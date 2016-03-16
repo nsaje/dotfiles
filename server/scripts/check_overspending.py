@@ -1,4 +1,5 @@
-import os, django
+import os
+import django
 
 import datetime
 
@@ -28,8 +29,9 @@ def create_overspend_report(date, ad_group_id, debug_print):
         content_ads = ContentAd.objects.filter(ad_group=ad_group)
 
         # ad content_ad => media sources for this ad group
-        content_ad_sources = ContentAdSource.objects.filter(content_ad__in=content_ads,
-                                                            state=constants.ContentAdSourceState.ACTIVE).distinct('source')
+        content_ad_sources = ContentAdSource.objects.filter(
+            content_ad__in=content_ads,
+            state=constants.ContentAdSourceState.ACTIVE).distinct('source')
         media_sources = set([c.source for c in content_ad_sources if c.source.name not in ('Yahoo', 'Outbrain')])
 
         # all media source for this ad group
@@ -59,18 +61,20 @@ def create_overspend_report(date, ad_group_id, debug_print):
 
             if yesterday_spent > daily_budget:
                 try:
-                    result_string = 'OVERSPENT: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, Yesterday spent: %f, DIFF: %f' % (
-                        ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget, yesterday_spent,
-                        yesterday_spent - float(daily_budget))
-                    print result_string
+                    result_string = 'OVERSPENT: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, ' \
+                                    'Yesterday spent: %f, DIFF: %f' % (
+                                        ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
+                                        yesterday_spent, yesterday_spent - float(daily_budget))
+                    print(result_string)
                 except:
                     print 'Exception while priting result for adgroup.id = %d and media_source.id = %d' % (
                         ad_group.id, media_source.id)
             elif debug_print:
-                result_string = 'OK: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, Yesterday spent: %f' % (
-                    ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
-                    yesterday_spent)
-                print result_string
+                result_string = 'OK: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, ' \
+                                'Yesterday spent: %f' % (
+                                    ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
+                                    yesterday_spent)
+                print(result_string)
 
 
 parser = OptionParser()
