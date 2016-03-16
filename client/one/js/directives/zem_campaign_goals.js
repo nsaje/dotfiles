@@ -1,4 +1,4 @@
-/* global oneApp,constants,angular*/
+/* global oneApp,constants*/
 'use strict';
 
 oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
