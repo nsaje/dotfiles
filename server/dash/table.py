@@ -1849,8 +1849,8 @@ class PublishersTable(object):
             user,
             totals_data,
         )
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            totals.update(campaign_goal_helpers.create_goal_totals(adgroup.campaign, totals_data))
+        #if user.has_perm('zemauth.campaign_goal_optimization'):
+        totals.update(campaign_goal_helpers.create_goal_totals(adgroup.campaign, totals_data))
 
         response = {
             'rows': rows,

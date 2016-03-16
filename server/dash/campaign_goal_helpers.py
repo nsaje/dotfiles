@@ -11,7 +11,7 @@ def create_goals(campaign, data):
     for row in data:
         for campaign_goal_value in campaign_goal_values:
             goal_type = campaign_goal_value.campaign_goal.type
-            ret.extend(calculate_goal_values(row, goal_type))
+            ret.update(calculate_goal_values(row, goal_type, 1))
     # TODO: CPA
     return ret
 
@@ -21,7 +21,7 @@ def create_goal_totals(campaign, data):
     campaign_goal_values = get_campaign_goal_values(campaign)
     for campaign_goal_value in campaign_goal_values:
         goal_type = campaign_goal_value.campaign_goal.type
-        ret.extend(calculate_goal_values(data, goal_type))
+        ret.update(calculate_goal_values(data, goal_type, 1))
     # TODO: CPA
     return ret
 
@@ -39,24 +39,24 @@ def get_campaign_goal_values(campaign):
     )
 
 
-def calculate_goal_values(row, goal_type):
+def calculate_goal_values(row, goal_type, cost):
     ret = {}
     if goal_type == dash.constants.CampaignGoalKPI.TIME_ON_SITE:
-        # total seconds
-        ret['total_seconds'] = (row.get('avg_tos') or 0) *\
+        total_seconds = (row.get('avg_tos') or 0) *\
             (row.get('visits') or 0)
-        # avg cost for second
-        ret['avg_cost_per_second'] = row.get('avg_tos') or 0
+        ret['total_seconds'] = total_seconds
+        ret['avg_cost_per_second'] = float(cost) / total_seconds if\
+            total_seconds != 0 else 0
     elif goal_type == dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
-        # unbounced visitors
-        ret['unbounced_visits'] = 1.0 - (row.get('bounce_rate') or 0)
-        # avg. cost for unbounced visitor
-        ret['avg_cost_per_non_bounced_visitor'] =\
-            (row.get('bounce_rate') or 0)
+        unbounced_visits = 1.0 - (row.get('bounce_rate') or 0)
+        ret['unbounced_visits'] = unbounced_visits
+        ret['avg_cost_per_non_bounced_visitor'] = float(cost) / unbounced_visits if\
+            unbounced_visits != 0 else 0
     elif goal_type == dash.constants.CampaignGoalKPI.PAGES_PER_SESSION:
-        # total pageviews
-        ret['total_pageviews'] = (row.get('pv_per_visit') or 0) *\
+        total_pageviews = (row.get('pv_per_visit') or 0) *\
             (row.get('visits') or 0)
+        ret['total_pageviews'] = total_pageviews
         # avg. cost per pageview
-        ret['avg_cost_per_pageview'] = (row.get('pv_per_visit') or 0)
+        ret['avg_cost_per_pageview'] = float(cost) / total_pageviews if\
+            total_pageviews != 0 else 0
     return ret
