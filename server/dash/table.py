@@ -1439,6 +1439,7 @@ class CampaignAdGroupsTable(object):
 
         rows = self.get_rows(
             user,
+            campaign,
             ad_groups,
             ad_groups_settings,
             ad_groups_status_dict,
