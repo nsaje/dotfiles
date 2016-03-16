@@ -3089,7 +3089,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     function CampaignGoalValidation () {
         var self = this;
 
-        this.convert = {
+        self.convert = {
             dataToApi: function (goal) {
                 var data = {
                     type: goal.type,
@@ -3109,7 +3109,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
         };
 
-        this.post = function (campaignId, goal) {
+        self.post = function (campaignId, goal) {
             var url = '/api/campaigns/' + campaignId + '/goals/validate/';
             return $http.post(url, self.convert.dataToApi(goal));
         };
