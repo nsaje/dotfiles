@@ -1873,10 +1873,9 @@ class PublishersTable(object):
         )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            rows = campaign_goal_helpers.create_goals(adgroup.campaign, rows, totals.get('cost') or 0)
-
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            totals = campaign_goal_helpers.create_goal_totals(adgroup.campaign, totals, totals.get('cost', 0))
+            campaign = adgroup.campaign
+            rows = campaign_goal_helpers.create_goals(campaign, rows, totals.get('cost') or 0)
+            totals = campaign_goal_helpers.create_goal_totals(campaign, totals, totals.get('cost', 0))
 
         response = {
             'rows': rows,
@@ -1892,6 +1891,9 @@ class PublishersTable(object):
             'order': order,
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            response['campaign_goals'] = campaign_goal_helpers.get_campaign_goals(campaign)
         return response
 
     def _construct_pub_bl_queryset(self, publishers_data, adgroup):

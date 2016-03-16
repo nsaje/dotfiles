@@ -90,3 +90,14 @@ def calculate_goal_total_values(row, goal_type, cost):
         ret['avg_cost_per_pageview'] = float(cost) / total_pageviews if\
             total_pageviews != 0 else 0
     return ret
+
+
+def get_campaign_goals(campaign):
+    cg_values = get_campaign_goal_values(campaign)
+    ret = {}
+    for cg_value in cg_values:
+        goal_name = dash.constants.CampaignGoal.get_text(
+            cg_value.campaign_goal.type
+        )
+        ret[goal_name] = float(cg_value.value)
+    return ret
