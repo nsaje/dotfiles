@@ -331,6 +331,7 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
 
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request)
+    _set_retargeting_manual_property_if_needed(ad_group_source, ad_group_settings, request)
 
     delayed_actions = actionlog.api.send_delayed_actionlogs([ad_group_source], send=False)
     actions.extend(delayed_actions)
@@ -370,6 +371,21 @@ def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_setti
                 request,
                 'target_regions',
                 new_field_value
+        )
+
+
+def _set_retargeting_manual_property_if_needed(ad_group_source, ad_group_settings, request):
+    source = ad_group_source.source
+    # if we could not select target regions automatically, see if we can select them manually
+    if ad_group_settings.retargeting_ad_groups != [] and\
+            source.can_modify_retargeting_manually():
+
+        new_field_value = ad_group_settings.retargeting_ad_groups
+        actionlog.api.init_set_ad_group_manual_property(
+            ad_group_source,
+            request,
+            'retargeting_ad_groups',
+            new_field_value
         )
 
 
