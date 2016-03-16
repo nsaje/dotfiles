@@ -5,7 +5,8 @@ from django.core.urlresolvers import reverse
 
 from zemauth.models import User
 
-class TestTestData(TestCase):
+
+class BreakdownsTestDataTest(TestCase):
     fixtures = ['test_models.yaml']
 
     def setUp(self):
@@ -22,11 +23,10 @@ class TestTestData(TestCase):
         }
 
         response = self.client.get(
-            reverse('stats_test_data'),
+            reverse('stats_breakdowns_test_data'),
             params,
             follow=True
         )
 
         result = json.loads(response.content)
-
         self.assertTrue(result['success'])

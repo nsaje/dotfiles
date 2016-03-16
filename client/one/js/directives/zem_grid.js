@@ -8,7 +8,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
         BREAKDOWN: 2
     };
 
-    function GridRow(type, level, data) {
+    function GridRow (type, level, data) {
         this.type = type;
         this.level = level;
         this.data = data;
@@ -98,11 +98,10 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             // TODO: move to filter
             $scope.getRowClass = function (row) {
                 var classes = [];
-                classes.push ('level-'+row.level);
+                classes.push('level-' + row.level);
 
-                if (row.level === $scope.dataSource.breakdowns.length)
-                {
-                    classes.push ('level-last');
+                if (row.level === $scope.dataSource.breakdowns.length) {
+                    classes.push('level-last');
                 }
 
                 return classes;
@@ -114,9 +113,9 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             // DEBUG PANEL
             // TODO: move to development controller
             $scope.DEBUG_BREAKDOWNS = {ad_group: true, age: true, sex: false, date: true};
-            $scope.DEBUG_APPLY_BREAKDOWN = function (){
+            $scope.DEBUG_APPLY_BREAKDOWN = function () {
                 var breakdowns = [];
-                angular.forEach($scope.DEBUG_BREAKDOWNS, function(value, key){
+                angular.forEach($scope.DEBUG_BREAKDOWNS, function (value, key) {
                     if (value) breakdowns.push(key);
                 });
                 $scope.dataSource.breakdowns = breakdowns;

@@ -68,11 +68,6 @@ urlpatterns = patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^api/experimental/stats/testdata/',
-        stats.views.TestData.as_view(),
-        name='stats_test_data'
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/state/',
         login_required(dash.views.views.AdGroupState.as_view()),
     ),
@@ -492,6 +487,11 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/export_plus/',
         login_required(dash.views.export_plus.AllAccountsExport.as_view())
+    ),
+    url(
+        r'^api/stats/testdata/',
+        stats.views.BreakdownsTestData.as_view(),
+        name='stats_breakdowns_test_data'
     )
 )
 

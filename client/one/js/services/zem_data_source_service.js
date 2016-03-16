@@ -3,9 +3,9 @@
 
 oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
 
-    function DataSource() {
+    function DataSource () {
         this.breakdowns = ['ad_group', 'age', 'date'];
-        this.endpoint = '/api/experimental/stats/testdata/';
+        this.endpoint = '/api/stats/testdata/';
         this.defaultPagination = [2, 3, 5];
 
         this.data = null;
@@ -17,7 +17,7 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
             var ranges = [];
             for (var i = 1; i <= this.breakdowns.length; ++i) {
                 var from = 0;
-                var to = this.defaultPagination[i-1];
+                var to = this.defaultPagination[i - 1];
                 if (breakdown) {
                     if (i < breakdown.level) {
                         from = breakdown.position[i];
@@ -29,7 +29,7 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
                             else to = -1;
                         }
                         else {
-                            to = from + this.defaultPagination[i-1];
+                            to = from + this.defaultPagination[i - 1];
                         }
                     }
                 }

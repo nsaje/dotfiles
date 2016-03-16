@@ -10,9 +10,8 @@ TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-
 TEST_BREAKDOWNS_SEX = ['man', 'woman']
 
 
-# stats
 # <breakdown>
-#   -> level (0->n)
+#   -> level
 #   -> position - [a,b,c]
 #   -> pagination - from, to, size, count
 #   -> rows []
@@ -22,7 +21,7 @@ TEST_BREAKDOWNS_SEX = ['man', 'woman']
 #
 # level 0 -> wrapper for total row and it's breakdown
 # level 1 -> first level breakdown - original rows  with potential breakdown
-# level 2-... -> breakdowns
+# level 2-n -> breakdowns
 def generate_random_breakdowns(breakdowns, level):
     top_level_row = _generate_random_breakdown(breakdowns, level=1, position=(0,))
     top_level_breakdown = {
