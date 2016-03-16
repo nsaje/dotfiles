@@ -171,9 +171,10 @@ class AdGroupSourceSettingsTest(TestCase):
         self.ad_group = models.AdGroup.objects.get(pk=1)
 
     def _set_ad_group_end_date(self, days_delta=0):
-        settings = self.ad_group.get_current_settings()
-        settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=days_delta)
-        settings.save(None)
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=days_delta)
+        new_settings.save(None)
 
     def _set_campaign_landing_mode(self):
         self.ad_group.campaign.landing_mode = True
@@ -400,16 +401,10 @@ class CampaignAdGroups(TestCase):
         request.user = self.user
 
         ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings = ad_group_settings.copy_settings()
         ad_group_settings.retargeting_ad_groups = 1
         ad_group_settings.save(request)
         request = None
-
-        view = views.CampaignAdGroups()
-        actions = view._add_media_sources(ad_group, ad_group_settings, request)
-
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
-        added_source = models.Source.objects.get(pk=1)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
             ad_group_source__ad_group=ad_group
@@ -443,11 +438,11 @@ class CampaignAdGroups(TestCase):
         request = None
 
         view = views.CampaignAdGroups()
-        settings = view._create_new_settings(ad_group, request)
+        new_settings = view._create_new_settings(ad_group, request)
         campaign_settings = ad_group.campaign.get_current_settings()
 
-        self.assertEqual(settings.target_devices, campaign_settings.target_devices)
-        self.assertEqual(settings.target_regions, campaign_settings.target_regions)
+        self.assertEqual(new_settings.target_devices, campaign_settings.target_devices)
+        self.assertEqual(new_settings.target_regions, campaign_settings.target_regions)
 
 
 class AdGroupContentAdCSVTest(TestCase):
@@ -778,8 +773,9 @@ class AdGroupArchiveRestoreTest(TestCase):
         self.assertFalse(ad_group.is_archived())
 
         ad_group_settings = ad_group.get_current_settings()
-        ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
-        ad_group_settings.save(None)
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+        new_ad_group_settings.save(None)
 
         self._post_archive_ad_group(1)
 
@@ -796,8 +792,9 @@ class AdGroupArchiveRestoreTest(TestCase):
         self.assertFalse(ad_group.is_archived())
 
         ad_group_settings = ad_group.get_current_settings()
-        ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
-        ad_group_settings.save(None)
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+        new_ad_group_settings.save(None)
 
         self._post_archive_ad_group(1)
 
@@ -1703,9 +1700,9 @@ class AdGroupSourcesTest(TestCase):
 
     def test_available_sources_with_filter_empty(self):
         response = self.client.get(
-                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
-                {'filtered_sources': '7,8'},
-                follow=True
+            reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+            {'filtered_sources': '7,8'},
+            follow=True
         )
         # Expected sources - none
         # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
@@ -1714,8 +1711,8 @@ class AdGroupSourcesTest(TestCase):
 
     def test_put(self):
         response = self.client.put(
-                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
-                data=json.dumps({'source_id': '9'})
+            reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+            data=json.dumps({'source_id': '9'})
         )
         self.assertEqual(response.status_code, 200)
 
@@ -1728,23 +1725,23 @@ class AdGroupSourcesTest(TestCase):
         self.assertIn(source, waiting_sources)
 
     def test_put_with_retargeting(self):
-
         ad_group = models.AdGroup.objects.get(pk=1)
 
         request = RequestFactory()
         request.user = User(id=1)
 
         current_settings = ad_group.get_current_settings()
-        current_settings.retargeting_ad_groups = [2]
-        current_settings.save(request)
+        new_settings = current_settings.copy_settings()
+        new_settings.retargeting_ad_groups = [2]
+        new_settings.save(request)
 
         source = models.Source.objects.get(pk=9)
         source.supports_retargeting = False
         source.save()
 
         response = self.client.put(
-                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
-                data=json.dumps({'source_id': '9'})
+            reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+            data=json.dumps({'source_id': '9'})
         )
         self.assertEqual(response.status_code, 400)
 
@@ -1756,8 +1753,8 @@ class AdGroupSourcesTest(TestCase):
 
     def test_put_existing_source(self):
         response = self.client.put(
-                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
-                data=json.dumps({'source_id': '1'})
+            reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+            data=json.dumps({'source_id': '1'})
         )
         self.assertEqual(response.status_code, 400)
 
@@ -2748,9 +2745,10 @@ class AdGroupOverviewTest(TestCase):
         # and is overperforming
         ad_group = models.AdGroup.objects.get(pk=1)
         ad_group_settings = ad_group.get_current_settings()
-        ad_group_settings.start_date = start_date
-        ad_group_settings.end_date = end_date
-        ad_group_settings.save(None)
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.start_date = start_date
+        new_ad_group_settings.end_date = end_date
+        new_ad_group_settings.save(None)
 
         credit = models.CreditLineItem.objects.create(
             account=ad_group.campaign.account,
@@ -2882,15 +2880,17 @@ class CampaignOverviewTest(TestCase):
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
-            adgs.start_date = adg_start_date
-            adgs.end_date = adg_end_date
-            adgs.state = constants.AdGroupSettingsState.ACTIVE
-            adgs.save(req)
+            new_adgs = adgs.copy_settings()
+            new_adgs.start_date = adg_start_date
+            new_adgs.end_date = adg_end_date
+            new_adgs.state = constants.AdGroupSettingsState.ACTIVE
+            new_adgs.save(req)
 
         # make all adgroup sources active
         for adgss in models.AdGroupSourceSettings.objects.all():
-            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
-            adgss.save(req)
+            new_adgss = adgss.copy_settings()
+            new_adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_adgss.save(req)
 
         self.setUpPermissions()
         cursor().dictfetchall.return_value = [{
@@ -3005,15 +3005,17 @@ class AccountOverviewTest(TestCase):
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
-            adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
-            adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
-            adgs.state = constants.AdGroupSettingsState.ACTIVE
-            adgs.save(req)
+            new_adgs = adgs.copy_settings()
+            new_adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            new_adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+            new_adgs.state = constants.AdGroupSettingsState.ACTIVE
+            new_adgs.save(req)
 
         # make all adgroup sources active
         for adgss in models.AdGroupSourceSettings.objects.all():
-            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
-            adgss.save(req)
+            new_adgss = adgss.copy_settings()
+            new_adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_adgss.save(req)
 
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
@@ -3044,15 +3046,17 @@ class AccountOverviewTest(TestCase):
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
-            adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
-            adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
-            adgs.state = constants.AdGroupSettingsState.ACTIVE
-            adgs.save(req)
+            new_adgs = adgs.copy_settings()
+            new_adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            new_adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+            new_adgs.state = constants.AdGroupSettingsState.ACTIVE
+            new_adgs.save(req)
 
         # make all adgroup sources active
         for adgss in models.AdGroupSourceSettings.objects.all():
-            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
-            adgss.save(req)
+            new_adgss = adgss.copy_settings()
+            new_adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_adgss.save(req)
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -3061,12 +3065,14 @@ class AccountOverviewTest(TestCase):
         mock_current_settings.return_value = settings
 
         campaign_settings = models.Campaign.objects.get(pk=1).get_current_settings()
-        campaign_settings.archived = True
-        campaign_settings.save(req)
+        new_campaign_settings = campaign_settings.copy_settings()
+        new_campaign_settings.archived = True
+        new_campaign_settings.save(req)
 
         adgroup_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
-        adgroup_settings.archived = True
-        adgroup_settings.save(req)
+        new_adgroup_settings = adgroup_settings.copy_settings()
+        new_adgroup_settings.archived = True
+        new_adgroup_settings.save(req)
 
         # do some extra setup to the account
         cursor().dictfetchall.return_value = [{

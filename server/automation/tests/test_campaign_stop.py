@@ -148,8 +148,13 @@ class GetMaximumDailyBudgetTestCase(TestCase):
         ags5 = dash.models.AdGroupSource.objects.get(id=5)  # UTC+9
 
         date = datetime.date(2016, 3, 1)
-        self.assertEqual(Decimal('55'), campaign_stop._get_source_max_daily_budget(date, ags1, ags_settings))
-        self.assertEqual(Decimal('50'), campaign_stop._get_source_max_daily_budget(date, ags2, ags_settings))
-        self.assertEqual(Decimal('0'), campaign_stop._get_source_max_daily_budget(date, ags3, ags_settings))
-        self.assertEqual(Decimal('20'), campaign_stop._get_source_max_daily_budget(date, ags4, ags_settings))
-        self.assertEqual(Decimal('100'), campaign_stop._get_source_max_daily_budget(date, ags5, ags_settings))
+        self.assertEqual(Decimal('55'), campaign_stop._get_source_max_daily_budget(
+            date, ags1, ags_settings.filter(ad_group_source_id=ags1.id)))
+        self.assertEqual(Decimal('50'), campaign_stop._get_source_max_daily_budget(
+            date, ags2, ags_settings.filter(ad_group_source_id=ags2.id)))
+        self.assertEqual(Decimal('0'), campaign_stop._get_source_max_daily_budget(
+            date, ags3, ags_settings.filter(ad_group_source_id=ags3.id)))
+        self.assertEqual(Decimal('20'), campaign_stop._get_source_max_daily_budget(
+            date, ags4, ags_settings.filter(ad_group_source_id=ags4.id)))
+        self.assertEqual(Decimal('100'), campaign_stop._get_source_max_daily_budget(
+            date, ags5, ags_settings.filter(ad_group_source_id=ags5.id)))
