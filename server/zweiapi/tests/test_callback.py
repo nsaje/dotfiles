@@ -250,8 +250,7 @@ class CreateCampaignManualActionsTest(TestCase):
             ad_group_source,
             target_regions=None,
             available_actions=None,
-            retargeting_ad_groups=None
-        ):
+            retargeting_ad_groups=None):
         if available_actions:
             ad_group_source.source.source_type.available_actions.extend(available_actions)
             ad_group_source.source.source_type.save()
