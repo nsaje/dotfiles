@@ -376,7 +376,6 @@ def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_setti
 
 def _set_retargeting_manual_property_if_needed(ad_group_source, ad_group_settings, request):
     source = ad_group_source.source
-    # if we could not select target regions automatically, see if we can select them manually
     if ad_group_settings.retargeting_ad_groups != [] and\
             source.can_modify_retargeting_manually():
 
