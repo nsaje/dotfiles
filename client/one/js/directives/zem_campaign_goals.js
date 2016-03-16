@@ -42,7 +42,9 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             };
 
             $scope.setPrimary = function (goal) {
-                if (goal.removed) { return; }
+                if (goal.removed) {
+                    return;
+                }
                 $scope.campaignGoals.forEach(function (el) {
                     el.primary = false;
                 });

@@ -23,7 +23,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.setDefaultValue = function () {
         var defaultValue = null;
         defaults.campaignGoalKPI.forEach(function (kpiDefault) {
-            if (kpiDefault.id == $scope.campaignGoal.type) {
+            if (kpiDefault.id === $scope.campaignGoal.type) {
                 defaultValue = kpiDefault.value;
             }
         });

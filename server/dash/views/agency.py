@@ -597,7 +597,7 @@ class CampaignSettings(api_common.BaseApiView):
             'modified': {}
         })
 
-        new_primary = None
+        new_primary_id = None
         errors = []
         for goal in changes['added']:
             is_primary = goal['primary']
@@ -627,19 +627,20 @@ class CampaignSettings(api_common.BaseApiView):
                 goal_added = campaign_goals.create_campaign_goal(request, goal_form, campaign)
 
             if is_primary:
-                new_primary = goal_added.pk
+                new_primary_id = goal_added.pk
 
             campaign_goals.add_campaign_goal_value(request, goal_added.pk, goal['value'])
 
         for goal_id, value in changes['modified'].iteritems():
             campaign_goals.add_campaign_goal_value(request, goal_id, value)
 
-        for goal in changes['removed']:
-            campaign_goals.delete_campaign_goal(request, goal['id'])
+        removed_goals = {goal['id'] for goal in changes['removed']}
+        for goal_id in removed_goals:
+            campaign_goals.delete_campaign_goal(request, goal_id)
 
-        new_primary = new_primary or changes['primary']
-        if new_primary:
-            campaign_goals.set_campaign_goal_primary(request, campaign, new_primary)
+        new_primary_id = new_primary_id or changes['primary']
+        if new_primary_id and new_primary_id not in removed_goals:
+            campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
 
         return errors
 
