@@ -1,11 +1,11 @@
-/*global $,oneApp,constants*/
+/* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', function (config, zemDataSourceService, $window) {
+oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config, zemDataSourceService) {
 
     var GridRowType = {
         STATS: 1,
-        BREAKDOWN: 2
+        BREAKDOWN: 2,
     };
 
     function GridRow (type, level, data) {
@@ -24,7 +24,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             // TODO: bindings
         },
         templateUrl: '/partials/zem_grid.html',
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        controller: ['$scope', function ($scope) {
 
             $scope.dataSource = new zemDataSourceService();
             $scope.config = config;
@@ -42,8 +42,6 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                         var totalRow = new GridRow(GridRowType.STATS, 0, totalDataRow);
                         $scope.rows = $scope.parseBreakdown(totalRow, totalDataRow.breakdown);
                         $scope.rows.push(totalRow);
-                    }, function (error) {
-
                     }
                 );
             };
@@ -55,8 +53,6 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                         var idx = $scope.rows.indexOf(row);
                         rows.pop();
                         $scope.rows.splice.apply($scope.rows, [idx, 0].concat(rows));
-                    }, function (error) {
-
                     }
                 );
             };
@@ -82,14 +78,11 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             };
 
             $scope.toggleCollapse = function (gridRow) {
-
                 gridRow.collapsed = !gridRow.collapsed;
 
                 var idx = this.rows.indexOf(gridRow);
-                while (true) {
-                    if (idx >= this.rows.length) break;
-
-                    var child = this.rows[++idx];
+                while (++idx < this.rows.length) {
+                    var child = this.rows[idx];
                     if (child.level <= gridRow.level) break;
                     child.visible = !gridRow.collapsed && !child.parent.collapsed;
                 }
@@ -109,10 +102,8 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
 
             $scope.load();
 
-            /////////////////////
-            // DEBUG PANEL
             // TODO: move to development controller
-            $scope.DEBUG_BREAKDOWNS = {ad_group: true, age: true, sex: false, date: true};
+            $scope.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
             $scope.DEBUG_APPLY_BREAKDOWN = function () {
                 var breakdowns = [];
                 angular.forEach($scope.DEBUG_BREAKDOWNS, function (value, key) {

@@ -1,4 +1,4 @@
-/*globals angular,oneApp,constants,options,moment*/
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
@@ -27,8 +27,7 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
                         if (size) {
                             if (size > 0) to = from + size;
                             else to = -1;
-                        }
-                        else {
+                        } else {
                             to = from + this.defaultPagination[i - 1];
                         }
                     }
@@ -69,13 +68,12 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
             var config = this.prepareBreakdownConfig(breakdown, size);
             var deferred = $q.defer();
             var that = this;
-            $http.get(this.endpoint, config).success(function (data, status) {
+            $http.get(this.endpoint, config).success(function (data) {
                 var breakdown = data.data[0];
                 that.applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
-            }).error(function (data, status) {
-                console.log('ERROR: ' + status);
-                deferred.reject(data)
+            }).error(function (data) {
+                deferred.reject(data);
             });
 
             return deferred.promise;
