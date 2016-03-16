@@ -1741,7 +1741,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             });
         }
 
-        function convertCampaignGoalsToApi (goals, campaignId) {
+        function convertCampaignGoalsToApi (goals) {
             var data = {};
             goals = goals || {};
             data.primary = goals.primary || null;
@@ -1752,7 +1752,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     primary: goal.primary,
                     value: goal.value,
                     type: goal.type,
-                    campaign_id: campaignId,
                 };
                 if (goal.conversionGoal) {
                     converted.conversion_goal =  {
@@ -1796,7 +1795,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             var data = {
                 'settings': convertSettingsToApi(settings),
-                'goals': convertCampaignGoalsToApi(campaignGoals, settings.id)
+                'goals': convertCampaignGoalsToApi(campaignGoals)
             };
 
             $http.put(url, data, config).

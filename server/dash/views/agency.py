@@ -624,7 +624,7 @@ class CampaignSettings(api_common.BaseApiView):
                 )
 
             else:
-                goal_form = forms.CampaignGoalForm(goal, campaign_id=goal['campaign_id'])
+                goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
                 errors.append(dict(goal_form.errors))
                 goal_added = campaign_goals.create_campaign_goal(request, goal_form, campaign)
 
