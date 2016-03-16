@@ -496,14 +496,6 @@ class SourcesTable(object):
             order=order,
             ad_group_level=ad_group_level,
         )
-        if user.has_perm('zemauth.campaign_goal_optimization') and\
-                level_ in ('ad_group', 'campaigns'):
-            if level_ == 'ad_group':
-                campaign = level_sources_table.ad_group.campaign
-            elif level_ == 'campaigns':
-                campaign = level_sources_table.campaign
-            for row in rows:
-                row.update(campaign_goal_helpers.create_goals(campaign, source_data))
 
         totals = self.get_totals(
             ad_group_level,
@@ -517,14 +509,30 @@ class SourcesTable(object):
         )
 
         if user.has_perm('zemauth.campaign_goal_optimization') and\
-                level_ in ('ad_group', 'campaigns'):
-            if level_ == 'ad_group':
+                level_ in ('ad_groups', 'campaigns'):
+            if level_ == 'ad_groups':
                 campaign = level_sources_table.ad_group.campaign
             elif level_ == 'campaigns':
                 campaign = level_sources_table.campaign
 
-            totals.update(campaign_goal_helpers.create_goal_totals(campaign, totals))
+            rows = campaign_goal_helpers.create_goals(
+                campaign,
+                rows,
+                totals.get('cost') or 0
+            )
 
+        if user.has_perm('zemauth.campaign_goal_optimization') and\
+                level_ in ('ad_groups', 'campaigns'):
+            if level_ == 'ad_groups':
+                campaign = level_sources_table.ad_group.campaign
+            elif level_ == 'campaigns':
+                campaign = level_sources_table.campaign
+
+            totals = campaign_goal_helpers.create_goal_totals(
+                campaign,
+                totals,
+                totals.get('cost', 0)
+            )
 
         response = {
             'rows': rows,
@@ -1190,11 +1198,6 @@ class AdGroupAdsPlusTable(object):
 
         rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            campaign = ad_group.campaign
-            # TODO: Optimize this
-            for row in rows:
-                row.update(campaign_goal_helpers.create_goals(campaign, row))
 
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
@@ -1225,9 +1228,19 @@ class AdGroupAdsPlusTable(object):
                   user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
         total_row = self._get_total_row(user, total_stats)
+
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            total_row.update(
-                campaign_goal_helpers.create_goal_totals(ad_group.campaign, total_stats)
+            rows = campaign_goal_helpers.create_goals(
+                ad_group.campaign,
+                rows,
+                total_stats.get('cost') or 0
+            )
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            total_row= campaign_goal_helpers.create_goal_totals(
+                ad_group.campaign,
+                total_row,
+                total_row.get('cost', 0)
             )
 
         response_dict = {
@@ -1444,8 +1457,20 @@ class CampaignAdGroupsTable(object):
             e_yesterday_total_cost,
             yesterday_total_cost
         )
+
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            totals.update(campaign_goal_helpers.create_goal_totals(campaign, totals))
+            rows = campaign_goal_helpers.create_goals(
+                campaign,
+                rows,
+                totals.get('cost') or 0
+            )
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals = campaign_goal_helpers.create_goal_totals(
+                campaign,
+                totals,
+                totals.get('cost', 0)
+            )
 
         response = {
             'rows': rows,
@@ -1554,9 +1579,6 @@ class CampaignAdGroupsTable(object):
 
             row['last_sync'] = last_sync
             row['editable_fields'] = self.get_editable_fields(ad_group, campaign, row)
-
-            if user.has_perm('zemauth.campaign_goal_optimization'):
-                row.update(campaign_goal_helpers.create_goals(ad_group.campaign, row))
 
             rows.append(row)
 
