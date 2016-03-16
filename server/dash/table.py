@@ -1815,6 +1815,8 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
+
+
         publishers_data, totals_data = self._query_filtered_publishers(
             show_blacklisted_publishers,
             start_date,
@@ -1841,16 +1843,17 @@ class PublishersTable(object):
             map_exchange_to_source_name,
             publishers_data=publishers_data,
         )
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            for row in rows:
-                row.update(campaign_goal_helpers.create_goals(adgroup.campaign, publishers_data))
 
         totals = self.get_totals(
             user,
             totals_data,
         )
-        #if user.has_perm('zemauth.campaign_goal_optimization'):
-        totals.update(campaign_goal_helpers.create_goal_totals(adgroup.campaign, totals_data))
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            rows = campaign_goal_helpers.create_goals(adgroup.campaign, rows, totals.get('cost') or 0)
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals = campaign_goal_helpers.create_goal_totals(adgroup.campaign, totals, totals.get('cost', 0))
 
         response = {
             'rows': rows,
