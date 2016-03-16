@@ -67,8 +67,8 @@ def create_overspend_report(date, ad_group_id, debug_print):
                                         yesterday_spent, yesterday_spent - float(daily_budget))
                     print(result_string)
                 except:
-                    print 'Exception while priting result for adgroup.id = %d and media_source.id = %d' % (
-                        ad_group.id, media_source.id)
+                    print('Exception while printing result for adgroup.id = %d and media_source.id = %d' % (
+                        ad_group.id, media_source.id))
             elif debug_print:
                 result_string = 'OK: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, ' \
                                 'Yesterday spent: %f' % (
