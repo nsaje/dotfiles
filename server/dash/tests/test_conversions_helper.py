@@ -117,8 +117,10 @@ class ConversionHelperTestCase(test.TestCase):
     def test_empty_merge_touchpoint_convertions(self):
         publisher_data = [{'dummy': 'dummy'}]
 
-        conversions_helper.merge_touchpoint_conversions_to_publishers_data(publisher_data, [], [], [])
-        self.assertEqual(publisher_data, publisher_data)
+        merged_data, reorder = conversions_helper.merge_touchpoint_conversions_to_publishers_data(
+            publisher_data, [], [], [])
+        self.assertEqual(merged_data, publisher_data)
+        self.assertFalse(reorder)
 
     def test_merge_touchpoint_conversions_to_publishers_data(self):
         publishers_data = self._get_publishers_data()
@@ -126,11 +128,13 @@ class ConversionHelperTestCase(test.TestCase):
         publisher_breakdown_fields = ['domain', 'exchange']
         touchpoint_breakdown_fields = ['publisher', 'source']
 
-        conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data,
-                                                                           publisher_breakdown_fields,
-                                                                           touchpoint_breakdown_fields)
+        merged_data, reorder = conversions_helper.merge_touchpoint_conversions_to_publishers_data(
+            publishers_data,
+            touchpoint_data,
+            publisher_breakdown_fields,
+            touchpoint_breakdown_fields)
 
-        self.assertDictEqual(publishers_data[0], {
+        self.assertDictEqual(merged_data[0], {
             'domain': 'dummy_domain',
             'exchange': 'adiant',
             'dummy_info': -100,
@@ -138,26 +142,23 @@ class ConversionHelperTestCase(test.TestCase):
                 'goal_1': 100,
             }
         })
-        self.assertDictEqual(publishers_data[1], {
+        self.assertDictEqual(merged_data[1], {
             'domain': 'dummy_domain_2',
             'exchange': 'adiant',
             'dummy_info_2': -200,
         })
+        self.assertFalse(reorder)
 
     def test_convert_touchpoint_source_id_field_to_bidder_slug(self):
         touchpoint_data = self._get_touchpoint_data()
 
-        conversions_helper.convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data)
+        touchpoint_data = conversions_helper.convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data)
 
+        self.assertEqual(len(touchpoint_data), 1)
         self.assertDictEqual(touchpoint_data[0], {
             'source': 'adiant',
             'publisher': 'dummy_domain',
             'slug': 'goal_1',
             'conversion_count': 100,
             'dummy_info': -1000,
-        })
-        self.assertDictEqual(touchpoint_data[1], {
-            'source': -1,
-            'publisher': 'wont_be_used',
-            'slug': 'goal_none',
         })

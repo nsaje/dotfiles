@@ -7,6 +7,7 @@ import reports.api_touchpointconversions
 import utils.sort_helper
 from dash import conversions_helper, constants
 from reports import api_touchpointconversions, api_publishers
+from utils import sort_helper
 
 
 def get_reports_api_module(can_see_redshift_stats):
@@ -111,7 +112,8 @@ def get_publishers_data_and_conversion_goals(
                                                                 touchpoint_data,
                                                                 publisher_breakdown_fields,
                                                                 touchpoint_breakdown_fields,
-                                                                conversion_goals)
+                                                                conversion_goals,
+                                                                order_fields)
     return publishers_data
 
 
@@ -172,13 +174,18 @@ def _transform_and_merge_conversion_goals(publishers_data,
                                           touchpoint_data,
                                           publisher_breakdown_fields,
                                           touchpoint_breakdown_fields,
-                                          conversion_goals):
-    conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data,
-                                                                       touchpoint_data,
-                                                                       publisher_breakdown_fields,
-                                                                       touchpoint_breakdown_fields)
-    conversions_helper.transform_to_conversion_goals(publishers_data, conversion_goals)
-    return publishers_data
+                                          conversion_goals,
+                                          order_fields):
+    merged_data, reorder = conversions_helper.merge_touchpoint_conversions_to_publishers_data(
+        publishers_data,
+        touchpoint_data,
+        publisher_breakdown_fields,
+        touchpoint_breakdown_fields)
+    conversions_helper.transform_to_conversion_goals(merged_data, conversion_goals)
+
+    if reorder:
+        merged_data = sort_helper.sort_results(merged_data, order_fields)
+    return merged_data
 
 
 def _get_stats_with_conversions(
