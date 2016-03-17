@@ -84,6 +84,10 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 }
                 $scope.campaignGoals[0].primary = true;
                 $scope.model.primary = $scope.campaignGoals[0].id;
+
+                if (!$scope.model.primary) {
+                    $scope.model.added[0].primary = true;
+                }
             };
 
             function openModal (goal) {
