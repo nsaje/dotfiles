@@ -44,6 +44,16 @@ def set_campaign_goal_primary(request, campaign, goal_id):
     goal.save()
 
 
+def get_primary_campaign_goal(campaign):
+    try:
+        return models.CampaignGoal.objects.select_related('conversion_goal').get(
+            campaign=campaign,
+            primary=True
+        )
+    except models.CampaignGoal.DoesNotExist:
+        return None
+
+
 def delete_conversion_goal(request, conversion_goal_id, campaign):
     try:
         conversion_goal = models.ConversionGoal.objects.get(
