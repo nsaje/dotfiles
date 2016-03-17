@@ -1,3 +1,4 @@
+/* global describe,angular,beforeEach,module,it,inject,expect,spyOn */
 'use strict';
 
 describe('CampaignSettingsCtrl', function () {

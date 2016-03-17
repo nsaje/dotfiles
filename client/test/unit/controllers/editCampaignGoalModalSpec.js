@@ -1,3 +1,4 @@
+/* global describe,angular,beforeEach,module,it,inject,expect,spyOn */
 'use strict';
 
 describe('EditCampaignGoalModalCtrl', function () {
@@ -28,15 +29,15 @@ describe('EditCampaignGoalModalCtrl', function () {
                 },
                 conversionPixel: {
                     list: mockApiFunc
-                }
+                },
             };
 
             $state = _$state_;
-            $state.params = {id: 1};
+            $state.params = {id: 1,};
 
             $scope.campaignGoals = [];
-            $scope.campaign = { id: 1 };
-            $scope.account = { id: 1 };
+            $scope.campaign = {id: 1,};
+            $scope.account = {id: 1,};
 
             openedDeferred = $q.defer();
             $modalInstance = {
@@ -48,7 +49,7 @@ describe('EditCampaignGoalModalCtrl', function () {
             $controller('EditCampaignGoalModalCtrl', {
                 $scope: $scope,
                 $modalInstance: $modalInstance,
-                api: api
+                api: api,
             });
         });
     });
@@ -66,7 +67,6 @@ describe('EditCampaignGoalModalCtrl', function () {
             );
             spyOn($modalInstance, 'close');
 
-            
             $scope.save();
 
             expect($scope.validate).toHaveBeenCalled();
@@ -125,7 +125,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     goalId: 'something', type: 3, name: "124"
                 }
             };
-            
+
             expect($scope.validate(newGoal, errors)).toBe(false);
 
             newGoal = {
@@ -135,9 +135,9 @@ describe('EditCampaignGoalModalCtrl', function () {
                     goalId: 'something', type: 3, name: "125"
                 }
             };
-            
+
             expect($scope.validate(newGoal, errors)).toBe(true);
-            
+
         });
         it ('catches duplicate conversion goal ids', function () {
             var newGoal = {},
@@ -149,7 +149,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     id: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 2, name: "123"
+                        goalId: '123', type: 2, name: "123",
                     }
                 },
                 {
@@ -157,29 +157,29 @@ describe('EditCampaignGoalModalCtrl', function () {
                     campaignId: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 3, name: "124"
+                        goalId: '123', type: 3, name: "124",
                     }
-                }
+                },
             ];
 
             newGoal = {
                 type: 4,
                 campaignId: 1,
                 conversionGoal: {
-                    goalId: '123', type: 3, name: "125"
-                }
+                    goalId: '123', type: 3, name: "125",
+                },
             };
-            
+
             expect($scope.validate(newGoal, errors)).toBe(false);
 
             newGoal = {
                 type: 4,
                 campaignId: 1,
                 conversionGoal: {
-                    goalId: '124', type: 3, name: "125"
-                }
+                    goalId: '124', type: 3, name: "125",
+                },
             };
-            
+
             expect($scope.validate(newGoal, errors)).toBe(true);
         });
         it ('recognizes modified existing goals', function () {
@@ -192,17 +192,17 @@ describe('EditCampaignGoalModalCtrl', function () {
                     id: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 2, name: "123"
-                    }
+                        goalId: '123', type: 2, name: "123",
+                    },
                 },
                 {
                     primary: true,
                     campaignId: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 3, name: "124"
-                    }
-                }
+                        goalId: '123', type: 3, name: "124",
+                    },
+                },
             ];
 
             newGoal = {
@@ -210,10 +210,10 @@ describe('EditCampaignGoalModalCtrl', function () {
                 campaignId: 1,
                 id: 1,
                 conversionGoal: {
-                    goalId: '123', type: 2, name: "128"
-                }
+                    goalId: '123', type: 2, name: "128",
+                },
             };
-            
+
             expect($scope.validate(newGoal, errors)).toBe(true);
         });
     });

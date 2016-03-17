@@ -2,7 +2,6 @@
 'use strict';
 
 oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
-
     return {
         restrict: 'E',
         scope: {

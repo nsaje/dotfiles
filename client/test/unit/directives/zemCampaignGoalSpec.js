@@ -1,3 +1,4 @@
+/* global describe,angular,beforeEach,module,it,inject,expect,spyOn */
 'use strict';
 
 describe('zemCampaignGoals', function () {
@@ -12,8 +13,8 @@ describe('zemCampaignGoals', function () {
         $scope = $rootScope.$new();
         $scope.isPermissionInternal = function () { return true; };
         $scope.hasPermission = function () { return true; };
-        $scope.campaign = {id: 1};
-        $scope.account = {id: 1};
+        $scope.campaign = {id: 1,};
+        $scope.account = {id: 1,};
         $scope.goals = [];
         $scope.campaignGoalsDiff = {};
 
@@ -25,7 +26,7 @@ describe('zemCampaignGoals', function () {
 
     describe('choosePrimary', function () {
         it('sets first goal to primary', function () {
-            isolate.campaignGoals = [ {type: 1, id: 1}, {type: 2, id: 2} ];
+            isolate.campaignGoals = [{type: 1, id: 1,}, {type: 2, id: 2,}];
 
             isolate.choosePrimary();
 
@@ -35,8 +36,8 @@ describe('zemCampaignGoals', function () {
         });
 
         it('sets first goal to primary even if it still has to be added', function () {
-            isolate.campaignGoals = [ {type: 1}, {type: 2} ];
-            isolate.model.added = [ {type: 1}, {type: 2} ];
+            isolate.campaignGoals = [{type: 1}, {type: 2}];
+            isolate.model.added = [{type: 1}, {type: 2}];
             isolate.choosePrimary();
 
             expect(isolate.campaignGoals[0].primary).toBe(true);
