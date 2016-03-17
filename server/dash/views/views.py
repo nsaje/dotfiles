@@ -745,7 +745,7 @@ class AccountOverview(api_common.BaseApiView):
         count_campaigns_setting = infobox_helpers.OverviewSetting(
             'Active campaigns:',
             '{}'.format(count_campaigns),
-            tooltip='Number of campaigns with at least one active ad group'
+            tooltip='Number of campaigns with at least one ad group running'
         )
         settings.append(count_campaigns_setting.as_dict())
 
@@ -2005,7 +2005,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             'Active accounts:',
             count_active_accounts,
             section_start=True,
-            tooltip='All accounts that have at least one running campaign'
+            tooltip='Number of accounts with at least one campaign running'
         ))
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
