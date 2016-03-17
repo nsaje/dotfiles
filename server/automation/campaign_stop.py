@@ -62,8 +62,10 @@ def get_max_settable_daily_budget(ad_group_source):
     max_daily_budget_per_ags[ad_group_source.id] = 0
     max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
 
-    max_today = (available_today - max_daily_budget_sum).to_integral_exact(rounding=decimal.ROUND_CEILING)
-    max_tomorrow = (available_tomorrow - max_daily_budget_sum).to_integral_exact(rounding=decimal.ROUND_CEILING)
+    max_today = decimal.Decimal(available_today - max_daily_budget_sum)\
+                       .to_integral_exact(rounding=decimal.ROUND_CEILING)
+    max_tomorrow = decimal.Decimal(available_tomorrow - max_daily_budget_sum)\
+                          .to_integral_exact(rounding=decimal.ROUND_CEILING)
 
     return max(min(max_today, max_tomorrow), 0)
 
