@@ -402,6 +402,48 @@ class ConversionGoalForm(forms.Form):
             pass
 
 
+class CampaignGoalForm(forms.Form):
+    type = forms.TypedChoiceField(
+        required=True,
+        choices=constants.CampaignGoalKPI.get_choices(),
+        coerce=int
+    )
+    primary = forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.campaign_id = kwargs.pop('campaign_id')
+        self.id = kwargs.pop('id') if 'id' in kwargs else None
+        super(CampaignGoalForm, self).__init__(*args, **kwargs)
+
+    def clean_primary(self):
+        primary = self.cleaned_data.get('primary')
+        if not primary:
+            return False
+        goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, primary=True)
+        if self.id:
+            goals.exclude(pk=self.id)
+        if goals.count():
+            raise forms.ValidationError('Only one goal can be primary')
+        return True
+
+    def clean_type(self):
+        goal_type = self.cleaned_data['type']
+        if goal_type == constants.CampaignGoalKPI.CPA:
+            goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, type=goal_type)
+            if self.id:
+                goals.exclude(pk=self.id)
+            if goals.count() > constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
+                raise forms.ValidationError('Max conversion goals per campaign exceeded')
+            return goal_type
+
+        goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, type=goal_type)
+        if self.id:
+            goals.exclude(pk=self.id)
+        if goals.count():
+            raise forms.ValidationError('Multiple goals of the same type not allowed')
+        return goal_type
+
+
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
     campaign_manager = forms.IntegerField()
