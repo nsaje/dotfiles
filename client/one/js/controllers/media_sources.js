@@ -527,7 +527,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
                 $scope.selectRows();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
-
+                if ($scope.level === constants.level.CAMPAIGNS) {
+                    $scope.campaignGoals = data.campaign_goals;
+                    zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                }
             },
             function (data) {
                 // error

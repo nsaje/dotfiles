@@ -573,9 +573,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.dataStatus = data.dataStatus;
                 $scope.adGroupAutopilotState = data.adGroupAutopilotState;
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.campaignGoals = data.campaign_goals;
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
             },
             function (data) {
                 // error
