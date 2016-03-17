@@ -776,6 +776,7 @@ class AccountOverview(api_common.BaseApiView):
                 'Users:',
                 '{}'.format(all_users.count()),
                 section_start=True,
+                tooltip='Users assigned to this account'
             ).comment(
                 'Show more',
                 'Show less',
@@ -823,7 +824,7 @@ class AccountOverview(api_common.BaseApiView):
             description='{} remaining'.format(
                 lc_helper.default_currency(available_budget)
             ),
-            tooltip='Spent and remaining budget'
+            tooltip='Spent and remaining media budget'
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -2019,7 +2020,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         email_list_setting = infobox_helpers.OverviewSetting(
             'Active users:',
             '{}'.format(len(weekly_active_users)),
-            tooltip='E-mails of self managed users in the past 7 days'
+            tooltip='Users who took self-managed actions in the past 7 days'
         )
 
         if weekly_active_user_emails != []:
