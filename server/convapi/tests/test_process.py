@@ -94,6 +94,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                     'adGroupId': 1,
                     'source': 'outbrain',
                     'contentAdId': 1,
+                    'publisher': 'www.test.com',
                     'adLookup': False,
                 }
             ]
@@ -115,6 +116,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 1,
+                'publisher': 'www.test.com',
             }
         ]
 
@@ -273,6 +275,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                     'accountId': 1,
                     'adGroupId': 1,
                     'source': 'outbrain',
+                    'publisher': '',
                     'contentAdId': 1,
                 }, {
                     'zuid': '1234-12345-123456',
@@ -306,6 +309,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 1,
+                'publisher': None,
             }, {
                 'slug': 'test_slug',
                 'zuid': '1234-12345-123456',
@@ -320,6 +324,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 2,
                 'source_id': 5,
                 'conversion_lag': 22,
+                'publisher': None,
             }
         ]
 
@@ -396,6 +401,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 1,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -411,6 +417,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 2,
                 'source_id': 5,
                 'conversion_lag': 22,
+                'publisher': None,
             }
         ]
 
@@ -487,6 +494,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 1,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -502,6 +510,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 2,
                 'source_id': 5,
                 'conversion_lag': 22,
+                'publisher': None,
             }
         ]
 
@@ -579,6 +588,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 1,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -594,6 +604,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 2,
                 'source_id': 5,
                 'conversion_lag': 22,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -609,6 +620,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 3,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -624,6 +636,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 2,
                 'source_id': 5,
                 'conversion_lag': 24,
+                'publisher': None,
             }
         ]
 
@@ -700,6 +713,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'source_id': 5,
                 'content_ad_id': 2,
                 'conversion_lag': 22,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -715,6 +729,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 1,
                 'source_id': 3,
                 'conversion_lag': 1,
+                'publisher': None,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -730,6 +745,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'content_ad_id': 2,
                 'source_id': 5,
                 'conversion_lag': 24,
+                'publisher': None,
             }
         ]
 
