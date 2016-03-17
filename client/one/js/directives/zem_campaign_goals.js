@@ -10,6 +10,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             isPermissionInternal: '=zemIsPermissionInternal',
             model: '=model',
             campaign: '=campaign',
+            account: '=account',
             campaignGoals: '=goals',
         },
         templateUrl: '/partials/zem_campaign_goals.html',
@@ -90,6 +91,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
                 scope.campaignGoals = $scope.campaignGoals;
                 scope.campaign = $scope.campaign;
+                scope.account = $scope.account;
 
                 if (goal !== undefined) {
                     scope.campaignGoal = goal;

@@ -1735,6 +1735,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         type: goal.conversion_goal.type,
                         name: goal.conversion_goal.name,
                         goalId: goal.conversion_goal.goal_id,
+                        conversionWindow: goal.conversion_goal.conversion_window,
                     };
                 }
                 return converted;
@@ -1758,6 +1759,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         goal_id: goal.conversionGoal.goalId,
                         name: goal.conversionGoal.name,
                         type: goal.conversionGoal.type,
+                        conversion_window: goal.conversionGoal.conversionWindow,
                     };
                 }
                 return converted;
@@ -3093,12 +3095,14 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 var data = {
                     type: goal.type,
                     value: goal.value,
+                    id: goal.id,
                 };
                 if (goal.conversionGoal) {
                     data.conversion_goal = {
                         goal_id: goal.conversionGoal.goalId,
                         name: goal.conversionGoal.name,
                         type: goal.conversionGoal.type,
+                        conversion_window: goal.conversionGoal.conversionWindow,
                     };
                 }
                 return data;

@@ -6,7 +6,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.error = false;
     $scope.newCampaignGoal = false;
     $scope.unit = '';
-
+    $scope.availablePixels = [];
+    $scope.loadingPixies = true;
+    
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
         $scope.campaignGoal = {
@@ -55,6 +57,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         var goalTypeIds = {},
             goalNames = {},
             errors = {};
+        
         if (newGoal.type !== constants.campaignGoalKPI.CPA) {
             return true;
         }
@@ -66,6 +69,10 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
 
         $scope.campaignGoals.forEach(function (goal) {
             if (goal.type !== constants.campaignGoalKPI.CPA) {
+                return;
+            }
+            if (newGoal.id && newGoal.id === goal.id) {
+                // skip same rows
                 return;
             }
             var typeId = goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
@@ -149,6 +156,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.setDefaultValue();
         $scope.unit = unit || '';
     };
-
     $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
+    api.conversionPixel.list($scope.account.id).then(function (data) {
+        $scope.availablePixels = data.rows;
+        $scope.loadingPixies = false;
+    });
 }]);
