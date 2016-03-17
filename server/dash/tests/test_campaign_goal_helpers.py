@@ -36,13 +36,61 @@ class CampaignGoalHelpersTestCase(TestCase):
             created_by=self.user
         )
 
-    def test_create_goals(self):
-        # campaign, data, cost):
-        pass
+    def test_create_goals_and_totals_tos(self):
+        self._add_value(dash.constants.CampaignGoalKPI.TIME_ON_SITE, 10)
+        cost = 20
+        row = {
+            'avg_tos': 20,
+            'visits': 1,
+        }
 
-    def test_create_goal_totals(self):
-        # (campaign, data, cost):
-        pass
+        expected = {
+            'total_seconds': 20,
+            'avg_cost_per_second': 1,
+        }
+
+        goal_totals = dash.campaign_goal_helpers.create_goal_totals(self.campaign, row, cost)
+        self.assertDictContainsSubset(expected, goal_totals)
+
+    def test_create_goals_and_totals_pps(self):
+        self._add_value(dash.constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        cost = 20
+        row = {
+            'pv_per_visit': 10,
+            'visits': 1,
+        }
+
+        expected = {
+            'total_pageviews': 10,
+            'avg_cost_per_pageview': 2,
+        }
+
+        goal_totals = dash.campaign_goal_helpers.create_goal_totals(self.campaign, row, cost)
+        self.assertDictContainsSubset(
+            expected,
+            goal_totals
+        )
+
+        rows = dash.campaign_goal_helpers.create_goals(self.campaign, [row], cost)
+        self.assertDictContainsSubset(expected, rows[0])
+
+    def test_create_goals_and_totals_bounce_rate(self):
+        self._add_value(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
+        cost = 20
+        row = {
+            'bounce_rate': 0.75
+        }
+
+        expected = {
+            'unbounced_visits': 0.25,
+            'avg_cost_per_non_bounced_visitor': 5,
+        }
+
+        goal_totals = dash.campaign_goal_helpers.create_goal_totals(self.campaign, row, cost)
+        self.assertDictContainsSubset(
+            expected,
+            goal_totals
+        )
 
     def test_get_campaign_goal_values(self):
         self._add_value(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.1)
