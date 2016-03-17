@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 import datetime
 import logging
 import decimal
-
-import newrelic.agent
 
 import dash.constants
 import dash.models
@@ -19,7 +18,6 @@ TEMP_EMAILS = [
 ]
 
 
-@newrelic.agent.background_task()
 def switch_low_budget_campaigns_to_landing_mode():
     for campaign in dash.models.Campaign.objects.filter(landing_mode=False).iterator():
         available_tomorrow, max_daily_budget = get_minimum_remaining_budget(campaign)
@@ -77,33 +75,46 @@ def _get_budgets_active_on_date(date, campaign):
     ).select_related('credit')
 
 
+def _get_ags_settings_dict(date, ad_group_sources):
+    settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__in=ad_group_sources,
+        created_dt__lt=date+datetime.timedelta(days=1),
+        created_dt__gte=date,
+    ).order_by('-created_dt')
+
+    ret = defaultdict(list)
+    for ags_sett in settings_on_date.iterator():
+        ret[ags_sett.ad_group_source_id].append(ags_sett)
+
+    latest_before_date = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__in=ad_group_sources,
+        created_dt__lt=date,
+    ).group_current_settings()
+
+    for ags_sett in latest_before_date.iterator():
+        ret[ags_sett.ad_group_source_id].append(ags_sett)
+
+    return ret
+
+
 def _get_max_daily_budget_per_ags(date, campaign):
     ad_groups = _get_ad_groups_active_on_date(date, campaign)
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups,
     ).select_related('source__source_type')
-    ad_group_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__in=ad_group_sources,
-        created_dt__lt=date+datetime.timedelta(days=1)
-    )
+    ad_group_sources_settings = _get_ags_settings_dict(date, ad_group_sources)
 
     max_daily_budget = {}
-    for ad_group_source in ad_group_sources:
-        max_daily_budget[ad_group_source.id] = _get_source_max_daily_budget(date, ad_group_source,
-                                                                            ad_group_sources_settings)
+    for ags in ad_group_sources:
+        max_daily_budget[ags.id] = _get_source_max_daily_budget(date, ags, ad_group_sources_settings[ags.id])
 
     return max_daily_budget
 
 
-def _get_source_max_daily_budget(date, ad_group_source, ad_group_sources_settings):
-    ad_group_sources_settings = ad_group_sources_settings.order_by('-created_dt')
-
+def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings):
     ags_max_daily_budget = 0
     reached_day_before = False
-    for sett in ad_group_sources_settings:
-        if sett.ad_group_source_id != ad_group_source.id:
-            continue
-
+    for sett in ad_group_source_settings:
         if reached_day_before:
             break
 
@@ -119,18 +130,32 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_sources_setting
     return ags_max_daily_budget
 
 
-def _get_ad_groups_active_on_date(date, campaign):
-    ad_group_settings = dash.models.AdGroupSettings.objects.filter(
+def _get_ag_settings_dict(date, campaign):
+    ad_group_settings_on_date = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=campaign.adgroup_set.all(),
         created_dt__lt=date+datetime.timedelta(days=1),
+        created_dt__gte=date,
     ).order_by('-created_dt')
 
+    ret = defaultdict(list)
+    for ag_sett in ad_group_settings_on_date.iterator():
+        ret[ag_sett.ad_group_id].append(ag_sett)
+
+    latest_ad_group_settings_before_date = dash.models.AdGroupSettings.objects.filter(
+        created_dt__lt=date,
+    ).group_current_settings()
+
+    for ag_sett in latest_ad_group_settings_before_date.iterator():
+        ret[ag_sett.ad_group_id].append(ag_sett)
+
+    return ret
+
+
+def _get_ad_groups_active_on_date(date, campaign):
+    ad_groups_settings = _get_ag_settings_dict(date, campaign)
     active_ad_groups = set()
     for ad_group in campaign.adgroup_set.all():
-        for sett in ad_group_settings:
-            if sett.ad_group_id != ad_group.id:
-                continue
-
+        for sett in ad_groups_settings[ad_group.id]:
             if (not sett.end_date or sett.end_date >= date) and\
                sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
                 active_ad_groups.add(ad_group)
