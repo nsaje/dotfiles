@@ -2,19 +2,25 @@
     <!--- DEBUG PANEL [START] --->
     <!--- TODO: move to development partial and bind with controller  --->
     <div class="debug-panel">
-        <span>[DEBUG] Breakdowns: </span>
+        <span>[DEBUG] Breakdowns : </span>
         <label ng-repeat="(breakdown, enabled) in DEBUG_BREAKDOWNS">
             <input type="checkbox" ng-model="DEBUG_BREAKDOWNS[breakdown]">
             {{breakdown}}
         </label>
         <button type="submit" class="btn btn-default" ng-click="DEBUG_APPLY_BREAKDOWN()">Submit</button>
     </div>
+    <div class="debug-panel">
+        <span> [DEBUG] Collapse : </span>
+        <button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(1)">Toggle Level 1</button>
+        <button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(2)">Toggle Level 2</button>
+        <button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(3)">Toggle Level 3</button>
+    </div>
     <!--- DEBUG PANEL [END] --->
 
     <table class="zem-grid table table-hover">
         <thead>
         <tr>
-            <th ng-repeat="col in columns">
+            <th ng-repeat="col in header.columns">
                 <span class="col-title">{{ col }}</span>
             </th>
         </tr>
@@ -46,5 +52,12 @@
             </td>
         </tr>
         </tbody>
+        <tfoot>
+        <tr>
+            <th ng-repeat="col in footer.data.stats">
+                <span class="col-title">{{ col }}</span>
+            </th>
+        </tr>
+        </tfoot>
     </table>
 </div>

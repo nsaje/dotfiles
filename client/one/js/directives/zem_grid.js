@@ -32,16 +32,17 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
 
 
             $scope.rows = [];
-            $scope.columns = ['Name'];
-            for (var i = 0; i < 8; ++i) $scope.columns.push('Stat ' + (i + 1));
+            var columns = ['Name'];
+            for (var i = 0; i < 8; ++i) columns.push('Stat ' + (i + 1));
+            $scope.header = {columns: columns}
+            $scope.footer = {};
 
             $scope.load = function () {
                 $scope.dataSource.fetch().then(
                     function (breakdown) {
                         var totalDataRow = breakdown.rows[0];
-                        var totalRow = new GridRow(GridRowType.STATS, 0, totalDataRow);
-                        $scope.rows = $scope.parseBreakdown(totalRow, totalDataRow.breakdown);
-                        $scope.rows.push(totalRow);
+                        $scope.footer = new GridRow(GridRowType.STATS, 0, totalDataRow);
+                        $scope.rows = $scope.parseBreakdown($scope.footer, totalDataRow.breakdown);
                     }
                 );
             };
@@ -77,14 +78,29 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
                 return rows;
             };
 
-            $scope.toggleCollapse = function (gridRow) {
-                gridRow.collapsed = !gridRow.collapsed;
-
+            $scope.setRowCollapsed = function (gridRow, collapsed) {
+                gridRow.collapsed = collapsed;
                 var idx = this.rows.indexOf(gridRow);
                 while (++idx < this.rows.length) {
                     var child = this.rows[idx];
                     if (child.level <= gridRow.level) break;
                     child.visible = !gridRow.collapsed && !child.parent.collapsed;
+                }
+            };
+
+            $scope.toggleCollapse = function (gridRow) {
+                $scope.setRowCollapsed(gridRow, !gridRow.collapsed);
+            };
+
+            $scope.toggleCollapseLevel = function (level) {
+                var collapsed = null;
+                for (var i = 0; i < this.rows.length; ++i) {
+                    var row = this.rows[i];
+                    if (row.level === level) {
+                        if (collapsed === null)
+                            collapsed = !row.collapsed;
+                        $scope.setRowCollapsed(row, collapsed);
+                    }
                 }
             };
 
@@ -113,7 +129,6 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
                 $scope.dataSource.defaultPagination = [2, 3, 5, 7];
                 $scope.load();
             };
-
         }],
     };
 }]);
