@@ -45,8 +45,20 @@ class CampaignGoalHelpersTestCase(TestCase):
         pass
 
     def test_get_campaign_goal_values(self):
-        # campaign):
-        pass
+        self._add_value(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.1)
+        self._add_value(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.5)
+        self._add_value(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
+
+        values = dash.campaign_goal_helpers.get_campaign_goal_values(self.campaign)
+        self.assertEqual(0.75, values[0].value)
+
+        self._add_value(dash.constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        self._add_value(dash.constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+
+        values = dash.campaign_goal_helpers.get_campaign_goal_values(
+            self.campaign
+        ).values_list('value', flat=True)
+        self.assertItemsEqual([0.75, 5, 60], values)
 
     def test_calculate_goal_values(self):
         # row, goal_type, cost):
