@@ -152,7 +152,7 @@ class ConversionHelperTestCase(test.TestCase):
     def test_convert_touchpoint_source_id_field_to_bidder_slug(self):
         touchpoint_data = self._get_touchpoint_data()
 
-        touchpoint_data = conversions_helper.convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data)
+        touchpoint_data = conversions_helper.convert_touchpoint_source_id_field_to_publisher_exchange(touchpoint_data)
 
         self.assertEqual(len(touchpoint_data), 1)
         self.assertDictEqual(touchpoint_data[0], {

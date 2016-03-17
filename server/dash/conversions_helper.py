@@ -2,6 +2,7 @@ import copy
 
 import dash.constants
 import models
+from dash import publisher_helpers
 from reports import redshift
 
 REPORT_GOAL_TYPES = [dash.constants.ConversionGoalType.GA, dash.constants.ConversionGoalType.OMNITURE]
@@ -51,9 +52,9 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
     # make a copy of original data
     publishers_data = copy.copy(publishers_data)
 
-    # if source in touchpoint field then do mapping from id to bidder_slug
+    # if source in touchpoint field then do mapping from id to publisher exchange
     if 'source' in touchpoint_breakdown_fields:
-        touchpoint_data = convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data)
+        touchpoint_data = convert_touchpoint_source_id_field_to_publisher_exchange(touchpoint_data)
 
     def create_key(breakdown_fields):
         return lambda x: tuple(x[field] for field in breakdown_fields)
@@ -77,16 +78,16 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
     return publishers_data, reorder
 
 
-def convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data):
+def convert_touchpoint_source_id_field_to_publisher_exchange(touchpoint_data):
     touchpoint_sources = [tp['source'] for tp in touchpoint_data]
-    sources = models.Source.objects.filter(pk__in=touchpoint_sources).values('id', 'bidder_slug')
-    sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
+    sources = models.Source.objects.filter(pk__in=touchpoint_sources)
+    sources_by_id = {source.id: source for source in sources}
 
     result = []
     for tp in touchpoint_data:
         source = sources_by_id.get(tp['source'])
         if source:
-            tp['source'] = source
+            tp['source'] = publisher_helpers.publisher_exchange(source)
             result.append(tp)
 
     return result

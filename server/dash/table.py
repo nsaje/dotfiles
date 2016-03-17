@@ -1805,13 +1805,7 @@ class PublishersTable(object):
         )
 
         if order:
-            order_list = [order]
-
-            # status setting should also be sorted by autopilot state
-            if 'status_setting' in order:
-                order_list.append(('-' if order.startswith('-') else '') + 'autopilot_state')
-
-            publishers_data = sort_results(publishers_data, order_list)
+            publishers_data = sort_results(publishers_data, order)
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
@@ -1953,8 +1947,7 @@ class PublishersTable(object):
             user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
             count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
 
-        if publisher_source.can_modify_publisher_blacklist_automatically() and\
-                known_source and\
+        if known_source and publisher_source.can_modify_publisher_blacklist_automatically() and\
                 (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
                     can_blacklist_outbrain_publisher):
             return True

@@ -1007,7 +1007,7 @@ class AdGroupPublishersTableTest(TestCase):
             'pv_per_visit': 10,
             'avg_tos': 20,
             'domain': 'example.com',
-            'exchange': 'adsnative',
+            'exchange': 'adiant',
             'conversions': {},
         }]
         mock_stats2 = [{
@@ -1038,7 +1038,7 @@ class AdGroupPublishersTableTest(TestCase):
             'date': date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
-            'source': 1,
+            'source': 7,
             'publisher': 'example.com'
         }]
         mock_stats4 = [{
@@ -1056,7 +1056,7 @@ class AdGroupPublishersTableTest(TestCase):
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
-            'filtered_sources': '1',
+            'filtered_sources': '7',
             'show_blacklisted_publishers': constants.PublisherBlacklistFilter.SHOW_ACTIVE,
         }
 
@@ -1071,7 +1071,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
-            constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
+            constraints={'ad_group': ad_group.id, 'exchange': ['adiant']},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
             constraints_list=[],
         )
@@ -1081,7 +1081,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
-            constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
+            constraints={'ad_group': ad_group.id, 'exchange': ['adiant']},
             constraints_list=[],
         )
 
@@ -1090,7 +1090,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=[],
             order_fields=[],
-            constraints={"ad_group": ad_group.id, 'exchange': ['adsnative']},
+            constraints={"ad_group": ad_group.id, 'exchange': ['adiant']},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
             constraints_list=[],
         )
@@ -1100,7 +1100,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
-            constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
+            constraints={'ad_group': ad_group.id, 'exchange': ['adiant']},
             constraints_list=[],
         )
 
@@ -1120,7 +1120,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'blacklisted': u'Active',
             u'can_blacklist_publisher': True,
             u'ctr': 100.0,
-            u'exchange': u'AdsNative',
+            u'exchange': u'Adiant',
             u'cpc': 1.3,
             u'media_cost': 2.4,
             u'e_media_cost': 2.4,
@@ -1132,7 +1132,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'billing_cost': 2.4,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 1,
+            u'source_id': 7,
             u'visits': 15,
             u'click_discrepancy': 3,
             u'pageviews': 100,
