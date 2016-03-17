@@ -143,3 +143,21 @@ class ConversionHelperTestCase(test.TestCase):
             'exchange': 'adiant',
             'dummy_info_2': -200,
         })
+
+    def test_convert_touchpoint_source_id_field_to_bidder_slug(self):
+        touchpoint_data = self._get_touchpoint_data()
+
+        conversions_helper.convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data)
+
+        self.assertDictEqual(touchpoint_data[0], {
+            'source': 'adiant',
+            'publisher': 'dummy_domain',
+            'slug': 'goal_1',
+            'conversion_count': 100,
+            'dummy_info': -1000,
+        })
+        self.assertDictEqual(touchpoint_data[1], {
+            'source': -1,
+            'publisher': 'wont_be_used',
+            'slug': 'goal_none',
+        })

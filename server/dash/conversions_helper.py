@@ -40,27 +40,20 @@ def transform_to_conversion_goals(rows, conversion_goals):
 
 
 def merge_touchpoint_conversions_to_publishers_data(publishers_data,
-                                                    touchpoint_conversions,
+                                                    touchpoint_data,
                                                     publisher_breakdown_fields,
                                                     touchpoint_breakdown_fields):
-    if not touchpoint_conversions:
+    if not touchpoint_data:
         return
 
     # if source in touchpoint field then do mapping from id to bidder_slug
     if 'source' in touchpoint_breakdown_fields:
-        touchpoint_sources = [tp['source'] for tp in touchpoint_conversions]
-        sources = models.Source.objects.filter(pk__in=touchpoint_sources).values('id', 'bidder_slug')
-        sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
-
-        for tp in touchpoint_conversions:
-            source = sources_by_id.get(tp['source'])
-            if source:
-                tp['source'] = source
+        convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data)
 
     def create_key(breakdown_fields):
         return lambda x: tuple(x[field] for field in breakdown_fields)
     publishers_data_by_key = {create_key(publisher_breakdown_fields)(p): p for p in publishers_data}
-    touchpoint_data_by_key = {create_key(touchpoint_breakdown_fields)(t): t for t in touchpoint_conversions}
+    touchpoint_data_by_key = {create_key(touchpoint_breakdown_fields)(t): t for t in touchpoint_data}
 
     for key, val in touchpoint_data_by_key.iteritems():
         publisher = publishers_data_by_key.get(key)
@@ -68,3 +61,14 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
         if publisher:
             publisher.setdefault('conversions', {})
             publisher['conversions'][val['slug']] = val['conversion_count']
+
+
+def convert_touchpoint_source_id_field_to_bidder_slug(touchpoint_data):
+    touchpoint_sources = [tp['source'] for tp in touchpoint_data]
+    sources = models.Source.objects.filter(pk__in=touchpoint_sources).values('id', 'bidder_slug')
+    sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
+
+    for tp in touchpoint_data:
+        source = sources_by_id.get(tp['source'])
+        if source:
+            tp['source'] = source
