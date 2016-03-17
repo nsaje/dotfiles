@@ -57,9 +57,10 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
             if source:
                 tp['source'] = source
 
-    create_key = lambda x, breakdown_fields: tuple(x[field] for field in breakdown_fields)
-    publishers_data_by_key = {create_key(p, publisher_breakdown_fields): p for p in publishers_data}
-    touchpoint_data_by_key = {create_key(t, touchpoint_breakdown_fields): t for t in touchpoint_conversions}
+    def create_key(breakdown_fields):
+        return lambda x: tuple(x[field] for field in breakdown_fields)
+    publishers_data_by_key = {create_key(publisher_breakdown_fields)(p): p for p in publishers_data}
+    touchpoint_data_by_key = {create_key(touchpoint_breakdown_fields)(t): t for t in touchpoint_conversions}
 
     for key, val in touchpoint_data_by_key.iteritems():
         publisher = publishers_data_by_key.get(key)
