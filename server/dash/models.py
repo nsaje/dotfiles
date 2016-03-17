@@ -97,6 +97,7 @@ class QuerySetManager(models.Manager):
 
 
 class SettingsQuerySet(models.QuerySet):
+
     def update(self, *args, **kwargs):
         raise AssertionError('Using update not allowed.')
 
@@ -105,6 +106,7 @@ class SettingsQuerySet(models.QuerySet):
 
 
 class CopySettingsMixin(object):
+
     def copy_settings(self):
         new_settings = type(self)()
 
@@ -766,10 +768,15 @@ class CampaignGoal(models.Model):
             campaign_goal['conversion_goal'] = {
                 'type': self.conversion_goal.type,
                 'name': self.conversion_goal.name,
-                'pixel': self.conversion_goal.pixel,
+                'pixel': None,
                 'conversion_window': self.conversion_goal.conversion_window,
                 'goal_id': self.conversion_goal.goal_id,
             }
+            if self.conversion_goal.pixel:
+                campaign_goal['conversion_goal']['pixel'] = (
+                    self.conversion_goal.pixel.account_id, self.conversion_goal.pixel.slug,
+                )
+
         if with_values:
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt), 'value': value.value}
