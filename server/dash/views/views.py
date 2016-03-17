@@ -2020,7 +2020,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         email_list_setting = infobox_helpers.OverviewSetting(
             'Active users:',
             '{}'.format(len(weekly_active_users)),
-            tooltip='Users who took self-managed actions in the past 7 days'
+            tooltip='Users who made self-managed actions in the past 7 days'
         )
 
         if weekly_active_user_emails != []:
