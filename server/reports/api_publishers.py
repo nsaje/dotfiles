@@ -5,6 +5,8 @@ import time
 
 from django.conf import settings
 
+from dash import conversions_helper
+from dash.models import Source
 from reports import redshift
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
     decimal_to_int_exact, sum_expr, extract_json_or_null
@@ -87,14 +89,21 @@ class RSPublishersModel(redshift.RSModel):
 rs_pub = RSPublishersModel()
 
 
-def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[]):
+def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, conversion_goals=[], constraints={}, constraints_list=[]):
+    conversion_goals = copy.copy(conversion_goals)
+
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
     cursor = redshift.get_cursor()
+
+    returned_fields = rs_pub.DEFAULT_RETURNED_FIELDS_APP[:]
+    for label in conversion_goals:
+        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + label)
+
     results = rs_pub.execute_select_query(
         cursor,
-        rs_pub.DEFAULT_RETURNED_FIELDS_APP,
+        returned_fields,
         breakdown_fields,
         order_fields,
         offset,
@@ -104,42 +113,64 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     )
 
     cursor.close()
-    if breakdown_fields:
-        return results
-    else:
-        return results[0]
+
+    results = conversions_helper.group_conversions(results)
+    return results
 
 
-def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
-    constraints_list = []
-    if blacklist:
-        aggregated_blacklist = _aggregate_domains(blacklist)
-
-        # create a base object, then OR onto it
-        rsq = ~_map_blacklist_to_rs_queryset(aggregated_blacklist[0])
-        for blacklist_entry in aggregated_blacklist[1:]:
-            rsq &= ~_map_blacklist_to_rs_queryset(blacklist_entry)
-        constraints_list = [rsq]
-
+def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[], conversion_goals=[]):
     return query(start_date, end_date,
         breakdown_fields=breakdown_fields,
         order_fields=order_fields,
         offset=offset,
         limit=limit,
+        conversion_goals=conversion_goals,
         constraints=constraints,
         constraints_list=constraints_list
     )
 
 
-def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
+def prepare_active_publishers_constraint_list(blacklist, use_touchpoint_fields):
     constraints_list = []
     if blacklist:
         aggregated_blacklist = _aggregate_domains(blacklist)
 
+        if use_touchpoint_fields:
+            _convert_exchange_to_source_id(aggregated_blacklist)
+
         # create a base object, then OR onto it
-        rsq = _map_blacklist_to_rs_queryset(aggregated_blacklist[0])
+        rsq = ~_map_blacklist_to_rs_queryset(aggregated_blacklist[0], use_touchpoint_fields)
         for blacklist_entry in aggregated_blacklist[1:]:
-            rsq |= _map_blacklist_to_rs_queryset(blacklist_entry)
+            rsq &= ~_map_blacklist_to_rs_queryset(blacklist_entry, use_touchpoint_fields)
+        constraints_list = [rsq]
+
+    return constraints_list
+
+
+def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[], conversion_goals=[]):
+    return query(start_date, end_date,
+        breakdown_fields=breakdown_fields,
+        order_fields=order_fields,
+        offset=offset,
+        limit=limit,
+        conversion_goals=conversion_goals,
+        constraints=constraints,
+        constraints_list=constraints_list
+    )
+
+
+def prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, use_touchpoint_fields):
+    constraints_list = []
+    if blacklist:
+        aggregated_blacklist = _aggregate_domains(blacklist)
+
+        if use_touchpoint_fields:
+            _convert_exchange_to_source_id(aggregated_blacklist)
+
+        # create a base object, then OR onto it
+        rsq = _map_blacklist_to_rs_queryset(aggregated_blacklist[0], use_touchpoint_fields)
+        for blacklist_entry in aggregated_blacklist[1:]:
+            rsq |= _map_blacklist_to_rs_queryset(blacklist_entry, use_touchpoint_fields)
         constraints_list = [rsq]
     else:
         if breakdown_fields:
@@ -147,14 +178,18 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
         else:
             return {}
 
-    return query(start_date, end_date,
-        breakdown_fields=breakdown_fields,
-        order_fields=order_fields,
-        offset=offset,
-        limit=limit,
-        constraints=constraints,
-        constraints_list=constraints_list
-    )
+    return constraints_list
+
+
+def _convert_exchange_to_source_id(aggregated_blacklist):
+    exchanges = set(filter(lambda x: x is not None, (agg.get('exchange', None) for agg in aggregated_blacklist)))
+
+    sources = Source.objects.filter(bidder_slug__in=exchanges).values('id', 'bidder_slug')
+    sources_by_exchange = {s['bidder_slug']: s['id'] for s in sources}
+
+    for agg in aggregated_blacklist:
+        if 'exchange' in agg:
+            agg['source'] = sources_by_exchange[agg['exchange']]
 
 
 def _aggregate_domains(blacklist):
@@ -187,14 +222,24 @@ def _aggregate_domains(blacklist):
     return ret
 
 
-def _map_blacklist_to_rs_queryset(blacklist):
+def _map_blacklist_to_rs_queryset(blacklist, use_touchpoint_fields):
     if blacklist.get('adgroup_id') is not None:
+        if use_touchpoint_fields:
+            return redshift.RSQ(
+                publisher=blacklist['domain'],
+                source=blacklist['source'],
+                ad_group=blacklist['adgroup_id'],
+            )
         return redshift.RSQ(
             domain=blacklist['domain'],
             exchange=blacklist['exchange'],
-            ad_group=blacklist['adgroup_id']
+            ad_group=blacklist['adgroup_id'],
         )
     else:
+        if use_touchpoint_fields:
+            return redshift.RSQ(
+                publisher=blacklist['domain'],
+            )
         return redshift.RSQ(
             domain=blacklist['domain'],
         )

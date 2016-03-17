@@ -210,7 +210,7 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
                 'conversion_count': 0,
             }
         }
-        self._check_values(with_breakdown, totals, breakdown, expected_values)
+        self._check_values(with_breakdown, totals[0], breakdown, expected_values)
 
         ad_group_2 = dash.models.AdGroup.objects.get(id=2)
         constraints_ad_group_2 = {'ad_group': ad_group_2, 'source': dash.models.Source.objects.all()}
@@ -223,7 +223,7 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
                 'conversion_count': 0,
             },
         }
-        self._check_values(with_breakdown_ad_group_2, totals_ad_group_2, breakdown, expected_values_ad_group_2)
+        self._check_values(with_breakdown_ad_group_2, totals_ad_group_2[0], breakdown, expected_values_ad_group_2)
 
     def test_no_duplicates_ad_group_source_level(self):
         d1 = datetime.date(2015, 11, 1)
@@ -248,7 +248,7 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
                 'conversion_count': 0,
             }
         }
-        self._check_values(with_breakdown, totals, breakdown, expected_values)
+        self._check_values(with_breakdown, totals[0], breakdown, expected_values)
 
         ad_group_2 = dash.models.AdGroup.objects.get(id=2)
         constraints_ad_group_2 = {'ad_group': ad_group_2, 'source': dash.models.Source.objects.all()}
@@ -261,7 +261,7 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
                 'conversion_count': 0,
             },
         }
-        self._check_values(with_breakdown_ad_group_2, totals_ad_group_2, breakdown, expected_values_ad_group_2)
+        self._check_values(with_breakdown_ad_group_2, totals_ad_group_2[0], breakdown, expected_values_ad_group_2)
 
 
     def test_no_duplicates_campaign_ad_group_level(self):
@@ -287,7 +287,7 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
                 'conversion_count': 0,
             }
         }
-        self._check_values(with_breakdown, totals, breakdown, expected_values)
+        self._check_values(with_breakdown, totals[0], breakdown, expected_values)
 
 
     def test_no_duplicates_campaign_source_level(self):
@@ -313,4 +313,4 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
                 'conversion_count': 0,
             }
         }
-        self._check_values(with_breakdown, totals, breakdown, expected_values)
+        self._check_values(with_breakdown, totals[0], breakdown, expected_values)

@@ -19,6 +19,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
     $scope.autopilotChanges = '';
+    $scope.loadRequestInProgress = false;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -549,8 +550,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
-
-    $scope.loadRequestInProgress = false;
 
     $scope.orderTableData = function (order) {
         $scope.order = order;
