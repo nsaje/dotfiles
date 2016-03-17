@@ -64,9 +64,9 @@
                     Conversion pixel
                     <zem-help-popover content="One of pre-set conversions pixels. You can add additional ones on Account tab of the account." placement="top"></zem-help-popover>
                 </label>
-				<div class="col-xs-4" ng-if="loadingPixies">
-					<div class="loader"></div>
-				</div>
+                <div class="col-xs-4" ng-if="loadingPixies">
+                    <div class="loader"></div>
+                </div>
                 <div class="col-xs-4" ng-if="availablePixels.length">
                     <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="campaignGoal.conversionGoal.goalId"  ng-disabled="!!campaignGoal.conversionGoal.id">
                         <ui-select-match>{{$select.selected.slug}}</ui-select-match>
