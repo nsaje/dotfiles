@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 
 from utils.test_helper import QuerySetMatcher, ListMatcher
 from zemauth.models import User
-from dash import models
+from dash import models, conversions_helper
 
 
 class BaseDailyStatsTest(TestCase):
@@ -395,6 +395,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
         })
 
 
+@patch('dash.table.reports.api_touchpointconversions.query')
 @patch('dash.views.daily_stats.reports.api_publishers.query')
 class AdGroupPublishersDailyStatsTest(TestCase):
     fixtures = ['test_views']
@@ -405,20 +406,37 @@ class AdGroupPublishersDailyStatsTest(TestCase):
 
         self.client.login(username=self.user.email, password=password)
 
-    def test_get(self, mock_query):
+    def test_get(self, mock_query, mock_touchpointconversins_query):
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [{
             'date': start_date.isoformat(),
             'cpc': '0.0100',
-            'clicks': 1000
+            'clicks': 1000,
+            'conversions': {},
         }, {
             'date': end_date.isoformat(),
             'cpc': '0.0200',
-            'clicks': 1500
+            'clicks': 1500,
+            'conversions': {},
         }]
         mock_query.return_value = mock_stats
+
+        mock_stats2 = [{
+            'date': start_date.isoformat(),
+            'conversion_count': 64,
+            'slug': 'test_goal',
+        }, {
+            'date': start_date.isoformat(),
+            'conversion_count': 64,
+            'slug': 'test_goal',
+        }]
+        mock_touchpointconversins_query.return_value = mock_stats2
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = \
+            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -438,7 +456,18 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             end_date,
             order_fields=['date'],
             breakdown_fields=['date'],
-            constraints={'ad_group': 1}
+            constraints={'ad_group': ad_group.id},
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            start_date,
+            end_date,
+            breakdown=['date'],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         self.maxDiff = None
@@ -456,12 +485,30 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                             [start_date.isoformat(), '0.0100'],
                             [end_date.isoformat(), '0.0200']
                         ]
-                    }
+                    },
                 }],
+                'conversion_goals': ListMatcher([
+                    {
+                        'id': 'conversion_goal_5',
+                        'name': 'test conversion goal 5'
+                    },
+                    {
+                        'id': 'conversion_goal_4',
+                        'name': 'test conversion goal 4'
+                    },
+                    {
+                        'id': 'conversion_goal_3',
+                        'name': 'test conversion goal 3'
+                    },
+                    {
+                        'id': 'conversion_goal_2',
+                        'name': 'test conversion goal 2'
+                    },
+                    {
+                        'id': 'conversion_goal_1',
+                        'name': 'test conversion goal'
+                    },
+                ])
             },
             'success': True
         })
-
-
-
-

@@ -5,6 +5,7 @@ import pytz
 
 from django.conf import settings
 
+from dash import conversions_helper
 from reports import redshift
 from reports import api
 from reports.db_raw_helpers import extract_obj_ids
@@ -123,26 +124,11 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
 
     cursor.close()
 
-    results = _transform_conversions(results)
+    results = conversions_helper.group_conversions(results)
     if breakdown:
         return results
 
     return results[0] if len(results) else {}
-
-
-def _transform_conversions(rows):
-    results = []
-    for row in rows:
-        new_row = {}
-        for key, val in row.iteritems():
-            if key.startswith('conversions'):
-                _, json_key = redshift.extract_json_key_parts(key)
-                new_row.setdefault('conversions', {})
-                new_row['conversions'][json_key] = val
-                continue
-            new_row[key] = val
-        results.append(new_row)
-    return results
 
 
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):
