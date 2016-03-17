@@ -849,12 +849,13 @@ div[datepicker] {
 
 .infobox-all-accounts {
     .infobox-setting-label {
-        width: 185px;
-        max-width: 185px;
+        width: 138px;
+        max-width: 138px;
     }
 
     .infobox-body {
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: scroll;
         height: 200px;
     }
 }
@@ -967,6 +968,15 @@ div[datepicker] {
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 15px 15px;
+}
+
+.infobox-landing-mode-icon {
+    color: @infobox-black;
+    text-align: center;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
 }
 
 .infobox-icon {
@@ -2580,24 +2590,19 @@ div[datepicker] {
     margin: 0 5px 0 0;
 }
 
-.adgroup-status-enabled-running-icon {
+.adgroup-status-active-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_enabled_green.svg');
 }
 
-.adgroup-status-enabled-stopped-icon {
+.adgroup-status-inactive-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_enabled_red.svg');
 }
 
-.adgroup-status-paused-stopped-icon {
+.adgroup-status-stopped-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_paused_gray.svg');
-}
-
-.adgroup-status-paused-running-icon {
-    .adgroup-status-icon-placeholder();
-    background-image: url('img/adgroup_status_paused_red.svg');
 }
 
 .adgroup-status-landing-mode-icon {
@@ -2608,7 +2613,7 @@ div[datepicker] {
     background-image: url('img/adgroup_status_landing_mode.svg');
 }
 
-.adgroup-status-landing-mode-active-icon {
+.adgroup-status-landing-mode-selected-icon {
     .adgroup-status-landing-mode-icon();
     background-image: url('img/adgroup_status_landing_mode_white.svg');
 }
@@ -3292,6 +3297,12 @@ zem-editable-currency-field {
                 .form-group {
                     margin-right: 0;
                 }
+
+                .goal-type {
+                    .input-group-addon {
+                        width: 35px;
+                    }
+                }
             }
 
             .add-scheduled-report-form {
@@ -3697,7 +3708,7 @@ select.media-source-select {
                 position: relative;
             }
 
-            color: #c2c2c2;
+            color: #aaaaaa;
             padding-top: 7px;
         }
     }
@@ -3717,6 +3728,12 @@ select.media-source-select {
         .plus-label {
             padding-left: 10px;
         }
+    }
+
+    .helper-label {
+        color: #aaaaaa;
+        text-align: right;
+        font-size: 13px;
     }
 
     .campaign-goal-row {
@@ -3739,10 +3756,14 @@ select.media-source-select {
                 }
             }
         }
+        &.archived, &.archived .camp-goal-text {
+            color: #aaaaaa !important;
+            cursor: default !important;
+        }
 
         & > div {
             border-style: solid;
-            border-color: #d2d2d2;
+            border-color: #aaaaaa;
             border-width: 1px 1px 1px 0;
             min-height: 50px;
             .border-radius(0px);
@@ -3760,7 +3781,7 @@ select.media-source-select {
             &.campaign-goal-index {
                 font-size: 22px;
                 font-weight: 200;
-                color: #c2c2c2;
+                color: #aaaaaa;
                 text-align: center;
             }
 
@@ -3772,7 +3793,7 @@ select.media-source-select {
                 .conv-goal-text {
                     font-size: 11px;
                     line-height: 11px;
-                    color: #c2c2c2;
+                    color: #aaaaaa;
                 }
 
                 .center-area {
@@ -3782,10 +3803,18 @@ select.media-source-select {
 
             &.campaign-goal-edit {
                 text-align: center;
+
+                .centered {
+                    height: 16px
+                }
             }
 
             &.campaign-goal-delete {
                 text-align: center;
+                
+                .centered {
+                    height: 16px
+                }
             }
 
             .center-area {
@@ -3794,6 +3823,7 @@ select.media-source-select {
                 bottom: 0;
                 left: 0;
                 right: 0;
+                padding-right: 2px;
 
                 &:before {
                     content: '';
@@ -3896,4 +3926,8 @@ select.media-source-select {
             color: #fff;
         }
     }
+}
+
+.nopadding {
+    padding: 0 !important;
 }

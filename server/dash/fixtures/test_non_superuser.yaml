@@ -1,0 +1,17 @@
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: non_superuser@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1

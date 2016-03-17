@@ -6,6 +6,8 @@ from dash import regions
 # which corresponds to 10 blacklisted publishers per Z1 account
 MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
 
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
+
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
@@ -134,8 +136,8 @@ class InfoboxLevel(ConstantBase):
 
     _VALUES = {
         ADGROUP: 'Ad Group',
-        CAMPAIGN : 'Campaign',
-        ACCOUNT : 'Account',
+        CAMPAIGN: 'Campaign',
+        ACCOUNT: 'Account',
         ALL_ACCOUNTS: 'All Accounts'
     }
 
@@ -144,11 +146,13 @@ class InfoboxStatus(ConstantBase):
     ACTIVE = 'active'
     INACTIVE = 'inactive'
     STOPPED = 'stopped'
+    LANDING_MODE = 'landing-mode'
 
     _VALUES = {
         ACTIVE: 'Active',
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
+        LANDING_MODE: 'Landing Mode'
     }
 
 
@@ -1058,7 +1062,6 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL = 17
     CAN_FETCH_REPORT_BY_PUBLISHER = 18
     CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC = 19
-    CAN_MODIFY_RETARGETING = 20
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -1080,7 +1083,6 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
         CAN_FETCH_REPORT_BY_PUBLISHER: 'Can fetch report by publishers',
         CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC: 'Can modify publisher blacklist',
-        CAN_MODIFY_RETARGETING: 'Can modify retargeting settings',
     }
 
 
@@ -1232,15 +1234,15 @@ class RegionType(ConstantBase):
 
     _VALUES = {
         COUNTRY: 'Country',
-        SUBDIVISION: 'U.S. state', # NOTE update when subdivisions other than U.S. states are added
+        SUBDIVISION: 'U.S. state',  # NOTE update when subdivisions other than U.S. states are added
         DMA: 'DMA',
     }
 
 
 class CreditLineItemStatus(ConstantBase):
-    SIGNED = 1 # Only adding BudgetLineItems is permitted
-    PENDING = 2 # Internal "waiting" status, fields are editable
-    CANCELED = 3 # Adding BudgetLineItems is not permitted
+    SIGNED = 1  # Only adding BudgetLineItems is permitted
+    PENDING = 2  # Internal "waiting" status, fields are editable
+    CANCELED = 3  # Adding BudgetLineItems is not permitted
 
     _VALUES = {
         SIGNED: 'Signed',

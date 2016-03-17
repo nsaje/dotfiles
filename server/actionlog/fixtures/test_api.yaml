@@ -272,6 +272,7 @@
         maintenance: false
         bidder_slug: 'sharethrough'
         content_ad_submission_type: 1
+        supports_retargeting: true
     model: dash.source
     pk: 9
 

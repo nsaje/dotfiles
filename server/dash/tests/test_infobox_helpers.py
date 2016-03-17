@@ -1,7 +1,8 @@
 import datetime
 
+from decimal import Decimal
 from django.test import TestCase, mock
-from django.http.request import HttpRequest
+from django.db import connection
 
 import zemauth.models
 
@@ -364,10 +365,10 @@ class InfoBoxHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         self.assertEqual(50, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
-        dash.models.AdGroupSourceState.objects.all().delete()
-        for adgss in dash.models.AdGroupSourceState.objects.all():
-            adgss.daily_budget_cc = 0
-            adgss.save(None)
+        # use raw sql to bypass model restrictions
+        q = 'DELETE FROM dash_adgroupsourcestate'
+        cursor = connection.cursor()
+        cursor.execute(q, [])
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
@@ -445,8 +446,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date = start_date + datetime.timedelta(days=99)
+        start_date = datetime.datetime.today().date() - datetime.timedelta(days=30)
+        end_date = datetime.datetime.today().date() + datetime.timedelta(days=30)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
@@ -515,9 +516,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             ad_group__campaign__account__id=1
         )
         for adgset in all_adgset:
-            adgset.start_date = today
-            adgset.end_date = today + datetime.timedelta(days=1)
-            adgset.save(None)
+            new_adgset = adgset.copy_settings()
+            new_adgset.start_date = today
+            new_adgset.end_date = today + datetime.timedelta(days=1)
+            new_adgset.save(None)
 
         all_adgs_1 = dash.models.AdGroupSource.objects.filter(
             ad_group__campaign__account__id=1
@@ -533,9 +535,16 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
 
     def test_calculate_all_accounts_total_budget(self):
-        today = datetime.datetime.utcnow()
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
+        today = datetime.datetime.utcnow().date()
+        day_budget_span = (self.budget.end_date - self.budget.start_date).days
 
+        self.assertEqual(
+            100 * (Decimal(1) / day_budget_span),
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today,
+                today + datetime.timedelta(days=1)
+            )
+        )
         self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
             today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)
         ))
@@ -543,8 +552,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
+        end_date_1 = datetime.datetime.utcnow() + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -555,11 +564,11 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         self.assertEqual(
-            200,
+            (Decimal(50) + Decimal(30.0 / 45) * Decimal(100)).quantize(Decimal('.01')),
             dash.infobox_helpers.calculate_all_accounts_total_budget(
                 today - datetime.timedelta(days=60),
                 today
-            )
+            ).quantize(Decimal('.01'))
         )
 
         # test with date after end of budget
@@ -582,23 +591,32 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        self.assertEqual(
+            Decimal(50.0),
+            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today).quantize(Decimal('.01'))
+        )
 
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        today = datetime.date.today()
+        first_of = datetime.date(today.year, today.month, 1)
+
+        start_date_1 = first_of
+        end_date_1 = today
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
-            amount=100,
+            amount=50,
             start_date=start_date_1,
             end_date=end_date_1,
             created_by=user,
         )
 
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        self.assertEqual(
+            Decimal(100.0),
+            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today)
+        )
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(
@@ -610,24 +628,26 @@ class InfoBoxAccountHelpersTest(TestCase):
         ordinary_john.save()
         return ordinary_john
 
-    def test_count_weekly_logged_in_users(self):
+    def test_get_weekly_logged_in_users(self):
         self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
                 continue
-            u.last_login = datetime.datetime.utcnow()
+            u.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
             u.save()
 
         # zemanta mail should be skipped when counting mails
         self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
 
-        self._make_a_john()
+        john = self._make_a_john()
+        john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
 
     def test_count_weekly_active_users(self):
         # should be 0 by default
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
         for u in zemauth.models.User.objects.all():
@@ -637,32 +657,36 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.models.UserActionLog.objects.create(
                 action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
                 ad_group=dash.models.AdGroup.objects.get(pk=1),
-                created_dt=datetime.datetime.utcnow(),
+                created_dt=datetime.datetime.utcnow()-datetime.timedelta(hours=24),
                 created_by=u,
             )
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
         john = self._make_a_john()
-        dash.models.UserActionLog.objects.create(
+        ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
-            created_dt=datetime.datetime.utcnow(),
             created_by=john,
         )
+        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual.save()
 
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-        dash.models.UserActionLog.objects.create(
+        ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.SET_CAMPAIGN_SETTINGS,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
             created_dt=datetime.datetime.utcnow(),
-            created_by=john,
+            created_by=john
         )
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual.save()
+
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
     def test_calculate_yesterday_account_spend(self):
@@ -717,9 +741,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
         ).all()[:1]
-        for source in source_settings:
-            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            source.save(None)
+        for agss in source_settings:
+            new_agss = agss.copy_settings()
+            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            new_agss.save(None)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -727,13 +752,27 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
+        # adgroup is active, sources are active and campaign is in landing mode
+        ad_group.campaign.landing_mode = True
+        ad_group.campaign.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        ad_group.campaign.landing_mode = False
+        ad_group.campaign.save(None)
+
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
         ).all()
-        for source in source_settings:
-            source.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-            source.save(None)
+        for agss in source_settings:
+            agss.pk = None
+            agss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            agss.save(None)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -742,15 +781,17 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         # adgroup is inactive but sources are active
-        adgs.state = dash.constants.AdGroupSettingsState.INACTIVE
-        adgs.save(None)
+        new_adgs = adgs.copy_settings()
+        new_adgs.state = dash.constants.AdGroupSettingsState.INACTIVE
+        new_adgs.save(None)
 
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
         ).all()
-        for source in source_settings:
-            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            source.save(None)
+        for agss in source_settings:
+            new_agss = agss.copy_settings()
+            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            new_agss.save(None)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -779,12 +820,22 @@ class InfoBoxAccountHelpersTest(TestCase):
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
         ).all()[:1]
-        for source in source_settings:
-            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            source.save(None)
+        for agss in source_settings:
+            new_agss = agss.copy_settings()
+            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            new_agss.save(None)
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+
+        # campaign is in landing mode
+        campaign.landing_mode = True
+        campaign.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
             dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
@@ -809,9 +860,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
         ).all()[:1]
-        for source in source_settings:
-            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            source.save(None)
+        for agss in source_settings:
+            new_agss = agss.copy_settings()
+            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            new_agss.save(None)
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
@@ -881,6 +933,42 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, allocated_credit)
         self.assertEqual(00, available_credit)
+
+    def test_calculate_allocated_and_available_credit_with_freed_budget(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(0, available_credit)
+        self.assertEqual(0, allocated_credit)
+
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+            freed_cc=10*1e4
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(30, allocated_credit)
+        self.assertEqual(70, available_credit)
 
     def test_calculate_spend_and_available_budget(self):
         account = dash.models.Account.objects.get(pk=1)

@@ -800,12 +800,14 @@ def _init_create_campaign(ad_group_source, name, request):
                 payload['args']['extra'].update({
                     'target_devices': ad_group_settings.target_devices,
                     'target_regions': ad_group_settings.target_regions,
+                    'retargeting_ad_groups': ad_group_settings.retargeting_ad_groups,
                     'brand_name': ad_group_settings.brand_name,
                     'display_url': ad_group_settings.display_url,
                     'start_date': ad_group_settings.start_date,
                     'end_date': ad_group_settings.end_date,
                 })
                 ad_group_tracking_codes = ad_group_settings.get_tracking_codes()
+
 
             # tracking code should always be ad group settings first, ad group source ids second
             payload['args']['extra'].update({
