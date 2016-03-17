@@ -71,9 +71,10 @@ class AdGroupSettingsTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
-        ad_group_settings.save(request)
-        self.assertEqual(ad_group_settings.get_tracking_codes(), u'param1=value1&param2=value2#hash?a=b&c=d')
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
+        new_ad_group_settings.save(request)
+        self.assertEqual(new_ad_group_settings.get_tracking_codes(), u'param1=value1&param2=value2#hash?a=b&c=d')
 
     def test_adgroup_settings_end_datetime(self):
         ad_group_settings = models.AdGroupSettings()
@@ -262,7 +263,10 @@ class AdGroupRunningStatusTest(TestCase):
         ad_group_sources_settings = models.AdGroupSourceSettings.objects\
                                                                 .filter(ad_group_source__source_id__in=[1, 2, 3])\
                                                                 .group_current_settings()
-        ad_group_sources_settings.update(state=constants.AdGroupSourceSettingsState.INACTIVE)
+        for agss in ad_group_sources_settings.iterator():
+            new_agss = agss.copy_settings()
+            new_agss.state = constants.AdGroupSourceSettingsState.INACTIVE
+            new_agss.save(None)
 
         self.assertEqual(
             models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),

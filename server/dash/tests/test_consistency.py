@@ -56,8 +56,9 @@ class SettingsStateConsistencyTestCase(test.TestCase):
 
     def test_get_needed_state_updates_with_adgroup_inactive(self):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
-        ad_group_settings.save(None)
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+        new_ad_group_settings.save(None)
 
         changes = self.settings_state_consistency.get_needed_state_updates()
         settings = self.ad_group_source.get_current_settings()
@@ -96,13 +97,15 @@ class SettingsStateConsistencyTestCase(test.TestCase):
         self.assertEqual(actual_state, constants.AdGroupSourceSettingsState.ACTIVE)
 
         ad_group_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
-        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
-        ad_group_settings.save(None)
+        ad_group_settings_copy = ad_group_settings.copy_settings()
+        ad_group_settings_copy.state = constants.AdGroupSettingsState.INACTIVE
+        ad_group_settings_copy.save(None)
         actual_state = self.settings_state_consistency._get_actual_source_settings_state(ad_group_source_settings)
         self.assertEqual(actual_state, constants.AdGroupSourceSettingsState.INACTIVE)
 
         ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
-        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
-        ad_group_settings.save(None)
+        ad_group_settings_copy = ad_group_settings_copy.copy_settings()
+        ad_group_settings_copy.state = constants.AdGroupSettingsState.INACTIVE
+        ad_group_settings_copy.save(None)
         actual_state = self.settings_state_consistency._get_actual_source_settings_state(ad_group_source_settings)
         self.assertEqual(actual_state, constants.AdGroupSourceSettingsState.INACTIVE)

@@ -1,5 +1,5 @@
-/*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) {
+/* globals oneApp,constants,options */
+oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
@@ -23,7 +23,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                 $scope.discarded = discarded;
                 campaignFreshSettings.resolve(data.settings.name === 'New campaign');
             },
-            function (data) {
+            function () {
                 // error
                 return;
             }
@@ -54,8 +54,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                             id: adGroupData.id,
                             name: adGroupData.name,
                             contentAdsTabWithCMS: data.contentAdsTabWithCMS,
-                            status: 'stopped',
-                            state: 'paused',
+                            status: constants.adGroupSettingsState.INACTIVE,
+                            state: constants.adGroupRunningStatus.INACTIVE,
                         });
                         $timeout(function () {
                             $state.go('main.adGroups.settings', {id: adGroupData.id});

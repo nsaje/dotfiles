@@ -276,7 +276,7 @@ class AdGroupSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
         self.user = user
-        self.ad_group = helpers.get_ad_group(user, id_)
+        self.ad_group = helpers.get_ad_group(user, id_, select_related=True)
         self.ad_group_settings = self.ad_group.get_current_settings()
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
@@ -678,6 +678,7 @@ class SourcesTable(object):
                 ad_group_settings = level_sources_table.ad_group_settings
 
                 row['editable_fields'] = helpers.get_editable_fields(
+                    level_sources_table.ad_group,
                     ad_group_source,
                     ad_group_settings,
                     source_settings,
@@ -1405,6 +1406,7 @@ class CampaignAdGroupsTable(object):
         response = {
             'rows': self.get_rows(
                 user,
+                campaign,
                 ad_groups,
                 ad_groups_settings,
                 ad_groups_status_dict,
@@ -1476,7 +1478,7 @@ class CampaignAdGroupsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_rows(self, user, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
+    def get_rows(self, user, campaign, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
                  order, has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
@@ -1520,7 +1522,7 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-            row['editable_fields'] = self.get_editable_fields(ad_group, row)
+            row['editable_fields'] = self.get_editable_fields(ad_group, campaign, row)
 
             if user.has_perm('zemauth.campaign_goal_optimization'):
                 row.update(campaign_goal_helpers.create_goals(row))
@@ -1544,12 +1546,15 @@ class CampaignAdGroupsTable(object):
             totals_data.update(campaign_goal_helpers.create_goal_totals(totals_data))
         return totals_data
 
-    def get_editable_fields(self, ad_group, row):
+    def get_editable_fields(self, ad_group, campaign, row):
         state = {
             'enabled': True,
             'message': None
         }
-        if row['state'] == constants.AdGroupSettingsState.INACTIVE \
+        if campaign.landing_mode:
+            state['enabled'] = False
+            state['message'] = 'Please add additional budget to your campaign to make changes.'
+        elif row['state'] == constants.AdGroupSettingsState.INACTIVE \
                 and not validation_helpers.ad_group_has_available_budget(ad_group):
             state['enabled'] = False
             state['message'] = 'Cannot enable ad group without available budget.'

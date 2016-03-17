@@ -194,7 +194,7 @@ class ActionLogApiTestCase(TestCase):
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=True)[0]
 
-        ad_group.campaign.account.allowed_sources.add(ad_group_source.source_id) 
+        ad_group.campaign.account.allowed_sources.add(ad_group_source.source_id)
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
@@ -626,6 +626,7 @@ class ActionLogApiTestCase(TestCase):
                     'tracking_slug': 'yahoo',
                     'target_regions': ['UK', 'US', 'CA'],
                     'target_devices': ['desktop', 'mobile'],
+                    'retargeting_ad_groups': [3],
                     'start_date': '2015-03-02',
                     'end_date': '2015-04-02',
                     'brand_name': 'Example',
@@ -662,6 +663,7 @@ class ActionLogApiTestCase(TestCase):
                     'tracking_slug': 'industrybrains',
                     'target_devices': [],
                     'target_regions': ['693'],
+                    'retargeting_ad_groups': [],
                     'start_date': None,
                     'end_date': None,
                     'brand_name': 'Example',

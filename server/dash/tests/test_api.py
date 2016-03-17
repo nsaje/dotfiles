@@ -2,6 +2,7 @@ import decimal
 import datetime
 import mock
 
+from django.db import connection
 from django.conf import settings
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.http.request import HttpRequest
@@ -240,8 +241,9 @@ class AutomaticallySyncContentAdSourceStatus(TestCase):
 
     def setUp(self):
         ad_group_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
-        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
-        ad_group_settings.save(None)
+        ad_group_settings_copy = ad_group_settings.copy_settings()
+        ad_group_settings_copy.state = constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings_copy.save(None)
 
     def test_send_sync_actionlogs(self):
         content_ad_data = [{
@@ -1134,7 +1136,9 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertTrue(
             models.AdGroupSourceState.objects.filter(ad_group_source=self.ad_group_source).count() > 0
         )
-        models.AdGroupSourceState.objects.filter(ad_group_source=self.ad_group_source).delete()
+        # use raw sql to bypass model restrictions
+        q = 'DELETE FROM dash_adgroupsourcestate WHERE ad_group_source_id=%s'
+        connection.cursor().execute(q, [self.ad_group_source.id])
 
         conf = {
             'state': 2,
@@ -1486,8 +1490,9 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.ad_group_settings.state = 1
-        self.ad_group_settings.save(request)
+        ad_group_settings_copy = self.ad_group_settings.copy_settings()
+        ad_group_settings_copy.state = 1
+        ad_group_settings_copy.save(request)
         self.assertTrue(self.writer.can_trigger_action())
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
@@ -1496,8 +1501,9 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
         )
-        # delete all ad_group_source_settings
-        models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).delete()
+        # delete all ad_group_source_settings - use raw sql to bypass model restrictions
+        q = 'DELETE FROM dash_adgroupsourcesettings'
+        connection.cursor().execute(q, [])
 
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
