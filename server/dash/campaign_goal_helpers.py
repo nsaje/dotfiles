@@ -4,6 +4,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+CAMPAIGN_GOAL_MAP = {
+    dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: [
+        'unbounced_visits',
+        'avg_cost_per_non_bounced_visitor',
+    ],
+    dash.constants.CampaignGoalKPI.PAGES_PER_SESSION: [
+        'total_pageviews',
+        'avg_cost_per_pageview',
+    ],
+    dash.constants.CampaignGoalKPI.TIME_ON_SITE: [
+        'total_seconds',
+        'avg_cost_per_second',
+    ],
+    dash.constants.CampaignGoalKPI.CPA: [],
+    dash.constants.CampaignGoalKPI.CPC: [],
+    dash.constants.CampaignGoalKPI.CPM: [],
+}
+
 
 def create_goals(campaign, data, cost):
     campaign_goal_values = get_campaign_goal_values(campaign)
@@ -94,10 +112,15 @@ def calculate_goal_total_values(row, goal_type, cost):
 
 def get_campaign_goals(campaign):
     cg_values = get_campaign_goal_values(campaign)
-    ret = {}
+    ret = []
     for cg_value in cg_values:
-        goal_name = dash.constants.CampaignGoal.get_text(
-            cg_value.campaign_goal.type
+        goal_type = cg_value.campaign_goal.type
+        goal_name = dash.constants.CampaignGoalKPI.get_text(
+            goal_type
         )
-        ret[goal_name] = float(cg_value.value)
+        ret.append({
+            'name': goal_name,
+            'value': float(cg_value.value),
+            'fields': {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
+        })
     return ret
