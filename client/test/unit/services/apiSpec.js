@@ -40,15 +40,32 @@ describe('api', function () {
     describe('CampaignSettings', function () {
         var campaignId = 1;
         var url = '/api/campaigns/' + campaignId + '/settings/';
-        var serverData = {
+        var responseData = {
             settings: {
                 id: 1,
                 name: 'Test Campaign',
                 campaign_goal: 3,
                 goal_quantity: '0.04',
                 target_devices: ['mobile'],
-                target_regions: ['NC', '501']
-            }
+                target_regions: ['NC', '501'],
+            },
+            goals: [],
+        };
+        var requestData = {
+            settings: {
+                id: 1,
+                name: 'Test Campaign',
+                campaign_goal: 3,
+                goal_quantity: '0.04',
+                target_devices: ['mobile'],
+                target_regions: ['NC', '501'],
+            },
+            goals: {
+                primary: null,
+                added: [],
+                removed: [],
+                modified: {},
+            },
         };
         var settings = {
             id: 1,
@@ -70,7 +87,7 @@ describe('api', function () {
         describe('get', function () {
             it('gets and converts server data', function () {
                 var result;
-                var data = {data: serverData};
+                var data = {data: responseData};
 
                 $httpBackend.expectGET(url).respond(200, data);
                 api.campaignSettings.get(campaignId).then(function (data) {
@@ -86,7 +103,7 @@ describe('api', function () {
             it('converts and saves data', function () {
                 var result;
 
-                $httpBackend.expectPUT(url, serverData).respond(200, {data: serverData});
+                $httpBackend.expectPUT(url, requestData).respond(200, {data: responseData});
                 api.campaignSettings.save(settings).then(function (data) {
                     result = data;
                 });
@@ -108,7 +125,7 @@ describe('api', function () {
                     }
                 };
 
-                $httpBackend.expectPUT(url, serverData).respond(400, {data: errorData});
+                $httpBackend.expectPUT(url, requestData).respond(400, {data: errorData});
                 api.campaignSettings.save(settings).then(null, function (data) {
                     result = data;
                 });

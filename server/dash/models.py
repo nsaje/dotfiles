@@ -97,6 +97,7 @@ class QuerySetManager(models.Manager):
 
 
 class SettingsQuerySet(models.QuerySet):
+
     def update(self, *args, **kwargs):
         raise AssertionError('Using update not allowed.')
 
@@ -105,6 +106,7 @@ class SettingsQuerySet(models.QuerySet):
 
 
 class CopySettingsMixin(object):
+
     def copy_settings(self):
         new_settings = type(self)()
 
@@ -742,6 +744,8 @@ class CampaignGoal(models.Model):
         default=constants.CampaignGoalKPI.TIME_ON_SITE,
         choices=constants.CampaignGoalKPI.get_choices(),
     )
+    primary = models.BooleanField(default=False)
+    conversion_goal = models.ForeignKey('ConversionGoal', null=True, blank=True, on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -749,11 +753,41 @@ class CampaignGoal(models.Model):
                                    on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
-        unique_together = ('campaign', 'type')
+        unique_together = ('campaign', 'type', 'conversion_goal')
+
+    def to_dict(self, with_values=False):
+        campaign_goal = {
+            'campaign_id': self.campaign.id,
+            'type': self.type,
+            'primary': self.primary,
+            'id': self.pk,
+            'conversion_goal': None,
+        }
+
+        if self.conversion_goal:
+            campaign_goal['conversion_goal'] = {
+                'type': self.conversion_goal.type,
+                'name': self.conversion_goal.name,
+                'pixel': None,
+                'conversion_window': self.conversion_goal.conversion_window,
+                'goal_id': self.conversion_goal.goal_id,
+            }
+            if self.conversion_goal.pixel:
+                campaign_goal['conversion_goal']['pixel'] = (
+                    self.conversion_goal.pixel.account_id, self.conversion_goal.pixel.slug,
+                )
+
+        if with_values:
+            campaign_goal['values'] = [
+                {'datetime': str(value.created_dt), 'value': value.value}
+                for value in self.values.all()
+            ]
+
+        return campaign_goal
 
 
 class CampaignGoalValue(models.Model):
-    campaign_goal = models.ForeignKey(CampaignGoal)
+    campaign_goal = models.ForeignKey(CampaignGoal, related_name='values')
     value = models.DecimalField(max_digits=15, decimal_places=5)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -1280,6 +1314,7 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |
