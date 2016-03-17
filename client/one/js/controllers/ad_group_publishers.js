@@ -832,7 +832,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 setChartOptions(data.goals);
                 setConversionGoalChartOptions(data.conversionGoals);
 
-                $scope.conversionGoals = data.conversionGoals;
                 $scope.chartData = data.chartData;
                 $scope.chartGoalMetrics = data.goals;
             },

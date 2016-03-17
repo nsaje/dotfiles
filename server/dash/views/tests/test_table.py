@@ -850,6 +850,7 @@ class AdGroupPublishersTableTest(TestCase):
             order_fields=[],
             constraints={'ad_group': ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -858,6 +859,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         mock_query.assert_any_call(
@@ -867,6 +869,7 @@ class AdGroupPublishersTableTest(TestCase):
             order_fields=[],
             constraints={"ad_group": ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -875,6 +878,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown=[],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         result = json.loads(response.content)
@@ -1415,6 +1419,7 @@ class AdGroupPublishersTableTest(TestCase):
             order_fields=[],
             constraints={'ad_group': ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -1423,6 +1428,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         mock_query.assert_any_call(
@@ -1432,6 +1438,7 @@ class AdGroupPublishersTableTest(TestCase):
             order_fields=[],
             constraints={"ad_group": ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -1440,6 +1447,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown=[],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         result = json.loads(response.content)
@@ -1636,8 +1644,9 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
-            constraints={'ad_group': ad_group.id, },
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints={'ad_group': ad_group.id, },
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -1646,6 +1655,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         mock_query.assert_any_call(
@@ -1653,8 +1663,9 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=[],
             order_fields=[],
-            constraints={"ad_group": ad_group.id, },
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints={"ad_group": ad_group.id, },
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -1663,6 +1674,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown=[],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         result = json.loads(response.content)
@@ -1806,6 +1818,7 @@ class AdGroupPublishersTableTest(TestCase):
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
             conversion_goals=[],
+            constraints_list=[],
         )
 
         mock_query.assert_any_call(
@@ -1815,6 +1828,7 @@ class AdGroupPublishersTableTest(TestCase):
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
             conversion_goals=[],
+            constraints_list=[],
         )
 
         result = json.loads(response.content)

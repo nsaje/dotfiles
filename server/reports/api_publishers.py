@@ -230,21 +230,19 @@ def _map_blacklist_to_rs_queryset(blacklist, use_touchpoint_fields):
                 source=blacklist['source'],
                 ad_group=blacklist['adgroup_id'],
             )
-        else:
-            return redshift.RSQ(
-                domain=blacklist['domain'],
-                exchange=blacklist['exchange'],
-                ad_group=blacklist['adgroup_id'],
-            )
+        return redshift.RSQ(
+            domain=blacklist['domain'],
+            exchange=blacklist['exchange'],
+            ad_group=blacklist['adgroup_id'],
+        )
     else:
         if use_touchpoint_fields:
             return redshift.RSQ(
                 publisher=blacklist['domain'],
             )
-        else:
-            return redshift.RSQ(
-                domain=blacklist['domain'],
-            )
+        return redshift.RSQ(
+            domain=blacklist['domain'],
+        )
 
 
 def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):

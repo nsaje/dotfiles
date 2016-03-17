@@ -89,54 +89,95 @@ def get_publishers_data_and_conversion_goals(
         report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
         touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
-    if show_blacklisted_publishers is None:
-        publishers_data = query_func(
-            start_date, end_date,
-            breakdown_fields=publisher_breakdown_fields,
-            order_fields=order_fields,
-            constraints=constraints,
-            conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
-        )
-        if can_see_conversion_goals:
-            touchpoint_data = api_touchpointconversions.query(
-                start_date, end_date,
-                breakdown=touchpoint_breakdown_fields,
-                conversion_goals=touchpoint_conversion_goals,
-                constraints=constraints,
-            )
-    else:
-        if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-            publisher_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers, False)
-            if can_see_conversion_goals:
-                touchpoint_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers, True)
-        else:
-            publisher_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, publisher_breakdown_fields, False)
-            if can_see_conversion_goals:
-                touchpoint_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, touchpoint_breakdown_fields, True)
-
-        publishers_data = query_func(
-            start_date, end_date,
-            breakdown_fields=publisher_breakdown_fields,
-            order_fields=order_fields,
-            constraints=constraints,
-            conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
-            constraints_list=publisher_constraints_list,
-        )
-        if can_see_conversion_goals:
-            touchpoint_data = api_touchpointconversions.query(
-                start_date, end_date,
-                breakdown=touchpoint_breakdown_fields,
-                conversion_goals=touchpoint_conversion_goals,
-                constraints=constraints,
-                constraints_list=touchpoint_constraints_list,
-            )
+    publishers_data = _get_publishers_data(query_func,
+                                           start_date,
+                                           end_date,
+                                           publisher_breakdown_fields,
+                                           order_fields,
+                                           report_conversion_goals,
+                                           constraints,
+                                           show_blacklisted_publishers,
+                                           adg_blacklisted_publishers)
 
     if publishers_data and can_see_conversion_goals:
-        conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data,
-                                                                           publisher_breakdown_fields,
-                                                                           touchpoint_breakdown_fields)
-        conversions_helper.transform_to_conversion_goals(publishers_data, conversion_goals)
+        touchpoint_data = _get_conversion_goals(start_date,
+                                                end_date,
+                                                touchpoint_breakdown_fields,
+                                                touchpoint_conversion_goals,
+                                                constraints,
+                                                show_blacklisted_publishers,
+                                                adg_blacklisted_publishers)
+        publishers_data = _transform_and_merge_conversion_goals(publishers_data,
+                                                                touchpoint_data,
+                                                                publisher_breakdown_fields,
+                                                                touchpoint_breakdown_fields,
+                                                                conversion_goals)
+    return publishers_data
 
+
+def _get_publishers_data(query_func,
+                         start_date,
+                         end_date,
+                         publisher_breakdown_fields,
+                         order_fields,
+                         report_conversion_goals,
+                         constraints,
+                         show_blacklisted_publishers,
+                         adg_blacklisted_publishers):
+    publisher_constraints_list = []
+    if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+        publisher_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(
+            adg_blacklisted_publishers, False)
+    elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
+        publisher_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(
+            adg_blacklisted_publishers, publisher_breakdown_fields, False)
+
+    publishers_data = query_func(
+        start_date, end_date,
+        breakdown_fields=publisher_breakdown_fields,
+        order_fields=order_fields,
+        conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
+        constraints=constraints,
+        constraints_list=publisher_constraints_list,
+    )
+    return publishers_data
+
+
+def _get_conversion_goals(start_date,
+                          end_date,
+                          touchpoint_breakdown_fields,
+                          touchpoint_conversion_goals,
+                          constraints,
+                          show_blacklisted_publishers,
+                          adg_blacklisted_publishers):
+    touchpoint_constraints_list = []
+    if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+        touchpoint_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(
+            adg_blacklisted_publishers, True)
+    elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
+        touchpoint_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(
+            adg_blacklisted_publishers, touchpoint_breakdown_fields, True)
+
+    touchpoint_data = api_touchpointconversions.query(
+            start_date, end_date,
+            breakdown=touchpoint_breakdown_fields,
+            conversion_goals=touchpoint_conversion_goals,
+            constraints=constraints,
+            constraints_list=touchpoint_constraints_list,
+    )
+    return touchpoint_data
+
+
+def _transform_and_merge_conversion_goals(publishers_data,
+                                          touchpoint_data,
+                                          publisher_breakdown_fields,
+                                          touchpoint_breakdown_fields,
+                                          conversion_goals):
+    conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data,
+                                                                       touchpoint_data,
+                                                                       publisher_breakdown_fields,
+                                                                       touchpoint_breakdown_fields)
+    conversions_helper.transform_to_conversion_goals(publishers_data, conversion_goals)
     return publishers_data
 
 
@@ -184,18 +225,8 @@ def _get_stats_with_conversions(
         content_ad_stats = [content_ad_stats]
 
     ca_stats_by_breakdown = OrderedDict((tuple(s[b] for b in breakdown), s) for s in content_ad_stats)
-    for ca_stat in ca_stats_by_breakdown.values():
-        for conversion_goal in report_conversion_goals:
-            key = conversion_goal.get_stats_key()
-            ca_stat[conversion_goal.get_view_key(conversion_goals)] = ca_stat.get('conversions', {}).get(key)
-
-        for tp_conversion_goal in touchpoint_conversion_goals:
-            # set the default - if tp_conv_stats result won't contain value, assume it's 0
-            ca_stat[tp_conversion_goal.get_view_key(conversion_goals)] = 0
-
-        if 'conversions' in ca_stat:
-            # mapping done, this is not needed anymore
-            del ca_stat['conversions']
+    if can_see_conversions:
+        conversions_helper.transform_to_conversion_goals(ca_stats_by_breakdown.values(), conversion_goals)
 
     if not can_see_conversions or not touchpoint_conversion_goals:
         result = ca_stats_by_breakdown.values()

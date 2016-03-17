@@ -736,13 +736,7 @@ class SourcesTable(object):
             rows.append(row)
 
         if order:
-            order_list = [order]
-
-            # status setting should also be sorted by autopilot state
-            if 'status_setting' in order:
-                order_list.append(('-' if order.startswith('-') else '') + 'autopilot_state')
-
-            rows = sort_results(rows, order_list)
+            rows = sort_results(rows, order)
 
         return rows
 
@@ -1793,7 +1787,8 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        conversion_goals = adgroup.campaign.conversiongoal_set.all()
+        can_see_conversion_goals = user.has_perm('zemauth.view_pubs_conversion_goals')
+        conversion_goals = adgroup.campaign.conversiongoal_set.all() if can_see_conversion_goals else []
         publishers_data, totals_data = self._query_filtered_publishers(
             user,
             show_blacklisted_publishers,
@@ -1830,7 +1825,6 @@ class PublishersTable(object):
                 user,
                 map_exchange_to_source_name,
                 publishers_data=publishers_data,
-                order=order,
             ),
             'pagination': {
                 'currentPage': current_page,
@@ -1964,57 +1958,40 @@ class PublishersTable(object):
 
     def _query_filtered_publishers(self, user, show_blacklisted_publishers, start_date, end_date, adgroup, constraints,
                                    conversion_goals):
-        publishers_data = []
-        totals_data = []
 
-        if not show_blacklisted_publishers or show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-            publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
-                user,
-                reports.api_publishers.query,
-                start_date,
-                end_date,
-                constraints,
-                conversion_goals,
-                publisher_breakdown_fields=['domain', 'exchange'],
-                touchpoint_breakdown_fields=['publisher', 'source'])
-            totals_data = stats_helper.get_publishers_data_and_conversion_goals(
-                user, reports.api_publishers.query, start_date, end_date, constraints, conversion_goals)
-        elif show_blacklisted_publishers in (
-                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
-
-            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
-                adgroup
-            )
-
-            query_func = None
+        if show_blacklisted_publishers in (
+                constants.PublisherBlacklistFilter.SHOW_ACTIVE, constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
             if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                 query_func = reports.api_publishers.query_active_publishers
             else:
                 query_func = reports.api_publishers.query_blacklisted_publishers
+            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(adgroup)
+        else:
+            query_func = reports.api_publishers.query
+            adg_blacklisted_publishers = None
 
-            publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
-                user,
-                query_func,
-                start_date,
-                end_date,
-                constraints,
-                conversion_goals,
-                publisher_breakdown_fields=['domain', 'exchange'],
-                touchpoint_breakdown_fields=['publisher', 'source'],
-                show_blacklisted_publishers=show_blacklisted_publishers,
-                adg_blacklisted_publishers=adg_blacklisted_publishers,
-            )
-            totals_data = stats_helper.get_publishers_data_and_conversion_goals(
-                user,
-                query_func,
-                start_date,
-                end_date,
-                constraints,
-                conversion_goals,
-                show_blacklisted_publishers=show_blacklisted_publishers,
-                adg_blacklisted_publishers=adg_blacklisted_publishers,
-            )
+        publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
+            user,
+            query_func,
+            start_date,
+            end_date,
+            constraints,
+            conversion_goals,
+            publisher_breakdown_fields=['domain', 'exchange'],
+            touchpoint_breakdown_fields=['publisher', 'source'],
+            show_blacklisted_publishers=show_blacklisted_publishers,
+            adg_blacklisted_publishers=adg_blacklisted_publishers,
+        )
+        totals_data = stats_helper.get_publishers_data_and_conversion_goals(
+            user,
+            query_func,
+            start_date,
+            end_date,
+            constraints,
+            conversion_goals,
+            show_blacklisted_publishers=show_blacklisted_publishers,
+            adg_blacklisted_publishers=adg_blacklisted_publishers,
+        )
 
         return publishers_data, totals_data[0]
 
@@ -2056,7 +2033,7 @@ class PublishersTable(object):
 
         return result
 
-    def get_rows(self, user, map_exchange_to_source_name, publishers_data, order=None):
+    def get_rows(self, user, map_exchange_to_source_name, publishers_data):
         rows = []
         for publisher_data in publishers_data:
             exchange = publisher_data.get('exchange', None)

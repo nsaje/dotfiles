@@ -609,6 +609,7 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             order_fields=[],
             constraints=constraints,
             conversion_goals=[],
+            constraints_list=[],
         )
 
         self.assertFalse(mock_touchpointconversins_query.called)
@@ -644,7 +645,8 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             breakdown_fields=publishers_breakdown_fields,
             order_fields=[],
             constraints=constraints,
-            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2'])
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
         )
 
         mock_touchpointconversions_query.assert_any_call(
@@ -653,6 +655,7 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             breakdown=touchpoint_breakdown_fields,
             conversion_goals=[touchpoint_conversion_goal],
             constraints=constraints,
+            constraints_list=[],
         )
 
         result_mock = self._mock_publishers_and_touchpoint_data(date)

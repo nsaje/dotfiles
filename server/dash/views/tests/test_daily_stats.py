@@ -458,6 +458,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             breakdown_fields=['date'],
             constraints={'ad_group': ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
         )
 
         mock_touchpointconversins_query.assert_any_call(
@@ -466,6 +467,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             breakdown=['date'],
             conversion_goals=[touchpoint_conversion_goal],
             constraints={'ad_group': ad_group.id},
+            constraints_list=[],
         )
 
         self.maxDiff = None

@@ -37,20 +37,19 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], constraints={}, constraints_list=None):
+def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], constraints={}, constraints_list=[]):
 
     breakdown = copy.copy(breakdown)
     conversion_goals = copy.copy(conversion_goals)
     order = copy.copy(order)
     constraints = copy.copy(constraints)
+    constraints_list = copy.copy(constraints_list)
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
 
     constraints = db_raw_helpers.extract_obj_ids(constraints)
 
-    if constraints_list is None:
-        constraints_list = []
     if conversion_goals:
         # create a base object, then OR onto it
         rsq = redshift.RSQ(account=conversion_goals[0].pixel.account_id, slug=conversion_goals[0].pixel.slug,
