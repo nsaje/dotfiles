@@ -81,19 +81,10 @@ def _get_ags_settings_dict(date, ad_group_sources):
     settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources,
         created_dt__lt=date+datetime.timedelta(days=1),
-        created_dt__gte=date,
     ).order_by('-created_dt')
 
     ret = defaultdict(list)
     for ags_sett in settings_on_date.iterator():
-        ret[ags_sett.ad_group_source_id].append(ags_sett)
-
-    latest_before_date = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__in=ad_group_sources,
-        created_dt__lt=date,
-    ).group_current_settings()
-
-    for ags_sett in latest_before_date.iterator():
         ret[ags_sett.ad_group_source_id].append(ags_sett)
 
     return ret
