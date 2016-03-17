@@ -114,25 +114,18 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings
 
 
 @newrelic.agent.function_trace()
-def _get_ag_settings_dict(date, campaign):
+def _get_ad_groups_active_on_date(date, campaign):
     ad_group_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=campaign.adgroup_set.all(),
         created_dt__lt=date+datetime.timedelta(days=1),
     ).order_by('-created_dt')
 
-    ret = defaultdict(list)
-    for ag_sett in ad_group_settings:
-        ret[ag_sett.ad_group_id].append(ag_sett)
-
-    return ret
-
-
-@newrelic.agent.function_trace()
-def _get_ad_groups_active_on_date(date, campaign):
-    ad_groups_settings = _get_ag_settings_dict(date, campaign)
     active_ad_groups = set()
     for ad_group in campaign.adgroup_set.all():
-        for sett in ad_groups_settings[ad_group.id]:
+        for sett in ad_group_settings:
+            if sett.ad_group_id != ad_group.id:
+                continue
+
             if (not sett.end_date or sett.end_date >= date) and\
                sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
                 active_ad_groups.add(ad_group)
