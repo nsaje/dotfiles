@@ -2,13 +2,13 @@
 'use strict';
 
 describe('EditCampaignGoalModalCtrl', function () {
-    var $modalStack, $modalInstance, $timeout, $scope, $state, $q, api, openedDeferred;
+    var $modalInstance, $timeout, $scope, $state, $q, api, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, _$state_, _$q_, _$timeout_, _$modalStack_) {
+        inject(function ($rootScope, $controller, _$state_, _$q_, _$timeout_) {
             $q = _$q_;
             $timeout = _$timeout_;
             $scope = $rootScope.$new();
@@ -25,26 +25,25 @@ describe('EditCampaignGoalModalCtrl', function () {
 
             api = {
                 campaignGoalValidation: {
-                    post: mockApiFunc
+                    post: mockApiFunc,
                 },
                 conversionPixel: {
-                    list: mockApiFunc
+                    list: mockApiFunc,
                 },
             };
 
             $state = _$state_;
-            $state.params = {id: 1,};
+            $state.params = {id: 1};
 
             $scope.campaignGoals = [];
-            $scope.campaign = {id: 1,};
-            $scope.account = {id: 1,};
+            $scope.campaign = {id: 1};
+            $scope.account = {id: 1};
 
             openedDeferred = $q.defer();
             $modalInstance = {
                 close: function () {},
-                opened: openedDeferred.promise
+                opened: openedDeferred.promise,
             };
-            $modalStack = _$modalStack_;
 
             $controller('EditCampaignGoalModalCtrl', {
                 $scope: $scope,
@@ -60,10 +59,14 @@ describe('EditCampaignGoalModalCtrl', function () {
             $scope.campaignGoal = 'goal';
             $scope.errors = {};
             spyOn(api.campaignGoalValidation, 'post').and.callFake(
-                function () { return deferred.promise; }
+                function () {
+                    return deferred.promise;
+                }
             );
             spyOn($scope, 'validate').and.callFake(
-                function () { return true; }
+                function () {
+                    return true;
+                }
             );
             spyOn($modalInstance, 'close');
 
@@ -79,14 +82,18 @@ describe('EditCampaignGoalModalCtrl', function () {
         });
         it('doesn\'t call api if validation fails', function () {
             var deferred = $q.defer();
-            
+
             $scope.campaignGoal = 'goal';
             $scope.errors = {};
             spyOn(api.campaignGoalValidation, 'post').and.callFake(
-                function () { return deferred.promise; }
+                function () {
+                    return deferred.promise;
+                }
             );
             spyOn($scope, 'validate').and.callFake(
-                function () { return false; }
+                function () {
+                    return false;
+                }
             );
             $scope.save();
             expect($scope.validate).toHaveBeenCalled();
@@ -105,7 +112,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     id: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 2, name: "123"
+                        goalId: '123', type: 2, name: '123',
                     }
                 },
                 {
@@ -113,7 +120,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     campaignId: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 3, name: "124"
+                        goalId: '123', type: 3, name: '124',
                     }
                 }
             ];
@@ -122,7 +129,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 type: 4,
                 campaignId: 1,
                 conversionGoal: {
-                    goalId: 'something', type: 3, name: "124"
+                    goalId: 'something', type: 3, name: '124',
                 }
             };
 
@@ -132,7 +139,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 type: 4,
                 campaignId: 1,
                 conversionGoal: {
-                    goalId: 'something', type: 3, name: "125"
+                    goalId: 'something', type: 3, name: '125',
                 }
             };
 
@@ -149,16 +156,16 @@ describe('EditCampaignGoalModalCtrl', function () {
                     id: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 2, name: "123",
-                    }
+                        goalId: '123', type: 2, name: '123',
+                    },
                 },
                 {
                     primary: true,
                     campaignId: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 3, name: "124",
-                    }
+                        goalId: '123', type: 3, name: '124',
+                    },
                 },
             ];
 
@@ -166,7 +173,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 type: 4,
                 campaignId: 1,
                 conversionGoal: {
-                    goalId: '123', type: 3, name: "125",
+                    goalId: '123', type: 3, name: '125',
                 },
             };
 
@@ -176,7 +183,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 type: 4,
                 campaignId: 1,
                 conversionGoal: {
-                    goalId: '124', type: 3, name: "125",
+                    goalId: '124', type: 3, name: '125',
                 },
             };
 
@@ -192,7 +199,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     id: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 2, name: "123",
+                        goalId: '123', type: 2, name: '123',
                     },
                 },
                 {
@@ -200,7 +207,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     campaignId: 1,
                     type: 4,
                     conversionGoal: {
-                        goalId: '123', type: 3, name: "124",
+                        goalId: '123', type: 3, name: '124',
                     },
                 },
             ];
@@ -210,7 +217,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 campaignId: 1,
                 id: 1,
                 conversionGoal: {
-                    goalId: '123', type: 2, name: "128",
+                    goalId: '123', type: 2, name: '128',
                 },
             };
 

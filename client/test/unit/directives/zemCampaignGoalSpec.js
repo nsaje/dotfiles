@@ -1,20 +1,23 @@
-/* global describe,angular,beforeEach,module,it,inject,expect,spyOn */
+/* global describe,beforeEach,module,it,inject,expect */
 'use strict';
 
 describe('zemCampaignGoals', function () {
-    var $scope, $q, element, isolate;
+    var $scope, element, isolate;
 
     beforeEach(module('one'));
 
     beforeEach(inject(function ($compile, $rootScope, _$q_) {
-        $q =  _$q_;
         var template = '<zem-campaign-goals account="account" campaign="campaign" goals="campaignGoals" model="campaignGoalsDiff"></zem-campaign-goals>';
 
         $scope = $rootScope.$new();
-        $scope.isPermissionInternal = function () { return true; };
-        $scope.hasPermission = function () { return true; };
-        $scope.campaign = {id: 1,};
-        $scope.account = {id: 1,};
+        $scope.isPermissionInternal = function () {
+            return true;
+        };
+        $scope.hasPermission = function () {
+            return true;
+        };
+        $scope.campaign = {id: 1};
+        $scope.account = {id: 1};
         $scope.goals = [];
         $scope.campaignGoalsDiff = {};
 
@@ -26,7 +29,7 @@ describe('zemCampaignGoals', function () {
 
     describe('choosePrimary', function () {
         it('sets first goal to primary', function () {
-            isolate.campaignGoals = [{type: 1, id: 1,}, {type: 2, id: 2,}];
+            isolate.campaignGoals = [{type: 1, id: 1}, {type: 2, id: 2}];
 
             isolate.choosePrimary();
 
@@ -45,7 +48,7 @@ describe('zemCampaignGoals', function () {
             expect(isolate.model.primary).toBeFalsy();
             expect(isolate.model.added[0].primary).toBe(true);
         });
-        
+
     });
 
     describe('addGoal', function (done) {
@@ -57,7 +60,7 @@ describe('zemCampaignGoals', function () {
                 .finally(done);
         });
     });
-    
+
     describe('editGoal', function (done) {
         it('opens a modal window', function () {
             isolate.editGoal().result
@@ -111,7 +114,8 @@ describe('zemCampaignGoals', function () {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false, id: 10},
-            ];isolate.model.added = [isolate.campaignGoals[0]];
+            ];
+            isolate.model.added = [isolate.campaignGoals[0]];
 
             isolate.deleteGoal(isolate.campaignGoals[1]);
             
