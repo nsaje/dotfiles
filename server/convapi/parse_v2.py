@@ -317,7 +317,7 @@ class Report(object):
         return result.values()
 
     def reported_visits(self):
-        return sum(entry.visits for entry in self.get_content_ads_stat())
+        return sum(entry.visits for entry in self.get_content_ad_stats())
 
     def imported_visits(self):
         return self._imported_visits
