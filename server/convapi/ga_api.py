@@ -1,3 +1,5 @@
+import copy
+import dash
 import json
 import logging
 import httplib2
@@ -35,11 +37,12 @@ def get_ga_service():
 
 
 class GAApiReportRow(ReportRow):
-    def __init__(self, report_date, content_ad_id, source_param):
+    def __init__(self, report_date, content_ad_id, source_param, publisher_param):
         ReportRow.__init__(self)
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
+        self.publisher_param = publisher_param
 
         self.visits = 0
         self.new_visits = 0
@@ -63,7 +66,7 @@ class GAApiReportRow(ReportRow):
         self.goals = goals
 
     def key(self):
-        return self.report_date, self.content_ad_id, self.source_param
+        return self.report_date, self.content_ad_id, self.source_param, self.publisher_param
 
     def merge_postclick_stats_with(self, ga_report_row):
         self.visits += ga_report_row.visits
@@ -84,6 +87,16 @@ class GAApiReportRow(ReportRow):
 
         return self.content_ad_id is not None and self.source_param != '' and self.source_param is not None
 
+    def is_publisher_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None and\
+            self.publisher_param != '' and\
+            self.publisher_param is not None
+
 
 class GAApiReport(GAReport):
     def __init__(self, ga_service, start_date):
@@ -96,6 +109,56 @@ class GAApiReport(GAReport):
         self._download_postclick_stats(profiles)
         self._download_goal_conversion_stats(profiles)
 
+    def get_content_ad_stats(self):
+        result = {}
+
+        for key, entry in self.entries.iteritems():
+            if not entry.is_row_valid():
+                continue
+
+            result_key = (entry.report_date, entry.content_ad_id, entry.source_param)
+            if result_key not in result:
+                result[result_key] = copy.deepcopy(entry)
+            else:
+                result[result_key].merge_postclick_stats_with(entry)
+                result[result_key].merge_conversion_goal_stats_with(entry)
+
+        return result.values()
+
+    def get_publisher_stats(self):
+        result = {}
+
+        content_ad_ids = set([entry.content_ad_id for entry in self.entries.values()])
+
+        content_ads_ad_groups = dash.models.ContentAd.objects.filter(
+                pk__in=content_ad_ids
+        ).values_list('ad_group', 'pk')
+
+        ad_group_mapping = dict((k, v) for v, k in content_ads_ad_groups)
+
+        for key, entry in self.entries.iteritems():
+            if not entry.is_publisher_row_valid():
+                continue
+
+            ad_group_id = ad_group_mapping[entry.content_ad_id]
+
+            result_key = (
+                entry.report_date,
+                ad_group_id,
+                entry.publisher_param,
+                entry.source_param
+            )
+            if result_key not in result:
+                entry_copy = copy.deepcopy(entry)
+                entry_copy.ad_group_id = ad_group_id
+                entry_copy.content_ad_id = None
+                result[result_key] = entry_copy
+            else:
+                result[result_key].merge_postclick_stats_with(entry)
+                result[result_key].merge_conversion_goal_stats_with(entry)
+
+        return result.values()
+
     def _get_ga_profiles(self, ga_account):
         return self.ga_service.management().profiles().list(
                 accountId=ga_account.ga_account_id, webPropertyId=ga_account.ga_web_property_id).execute()
@@ -105,7 +168,7 @@ class GAApiReport(GAReport):
                                             'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite'):
             logger.debug('Processing GA postclick data row: %s', row)
             content_ad_id, media_source_tracking_slug, publisher = self._parse_keyword_or_url(row)
-            report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug)
+            report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug, publisher)
             report_entry.set_postclick_stats(row)
             self._update_report_entry_postclick_stats(report_entry)
 
@@ -168,7 +231,7 @@ class GAApiReport(GAReport):
                 logger.debug('Processing GA conversion goal data row: %s', row)
                 self._update_goals(goals, row, sub_goal_metadata)
         for key, value in goals.iteritems():
-            report_entry = GAApiReportRow(key[0], key[1], key[2])
+            report_entry = GAApiReportRow(key[0], key[1], key[2], key[3])
             report_entry.set_conversion_goal_stats_with(value)
             self._update_report_entry_goal_conversion_stats(report_entry)
 
@@ -196,7 +259,7 @@ class GAApiReport(GAReport):
         for i, metadata in enumerate(sub_goal_metadata):
             sub_goal_name = metadata['name']
             sub_goals[sub_goal_name] = int(row[NUM_GA_DIMENSIONS + i * NUM_METRICS_PER_GOAL])
-        key = (self.start_date, content_ad_id, media_source_tracking_slug)
+        key = (self.start_date, content_ad_id, media_source_tracking_slug, publisher_param)
         existing_goal = goals.get(key)
         if existing_goal is None:
             goals[key] = sub_goals
