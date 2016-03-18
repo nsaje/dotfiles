@@ -1068,7 +1068,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
 
-        if 'daily_budget_cc' in resource:
+        campaign_settings = ad_group.campaign.get_current_settings()
+        if 'daily_budget_cc' in resource and campaign_settings.automatic_landing_mode:
             max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
             if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
                 errors.update({
