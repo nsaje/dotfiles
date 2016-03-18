@@ -512,9 +512,6 @@ class CampaignAdGroups(api_common.BaseApiView):
                 logger.exception('Exception occurred on campaign with id %s', ad_group.campaign.pk)
                 continue
 
-            if not self._can_automatically_add_media_source(source_default_settings):
-                continue
-
             ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)
             external_name = ad_group_source.get_external_name()
             action = actionlog.api.create_campaign(ad_group_source, external_name, request, send=False)
@@ -528,11 +525,6 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         return actions
 
-    def _can_automatically_add_media_source(self, source_default_settings):
-        return bool(source_default_settings.default_cpc_cc or
-                    source_default_settings.mobile_cpc_cc or
-                    source_default_settings.daily_budget_cc)
-
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         source = source_settings.source
         ad_group = ad_group_settings.ad_group
@@ -541,8 +533,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group_source.save(request)
         active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
             retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
-        helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
-                                             mobile_only=ad_group_settings.is_mobile_only(),
+        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
         return ad_group_source
 
@@ -950,8 +941,7 @@ class AdGroupSources(api_common.BaseApiView):
                                             ad_group=ad_group)
 
         if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_settings(request, ad_group_source, default_settings,
-                                                 mobile_only=ad_group.get_current_settings().is_mobile_only())
+            helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
 
         return self.create_api_response(None)
 
