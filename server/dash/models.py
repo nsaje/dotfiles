@@ -1141,7 +1141,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC'
+        verbose_name='Default CPC',
+        help_text='This setting has moved. See Source model.'
     )
 
     mobile_cpc_cc = models.DecimalField(
@@ -1149,7 +1150,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC (if ad group is targeting mobile only)'
+        verbose_name='Default CPC (if ad group is targeting mobile only)',
+        help_text='This setting has moved. See Source model.'
     )
 
     daily_budget_cc = models.DecimalField(
@@ -1157,7 +1159,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default daily budget'
+        verbose_name='Default daily budget',
+        help_text='This setting has moved. See Source model.'
     )
 
     objects = QuerySetManager()

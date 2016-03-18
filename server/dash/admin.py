@@ -23,7 +23,6 @@ from dash import models
 from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
-from dash import bcm_helpers as bcmh
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
@@ -232,6 +231,7 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
         'source',
         'credentials_'
     )
+    readonly_fields = ('default_cpc_cc', 'mobile_cpc_cc', 'daily_budget_cc')
 
     def credentials_(self, obj):
         if obj.credentials is None:
