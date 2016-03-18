@@ -67,6 +67,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 10)
         cost = 20
         row = {
+            'media_cost': 20,
             'avg_tos': 20,
             'visits': 1,
         }
@@ -79,13 +80,14 @@ class CampaignGoalsTestCase(TestCase):
         goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
         self.assertDictContainsSubset(expected, goal_totals)
 
-        rows = campaign_goals.create_goals(self.campaign, [row], cost)
+        rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
 
     def test_create_goals_and_totals_pps(self):
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         cost = 20
         row = {
+            'media_cost': 20,
             'pv_per_visit': 10,
             'visits': 1,
         }
@@ -101,13 +103,14 @@ class CampaignGoalsTestCase(TestCase):
             goal_totals
         )
 
-        rows = campaign_goals.create_goals(self.campaign, [row], cost)
+        rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
 
     def test_create_goals_and_totals_bounce_rate(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
         cost = 20
         row = {
+            'media_cost': 20,
             'bounce_rate': 0.75,
             'visits': 1,
         }
@@ -123,7 +126,7 @@ class CampaignGoalsTestCase(TestCase):
             goal_totals
         )
 
-        rows = campaign_goals.create_goals(self.campaign, [row], cost)
+        rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
 
     def test_get_campaign_goal_values(self):

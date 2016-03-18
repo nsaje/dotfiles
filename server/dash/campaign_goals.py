@@ -149,20 +149,29 @@ def create_conversion_goal(request, form, campaign):
     return conversion_goal, campaign_goal
 
 
-def create_goals(campaign, data, cost):
+def extract_cost(data):
+    return data.get('media_cost', 0)
+
+
+def create_goals(campaign, data):
     campaign_goal_values = get_campaign_goal_values(campaign)
     ret = []
     for row in data:
         new_row = dict(row)
-        for campaign_goal_value in campaign_goal_values:
-            goal_type = campaign_goal_value.campaign_goal.type
-            new_row.update(calculate_goal_values(row, goal_type, cost))
+        cost = extract_cost(row)
+        if cost:
+            for campaign_goal_value in campaign_goal_values:
+                goal_type = campaign_goal_value.campaign_goal.type
+                new_row.update(calculate_goal_values(row, goal_type, cost))
         ret.append(new_row)
     # TODO: CPA
     return ret
 
 
 def create_goal_totals(campaign, data, cost):
+    if not cost:
+        return data
+
     ret = dict(data)
     campaign_goal_values = get_campaign_goal_values(campaign)
     for campaign_goal_value in campaign_goal_values:

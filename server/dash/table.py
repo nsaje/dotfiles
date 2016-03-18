@@ -509,15 +509,16 @@ class SourcesTable(object):
         )
 
         if user.has_perm('zemauth.campaign_goal_optimization') and\
+                user.has_perm('zemauth.can_view_actual_costs') and\
                 level_ in ('ad_groups', 'campaigns'):
             if level_ == 'ad_groups':
                 campaign = level_sources_table.ad_group.campaign
             elif level_ == 'campaigns':
                 campaign = level_sources_table.campaign
 
-            totals_cost = totals.get('cost', 0)
+            totals_cost = campaign_goals.extract_cost(totals)
             rows = campaign_goals.create_goals(
-                campaign, rows, totals_cost
+                campaign, rows
             )
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
@@ -1214,11 +1215,12 @@ class AdGroupAdsPlusTable(object):
 
         total_row = self._get_total_row(user, total_stats)
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
+        if user.has_perm('zemauth.campaign_goal_optimization') and\
+                user.has_perm('zemauth.can_view_actual_costs'):
             campaign = ad_group.campaign
-            totals_cost = total_stats.get('cost') or 0
+            totals_cost = campaign_goals.extract_cost(total_stats)
             rows = campaign_goals.create_goals(
-                campaign, rows, totals_cost
+                campaign, rows
             )
             total_row = campaign_goals.create_goal_totals(
                 campaign, total_row, totals_cost
@@ -1443,10 +1445,11 @@ class CampaignAdGroupsTable(object):
             yesterday_total_cost
         )
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            totals_cost = totals.get('cost', 0)
+        if user.has_perm('zemauth.campaign_goal_optimization') and\
+                user.has_perm('zemauth.can_view_actual_costs'):
+            totals_cost = campaign_goals.extract_cost(totals)
             rows = campaign_goals.create_goals(
-                campaign, rows, totals_cost
+                campaign, rows
             )
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
@@ -1858,10 +1861,12 @@ class PublishersTable(object):
             totals_data,
         )
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
+        if user.has_perm('zemauth.campaign_goal_optimization') and\
+                user.has_perm('zemauth.can_view_actual_costs'):
             campaign = adgroup.campaign
-            rows = campaign_goals.create_goals(campaign, rows, totals.get('cost') or 0)
-            totals = campaign_goals.create_goal_totals(campaign, totals, totals.get('cost', 0))
+            cost = campaign_goals.extract_cost(totals)
+            rows = campaign_goals.create_goals(campaign, rows)
+            totals = campaign_goals.create_goal_totals(campaign, totals, cost)
 
         response = {
             'rows': rows,
