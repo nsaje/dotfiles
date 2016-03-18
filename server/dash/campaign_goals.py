@@ -44,7 +44,7 @@ def delete_campaign_goal(request, goal_id, campaign):
     goal.delete()
 
     new_settings = campaign.get_current_settings().copy_settings()
-    new_settings.changes_text = u'Deleted campaign goal: {}'.format(
+    new_settings.changes_text = u'Deleted campaign goal "{}"'.format(
         constants.CampaignGoalKPI.get_text(goal.type)
     )
     new_settings.save(request)
@@ -83,6 +83,18 @@ def set_campaign_goal_primary(request, campaign, goal_id):
     goal = models.CampaignGoal.objects.get(pk=goal_id)
     goal.primary = True
     goal.save()
+
+    new_settings = campaign.get_current_settings().copy_settings()
+    new_settings.changes_text = u'Campaign goal "{}" set as primary'.format(
+        constants.CampaignGoalKPI.get_text(goal.type)
+    )
+    new_settings.save(request)
+
+    helpers.log_useraction_if_necessary(
+        request,
+        constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
+        campaign=campaign
+    )
 
 
 def get_primary_campaign_goal(campaign):

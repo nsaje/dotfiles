@@ -47,6 +47,18 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
+    def test_set_campaign_goal_primary(self):
+        goal = models.CampaignGoal.objects.create(
+            type=1,
+            campaign_id=2,
+            primary=False,
+        )
+        campaign_goals.set_campaign_goal_primary(self.request, self.campaign, goal.pk)
+        self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
+
+        settings = self.campaign.get_current_settings()
+        self.assertEqual(settings.changes_text, 'Campaign goal "time on site in seconds" set as primary')
+
     def test_create_campaign_goal(self):
         goal_form = forms.CampaignGoalForm({'type': 1, }, campaign_id=self.campaign.pk)
         goal = campaign_goals.create_campaign_goal(
@@ -58,6 +70,9 @@ class CampaignGoalsTestCase(TestCase):
         self.assertTrue(goal.pk)
         self.assertEqual(goal.type, 1)
         self.assertEqual(goal.campaign_id, 1)
+
+        settings = self.campaign.get_current_settings()
+        self.assertEqual(settings.changes_text, 'Added campaign goal "time on site in seconds"')
 
         with self.assertRaises(exc.ValidationError):
             goal_form = forms.CampaignGoalForm({}, campaign_id=self.campaign.pk)
@@ -82,9 +97,13 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoalValue.objects.all().count())
         self.assertFalse(models.CampaignGoal.objects.all().count())
 
+        settings = self.campaign.get_current_settings()
+        self.assertEqual(settings.changes_text, 'Deleted campaign goal "time on site in seconds"')
+
         conv_goal = models.ConversionGoal.objects.create(
             goal_id='123',
-            type=2,
+            name='123',
+            type=3,
             campaign_id=1,
         )
         goal = models.CampaignGoal.objects.create(
@@ -103,6 +122,9 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoal.objects.all().count())
         self.assertFalse(models.ConversionGoal.objects.all().count())
 
+        settings = self.campaign.get_current_settings()
+        self.assertEqual(settings.changes_text, 'Deleted conversion goal "123"')
+
     def test_add_campaign_goal_value(self):
         goal = models.CampaignGoal.objects.create(
             type=1,
@@ -119,3 +141,6 @@ class CampaignGoalsTestCase(TestCase):
             [val.value for val in models.CampaignGoalValue.objects.all()],
             [Decimal('10'), Decimal('15')]
         )
+
+        settings = self.campaign.get_current_settings()
+        self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 time on site in seconds"')
