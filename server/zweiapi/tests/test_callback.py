@@ -245,13 +245,19 @@ class CreateCampaignManualActionsTest(TestCase):
         self.request.user = user
         self.client.login(username=user.email, password=password)
 
-    def _setup_ad_group_source(self, ad_group_source, target_regions=None, available_actions=None):
+    def _setup_ad_group_source(
+            self,
+            ad_group_source,
+            target_regions=None,
+            available_actions=None,
+            retargeting_ad_groups=None):
         if available_actions:
             ad_group_source.source.source_type.available_actions.extend(available_actions)
             ad_group_source.source.source_type.save()
 
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.target_regions = target_regions
+        ad_group_settings.retargeting_ad_groups = retargeting_ad_groups
         ad_group_settings.save(self.request)
 
     def _fire_campaign_creation_callback(self, ad_group_source):
@@ -320,7 +326,6 @@ class CreateCampaignManualActionsTest(TestCase):
                 dash.constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL,
                 dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
-
         self._fire_campaign_creation_callback(ad_group_source)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
@@ -328,6 +333,23 @@ class CreateCampaignManualActionsTest(TestCase):
         # should create manual actions
         self.assertEqual(len(manual_actions), 1)
         self.assertEqual('target_regions', manual_actions[0].payload['property'])
+
+    def test_manual_update_after_campaign_creation_retargeting(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+        ad_group_source.source.supports_retargeting_manually = True
+        ad_group_source.source.save()
+
+        self._setup_ad_group_source(
+            ad_group_source,
+            retargeting_ad_groups=[1]
+            )
+
+        self._fire_campaign_creation_callback(ad_group_source)
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+        # should create manual actions
+        self.assertEqual(len(manual_actions), 1)
+        self.assertEqual('retargeting_ad_groups', manual_actions[0].payload['property'])
 
 
 class SubmitAdGroupTest(TestCase):

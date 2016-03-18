@@ -6,6 +6,8 @@ from dash import regions
 # which corresponds to 10 blacklisted publishers per Z1 account
 MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
 
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
+
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
@@ -134,8 +136,8 @@ class InfoboxLevel(ConstantBase):
 
     _VALUES = {
         ADGROUP: 'Ad Group',
-        CAMPAIGN : 'Campaign',
-        ACCOUNT : 'Account',
+        CAMPAIGN: 'Campaign',
+        ACCOUNT: 'Account',
         ALL_ACCOUNTS: 'All Accounts'
     }
 
@@ -1232,15 +1234,15 @@ class RegionType(ConstantBase):
 
     _VALUES = {
         COUNTRY: 'Country',
-        SUBDIVISION: 'U.S. state', # NOTE update when subdivisions other than U.S. states are added
+        SUBDIVISION: 'U.S. state',  # NOTE update when subdivisions other than U.S. states are added
         DMA: 'DMA',
     }
 
 
 class CreditLineItemStatus(ConstantBase):
-    SIGNED = 1 # Only adding BudgetLineItems is permitted
-    PENDING = 2 # Internal "waiting" status, fields are editable
-    CANCELED = 3 # Adding BudgetLineItems is not permitted
+    SIGNED = 1  # Only adding BudgetLineItems is permitted
+    PENDING = 2  # Internal "waiting" status, fields are editable
+    CANCELED = 3  # Adding BudgetLineItems is not permitted
 
     _VALUES = {
         SIGNED: 'Signed',

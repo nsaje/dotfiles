@@ -40,7 +40,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             name: 'Avg. Cost Per Second',
             field: 'avg_cost_per_second',
             checked: true,
-            type: 'number',
+            type: 'currency',
             shown: isShown,
             internal: isInternal,
             help: 'Average cost per time spent on site.',
@@ -51,7 +51,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             name: 'Avg. Cost Per Pageview',
             field: 'avg_cost_per_pageview',
             checked: true,
-            type: 'number',
+            type: 'currency',
             shown: isShown,
             internal: isInternal,
             help: 'Average cost per pageview.',
@@ -62,7 +62,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             name: 'Avg. Cost For Non-bounced Visitor',
             field: 'avg_cost_per_non_bounced_visitor',
             checked: true,
-            type: 'number',
+            type: 'currency',
             shown: isShown,
             internal: isInternal,
             help: 'Average cost per non-bounced visitors.',
@@ -73,7 +73,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             name: 'CPA',
             field: 'cpa',
             checked: true,
-            type: 'number',
+            type: 'currency',
             shown: isShown,
             internal: isInternal,
             help: 'Cost per acquisition.',
@@ -83,23 +83,46 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         });
     }
 
+    function columnCategories () {
+        return {
+            total_seconds: true,
+            unbounced_visits: true,
+            total_pageviews: true,
+            avg_cost_per_second: true,
+            avg_cost_per_pageview: true,
+            avg_cost_per_non_bounced_visitor: true,
+            cpa: true,
+        };
+    }
+
     function createColumnCategories () {
+        var columnCats = columnCategories();
         return {
             'name': 'Campaign Goals',
-            'fields': [
-                'total_seconds',
-                'unbounced_visits',
-                'total_pageviews',
-                'avg_cost_per_second',
-                'avg_cost_per_pageview',
-                'avg_cost_per_non_bounced_visitor',
-                'cpa',
-            ],
+            'fields': Object.keys(columnCats),
         };
+    }
+
+    function updateVisibility (columns, goals) {
+        var columnCats = columnCategories();
+        columns.forEach(function (column) {
+            if (columnCats[column.field]) {
+                column.shown = false;
+                column.unselectable = true;
+            }
+
+            goals.forEach(function (goal) {
+                if (goal.fields[column.field] !== undefined) {
+                    column.shown = true;
+                    column.unselectable = false;
+                }
+            });
+        });
     }
 
     return {
         createColumnCategories: createColumnCategories,
         insertAudienceOptimizationColumns: insertAudienceOptimizationColumns,
+        updateVisibility: updateVisibility,
     };
 });
