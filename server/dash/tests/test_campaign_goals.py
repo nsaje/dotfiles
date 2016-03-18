@@ -77,9 +77,6 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_second': 1,
         }
 
-        goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
-        self.assertDictContainsSubset(expected, goal_totals)
-
         rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
 
@@ -97,12 +94,6 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_pageview': 2,
         }
 
-        goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
-        self.assertDictContainsSubset(
-            expected,
-            goal_totals
-        )
-
         rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
 
@@ -119,12 +110,6 @@ class CampaignGoalsTestCase(TestCase):
             'unbounced_visits': 25,
             'avg_cost_per_non_bounced_visitor': 20.0 / (100 * 0.25),
         }
-
-        goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
-        self.assertDictContainsSubset(
-            expected,
-            goal_totals
-        )
 
         rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
