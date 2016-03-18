@@ -78,7 +78,7 @@ class CampaignGoalsTestCase(TestCase):
             campaign_goal=goal,
         )
 
-        campaign_goals.delete_campaign_goal(self.request, goal.pk)
+        campaign_goals.delete_campaign_goal(self.request, goal.pk, self.campaign)
         self.assertFalse(models.CampaignGoalValue.objects.all().count())
         self.assertFalse(models.CampaignGoal.objects.all().count())
 
@@ -98,7 +98,7 @@ class CampaignGoalsTestCase(TestCase):
             campaign_goal=goal,
         )
 
-        campaign_goals.delete_campaign_goal(self.request, goal.pk)
+        campaign_goals.delete_campaign_goal(self.request, goal.pk, self.campaign)
         self.assertFalse(models.CampaignGoalValue.objects.all().count())
         self.assertFalse(models.CampaignGoal.objects.all().count())
         self.assertFalse(models.ConversionGoal.objects.all().count())
@@ -113,7 +113,7 @@ class CampaignGoalsTestCase(TestCase):
             value=Decimal('10'),
             campaign_goal=goal,
         )
-        campaign_goals.add_campaign_goal_value(self.request, goal.pk, Decimal('15'))
+        campaign_goals.add_campaign_goal_value(self.request, goal, Decimal('15'), self.campaign)
 
         self.assertEqual(
             [val.value for val in models.CampaignGoalValue.objects.all()],

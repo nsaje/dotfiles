@@ -6,19 +6,34 @@ from dash import forms
 from dash.views import helpers
 
 
-def create_campaign_goal(request, form, campaign, conversion_goal=None):
+def create_campaign_goal(request, form, campaign, value=None, conversion_goal=None):
     if not form.is_valid():
         raise exc.ValidationError(errors=form.errors)
 
-    return models.CampaignGoal.objects.create(
+    goal = models.CampaignGoal.objects.create(
         type=form.cleaned_data['type'],
         primary=form.cleaned_data['primary'],
         campaign=campaign,
         conversion_goal=conversion_goal,
     )
 
+    new_settings = campaign.get_current_settings().copy_settings()
+    new_settings.changes_text = u'Added campaign goal "{}{}"'.format(
+        (str(value) + ' ') if value else '',
+        constants.CampaignGoalKPI.get_text(goal.type)
+    )
+    new_settings.save(request)
 
-def delete_campaign_goal(request, goal_id):
+    helpers.log_useraction_if_necessary(
+        request,
+        constants.UserActionType.CREATE_CAMPAIGN_GOAL,
+        campaign=campaign
+    )
+
+    return goal
+
+
+def delete_campaign_goal(request, goal_id, campaign):
     goal = models.CampaignGoal.objects.all().select_related('campaign').get(pk=goal_id)
 
     if goal.conversion_goal:
@@ -28,13 +43,39 @@ def delete_campaign_goal(request, goal_id):
     models.CampaignGoalValue.objects.filter(campaign_goal_id=goal_id).delete()
     goal.delete()
 
+    new_settings = campaign.get_current_settings().copy_settings()
+    new_settings.changes_text = u'Deleted campaign goal: {}'.format(
+        constants.CampaignGoalKPI.get_text(goal.type)
+    )
+    new_settings.save(request)
 
-def add_campaign_goal_value(request, goal_id, value):
+    helpers.log_useraction_if_necessary(
+        request,
+        constants.UserActionType.DELETE_CAMPAIGN_GOAL,
+        campaign=campaign
+    )
+
+
+def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
     goal_value = models.CampaignGoalValue(
-        campaign_goal_id=goal_id,
+        campaign_goal_id=goal.pk,
         value=value
     )
     goal_value.save(request)
+
+    if not skip_history:
+        new_settings = campaign.get_current_settings().copy_settings()
+        new_settings.changes_text = u'Changed campaign goal value: "{} {}"'.format(
+            value,
+            constants.CampaignGoalKPI.get_text(goal.type)
+        )
+        new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
+            campaign=campaign
+        )
 
 
 def set_campaign_goal_primary(request, campaign, goal_id):
@@ -81,7 +122,7 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
     )
 
 
-def create_conversion_goal(request, form, campaign):
+def create_conversion_goal(request, form, campaign, value=None):
     if not form.is_valid():
         raise exc.ValidationError(errors=form.errors)
 
@@ -114,7 +155,9 @@ def create_conversion_goal(request, form, campaign):
             primary=False
         ), campaign_id=campaign.pk)
 
-        campaign_goal = create_campaign_goal(request, campaign_goal_form, campaign, conversion_goal=conversion_goal)
+        campaign_goal = create_campaign_goal(
+            request, campaign_goal_form, campaign, conversion_goal=conversion_goal, value=value
+        )
 
     new_settings = campaign.get_current_settings().copy_settings()
     new_settings.changes_text = u'Added conversion goal with name "{}" of type {}'.format(

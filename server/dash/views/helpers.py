@@ -603,7 +603,8 @@ def get_content_ad_data_status(ad_group, content_ads):
         if not out_of_sync:
             message = 'All data is OK.'
         else:
-            message = 'The status of this Content Ad differs on these media sources: {}.'.format(", ".join(sorted(out_of_sync)))
+            message = 'The status of this Content Ad differs on these media sources: {}.'.format(
+                ", ".join(sorted(out_of_sync)))
 
         data_status[str(content_ad.id)] = {
             'message': message,
