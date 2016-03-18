@@ -151,25 +151,25 @@ class CampaignGoalsTestCase(TestCase):
         result = [
             {
                 'name': 'time on site in seconds',
-                'conversion_name': None,
+                'conversion': None,
                 'value': 60,
                 'fields': {'total_seconds': True, 'avg_cost_per_second': True},
             },
             {
                 'name': 'pages per session',
-                'conversion_name': None,
+                'conversion': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
             },
             {
                 'name': 'max bounce rate %',
-                'conversion_name': None,
+                'conversion': None,
                 'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
             },
             {
                 'name': '$CPA',
-                'conversion_name': 'test conversion goal',
+                'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},
             }

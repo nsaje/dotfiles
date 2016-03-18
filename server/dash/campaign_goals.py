@@ -239,7 +239,7 @@ def get_campaign_goals(campaign):
 
         ret.append({
             'name': goal_name,
-            'conversion_name': conversion_goal_name,
+            'conversion': conversion_goal_name,
             'value': float(cg_value.value),
             'fields': {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
         })
