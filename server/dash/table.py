@@ -12,7 +12,7 @@ from dash import bcm_helpers
 from dash import stats_helper
 from dash import publisher_helpers
 from dash import validation_helpers
-from dash import campaign_goal_helpers
+from dash import campaign_goals
 
 import utils.pagination
 from utils import exc
@@ -516,10 +516,10 @@ class SourcesTable(object):
                 campaign = level_sources_table.campaign
 
             totals_cost = totals.get('cost', 0)
-            rows = campaign_goal_helpers.create_goals(
+            rows = campaign_goals.create_goals(
                 campaign, rows, totals_cost
             )
-            totals = campaign_goal_helpers.create_goal_totals(
+            totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
 
@@ -559,7 +559,7 @@ class SourcesTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization') and\
                 level_ in ('ad_groups', 'campaigns'):
-            response['campaign_goals'] = campaign_goal_helpers.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         return response
 
@@ -1217,10 +1217,10 @@ class AdGroupAdsPlusTable(object):
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = ad_group.campaign
             totals_cost = total_stats.get('cost') or 0
-            rows = campaign_goal_helpers.create_goals(
+            rows = campaign_goals.create_goals(
                 campaign, rows, totals_cost
             )
-            total_row = campaign_goal_helpers.create_goal_totals(
+            total_row = campaign_goals.create_goal_totals(
                 campaign, total_row, totals_cost
             )
 
@@ -1257,7 +1257,7 @@ class AdGroupAdsPlusTable(object):
             )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            response['campaign_goals'] = campaign_goal_helpers.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         return response
 
@@ -1445,10 +1445,10 @@ class CampaignAdGroupsTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             totals_cost = totals.get('cost', 0)
-            rows = campaign_goal_helpers.create_goals(
+            rows = campaign_goals.create_goals(
                 campaign, rows, totals_cost
             )
-            totals = campaign_goal_helpers.create_goal_totals(
+            totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
 
@@ -1479,7 +1479,7 @@ class CampaignAdGroupsTable(object):
             )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            response['campaign_goals'] = campaign_goal_helpers.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         return response
 
@@ -1860,8 +1860,8 @@ class PublishersTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = adgroup.campaign
-            rows = campaign_goal_helpers.create_goals(campaign, rows, totals.get('cost') or 0)
-            totals = campaign_goal_helpers.create_goal_totals(campaign, totals, totals.get('cost', 0))
+            rows = campaign_goals.create_goals(campaign, rows, totals.get('cost') or 0)
+            totals = campaign_goals.create_goal_totals(campaign, totals, totals.get('cost', 0))
 
         response = {
             'rows': rows,
@@ -1879,7 +1879,7 @@ class PublishersTable(object):
         }
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            response['campaign_goals'] = campaign_goal_helpers.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
             response['conversion_goals'] = [
