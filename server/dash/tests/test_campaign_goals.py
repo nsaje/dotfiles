@@ -146,7 +146,7 @@ class CampaignGoalsTestCase(TestCase):
 
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
 
-        cam_goals = campaign_goals.get_campaign_goals(self.campaign)
+        cam_goals = campaign_goals.get_campaign_goals(self.campaign, [])
 
         result = [
             {
@@ -168,7 +168,7 @@ class CampaignGoalsTestCase(TestCase):
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
             },
             {
-                'name': '$CPA',
+                'name': 'Avg. cost per conversion',
                 'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},

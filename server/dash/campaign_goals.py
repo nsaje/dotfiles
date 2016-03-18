@@ -237,7 +237,7 @@ def get_campaign_goals(campaign, conversion_goals):
 
         conversion_goal_name = None
         if goal_type == constants.CampaignGoalKPI.CPA:
-            goal_name = 'Avg. cost per conversion',
+            goal_name = 'Avg. cost per conversion'
             conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
             fields = dict(('avg_cost_per_{}'.format(k['id']), True) for k in conversion_goals if k['name'] == conversion_goal_name)
 
