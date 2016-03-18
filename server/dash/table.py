@@ -1845,7 +1845,7 @@ class PublishersTable(object):
         self._annotate_publishers(publishers_data, user, adgroup)
 
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            account=adgroup.campaign.account,
+            account_id=adgroup.campaign.account_id,
             source__source_type__type=constants.SourceType.OUTBRAIN
         ).count()
 
@@ -1956,12 +1956,12 @@ class PublishersTable(object):
                     blacklisted_pub.everywhere
 
                 pub_source_match = publisher_domain == blacklisted_pub.name and\
-                    publisher_source == blacklisted_pub.source
+                    publisher_source.id == blacklisted_pub.source_id
 
                 blacklisted_on_some_level = (
-                    blacklisted_pub.account == adgroup.campaign.account or
-                    blacklisted_pub.campaign == adgroup.campaign or
-                    blacklisted_pub.ad_group == adgroup
+                    blacklisted_pub.account_id == adgroup.campaign.account_id or
+                    blacklisted_pub.campaign_id == adgroup.campaign_id or
+                    blacklisted_pub.ad_group_id == adgroup.id
                 )
 
                 if pub_source_match and blacklisted_on_some_level or globally_blacklisted:

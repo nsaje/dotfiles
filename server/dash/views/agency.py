@@ -509,12 +509,13 @@ class CampaignGoalValidation(api_common.BaseApiView):
             errors.update(dict(goal_form.errors))
 
         if campaign_goal['type'] == constants.CampaignGoalKPI.CPA:
-            conversion_form = forms.ConversionGoalForm(
-                campaign_goal.get('conversion_goal', {}),
-                campaign_id=campaign.pk,
-            )
-            if not conversion_form.is_valid():
-                errors['conversion_goal'] = conversion_form.errors
+            if not campaign_goal.get('id'):
+                conversion_form = forms.ConversionGoalForm(
+                    campaign_goal.get('conversion_goal', {}),
+                    campaign_id=campaign.pk,
+                )
+                if not conversion_form.is_valid():
+                    errors['conversion_goal'] = conversion_form.errors
 
         if errors:
             raise exc.ValidationError(errors=errors)
@@ -614,7 +615,7 @@ class CampaignSettings(api_common.BaseApiView):
                         'conversion_window': goal['conversion_goal'].get('conversion_window'),
                         'goal_id': goal['conversion_goal'].get('goal_id'),
                     },
-                    campaign_id=campaign.pk
+                    campaign_id=campaign.pk,
                 )
                 errors.append(dict(conversion_form.errors))
                 conversion_goal, goal_added = campaign_goals.create_conversion_goal(
