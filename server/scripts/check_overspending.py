@@ -46,8 +46,8 @@ def create_overspend_report(date, ad_group_id, debug_print):
 
             # daily spent
             daily_spent = ContentAdStats.objects.filter(source=media_source,
-                                                               date=date,
-                                                               content_ad__in=content_ads).aggregate(Sum('cost_cc'))
+                                                        date=date,
+                                                        content_ad__in=content_ads).aggregate(Sum('cost_cc'))
             daily_spent = (daily_spent['cost_cc__sum'] or 0) / float(10000)
 
             # diff
@@ -77,7 +77,7 @@ if len(args) >= 1:
 ad_group_id = None
 if len(args) >= 2:
     ad_group_id = int(args[1])
-    print 'Checking overspending only for AdGroup with id ' + str(ad_group_id)
+    print('Checking overspending only for AdGroup with id ' + str(ad_group_id))
 
 if date:
     create_overspend_report(date, ad_group_id, options.debug)
@@ -86,6 +86,6 @@ else:
     date = datetime.date(date.year, date.month, date.day) - datetime.timedelta(days=1)
 
     while True:
-        print 'Checking overspending for day ' + str(date)
+        print('Checking overspending for day ' + str(date))
         create_overspend_report(date, ad_group_id, options.debug)
         date -= datetime.timedelta(days=1)
