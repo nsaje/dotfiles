@@ -757,7 +757,7 @@ class SourcesTable(object):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, order)
+            rows = sort_results(rows, [order])
 
         return rows
 
@@ -1841,7 +1841,7 @@ class PublishersTable(object):
         )
 
         if order:
-            publishers_data = sort_results(publishers_data, order)
+            publishers_data = sort_results(publishers_data, [order])
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
