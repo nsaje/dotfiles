@@ -2060,7 +2060,7 @@ class ContentAd(models.Model):
             if not should_filter_by_sources(sources):
                 return self
 
-            content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
+            content_ad_ids = ContentAdSource.objects.filter(source__in=sources).select_related(
                 'content_ad').distinct('content_ad_id').values_list('content_ad_id', flat=True)
 
             return self.filter(id__in=content_ad_ids)

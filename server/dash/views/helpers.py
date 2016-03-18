@@ -63,6 +63,7 @@ def get_by_day(by_day):
 
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
+
     if not user.has_perm('zemauth.filter_sources') or not sources_filter:
         return filtered_sources
 
@@ -390,7 +391,7 @@ def get_content_ad_notifications(ad_group):
 def _get_changed_content_ad_sources(ad_group, sources, last_change_dt):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group=ad_group,
-        source=sources
+        source__in=sources
     )
 
     if last_change_dt is not None:
