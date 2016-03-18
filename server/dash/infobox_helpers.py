@@ -638,14 +638,18 @@ def _compute_daily_cap(ad_groups):
 
 
 def get_campaign_goal_list(user, campaign):
+    prefetch_values = Prefetch(
+        'values',
+        queryset=dash.models.CampaignGoalValue.objects.order_by('-created_dt')
+    )
     goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
-        Prefetch('values', queryset=dash.models.CampaignGoalValue.objects.order_by('-created_dt'))
+        prefetch_values
     ).select_related('conversion_goal')
 
     settings = []
     for i, campaign_goal in enumerate(goals):
-        format_value = lambda val: val and CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
-            or 'N/A'
+        def format_value(val):
+            return val and CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) or 'N/A'
 
         goal_values = campaign_goal.values.all()
         planned_value = goal_values and goal_values[0].value
