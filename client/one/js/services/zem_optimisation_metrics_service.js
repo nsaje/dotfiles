@@ -18,7 +18,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             name: 'Unbounced Visitors',
             field: 'unbounced_visits',
             checked: false,
-            type: 'percent',
+            type: 'number',
             shown: isShown,
             internal: isInternal,
             help: 'Percent of visitors that navigate to more than one page on the site.',
