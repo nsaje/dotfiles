@@ -1184,7 +1184,6 @@ class AdGroupAdsPlusTable(object):
 
         rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
-
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
