@@ -602,12 +602,12 @@ class InfoBoxAccountHelpersTest(TestCase):
         today = datetime.date.today()
         first_of = datetime.date(today.year, today.month, 1)
 
-        start_date_1 = first_of - datetime.timedelta(days=15)
-        end_date_1 = first_of + datetime.timedelta(days=15)
+        start_date_1 = first_of
+        end_date_1 = today
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
-            amount=100,
+            amount=50,
             start_date=start_date_1,
             end_date=end_date_1,
             created_by=user,
