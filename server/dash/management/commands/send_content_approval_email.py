@@ -61,8 +61,9 @@ class Command(ExceptionCommand):
         links = []
         for ad_group_source in ad_group_sources:
             links.append(
-                u"{name} / {one_dash_url} / {supply_dash_url}".format(
+                u"{name} / {marketer_id} / {one_dash_url} / {supply_dash_url}".format(
                     name=ad_group_source.get_external_name(),
+                    marketer_id=ad_group_source.ad_group.campaign.account.outbrain_marketer_id,
                     one_dash_url=get_full_z1_url(
                         '/ad_groups/{}/sources'.format(ad_group_source.ad_group_id)
                     ),
