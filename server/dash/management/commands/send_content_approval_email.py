@@ -83,8 +83,6 @@ class Command(ExceptionCommand):
 
         Thanks.
 
-        Best regards,
-
         """)
 
         date_str = datetime.date.today().strftime('%Y-%m-%d')
