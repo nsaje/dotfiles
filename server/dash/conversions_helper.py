@@ -103,7 +103,8 @@ def convert_constraint_exchanges_to_source_ids(constraints):
     sources = models.Source.objects.filter(bidder_slug__in=exchanges).values('id', 'bidder_slug')
     sources_by_exchange = {s['bidder_slug']: s['id'] for s in sources}
 
-    constraints['source'] = list(sources_by_exchange[exchange] for exchange in exchanges)
+    constraints['source'] = list(
+        sources_by_exchange[exchange] for exchange in exchanges if sources_by_exchange.get(exchange))
     del(constraints['exchange'])
 
     return constraints
