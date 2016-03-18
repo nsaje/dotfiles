@@ -380,6 +380,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
     function AdGroupPublishersTable () {
 
+        function convertFromApi (data) {
+            data.conversionGoals = data.conversion_goals;
+            return data;
+        }
+
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/publishers/table/';
@@ -411,7 +416,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        deferred.resolve(data.data);
+                        deferred.resolve(convertFromApi(data.data));
                     }
                 }).
                 error(function (data, status, headers, config) {
@@ -1722,6 +1727,50 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return result;
         }
 
+        function convertCampaignGoalsFromApi (goals) {
+            return (goals || []).map(function (goal) {
+                var converted = {
+                    primary: goal.primary,
+                    value: goal.values.length ? goal.values[goal.values.length - 1].value : null,
+                    type: goal.type,
+                    id: goal.id,
+                };
+                if (goal.conversion_goal) {
+                    converted.conversionGoal = {
+                        type: goal.conversion_goal.type,
+                        name: goal.conversion_goal.name,
+                        goalId: goal.conversion_goal.goal_id,
+                        conversionWindow: goal.conversion_goal.conversion_window,
+                    };
+                }
+                return converted;
+            });
+        }
+
+        function convertCampaignGoalsToApi (goals) {
+            var data = {};
+            goals = goals || {};
+            data.primary = goals.primary || null;
+            data.modified = goals.modified || {};
+            data.removed = goals.removed || [];
+            data.added = (goals.added || []).map(function (goal) {
+                var converted = {
+                    primary: goal.primary,
+                    value: goal.value,
+                    type: goal.type,
+                };
+                if (goal.conversionGoal) {
+                    converted.conversion_goal =  {
+                        goal_id: goal.conversionGoal.goalId,
+                        name: goal.conversionGoal.name,
+                        type: goal.conversionGoal.type,
+                        conversion_window: goal.conversionGoal.conversionWindow,
+                    };
+                }
+                return converted;
+            });
+            return data;
+        }
 
         this.get = function (id) {
             var deferred = $q.defer();
@@ -1733,7 +1782,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         deferred.reject(data);
                     }
                     deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings)
+                        settings: convertSettingsFromApi(data.data.settings),
+                        goals: convertCampaignGoalsFromApi(data.data.goals)
                     });
                 }).
                 error(function (data, status, headers) {
@@ -1743,7 +1793,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.save = function (settings) {
+        this.save = function (settings, campaignGoals) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + settings.id + '/settings/';
             var config = {
@@ -1751,7 +1801,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             };
 
             var data = {
-                'settings': convertSettingsToApi(settings)
+                'settings': convertSettingsToApi(settings),
+                'goals': convertCampaignGoalsToApi(campaignGoals)
             };
 
             $http.put(url, data, config).
@@ -3041,6 +3092,37 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function CampaignGoalValidation () {
+        var self = this;
+
+        self.convert = {
+            dataToApi: function (goal) {
+                var data = {
+                    type: goal.type,
+                    value: goal.value,
+                    id: goal.id,
+                };
+                if (goal.conversionGoal) {
+                    data.conversion_goal = {
+                        goal_id: goal.conversionGoal.goalId,
+                        name: goal.conversionGoal.name,
+                        type: goal.conversionGoal.type,
+                        conversion_window: goal.conversionGoal.conversionWindow,
+                    };
+                }
+                return data;
+            },
+            errorsFromApi: function (resp) {
+                return resp.data.data.errors;
+            }
+        };
+
+        self.post = function (campaignId, goal) {
+            var url = '/api/campaigns/' + campaignId + '/goals/validate/';
+            return $http.post(url, self.convert.dataToApi(goal));
+        };
+    }
+
     return {
         navigation: new Navigation(),
         user: new User(),
@@ -3095,7 +3177,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive(),
         accountCredit: new AccountCredit(),
-        campaignBudgetPlus: new CampaignBudgetPlus()
+        campaignBudgetPlus: new CampaignBudgetPlus(),
+        campaignGoalValidation: new CampaignGoalValidation()
         // Also, don't forget to add me to DEMO!
     };
 }]);

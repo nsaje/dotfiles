@@ -22,6 +22,7 @@ from dash import forms
 
 
 class AgencyViewTestCase(TestCase):
+
     def add_permissions(self, permissions):
         for permission in permissions:
             self.user.user_permissions.add(Permission.objects.get(codename=permission))
@@ -1599,6 +1600,7 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
 
         self.assertEqual(200, response.status_code)
 
+        models.CampaignGoal.objects.latest('created_dt').delete()
         models.ConversionGoal.objects.latest('created_dt').delete()
         models.ConversionPixel.objects.filter(id=1).update(archived=True)
 
@@ -1972,6 +1974,170 @@ class CampaignSettingsTest(AgencyViewTestCase):
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_SETTINGS,
             campaign=campaign)
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_put_goals_added(self, p1, p2, p3):
+        self.add_permissions([
+            'campaign_settings_view',
+            'settings_defaults_on_campaign_level',
+            'can_see_campaign_goals'
+        ])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['CA', '502']
+                },
+                'goals': {
+                    'added': [
+                        {'primary': False, 'value': '0.10', 'type': 1, 'conversion_goal': None, 'campaign_id': 1}
+                    ],
+                    'removed': [],
+                    'modified': {},
+                    'primary': None
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+
+        goals = models.CampaignGoal.objects.filter(campaign_id=1)
+        self.assertEqual(goals[0].type, 1)
+
+        values = models.CampaignGoalValue.objects.filter(campaign_goal__campaign_id=1)
+        self.assertEqual(values[0].value, Decimal('0.1000'))
+
+        models.ConversionGoal.objects.all().delete()
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['CA', '502']
+                },
+                'goals': {
+                    'added': [
+                        {
+                            'primary': False, 'value': '0.10', 'type': 4,
+                            'conversion_goal': {'name': 'test', 'goal_id': 'test', 'type': 2},
+                            'campaign_id': 2
+                        }
+                    ],
+                    'removed': [],
+                    'modified': {},
+                    'primary': None
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(models.ConversionGoal.objects.all()[0].name, 'test')
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_put_goals_modified(self, p1, p2, p3):
+        goal = models.CampaignGoal.objects.create(
+            type=1,
+            primary=True,
+            campaign_id=1,
+        )
+        models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal('0.1')
+        )
+
+        self.add_permissions([
+            'campaign_settings_view',
+            'settings_defaults_on_campaign_level',
+            'can_see_campaign_goals'
+        ])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['CA', '502']
+                },
+                'goals': {
+                    'added': [],
+                    'removed': [],
+                    'modified': {goal.pk: '0.2'},
+                    'primary': goal.pk
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertTrue(content['data']['goals'][0]['primary'])
+
+        values = models.CampaignGoalValue.objects.filter(
+            campaign_goal__campaign_id=1
+        ).order_by('created_dt')
+        self.assertEqual(values[0].value, Decimal('0.1000'))
+        self.assertEqual(values[1].value, Decimal('0.2000'))
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_put_goals_removed(self, p1, p2, p3):
+        goal = models.CampaignGoal.objects.create(
+            type=1,
+            primary=True,
+            campaign_id=1,
+        )
+
+        self.add_permissions([
+            'campaign_settings_view',
+            'settings_defaults_on_campaign_level',
+            'can_see_campaign_goals'
+        ])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['CA', '502']
+                },
+                'goals': {
+                    'added': [],
+                    'removed': [{'id': goal.pk}],
+                    'modified': {},
+                    'primary': None
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertFalse(models.CampaignGoal.objects.all())
+        self.assertFalse(models.CampaignGoalValue.objects.all())
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')

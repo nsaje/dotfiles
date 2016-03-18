@@ -1,6 +1,7 @@
 from django.db.models import Q
 
 import reports.api
+import reports.api_publishers
 
 from dash import stats_helper
 from dash.views import helpers
@@ -66,8 +67,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         return result
 
-    def get_response_dict(self, user, stats, totals, groups_dict,
-                          metrics, group_key=None, conversion_goals=None):
+    def get_response_dict(self, stats, totals, groups_dict, metrics, can_see_conversion_goals, group_key=None, conversion_goals=None):
         series_groups = self._get_series_groups_dict(totals, groups_dict)
 
         for stat in stats:
@@ -87,7 +87,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'chart_data': series_groups.values()
         }
 
-        if user.has_perm('zemauth.conversion_reports') and conversion_goals is not None:
+        if can_see_conversion_goals and conversion_goals is not None:
             result['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name} for cg in conversion_goals]
 
         return result
@@ -139,12 +139,13 @@ class AccountDailyStats(BaseDailyStatsView):
 
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
+        can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
-            request.user,
             stats,
             totals,
             group_names,
             metrics,
+            can_see_conversion_goals,
             group_key
         ))
 
@@ -190,12 +191,13 @@ class CampaignDailyStats(BaseDailyStatsView):
         conversion_goals = campaign.conversiongoal_set.all()
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, conversion_goals)
 
+        can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
-            request.user,
             stats,
             totals,
             group_names,
             metrics,
+            can_see_conversion_goals,
             group_key,
             conversion_goals=conversion_goals,
         ))
@@ -229,12 +231,13 @@ class AdGroupDailyStats(BaseDailyStatsView):
             request, totals_kwargs, selected_kwargs=selected_kwargs,
             group_key='source', conversion_goals=conversion_goals)
 
+        can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
-            request.user,
             stats,
             totals,
             {source.id: source.name for source in sources},
             metrics,
+            can_see_conversion_goals,
             group_key='source',
             conversion_goals=conversion_goals,
         ))
@@ -269,18 +272,21 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         if set(models.Source.objects.all()) != set(filtered_sources):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        stats = self.get_stats(request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key='source')
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        stats = self.get_stats(request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key='source', conversion_goals=conversion_goals)
 
+        can_see_conversion_goals = request.user.has_perm('zemauth.view_pubs_conversion_goals')
         return self.create_api_response(self.get_response_dict(
-            request.user,
             stats,
             totals,
             {},
             metrics,
-            'domain'
+            can_see_conversion_goals,
+            'domain',
+            conversion_goals
         ))
 
-    def get_stats(self, request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key=None):
+    def get_stats(self, request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key=None, conversion_goals=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
@@ -289,13 +295,16 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
             if not show_blacklisted_publishers or\
                     show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-                totals_stats = reports.api_publishers.query(
+                totals_stats = stats_helper.get_publishers_data_and_conversion_goals(
+                    request.user,
+                    reports.api_publishers.query,
                     start_date,
                     end_date,
-                    order_fields=['date'],
-                    breakdown_fields=['date'],
-                    constraints=totals_constraints
-                )
+                    totals_constraints,
+                    conversion_goals,
+                    publisher_breakdown_fields=['date'],
+                    touchpoint_breakdown_fields=['date'],
+                    order_fields=['date'])
 
             elif show_blacklisted_publishers in (
                 constants.PublisherBlacklistFilter.SHOW_ACTIVE,
@@ -311,13 +320,18 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 else:
                     query_func = reports.api_publishers.query_blacklisted_publishers
 
-                totals_stats = query_func(
+                totals_stats = stats_helper.get_publishers_data_and_conversion_goals(
+                    request.user,
+                    query_func,
                     start_date,
                     end_date,
+                    totals_constraints,
+                    conversion_goals,
+                    publisher_breakdown_fields=['date'],
+                    touchpoint_breakdown_fields=['date'],
                     order_fields=['date'],
-                    breakdown_fields=['date'],
-                    constraints=totals_constraints,
-                    blacklist=adg_blacklisted_publishers
+                    show_blacklisted_publishers=show_blacklisted_publishers,
+                    adg_blacklisted_publishers=adg_blacklisted_publishers,
                 )
 
         breakdown_stats = []
@@ -360,12 +374,13 @@ class AccountsDailyStats(BaseDailyStatsView):
 
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
+        can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
-            request.user,
             stats,
             totals,
             group_names,
             metrics,
+            can_see_conversion_goals,
             group_key
         ))
 
@@ -385,12 +400,13 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals)
 
+        can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
-            request.user,
             stats,
             totals=True,
             groups_dict=None,
             metrics=metrics,
+            can_see_conversion_goals=can_see_conversion_goals,
             conversion_goals=conversion_goals
         ))
 
