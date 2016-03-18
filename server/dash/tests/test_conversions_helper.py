@@ -162,3 +162,18 @@ class ConversionHelperTestCase(test.TestCase):
             'conversion_count': 100,
             'dummy_info': -1000,
         })
+
+    def test_empty_convert_constraint_exchange_to_source_id(self):
+        constraints = {'ad_group_id': 1}
+        results = conversions_helper.convert_constraint_exchanges_to_source_ids(constraints)
+
+        self.assertDictEqual(constraints, results)
+
+    def test_convert_constraint_exchange_to_source_id(self):
+        constraints = {'ad_group_id': 1, 'exchange': ['adiant', 'dummy']}
+        result = conversions_helper.convert_constraint_exchanges_to_source_ids(constraints)
+
+        self.assertDictEqual(result, {
+            'ad_group_id': 1,
+            'source': [7],
+        })
