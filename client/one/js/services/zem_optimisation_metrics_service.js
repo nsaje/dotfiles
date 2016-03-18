@@ -71,9 +71,9 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             initialOrder: 'desc',
         });
 
-        for (i=0; i < 5; i++) {
+        for (var i=0; i < 5; i++) {
             columns.splice(position + i + 6, 0, {
-                name: '$CPA',
+                name: 'Avg. cost per conversion',
                 field: 'avg_cost_per_conversion_goal_' + i,
                 checked: true,
                 type: 'currency',
@@ -97,7 +97,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             avg_cost_per_non_bounced_visitor: true,
             cpa: true,
         };
-        for (i=0; i < 5; i++) {
+        for (var i=0; i < 5; i++) {
             categories['avg_cost_per_conversion_goal_' + i] = true;
         }
         return categories;
@@ -125,7 +125,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                     column.unselectable = false;
 
                     if (goal.conversion) {
-                        column.name = '$CPA (' + goal.conversion + ')';
+                        column.name = goal.name + ' (' + goal.conversion + ')';
                     } 
                 }
             });

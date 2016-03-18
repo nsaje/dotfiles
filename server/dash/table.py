@@ -533,12 +533,14 @@ class SourcesTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
+        conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports') and hasattr(level_sources_table, 'conversion_goals'):
-            # only on ad group and campaign level
-            response['conversion_goals'] = [
+            conversion_goals_lst = [
                 {'id': cg.get_view_key(level_sources_table.conversion_goals), 'name': cg.name}
                 for cg in level_sources_table.conversion_goals
             ]
+            # only on ad group and campaign level
+            response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = level_sources_table.get_data_status(user)
@@ -564,7 +566,9 @@ class SourcesTable(object):
                 campaign = level_sources_table.ad_group.campaign
             elif level_ == 'campaigns':
                 campaign = level_sources_table.campaign
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
@@ -1251,9 +1255,12 @@ class AdGroupAdsPlusTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
+        conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports'):
-            response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+            conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
                                             for cg in conversion_goals]
+
+            response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
@@ -1264,7 +1271,9 @@ class AdGroupAdsPlusTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = ad_group.campaign
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
@@ -1473,10 +1482,13 @@ class CampaignAdGroupsTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         }
 
+        conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
-            response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+            conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
                                             for cg in conversion_goals]
+
+            response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
@@ -1487,7 +1499,9 @@ class CampaignAdGroupsTable(object):
             )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
@@ -1888,15 +1902,20 @@ class PublishersTable(object):
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            campaign = adgroup.campaign
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
-
+        conversion_goals_lst = []
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
-            response['conversion_goals'] = [
+            conversion_goals_lst = [
                 {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
                 for cg in conversion_goals
             ]
+            response['conversion_goals'] = conversion_goals_lst
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            campaign = adgroup.campaign
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
+
 
         return response
 

@@ -216,16 +216,16 @@ def calculate_goal_values(row, goal_type, cost):
     elif goal_type == constants.CampaignGoalKPI.CPA:
         goal_index = 1
         goal_name = ""
-        while goal_index == 1 or goal_name in ret:
+        while goal_index == 1 or goal_name in row:
             goal_name = 'conversion_goal_{}'.format(goal_index)
-            if goal_name in ret:
+            if goal_name in row:
                 ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
-                    float(cost) / ret[goal_name]
+                    float(cost) / row[goal_name] if row[goal_name] != 0 else 0
             goal_index += 1
     return ret
 
 
-def get_campaign_goals(campaign):
+def get_campaign_goals(campaign, conversion_goals):
     cg_values = get_campaign_goal_values(campaign)
     ret = []
     for cg_value in cg_values:
@@ -233,14 +233,18 @@ def get_campaign_goals(campaign):
         goal_name = constants.CampaignGoalKPI.get_text(
             goal_type
         )
+        fields = {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
+
         conversion_goal_name = None
         if goal_type == constants.CampaignGoalKPI.CPA:
+            goal_name = 'Avg. cost per conversion',
             conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
+            fields = dict(('avg_cost_per_{}'.format(k['id']), True) for k in conversion_goals if k['name'] == conversion_goal_name)
 
         ret.append({
             'name': goal_name,
             'conversion': conversion_goal_name,
             'value': float(cg_value.value),
-            'fields': {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
+            'fields': fields,
         })
     return ret
