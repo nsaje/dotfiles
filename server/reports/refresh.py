@@ -270,7 +270,7 @@ def put_pub_postclick_stats_to_s3(entries):
             "new_visits": entry.new_visits,
             "bounced_visits": entry.bounced_visits,
             "total_time_on_site": entry.total_time_on_site,
-            "goals": entry.goals,
+            "conversions": entry.goals,
         }
 
     s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, json.dumps(data))
