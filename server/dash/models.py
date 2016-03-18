@@ -1008,6 +1008,13 @@ class Source(models.Model):
         choices=constants.SourceSubmissionType.get_choices()
     )
 
+    default_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                         verbose_name='Default CPC')
+    default_mobile_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                                verbose_name='Default CPC (if ad group is targeting mobile only)')
+    default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
+                                                  verbose_name='Default daily budget')
+
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
 
