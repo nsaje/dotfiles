@@ -732,6 +732,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
                 $scope.notifications = data.notifications;
+                $scope.campaignGoals = data.campaign_goals;
                 $scope.lastChange = data.lastChange;
 
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
@@ -747,6 +748,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
+                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
             },
             function (data) {
                 // error
