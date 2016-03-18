@@ -749,7 +749,6 @@ class SourcesTable(object):
                 if field.startswith('G[') and field.endswith('_conversionrate'):
                     row[field] = val
 
-
             rows.append(row)
 
         if order:
@@ -1222,7 +1221,7 @@ class AdGroupAdsPlusTable(object):
             rows = campaign_goal_helpers.create_goals(
                 campaign, rows, totals_cost
             )
-            total_row= campaign_goal_helpers.create_goal_totals(
+            total_row = campaign_goal_helpers.create_goal_totals(
                 campaign, total_row, totals_cost
             )
 
@@ -1249,7 +1248,7 @@ class AdGroupAdsPlusTable(object):
 
         if user.has_perm('zemauth.conversion_reports'):
             response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                                 for cg in conversion_goals]
+                                            for cg in conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])

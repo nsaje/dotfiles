@@ -115,7 +115,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 if (goal.fields[column.field] !== undefined) {
                     column.shown = true;
                     column.unselectable = false;
-                }          
+                }
             });
         });
     }

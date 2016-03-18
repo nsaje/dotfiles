@@ -421,8 +421,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
 
         if (($scope.level === constants.level.CAMPAIGNS) ||
-            ($scope.level === constants.level.AD_GROUPS))
-        {
+            ($scope.level === constants.level.AD_GROUPS)) {
             zemOptimisationMetricsService.insertAudienceOptimizationColumns(
                 $scope.columns,
                 $scope.columns.length - 2,
