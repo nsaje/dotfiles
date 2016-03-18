@@ -24,6 +24,7 @@ from convapi import parse_v2
 from convapi.aggregate import ReportEmail
 from convapi.helpers import get_from_s3
 
+from reports import refresh
 from reports import update
 
 from utils.compression import unzip
@@ -439,6 +440,8 @@ def process_report_v2(report_task, report_type):
             entries,
             report_type
         )
+
+        refresh.put_pub_postclick_stats_to_s3(report.get_publisher_stats())
 
         report_log.visits_imported = report.imported_visits()
         report_log.visits_reported = report.reported_visits()
