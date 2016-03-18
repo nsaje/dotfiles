@@ -519,6 +519,16 @@ urlpatterns += patterns(
     )
 )
 
+# K1 Campaigns Api
+urlpatterns += patterns(
+    '',
+    url(
+        r'^k1campaignsapi/accounts/(?P<action_id>\d+)$',
+        zweiapi.views.zwei_callback,
+        name='api.zwei_callback',
+    )
+)
+
 # Crossvalidation Api
 urlpatterns += patterns(
     '',
