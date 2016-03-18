@@ -107,16 +107,16 @@ class CampaignGoalsTestCase(TestCase):
         self.assertDictContainsSubset(expected, rows[0])
 
     def test_create_goals_and_totals_bounce_rate(self):
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
         cost = 20
         row = {
             'media_cost': 20,
-            'bounce_rate': 0.75,
+            'bounce_rate': 75,
             'visits': 1,
         }
 
         expected = {
-            'unbounced_visits': 0.25,
+            'unbounced_visits': 25,
             'avg_cost_per_non_bounced_visitor': 5,
         }
 
@@ -130,12 +130,12 @@ class CampaignGoalsTestCase(TestCase):
         self.assertDictContainsSubset(expected, rows[0])
 
     def test_get_campaign_goal_values(self):
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.1)
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.5)
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 5)
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
 
         values = campaign_goals.get_campaign_goal_values(self.campaign)
-        self.assertEqual(0.75, values[0].value)
+        self.assertEqual(75, values[0].value)
 
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
@@ -143,10 +143,10 @@ class CampaignGoalsTestCase(TestCase):
         values = campaign_goals.get_campaign_goal_values(
             self.campaign
         ).values_list('value', flat=True)
-        self.assertItemsEqual([0.75, 5, 60], values)
+        self.assertItemsEqual([75, 5, 60], values)
 
     def test_get_campaign_goals(self):
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
 
@@ -165,7 +165,7 @@ class CampaignGoalsTestCase(TestCase):
             },
             {
                 'name': 'max bounce rate %',
-                'value': 0.75,
+                'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
             }
         ]

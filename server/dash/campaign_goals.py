@@ -204,9 +204,9 @@ def calculate_goal_values(row, goal_type, cost):
         ret['avg_cost_per_second'] = visits_cost / total_seconds if\
             total_seconds != 0 else 0
     elif goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
-        unbounced_visits = 1.0 - (row.get('bounce_rate') or 0)
+        unbounced_visits = 100.0 - (row.get('bounce_rate') or 0)
         ret['unbounced_visits'] = unbounced_visits
-        ret['avg_cost_per_non_bounced_visitor'] = visits_cost * unbounced_visits if\
+        ret['avg_cost_per_non_bounced_visitor'] = visits_cost * unbounced_visits / 100.0 if\
             unbounced_visits != 0 else 0
     elif goal_type == constants.CampaignGoalKPI.PAGES_PER_SESSION:
         total_pageviews = (row.get('pv_per_visit') or 0) *\
@@ -227,9 +227,9 @@ def calculate_goal_total_values(row, goal_type, cost):
         ret['avg_cost_per_second'] = float(cost) / total_seconds if\
             total_seconds != 0 else 0
     elif goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
-        unbounced_visits = 1.0 - (row.get('bounce_rate') or 0)
+        unbounced_visits = 100.0 - (row.get('bounce_rate') or 0)
         ret['unbounced_visits'] = unbounced_visits
-        ret['avg_cost_per_non_bounced_visitor'] = float(cost) * unbounced_visits if\
+        ret['avg_cost_per_non_bounced_visitor'] = float(cost) * unbounced_visits / 100.0 if\
             unbounced_visits != 0 else 0
     elif goal_type == constants.CampaignGoalKPI.PAGES_PER_SESSION:
         total_pageviews = (row.get('pv_per_visit') or 0) *\
