@@ -1,4 +1,3 @@
-import sys
 import datetime
 import logging
 import textwrap
@@ -13,6 +12,8 @@ from utils.url_helper import get_full_z1_url
 
 
 logger = logging.getLogger(__name__)
+
+OUTBRAIN_SOURCE_ID = 3
 
 
 def get_ad_group_sources(source):
@@ -38,6 +39,12 @@ def get_ad_group_sources(source):
     return ad_group_sources
 
 
+def get_outbrain_marketer_name(ad_group_source):
+    account = ad_group_source.ad_group.campaign.account
+    outbrain_account = models.OutbrainAccount.objects.get(marketer_id=account.outbrain_marketer_id)
+    return outbrain_account.marketer_name if outbrain_account and outbrain_account.marketer_name else 'n/a'
+
+
 class Command(ExceptionCommand):
 
     help = "Sends email with ad groups that had content ads added recently"
@@ -45,13 +52,11 @@ class Command(ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
                             default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
-        parser.add_argument('--source-id', metavar='SOURCEID', nargs='?', default='3', type=int,
-                            help='Source id. 3 (Outbrain) by default.')
 
     def handle(self, *args, **options):
         set_logger_verbosity(logger, options)
 
-        source = models.Source.objects.get(id=options['source_id'])
+        source = models.Source.objects.get(id=OUTBRAIN_SOURCE_ID)
         ad_group_sources = get_ad_group_sources(source)
 
         if not ad_group_sources:
@@ -61,9 +66,9 @@ class Command(ExceptionCommand):
         links = []
         for ad_group_source in ad_group_sources:
             links.append(
-                u"{name} / {marketer_id} / {one_dash_url} / {supply_dash_url}".format(
+                u"{name} / {marketer_name} / {one_dash_url} / {supply_dash_url}".format(
                     name=ad_group_source.get_external_name(),
-                    marketer_id=ad_group_source.ad_group.campaign.account.outbrain_marketer_id,
+                    marketer_name=get_outbrain_marketer_name(ad_group_source),
                     one_dash_url=get_full_z1_url(
                         '/ad_groups/{}/sources'.format(ad_group_source.ad_group_id)
                     ),
