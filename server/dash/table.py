@@ -2068,9 +2068,6 @@ class PublishersTable(object):
             for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
                 result[key] = totals_data[key]
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            result.update(campaign_goal_helpers.create_goal_totals(totals_data))
-
         return result
 
     def get_rows(self, user, map_exchange_to_source_name, publishers_data):

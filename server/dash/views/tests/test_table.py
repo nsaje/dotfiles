@@ -914,13 +914,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'cpa': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -946,13 +939,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'cpa': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
@@ -1124,13 +1110,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
 
         self.assertIn('totals', result['data'])
@@ -1159,13 +1138,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
 
     """
@@ -1484,13 +1456,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -1516,13 +1481,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'cpa': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
@@ -1697,13 +1655,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
 
     def test_actual_hidden(self, mock_query, mock_touchpointconversins_query):
