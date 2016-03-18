@@ -1,4 +1,4 @@
-/* global describe,angular,beforeEach,module,it,inject,expect,spyOn */
+/* global describe,beforeEach,module,it,inject,expect,spyOn */
 'use strict';
 
 describe('EditCampaignGoalModalCtrl', function () {
@@ -17,9 +17,9 @@ describe('EditCampaignGoalModalCtrl', function () {
                 return {
                     then: function () {
                         return {
-                            finally: function () {}
+                            finally: function () {},
                         };
-                    }
+                    },
                 };
             };
 
@@ -113,7 +113,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     type: 4,
                     conversionGoal: {
                         goalId: '123', type: 2, name: '123',
-                    }
+                    },
                 },
                 {
                     primary: true,
@@ -121,8 +121,8 @@ describe('EditCampaignGoalModalCtrl', function () {
                     type: 4,
                     conversionGoal: {
                         goalId: '123', type: 3, name: '124',
-                    }
-                }
+                    },
+                },
             ];
 
             newGoal = {
@@ -130,7 +130,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 campaignId: 1,
                 conversionGoal: {
                     goalId: 'something', type: 3, name: '124',
-                }
+                },
             };
 
             expect($scope.validate(newGoal, errors)).toBe(false);
@@ -140,7 +140,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                 campaignId: 1,
                 conversionGoal: {
                     goalId: 'something', type: 3, name: '125',
-                }
+                },
             };
 
             expect($scope.validate(newGoal, errors)).toBe(true);

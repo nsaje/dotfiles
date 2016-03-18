@@ -7,8 +7,8 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.newCampaignGoal = false;
     $scope.unit = '';
     $scope.availablePixels = [];
-    $scope.loadingPixies = true;
-    
+    $scope.loadingPixels = true;
+
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
         $scope.campaignGoal = {
@@ -57,7 +57,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         var goalTypeIds = {},
             goalNames = {},
             errors = {};
-        
+
         if (newGoal.type !== constants.campaignGoalKPI.CPA) {
             return true;
         }
@@ -159,6 +159,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
     api.conversionPixel.list($scope.account.id).then(function (data) {
         $scope.availablePixels = data.rows;
-        $scope.loadingPixies = false;
+        $scope.loadingPixels = false;
     });
 }]);

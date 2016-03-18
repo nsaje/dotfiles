@@ -27,7 +27,7 @@ describe('CampaignSettingsCtrl', function () {
                 campaignSettings: {
                     get: mockApiFunc,
                     save: mockApiFunc,
-                }
+                },
             };
 
             $state = _$state_;

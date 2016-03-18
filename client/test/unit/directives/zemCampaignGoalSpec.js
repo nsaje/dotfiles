@@ -6,7 +6,7 @@ describe('zemCampaignGoals', function () {
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($compile, $rootScope, _$q_) {
+    beforeEach(inject(function ($compile, $rootScope) {
         var template = '<zem-campaign-goals account="account" campaign="campaign" goals="campaignGoals" model="campaignGoalsDiff"></zem-campaign-goals>';
 
         $scope = $rootScope.$new();
@@ -60,7 +60,6 @@ describe('zemCampaignGoals', function () {
                 .finally(done);
         });
     });
-
     describe('editGoal', function (done) {
         it('opens a modal window', function () {
             isolate.editGoal().result
@@ -118,7 +117,7 @@ describe('zemCampaignGoals', function () {
             isolate.model.added = [isolate.campaignGoals[0]];
 
             isolate.deleteGoal(isolate.campaignGoals[1]);
-            
+
             expect(isolate.model.added.length).toBe(1);
             expect(isolate.campaignGoals.length).toBe(1);
             expect(isolate.campaignGoals[0].id).toBe(undefined);
