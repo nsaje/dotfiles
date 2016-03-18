@@ -766,16 +766,14 @@ class CampaignGoal(models.Model):
 
         if self.conversion_goal:
             campaign_goal['conversion_goal'] = {
+                'id': self.conversion_goal.pk,
                 'type': self.conversion_goal.type,
                 'name': self.conversion_goal.name,
-                'pixel': None,
                 'conversion_window': self.conversion_goal.conversion_window,
                 'goal_id': self.conversion_goal.goal_id,
             }
             if self.conversion_goal.pixel:
-                campaign_goal['conversion_goal']['pixel'] = (
-                    self.conversion_goal.pixel.account_id, self.conversion_goal.pixel.slug,
-                )
+                campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
 
         if with_values:
             campaign_goal['values'] = [
@@ -1010,6 +1008,13 @@ class Source(models.Model):
         choices=constants.SourceSubmissionType.get_choices()
     )
 
+    default_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                         verbose_name='Default CPC')
+    default_mobile_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                                verbose_name='Default CPC (if ad group is targeting mobile only)')
+    default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
+                                                  verbose_name='Default daily budget')
+
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
 
@@ -1136,7 +1141,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC'
+        verbose_name='Default CPC',
+        help_text='This setting has moved. See Source model.'
     )
 
     mobile_cpc_cc = models.DecimalField(
@@ -1144,7 +1150,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC (if ad group is targeting mobile only)'
+        verbose_name='Default CPC (if ad group is targeting mobile only)',
+        help_text='This setting has moved. See Source model.'
     )
 
     daily_budget_cc = models.DecimalField(
@@ -1152,7 +1159,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default daily budget'
+        verbose_name='Default daily budget',
+        help_text='This setting has moved. See Source model.'
     )
 
     objects = QuerySetManager()
@@ -2265,9 +2273,9 @@ class PublisherBlacklist(models.Model):
 
     def get_blacklist_level(self):
         level = constants.PublisherBlacklistLevel.ADGROUP
-        if self.campaign is not None:
+        if self.campaign_id is not None:
             level = constants.PublisherBlacklistLevel.CAMPAIGN
-        elif self.account is not None:
+        elif self.account_id is not None:
             level = constants.PublisherBlacklistLevel.ACCOUNT
         elif self.everywhere:
             level = constants.PublisherBlacklistLevel.GLOBAL

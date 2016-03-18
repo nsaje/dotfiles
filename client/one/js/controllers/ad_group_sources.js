@@ -19,6 +19,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
     $scope.autopilotChanges = '';
+    $scope.loadRequestInProgress = false;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -550,8 +551,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         );
     };
 
-    $scope.loadRequestInProgress = false;
-
     $scope.orderTableData = function (order) {
         $scope.order = order;
         getTableData();
@@ -573,9 +572,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.dataStatus = data.dataStatus;
                 $scope.adGroupAutopilotState = data.adGroupAutopilotState;
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.campaignGoals = data.campaign_goals;
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
             },
             function (data) {
                 // error
