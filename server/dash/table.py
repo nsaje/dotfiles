@@ -560,6 +560,10 @@ class SourcesTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization') and\
                 level_ in ('ad_groups', 'campaigns'):
+            if level_ == 'ad_groups':
+                campaign = level_sources_table.ad_group.campaign
+            elif level_ == 'campaigns':
+                campaign = level_sources_table.campaign
             response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         return response
@@ -1259,6 +1263,7 @@ class AdGroupAdsPlusTable(object):
             )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
+            campaign = ad_group.campaign
             response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         return response
@@ -1884,6 +1889,7 @@ class PublishersTable(object):
         }
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
+            campaign = adgroup.campaign
             response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
 
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
