@@ -560,6 +560,3 @@ class ExportPlusTestCase(test.TestCase):
         expected = 'http://example.org/go%3Ba=1%3Ba.v=2%2C2%3B'
         formatted_url = export_plus._format_urls(url, field)
         self.assertEqual(expected, formatted_url)
-
-
-
