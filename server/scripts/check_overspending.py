@@ -1,20 +1,17 @@
+import datetime
 import os
 import django
-
-import datetime
-
-# start django first
-from optparse import OptionParser
-
-from django.db.models import Sum
-from dash import constants
-from dateutil.parser import parse
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
 django.setup()
 
-from dash.models import AdGroup, ContentAdSource, ContentAd, AdGroupSourceSettings, AdGroupSource
+from optparse import OptionParser
+from dateutil.parser import parse
+from django.db.models import Sum
+from dash import constants
+from dash.models import AdGroup, ContentAd, AdGroupSourceSettings, AdGroupSource
 from reports.models import ContentAdStats
+from automation import campaign_stop
 
 
 def create_overspend_report(date, ad_group_id, debug_print):
@@ -24,56 +21,48 @@ def create_overspend_report(date, ad_group_id, debug_print):
         ad_groups = AdGroup.objects.all()
 
     # all ad groups
-    for ad_group in ad_groups:
-        ad_group_name = unicode(ad_group.name)
-        content_ads = ContentAd.objects.filter(ad_group=ad_group)
+    for ad_group in ad_groups.iterator():
+        if ad_group.is_archived():
+            continue
 
-        # ad content_ad => media sources for this ad group
-        content_ad_sources = ContentAdSource.objects.filter(
-            content_ad__in=content_ads,
-            state=constants.ContentAdSourceState.ACTIVE).distinct('source')
-        media_sources = set([c.source for c in content_ad_sources if c.source.name not in ('Yahoo', 'Outbrain')])
+        ad_group_name = unicode(ad_group.name)
+        media_sources = ad_group.sources.filter(source_type__type=constants.SourceType.B1)
+        content_ads = ContentAd.objects.filter(ad_group=ad_group)
 
         # all media source for this ad group
         for media_source in media_sources:
             media_source_name = unicode(media_source.name)
 
             #  daily budget
-            ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group, source=media_source)
+            ad_group_source = AdGroupSource.objects.get(ad_group=ad_group, source=media_source)
             next_day = date + datetime.timedelta(days=1)
-            ad_group_settings = AdGroupSourceSettings.objects.filter(ad_group_source__in=ad_group_sources,
-                                                                     created_dt__lt=next_day,
-                                                                     state=constants.AdGroupSourceSettingsState.ACTIVE)
-            if ad_group_settings.exists():
-                ad_group_settings = ad_group_settings.latest('created_dt')
-            else:
+            ad_group_settings = AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source,
+                                                                     created_dt__lt=next_day)
+            daily_budget = campaign_stop._get_source_max_daily_budget(date, ad_group_source, ad_group_settings)
+
+            # daily_budget = ad_group_settings.daily_budget_cc
+            if daily_budget == 0:
                 continue
 
-            daily_budget = ad_group_settings.daily_budget_cc
-            if daily_budget is None:
-                continue
+            # daily spent
+            daily_spent = ContentAdStats.objects.filter(source=media_source,
+                                                               date=date,
+                                                               content_ad__in=content_ads).aggregate(Sum('cost_cc'))
+            daily_spent = (daily_spent['cost_cc__sum'] or 0) / float(10000)
 
-            # yesterday spent
-            yesterday_spent = ContentAdStats.objects.filter(source=media_source,
-                                                            date=date,
-                                                            content_ad__in=content_ads).aggregate(Sum('cost_cc'))
-            yesterday_spent = float((yesterday_spent['cost_cc__sum'] or 0) / 10000)
-
-            if yesterday_spent > daily_budget:
-                try:
-                    result_string = 'OVERSPENT: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, ' \
-                                    'Yesterday spent: %f, DIFF: %f' % (
-                                        ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
-                                        yesterday_spent, yesterday_spent - float(daily_budget))
-                    print(result_string)
-                except:
-                    print('Exception while printing result for adgroup.id = %d and media_source.id = %d' % (
-                        ad_group.id, media_source.id))
-            elif debug_print:
-                result_string = 'OK: AdGroup %s [id=%d], MediaSource: %s [id=%d], Daily budget: %d, ' \
-                                'Yesterday spent: %f' % (
+            # diff
+            diff = daily_spent - float(daily_budget)
+            if diff > 0:
+                result_string = 'OVERSPENT: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
+                                'Daily spent: {}, DIFF: {}'.format(
                                     ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
-                                    yesterday_spent)
+                                    daily_spent, diff)
+                print(result_string)
+            elif debug_print:
+                result_string = 'OK: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
+                                'Daily spent: {}'.format(
+                                    ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
+                                    daily_spent)
                 print(result_string)
 
 
