@@ -21,6 +21,15 @@ class CampaignGoalsTestCase(TestCase):
                 created_by=self.user,
             )
 
+        cpa_goal = self._goal(constants.CampaignGoalKPI.CPA)
+        conversion_goal = models.ConversionGoal.objects.create(
+            campaign=self.campaign,
+            type=constants.ConversionGoalType.GA,
+            name='test conversion goal',
+        )
+        cpa_goal.conversion_goal = conversion_goal
+        cpa_goal.save()
+
     def _goal(self, goal_type):
         return models.CampaignGoal.objects.filter(
             type=goal_type
@@ -135,23 +144,34 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
 
+        self._add_value(constants.CampaignGoalKPI.CPA, 10)
+
         cam_goals = campaign_goals.get_campaign_goals(self.campaign)
 
         result = [
             {
                 'name': 'time on site in seconds',
+                'conversion_name': None,
                 'value': 60,
                 'fields': {'total_seconds': True, 'avg_cost_per_second': True},
             },
             {
                 'name': 'pages per session',
+                'conversion_name': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
             },
             {
                 'name': 'max bounce rate %',
+                'conversion_name': None,
                 'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
+            },
+            {
+                'name': '$CPA',
+                'conversion_name': 'test conversion goal',
+                'value': 10,
+                'fields': {},
             }
         ]
 

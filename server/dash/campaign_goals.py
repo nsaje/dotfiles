@@ -213,6 +213,15 @@ def calculate_goal_values(row, goal_type, cost):
         # avg. cost per pageview
         ret['avg_cost_per_pageview'] = float(cost) / total_pageviews if\
             total_pageviews != 0 else 0
+    elif goal_type == constants.CampaignGoalKPI.CPA:
+        goal_index = 1
+        goal_name = ""
+        while goal_index == 1 or goal_name in ret:
+            goal_name = 'conversion_goal_{}'.format(goal_index)
+            if goal_name in ret:
+                ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
+                    float(cost) / ret[goal_name]
+            goal_index += 1
     return ret
 
 
@@ -224,8 +233,13 @@ def get_campaign_goals(campaign):
         goal_name = constants.CampaignGoalKPI.get_text(
             goal_type
         )
+        conversion_goal_name = None
+        if goal_type == constants.CampaignGoalKPI.CPA:
+            conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
+
         ret.append({
             'name': goal_name,
+            'conversion_name': conversion_goal_name,
             'value': float(cg_value.value),
             'fields': {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
         })
