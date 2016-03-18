@@ -1000,7 +1000,25 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         self.list_display_links = (None, )
 
 
-class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class CreditLineItemResource(resources.ModelResource):
+
+    class Meta:
+        model = models.CreditLineItem
+
+    def _get_name(self, obj):
+        return obj.name if obj else '/'
+
+    def dehydrate_account(self, obj):
+        return obj.account.name if obj.account else '/'
+
+    def dehydrate_created_by(self, obj):
+        return obj.created_by.email if obj.created_by else '/'
+
+    def dehydrate_status(self, obj):
+        return constants.CreditLineItemStatus.get_text(obj.status)
+
+
+class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'account',
         'start_date',
@@ -1017,6 +1035,8 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'created_by',)
     search_fields = ('account__name', 'amount')
     form = dash_forms.CreditLineItemAdminForm
+
+    resource_class = CreditLineItemResource
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
