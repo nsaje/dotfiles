@@ -112,12 +112,12 @@ class CampaignGoalsTestCase(TestCase):
         row = {
             'media_cost': 20,
             'bounce_rate': 75,
-            'visits': 1,
+            'visits': 100,
         }
 
         expected = {
             'unbounced_visits': 25,
-            'avg_cost_per_non_bounced_visitor': 5,
+            'avg_cost_per_non_bounced_visitor': 20.0 * (100/100 * 0.25),
         }
 
         goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
