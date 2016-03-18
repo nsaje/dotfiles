@@ -34,7 +34,6 @@ class CampaignGoalsTestCase(TestCase):
             created_by=self.user
         )
 
-
     def test_get_primary_campaign_goal(self):
         campaign = models.Campaign.objects.get(pk=1)
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
@@ -80,6 +79,9 @@ class CampaignGoalsTestCase(TestCase):
         goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
         self.assertDictContainsSubset(expected, goal_totals)
 
+        rows = campaign_goals.create_goals(self.campaign, [row], cost)
+        self.assertDictContainsSubset(expected, rows[0])
+
     def test_create_goals_and_totals_pps(self):
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         cost = 20
@@ -106,7 +108,8 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
         cost = 20
         row = {
-            'bounce_rate': 0.75
+            'bounce_rate': 0.75,
+            'visits': 1,
         }
 
         expected = {
@@ -119,6 +122,9 @@ class CampaignGoalsTestCase(TestCase):
             expected,
             goal_totals
         )
+
+        rows = campaign_goals.create_goals(self.campaign, [row], cost)
+        self.assertDictContainsSubset(expected, rows[0])
 
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.1)
@@ -135,14 +141,6 @@ class CampaignGoalsTestCase(TestCase):
             self.campaign
         ).values_list('value', flat=True)
         self.assertItemsEqual([0.75, 5, 60], values)
-
-    def test_calculate_goal_values(self):
-        # row, goal_type, cost):
-        pass
-
-    def test_calculate_goal_total_values(self):
-        # row, goal_type, cost):
-        pass
 
     def test_get_campaign_goals(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 0.75)
