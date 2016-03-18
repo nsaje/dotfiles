@@ -49,8 +49,6 @@ def create_goal_totals(campaign, data, cost):
 def get_campaign_goal_values(campaign):
     return dash.models.CampaignGoalValue.objects.all().filter(
         campaign_goal__campaign=campaign
-    ).select_related(
-        'campaign_goal'
     ).order_by(
         'campaign_goal',
         '-created_dt'
