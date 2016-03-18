@@ -766,16 +766,14 @@ class CampaignGoal(models.Model):
 
         if self.conversion_goal:
             campaign_goal['conversion_goal'] = {
+                'id': self.conversion_goal.pk,
                 'type': self.conversion_goal.type,
                 'name': self.conversion_goal.name,
-                'pixel': None,
                 'conversion_window': self.conversion_goal.conversion_window,
                 'goal_id': self.conversion_goal.goal_id,
             }
             if self.conversion_goal.pixel:
-                campaign_goal['conversion_goal']['pixel'] = (
-                    self.conversion_goal.pixel.account_id, self.conversion_goal.pixel.slug,
-                )
+                campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
 
         if with_values:
             campaign_goal['values'] = [

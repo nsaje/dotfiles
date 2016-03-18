@@ -2,7 +2,6 @@
 'use strict';
 
 oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
-
     return {
         restrict: 'E',
         scope: {
@@ -10,6 +9,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             isPermissionInternal: '=zemIsPermissionInternal',
             model: '=model',
             campaign: '=campaign',
+            account: '=account',
             campaignGoals: '=goals',
         },
         templateUrl: '/partials/zem_campaign_goals.html',
@@ -83,6 +83,10 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 }
                 $scope.campaignGoals[0].primary = true;
                 $scope.model.primary = $scope.campaignGoals[0].id;
+
+                if (!$scope.model.primary) {
+                    $scope.model.added[0].primary = true;
+                }
             };
 
             function openModal (goal) {
@@ -90,6 +94,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
                 scope.campaignGoals = $scope.campaignGoals;
                 scope.campaign = $scope.campaign;
+                scope.account = $scope.account;
 
                 if (goal !== undefined) {
                     scope.campaignGoal = goal;
@@ -120,8 +125,8 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             $scope.editGoal = function (goal) {
                 var modalInstance = openModal(goal);
                 modalInstance.result.then(function (campaignGoal) {
-                    if (goal.id === undefined) {
-                        $scope.model.modified[campaignGoal.id] = campaignGoal.value;
+                    if (goal.id !== undefined) {
+                        $scope.model.modified[goal.id] = campaignGoal.value;
                     }
                 });
 
