@@ -91,3 +91,19 @@ def convert_touchpoint_source_id_field_to_publisher_exchange(touchpoint_data):
             result.append(tp)
 
     return result
+
+
+def convert_constraint_exchanges_to_source_ids(constraints):
+    if 'exchange' not in constraints:
+        return constraints
+
+    constraints = copy.copy(constraints)
+
+    exchanges = constraints['exchange']
+    sources = models.Source.objects.filter(bidder_slug__in=exchanges).values('id', 'bidder_slug')
+    sources_by_exchange = {s['bidder_slug']: s['id'] for s in sources}
+
+    constraints['source'] = list(sources_by_exchange[exchange] for exchange in exchanges)
+    del(constraints['exchange'])
+
+    return constraints
