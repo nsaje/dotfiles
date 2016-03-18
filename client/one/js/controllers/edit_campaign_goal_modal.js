@@ -108,6 +108,11 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.clearErrors('type');
         $scope.clearErrors('value');
 
+        if (!$scope.newCampaignGoal) {
+            $modalInstance.close($scope.campaignGoal);
+            return; // Existing goals don't need validation
+        }
+
         if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
             return;
         }
