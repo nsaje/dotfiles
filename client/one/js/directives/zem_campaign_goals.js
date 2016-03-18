@@ -125,8 +125,8 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             $scope.editGoal = function (goal) {
                 var modalInstance = openModal(goal);
                 modalInstance.result.then(function (campaignGoal) {
-                    if (goal.id === undefined) {
-                        $scope.model.modified[campaignGoal.id] = campaignGoal.value;
+                    if (goal.id !== undefined) {
+                        $scope.model.modified[goal.id] = campaignGoal.value;
                     }
                 });
 
