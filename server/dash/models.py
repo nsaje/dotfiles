@@ -2265,9 +2265,9 @@ class PublisherBlacklist(models.Model):
 
     def get_blacklist_level(self):
         level = constants.PublisherBlacklistLevel.ADGROUP
-        if self.campaign is not None:
+        if self.campaign_id is not None:
             level = constants.PublisherBlacklistLevel.CAMPAIGN
-        elif self.account is not None:
+        elif self.account_id is not None:
             level = constants.PublisherBlacklistLevel.ACCOUNT
         elif self.everywhere:
             level = constants.PublisherBlacklistLevel.GLOBAL
