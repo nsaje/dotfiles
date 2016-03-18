@@ -20,6 +20,8 @@ class BCMViewTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.get(pk=1)
 
+        self.assertFalse(self.user.is_superuser)
+
         for account in models.Account.objects.all():
             account.users.add(self.user)
 

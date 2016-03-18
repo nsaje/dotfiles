@@ -443,10 +443,13 @@ def process_report_v2(report_task, report_type):
         report_log.visits_imported = report.imported_visits()
         report_log.visits_reported = report.reported_visits()
 
-        statsd_incr('convapi_v2.imported_visits', report_log.visits_imported or 0)
-        influx.incr('convapi_v2.visits', report_log.visits_imported or 0, visit_type='imported')
-        statsd_incr('convapi_v2.reported_visits', report_log.visits_reported or 0)
-        influx.incr('convapi_v2.visits', report_log.visits_reported or 0, visit_type='reported')
+        visits_imported = report_log.visits_imported or 0
+        visits_reported = report_log.visits_reported or 0
+        statsd_incr('convapi_v2.imported_visits', visits_imported)
+        influx.incr('convapi_v2.visits', visits_imported, visit_type='imported')
+        statsd_incr('convapi_v2.reported_visits', visits_reported)
+        influx.incr('convapi_v2.visits', visits_reported, visit_type='reported')
+        influx.gauge('convapi_v2.visits.diff', visits_imported - visits_reported)
 
         report_log.state = constants.ReportState.SUCCESS
         statsd_incr('convapi_v2.report.success')

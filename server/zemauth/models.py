@@ -85,6 +85,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         help_text='Designates whether user has self-manage access and needs onboarding guidance.'
     )
 
+    is_test_user = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether user is an internal testing user and will not contribute towards certain statistics.')
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -131,7 +136,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('content_ads_postclick_engagement', 'Can view content ads postclick eng. metrics.'),
             ('aggregate_postclick_acquisition', 'Can view aggregate postclick acq. metrics.'),
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
-            ('view_pubs_postclick_stats', 'Can view publishers postclick stats'),
+            ('view_pubs_conversion_goals', 'Can view publishers conversion goals.'),
+            ('view_pubs_postclick_stats', 'Can view publishers postclick stats.'),
             ('data_status_column', 'Can see data status column in table.'),
             ('new_content_ads_tab', 'Can view new content ads tab.'),
             ('filter_sources', 'Can filter sources'),
@@ -182,6 +188,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_campaign_infobox', 'Can access info box on campaign level'),
             ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
+            ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
         )
 
     def get_full_name(self):

@@ -4,6 +4,8 @@ import decimal
 import traceback
 import logging
 
+import influx
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
@@ -271,6 +273,7 @@ def _get_email_source_changes_text(change):
         ' and '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in change['comments']))
 
 
+@influx.timer('automation.autopilot.adjust_autopilot_media_sources_bid_cpcs')
 @statsd_timer('automation.autopilot', 'adjust_autopilot_media_sources_bid_cpcs')
 def adjust_autopilot_media_sources_bid_cpcs():
     changes = {}
@@ -354,6 +357,7 @@ def report_autopilot_metrics():
 def _report_cpc_autopilot_log_sources_count_metrics(today_min, today_max):
     sources_on_autopilot_logs_count = automation.models.AutopilotAdGroupSourceBidCpcLog.objects.filter(
         created_dt__range=(today_min, today_max)).values('ad_group_source_id').distinct().count()
+    influx.gauge('automation.autopilot.cpc_autopilot_log_sources_count', sources_on_autopilot_logs_count)
     statsd_gauge('automation.autopilot.cpc_autopilot_log_sources_count', sources_on_autopilot_logs_count)
 
 
@@ -382,10 +386,12 @@ def _report_spend_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
         )
 
     if len(spend_trends) > 0:
-        statsd_gauge('automation.autopilot.avg_trend_of_spend_towards_optimal_spend',
-                     sum(spend_trends) / decimal.Decimal(len(spend_trends)))
-        statsd_gauge('automation.autopilot.perc_of_improved_spends',
-                     sum([1 for spend in spend_trends if spend > decimal.Decimal('0')]) / float(len(spend_trends)))
+        avg_trend_spend = sum(spend_trends) / decimal.Decimal(len(spend_trends))
+        perc_of_improved = sum([1 for spend in spend_trends if spend > decimal.Decimal('0')]) / float(len(spend_trends))
+        influx.gauge('automation.autopilot.performance', avg_trend_spend, metric='average_improvement', type='spend')
+        influx.gauge('automation.autopilot.performance', perc_of_improved, metric='improved_sources', type='spend')
+        statsd_gauge('automation.autopilot.avg_trend_of_spend_towards_optimal_spend', avg_trend_spend)
+        statsd_gauge('automation.autopilot.perc_of_improved_spends', perc_of_improved)
 
 
 def _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
@@ -398,7 +404,9 @@ def _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
         click_increases.append(todays.yesterdays_clicks / float(yesterdays.yesterdays_clicks) - 1)
 
     if len(click_increases) > 0:
-        statsd_gauge('automation.autopilot.avg_proc_increase_in_clicks',
-                     sum(click_increases) / float(len(click_increases)))
-        statsd_gauge('automation.autopilot.perc_of_increased_clicks',
-                     sum([1 for clicks in click_increases if clicks > 0]) / float(len(click_increases)))
+        avg_proc_increase = sum(click_increases) / float(len(click_increases))
+        perc_of_increased = sum([1 for clicks in click_increases if clicks > 0]) / float(len(click_increases))
+        influx.gauge('automation.autopilot.performance', avg_proc_increase, metric='average_improvement', type='clicks')
+        influx.gauge('automation.autopilot.performance', perc_of_increased, metric='improved_sources', type='clicks')
+        statsd_gauge('automation.autopilot.avg_proc_increase_in_clicks', avg_proc_increase)
+        statsd_gauge('automation.autopilot.perc_of_increased_clicks', perc_of_increased)

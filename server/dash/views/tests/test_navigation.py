@@ -148,7 +148,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test campaign 1',
-                'landing_mode': False,
+                'landingMode': False,
             }
         })
 
@@ -165,7 +165,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test campaign 3',
-                'landing_mode': False,
+                'landingMode': False,
             }
         })
 
@@ -180,7 +180,7 @@ class NavigationDataViewTest(TestCase):
             'campaign': {
                 'id': 2,
                 'name': 'test campaign 2',
-                'landing_mode': False,
+                'landingMode': False,
             }
         })
 
@@ -213,15 +213,15 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test campaign 1',
-                'landing_mode': False,
+                'landingMode': False,
             },
             'ad_group': {
                 'archived': False,
                 'id': 1,
                 'name': 'test adgroup 1',
                 'contentAdsTabWithCMS': True,
-                'state': 'enabled',
-                'status': 'running'
+                'state': 1,
+                'status': 1,
             }
         })
 
@@ -242,15 +242,15 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test campaign 2',
-                'landing_mode': False,
+                'landingMode': False,
             },
             'ad_group': {
                 'archived': True,
                 'id': 4,
                 'name': 'test adgroup 4',
                 'contentAdsTabWithCMS': True,
-                'state': 'paused',
-                'status': 'stopped'
+                'state': 2,
+                'status': 2,
             }
         })
 
@@ -266,14 +266,14 @@ class NavigationDataViewTest(TestCase):
             'campaign': {
                 'id': 2,
                 'name': 'test campaign 2',
-                'landing_mode': False,
+                'landingMode': False,
             },
             'ad_group': {
                 'id': 4,
                 'name': 'test adgroup 4',
                 'contentAdsTabWithCMS': True,
-                'state': 'paused',
-                'status': 'stopped'
+                'state': 2,
+                'status': 2,
             }
         })
 
@@ -318,27 +318,27 @@ class NavigationTreeViewTest(TestCase):
                     "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
-                    "state": "enabled",
-                    "status": "running"
+                    "state": 1,
+                    "status": 1,
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
-                    "state": "enabled",
-                    "status": "stopped"  # past dates
+                    "state": 1,
+                    "status": 2,  # past dates
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
-                    "state": "paused",
-                    "status": "stopped"
+                    "state": 2,
+                    "status": 2,
                 }],
                 "archived": False,
                 "id": 1,
                 "name": "test campaign 1",
-                "landing_mode": False,
+                "landingMode": False,
             }],
             "id": 1,
             "name": "test account 1",
@@ -357,24 +357,24 @@ class NavigationTreeViewTest(TestCase):
                     "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
-                    "state": "enabled",
-                    "status": "stopped"  # source paused
+                    "state": 1,
+                    "status": 2  # source paused
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
-                    "state": "enabled",
-                    "status": "stopped"
+                    "state": 1,
+                    "status": 2
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
-                    "state": "paused",
-                    "status": "stopped"  # source paused
+                    "state": 2,
+                    "status": 2,  # source paused
                 }],
-                "landing_mode": False,
+                "landingMode": False,
                 "archived": False,
                 "id": 1,
                 "name": "test campaign 1"
@@ -397,13 +397,13 @@ class NavigationTreeViewTest(TestCase):
                         "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
-                        "state": "paused",
-                        "status": "stopped"
+                        "state": 2,
+                        "status": 2,
                     }
                 ],
                 "id": 2,
                 "name": "test campaign 2",
-                "landing_mode": False,
+                "landingMode": False,
             }],
             "id": 2,
             "name": "test account 2",
@@ -426,14 +426,14 @@ class NavigationTreeViewTest(TestCase):
                         "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
-                        "state": "paused",
-                        "status": "stopped"
+                        "state": 2,
+                        "status": 2,
                     }
                 ],
                 "id": 2,
                 "name": "test campaign 2",
                 "archived": False,
-                "landing_mode": False,
+                "landingMode": False,
             }],
             "id": 2,
             "name": "test account 2",

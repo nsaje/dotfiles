@@ -17,8 +17,8 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
+from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
-
 
 import utils.string_helper
 
@@ -94,6 +94,35 @@ class QuerySetManager(models.Manager):
 
     def get_queryset(self):
         return self.model.QuerySet(self.model)
+
+
+class SettingsQuerySet(models.QuerySet):
+
+    def update(self, *args, **kwargs):
+        raise AssertionError('Using update not allowed.')
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Using delete not allowed.')
+
+
+class CopySettingsMixin(object):
+
+    def copy_settings(self):
+        new_settings = type(self)()
+
+        for name in self._settings_fields:
+            setattr(new_settings, name, getattr(self, name))
+
+        if type(self) == AccountSettings:
+            new_settings.account = self.account
+        elif type(self) == CampaignSettings:
+            new_settings.campaign = self.campaign
+        elif type(self) == AdGroupSettings:
+            new_settings.ad_group = self.ad_group
+        elif type(self) == AdGroupSourceSettings or type(self) == AdGroupSourceState:
+            new_settings.ad_group_source = self.ad_group_source
+
+        return new_settings
 
 
 class DemoManager(models.Manager):
@@ -460,8 +489,19 @@ class Campaign(models.Model, PermissionMixin):
             return self.exclude(pk__in=archived_campaigns)
 
 
-class SettingsBase(models.Model):
+class SettingsBase(models.Model, CopySettingsMixin):
     _settings_fields = None
+
+    objects = QuerySetManager()
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise AssertionError('Updating settings object not alowed.')
+
+        super(SettingsBase, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Deleting settings object not allowed.')
 
     @classmethod
     def get_settings_fields(cls):
@@ -489,21 +529,6 @@ class SettingsBase(models.Model):
     @classmethod
     def get_defaults_dict(cls):
         return {}
-
-    def copy_settings(self):
-        new_settings = type(self)()
-
-        for name in self._settings_fields:
-            setattr(new_settings, name, getattr(self, name))
-
-        if type(self) == AccountSettings:
-            new_settings.account = self.account
-        elif type(self) == CampaignSettings:
-            new_settings.campaign = self.campaign
-        elif type(self) == AdGroupSettings:
-            new_settings.ad_group = self.ad_group
-
-        return new_settings
 
     class Meta:
         abstract = True
@@ -559,7 +584,7 @@ class AccountSettings(SettingsBase):
     class Meta:
         ordering = ('-created_dt',)
 
-    class QuerySet(models.QuerySet):
+    class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
             return self.order_by('account_id', '-created_dt').distinct('account')
@@ -659,7 +684,7 @@ class CampaignSettings(SettingsBase):
     class Meta:
         ordering = ('-created_dt',)
 
-    class QuerySet(models.QuerySet):
+    class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
             return self.order_by('campaign_id', '-created_dt').distinct('campaign')
@@ -719,6 +744,8 @@ class CampaignGoal(models.Model):
         default=constants.CampaignGoalKPI.TIME_ON_SITE,
         choices=constants.CampaignGoalKPI.get_choices(),
     )
+    primary = models.BooleanField(default=False)
+    conversion_goal = models.ForeignKey('ConversionGoal', null=True, blank=True, on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -726,11 +753,39 @@ class CampaignGoal(models.Model):
                                    on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
-        unique_together = ('campaign', 'type')
+        unique_together = ('campaign', 'type', 'conversion_goal')
+
+    def to_dict(self, with_values=False):
+        campaign_goal = {
+            'campaign_id': self.campaign.id,
+            'type': self.type,
+            'primary': self.primary,
+            'id': self.pk,
+            'conversion_goal': None,
+        }
+
+        if self.conversion_goal:
+            campaign_goal['conversion_goal'] = {
+                'id': self.conversion_goal.pk,
+                'type': self.conversion_goal.type,
+                'name': self.conversion_goal.name,
+                'conversion_window': self.conversion_goal.conversion_window,
+                'goal_id': self.conversion_goal.goal_id,
+            }
+            if self.conversion_goal.pixel:
+                campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
+
+        if with_values:
+            campaign_goal['values'] = [
+                {'datetime': str(value.created_dt), 'value': value.value}
+                for value in self.values.all()
+            ]
+
+        return campaign_goal
 
 
 class CampaignGoalValue(models.Model):
-    campaign_goal = models.ForeignKey(CampaignGoal)
+    campaign_goal = models.ForeignKey(CampaignGoal, related_name='values')
     value = models.DecimalField(max_digits=15, decimal_places=5)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -866,10 +921,6 @@ class SourceType(models.Model):
         elif region_type == constants.RegionType.DMA:
             return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
-    def can_modify_retargeting_automatically(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_RETARGETING in self.available_actions
-
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions
@@ -942,10 +993,27 @@ class Source(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     released = models.BooleanField(default=True)
+    supports_retargeting = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether source supports retargeting automatically.')
+    )
+
+    supports_retargeting_manually = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether source supports retargeting via manual action.')
+    )
+
     content_ad_submission_type = models.IntegerField(
         default=constants.SourceSubmissionType.DEFAULT,
         choices=constants.SourceSubmissionType.get_choices()
     )
+
+    default_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                         verbose_name='Default CPC')
+    default_mobile_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                                verbose_name='Default CPC (if ad group is targeting mobile only)')
+    default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
+                                                  verbose_name='Default daily budget')
 
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
@@ -1002,7 +1070,10 @@ class Source(models.Model):
         return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
 
     def can_modify_retargeting_automatically(self):
-        return self.source_type.can_modify_retargeting_automatically() and not self.maintenance and not self.deprecated
+        return self.supports_retargeting and not self.maintenance and not self.deprecated
+
+    def can_modify_retargeting_manually(self):
+        return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -1248,6 +1319,7 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |
@@ -1694,13 +1766,19 @@ class AdGroupSettings(SettingsBase):
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
-    class QuerySet(models.QuerySet):
+    class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
             return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
 
 
-class AdGroupSourceState(models.Model):
+class AdGroupSourceState(models.Model, CopySettingsMixin):
+    _settings_fields = [
+        'state',
+        'cpc_cc',
+        'daily_budget_cc'
+    ]
+
     id = models.AutoField(primary_key=True)
 
     ad_group_source = models.ForeignKey(
@@ -1733,17 +1811,33 @@ class AdGroupSourceState(models.Model):
 
     objects = QuerySetManager()
 
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise AssertionError('Updating state object not allowed.')
+
+        super(AdGroupSourceState, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Deleting object object not allowed.')
+
     class Meta:
         get_latest_by = 'created_dt'
         ordering = ('-created_dt',)
 
-    class QuerySet(models.QuerySet):
+    class QuerySet(SettingsQuerySet):
 
         def group_current_states(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
 
-class AdGroupSourceSettings(models.Model):
+class AdGroupSourceSettings(models.Model, CopySettingsMixin):
+    _settings_fields = [
+        'state',
+        'cpc_cc',
+        'daily_budget_cc',
+        'autopilot_state',
+    ]
+
     id = models.AutoField(primary_key=True)
 
     ad_group_source = models.ForeignKey(
@@ -1788,10 +1882,16 @@ class AdGroupSourceSettings(models.Model):
     objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):
+        if self.pk is not None:
+            raise AssertionError('Updating settings object not allowed.')
+
         if self.pk is None and request is not None:
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Deleting settings object not allowed.')
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -1831,7 +1931,7 @@ class AdGroupSourceSettings(models.Model):
 
         return result
 
-    class QuerySet(models.QuerySet):
+    class QuerySet(SettingsQuerySet):
 
         def group_current_settings(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
@@ -2170,9 +2270,9 @@ class PublisherBlacklist(models.Model):
 
     def get_blacklist_level(self):
         level = constants.PublisherBlacklistLevel.ADGROUP
-        if self.campaign is not None:
+        if self.campaign_id is not None:
             level = constants.PublisherBlacklistLevel.CAMPAIGN
-        elif self.account is not None:
+        elif self.account_id is not None:
             level = constants.PublisherBlacklistLevel.ACCOUNT
         elif self.everywhere:
             level = constants.PublisherBlacklistLevel.GLOBAL

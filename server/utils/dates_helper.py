@@ -32,6 +32,12 @@ def local_today():
     return utc_to_local_datetime(datetime.datetime.utcnow()).date()
 
 
+def local_midnight_to_utc_time():
+    local_now = utc_to_local_datetime(datetime.datetime.utcnow())
+    local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    return local_midnight.astimezone(pytz.utc)
+
+
 def count_months(start_date, end_date):
     return (end_date.year - start_date.year) * 12 + end_date.month - start_date.month
 

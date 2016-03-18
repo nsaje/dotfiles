@@ -5,6 +5,7 @@ import newrelic.agent
 
 from collections import OrderedDict
 from django.db import transaction
+from django.db.models import Prefetch
 from django.conf import settings
 from django.contrib.auth import models as authmodels
 
@@ -18,6 +19,7 @@ from dash import api
 from dash import constants
 from dash import validation_helpers
 from dash import retargeting_helper
+from dash import campaign_goals
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -30,9 +32,7 @@ from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
 
-
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
-MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
 
 def _get_conversion_pixel_url(account_id, slug):
@@ -44,7 +44,7 @@ class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         settings = ad_group.get_current_settings()
@@ -61,7 +61,7 @@ class AdGroupSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         previous_ad_group_name = ad_group.name
@@ -247,43 +247,48 @@ class AdGroupSettingsState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = ad_group.get_current_settings()
+        current_settings = ad_group.get_current_settings()
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': settings.state,
+            'state': current_settings.state,
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         data = json.loads(request.body)
         new_state = data.get('state')
         self._validate_state(ad_group, new_state)
 
-        settings = ad_group.get_current_settings()
-        if settings.state != new_state:
-            settings.state = new_state
-            settings.save(request)
-            actionlog_api.init_set_ad_group_state(ad_group, settings.state, request, send=True)
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+
+        if new_settings.state != new_state:
+            new_settings.state = new_state
+            new_settings.save(request)
+            actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
 
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': settings.state,
+            'state': new_settings.state,
         })
 
     def _validate_state(self, ad_group, state):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        # ACTIVE state is only valid when there is budget to spend
+        if ad_group.campaign.landing_mode:
+            raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
+
         if state == constants.AdGroupSettingsState.ACTIVE and \
                 not validation_helpers.ad_group_has_available_budget(ad_group):
+            # ACTIVE state is only valid when there is budget to spend
             raise exc.ValidationError('Cannot enable ad group without available budget.')
 
 
@@ -292,7 +297,7 @@ class CampaignAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_agency_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -311,7 +316,7 @@ class CampaignAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_agency_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
@@ -414,7 +419,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -453,7 +458,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -471,41 +476,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
             },
             campaign_id=campaign_id
         )
-
-        if not form.is_valid():
-            raise exc.ValidationError(errors=form.errors)
-
-        if models.ConversionGoal.objects.filter(campaign_id=campaign.id).count() >= MAX_CONVERSION_GOALS_PER_CAMPAIGN:
-            raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
-
-        conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
-                                                name=form.cleaned_data['name'])
-        if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
-            try:
-                pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],
-                                                           account_id=campaign.account_id)
-            except models.ConversionPixel.DoesNotExist:
-                raise exc.MissingDataError(message='Invalid conversion pixel')
-
-            if pixel.archived:
-                raise exc.MissingDataError(message='Invalid conversion pixel')
-
-            conversion_goal.pixel = pixel
-            conversion_goal.conversion_window = form.cleaned_data['conversion_window']
-        else:
-            conversion_goal.goal_id = form.cleaned_data['goal_id']
-
-        with transaction.atomic():
-            conversion_goal.save()
-
-            new_settings = campaign.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Added conversion goal with name "{}" of type {}'.format(
-                conversion_goal.name,
-                constants.ConversionGoalType.get_text(conversion_goal.type)
-            )
-            new_settings.save(request)
-
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_GOAL, campaign=campaign)
+        campaign_goals.create_conversion_goal(request, form, campaign)
 
         return self.create_api_response()
 
@@ -515,25 +486,39 @@ class ConversionGoal(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
     def delete(self, request, campaign_id, conversion_goal_id):
         if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
-        try:
-            conversion_goal = models.ConversionGoal.objects.get(id=conversion_goal_id, campaign_id=campaign.id)
-        except models.ConversionGoal.DoesNotExist:
-            raise exc.MissingDataError(message='Invalid conversion goal')
+        campaign_goals.delete_conversion_goal(request, conversion_goal_id, campaign)
 
-        with transaction.atomic():
-            conversion_goal.delete()
+        return self.create_api_response()
 
-            new_settings = campaign.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Deleted conversion goal "{}"'.format(
-                conversion_goal.name,
-                constants.ConversionGoalType.get_text(conversion_goal.type)
-            )
-            new_settings.save(request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_CONVERSION_GOAL, campaign=campaign)
+class CampaignGoalValidation(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_goal_validate_put')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.can_see_campaign_goals'):
+            raise exc.MissingDataError()
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign_goal = json.loads(request.body)
+        goal_form = forms.CampaignGoalForm(campaign_goal, campaign_id=campaign.pk)
+
+        errors = {}
+        if not goal_form.is_valid():
+            errors.update(dict(goal_form.errors))
+
+        if campaign_goal['type'] == constants.CampaignGoalKPI.CPA:
+            if not campaign_goal.get('id'):
+                conversion_form = forms.ConversionGoalForm(
+                    campaign_goal.get('conversion_goal', {}),
+                    campaign_id=campaign.pk,
+                )
+                if not conversion_form.is_valid():
+                    errors['conversion_goal'] = conversion_form.errors
+
+        if errors:
+            raise exc.ValidationError(errors=errors)
 
         return self.create_api_response()
 
@@ -543,7 +528,7 @@ class CampaignSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
@@ -552,12 +537,15 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, campaign_settings, campaign),
         }
 
+        if request.user.has_perm('zemauth.can_see_campaign_goals'):
+            response['goals'] = self.get_campaign_goals(campaign_id)
+
         return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
@@ -572,12 +560,22 @@ class CampaignSettings(api_common.BaseApiView):
             settings_dict['target_devices'] = new_settings.target_devices
             settings_dict['target_regions'] = new_settings.target_regions
 
-        form = forms.CampaignSettingsForm(settings_dict)
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
+        settings_form = forms.CampaignSettingsForm(settings_dict)
+        errors = {}
+        if not settings_form.is_valid():
+            errors.update(dict(settings_form.errors))
 
-        self.set_settings(request, new_settings, campaign, form.cleaned_data)
-        self.set_campaign(campaign, form.cleaned_data)
+        with transaction.atomic():
+            goal_errors = self.set_goals(request, campaign, resource)
+
+        if any(goal_error for goal_error in goal_errors):
+            errors['goals'] = goal_errors
+
+        if errors:
+            raise exc.ValidationError(errors=errors)
+
+        self.set_settings(request, new_settings, campaign, settings_form.cleaned_data)
+        self.set_campaign(campaign, settings_form.cleaned_data)
 
         helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
         helpers.log_and_notify_campaign_settings_change(campaign, current_settings, new_settings, request,
@@ -587,7 +585,76 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, new_settings, campaign)
         }
 
+        if request.user.has_perm('zemauth.can_see_campaign_goals'):
+            response['goals'] = self.get_campaign_goals(campaign_id)
+
         return self.create_api_response(response)
+
+    def set_goals(self, request, campaign, resource):
+        if not request.user.has_perm('zemauth.can_see_campaign_goals'):
+            return []
+        changes = resource.get('goals', {
+            'added': [],
+            'removed': [],
+            'primary': None,
+            'modified': {}
+        })
+
+        new_primary_id = None
+        errors = []
+        for goal in changes['added']:
+            is_primary = goal['primary']
+
+            goal['primary'] = False
+
+            if goal['conversion_goal']:
+                conversion_form = forms.ConversionGoalForm(
+                    {
+                        'name': goal['conversion_goal'].get('name'),
+                        'type': goal['conversion_goal'].get('type'),
+                        'conversion_window': goal['conversion_goal'].get('conversion_window'),
+                        'goal_id': goal['conversion_goal'].get('goal_id'),
+                    },
+                    campaign_id=campaign.pk,
+                )
+                errors.append(dict(conversion_form.errors))
+                conversion_goal, goal_added = campaign_goals.create_conversion_goal(
+                    request,
+                    conversion_form,
+                    campaign
+                )
+
+            else:
+                goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
+                errors.append(dict(goal_form.errors))
+                goal_added = campaign_goals.create_campaign_goal(request, goal_form, campaign)
+
+            if is_primary:
+                new_primary_id = goal_added.pk
+
+            campaign_goals.add_campaign_goal_value(request, goal_added.pk, goal['value'])
+
+        for goal_id, value in changes['modified'].iteritems():
+            campaign_goals.add_campaign_goal_value(request, goal_id, value)
+
+        removed_goals = {goal['id'] for goal in changes['removed']}
+        for goal_id in removed_goals:
+            campaign_goals.delete_campaign_goal(request, goal_id)
+
+        new_primary_id = new_primary_id or changes['primary']
+        if new_primary_id and new_primary_id not in removed_goals:
+            campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+
+        return errors
+
+    def get_campaign_goals(self, campaign_id):
+        return [
+            campaign_goal.to_dict(with_values=True)
+            for campaign_goal in
+            models.CampaignGoal.objects.filter(campaign_id=campaign_id).prefetch_related(
+                Prefetch('values', queryset=models.CampaignGoalValue.objects.order_by('created_dt'))
+            ).select_related('conversion_goal')
+        ]
 
     def get_dict(self, request, settings, campaign):
         if not settings:
@@ -633,7 +700,7 @@ class AccountConversionPixels(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
@@ -659,7 +726,7 @@ class AccountConversionPixels(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)  # check access to account
 
@@ -707,7 +774,7 @@ class ConversionPixel(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         try:
             conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
@@ -726,7 +793,7 @@ class ConversionPixel(api_common.BaseApiView):
 
         if 'archived' in data:
             if not request.user.has_perm('zemauth.archive_restore_entity'):
-                raise exc.MissingDataError()
+                raise exc.AuthorizationError()
 
             if not isinstance(data['archived'], bool):
                 raise exc.ValidationError(message='Invalid value')
@@ -756,7 +823,7 @@ class AccountAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
@@ -775,7 +842,7 @@ class AccountAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
@@ -790,7 +857,7 @@ class AccountAgency(api_common.BaseApiView):
 
                 if 'allowed_sources' in form.cleaned_data \
                         and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                    raise exc.MissingDataError()
+                    raise exc.AuthorizationError()
 
                 if 'allowed_sources' in form.cleaned_data:
                     self.set_allowed_sources(
@@ -1079,7 +1146,7 @@ class AdGroupAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1160,7 +1227,7 @@ class AccountUsers(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
         users = [self._get_user_dict(u) for u in account.users.all()]
@@ -1172,7 +1239,7 @@ class AccountUsers(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
@@ -1238,7 +1305,7 @@ class AccountUsers(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
     def delete(self, request, account_id, user_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
 
@@ -1281,7 +1348,7 @@ class UserActivation(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_post')
     def post(self, request, account_id, user_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
-            raise exc.MissingDataError()
+            raise exc.AuthorizationError()
 
         try:
             user = ZemUser.objects.get(pk=user_id)

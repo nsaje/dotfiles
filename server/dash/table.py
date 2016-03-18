@@ -12,6 +12,7 @@ from dash import bcm_helpers
 from dash import stats_helper
 from dash import publisher_helpers
 from dash import validation_helpers
+from dash import campaign_goal_helpers
 
 import utils.pagination
 from utils import exc
@@ -275,7 +276,7 @@ class AdGroupSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
         self.user = user
-        self.ad_group = helpers.get_ad_group(user, id_)
+        self.ad_group = helpers.get_ad_group(user, id_, select_related=True)
         self.ad_group_settings = self.ad_group.get_current_settings()
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
@@ -573,6 +574,9 @@ class SourcesTable(object):
         else:
             result['daily_budget'] = get_current_daily_budget_total(sources_states)
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            result.update(campaign_goal_helpers.create_goal_totals(result))
+
         return result
 
     def get_state(self, states):
@@ -674,6 +678,7 @@ class SourcesTable(object):
                 ad_group_settings = level_sources_table.ad_group_settings
 
                 row['editable_fields'] = helpers.get_editable_fields(
+                    level_sources_table.ad_group,
                     ad_group_source,
                     ad_group_settings,
                     source_settings,
@@ -725,16 +730,14 @@ class SourcesTable(object):
                 if field.startswith('G[') and field.endswith('_conversionrate'):
                     row[field] = val
 
+            # add campaign goal optimisation metrics
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(source_data))
+
             rows.append(row)
 
         if order:
-            order_list = [order]
-
-            # status setting should also be sorted by autopilot state
-            if 'status_setting' in order:
-                order_list.append(('-' if order.startswith('-') else '') + 'autopilot_state')
-
-            rows = sort_results(rows, order_list)
+            rows = sort_results(rows, order)
 
         return rows
 
@@ -795,6 +798,9 @@ class AccountsAccountsTable(object):
             totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
             totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals_data.update(campaign_goal_helpers.create_goal_totals(totals_data))
+
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
             flat_fees = self.get_flat_fees(start_date, end_date, accounts)
@@ -815,6 +821,7 @@ class AccountsAccountsTable(object):
         accounts_status_dict = self.get_per_account_running_status_dict(accounts, filtered_sources)
 
         rows = self.get_rows(
+            user,
             accounts,
             accounts_settings,
             accounts_status_dict,
@@ -921,7 +928,7 @@ class AccountsAccountsTable(object):
 
         return account_budget, account_total_spend
 
-    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
+    def get_rows(self, user, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
                  show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
         rows = []
@@ -986,6 +993,9 @@ class AccountsAccountsTable(object):
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
                 row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
 
             rows.append(row)
 
@@ -1165,6 +1175,10 @@ class AdGroupAdsPlusTable(object):
 
         rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            for row in rows:
+                row.update(campaign_goal_helpers.create_goals(row))
+
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
@@ -1196,7 +1210,7 @@ class AdGroupAdsPlusTable(object):
         response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
-            'totals': self._get_total_row(total_stats),
+            'totals': self._get_total_row(user, total_stats),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1227,9 +1241,11 @@ class AdGroupAdsPlusTable(object):
 
         return response_dict
 
-    def _get_total_row(self, stats):
+    def _get_total_row(self, user, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals.update(campaign_goal_helpers.create_goal_totals(stats))
         return totals
 
     def _get_url(self, ad_group, content_ad, is_demo):
@@ -1390,6 +1406,7 @@ class CampaignAdGroupsTable(object):
         response = {
             'rows': self.get_rows(
                 user,
+                campaign,
                 ad_groups,
                 ad_groups_settings,
                 ad_groups_status_dict,
@@ -1461,7 +1478,7 @@ class CampaignAdGroupsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_rows(self, user, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
+    def get_rows(self, user, campaign, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
                  order, has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
@@ -1505,7 +1522,11 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-            row['editable_fields'] = self.get_editable_fields(ad_group, row)
+            row['editable_fields'] = self.get_editable_fields(ad_group, campaign, row)
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
+
             rows.append(row)
 
         if order:
@@ -1521,15 +1542,19 @@ class CampaignAdGroupsTable(object):
             totals_data['e_yesterday_cost'] = e_yesterday_cost
         if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
             totals_data['yesterday_cost'] = yesterday_cost
-
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals_data.update(campaign_goal_helpers.create_goal_totals(totals_data))
         return totals_data
 
-    def get_editable_fields(self, ad_group, row):
+    def get_editable_fields(self, ad_group, campaign, row):
         state = {
             'enabled': True,
             'message': None
         }
-        if row['state'] == constants.AdGroupSettingsState.INACTIVE \
+        if campaign.landing_mode:
+            state['enabled'] = False
+            state['message'] = 'Please add additional budget to your campaign to make changes.'
+        elif row['state'] == constants.AdGroupSettingsState.INACTIVE \
                 and not validation_helpers.ad_group_has_available_budget(ad_group):
             state['enabled'] = False
             state['message'] = 'Cannot enable ad group without available budget.'
@@ -1580,6 +1605,9 @@ class AccountCampaignsTable(object):
 
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals_stats.update(campaign_goal_helpers.create_goal_totals(totals_stats))
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
@@ -1722,6 +1750,9 @@ class AccountCampaignsTable(object):
             row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
             row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
 
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
+
             rows.append(row)
 
         if order:
@@ -1761,14 +1792,20 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
+        can_see_conversion_goals = user.has_perm('zemauth.view_pubs_conversion_goals')
+        conversion_goals = adgroup.campaign.conversiongoal_set.all() if can_see_conversion_goals else []
         publishers_data, totals_data = self._query_filtered_publishers(
+            user,
             show_blacklisted_publishers,
             start_date,
             end_date,
             adgroup,
             constraints,
-            order
+            conversion_goals
         )
+
+        if order:
+            publishers_data = sort_results(publishers_data, order)
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
@@ -1778,7 +1815,7 @@ class PublishersTable(object):
         self._annotate_publishers(publishers_data, user, adgroup)
 
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            account=adgroup.campaign.account,
+            account_id=adgroup.campaign.account_id,
             source__source_type__type=constants.SourceType.OUTBRAIN
         ).count()
 
@@ -1803,6 +1840,13 @@ class PublishersTable(object):
             'order': order,
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
+
+        if user.has_perm('zemauth.view_pubs_conversion_goals'):
+            response['conversion_goals'] = [
+                {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                for cg in conversion_goals
+            ]
+
         return response
 
     def _construct_pub_bl_queryset(self, publishers_data, adgroup):
@@ -1870,12 +1914,12 @@ class PublishersTable(object):
                     blacklisted_pub.everywhere
 
                 pub_source_match = publisher_domain == blacklisted_pub.name and\
-                    publisher_source == blacklisted_pub.source
+                    publisher_source.id == blacklisted_pub.source_id
 
                 blacklisted_on_some_level = (
-                    blacklisted_pub.account == adgroup.campaign.account or
-                    blacklisted_pub.campaign == adgroup.campaign or
-                    blacklisted_pub.ad_group == adgroup
+                    blacklisted_pub.account_id == adgroup.campaign.account_id or
+                    blacklisted_pub.campaign_id == adgroup.campaign_id or
+                    blacklisted_pub.ad_group_id == adgroup.id
                 )
 
                 if pub_source_match and blacklisted_on_some_level or globally_blacklisted:
@@ -1903,54 +1947,51 @@ class PublishersTable(object):
             user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
             count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
 
-        if publisher_source.can_modify_publisher_blacklist_automatically() and\
-                known_source and\
+        if known_source and publisher_source.can_modify_publisher_blacklist_automatically() and\
                 (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
                     can_blacklist_outbrain_publisher):
             return True
         else:
             return False
 
-    def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
-        if not show_blacklisted_publishers or\
-                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-            publishers_data = reports.api_publishers.query(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-            )
-            totals_data = reports.api_publishers.query(
-                start_date, end_date,
-                constraints=constraints,
-            )
-        elif show_blacklisted_publishers in (
-                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+    def _query_filtered_publishers(self, user, show_blacklisted_publishers, start_date, end_date, adgroup, constraints,
+                                   conversion_goals):
 
-            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
-                adgroup
-            )
-
-            query_func = None
+        if show_blacklisted_publishers in (
+                constants.PublisherBlacklistFilter.SHOW_ACTIVE, constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
             if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                 query_func = reports.api_publishers.query_active_publishers
             else:
                 query_func = reports.api_publishers.query_blacklisted_publishers
+            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(adgroup)
+        else:
+            query_func = reports.api_publishers.query
+            adg_blacklisted_publishers = None
 
-            publishers_data = query_func(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = query_func(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-        return publishers_data, totals_data
+        publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
+            user,
+            query_func,
+            start_date,
+            end_date,
+            constraints,
+            conversion_goals,
+            publisher_breakdown_fields=['domain', 'exchange'],
+            touchpoint_breakdown_fields=['publisher', 'source'],
+            show_blacklisted_publishers=show_blacklisted_publishers,
+            adg_blacklisted_publishers=adg_blacklisted_publishers,
+        )
+        totals_data = stats_helper.get_publishers_data_and_conversion_goals(
+            user,
+            query_func,
+            start_date,
+            end_date,
+            constraints,
+            conversion_goals,
+            show_blacklisted_publishers=show_blacklisted_publishers,
+            adg_blacklisted_publishers=adg_blacklisted_publishers,
+        )
+
+        return publishers_data, totals_data[0]
 
     def get_totals(self,
                    user,
@@ -1981,6 +2022,13 @@ class PublishersTable(object):
             result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
+        if user.has_perm('zemauth.view_pubs_conversion_goals'):
+            for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
+                result[key] = totals_data[key]
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            result.update(campaign_goal_helpers.create_goal_totals(totals_data))
+
         return result
 
     def get_rows(self, user, map_exchange_to_source_name, publishers_data):
@@ -2030,10 +2078,15 @@ class PublishersTable(object):
                 row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
+            if user.has_perm('zemauth.view_pubs_conversion_goals'):
+                for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
+                    row[key] = publisher_data[key]
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
                 row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(publisher_data))
 
             rows.append(row)
 

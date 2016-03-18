@@ -285,6 +285,10 @@ urlpatterns += patterns(
         login_required(dash.views.agency.CampaignSettings.as_view()),
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/goals/validate/',
+        login_required(dash.views.agency.CampaignGoalValidation.as_view()),
+    ),
+    url(
         r'^api/campaigns/sync/',
         login_required(dash.views.sync.CampaignSync.as_view()),
     ),

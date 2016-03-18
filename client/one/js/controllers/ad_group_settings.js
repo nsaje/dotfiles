@@ -1,5 +1,5 @@
-/*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) {
+/*globals oneApp,constants,options,moment*/
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
     var freshSettings = $q.defer(),
         goToContentAds = false;
     $scope.settings = {};
@@ -40,14 +40,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
     };
 
-    var getAdGroupStatus = function (settings) {
-        var now = new Date(),
-            running0 = settings.state === constants.adGroupSettingsState.ACTIVE,
-            running1 = settings.endDate && (now <= moment(settings.endDate).toDate() && moment(settings.startDate).toDate() <= now),
-            running2 = !settings.endDate && (moment(settings.startDate).toDate() <= now);
-        return running0 && (running1 || running2) ? 'running' : 'stopped';
-    };
-
     $scope.getSettings = function (id) {
         $scope.loadRequestInProgress = true;
 
@@ -58,10 +50,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
-                freshSettings.resolve(data.settings.name == 'New ad group');
-                goToContentAds = data.settings.name == 'New ad group';
+                freshSettings.resolve(data.settings.name === 'New ad group');
+                goToContentAds = data.settings.name === 'New ad group';
             },
-            function (data) {
+            function () {
                 // error
                 return;
             }
@@ -83,7 +75,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
             },
-            function (data) {
+            function () {
                 // error
                 $scope.saveRequestInProgress = false;
                 return;
@@ -92,8 +84,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     };
 
     $scope.saveSettings = function () {
-        var prevAdGroup = $scope.adGroup.id,
-            stateActive = constants.adGroupSourceSettingsState.ACTIVE;
+        var prevAdGroup = $scope.adGroup.id;
+
         $scope.saved = null;
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
@@ -102,10 +94,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
             function (data) {
                 var currAdGroup = $scope.adGroup.id;
                 $scope.errors = {};
-                if (prevAdGroup != currAdGroup) {
+                if (prevAdGroup !== currAdGroup) {
                     zemNavigationService.updateAdGroupCache(prevAdGroup, {
                         name: data.settings.name,
-                        state: data.settings.state === stateActive ? 'enabled' : 'paused',
+                        state: data.settings.state,
                     });
                 } else {
                     $scope.settings = data.settings;
@@ -114,7 +106,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
 
                     zemNavigationService.updateAdGroupCache(currAdGroup, {
                         name: data.settings.name,
-                        state: data.settings.state === constants.adGroupSourceSettingsState.ACTIVE ? 'enabled' : 'paused',
+                        state: data.settings.state,
                         status: status,
                     });
                 }
