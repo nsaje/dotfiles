@@ -25,7 +25,7 @@ def create_overspend_report(date, ad_group_id, debug_print):
         if ad_group.is_archived():
             continue
 
-        ad_group_name = unicode(ad_group.name)
+        ad_group_name = ad_group.name.encode(errors='replace')
         media_sources = ad_group.sources.filter(source_type__type=constants.SourceType.B1)
         content_ads = ad_group.contentad_set.all()
 
@@ -34,7 +34,7 @@ def create_overspend_report(date, ad_group_id, debug_print):
 
         # all media source for this ad group
         for media_source in media_sources:
-            media_source_name = unicode(media_source.name)
+            media_source_name = media_source.name.encode(errors='replace')
 
             #  daily budget
             ad_group_source = ad_group_sources_map[media_source]
@@ -59,9 +59,13 @@ def create_overspend_report(date, ad_group_id, debug_print):
                                     'Daily spent: {}, DIFF: {}'.format(
                                         ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
                                         daily_spent, diff)
+
+                    # if overspend exceeds 1$ then mark it
+                    if diff > 1:
+                        result_string += ' *****************'
                     print(result_string)
                 except UnicodeEncodeError:
-                    print('Error printing AdGroup.id=' + ad_group.id)
+                    print('Error printing AdGroup.id=' + str(ad_group.id))
             elif debug_print:
                 result_string = 'OK: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
                                 'Daily spent: {}'.format(
@@ -77,6 +81,7 @@ parser.add_option('-d', '--debug', dest='debug', action="store_true", default=Fa
 date = None
 if len(args) >= 1:
     date = parse(args[0])
+    print('Checking overspending only for day ' + str(date))
 
 ad_group_id = None
 if len(args) >= 2:
@@ -88,7 +93,8 @@ if date:
 else:
     date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
 
-    while True:
+    # print last 7 days
+    for i in range(7):
         print('Checking overspending for day ' + str(date))
         create_overspend_report(date, ad_group_id, options.debug)
         date -= datetime.timedelta(days=1)
