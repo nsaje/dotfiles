@@ -1,14 +1,14 @@
 import datetime
 import os
 import django
+from dateutil.parser import parse
+from optparse import OptionParser
+from dash import constants
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
 django.setup()
 
-from optparse import OptionParser
-from dateutil.parser import parse
 from django.db.models import Sum
-from dash import constants
 from dash.models import AdGroup, AdGroupSourceSettings, AdGroupSource
 from reports.models import ContentAdStats
 from automation import campaign_stop
@@ -53,25 +53,30 @@ def create_overspend_report(date, ad_group_id, debug_print):
 
             # diff
             diff = daily_spent - float(daily_budget)
-            if diff > 0:
-                try:
-                    result_string = 'OVERSPENT: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
-                                    'Daily spent: {}, DIFF: {}'.format(
-                                        ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
-                                        daily_spent, diff)
+            print_result(ad_group, ad_group_name, media_source, media_source_name, daily_budget, daily_spent, diff,
+                         debug_print)
 
-                    # if overspend exceeds 1$ then mark it
-                    if diff > 1:
-                        result_string += ' *****************'
-                    print(result_string)
-                except UnicodeEncodeError:
-                    print('Error printing AdGroup.id=' + str(ad_group.id))
-            elif debug_print:
-                result_string = 'OK: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
-                                'Daily spent: {}'.format(
-                                    ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
-                                    daily_spent)
-                print(result_string)
+
+def print_result(ad_group, ad_group_name, media_source, media_source_name, daily_budget, daily_spent, diff, debug_print):
+    if diff > 0:
+        try:
+            result_string = 'OVERSPENT: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
+                            'Daily spent: {}, DIFF: {}'.format(
+                                ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
+                                daily_spent, diff)
+
+            # if overspend exceeds 1$ then mark it
+            if diff > 1:
+                result_string += ' *****************'
+            print(result_string)
+        except UnicodeEncodeError:
+            print('Error printing AdGroup.id=' + str(ad_group.id))
+    elif debug_print:
+        result_string = 'OK: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
+                        'Daily spent: {}'.format(
+                            ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
+                            daily_spent)
+        print(result_string)
 
 
 parser = OptionParser()
