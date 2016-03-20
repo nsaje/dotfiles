@@ -57,7 +57,8 @@ def create_overspend_report(date, ad_group_id, debug_print):
                          debug_print)
 
 
-def print_result(ad_group, ad_group_name, media_source, media_source_name, daily_budget, daily_spent, diff, debug_print):
+def print_result(ad_group, ad_group_name, media_source, media_source_name, daily_budget, daily_spent, diff,
+                 debug_print):
     if diff > 0:
         try:
             result_string = 'OVERSPENT: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
