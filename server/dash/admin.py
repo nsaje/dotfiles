@@ -875,6 +875,7 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
 class OutbrainAccountAdmin(admin.ModelAdmin):
     list_display = (
         'marketer_id',
+        'marketer_name',
         'used',
         'created_dt',
         'modified_dt',
