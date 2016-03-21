@@ -163,7 +163,7 @@ def create_goals(campaign, data):
             for campaign_goal_value in campaign_goal_values:
                 goal_type = campaign_goal_value.campaign_goal.type
                 new_row.update(calculate_goal_values(row, goal_type, cost))
-        ret.append(new_row.exclude_goal_columns(new_row, campaign_goal_values))
+        ret.append(exclude_goal_columns(new_row, campaign_goal_values))
     # TODO: CPA
     return ret
 
@@ -200,7 +200,6 @@ def exclude_goal_columns(row, goal_types):
     excluded_goals = set(constants.CampaignGoalKPI.get_all()) -\
        set(map(lambda gv: gv.campaign_goal.type, goal_types))
 
-    from pudb import set_trace; set_trace()
     for excluded_goal in excluded_goals:
         goal_strings = CAMPAIGN_GOAL_MAP.get(excluded_goal, [])
         for goal_string in goal_strings:
