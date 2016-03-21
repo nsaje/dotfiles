@@ -22,6 +22,15 @@ CONTENTADSTATS_FIELD_MAPPING = {
 }
 CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MAPPING.iteritems()}
 
+CAMPAIGN_GOAL_FIELDS = [
+    'total_seconds',
+    'avg_cost_per_second',
+    'unbounced_visits',
+    'avg_cost_per_non_bounced_visitor',
+    'total_pageviews',
+    'avg_cost_per_pageview',
+]
+
 FIELD_PERMISSION_MAPPING = {
     'e_media_cost':   'zemauth.can_view_effective_costs',
     'e_data_cost':    'zemauth.can_view_effective_costs',
@@ -54,10 +63,15 @@ def filter_by_permissions(result, user):
             for field in POSTCLICK_ENGAGEMENT_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]
-        if (user.has_perm('zemauth.conversion_reports')):
+        if user.has_perm('zemauth.conversion_reports'):
             for field in CONVERSION_GOAL_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            for field in CAMPAIGN_GOAL_FIELDS:
+                if field in row:
+                    filtered_row[field] = row[field]
+
         filtered_row = {
             field: value for field, value in filtered_row.iteritems()
             if field not in FIELD_PERMISSION_MAPPING or user.has_perm(FIELD_PERMISSION_MAPPING[field])

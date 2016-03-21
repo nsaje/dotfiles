@@ -2091,13 +2091,7 @@ class PublishersTable(object):
             result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            result['total_seconds'] = totals_data.get('total_seconds', 0)
-            result['avg_cost_per_second'] = totals_data.get('avg_time_per_second', 0)
-            result['unbounced_visits'] = totals_data.get('unbounced_visits', 0)
-            result['avg_cost_per_non_bounced_visitor'] = totals_data.get('avg_cost_per_non_bounced_visitor', 0)
-            result['total_pageviews'] = totals_data.get('total_pageviews', 0)
-            result['avg_cost_per_pageview'] = totals_data.get('avg_cost_per_pageview', 0)
+        campaign_goals.copy_fields(user, totals_data, result)
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
             for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
                 result[key] = totals_data[key]
@@ -2154,13 +2148,7 @@ class PublishersTable(object):
             if user.has_perm('zemauth.view_pubs_conversion_goals'):
                 for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                     row[key] = publisher_data[key]
-            if user.has_perm('zemauth.campaign_goal_optimization'):
-                row['total_seconds'] = publisher_data.get('total_seconds', 0)
-                row['avg_cost_per_second'] = publisher_data.get('avg_time_per_second', 0)
-                row['unbounced_visits'] = publisher_data.get('unbounced_visits', 0)
-                row['avg_cost_per_non_bounced_visitor'] = publisher_data.get('avg_cost_per_non_bounced_visitor', 0)
-                row['total_pageviews'] = publisher_data.get('total_pageviews', 0)
-                row['avg_cost_per_pageview'] = publisher_data.get('avg_cost_per_pageview', 0)
+            campaign_goals.copy_fields(user, publisher_data, row)
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
                 row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']

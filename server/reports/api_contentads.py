@@ -14,15 +14,15 @@ import reports.rs_helpers as rsh
 import dash.models
 import dash.constants
 
-from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null, subtractions, from_cc, mul_expr
+from reports.rs_helpers import sum_div, sum_agr, unchanged, from_cc
 
 from utils.sort_helper import map_by_breakdown
 
 
 logger = logging.getLogger(__name__)
 
-UNBOUNCED_VISITS_FORMULA = sum_div(subtractions(sum_agr('visits'), sum_agr('bounced_visits')), 100)
+UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
+AVG_SUM_UNBOUNCED_VISITS_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
 
 
 class RSContentAdStatsModel(redshift.RSModel):
@@ -72,12 +72,12 @@ class RSContentAdStatsModel(redshift.RSModel):
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
-        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=sum_agr('total_time_on_site')),
-        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_cc,         calc=sum_div('cost_cc', 'total_time_on_site')),
-        #dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=to_percent,      calc=UNBOUNCED_VISITS_FORMULA),
-        #dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_cc,         calc=sum_div('cost_cc', UNBOUNCED_VISITS_FORMULA)),
-        #dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=to_percent,      calc=mul_expr('pv_per_visit', 'visits')),
-        #dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_cc,         calc=sum_div('cost_cc', mul_expr('pv_per_visit', 'visits'))),
+        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,     calc=sum_agr('total_time_on_site')),
+        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_cc,       calc=sum_div('cost_cc', 'total_time_on_site')),
+        dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=unchanged,     calc=UNBOUNCED_VISITS_FORMULA),
+        dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_cc,       calc=AVG_SUM_UNBOUNCED_VISITS_FORMULA.format(expr=sum_agr('cost_cc'), divisor=UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,     calc=sum_agr('pageviews')),
+        dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_cc,       calc=sum_div('cost_cc', 'pageviews')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [

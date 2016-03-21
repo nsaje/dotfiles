@@ -26,14 +26,8 @@ FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
     sum_agr('license_fee_nano'),
 )
 
-# UNBOUNCED_VISITS_FORMULA = sum_div(subtractions(sum_agr('visits'), sum_agr('bounced_visits')), 100)
 UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
-# UNBOUNCED_VISITS_FORMULA = 'visits'
-
-
 AVG_SUM_UNBOUNCED_VISITS_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
-
-
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
 

@@ -260,3 +260,15 @@ def get_campaign_goals(campaign, conversion_goals):
             'fields': fields,
         })
     return ret
+
+
+def copy_fields(user, source, dest):
+    if not user.has_perm('zemauth.campaign_goal_optimization'):
+        return
+
+    dest['total_seconds'] = source.get('total_seconds', 0)
+    dest['avg_cost_per_second'] = source.get('avg_time_per_second', 0)
+    dest['unbounced_visits'] = source.get('unbounced_visits', 0)
+    dest['avg_cost_per_non_bounced_visitor'] = source.get('avg_cost_per_non_bounced_visitor', 0)
+    dest['total_pageviews'] = source.get('total_pageviews', 0)
+    dest['avg_cost_per_pageview'] = source.get('avg_cost_per_pageview', 0)
