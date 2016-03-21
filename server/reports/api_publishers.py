@@ -40,7 +40,9 @@ class RSPublishersModel(redshift.RSModel):
         "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
         "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee",
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
-        "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos",
+        "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
+        "avg_cost_per_second", "unbounced_visits", "avg_cost_per_non_bounced_visitor",
+        "total_pageviews", "avg_cost_per_pageview"
 
     ]
     # fields that are allowed for breakdowns (app-based naming)
@@ -84,10 +86,8 @@ class RSPublishersModel(redshift.RSModel):
     _POSTCLICK_OPTIMIZATION_FIELDS = [
         dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=sum_agr('total_time_on_site')),
         dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_cc,         calc=sum_div('cost_cc', 'total_time_on_site')),
-
         dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=to_percent,      calc=UNBOUNCED_VISITS_FORMULA),
         dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_cc,         calc=sum_div('cost_cc', UNBOUNCED_VISITS_FORMULA)),
-
         dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=to_percent,      calc=mul_expr('pv_per_visit', 'visits')),
         dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_cc,         calc=sum_div('cost_cc', mul_expr('pv_per_visit', 'visits'))),
     ]

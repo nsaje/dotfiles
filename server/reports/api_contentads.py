@@ -15,17 +15,14 @@ import dash.models
 import dash.constants
 
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null
+    decimal_to_int_exact, sum_expr, extract_json_or_null, subtractions, from_cc, mul_expr
 
 from utils.sort_helper import map_by_breakdown
 
 
 logger = logging.getLogger(__name__)
 
-FORMULA_TOTAL_SECONDS = '({} * {})'.format(
-    rsh.sum_div('total_time_on_site', 'visits'),
-    sum_agr('visits'),
-)
+UNBOUNCED_VISITS_FORMULA = sum_div(subtractions(sum_agr('visits'), sum_agr('bounced_visits')), 100)
 
 
 class RSContentAdStatsModel(redshift.RSModel):
@@ -75,8 +72,12 @@ class RSContentAdStatsModel(redshift.RSModel):
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
-        dict(sql='total_seconds_sum',          app='total_seconds',       out=rsh.unchanged,       calc=rsh.sum_agr('total_time_on_site')),
-        dict(sql='total_seconds_avg_cost_sum', app='avg_cost_per_second', out=rsh.from_cc,         calc=rsh.sum_div('total_time_on_site', 'cost_cc')),
+        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=sum_agr('total_time_on_site')),
+        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_cc,         calc=sum_div('cost_cc', 'total_time_on_site')),
+        dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=to_percent,      calc=UNBOUNCED_VISITS_FORMULA),
+        dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_cc,         calc=sum_div('cost_cc', UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=to_percent,      calc=mul_expr('pv_per_visit', 'visits')),
+        dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_cc,         calc=sum_div('cost_cc', mul_expr('pv_per_visit', 'visits'))),
     ]
 
     _CONVERSION_GOAL_FIELDS = [
@@ -89,9 +90,9 @@ class RSContentAdStatsModel(redshift.RSModel):
              out=rsh.unchanged, calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
     ]
 
-    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
+    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_OPTIMIZATION_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
 
-    DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
+    DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_OPTIMIZATION_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
 
 
