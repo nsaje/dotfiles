@@ -683,7 +683,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
             $scope.columns.length,
-            true,
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization'),
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
