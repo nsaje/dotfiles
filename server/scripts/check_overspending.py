@@ -16,28 +16,24 @@ from automation import campaign_stop
 
 def create_overspend_report(date, ad_group_id, debug_print):
     if ad_group_id:
-        ad_groups = AdGroup.objects.filter(id=ad_group_id).prefetch_related('sources')
+        ad_groups = AdGroup.objects.filter(id=ad_group_id).prefetch_related('sources', 'contentad_set')
     else:
-        ad_groups = AdGroup.objects.all().prefetch_related('sources')
+        ad_groups = AdGroup.objects.all().prefetch_related('sources', 'contentad_set')
 
     # all ad groups
-    for ad_group in ad_groups.iterator():
-        if ad_group.is_archived():
-            continue
-
+    for ad_group in ad_groups.exclude_archived().iterator():
         ad_group_name = ad_group.name.encode(errors='replace')
         media_sources = ad_group.sources.filter(source_type__type=constants.SourceType.B1)
         content_ads = ad_group.contentad_set.all()
 
-        ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group, source__in=media_sources)
-        ad_group_sources_map = {ags.source: ags for ags in ad_group_sources}
-
-        # all media source for this ad group
-        for media_source in media_sources:
+        # all source for this ad group
+        ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group, source__in=media_sources).select_related(
+            'source')
+        for ad_group_source in ad_group_sources:
+            media_source = ad_group_source.source
             media_source_name = media_source.name.encode(errors='replace')
 
             #  daily budget
-            ad_group_source = ad_group_sources_map[media_source]
             next_day = date + datetime.timedelta(days=1)
             ad_group_settings = AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source,
                                                                      created_dt__lt=next_day)
@@ -60,18 +56,15 @@ def create_overspend_report(date, ad_group_id, debug_print):
 def print_result(ad_group, ad_group_name, media_source, media_source_name, daily_budget, daily_spent, diff,
                  debug_print):
     if diff > 0:
-        try:
-            result_string = 'OVERSPENT: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
-                            'Daily spent: {}, DIFF: {}'.format(
-                                ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
-                                daily_spent, diff)
+        result_string = 'OVERSPENT: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
+                        'Daily spent: {}, DIFF: {}'.format(
+                            ad_group_name, ad_group.id, media_source_name, media_source.id, daily_budget,
+                            daily_spent, diff)
 
-            # if overspend exceeds 1$ then mark it
-            if diff > 1:
-                result_string += ' *****************'
-            print(result_string)
-        except UnicodeEncodeError:
-            print('Error printing AdGroup.id=' + str(ad_group.id))
+        # if overspend exceeds 1$ then mark it
+        if diff > 1:
+            result_string += ' *****************'
+        print(result_string)
     elif debug_print:
         result_string = 'OK: AdGroup {} [id={}], MediaSource: {} [id={}], Daily budget: {}, ' \
                         'Daily spent: {}'.format(
