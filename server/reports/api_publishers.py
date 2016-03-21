@@ -182,7 +182,7 @@ def prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, 
 
 
 def _convert_exchange_to_source_id(aggregated_blacklist):
-    exchanges = set(filter(lambda x: x is not None, (agg.get('exchange', None) for agg in aggregated_blacklist)))
+    exchanges = set(filter(lambda x: x is not None, (agg.get('exchange') for agg in aggregated_blacklist)))
 
     sources = Source.objects.filter(bidder_slug__in=exchanges).values('id', 'bidder_slug')
     sources_by_exchange = {s['bidder_slug']: s['id'] for s in sources}

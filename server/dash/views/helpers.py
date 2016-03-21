@@ -997,11 +997,14 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_settings(request, ad_group_source, source_settings,
-                                 mobile_only=False, active=False, send_action=False):
+def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False, send_action=False):
+    cpc_cc = ad_group_source.source.default_cpc_cc
+    if mobile_only:
+        cpc_cc = ad_group_source.source.default_mobile_cpc_cc
+
     resource = {
-        'daily_budget_cc': source_settings.daily_budget_cc,
-        'cpc_cc': source_settings.mobile_cpc_cc if mobile_only else source_settings.default_cpc_cc,
+        'daily_budget_cc': ad_group_source.source.default_daily_budget_cc,
+        'cpc_cc': cpc_cc,
         'state': constants.ContentAdSourceState.ACTIVE if active else constants.ContentAdSourceState.INACTIVE
     }
 

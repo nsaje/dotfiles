@@ -1045,7 +1045,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
-            constraints={'ad_group': ad_group.id, 'exchange': ['adiant']},
+            constraints={'ad_group': ad_group.id, 'source': [7]},
             constraints_list=[],
         )
 
@@ -1064,7 +1064,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown=['publisher', 'source'],
             conversion_goals=[touchpoint_conversion_goal],
-            constraints={'ad_group': ad_group.id, 'exchange': ['adiant']},
+            constraints={'ad_group': ad_group.id, 'source': [7]},
             constraints_list=[],
         )
 
