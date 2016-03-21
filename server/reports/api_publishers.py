@@ -28,6 +28,10 @@ FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
 
 UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
 AVG_SUM_UNBOUNCED_VISITS_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
+
+AVG_TOS = sum_div('total_time_on_site', 'visits')
+COST_PER_AVG_VISIT = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
+
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
 
@@ -83,8 +87,8 @@ class RSPublishersModel(redshift.RSModel):
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
-        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=sum_agr('total_time_on_site')),
-        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_nano,       calc=sum_div('cost_nano', 'total_time_on_site')),
+        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=AVG_TOS),
+        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_nano,       calc=COST_PER_AVG_VISIT.format(expr=sum_agr('cost_nano'), divisor=AVG_TOS)),
         dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=unchanged,       calc=UNBOUNCED_VISITS_FORMULA),
         dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_nano,       calc=AVG_SUM_UNBOUNCED_VISITS_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
         dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,       calc=sum_agr('pageviews')),
