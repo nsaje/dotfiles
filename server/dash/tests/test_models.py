@@ -306,7 +306,8 @@ class CampaignSettingsTest(TestCase):
             'target_regions': [u'CA', u'501'],
             'service_fee': Decimal('0.2000'),
             'campaign_goal': 2,
-            'goal_quantity': Decimal('10.00')
+            'goal_quantity': Decimal('10.00'),
+            'automatic_landing_mode': False,
         }
 
         self.assertEqual(

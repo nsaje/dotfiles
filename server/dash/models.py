@@ -601,7 +601,8 @@ class CampaignSettings(SettingsBase):
         'promotion_goal',
         'archived',
         'target_devices',
-        'target_regions'
+        'target_regions',
+        'automatic_landing_mode',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -647,6 +648,7 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+    automatic_landing_mode = models.BooleanField(default=False)
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
@@ -709,6 +711,7 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'automatic_landing_mode': 'Automatic Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -732,6 +735,8 @@ class CampaignSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
+        elif prop_name == 'automatic_landing_mode':
+            value = str(value)
         elif prop_name == 'archived':
             value = str(value)
 

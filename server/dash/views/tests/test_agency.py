@@ -1839,7 +1839,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
-                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'}
+                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
+                {'name': 'Automatic Landing Mode', 'value': 'False'},
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'
