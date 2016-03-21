@@ -788,28 +788,28 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     var initColumns = function () {
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.content_ads_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.content_ads_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
         );
 
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.conversion_reports'),
             $scope.isPermissionInternal('zemauth.conversion_reports')
         );
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.campaign_goal_optimization'),
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
