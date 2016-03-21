@@ -49,6 +49,8 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
+from automation import campaign_stop
+
 from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
@@ -1070,6 +1072,17 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'autopilot_state' in resource and\
                 resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        if 'daily_budget_cc' in resource and campaign_settings.automatic_landing_mode:
+            max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
+            if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
+                errors.update({
+                    'daily_budget_cc': 'Daily budget is too high. '
+                                       'Maximum daily budget can be up to {max_daily_budget}.'.format(
+                                           max_daily_budget=max_daily_budget
+                                       )
+                })
 
         if errors:
             raise exc.ValidationError(errors=errors)
