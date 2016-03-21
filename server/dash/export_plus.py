@@ -3,6 +3,7 @@ import urllib
 
 import unicodecsv
 import StringIO
+import re
 import slugify
 import time
 from decimal import Decimal
@@ -87,7 +88,7 @@ FORMAT_EMPTY_TO_0 = [
 ]
 
 FORMAT_URLS = ['url', 'image_url']
-FORMAT_URLS_CSV_SAFE_CHARACTERS = ':/?@&=+$'  # , and ; are not safe
+FORMAT_URLS_CSV_NOT_SAFE_CHARACTERS = [',',';']
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
@@ -444,8 +445,8 @@ def _format_decimals(value, field):
 
 
 def _format_urls(value, field):
-    if field in FORMAT_URLS:
-        return urllib.quote(value, safe=FORMAT_URLS_CSV_SAFE_CHARACTERS)
+    if field in FORMAT_URLS and any(char in value for char in FORMAT_URLS_CSV_NOT_SAFE_CHARACTERS):
+        return '"'+value+'"'
     return value
 
 
