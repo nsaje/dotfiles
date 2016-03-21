@@ -34,17 +34,14 @@ def create_campaign_goal(request, form, campaign, value=None, conversion_goal=No
         conversion_goal=conversion_goal,
     )
 
-    new_settings = campaign.get_current_settings().copy_settings()
-    new_settings.changes_text = u'Added campaign goal "{}{}"'.format(
-        (str(value) + ' ') if value else '',
-        constants.CampaignGoalKPI.get_text(goal.type)
-    )
-    new_settings.save(request)
-
-    helpers.log_useraction_if_necessary(
+    _add_entry_to_history(
         request,
+        campaign,
         constants.UserActionType.CREATE_CAMPAIGN_GOAL,
-        campaign=campaign
+        u'Added campaign goal "{}{}"'.format(
+            (str(value) + ' ') if value else '',
+            constants.CampaignGoalKPI.get_text(goal.type)
+        )
     )
 
     return goal
@@ -60,16 +57,13 @@ def delete_campaign_goal(request, goal_id, campaign):
     models.CampaignGoalValue.objects.filter(campaign_goal_id=goal_id).delete()
     goal.delete()
 
-    new_settings = campaign.get_current_settings().copy_settings()
-    new_settings.changes_text = u'Deleted campaign goal "{}"'.format(
-        constants.CampaignGoalKPI.get_text(goal.type)
-    )
-    new_settings.save(request)
-
-    helpers.log_useraction_if_necessary(
+    _add_entry_to_history(
         request,
+        campaign,
         constants.UserActionType.DELETE_CAMPAIGN_GOAL,
-        campaign=campaign
+        u'Deleted campaign goal "{}"'.format(
+            constants.CampaignGoalKPI.get_text(goal.type)
+        )
     )
 
 
@@ -81,17 +75,14 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
     goal_value.save(request)
 
     if not skip_history:
-        new_settings = campaign.get_current_settings().copy_settings()
-        new_settings.changes_text = u'Changed campaign goal value: "{} {}"'.format(
-            value,
-            constants.CampaignGoalKPI.get_text(goal.type)
-        )
-        new_settings.save(request)
-
-        helpers.log_useraction_if_necessary(
+        _add_entry_to_history(
             request,
+            campaign,
             constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
-            campaign=campaign
+            u'Changed campaign goal value: "{} {}"'.format(
+                value,
+                constants.CampaignGoalKPI.get_text(goal.type)
+            )
         )
 
 
@@ -101,16 +92,13 @@ def set_campaign_goal_primary(request, campaign, goal_id):
     goal.primary = True
     goal.save()
 
-    new_settings = campaign.get_current_settings().copy_settings()
-    new_settings.changes_text = u'Campaign goal "{}" set as primary'.format(
-        constants.CampaignGoalKPI.get_text(goal.type)
-    )
-    new_settings.save(request)
-
-    helpers.log_useraction_if_necessary(
+    _add_entry_to_history(
         request,
-        constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
-        campaign=campaign
+        campaign,
+        constants.UserActionType.CHANGE_PRIMARY_CAMPAIGN_GOAL,
+        u'Campaign goal "{}" set as primary'.format(
+            constants.CampaignGoalKPI.get_text(goal.type)
+        )
     )
 
 
@@ -137,18 +125,15 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
         models.CampaignGoal.objects.filter(conversion_goal=conversion_goal).delete()
         conversion_goal.delete()
 
-        new_settings = campaign.get_current_settings().copy_settings()
-        new_settings.changes_text = u'Deleted conversion goal "{}"'.format(
-            conversion_goal.name,
-            constants.ConversionGoalType.get_text(conversion_goal.type)
+        _add_entry_to_history(
+            request,
+            campaign,
+            constants.UserActionType.DELETE_CONVERSION_GOAL,
+            u'Deleted conversion goal "{}"'.format(
+                conversion_goal.name,
+                constants.ConversionGoalType.get_text(conversion_goal.type)
+            )
         )
-        new_settings.save(request)
-
-    helpers.log_useraction_if_necessary(
-        request,
-        constants.UserActionType.DELETE_CONVERSION_GOAL,
-        campaign=campaign
-    )
 
 
 def create_conversion_goal(request, form, campaign, value=None):
@@ -188,17 +173,14 @@ def create_conversion_goal(request, form, campaign, value=None):
             request, campaign_goal_form, campaign, conversion_goal=conversion_goal, value=value
         )
 
-    new_settings = campaign.get_current_settings().copy_settings()
-    new_settings.changes_text = u'Added conversion goal with name "{}" of type {}'.format(
-        conversion_goal.name,
-        constants.ConversionGoalType.get_text(conversion_goal.type)
-    )
-    new_settings.save(request)
-
-    helpers.log_useraction_if_necessary(
+    _add_entry_to_history(
         request,
+        campaign,
         constants.UserActionType.CREATE_CONVERSION_GOAL,
-        campaign=campaign
+        u'Added conversion goal with name "{}" of type {}'.format(
+            conversion_goal.name,
+            constants.ConversionGoalType.get_text(conversion_goal.type)
+        )
     )
 
     return conversion_goal, campaign_goal
@@ -310,3 +292,15 @@ def get_campaign_goals(campaign):
             'fields': {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
         })
     return ret
+
+
+def _add_entry_to_history(request, campaign, action_type, changes_text):
+    new_settings = campaign.get_current_settings().copy_settings()
+    new_settings.changes_text = changes_text
+    new_settings.save(request)
+
+    helpers.log_useraction_if_necessary(
+        request,
+        action_type,
+        campaign=campaign
+    )

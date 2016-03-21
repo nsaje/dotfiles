@@ -1198,6 +1198,7 @@ class UserActionType(ConstantBase):
     CREATE_CAMPAIGN_GOAL = 29
     DELETE_CAMPAIGN_GOAL = 30
     CHANGE_CAMPAIGN_GOAL_VALUE = 31
+    CHANGE_PRIMARY_CAMPAIGN_GOAL = 32
 
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
@@ -1231,6 +1232,7 @@ class UserActionType(ConstantBase):
         CREATE_CAMPAIGN_GOAL: 'Create Campaign Goal',
         DELETE_CAMPAIGN_GOAL: 'Delete Campaign Goal',
         CHANGE_CAMPAIGN_GOAL_VALUE: 'Change Campaign Goal Value',
+        CHANGE_PRIMARY_CAMPAIGN_GOAL: 'Change Primary Campaign Goal'
     }
 
 
