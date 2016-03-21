@@ -8,10 +8,11 @@ from dash import constants
 os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
 django.setup()
 
-from django.db.models import Sum
-from dash.models import AdGroup, AdGroupSourceSettings, AdGroupSource
-from reports.models import ContentAdStats
-from automation import campaign_stop
+# django has to be started before the models are imported
+from django.db.models import Sum  # noqa
+from dash.models import AdGroup, AdGroupSourceSettings, AdGroupSource  # noqa
+from reports.models import ContentAdStats  # noqa
+from automation import campaign_stop  # noqa
 
 
 def create_overspend_report(date, ad_group_id, debug_print):
