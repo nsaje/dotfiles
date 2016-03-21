@@ -577,9 +577,12 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(request, new_settings, campaign, settings_form.cleaned_data)
         self.set_campaign(campaign, settings_form.cleaned_data)
 
-        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
-        helpers.log_and_notify_campaign_settings_change(campaign, current_settings, new_settings, request,
-                                                        constants.UserActionType.SET_CAMPAIGN_SETTINGS)
+        if current_settings.get_setting_changes(new_settings):
+            helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+            helpers.log_and_notify_campaign_settings_change(
+                campaign, current_settings, new_settings, request,
+                constants.UserActionType.SET_CAMPAIGN_SETTINGS
+            )
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign)
@@ -621,25 +624,31 @@ class CampaignSettings(api_common.BaseApiView):
                 conversion_goal, goal_added = campaign_goals.create_conversion_goal(
                     request,
                     conversion_form,
-                    campaign
+                    campaign,
+                    value=goal['value']
                 )
 
             else:
                 goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
                 errors.append(dict(goal_form.errors))
-                goal_added = campaign_goals.create_campaign_goal(request, goal_form, campaign)
+                goal_added = campaign_goals.create_campaign_goal(
+                    request, goal_form, campaign, value=goal['value']
+                )
 
             if is_primary:
                 new_primary_id = goal_added.pk
 
-            campaign_goals.add_campaign_goal_value(request, goal_added.pk, goal['value'])
+            campaign_goals.add_campaign_goal_value(
+                request, goal_added, goal['value'], campaign, skip_history=True
+            )
 
         for goal_id, value in changes['modified'].iteritems():
-            campaign_goals.add_campaign_goal_value(request, goal_id, value)
+            goal = models.CampaignGoal.objects.get(pk=goal_id)
+            campaign_goals.add_campaign_goal_value(request, goal, value, campaign)
 
         removed_goals = {goal['id'] for goal in changes['removed']}
         for goal_id in removed_goals:
-            campaign_goals.delete_campaign_goal(request, goal_id)
+            campaign_goals.delete_campaign_goal(request, goal_id, campaign)
 
         new_primary_id = new_primary_id or changes['primary']
         if new_primary_id and new_primary_id not in removed_goals:
