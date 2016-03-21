@@ -14,10 +14,18 @@ import reports.rs_helpers as rsh
 import dash.models
 import dash.constants
 
+from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
+    decimal_to_int_exact, sum_expr, extract_json_or_null
+
 from utils.sort_helper import map_by_breakdown
 
 
 logger = logging.getLogger(__name__)
+
+FORMULA_TOTAL_SECONDS = '({} * {})'.format(
+    rsh.sum_div('total_time_on_site', 'visits'),
+    sum_agr('visits'),
+)
 
 
 class RSContentAdStatsModel(redshift.RSModel):
@@ -31,14 +39,13 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='adgroup_id',            app='ad_group',           out=rsh.unchanged),
         dict(sql='campaign_id',           app='campaign',           out=rsh.unchanged),
         dict(sql='account_id',            app='account',            out=rsh.unchanged),
-    ] 
+    ]
 
     _TRAFFIC_FIELDS = [
         dict(sql='clicks_sum',            app='clicks',             out=rsh.unchanged,            calc=rsh.sum_agr('clicks')),
         dict(sql='impressions_sum',       app='impressions',        out=rsh.unchanged,            calc=rsh.sum_agr('impressions')),
         dict(sql='cost_cc_sum',           app='cost',               out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
         dict(sql='data_cost_cc_sum',      app='data_cost',          out=rsh.from_cc,              calc=rsh.sum_agr('data_cost_cc')),
-        
         # BCM
         dict(sql='media_cost_cc_sum',     app='media_cost',         out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
         dict(sql='e_media_cost_nano_sum', app='e_media_cost',       out=rsh.from_nano,            calc=rsh.sum_agr('effective_cost_nano')),
@@ -65,6 +72,11 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='bounce_rate',           app='bounce_rate',        out=rsh.to_percent,           calc=rsh.sum_div('bounced_visits', 'visits')),
         dict(sql='pv_per_visit',          app='pv_per_visit',       out=rsh.unchanged,            calc=rsh.sum_div('pageviews', 'visits')),
         dict(sql='avg_tos',               app='avg_tos',            out=rsh.unchanged,            calc=rsh.sum_div('total_time_on_site', 'visits')),
+    ]
+
+    _POSTCLICK_OPTIMIZATION_FIELDS = [
+        dict(sql='total_seconds_sum',          app='total_seconds',       out=rsh.unchanged,       calc=rsh.sum_agr('total_time_on_site')),
+        dict(sql='total_seconds_avg_cost_sum', app='avg_cost_per_second', out=rsh.from_cc,         calc=rsh.sum_div('total_time_on_site', 'cost_cc')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [

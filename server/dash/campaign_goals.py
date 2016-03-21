@@ -163,7 +163,7 @@ def create_goals(campaign, data):
             for campaign_goal_value in campaign_goal_values:
                 goal_type = campaign_goal_value.campaign_goal.type
                 new_row.update(calculate_goal_values(row, goal_type, cost))
-        ret.append(new_row)
+        ret.append(new_row.exclude_goal_columns(new_row, campaign_goal_values))
     # TODO: CPA
     return ret
 
@@ -177,6 +177,8 @@ def create_goal_totals(campaign, data, cost):
     for campaign_goal_value in campaign_goal_values:
         goal_type = campaign_goal_value.campaign_goal.type
         ret.update(calculate_goal_values(data, goal_type, cost))
+
+    ret = exclude_goal_columns(ret, campaign_goal_values)
     # TODO: CPA
     return ret
 
@@ -192,15 +194,24 @@ def get_campaign_goal_values(campaign):
     )
 
 
+def exclude_goal_columns(row, goal_types):
+    ret_row = dict(row)
+
+    excluded_goals = set(constants.CampaignGoalKPI.get_all()) -\
+       set(map(lambda gv: gv.campaign_goal.type, goal_types))
+
+    from pudb import set_trace; set_trace()
+    for excluded_goal in excluded_goals:
+        goal_strings = CAMPAIGN_GOAL_MAP.get(excluded_goal, [])
+        for goal_string in goal_strings:
+            ret_row.pop(goal_string, None)
+
+    return ret_row
+
+
 def calculate_goal_values(row, goal_type, cost):
     ret = {}
-    if goal_type == constants.CampaignGoalKPI.TIME_ON_SITE:
-        total_seconds = (row.get('avg_tos') or 0) *\
-            (row.get('visits') or 0)
-        ret['total_seconds'] = total_seconds
-        ret['avg_cost_per_second'] = float(cost) / total_seconds if\
-            total_seconds != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
+    if goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
         unbounced_rate = 100.0 - (row.get('bounce_rate') or 0)
         unbounced_visits = (unbounced_rate / 100.0) * (row.get('visits', 0) or 0)
         ret['unbounced_visits'] = unbounced_visits

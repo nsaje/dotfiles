@@ -9,7 +9,7 @@ from dash import conversions_helper
 from dash.models import Source
 from reports import redshift
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null
+    decimal_to_int_exact, sum_expr, extract_json_or_null, from_cc
 
 from utils import s3helpers
 
@@ -78,12 +78,21 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='avg_tos',             app='avg_tos',              out=unchanged,      calc=sum_div('total_time_on_site', 'visits')),
     ]
 
+    _POSTCLICK_OPTIMIZATION_FIELDS = [
+        dict(sql='total_seconds_sum',          app='total_seconds',       out=unchanged,       calc=sum_agr('total_time_on_site')),
+        dict(sql='total_seconds_avg_cost_sum', app='avg_cost_per_second', out=from_cc,         calc=sum_div('total_time_on_site', 'cost_cc')),
+    ]
+
     _CONVERSION_GOAL_FIELDS = [
         dict(sql='conversions', app='conversions', out=decimal_to_int_exact,
              calc=sum_expr(extract_json_or_null('conversions')), num_json_params=2)
     ]
 
-    FIELDS = _FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _CONVERSION_GOAL_FIELDS
+    FIELDS = _FIELDS +\
+        _POSTCLICK_ACQUISITION_FIELDS +\
+        _POSTCLICK_ENGAGEMENT_FIELDS +\
+        _POSTCLICK_OPTIMIZATION_FIELDS +\
+        _CONVERSION_GOAL_FIELDS
 
 
 rs_pub = RSPublishersModel()
