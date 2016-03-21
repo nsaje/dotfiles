@@ -11,6 +11,7 @@ import utils.statsd_helper
 from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
+import k1campaignsapi.views
 import actionlog.views
 import convapi.views
 import reports.views
@@ -523,10 +524,15 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^k1campaignsapi/accounts/(?P<action_id>\d+)$',
-        zweiapi.views.zwei_callback,
-        name='api.zwei_callback',
-    )
+        r'^k1campaignsapi/$',
+        k1campaignsapi.views.get_campaign_data,
+        name='k1campaignsapi.get_campaign_data',
+    ),
+    url(
+        r'^k1campaignsapi/(?P<media_source>\d+)$',
+        k1campaignsapi.views.get_campaign_data,
+        name='k1campaignsapi.get_campaign_data',
+    ),
 )
 
 # Crossvalidation Api
