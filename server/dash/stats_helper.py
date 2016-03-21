@@ -160,6 +160,7 @@ def _get_conversion_goals(start_date,
         touchpoint_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(
             adg_blacklisted_publishers, touchpoint_breakdown_fields, True)
 
+    constraints = conversions_helper.convert_constraint_exchanges_to_source_ids(constraints)
     touchpoint_data = api_touchpointconversions.query(
             start_date, end_date,
             breakdown=touchpoint_breakdown_fields,

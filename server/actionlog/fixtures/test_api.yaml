@@ -196,6 +196,9 @@
         tracking_slug: 'gravity'
         source_type: 2
         maintenance: false
+        default_cpc_cc: 0.18
+        default_mobile_cpc_cc: 0.22
+        default_daily_budget_cc: 22
     model: dash.source
     pk: 2
 
@@ -206,6 +209,8 @@
         tracking_slug: 'outbrain'
         source_type: 3
         maintenance: false
+        default_daily_budget_cc: 22
+        default_mobile_cpc_cc: 0.22
     model: dash.source
     pk: 3
 
@@ -216,6 +221,8 @@
         tracking_slug: 'taboola'
         source_type: 4
         maintenance: false
+        default_daily_budget_cc: 23
+        default_mobile_cpc_cc: 0.23
     model: dash.source
     pk: 4
 
@@ -226,6 +233,7 @@
         tracking_slug: 'yahoo'
         source_type: 5
         maintenance: false
+        default_mobile_cpc_cc: 0.24
     model: dash.source
     pk: 5
 
@@ -273,6 +281,7 @@
         bidder_slug: 'sharethrough'
         content_ad_submission_type: 1
         supports_retargeting: true
+        default_daily_budget_cc: 24
     model: dash.source
     pk: 9
 
@@ -777,9 +786,6 @@
         source: 2
         credentials: 2
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
-        default_cpc_cc: 0.18
-        mobile_cpc_cc: 0.22
-        daily_budget_cc: 22
     model: dash.defaultsourcesettings
     pk: 1
 
@@ -787,8 +793,6 @@
         source: 3
         credentials: 3
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
-        mobile_cpc_cc: 0.22
-        daily_budget_cc: 22
     model: dash.defaultsourcesettings
     pk: 2
 
@@ -796,8 +800,6 @@
         source: 4
         credentials: 3
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
-        mobile_cpc_cc: 0.23
-        daily_budget_cc: 23
     model: dash.defaultsourcesettings
     pk: 3
 
@@ -805,8 +807,6 @@
         source: 9
         credentials: 3
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
-        mobile_cpc_cc: 0.24
-        daily_budget_cc: 24
     model: dash.defaultsourcesettings
     pk: 4
 

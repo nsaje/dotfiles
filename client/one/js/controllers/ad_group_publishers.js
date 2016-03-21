@@ -723,18 +723,19 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
                 $scope.obBlacklistedCount = data.obBlacklistedCount;
+                $scope.campaignGoals = data.campaign_goals;
 
                 $scope.recountOutbrainPublishers();
                 $scope.updatePublisherSelection();
                 $scope.updateOutbrainPublisherSelection();
                 $scope.updateRowBlacklistInfo();
+                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.view_pubs_conversion_goals'));
             },
             function (data) {
