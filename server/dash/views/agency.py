@@ -283,7 +283,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        if ad_group.campaign.landing_mode:
+        if ad_group.campaign.is_in_landing():
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSettingsState.ACTIVE and \

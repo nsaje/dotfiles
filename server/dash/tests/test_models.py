@@ -308,6 +308,7 @@ class CampaignSettingsTest(TestCase):
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
             'automatic_landing_mode': False,
+            'landing_mode': False,
         }
 
         self.assertEqual(

@@ -1053,7 +1053,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'autopilot_state' in resource and not autopilot_form.is_valid():
             errors.update(autopilot_form.errors)
 
-        if ad_group.campaign.landing_mode:
+        if ad_group.campaign.is_in_landing():
             for key in resource.keys():
                 errors.update({key: 'Not allowed'})
 

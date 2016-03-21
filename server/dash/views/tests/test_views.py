@@ -178,8 +178,9 @@ class AdGroupSourceSettingsTest(TestCase):
         new_settings.save(None)
 
     def _set_campaign_landing_mode(self):
-        self.ad_group.campaign.landing_mode = True
-        self.ad_group.campaign.save(None)
+        new_campaign_settings = self.ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
     def _set_campaign_automatic_landing_mode(self, automatic_landing_mode):
         current_settings = self.ad_group.campaign.get_current_settings()

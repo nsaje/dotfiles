@@ -362,7 +362,6 @@ class Campaign(models.Model, PermissionMixin):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
-    landing_mode = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
 
@@ -449,6 +448,10 @@ class Campaign(models.Model, PermissionMixin):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save(request)
+
+    def is_in_landing(self):
+        current_settings = self.get_current_settings()
+        return current_settings.landing_mode
 
     def save(self, request, *args, **kwargs):
         self.modified_by = None
@@ -604,6 +607,7 @@ class CampaignSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'automatic_landing_mode',
+        'landing_mode'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -614,7 +618,8 @@ class CampaignSettings(SettingsBase):
     )
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
+                                   null=True, blank=True)
     campaign_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -649,7 +654,9 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+
     automatic_landing_mode = models.BooleanField(default=False)
+    landing_mode = models.BooleanField(default=False)
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
@@ -658,7 +665,10 @@ class CampaignSettings(SettingsBase):
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
-            self.created_by = request.user
+            if request is None:
+                self.created_by = None
+            else:
+                self.created_by = request.user
 
         super(CampaignSettings, self).save(*args, **kwargs)
 
@@ -713,6 +723,7 @@ class CampaignSettings(SettingsBase):
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'automatic_landing_mode': 'Automatic Landing Mode',
+            'landing_mode': 'Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -737,6 +748,8 @@ class CampaignSettings(SettingsBase):
             else:
                 value = 'worldwide'
         elif prop_name == 'automatic_landing_mode':
+            value = str(value)
+        elif prop_name == 'landing_mode':
             value = str(value)
         elif prop_name == 'archived':
             value = str(value)

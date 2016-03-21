@@ -138,31 +138,106 @@ class SwitchToLandingModeTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
-    @patch('utils.email_helper.send_notification_mail')
-    @patch('automation.campaign_stop.get_minimum_remaining_budget')
-    def test_send_stop_campaign_email(self, mock_get_mrb, mock_send_email):
-        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+    def setUp(self):
+        for campaign in dash.models.Campaign.objects.exclude(id=1):
+            new_settings = campaign.get_current_settings().copy_settings()
+            new_settings.landing_mode = True
+            new_settings.save(None)
 
-        dash.models.Campaign.objects.all().update(landing_mode=True)
-        c1 = dash.models.Campaign.objects.get(id=1)
-        c1.landing_mode = False
-        c1.save(None)
-
-        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
-        self.assertTrue(mock_send_email.called)
+        new_settings = dash.models.Campaign.objects.get(id=1).get_current_settings().copy_settings()
+        new_settings.landing_mode = False
+        new_settings.save(None)
 
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
-    def test_send_depleting_budget_notification_email(self, mock_get_mrb, mock_send_email):
+    def test_depleting_budget(self, mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('150'), Decimal('100')
 
-        dash.models.Campaign.objects.all().update(landing_mode=True)
-        c1 = dash.models.Campaign.objects.get(id=1)
-        c1.landing_mode = False
-        c1.save(None)
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        self.assertTrue(mock_send_email.called)
+
+    @patch('actionlog.zwei_actions.send')
+    @patch('automation.campaign_stop._send_campaign_stop_notification_email')
+    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    def test_switch_to_landing_mode(self, mock_get_mrb, mock_send_email, mock_send_actions):
+        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        for ad_group in campaign.adgroup_set.all():
+            current_settings = ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
+            new_settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=30)
+            new_settings.save(None)
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
         self.assertTrue(mock_send_email.called)
+
+        current_campaign_settings = campaign.get_current_settings()
+        self.assertTrue(current_campaign_settings.landing_mode)
+
+        for ad_group in campaign.adgroup_set.all():
+            self.assertEqual(datetime.datetime.utcnow().date(), ad_group.get_current_settings().end_date)
+
+        self.assertTrue(mock_send_actions.called)
+        self.assertEqual(sum(len(list(ag.sources.all())) for ag in campaign.adgroup_set.all().exclude_archived()),
+                         len(mock_send_actions.call_args[0][0]))
+
+    @patch('automation.campaign_stop._switch_to_landing_mode')
+    @patch('automation.campaign_stop._send_campaign_stop_notification_email')
+    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    def test_switch_to_landing_mode_manual(self, mock_get_mrb, mock_send_email, mock_switch_to_landing):
+        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.automatic_landing_mode = False
+        new_campaign_settings.save(None)
+
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        self.assertFalse(mock_get_mrb.called)
+        self.assertFalse(mock_send_email.called)
+        self.assertFalse(mock_switch_to_landing.called)
+
+    @patch('automation.campaign_stop._switch_to_landing_mode')
+    @patch('automation.campaign_stop._send_campaign_stop_notification_email')
+    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    def test_switch_to_landing_mode_already_landing(self, mock_get_mrb, mock_send_email, mock_switch_to_landing):
+        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.automatic_landing_mode = True
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
+
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        self.assertFalse(mock_get_mrb.called)
+        self.assertFalse(mock_send_email.called)
+        self.assertFalse(mock_switch_to_landing.called)
+
+    @patch('actionlog.zwei_actions.send')
+    @patch('automation.campaign_stop._send_campaign_stop_notification_email')
+    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    def test_switch_to_landing_mode_archived_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
+        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        in_30_days = datetime.datetime.utcnow().date() + datetime.timedelta(days=30)
+        for ad_group in campaign.adgroup_set.all():
+            current_settings = ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
+            new_settings.end_date = in_30_days
+            new_settings.archived = True
+            new_settings.save(None)
+
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        self.assertTrue(mock_send_email.called)
+
+        current_campaign_settings = campaign.get_current_settings()
+        self.assertTrue(current_campaign_settings.landing_mode)
+
+        for ad_group in campaign.adgroup_set.all():
+            self.assertEqual(in_30_days, ad_group.get_current_settings().end_date)
 
 
 class GetMaxSettableDailyBudget(TestCase):

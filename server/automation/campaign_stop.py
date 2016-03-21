@@ -4,6 +4,9 @@ import datetime
 import logging
 import decimal
 
+from django.db import transaction
+
+from actionlog import zwei_actions
 import dash.constants
 import dash.models
 from utils import dates_helper, email_helper, url_helper
@@ -19,13 +22,56 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    for campaign in dash.models.Campaign.objects.filter(landing_mode=False).iterator():
+    campaigns = dash.models.Campaign.objects.all()
+    campaign_settings_map = {
+        sett.campaign_id: sett for sett in dash.models.CampaignSettings.objects.all().group_current_settings()
+    }
+
+    for campaign in campaigns:
+        campaign_settings = campaign_settings_map.get(campaign.id)
+        if campaign_settings is None:
+            campaign_settings = dash.models.CampaignSettings(
+                campaign,
+                **dash.models.CampaignSettings.get_defaults_dict()
+            )
+
+        if campaign.id not in campaign_settings_map or\
+           not campaign_settings.automatic_landing_mode or\
+           campaign_settings.landing_mode:
+            continue
+
         available_tomorrow, max_daily_budget = get_minimum_remaining_budget(campaign)
         if available_tomorrow < max_daily_budget:
-            # TODO: switch to landing mode
+            _switch_to_landing_mode(campaign)
             _send_campaign_stop_notification_email(campaign)
         elif available_tomorrow < max_daily_budget * 2:
             _send_depleting_budget_notification_email(campaign)
+
+
+def _switch_to_landing_mode(campaign):
+    actions = []
+    with transaction.atomic():
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
+
+        for ad_group in campaign.adgroup_set.all().exclude_archived():
+            current_ag_settings = ad_group.get_current_settings()
+            new_ag_settings = current_ag_settings.copy_settings()
+            new_ag_settings.end_date = dates_helper.utc_today()
+            new_ag_settings.save(None)
+
+            actions.extend(
+                dash.api.order_ad_group_settings_update(
+                    ad_group,
+                    current_ag_settings,
+                    new_ag_settings,
+                    request=None,
+                    send=False,
+                )
+            )
+
+    zwei_actions.send(actions)
 
 
 def get_minimum_remaining_budget(campaign):
