@@ -10,6 +10,7 @@ from django.db.models import Sum, F, ExpressionWrapper, Prefetch
 
 import dash.constants
 import dash.models
+import dash.campaign_goals
 import zemauth.models
 import reports.api_contentads
 import reports.models
@@ -19,24 +20,6 @@ import utils.lc_helper
 from decimal import Decimal
 
 MAX_PREVIEW_REGIONS = 1
-
-CAMPAIGN_GOAL_NAME_FORMAT = {
-    dash.constants.CampaignGoalKPI.TIME_ON_SITE: '{} seconds on site',
-    dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} bounce rate',
-    dash.constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
-    dash.constants.CampaignGoalKPI.CPA: '{} CPA',
-    dash.constants.CampaignGoalKPI.CPC: '{} CPC',
-    dash.constants.CampaignGoalKPI.CPM: '{} CPM',
-}
-
-CAMPAIGN_GOAL_VALUE_FORMAT = {
-    dash.constants.CampaignGoalKPI.TIME_ON_SITE: lambda x: '{:.2f} s'.format(x),
-    dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: lambda x: '{:.2f} s'.format(x),
-    dash.constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f} s'.format(x),
-    dash.constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
-    dash.constants.CampaignGoalKPI.CPC: utils.lc_helper.default_currency,
-    dash.constants.CampaignGoalKPI.CPM: utils.lc_helper.default_currency,
-}
 
 
 class OverviewSetting(object):
@@ -649,14 +632,15 @@ def get_campaign_goal_list(user, campaign):
     settings = []
     for i, campaign_goal in enumerate(goals):
         def format_value(val):
-            return val and CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) or 'N/A'
+            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
+                or 'N/A'
 
         goal_values = campaign_goal.values.all()
         planned_value = goal_values and goal_values[0].value
 
         current_value = None
 
-        goal_description = CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
+        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
             format_value(current_value)
         )
         if campaign_goal.conversion_goal:
