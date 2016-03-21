@@ -210,20 +210,22 @@ def exclude_goal_columns(row, goal_types):
 
 def calculate_goal_values(row, goal_type, cost):
     ret = {}
+    """
     if goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
         unbounced_rate = 100.0 - (row.get('bounce_rate') or 0)
         unbounced_visits = (unbounced_rate / 100.0) * (row.get('visits', 0) or 0)
         ret['unbounced_visits'] = unbounced_visits
         ret['avg_cost_per_non_bounced_visitor'] = float(cost) / unbounced_visits if\
             unbounced_visits != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.PAGES_PER_SESSION:
+    if goal_type == constants.CampaignGoalKPI.PAGES_PER_SESSION:
         total_pageviews = (row.get('pv_per_visit') or 0) *\
             (row.get('visits') or 0)
         ret['total_pageviews'] = total_pageviews
         # avg. cost per pageview
         ret['avg_cost_per_pageview'] = float(cost) / total_pageviews if\
             total_pageviews != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.CPA:
+    """
+    if goal_type == constants.CampaignGoalKPI.CPA:
         goal_index = 1
         goal_name = ""
         while goal_index == 1 or goal_name in row:
