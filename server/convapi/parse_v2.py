@@ -89,6 +89,24 @@ class ReportRow(object):
     def __str__(self):
         return self.raw_row
 
+    def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None
+
+    def is_publisher_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None and\
+            self.publisher_param != '' and\
+            self.publisher_param is not None
+
 
 class GaReportRow(ReportRow):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, publisher_param, goals):
@@ -129,24 +147,6 @@ class GaReportRow(ReportRow):
         for goal in ga_report_row.goals:
             self.goals.setdefault(goal, 0)
             self.goals[goal] += ga_report_row.goals[goal]
-
-    def is_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None
-
-    def is_publisher_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None and\
-            self.publisher_param != '' and\
-            self.publisher_param is not None
 
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
@@ -234,24 +234,6 @@ class OmnitureReportRow(ReportRow):
         for goal in omniture_report_row.goals:
             self.goals.setdefault(goal, 0)
             self.goals[goal] += omniture_report_row.goals[goal]
-
-    def is_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None
-
-    def is_publisher_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None and\
-            self.publisher_param != '' and\
-            self.publisher_param is not None
 
 
 class Report(object):

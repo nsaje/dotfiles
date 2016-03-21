@@ -81,22 +81,6 @@ class GAApiReportRow(ReportRow):
             self.goals.setdefault(goal, 0)
             self.goals[goal] += ga_report_row.goals[goal]
 
-    def is_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and self.source_param != '' and self.source_param is not None
-
-    def is_publisher_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None and\
-            self.publisher_param != '' and\
-            self.publisher_param is not None
-
 
 class GAApiReport(GAReport):
     def __init__(self, ga_service, start_date):
