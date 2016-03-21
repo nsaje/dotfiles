@@ -49,6 +49,8 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
+from automation import campaign_stop
+
 from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
@@ -301,7 +303,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         max_cpc_setting = infobox_helpers.OverviewSetting(
             'Maximum CPC:',
-            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
+            lc_helper.default_currency(
+                ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
         )
         settings.append(max_cpc_setting.as_dict())
 
@@ -666,6 +669,10 @@ class CampaignOverview(api_common.BaseApiView):
             user, campaign
         )
         settings.extend(common_settings)
+
+        if user.has_perm('zemauth.can_see_campaign_goals'):
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign))
+
         return settings, is_delivering
 
     def _calculate_flight_dates(self, campaign):
@@ -893,7 +900,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source.id,
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings),
+                    source, ad_group_settings),
                 'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
             })
 
@@ -1065,6 +1072,17 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'autopilot_state' in resource and\
                 resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        if 'daily_budget_cc' in resource and campaign_settings.automatic_landing_mode:
+            max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
+            if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
+                errors.update({
+                    'daily_budget_cc': 'Daily budget is too high. '
+                                       'Maximum daily budget can be up to {max_daily_budget}.'.format(
+                                           max_daily_budget=max_daily_budget
+                                       )
+                })
 
         if errors:
             raise exc.ValidationError(errors=errors)
@@ -1285,11 +1303,12 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             if batch.error_report_key:
                 errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
-                errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
+                errors['description'] = 'Found {} error{}.'.format(
+                    batch.num_errors, 's' if batch.num_errors > 1 else '')
             else:
                 errors['description'] = 'An error occured while processing file.'
         elif batch.status == constants.UploadBatchStatus.CANCELLED:
-                errors['description'] = 'Content Ads upload was cancelled.'
+            errors['description'] = 'Content Ads upload was cancelled.'
 
         return errors
 
