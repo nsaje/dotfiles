@@ -72,59 +72,6 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
-    """
-    def test_create_goals_and_totals_tos(self):
-        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 10)
-        cost = 20
-        row = {
-            'media_cost': 20,
-            'avg_tos': 20,
-            'visits': 1,
-        }
-
-        expected = {
-            'total_seconds': 20,
-            'avg_cost_per_second': 1,
-        }
-
-        rows = campaign_goals.create_goals(self.campaign, [row])
-        self.assertDictContainsSubset(expected, rows[0])
-    """
-
-    def test_create_goals_and_totals_pps(self):
-        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
-        cost = 20
-        row = {
-            'media_cost': 20,
-            'pv_per_visit': 10,
-            'visits': 1,
-        }
-
-        expected = {
-            'total_pageviews': 10,
-            'avg_cost_per_pageview': 2,
-        }
-
-        rows = campaign_goals.create_goals(self.campaign, [row])
-        self.assertDictContainsSubset(expected, rows[0])
-
-    def test_create_goals_and_totals_bounce_rate(self):
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
-        cost = 20
-        row = {
-            'media_cost': 20,
-            'bounce_rate': 75,
-            'visits': 100,
-        }
-
-        expected = {
-            'unbounced_visits': 25,
-            'avg_cost_per_non_bounced_visitor': 20.0 / (100 * 0.25),
-        }
-
-        rows = campaign_goals.create_goals(self.campaign, [row])
-        self.assertDictContainsSubset(expected, rows[0])
-
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 5)
