@@ -3,6 +3,25 @@ from django.db import transaction
 from utils import exc
 from dash import models, constants, forms
 from dash.views import helpers
+import utils.lc_helper
+
+CAMPAIGN_GOAL_NAME_FORMAT = {
+    constants.CampaignGoalKPI.TIME_ON_SITE: '{} seconds on site',
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} bounce rate',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
+    constants.CampaignGoalKPI.CPA: '{} CPA',
+    constants.CampaignGoalKPI.CPC: '{} CPC',
+    constants.CampaignGoalKPI.CPM: '{} CPM',
+}
+
+CAMPAIGN_GOAL_VALUE_FORMAT = {
+    constants.CampaignGoalKPI.TIME_ON_SITE: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.CPC: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.CPM: utils.lc_helper.default_currency,
+}
 
 CAMPAIGN_GOAL_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: [
