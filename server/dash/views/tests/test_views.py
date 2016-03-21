@@ -3,6 +3,7 @@
 import json
 from mock import patch, ANY
 import datetime
+import decimal
 
 from django.test import TestCase, Client, TransactionTestCase, RequestFactory
 from django.http.request import HttpRequest
@@ -180,6 +181,14 @@ class AdGroupSourceSettingsTest(TestCase):
         self.ad_group.campaign.landing_mode = True
         self.ad_group.campaign.save(None)
 
+    def _set_campaign_automatic_landing_mode(self, automatic_landing_mode):
+        current_settings = self.ad_group.campaign.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.automatic_landing_mode = automatic_landing_mode
+        request = HttpRequest()
+        request.user = User.objects.get(id=1)
+        new_settings.save(request)
+
     def test_end_date_past(self):
         self._set_ad_group_end_date(-1)
         response = self.client.put(
@@ -239,11 +248,42 @@ class AdGroupSourceSettingsTest(TestCase):
             ad_group=self.ad_group)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.campaign_stop.get_max_settable_daily_budget')
+    def test_daily_budget_over_max_settable(self, mock_max_daily_budget):
+        mock_max_daily_budget.return_value = decimal.Decimal('500')
+        self._set_ad_group_end_date(days_delta=3)
+        self._set_campaign_automatic_landing_mode(False)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'daily_budget_cc': '600'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self._set_campaign_automatic_landing_mode(True)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'daily_budget_cc': '600'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'daily_budget_cc': '500'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'daily_budget_cc': '400'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     def test_source_cpc_over_ad_group_maximum(self):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
-                reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-                data=json.dumps({'cpc_cc': '1.10'})
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '1.10'})
         )
         self.assertEqual(response.status_code, 400)
 
@@ -251,8 +291,8 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_source_cpc_equal_ad_group_maximum(self):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
-                reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-                data=json.dumps({'cpc_cc': '1.00'})
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '1.00'})
         )
         self.assertEqual(response.status_code, 200)
 

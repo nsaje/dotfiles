@@ -58,6 +58,10 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             goalNames = {},
             errors = {};
 
+        if (!$scope.newCampaignGoal) {
+            return true;
+        }
+
         if (newGoal.type !== constants.campaignGoalKPI.CPA) {
             return true;
         }
@@ -107,6 +111,13 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.save = function () {
         $scope.clearErrors('type');
         $scope.clearErrors('value');
+
+        $scope.campaignGoal.value = Math.abs($scope.campaignGoal.value);
+
+        if (!$scope.newCampaignGoal) {
+            $modalInstance.close($scope.campaignGoal);
+            return; // Skip server validation call if this is not a new entry
+        }
 
         if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
             return;
