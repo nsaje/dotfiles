@@ -1258,7 +1258,7 @@ class AdGroupAdsPlusTable(object):
         conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                            for cg in conversion_goals]
+                                    for cg in conversion_goals]
 
             response['conversion_goals'] = conversion_goals_lst
 
@@ -1915,7 +1915,6 @@ class PublishersTable(object):
             response['campaign_goals'] = campaign_goals.get_campaign_goals(
                 campaign, conversion_goals_lst
             )
-
 
         return response
 
