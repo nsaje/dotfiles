@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
 AVG_SUM_UNBOUNCED_VISITS_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
 
-AVG_TOS = sum_div('total_time_on_site', 'visits')
+AVG_TOS = sum_agr('total_time_on_site')
 COST_PER_AVG_VISIT = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
 
 
