@@ -88,7 +88,7 @@ FORMAT_EMPTY_TO_0 = [
 ]
 
 FORMAT_URLS = ['url', 'image_url']
-FORMAT_URLS_CSV_NOT_SAFE_CHARACTERS = [',',';']
+FORMAT_URLS_CSV_NOT_SAFE_CHARACTERS = [',', ';']
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
