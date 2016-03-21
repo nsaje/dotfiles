@@ -1,15 +1,19 @@
-/*global $,oneApp,constants*/
+/* global oneApp */
 'use strict';
 
 oneApp.directive('zemIcon', ['config', function (config) {
     return {
         restrict: 'E',
         scope: true,
-        template: '<img class="zem-icon zem-icon-{{name}}" title="{{ title }}" ng-src="{{ config.static_url }}/one/img/{{name}}.svg" />',
+        template: '<img class="{{ classes }}" title="{{ title }}" ng-src="{{ config.static_url }}/one/img/{{file}}" />',
         controller: ['$scope', '$attrs', function ($scope, $attrs) {
             $scope.config = config;
             $scope.title = $attrs.title;
-            $scope.name = $attrs.name;
+            $scope.file = $attrs.file;
+            $scope.classes = 'zem-icon';
+            if ($attrs.imgClass) {
+                $scope.classes += ' ' + $attrs.imgClass;
+            }
         }],
     };
 
