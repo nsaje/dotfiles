@@ -232,26 +232,26 @@
 # Source Types
 -   fields:
         type: 'adblade'
-        available_actions: [7]
+        available_actions: [7] # set end date
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'adblade3'
-        available_actions: [7]
+        available_actions: [7] # set end date
     model: dash.sourcetype
     pk: 2
 
 -   fields:
         type: 'adalaska'
-        available_actions: [7]
+        available_actions: [7] # set end date
         budgets_tz: 'US/Alaska'
     model: dash.sourcetype
     pk: 3
 
 -   fields:
         type: 'adtokyo'
-        available_actions: [7]
+        available_actions: [7] # set end date
         budgets_tz: 'Asia/Tokyo'
     model: dash.sourcetype
     pk: 4
