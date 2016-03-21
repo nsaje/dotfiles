@@ -111,9 +111,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.save = function () {
         $scope.clearErrors('type');
         $scope.clearErrors('value');
-        
+
         $scope.campaignGoal.value = Math.abs($scope.campaignGoal.value);
-        
+
         if (!$scope.newCampaignGoal) {
             $modalInstance.close($scope.campaignGoal);
             return; // Skip server validation call if this is not a new entry
