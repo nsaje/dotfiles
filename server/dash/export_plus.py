@@ -3,7 +3,6 @@ import urllib
 
 import unicodecsv
 import StringIO
-import re
 import slugify
 import time
 from decimal import Decimal
