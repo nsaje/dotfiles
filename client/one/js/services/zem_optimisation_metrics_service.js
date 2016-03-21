@@ -126,7 +126,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
                     if (goal.conversion) {
                         column.name = goal.name + ' (' + goal.conversion + ')';
-                    } 
+                    }
                 }
             });
         });
