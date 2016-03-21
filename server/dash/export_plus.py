@@ -1,3 +1,6 @@
+import codecs
+import urllib
+
 import unicodecsv
 import StringIO
 import slugify
@@ -82,6 +85,9 @@ FORMAT_EMPTY_TO_0 = [
     'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
+
+FORMAT_URLS = ['url', 'image_url']
+FORMAT_URLS_CSV_SAFE_CHARACTERS = ':/?@&=+$'  # , and ; are not safe
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
@@ -386,34 +392,37 @@ def _adjust_ordering(order, dimensions):
 
 def get_csv_content(fieldnames, data):
     output = StringIO.StringIO()
+    output.write(codecs.BOM_UTF8)
     writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
     writer.writerow(fieldnames)
     for item in data:
-        # Format
         row = {}
         for field in fieldnames.keys():
-            value = item.get(field)
-            formatted_value = value
-
-            if not value and field in FORMAT_EMPTY_TO_0:
-                formatted_value = 0
-                value = 0
-            elif not value and field not in FORMAT_EMPTY_TO_0:
-                formatted_value = ''
-            elif field in FORMAT_DIVIDE_100:
-                value = '{:.4f}'.format(value / 100)
-
-            formatted_value = _format_decimals(value, field)
+            formatted_value = item.get(field)
+            formatted_value = _format_empty_value(formatted_value, field)
+            formatted_value = _format_percentages(formatted_value, field)
+            formatted_value = _format_decimals(formatted_value, field)
             formatted_value = _format_statuses_and_dates(formatted_value, field)
-
-            if ';' in repr(formatted_value):
-                formatted_value = '"' + formatted_value + '"'
-
+            formatted_value = _format_urls(formatted_value, field)
             row[field] = formatted_value
 
         writer.writerow(row)
 
     return output.getvalue()
+
+
+def _format_empty_value(value, field):
+    if not value and field in FORMAT_EMPTY_TO_0:
+        return 0
+    elif not value and field not in FORMAT_EMPTY_TO_0:
+        return ''
+    return value
+
+
+def _format_percentages(value, field):
+    if value and field in FORMAT_DIVIDE_100:
+        return '{:.4f}'.format(value / 100)
+    return value
 
 
 def _format_statuses_and_dates(value, field):
@@ -431,6 +440,12 @@ def _format_decimals(value, field):
         return '{:.2f}'.format(value)
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(value)
+    return value
+
+
+def _format_urls(value, field):
+    if field in FORMAT_URLS:
+        return urllib.quote(value, safe=FORMAT_URLS_CSV_SAFE_CHARACTERS)
     return value
 
 
