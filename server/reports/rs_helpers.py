@@ -40,6 +40,10 @@ def additions(*cols):
     return '({})'.format('+'.join(cols))
 
 
+def subtractions(*cols):
+    return '({})'.format('-'.join(cols))
+
+
 def total_cost(nano_cols=[], cc_cols=[]):
     return additions(
         *map(sum_agr, nano_cols) + ['{}*100000'.format(sum_agr(col)) for col in cc_cols]
@@ -81,6 +85,10 @@ def sum_agr(field_name):
 
 def sum_expr(expr):
     return 'SUM({expr})'.format(expr=expr)
+
+
+def mul_expr(expr1, expr2):
+    return '({expr1} * {expr2})'.format(expr1=expr1, expr2=expr2)
 
 
 def is_all_null(field_names):

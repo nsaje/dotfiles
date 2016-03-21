@@ -72,6 +72,7 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
+    """
     def test_create_goals_and_totals_tos(self):
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 10)
         cost = 20
@@ -88,6 +89,7 @@ class CampaignGoalsTestCase(TestCase):
 
         rows = campaign_goals.create_goals(self.campaign, [row])
         self.assertDictContainsSubset(expected, rows[0])
+    """
 
     def test_create_goals_and_totals_pps(self):
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
