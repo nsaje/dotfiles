@@ -2091,6 +2091,9 @@ class PublishersTable(object):
             result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            result['total_seconds'] = totals_data.get('total_seconds', 0)
+            result['avg_cost_per_second'] = totals_data.get('avg_time_per_second', 0)
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
             for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
                 result[key] = totals_data[key]
@@ -2147,6 +2150,9 @@ class PublishersTable(object):
             if user.has_perm('zemauth.view_pubs_conversion_goals'):
                 for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                     row[key] = publisher_data[key]
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row['total_seconds'] = publisher_data.get('total_seconds', 0)
+                row['avg_cost_per_second'] = publisher_data.get('avg_time_per_second', 0)
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
