@@ -8,7 +8,7 @@ oneApp.directive('zemIcon', ['config', function (config) {
         template: '<img class="{{ classes }}" title="{{ title }}" ng-src="{{ config.static_url }}/one/img/{{file}}" />',
         controller: ['$scope', '$attrs', function ($scope, $attrs) {
             $scope.config = config;
-            $scope.title = $attrs.title;
+            $scope.title = $attrs.title || '';
             $scope.file = $attrs.file;
             $scope.classes = 'zem-icon';
             if ($attrs.imgClass) {
