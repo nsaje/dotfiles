@@ -38,6 +38,8 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                     return '$' + value + ' CPC';
                 case constants.campaignGoalKPI.CPM:
                     return '$' + value + ' CPM';
+                case constants.campaignGoalKPI.NEW_UNIQUE_VISITORS:
+                    return value + ' % new unique visitors';
                 }
             };
 

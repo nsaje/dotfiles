@@ -71,7 +71,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             initialOrder: 'desc',
         });
 
-        for (var i=0; i < 5; i++ ) {
+        for (var i = 0; i < 5; i++) {
             columns.splice(position + i + 6, 0, {
                 name: 'Avg. cost per conversion',
                 field: 'avg_cost_per_conversion_goal_' + i,
@@ -97,7 +97,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             avg_cost_per_non_bounced_visitor: true,
             cpa: true,
         };
-        for (var i=0; i < 5; i++ ) {
+        for (var i = 0; i < 5; i++) {
             categories['avg_cost_per_conversion_goal_' + i] = true;
         }
         return categories;

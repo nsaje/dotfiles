@@ -784,6 +784,11 @@ div[datepicker] {
     box-shadow: none;
 }
 
+img.zem-icon {
+    width: 16px;
+    height: 16px;
+}
+
 .graph-button {
     width: 34px;
     height: 34px;
@@ -3723,6 +3728,25 @@ select.media-source-select {
 }
 
 .zem-campaign-goals {
+    img.zem-icon {
+        display: block;
+        margin: auto;
+        width: 12px;
+        height: 12px;
+        
+        &.zem-icon-remove {
+            width: 10px;
+            height: 10px;
+        }
+        &.zem-icon-buttons-plus {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+
+            margin-bottom: 3px;
+        }
+    }
+    
     .btn {
         .plus-sign {
             padding-right: 10px;
@@ -3805,20 +3829,8 @@ select.media-source-select {
                 }
             }
 
-            &.campaign-goal-edit {
+            &.campaign-goal-edit, &.campaign-goal-delete {
                 text-align: center;
-
-                .centered {
-                    height: 16px
-                }
-            }
-
-            &.campaign-goal-delete {
-                text-align: center;
-                
-                .centered {
-                    height: 16px
-                }
             }
 
             .center-area {
@@ -3827,6 +3839,7 @@ select.media-source-select {
                 bottom: 0;
                 left: 0;
                 right: 0;
+                
                 padding-right: 2px;
 
                 &:before {
@@ -3840,6 +3853,10 @@ select.media-source-select {
                     display: inline-block;
                     vertical-align: middle;
                 }
+            }
+            
+            &.campaign-goal-index .center-area {
+                padding-right: 5px;
             }
         }
     }

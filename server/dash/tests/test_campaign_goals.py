@@ -120,6 +120,7 @@ class CampaignGoalsTestCase(TestCase):
 
     def test_delete_campaign_goal(self):
         models.CampaignGoal.objects.all().delete()
+        models.ConversionGoal.objects.all().delete()
 
         goal = models.CampaignGoal.objects.create(
             type=1,
