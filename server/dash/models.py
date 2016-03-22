@@ -1445,7 +1445,6 @@ class AdGroup(models.Model):
                 values_list('ad_group_id', flat=True)
             return self.filter(id__in=active_ad_group_ids)
 
-
     class Meta:
         ordering = ('name',)
 
