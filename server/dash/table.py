@@ -1168,12 +1168,18 @@ class AdGroupAdsPlusTable(object):
             conversion_goals=conversion_goals,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
-
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
 
-        rows = self._get_rows(content_ads, stats, ad_group, has_view_archived_permission, show_archived)
+        rows = self._get_rows(
+            content_ads,
+            stats,
+            ad_group,
+            has_view_archived_permission,
+            show_archived,
+            user
+        )
 
         batches = []
         if user.has_perm('zemauth.content_ads_bulk_actions'):
@@ -1280,6 +1286,7 @@ class AdGroupAdsPlusTable(object):
     def _get_total_row(self, user, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
+        campaign_goals.copy_fields(user, stats, totals)
         return totals
 
     def _get_url(self, ad_group, content_ad, is_demo):
@@ -1297,7 +1304,7 @@ class AdGroupAdsPlusTable(object):
             content_ad_id=content_ad.id
         )
 
-    def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
+    def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived, user):
         stats = {s['content_ad']: s for s in stats}
         rows = []
 
@@ -1335,6 +1342,7 @@ class AdGroupAdsPlusTable(object):
                 'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)
+            campaign_goals.copy_fields(user, stat, row)
 
             if has_view_archived_permission:
                 row['archived'] = archived
