@@ -927,7 +927,7 @@ class AccountAgency(api_common.BaseApiView):
         return non_removable_source_ids_list
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
-        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
+        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed).order_by('id')]
         media_sources = ', '.join(source_names)
         if len(source_names) > 1:
             msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)

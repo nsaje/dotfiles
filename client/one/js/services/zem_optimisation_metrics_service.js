@@ -69,6 +69,17 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             totalRow: true,
             order: true,
             initialOrder: 'desc',
+        }, {
+            name: 'Avg. Cost For New Visitor',
+            field: 'avg_cost_for_new_visitor',
+            checked: true,
+            type: 'currency',
+            shown: isShown,
+            internal: isInternal,
+            help: 'Average cost for new visitor.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
         });
 
         for (var i = 0; i < 5; i++) {

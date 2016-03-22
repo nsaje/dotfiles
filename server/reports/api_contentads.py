@@ -14,6 +14,9 @@ import reports.rs_helpers as rsh
 import dash.models
 import dash.constants
 
+from reports.rs_helpers import sum_div, sum_agr, unchanged, from_cc, \
+    DIVIDE_FORMULA, UNBOUNCED_VISITS_FORMULA, AVG_TOS_FORMULA
+
 from utils.sort_helper import map_by_breakdown
 
 
@@ -31,14 +34,13 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='adgroup_id',            app='ad_group',           out=rsh.unchanged),
         dict(sql='campaign_id',           app='campaign',           out=rsh.unchanged),
         dict(sql='account_id',            app='account',            out=rsh.unchanged),
-    ] 
+    ]
 
     _TRAFFIC_FIELDS = [
         dict(sql='clicks_sum',            app='clicks',             out=rsh.unchanged,            calc=rsh.sum_agr('clicks')),
         dict(sql='impressions_sum',       app='impressions',        out=rsh.unchanged,            calc=rsh.sum_agr('impressions')),
         dict(sql='cost_cc_sum',           app='cost',               out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
         dict(sql='data_cost_cc_sum',      app='data_cost',          out=rsh.from_cc,              calc=rsh.sum_agr('data_cost_cc')),
-        
         # BCM
         dict(sql='media_cost_cc_sum',     app='media_cost',         out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
         dict(sql='e_media_cost_nano_sum', app='e_media_cost',       out=rsh.from_nano,            calc=rsh.sum_agr('effective_cost_nano')),
@@ -67,6 +69,16 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='avg_tos',               app='avg_tos',            out=rsh.unchanged,            calc=rsh.sum_div('total_time_on_site', 'visits')),
     ]
 
+    _POSTCLICK_OPTIMIZATION_FIELDS = [
+        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,     calc=AVG_TOS_FORMULA),
+        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_cc,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_cc'), divisor=AVG_TOS_FORMULA)),
+        dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=unchanged,     calc=UNBOUNCED_VISITS_FORMULA),
+        dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_cc,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_cc'), divisor=UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,     calc=sum_agr('pageviews')),
+        dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_cc,       calc=sum_div('cost_cc', 'pageviews')),
+        dict(sql='avg_cost_for_new_visitor_sum',  app='avg_cost_for_new_visitor',         out=from_cc,       calc=sum_div('cost_cc', 'new_visits')),
+    ]
+
     _CONVERSION_GOAL_FIELDS = [
         dict(sql='conversions',           app='conversions',        out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), num_json_params=2)
     ]
@@ -77,9 +89,9 @@ class RSContentAdStatsModel(redshift.RSModel):
              out=rsh.unchanged, calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
     ]
 
-    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
+    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_OPTIMIZATION_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
 
-    DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
+    DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_OPTIMIZATION_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
 
 
