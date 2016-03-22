@@ -53,7 +53,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 'autopilot_min_budget': '100'
             }
         }
-        self.maxDiff = None
+
         self.user = User.objects.get(pk=1)
 
         self.assertFalse(self.user.is_superuser)
