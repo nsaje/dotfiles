@@ -76,8 +76,11 @@ def get_max_settable_daily_budget(ad_group_source):
 
 def _get_yesterday_spend(campaign):
     yesterday = dates_helper.utc_today() - datetime.timedelta(days=1)
-    statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign=campaign)
-    spend_data = reports.budget_helpers.calculate_spend_data(statements, date=yesterday, use_decimal=True)
+    statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__campaign=campaign,
+        date=yesterday,
+    )
+    spend_data = reports.budget_helpers.calculate_spend_data(statements, use_decimal=True)
 
     return spend_data['media'] + spend_data['data']
 
