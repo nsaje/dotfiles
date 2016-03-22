@@ -309,7 +309,7 @@ class CampaignSettingsTest(TestCase):
             'service_fee': Decimal('0.2000'),
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
-            'automatic_landing_mode': False,
+            'automatic_campaign_stop': False,
             'landing_mode': False,
         }
 

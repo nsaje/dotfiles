@@ -194,7 +194,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
-        new_campaign_settings.automatic_landing_mode = False
+        new_campaign_settings.automatic_campaign_stop = False
         new_campaign_settings.save(None)
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
@@ -210,7 +210,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
-        new_campaign_settings.automatic_landing_mode = True
+        new_campaign_settings.automatic_campaign_stop = True
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 

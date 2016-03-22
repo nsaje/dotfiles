@@ -500,7 +500,7 @@ class Campaign(models.Model, PermissionMixin):
             excluded = CampaignSettings.objects.all().filter(
                 pk__in=related_settings
             ).filter(
-                models.Q(automatic_landing_mode=False) |
+                models.Q(automatic_campaign_stop=False) |
                 models.Q(landing_mode=True)
             ).values_list(
                 'campaign__id', flat=True
@@ -622,7 +622,7 @@ class CampaignSettings(SettingsBase):
         'archived',
         'target_devices',
         'target_regions',
-        'automatic_landing_mode',
+        'automatic_campaign_stop',
         'landing_mode'
     ]
 
@@ -673,7 +673,7 @@ class CampaignSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
 
-    automatic_landing_mode = models.BooleanField(default=False)
+    automatic_campaign_stop = models.BooleanField(default=False)
     landing_mode = models.BooleanField(default=False)
 
     archived = models.BooleanField(default=False)
@@ -740,7 +740,7 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
-            'automatic_landing_mode': 'Automatic Landing Mode',
+            'automatic_campaign_stop': 'Automatic Landing Mode',
             'landing_mode': 'Landing Mode',
         }
 
@@ -765,7 +765,7 @@ class CampaignSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'automatic_landing_mode':
+        elif prop_name == 'automatic_campaign_stop':
             value = str(value)
         elif prop_name == 'landing_mode':
             value = str(value)

@@ -182,10 +182,10 @@ class AdGroupSourceSettingsTest(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-    def _set_campaign_automatic_landing_mode(self, automatic_landing_mode):
+    def _set_campaign_automatic_campaign_stop(self, automatic_campaign_stop):
         current_settings = self.ad_group.campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
-        new_settings.automatic_landing_mode = automatic_landing_mode
+        new_settings.automatic_campaign_stop = automatic_campaign_stop
         request = HttpRequest()
         request.user = User.objects.get(id=1)
         new_settings.save(request)
@@ -253,14 +253,14 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_daily_budget_over_max_settable(self, mock_max_daily_budget):
         mock_max_daily_budget.return_value = decimal.Decimal('500')
         self._set_ad_group_end_date(days_delta=3)
-        self._set_campaign_automatic_landing_mode(False)
+        self._set_campaign_automatic_campaign_stop(False)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'daily_budget_cc': '600'})
         )
         self.assertEqual(response.status_code, 200)
 
-        self._set_campaign_automatic_landing_mode(True)
+        self._set_campaign_automatic_campaign_stop(True)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'daily_budget_cc': '600'})

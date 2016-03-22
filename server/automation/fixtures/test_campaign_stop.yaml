@@ -77,7 +77,7 @@
     name: 'Campaign Settings 1'
     campaign_manager: 1
     campaign: 1
-    automatic_landing_mode: True
+    automatic_campaign_stop: True
   model: dash.campaignsettings
   pk: 1
 
@@ -87,7 +87,7 @@
     name: 'Campaign Settings 2'
     campaign_manager: 1
     campaign: 2
-    automatic_landing_mode: True
+    automatic_campaign_stop: True
   model: dash.campaignsettings
   pk: 2
 
@@ -97,7 +97,7 @@
     name: 'Campaign Settings 3'
     campaign_manager: 1
     campaign: 3
-    automatic_landing_mode: True
+    automatic_campaign_stop: True
   model: dash.campaignsettings
   pk: 3
 
@@ -107,7 +107,7 @@
     name: 'Campaign Settings 4'
     campaign_manager: 1
     campaign: 4
-    automatic_landing_mode: True
+    automatic_campaign_stop: True
   model: dash.campaignsettings
   pk: 4
 
@@ -117,7 +117,7 @@
     name: 'Campaign Settings 5'
     campaign_manager: 1
     campaign: 5
-    automatic_landing_mode: True
+    automatic_campaign_stop: True
   model: dash.campaignsettings
   pk: 5
 
