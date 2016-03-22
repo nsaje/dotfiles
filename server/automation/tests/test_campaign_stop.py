@@ -222,7 +222,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('actionlog.zwei_actions.send')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
-    def test_switch_to_landing_mode_archived_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
+    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
 
         campaign = dash.models.Campaign.objects.get(id=1)
@@ -231,7 +231,7 @@ class SwitchToLandingModeTestCase(TestCase):
             current_settings = ad_group.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.end_date = in_30_days
-            new_settings.archived = True
+            new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
             new_settings.save(None)
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
