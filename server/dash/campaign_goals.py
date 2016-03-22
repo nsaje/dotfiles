@@ -39,7 +39,7 @@ CAMPAIGN_GOAL_MAP = {
         'avg_cost_per_second',
     ],
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: [
-        'percent_new_users',
+        'avg_cost_for_new_visitor',
     ],
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: [],
@@ -224,8 +224,7 @@ def create_goals(campaign, data):
             for campaign_goal_value in campaign_goal_values:
                 goal_type = campaign_goal_value.campaign_goal.type
                 new_row.update(calculate_goal_values(row, goal_type, cost))
-        ret.append(new_row)
-    # TODO: CPA
+        ret.append(exclude_goal_columns(new_row, campaign_goal_values))
     return ret
 
 
@@ -237,8 +236,9 @@ def create_goal_totals(campaign, data, cost):
     campaign_goal_values = get_campaign_goal_values(campaign)
     for campaign_goal_value in campaign_goal_values:
         goal_type = campaign_goal_value.campaign_goal.type
-        ret.update(calculate_goal_total_values(data, goal_type, cost))
-    # TODO: CPA
+        ret.update(calculate_goal_values(data, goal_type, cost))
+
+    ret = exclude_goal_columns(ret, campaign_goal_values)
     return ret
 
 
@@ -253,55 +253,35 @@ def get_campaign_goal_values(campaign):
     )
 
 
+def exclude_goal_columns(row, goal_types):
+    ret_row = dict(row)
+
+    excluded_goals = set(constants.CampaignGoalKPI.get_all()) -\
+       set(map(lambda gv: gv.campaign_goal.type, goal_types))
+
+    for excluded_goal in excluded_goals:
+        goal_strings = CAMPAIGN_GOAL_MAP.get(excluded_goal, [])
+        for goal_string in goal_strings:
+            ret_row.pop(goal_string, None)
+
+    return ret_row
+
+
 def calculate_goal_values(row, goal_type, cost):
     ret = {}
-    if goal_type == constants.CampaignGoalKPI.TIME_ON_SITE:
-        total_seconds = (row.get('avg_tos') or 0) *\
-            (row.get('visits') or 0)
-        ret['total_seconds'] = total_seconds
-        ret['avg_cost_per_second'] = float(cost) / total_seconds if\
-            total_seconds != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
-        unbounced_rate = 100.0 - (row.get('bounce_rate') or 0)
-        unbounced_visits = (unbounced_rate / 100.0) * (row.get('visits', 0) or 0)
-        ret['unbounced_visits'] = unbounced_visits
-        ret['avg_cost_per_non_bounced_visitor'] = float(cost) / unbounced_visits if\
-            unbounced_visits != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.PAGES_PER_SESSION:
-        total_pageviews = (row.get('pv_per_visit') or 0) *\
-            (row.get('visits') or 0)
-        ret['total_pageviews'] = total_pageviews
-        # avg. cost per pageview
-        ret['avg_cost_per_pageview'] = float(cost) / total_pageviews if\
-            total_pageviews != 0 else 0
+    if goal_type == constants.CampaignGoalKPI.CPA:
+        goal_index = 1
+        goal_name = ""
+        while goal_index == 1 or goal_name in row:
+            goal_name = 'conversion_goal_{}'.format(goal_index)
+            if goal_name in row:
+                ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
+                    float(cost) / row[goal_name] if row[goal_name] != 0 else 0
+            goal_index += 1
     return ret
 
 
-def calculate_goal_total_values(row, goal_type, cost):
-    ret = {}
-    if goal_type == constants.CampaignGoalKPI.TIME_ON_SITE:
-        total_seconds = (row.get('avg_tos') or 0) *\
-            (row.get('visits') or 0)
-        ret['total_seconds'] = total_seconds
-        ret['avg_cost_per_second'] = float(cost) / total_seconds if\
-            total_seconds != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.MAX_BOUNCE_RATE:
-        unbounced_rate = 100.0 - (row.get('bounce_rate') or 0)
-        unbounced_visits = (unbounced_rate / 100.0) * (row.get('visits', 0) or 0)
-        ret['unbounced_visits'] = unbounced_visits
-        ret['avg_cost_per_non_bounced_visitor'] = float(cost) / unbounced_visits if\
-            unbounced_visits != 0 else 0
-    elif goal_type == constants.CampaignGoalKPI.PAGES_PER_SESSION:
-        total_pageviews = (row.get('pv_per_visit') or 0) *\
-            (row.get('visits') or 0)
-        ret['total_pageviews'] = total_pageviews
-        # avg. cost per pageview
-        ret['avg_cost_per_pageview'] = float(cost) / total_pageviews if\
-            total_pageviews != 0 else 0
-    return ret
-
-
-def get_campaign_goals(campaign):
+def get_campaign_goals(campaign, conversion_goals):
     cg_values = get_campaign_goal_values(campaign)
     ret = []
     for cg_value in cg_values:
@@ -309,12 +289,35 @@ def get_campaign_goals(campaign):
         goal_name = constants.CampaignGoalKPI.get_text(
             goal_type
         )
+        fields = {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
+
+        conversion_goal_name = None
+        if goal_type == constants.CampaignGoalKPI.CPA:
+            goal_name = 'Avg. cost per conversion'
+            conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
+            fields = dict(('avg_cost_per_{}'.format(k['id']), True)
+                          for k in conversion_goals if k['name'] == conversion_goal_name)
+
         ret.append({
             'name': goal_name,
+            'conversion': conversion_goal_name,
             'value': float(cg_value.value),
-            'fields': {k: True for k in CAMPAIGN_GOAL_MAP.get(goal_type, [])}
+            'fields': fields,
         })
     return ret
+
+
+def copy_fields(user, source, dest):
+    if not user.has_perm('zemauth.campaign_goal_optimization'):
+        return
+
+    dest['total_seconds'] = source.get('total_seconds', 0)
+    dest['avg_cost_per_second'] = source.get('avg_time_per_second', 0)
+    dest['unbounced_visits'] = source.get('unbounced_visits', 0)
+    dest['avg_cost_per_non_bounced_visitor'] = source.get('avg_cost_per_non_bounced_visitor', 0)
+    dest['total_pageviews'] = source.get('total_pageviews', 0)
+    dest['avg_cost_per_pageview'] = source.get('avg_cost_per_pageview', 0)
+    dest['avg_cost_for_new_visitor'] = source.get('avg_cost_for_new_visitor', 0)
 
 
 def _add_entry_to_history(request, campaign, action_type, changes_text):

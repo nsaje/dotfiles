@@ -143,6 +143,7 @@ def process_touchpoint_conversions(redirects_impressions):
             content_ad_id = redirect_impression['contentAdId']
             conversion_key = (account_id, slug)
             source_slug = redirect_impression['source']
+            publisher = redirect_impression.get('publisher') or None
             ad_lookup = redirect_impression.get('adLookup', False)
 
             redirect_id = redirect_impression['redirectId']
@@ -206,7 +207,8 @@ def process_touchpoint_conversions(redirects_impressions):
                 'touchpoint_id': redirect_id,
                 'source_id': source.id,
                 'touchpoint_timestamp': redirect_ts,
-                'conversion_lag': int(math.ceil((impression_ts - redirect_ts).total_seconds() / (60 * 60)))
+                'conversion_lag': int(math.ceil((impression_ts - redirect_ts).total_seconds() / (60 * 60))),
+                'publisher': publisher
             }
 
             if is_touchpoint_conversion_within_bad_pixie_range(account_id, potential_touchpoint_conversion):

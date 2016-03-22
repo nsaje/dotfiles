@@ -2455,7 +2455,7 @@ class AccountAgencyTest(TestCase):
     def test_get_changes_text_for_media_sources(self):
         view = agency.AccountAgency()
 
-        sources = list(models.Source.objects.all())
+        sources = list(models.Source.objects.all().order_by('id'))
         self.assertEqual(
             view.get_changes_text_for_media_sources(sources[0:1], sources[1:2]),
             'Added allowed media sources (Source 1), Removed allowed media sources (Source 2)'

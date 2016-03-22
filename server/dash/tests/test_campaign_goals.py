@@ -29,6 +29,15 @@ class CampaignGoalsTestCase(TestCase):
                 created_by=self.user,
             )
 
+        cpa_goal = self._goal(constants.CampaignGoalKPI.CPA)
+        conversion_goal = models.ConversionGoal.objects.create(
+            campaign=self.campaign,
+            type=constants.ConversionGoalType.GA,
+            name='test conversion goal',
+        )
+        cpa_goal.conversion_goal = conversion_goal
+        cpa_goal.save()
+
     def _goal(self, goal_type):
         return models.CampaignGoal.objects.filter(
             type=goal_type
@@ -111,6 +120,7 @@ class CampaignGoalsTestCase(TestCase):
 
     def test_delete_campaign_goal(self):
         models.CampaignGoal.objects.all().delete()
+        models.ConversionGoal.objects.all().delete()
 
         goal = models.CampaignGoal.objects.create(
             type=1,
@@ -174,72 +184,6 @@ class CampaignGoalsTestCase(TestCase):
         settings = self.campaign.get_current_settings()
         self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 time on site in seconds"')
 
-    def test_create_goals_and_totals_tos(self):
-        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 10)
-        cost = 20
-        row = {
-            'media_cost': 20,
-            'avg_tos': 20,
-            'visits': 1,
-        }
-
-        expected = {
-            'total_seconds': 20,
-            'avg_cost_per_second': 1,
-        }
-
-        goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
-        self.assertDictContainsSubset(expected, goal_totals)
-
-        rows = campaign_goals.create_goals(self.campaign, [row])
-        self.assertDictContainsSubset(expected, rows[0])
-
-    def test_create_goals_and_totals_pps(self):
-        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
-        cost = 20
-        row = {
-            'media_cost': 20,
-            'pv_per_visit': 10,
-            'visits': 1,
-        }
-
-        expected = {
-            'total_pageviews': 10,
-            'avg_cost_per_pageview': 2,
-        }
-
-        goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
-        self.assertDictContainsSubset(
-            expected,
-            goal_totals
-        )
-
-        rows = campaign_goals.create_goals(self.campaign, [row])
-        self.assertDictContainsSubset(expected, rows[0])
-
-    def test_create_goals_and_totals_bounce_rate(self):
-        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
-        cost = 20
-        row = {
-            'media_cost': 20,
-            'bounce_rate': 75,
-            'visits': 100,
-        }
-
-        expected = {
-            'unbounced_visits': 25,
-            'avg_cost_per_non_bounced_visitor': 20.0 / (100 * 0.25),
-        }
-
-        goal_totals = campaign_goals.create_goal_totals(self.campaign, row, cost)
-        self.assertDictContainsSubset(
-            expected,
-            goal_totals
-        )
-
-        rows = campaign_goals.create_goals(self.campaign, [row])
-        self.assertDictContainsSubset(expected, rows[0])
-
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 5)
@@ -261,23 +205,34 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
 
-        cam_goals = campaign_goals.get_campaign_goals(self.campaign)
+        self._add_value(constants.CampaignGoalKPI.CPA, 10)
+
+        cam_goals = campaign_goals.get_campaign_goals(self.campaign, [])
 
         result = [
             {
                 'name': 'time on site in seconds',
+                'conversion': None,
                 'value': 60,
                 'fields': {'total_seconds': True, 'avg_cost_per_second': True},
             },
             {
                 'name': 'pages per session',
+                'conversion': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
             },
             {
                 'name': 'max bounce rate %',
+                'conversion': None,
                 'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
+            },
+            {
+                'name': 'Avg. cost per conversion',
+                'conversion': 'test conversion goal',
+                'value': 10,
+                'fields': {},
             }
         ]
 
