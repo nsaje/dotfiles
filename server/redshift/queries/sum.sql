@@ -1,1 +1,0 @@
-SUM({{ p }}{{ expr }}) {{ alias }}
