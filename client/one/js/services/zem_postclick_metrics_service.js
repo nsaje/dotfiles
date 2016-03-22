@@ -58,7 +58,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             type: 'percent',
             shown: isShown,
             internal: isInternal,
-            help: 'Percantage of visits that resulted in only one page view.',
+            help: 'Percentage of visits that resulted in only one page view.',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
