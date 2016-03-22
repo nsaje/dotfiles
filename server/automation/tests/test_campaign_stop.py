@@ -151,7 +151,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_depleting_budget(self, mock_get_mrb, mock_send_email):
-        mock_get_mrb.return_value = Decimal('150'), Decimal('100')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
         self.assertTrue(mock_send_email.called)
@@ -160,7 +160,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_switch_to_landing_mode(self, mock_get_mrb, mock_send_email, mock_send_actions):
-        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('110')}
 
         campaign = dash.models.Campaign.objects.get(id=1)
         for ad_group in campaign.adgroup_set.all():
@@ -190,6 +190,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_switch_to_landing_mode_manual(self, mock_get_mrb, mock_send_email, mock_switch_to_landing):
         mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
@@ -205,7 +206,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_switch_to_landing_mode_already_landing(self, mock_get_mrb, mock_send_email, mock_switch_to_landing):
-        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
@@ -222,7 +223,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_switch_to_landing_mode_archived_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
-        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
 
         campaign = dash.models.Campaign.objects.get(id=1)
         in_30_days = datetime.datetime.utcnow().date() + datetime.timedelta(days=30)

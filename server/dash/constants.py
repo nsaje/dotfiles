@@ -1031,6 +1031,7 @@ class CampaignGoalKPI(ConstantBase):
     CPA = 4
     CPC = 5
     CPM = 6
+    NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
         TIME_ON_SITE: 'time on site in seconds',
@@ -1039,6 +1040,7 @@ class CampaignGoalKPI(ConstantBase):
         CPA: '$CPA',
         CPC: '$CPC',
         CPM: '$CPM',
+        NEW_UNIQUE_VISITORS: 'new visitors %',
     }
 
 
