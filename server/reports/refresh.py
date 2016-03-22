@@ -252,7 +252,11 @@ def put_pub_postclick_stats_to_s3(date, entries):
 
     data = {}
     s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-    if list(s3.list(s3_key)):
+    s3_list = s3.list(s3_key)
+    if not s3_list:
+        return
+
+    if list(s3_list):
         json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
         if json_data:
             data = json.loads(json_data)
@@ -330,7 +334,8 @@ def _augment_pub_data_with_postclick_stats(date, rows):
     )
 
     s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-    if not list(s3.list(s3_key)):
+    s3_list = s3.list(s3_key)
+    if not s3_list or not list(s3_list):
         return
 
     json_data = s3.get(s3_key)
