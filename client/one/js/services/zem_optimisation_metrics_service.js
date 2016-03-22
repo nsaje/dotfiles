@@ -69,22 +69,26 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-        }, {
-            name: 'CPA',
-            field: 'cpa',
-            checked: true,
-            type: 'currency',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Cost per acquisition.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
         });
+
+        for (var i = 0; i < 5; i++) {
+            columns.splice(position + i + 6, 0, {
+                name: 'Avg. cost per conversion',
+                field: 'avg_cost_per_conversion_goal_' + i,
+                checked: true,
+                type: 'currency',
+                shown: isShown,
+                internal: isInternal,
+                help: 'Cost per acquisition.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            });
+        }
     }
 
     function columnCategories () {
-        return {
+        var categories = {
             total_seconds: true,
             unbounced_visits: true,
             total_pageviews: true,
@@ -93,6 +97,10 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             avg_cost_per_non_bounced_visitor: true,
             cpa: true,
         };
+        for (var i = 0; i < 5; i++) {
+            categories['avg_cost_per_conversion_goal_' + i] = true;
+        }
+        return categories;
     }
 
     function createColumnCategories () {
@@ -115,6 +123,10 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 if (goal.fields[column.field] !== undefined) {
                     column.shown = true;
                     column.unselectable = false;
+
+                    if (goal.conversion) {
+                        column.name = goal.name + ' (' + goal.conversion + ')';
+                    }
                 }
             });
         });
