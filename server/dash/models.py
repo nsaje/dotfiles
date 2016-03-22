@@ -206,6 +206,7 @@ class HistoryModel(models.Model):
 
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
+    marketer_name = models.CharField(blank=True, null=True, max_length=255)
     used = models.BooleanField(default=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -601,7 +602,8 @@ class CampaignSettings(SettingsBase):
         'promotion_goal',
         'archived',
         'target_devices',
-        'target_regions'
+        'target_regions',
+        'automatic_landing_mode',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -647,6 +649,7 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+    automatic_landing_mode = models.BooleanField(default=False)
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
@@ -709,6 +712,7 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'automatic_landing_mode': 'Automatic Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -732,6 +736,8 @@ class CampaignSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
+        elif prop_name == 'automatic_landing_mode':
+            value = str(value)
         elif prop_name == 'archived':
             value = str(value)
 
@@ -1141,7 +1147,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC'
+        verbose_name='Default CPC',
+        help_text='This setting has moved. See Source model.'
     )
 
     mobile_cpc_cc = models.DecimalField(
@@ -1149,7 +1156,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC (if ad group is targeting mobile only)'
+        verbose_name='Default CPC (if ad group is targeting mobile only)',
+        help_text='This setting has moved. See Source model.'
     )
 
     daily_budget_cc = models.DecimalField(
@@ -1157,7 +1165,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default daily budget'
+        verbose_name='Default daily budget',
+        help_text='This setting has moved. See Source model.'
     )
 
     objects = QuerySetManager()

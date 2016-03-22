@@ -1031,6 +1031,7 @@ class CampaignGoalKPI(ConstantBase):
     CPA = 4
     CPC = 5
     CPM = 6
+    NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
         TIME_ON_SITE: 'time on site in seconds',
@@ -1039,6 +1040,7 @@ class CampaignGoalKPI(ConstantBase):
         CPA: '$CPA',
         CPC: '$CPC',
         CPM: '$CPM',
+        NEW_UNIQUE_VISITORS: 'new visitors %',
     }
 
 
@@ -1195,6 +1197,11 @@ class UserActionType(ConstantBase):
     SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
     SET_GLOBAL_PUBLISHER_BLACKLIST = 28
 
+    CREATE_CAMPAIGN_GOAL = 29
+    DELETE_CAMPAIGN_GOAL = 30
+    CHANGE_CAMPAIGN_GOAL_VALUE = 31
+    CHANGE_PRIMARY_CAMPAIGN_GOAL = 32
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1223,7 +1230,11 @@ class UserActionType(ConstantBase):
         SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
         SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
         SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
-        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist',
+        CREATE_CAMPAIGN_GOAL: 'Create Campaign Goal',
+        DELETE_CAMPAIGN_GOAL: 'Delete Campaign Goal',
+        CHANGE_CAMPAIGN_GOAL_VALUE: 'Change Campaign Goal Value',
+        CHANGE_PRIMARY_CAMPAIGN_GOAL: 'Change Primary Campaign Goal'
     }
 
 

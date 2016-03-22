@@ -732,6 +732,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.order = data.order;
                 $scope.pagination = data.pagination;
                 $scope.notifications = data.notifications;
+                $scope.campaignGoals = data.campaign_goals;
                 $scope.lastChange = data.lastChange;
 
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
@@ -747,6 +748,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
+                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
             },
             function (data) {
                 // error
@@ -786,28 +788,28 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     var initColumns = function () {
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.content_ads_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.content_ads_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.content_ads_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
         );
 
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.conversion_reports'),
             $scope.isPermissionInternal('zemauth.conversion_reports')
         );
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
-            $scope.columns.length - 2,
+            $scope.columns.length - 1,
             $scope.hasPermission('zemauth.campaign_goal_optimization'),
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );

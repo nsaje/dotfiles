@@ -479,6 +479,8 @@ var constants = {
         PAGES_PER_SESSION: 3,
         CPA: 4,
         CPC: 5,
+        CPM: 6,
+        NEW_UNIQUE_VISITORS: 7,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -1048,6 +1050,7 @@ var options = {
         {name: 'max bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
+        {name: 'new unique visitors', vlaue: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     conversionGoalTypes: [
@@ -1084,5 +1087,6 @@ var defaults = {
         {id: constants.campaignGoalKPI.PAGES_PER_SESSION, value: 1.2},
         {id: constants.campaignGoalKPI.CPC, value: 0.35},
         {id: constants.campaignGoalKPI.CPA, value: 50},
+        {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
     ],
 };
