@@ -45,7 +45,7 @@ class RSPublishersModel(redshift.RSModel):
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
         "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
         "avg_cost_per_second", "unbounced_visits", "avg_cost_per_non_bounced_visitor",
-        "total_pageviews", "avg_cost_per_pageview"
+        "total_pageviews", "avg_cost_per_pageview", "avg_cost_for_new_visitor"
 
     ]
     # fields that are allowed for breakdowns (app-based naming)
@@ -93,6 +93,7 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_nano,       calc=AVG_SUM_UNBOUNCED_VISITS_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
         dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,       calc=sum_agr('pageviews')),
         dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_nano,       calc=sum_div('cost_nano', 'pageviews')),
+        dict(sql='avg_cost_for_new_visitor_sum',  app='avg_cost_for_new_visitor',         out=from_nano,       calc=sum_div('cost_nano', 'new_visits')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [

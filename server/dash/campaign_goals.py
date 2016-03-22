@@ -39,7 +39,7 @@ CAMPAIGN_GOAL_MAP = {
         'avg_cost_per_second',
     ],
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: [
-        'percent_new_users',
+        'avg_cost_for_new_visitor',
     ],
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: [],
@@ -317,6 +317,7 @@ def copy_fields(user, source, dest):
     dest['avg_cost_per_non_bounced_visitor'] = source.get('avg_cost_per_non_bounced_visitor', 0)
     dest['total_pageviews'] = source.get('total_pageviews', 0)
     dest['avg_cost_per_pageview'] = source.get('avg_cost_per_pageview', 0)
+    dest['avg_cost_for_new_visitor'] = source.get('avg_cost_for_new_visitor', 0)
 
 
 def _add_entry_to_history(request, campaign, action_type, changes_text):
