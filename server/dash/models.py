@@ -499,12 +499,13 @@ class Campaign(models.Model, PermissionMixin):
 
             excluded = CampaignSettings.objects.all().filter(
                 pk__in=related_settings
-            ).exclude(
+            ).filter(
                 models.Q(automatic_landing_mode=False) |
                 models.Q(landing_mode=True)
             ).values_list(
                 'campaign__id', flat=True
             )
+
             return self.exclude(pk__in=excluded)
 
 
