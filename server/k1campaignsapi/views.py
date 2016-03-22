@@ -8,6 +8,7 @@ from django.db.models import Prefetch
 from django.db import connection
 from django.conf import settings
 
+from utils import request_signer
 import sqlparse
 
 
@@ -16,7 +17,7 @@ def print_sql(query):
 
 
 @csrf_exempt
-def get_adgroups(request):
+def get_ad_groups(request):
     # FIXME
     # try:
     #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
@@ -25,8 +26,9 @@ def get_adgroups(request):
     #     return _error_response('Invalid K1 signature.', status=401)
 
     if settings.DEBUG:
-        from pprint import pprint
         num_qs_beginning = len(connection.queries)
+
+    source_types_filter = request.GET.getlist('source_type')
 
     adgroupsources = (
         dash.models.AdGroupSource.objects
@@ -36,8 +38,12 @@ def get_adgroups(request):
                 'ad_group_id',
                 'source_credentials__credentials',
                 'source_campaign_key',
+                'source__name',
+                'source__source_type__type',
             )
     )
+    if source_types_filter:
+        adgroupsources = adgroupsources.filter(source__source_type__type__in=source_types_filter)
 
     adgroup_ids = {adgroupsource['ad_group_id'] for adgroupsource in adgroupsources}
     adgroups = (
@@ -81,7 +87,13 @@ def get_adgroups(request):
 
     adgroupsources_by_adgroup = collections.defaultdict(list)
     for adgroupsource in adgroupsources:
-        adgroupsources_by_adgroup[adgroupsource['ad_group_id']].append(adgroupsource)
+        adgroupsources_by_adgroup[adgroupsource['ad_group_id']].append({
+            'id': adgroupsource['id'],
+            'source_name': adgroupsource['source__name'],
+            'source_type': adgroupsource['source__source_type__type'],
+            'source_credentials': adgroupsource['source_credentials__credentials'],
+            'source_campaign_key': adgroupsource['source_campaign_key'],
+        })
 
     adgroups_by_campaign = collections.defaultdict(list)
     for adgroup in adgroups:
@@ -100,7 +112,7 @@ def get_adgroups(request):
         campaign_id = campaign['id']
         campaigns_by_account[campaign['account_id']].append({
             'id': campaign_id,
-            'adgroups': adgroups_by_campaign[campaign_id],
+            'ad_groups': adgroups_by_campaign[campaign_id],
             'conversion_goals': conversion_goals_by_campaign[campaign_id],
         })
 
@@ -115,6 +127,8 @@ def get_adgroups(request):
         })
 
     if settings.DEBUG:
+        import json
+        print json.dumps(data, indent=4)
         num_qs = len(connection.queries) - num_qs_beginning
         for q in connection.queries[-num_qs:]:
             print_sql(q['sql'])
@@ -123,7 +137,7 @@ def get_adgroups(request):
 
 
 @csrf_exempt
-def get_campaign_data(request):
+def get_content_ad_sources(request):
     # FIXME
     # try:
     #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
@@ -145,13 +159,17 @@ def get_campaign_data(request):
             'source__source_type__type',
             'source_content_ad_id',
         )
-    )[:10]
+    )
     adgroup_ids = request.GET.getlist('ad_group')
     if adgroup_ids:
-        contentadsources = contentadsources.filter(ad_group_id__in=adgroup_ids)
+        contentadsources = contentadsources.filter(content_ad__ad_group_id__in=adgroup_ids)
     source_types = request.GET.getlist('source_type')
     if source_types:
         contentadsources = contentadsources.filter(source__source_type__type__in=source_types)
+
+    # FIXME
+    # slice it
+    contentadsources = contentadsources[:10]
 
     data_by_ids = {}
     for contentadsource in contentadsources:
@@ -163,7 +181,7 @@ def get_campaign_data(request):
             data_by_ids[adgroup_id][content_ad_id] = list()
         data_by_ids[adgroup_id][content_ad_id].append(contentadsource)
 
-    data = {'adgroups': []}
+    data = {'ad_groups': []}
     for adgroup_id, content_ads_dict in data_by_ids.items():
         content_ads = []
         for content_ad_id, content_ad_sources_raw in content_ads_dict.items():
@@ -180,18 +198,17 @@ def get_campaign_data(request):
                 'id': content_ad_id,
                 'content_ad_sources': content_ad_sources,
             })
-        data['adgroups'].append({
+        data['ad_groups'].append({
             'id': adgroup_id,
             'content_ads': content_ads,
         })
 
-    response_data = data
     if settings.DEBUG:
-        from pprint import pprint
-        pprint(data)
+        import json
+        print json.dumps(data, indent=4)
         num_qs = len(connection.queries) - num_qs_beginning
         for q in connection.queries[-num_qs:]:
             print_sql(q['sql'])
         print 'Queries run:', num_qs
 
-    return JsonResponse(response_data)
+    return JsonResponse(data)

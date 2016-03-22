@@ -524,14 +524,14 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^k1campaignsapi/adgroups$',
-        k1campaignsapi.views.get_adgroups,
-        name='k1campaignsapi.get_adgroups',
+        r'^k1campaignsapi/ad_groups$',
+        k1campaignsapi.views.get_ad_groups,
+        name='k1campaignsapi.get_ad_groups',
     ),
     url(
-        r'^k1campaignsapi/contentads$',
-        k1campaignsapi.views.get_campaign_data,
-        name='k1campaignsapi.get_campaign_data',
+        r'^k1campaignsapi/content_ad_sources$',
+        k1campaignsapi.views.get_content_ad_sources,
+        name='k1campaignsapi.get_content_ad_sources',
     ),
 )
 
