@@ -8,6 +8,7 @@ import utils.lc_helper
 CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: '{} seconds on site',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} bounce rate',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} new unique visitors',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
@@ -16,8 +17,9 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: lambda x: '{:.2f} s'.format(x),
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: lambda x: '{:.2f} %'.format(x),
     constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: lambda x: '{:.2f} %'.format(x),
     constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CPC: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CPM: utils.lc_helper.default_currency,
@@ -35,6 +37,9 @@ CAMPAIGN_GOAL_MAP = {
     constants.CampaignGoalKPI.TIME_ON_SITE: [
         'total_seconds',
         'avg_cost_per_second',
+    ],
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: [
+        'percent_new_users',
     ],
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: [],
