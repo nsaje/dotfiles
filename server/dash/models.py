@@ -1432,6 +1432,20 @@ class AdGroup(models.Model):
             ids = set(ad_group_settings) & set(ad_group_source_settings)
             return self.filter(id__in=ids)
 
+        def filter_active(self):
+            """
+            Returns only ad groups that have settings set to active.
+            """
+            latest_ad_group_settings = AdGroupSettings.objects.\
+                filter(ad_group__in=self).\
+                group_current_settings()
+            active_ad_group_ids = AdGroupSettings.objects.\
+                filter(id__in=latest_ad_group_settings).\
+                filter(state=constants.AdGroupSettingsState.ACTIVE).\
+                values_list('ad_group_id', flat=True)
+            return self.filter(id__in=active_ad_group_ids)
+
+
     class Meta:
         ordering = ('name',)
 
