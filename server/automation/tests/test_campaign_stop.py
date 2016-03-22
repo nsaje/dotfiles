@@ -141,7 +141,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_send_stop_campaign_email(self, mock_get_mrb, mock_send_email):
-        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('100')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('100')}
 
         dash.models.Campaign.objects.all().update(landing_mode=True)
         c1 = dash.models.Campaign.objects.get(id=1)
@@ -154,7 +154,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop.get_minimum_remaining_budget')
     def test_send_depleting_budget_notification_email(self, mock_get_mrb, mock_send_email):
-        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), Decimal('100')
+        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
 
         dash.models.Campaign.objects.all().update(landing_mode=True)
         c1 = dash.models.Campaign.objects.get(id=1)
