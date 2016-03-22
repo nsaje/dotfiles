@@ -203,24 +203,21 @@ class SourceForm(forms.ModelForm):
     def clean_default_daily_budget_cc(self):
         default_daily_budget_cc = self.cleaned_data.get('default_daily_budget_cc')
         if default_daily_budget_cc:
-            source = self.instance
-            validation_helpers.validate_daily_budget_cc(default_daily_budget_cc, source)
+            validation_helpers.validate_daily_budget_cc(default_daily_budget_cc, self.instance.source_type)
 
         return default_daily_budget_cc
 
     def clean_default_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('default_cpc_cc')
         if cpc_cc:
-            source = self.instance
-            validation_helpers.validate_source_cpc_cc(cpc_cc, source)
+            validation_helpers.validate_source_cpc_cc(cpc_cc, self.instance)
 
         return cpc_cc
 
     def clean_default_mobile_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('default_mobile_cpc_cc')
         if cpc_cc:
-            source = self.instance
-            validation_helpers.validate_source_cpc_cc(cpc_cc, source)
+            validation_helpers.validate_source_cpc_cc(cpc_cc, self.instance)
 
         return cpc_cc
 
@@ -361,6 +358,7 @@ class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 
 class SourceAdmin(admin.ModelAdmin):
+    form = SourceForm
     search_fields = ['name']
     list_display = (
         'name',
