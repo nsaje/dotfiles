@@ -1346,3 +1346,11 @@ class GATrackingType(ConstantBase):
         EMAIL: 'Email',
         API: 'API'
     }
+
+
+class SystemUserType(ConstantBase):
+    CAMPAIGN_STOP = 1
+
+    _VALUES = {
+        CAMPAIGN_STOP: 'Campaign Stop'
+    }

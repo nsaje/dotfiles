@@ -1583,6 +1583,8 @@ class AdGroupSettings(SettingsBase):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    on_delete=models.PROTECT, null=True, blank=True)
+    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
+                                                   null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
