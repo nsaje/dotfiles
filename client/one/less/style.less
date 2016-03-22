@@ -2448,6 +2448,24 @@ div[datepicker] {
     background-image: none !important;
 }
 
+.agency-history-popover-large {
+    max-width: 450px;
+
+    &.bottom {
+        margin-top: 0;
+        padding-top: 10px;
+        background: transparent;
+
+        & > .arrow {
+            top: 0;
+
+            &:after {
+                border-bottom-color: #2fa8c7;
+            }
+        }
+    }
+}
+
 .history-popover-table {
     display: table;
     table-layout: fixed;
@@ -3815,7 +3833,7 @@ select.media-source-select {
 
             &.campaign-goal-delete {
                 text-align: center;
-                
+
                 .centered {
                     height: 16px
                 }
