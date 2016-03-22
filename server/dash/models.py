@@ -492,6 +492,21 @@ class Campaign(models.Model, PermissionMixin):
             )
             return self.exclude(pk__in=archived_campaigns)
 
+        def filter_non_landing(self):
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
+
+            excluded = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).exclude(
+                models.Q(automatic_landing_mode=False) |
+                models.Q(landing_mode=True)
+            ).values_list(
+                'campaign__id', flat=True
+            )
+            return self.exclude(pk__in=excluded)
+
 
 class SettingsBase(models.Model, CopySettingsMixin):
     _settings_fields = None

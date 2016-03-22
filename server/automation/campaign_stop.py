@@ -22,24 +22,7 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    campaigns = dash.models.Campaign.objects.all()
-    campaign_settings_map = {
-        sett.campaign_id: sett for sett in dash.models.CampaignSettings.objects.all().group_current_settings()
-    }
-
-    for campaign in campaigns:
-        campaign_settings = campaign_settings_map.get(campaign.id)
-        if campaign_settings is None:
-            campaign_settings = dash.models.CampaignSettings(
-                campaign,
-                **dash.models.CampaignSettings.get_defaults_dict()
-            )
-
-        if campaign.id not in campaign_settings_map or\
-           not campaign_settings.automatic_landing_mode or\
-           campaign_settings.landing_mode:
-            continue
-
+    for campaign in dash.models.Campaign.objects.all().filter_non_landing():
         available_tomorrow, max_daily_budget = get_minimum_remaining_budget(campaign)
         if available_tomorrow < max_daily_budget:
             _switch_to_landing_mode(campaign)
