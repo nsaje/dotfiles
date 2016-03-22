@@ -43,7 +43,7 @@ def _switch_to_landing_mode(campaign):
         new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
         new_campaign_settings.save(None)
 
-        for ad_group in campaign.adgroup_sett.all().filter_active():
+        for ad_group in campaign.adgroup_set.all().filter_active():
             current_ag_settings = ad_group.get_current_settings()
             new_ag_settings = current_ag_settings.copy_settings()
             new_ag_settings.end_date = dates_helper.utc_today()
