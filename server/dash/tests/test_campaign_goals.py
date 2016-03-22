@@ -1,5 +1,6 @@
 from mock import patch
 from decimal import Decimal
+import datetime
 
 from django.test import TestCase
 from django.http.request import HttpRequest
@@ -7,6 +8,7 @@ from django.http.request import HttpRequest
 from utils import exc
 from dash import models, constants, forms
 from dash import campaign_goals
+from dash import infobox_helpers
 from zemauth.models import User
 
 
@@ -34,6 +36,7 @@ class CampaignGoalsTestCase(TestCase):
             campaign=self.campaign,
             type=constants.ConversionGoalType.GA,
             name='test conversion goal',
+            goal_id='123',
         )
         cpa_goal.conversion_goal = conversion_goal
         cpa_goal.save()
@@ -237,3 +240,85 @@ class CampaignGoalsTestCase(TestCase):
         ]
 
         self.assertItemsEqual(result, cam_goals)
+
+    def test_get_goal_performance(self):
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
+        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+        self._add_value(constants.CampaignGoalKPI.CPA, 10)
+
+        stats = {
+            'conversion_goal_1': 10,
+            'unbounced_visits': 10,
+            'total_pageviews': 10,
+            'total_seconds': 10,
+            'percent_new_users': 1.2,
+        }
+        performance = campaign_goals.get_goal_performance(self.user, self.campaign, stats=stats)
+        self.assertEqual(
+            [(p[1], p[2]) for p in sorted(performance.values())],
+            [(None, None), (1.2, None), (10, Decimal('5.00000')), (10, Decimal('10.00000')),
+             (10, Decimal('60.00000')), (10, Decimal('75.00000'))],
+        )
+
+    @patch('reports.api_contentads.query')
+    def test_infobox(self, mock_contentads_query):
+        start_date, end_date = datetime.date.today(), datetime.date.today() - datetime.timedelta(7)
+
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
+        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+        self._add_value(constants.CampaignGoalKPI.CPA, 10)
+
+        mock_contentads_query.return_value = {
+            'unbounced_visits': 10,
+            'total_pageviews': 10,
+            'total_seconds': 10,
+            'cpc': 0.1,
+            'percent_new_users': 1.2,
+            'conversions': {
+                'ga__123': 20.00,
+            },
+        }
+
+        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, self.campaign,
+                                                               start_date, end_date)
+        self.assertEqual(goals_infobox, [
+            {
+                'section_start': True,
+                'type': 'setting',
+                'name': 'Campaign Goals:',
+                'value': '10.00 seconds on site',
+                'description': ''
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': '10.00 % bounce rate',
+                'description': ''
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '', 'value':
+                '10.00 pages per session',
+                'description': ''
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': u'$20.00 CPA on conversion test conversion goal',
+                'description': ''
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': '$0.10 CPC',
+                'description': ''
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': '1.20 % new unique visitors',
+                'description': ''
+            }
+        ])

@@ -6,7 +6,7 @@ import utils.lc_helper
 
 import reports.api_helpers
 from django.db import models
-from django.db.models import Sum, F, ExpressionWrapper, Prefetch
+from django.db.models import Sum, F, ExpressionWrapper
 
 import dash.constants
 import dash.models
@@ -620,33 +620,25 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, campaign):
-    prefetch_values = Prefetch(
-        'values',
-        queryset=dash.models.CampaignGoalValue.objects.order_by('-created_dt')
-    )
-    goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
-        prefetch_values
-    ).select_related('conversion_goal')
+def get_campaign_goal_list(user, campaign, start_date, end_date):
+    performance = dash.campaign_goals.get_goal_performance(user, campaign,
+                                                           start_date=start_date, end_date=end_date)
 
     settings = []
-    for i, campaign_goal in enumerate(goals):
+    for i, goal_type in enumerate(performance.keys()):
+        status, metric_value, planned_value, campaign_goal = performance[goal_type]
+
         def format_value(val):
-            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
+            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](val) \
                 or 'N/A'
 
-        goal_values = campaign_goal.values.all()
-        planned_value = goal_values and goal_values[0].value
-
-        current_value = None
-
-        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
-            format_value(current_value)
+        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
+            format_value(metric_value)
         )
         if campaign_goal.conversion_goal:
             goal_description += ' on conversion ' + campaign_goal.conversion_goal.name
 
-        settings.append(OverviewSetting(
+        entry = OverviewSetting(
             '' if i else 'Campaign Goals:',
             goal_description,
             planned_value and '{}planned {}'.format(
@@ -654,5 +646,11 @@ def get_campaign_goal_list(user, campaign):
                 format_value(planned_value),
             ) or '',
             section_start=not i,
-        ).as_dict())
+        )
+        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
+            entry = entry.performance(True)
+        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
+            entry = entry.performance(False)
+
+        settings.append(entry.as_dict())
     return settings
