@@ -492,7 +492,7 @@ class Campaign(models.Model, PermissionMixin):
             )
             return self.exclude(pk__in=archived_campaigns)
 
-        def filter_non_landing(self):
+        def exclude_landing(self):
             related_settings = CampaignSettings.objects.all().filter(
                 campaign__in=self
             ).group_current_settings()

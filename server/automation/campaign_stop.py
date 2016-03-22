@@ -24,7 +24,7 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    for campaign in dash.models.Campaign.objects.all().filter_non_landing().iterator():
+    for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
         available_today, available_tomorrow, max_daily_budget_per_ags = get_minimum_remaining_budget(campaign)
         max_daily_budget = sum(max_daily_budget_per_ags.itervalues())
         if available_tomorrow < max_daily_budget:
