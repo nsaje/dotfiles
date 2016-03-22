@@ -9,7 +9,8 @@ from dash import conversions_helper
 from dash.models import Source
 from reports import redshift
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null, from_cc, subtractions, mul_expr
+    decimal_to_int_exact, sum_expr, extract_json_or_null, from_cc, subtractions, mul_expr, \
+    DIVIDE_FORMULA, UNBOUNCED_VISITS_FORMULA, AVG_TOS_FORMULA
 
 from utils import s3helpers
 
@@ -25,12 +26,6 @@ FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
     sum_agr('data_cost_nano'),
     sum_agr('license_fee_nano'),
 )
-
-UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
-AVG_SUM_UNBOUNCED_VISITS_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
-
-AVG_TOS = sum_agr('total_time_on_site')
-COST_PER_AVG_VISIT = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
 
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
@@ -87,10 +82,10 @@ class RSPublishersModel(redshift.RSModel):
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
-        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=AVG_TOS),
-        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_nano,       calc=COST_PER_AVG_VISIT.format(expr=sum_agr('cost_nano'), divisor=AVG_TOS)),
+        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=AVG_TOS_FORMULA),
+        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_nano,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=AVG_TOS_FORMULA)),
         dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=unchanged,       calc=UNBOUNCED_VISITS_FORMULA),
-        dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_nano,       calc=AVG_SUM_UNBOUNCED_VISITS_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_nano,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
         dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,       calc=sum_agr('pageviews')),
         dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_nano,       calc=sum_div('cost_nano', 'pageviews')),
         dict(sql='avg_cost_for_new_visitor_sum',  app='avg_cost_for_new_visitor',         out=from_nano,       calc=sum_div('cost_nano', 'new_visits')),

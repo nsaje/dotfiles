@@ -1,5 +1,8 @@
 import decimal
 
+# simple division sql for use with fields
+DIVIDE_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
+
 
 def unchanged(val):
     return val
@@ -107,3 +110,7 @@ def ranked(field_name, order_field):
         order_field = order_field[1:] + ' DESC'
     return "RANK() OVER (PARTITION BY {} ORDER BY {})".format(field_name, order_field)
 
+
+# common formulas
+UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
+AVG_TOS_FORMULA = sum_agr('total_time_on_site')
