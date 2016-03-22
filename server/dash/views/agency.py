@@ -11,7 +11,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_plus, autopilot_helpers
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -149,7 +149,8 @@ class AdGroupSettings(api_common.BaseApiView):
                     '{:.2f}'.format(settings.autopilot_daily_budget)
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
-                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group)
+                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
+                'autopilot_optimization_goal': autopilot_helpers.get_optimization_goal_text(ad_group.campaign)
             }
 
         return result
