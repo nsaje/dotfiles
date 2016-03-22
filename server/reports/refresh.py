@@ -258,11 +258,15 @@ def put_pub_postclick_stats_to_s3(date, entries):
             data = json.loads(json_data)
 
     for entry in entries:
+        source = entry.source_param.lower()
+        if source.startswith("b1_"):
+            source = source.replace("b1_", "", 1)
+
         key = u"{date}|{ad_group_id}|{publisher}|{source}".format(
             date=entry.report_date,
             ad_group_id=entry.ad_group_id,
             publisher=entry.publisher_param.lower(),
-            source=entry.source_param.lower()
+            source=source
         )
         data[key] = {
             "visits": entry.visits,
@@ -325,15 +329,19 @@ def _augment_pub_data_with_postclick_stats(date, rows):
         day=date.day
     )
 
-    json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
+    s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+    if not list(s3.list(s3_key)):
+        return
+
+    json_data = s3.get(s3_key)
     if not json_data:
         return
 
     postclick_data = json.loads(json_data)
     for row in rows:
-        key = "{date}|{ad_group_id}|{publisher}|{source}".format(
+        key = u"{date}|{ad_group_id}|{publisher}|{source}".format(
             date=date.isoformat(),
-            ad_group_id=row["ad_group_id"],
+            ad_group_id=row["adgroup_id"],
             publisher=row["domain"].lower(),
             source=row["exchange"].lower()
         )
