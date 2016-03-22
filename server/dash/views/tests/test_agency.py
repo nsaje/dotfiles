@@ -53,7 +53,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 'autopilot_min_budget': '100'
             }
         }
-
+        self.maxDiff = None
         self.user = User.objects.get(pk=1)
 
         self.assertFalse(self.user.is_superuser)
@@ -132,7 +132,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_min_budget': '100'
+                    'autopilot_min_budget': '100',
+                    'autopilot_optimization_goal': 'maximum spend'
                 },
                 'warnings': {}
             },
@@ -237,7 +238,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100'
+                        'autopilot_min_budget': '100',
+                        'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
                 'success': True
@@ -410,7 +412,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100'
+                        'autopilot_min_budget': '100',
+                        'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
                 'success': True

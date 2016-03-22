@@ -211,7 +211,6 @@ def _get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdG
 
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
-    today = datetime.date(2016, 3, 19) # TODO REMOVEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     yesterday = today - datetime.timedelta(days=1)
     days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
 
