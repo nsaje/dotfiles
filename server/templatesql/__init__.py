@@ -1,4 +1,12 @@
-class RSQuery(object):
+from django.template import loader
+
+def generate_query(template_name, context):
+    q = Query(template_name)
+    return q.generate(context)
+
+
+class Query(object):
+    # TODO is this needed? Probably just prepare_query
     def __init__(self, template_name):
         self.template_name = template_name
 
@@ -7,7 +15,7 @@ class RSQuery(object):
         return template.render(context)
 
 
-class RSModel(object):
+class Model(object):
     """
     # Use builtin https://docs.djangoproject.com/en/1.9/topics/db/sql/#executing-custom-sql-directly
     translation to map python-sql fields
@@ -21,7 +29,7 @@ class RSModel(object):
             cols = [(name, getattr(cls, name))
                     for name in dir(cls)
                     if isinstance(
-                        getattr(cls, name), RSColumn)]
+                        getattr(cls, name), Column)]
 
             for name, col in cols:
                 col.pyname = name
@@ -53,11 +61,12 @@ class RSModel(object):
         return [x[1] for x in columns]
 
 
-class RSColumn(object):
-    def __init__(self, column_name, group=None):
+class Column(object):
+    def __init__(self, column_name, group=None, pyout_fn=None):
         self.column_name = column_name
         self.group = group
         self.pyname = None  # set later through model
+        self.pyout_fn = pyout_fn
 
     @classmethod
     def _format_prefix(cls, prefix=None):
@@ -70,17 +79,18 @@ class RSColumn(object):
         return col if col == self.pyname else "{} {}".format(col, self.pyname)
 
 
-class RSTemplateColumn(RSColumn):
+class TemplateColumn(Column):
     def __init__(self, template_name, column_name, group, context=None):
         self.template_name = template_name
         self.context = context
-        super(RSTemplateColumn, self).__init__(column_name, group)
+        super(TemplateColumn, self).__init__(column_name, group)
 
     def gen(self, prefix=None):
         template = loader.get_template(self.template_name)
         context = {'p': self._format_prefix(prefix),
                    'column_name': self.column_name,
                    'alias': self.pyname}
-        context.update(self.context)
+        if self.context:
+            context.update(self.context)
 
         return template.render(context)
