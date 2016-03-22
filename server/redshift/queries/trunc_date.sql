@@ -1,0 +1,1 @@
+TRUNC('{{ p }}{{ expr }}') {{ alias }}
