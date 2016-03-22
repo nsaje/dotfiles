@@ -240,11 +240,10 @@ def put_pub_stats_to_s3(date, rows, key_fmt):
     return s3_key
 
 
-def put_pub_postclick_stats_to_s3(entries):
+def put_pub_postclick_stats_to_s3(date, entries):
     if not entries:
         return
 
-    date = entries[0].report_date
     s3_key = RAW_PUB_POSTCLICK_DATA_S3_URI.format(
         year=date.year,
         month=date.month,

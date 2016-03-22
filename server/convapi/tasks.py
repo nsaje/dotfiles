@@ -441,7 +441,8 @@ def process_report_v2(report_task, report_type):
             report_type
         )
 
-        refresh.put_pub_postclick_stats_to_s3(report.get_publisher_stats())
+        refresh.put_pub_postclick_stats_to_s3(
+                report.get_date(), report.get_publisher_stats())
 
         report_log.visits_imported = report.imported_visits()
         report_log.visits_reported = report.reported_visits()
