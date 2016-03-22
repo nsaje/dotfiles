@@ -475,6 +475,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
                 datetime.date(2015, 4, 16),
                 1,
                 "gravity",
+                None,
                 {
                     "Goal 1": 0,
                 }
@@ -496,6 +497,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
                 datetime.date(2015, 4, 16),
                 3,
                 "gravity",
+                None,
                 {
                     "Goal 1": 0,
                 }
@@ -520,6 +522,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
                 datetime.date(2015, 4, 16),
                 12345,
                 "gravity",
+                None,
                 {
                     "Goal 1": 0,
                 }
@@ -567,7 +570,8 @@ class GaContentAdReportTest(test.TransactionTestCase):
         row_invalid_source = ga_api.GAApiReportRow(
                 datetime.date(2015, 4, 16),
                 12345,
-                'z1163569b1_gu\u00f1pzwssedw___mgum1z'
+                'z1163569b1_gu\u00f1pzwssedw___mgum1z',
+                'test.com'
         )
         row_invalid_source.set_postclick_stats(['/coupons/', 'z1163569b1_gu\u00f1pzwssedw___mgum1z', '1', '0', '0.0',
                                                 '1', '0.0'])
