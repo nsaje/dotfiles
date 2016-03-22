@@ -16,7 +16,114 @@ def print_sql(query):
 
 
 @csrf_exempt
-def get_campaign_data(request, media_source=None):
+def get_adgroups(request):
+    # FIXME
+    # try:
+    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    # except request_signer.SignatureError as e:
+    #     logger.exception('Invalid K1 signature.')
+    #     return _error_response('Invalid K1 signature.', status=401)
+
+    if settings.DEBUG:
+        from pprint import pprint
+        num_qs_beginning = len(connection.queries)
+
+    adgroupsources = (
+        dash.models.AdGroupSource.objects
+            .select_related('source_credentials')
+            .values(
+                'id',
+                'ad_group_id',
+                'source_credentials__credentials',
+                'source_campaign_key',
+            )
+    )
+
+    adgroup_ids = {adgroupsource['ad_group_id'] for adgroupsource in adgroupsources}
+    adgroups = (
+        dash.models.AdGroup.objects
+            .filter(id__in=adgroup_ids)
+            .values(
+                'id',
+                'campaign_id',
+            )
+    )
+
+    campaign_ids = {adgroup['campaign_id'] for adgroup in adgroups}
+    campaigns = (
+        dash.models.Campaign.objects
+            .filter(id__in=campaign_ids)
+            .values(
+                'id',
+                'account_id',
+            )
+    )
+
+    conversion_goals = (
+        dash.models.ConversionGoal.objects
+            .filter(campaign_id__in=campaign_ids)
+            .select_related('pixel')
+            .values(
+                'campaign_id',
+                'pixel__slug'
+            )
+    )
+
+    account_ids = {campaign['account_id'] for campaign in campaigns}
+    accounts = (
+        dash.models.Account.objects
+            .filter(id__in=account_ids)
+            .values(
+                'id',
+                'outbrain_marketer_id',
+            )
+    )
+
+    adgroupsources_by_adgroup = collections.defaultdict(list)
+    for adgroupsource in adgroupsources:
+        adgroupsources_by_adgroup[adgroupsource['ad_group_id']].append(adgroupsource)
+
+    adgroups_by_campaign = collections.defaultdict(list)
+    for adgroup in adgroups:
+        adgroup_id = adgroup['id']
+        adgroups_by_campaign[adgroup['campaign_id']].append({
+            'id': adgroup_id,
+            'adgroupsources': adgroupsources_by_adgroup[adgroup_id],
+        })
+
+    conversion_goals_by_campaign = collections.defaultdict(list)
+    for conversion_goal in conversion_goals:
+        conversion_goals_by_campaign[conversion_goal['campaign_id']].append(conversion_goal)
+
+    campaigns_by_account = collections.defaultdict(list)
+    for campaign in campaigns:
+        campaign_id = campaign['id']
+        campaigns_by_account[campaign['account_id']].append({
+            'id': campaign_id,
+            'adgroups': adgroups_by_campaign[campaign_id],
+            'conversion_goals': conversion_goals_by_campaign[campaign_id],
+        })
+
+    data = {}
+    data['accounts'] = []
+    for account in accounts:
+        account_id = account['id']
+        data['accounts'].append({
+            'id': account_id,
+            'outbrain_marketer_id': account['outbrain_marketer_id'],
+            'campaigns': campaigns_by_account[account_id]
+        })
+
+    if settings.DEBUG:
+        num_qs = len(connection.queries) - num_qs_beginning
+        for q in connection.queries[-num_qs:]:
+            print_sql(q['sql'])
+        print 'Queries run:', num_qs
+    return JsonResponse(data)
+
+
+@csrf_exempt
+def get_campaign_data(request):
     # FIXME
     # try:
     #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
@@ -27,97 +134,64 @@ def get_campaign_data(request, media_source=None):
     if settings.DEBUG:
         num_qs_beginning = len(connection.queries)
 
-    content_ads = (
-        dash.models.ContentAd.objects
-           .select_related('ad_group__campaign__account')
-           .prefetch_related(Prefetch(
-               'contentadsource_set',
-               to_attr='filtered_sources',
-               queryset=dash.models.ContentAdSource.objects
-               .select_related('source')
-               .only(
-                   'id',
-                   'content_ad_id',
-                   'source__id',
-                   'source__tracking_slug',
-                   'source_content_ad_id',
-               )
-           ))
-           # .prefetch_related('ad_group__campaign__account__conversionpixel_set')
-           .values(
-               'ad_group__campaign__account__id',
-               'ad_group__campaign__account__outbrain_marketer_id',
-               'ad_group__campaign__id',
-               'ad_group__id',
-               'id',
-               'contentadsource__id',
-               'contentadsource__content_ad_id',
-               'contentadsource__source__id',
-               'contentadsource__source__tracking_slug',
-               'contentadsource__source_content_ad_id',
-           )
-    )[:1]
+    contentadsources = (
+        dash.models.ContentAdSource.objects
+        .values(
+            'id',
+            'content_ad_id',
+            'content_ad__ad_group_id',
+            'source__id',
+            'source__tracking_slug',
+            'source__source_type__type',
+            'source_content_ad_id',
+        )
+    )[:10]
+    adgroup_ids = request.GET.getlist('ad_group')
+    if adgroup_ids:
+        contentadsources = contentadsources.filter(ad_group_id__in=adgroup_ids)
+    source_types = request.GET.getlist('source_type')
+    if source_types:
+        contentadsources = contentadsources.filter(source__source_type__type__in=source_types)
 
-    import pprint
-    pprint.pprint(content_ads)
-    response_data = {}
+    data_by_ids = {}
+    for contentadsource in contentadsources:
+        adgroup_id = contentadsource['content_ad__ad_group_id']
+        if adgroup_id not in data_by_ids:
+            data_by_ids[adgroup_id] = dict()
+        content_ad_id = contentadsource['content_ad_id']
+        if content_ad_id not in data_by_ids[adgroup_id]:
+            data_by_ids[adgroup_id][content_ad_id] = list()
+        data_by_ids[adgroup_id][content_ad_id].append(contentadsource)
 
-    # for content_ad in content_ads:
-    #     # pprint.pprint(dir(content_ad))
-    #     print content_ad.ad_group.campaign.id
-    #     print content_ad.ad_group.campaign.account.id
-    #     for contentadsource in content_ad.filtered_sources:
-    #         print contentadsource.source.id
+    data = {'adgroups': []}
+    for adgroup_id, content_ads_dict in data_by_ids.items():
+        content_ads = []
+        for content_ad_id, content_ad_sources_raw in content_ads_dict.items():
+            content_ad_sources = []
+            for content_ad_source in content_ad_sources_raw:
+                content_ad_sources.append({
+                    'id': content_ad_source['id'],
+                    'source_id': content_ad_source['source__id'],
+                    'source_tracking_slug': content_ad_source['source__tracking_slug'],
+                    'source_type': content_ad_source['source__source_type__type'],
+                    'source_content_ad_id': content_ad_source['source_content_ad_id'],
+                })
+            content_ads.append({
+                'id': content_ad_id,
+                'content_ad_sources': content_ad_sources,
+            })
+        data['adgroups'].append({
+            'id': adgroup_id,
+            'content_ads': content_ads,
+        })
 
-    # def tree(): return collections.defaultdict(tree)
-    # data = tree()
-    # for ca in content_ads:
-    #     sources = []
-    #     for cas in ca.filtered_sources:
-    #         sources.append({
-    #             'id': cas.id,
-    #             'source_id': cas.source.id,
-    #             'source_id': cas.source.id,
-    #             'source_slug': cas.source.tracking_slug,
-    #             'source_content_ad_id': cas.source_content_ad_id,
-    #         })
-    #     data[ca.ad_group.campaign.account.id][
-    #         ca.ad_group.campaign.id][ca.ad_group.id][ca.id] = sources
-    #
-    # accounts = []
-    # for account_id in data.keys():
-    #     campaigns = []
-    #     for campaign_id in data[account_id].keys():
-    #         ad_groups = []
-    #         for adgroup_id in data[account_id][campaign_id].keys():
-    #             content_ads = []
-    #             for content_ad_id in data[account_id][campaign_id][adgroup_id].keys():
-    #                 content_ads.append({
-    #                     'id': content_ad_id,
-    #                     'content_ad_sources': data[account_id][campaign_id][adgroup_id][content_ad_id]
-    #                 })
-    #             ad_groups.append({
-    #                 'id': adgroup_id,
-    #                 'content_ads': content_ads
-    #             })
-    #         campaigns.append({
-    #             'id': campaign_id,
-    #             'ad_groups': ad_groups
-    #         })
-    #     accounts.append({
-    #         'id': account_id,
-    #         'campaigns': campaigns
-    #     })
-    # response_data = {
-    #     'accounts': accounts
-    # }
-    #
+    response_data = data
     if settings.DEBUG:
-        import pprint
-        print response_data
+        from pprint import pprint
+        pprint(data)
         num_qs = len(connection.queries) - num_qs_beginning
         for q in connection.queries[-num_qs:]:
             print_sql(q['sql'])
         print 'Queries run:', num_qs
-    #
+
     return JsonResponse(response_data)
