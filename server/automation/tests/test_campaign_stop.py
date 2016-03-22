@@ -174,9 +174,12 @@ class SwitchToLandingModeTestCase(TestCase):
 
         current_campaign_settings = campaign.get_current_settings()
         self.assertTrue(current_campaign_settings.landing_mode)
+        self.assertEqual(dash.constants.SystemUserType.CAMPAIGN_STOP, current_campaign_settings.system_user)
 
         for ad_group in campaign.adgroup_set.all():
-            self.assertEqual(datetime.datetime.utcnow().date(), ad_group.get_current_settings().end_date)
+            current_ad_group_settings = ad_group.get_current_settings()
+            self.assertEqual(datetime.datetime.utcnow().date(), current_ad_group_settings.end_date)
+            self.assertEqual(dash.constants.SystemUserType.CAMPAIGN_STOP, current_ad_group_settings.system_user)
 
         self.assertTrue(mock_send_actions.called)
         self.assertEqual(sum(len(list(ag.sources.all())) for ag in campaign.adgroup_set.all().exclude_archived()),
@@ -235,9 +238,11 @@ class SwitchToLandingModeTestCase(TestCase):
 
         current_campaign_settings = campaign.get_current_settings()
         self.assertTrue(current_campaign_settings.landing_mode)
+        self.assertEqual(dash.constants.SystemUserType.CAMPAIGN_STOP, current_campaign_settings.system_user)
 
         for ad_group in campaign.adgroup_set.all():
-            self.assertEqual(in_30_days, ad_group.get_current_settings().end_date)
+            current_ad_group_settings = ad_group.get_current_settings()
+            self.assertEqual(in_30_days, current_ad_group_settings.end_date)
 
 
 class GetMaxSettableDailyBudget(TestCase):

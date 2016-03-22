@@ -36,6 +36,7 @@ def _switch_to_landing_mode(campaign):
     with transaction.atomic():
         new_campaign_settings = campaign.get_current_settings().copy_settings()
         new_campaign_settings.landing_mode = True
+        new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
         new_campaign_settings.save(None)
 
         for ad_group in campaign.adgroup_set.all().exclude_archived():
