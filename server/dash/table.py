@@ -593,6 +593,7 @@ class SourcesTable(object):
                    yesterday_cost):
         result = {}
         helpers.copy_stats_to_row(totals_data, result)
+        campaign_goals.copy_fields(user, totals_data, result)
         result['yesterday_cost'] = yesterday_cost
 
         if user.has_perm('zemauth.can_view_effective_costs'):
@@ -692,6 +693,7 @@ class SourcesTable(object):
                 del row['yesterday_cost']
 
             helpers.copy_stats_to_row(source_data, row)
+            campaign_goals.copy_fields(user, source_data, row)
 
             if ad_group_level:
                 bid_cpc_value = states[0].cpc_cc if len(states) == 1 else None
