@@ -213,7 +213,7 @@ if TESTING:
     }
 
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-    IMAGE_ORIGINAL_URL = ''
+    Z3_API_IMAGE_URL = ''
     IMAGE_THUMBNAIL_URL = ''
 
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
