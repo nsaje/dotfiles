@@ -13,13 +13,11 @@ oneApp.directive('zemGridHeader', ['config', function (config) {
             header: '=',
         },
         template: '' +
-        '<thead>' +
-            '<tr>' +
-                '<th ng-repeat="col in header.columns">' +
+            '<div>' +
+                '<div ng-repeat="col in header.columns">' +
                     '<span class="col-title">{{ col }}</span>' +
-                '</th>' +
-            '</tr>' +
-        '<thead/>',
+                '</div>' +
+            '</div>',
         controller: ['$scope', function ($scope) {
         }],
     };

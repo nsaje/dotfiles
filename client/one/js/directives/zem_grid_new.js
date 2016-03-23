@@ -2,6 +2,20 @@
 'use strict';
 
 oneApp.directive('zemGridNew', ['config', 'zemDataSourceService', function (config, zemDataSourceService) {
+    var GridRowType = {
+        STATS: 1,
+        BREAKDOWN: 2,
+    };
+
+    function GridRow (type, level, data) {
+        this.type = type;
+        this.level = level;
+        this.data = data;
+
+        this.parent = null;
+        this.collapsed = false;
+        this.visible = true;
+    }
     return {
         restrict: 'E',
         replace: true,
@@ -13,9 +27,9 @@ oneApp.directive('zemGridNew', ['config', 'zemDataSourceService', function (conf
         },
         template: '' +
             '<div>' +
-                '<zem-grid-header options="ctrl.options" header="ctrl.header"/>' +
-                '<zem-grid-body options="ctrl.options" header="ctrl.rows"/>' +
-                '<zem-grid-footer options="ctrl.options" header="ctrl.footer"/>' +
+                '<zem-grid-header options="ctrl.options" header="ctrl.header"></zem-grid-header>' +
+                '<zem-grid-body options="ctrl.options" header="ctrl.rows"></zem-grid-body>' +
+                '<zem-grid-footer options="ctrl.options" header="ctrl.footer"></zem-grid-footer>' +
             '</div>',
         controller: ['$scope', function ($scope) {
 

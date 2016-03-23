@@ -12,7 +12,7 @@ oneApp.directive('zemGridRow', ['config', function (config) {
             options: '=',
             cell: '=',
         },
-        template: '<td>{{cell}}<td/>',
+        template: '<div>{{cell}}</div>',
         controller: ['$scope', function ($scope) {
         }],
     };
