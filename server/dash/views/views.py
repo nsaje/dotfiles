@@ -554,6 +554,9 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': campaign.name,
             'active': infobox_helpers.get_campaign_running_status(campaign),
@@ -568,7 +571,9 @@ class CampaignOverview(api_common.BaseApiView):
             campaign,
             request.user,
             campaign_settings,
-            daily_cap
+            daily_cap,
+            start_date,
+            end_date,
         )
 
         for setting in performance_settings[1:]:
@@ -655,7 +660,8 @@ class CampaignOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
-    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
+    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc,
+                              start_date, end_date):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
@@ -671,7 +677,8 @@ class CampaignOverview(api_common.BaseApiView):
         settings.extend(common_settings)
 
         if user.has_perm('zemauth.can_see_campaign_goals'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign))
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
+                                                                   start_date, end_date))
 
         return settings, is_delivering
 
@@ -948,7 +955,8 @@ class AdGroupSources(api_common.BaseApiView):
                                             ad_group=ad_group)
 
         if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+            helpers.set_ad_group_source_settings(
+                request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
 
         return self.create_api_response(None)
 

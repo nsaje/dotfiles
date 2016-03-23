@@ -1050,7 +1050,7 @@ var options = {
         {name: 'max bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
-        {name: 'new unique visitors', vlaue: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
+        {name: 'new unique visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     conversionGoalTypes: [
