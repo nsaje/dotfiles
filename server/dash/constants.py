@@ -1030,7 +1030,7 @@ class CampaignGoalKPI(ConstantBase):
     PAGES_PER_SESSION = 3
     CPA = 4
     CPC = 5
-    #CPM = 6
+#    CPM = 6
     NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
@@ -1039,7 +1039,7 @@ class CampaignGoalKPI(ConstantBase):
         PAGES_PER_SESSION: 'pages per session',
         CPA: '$CPA',
         CPC: '$CPC',
-        # CPM: '$CPM',
+        #        CPM: '$CPM',
         NEW_UNIQUE_VISITORS: 'new visitors %',
     }
 
