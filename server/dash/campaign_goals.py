@@ -68,7 +68,7 @@ def get_performance_value(goal_type, metric_value, target_value):
         performance = (2 * target_value - metric_value) / target_value
     else:
         performance = metric_value / target_value
-    return max(0., min(performance, 2.))
+    return max(Decimal('0'), min(performance, Decimal('2')))
 
 
 def format_value(goal_type, value):
