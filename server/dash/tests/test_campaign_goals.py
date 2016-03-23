@@ -300,7 +300,7 @@ class CampaignGoalsTestCase(TestCase):
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
-                'value': u'$20.00 CPA on conversion test conversion goal',
+                'value': u'$20.00 CPA - test conversion goal',
                 'description': 'planned $10.00'
             }, {
                 'section_start': False,

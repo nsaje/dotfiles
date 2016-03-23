@@ -630,7 +630,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
     for status, metric_value, planned_value, campaign_goal in performance:
         goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
         if campaign_goal.conversion_goal:
-            goal_description += ' on conversion ' + campaign_goal.conversion_goal.name
+            goal_description += ' - ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
             '' if not first else 'Campaign Goals:',
