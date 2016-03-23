@@ -50,7 +50,7 @@ def ad_group_source_is_synced(ad_group_source):
 
 def update_ad_group_source_values(ad_group_source, changes):
     settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(changes, None)
+    return settings_writer.set(changes, None)
 
 
 def get_ad_group_sources_minimum_cpc(ad_group_source):

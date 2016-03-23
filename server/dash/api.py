@@ -1208,7 +1208,7 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj, request, send_action=True):
+    def set(self, settings_obj, request, send_action=True, send_to_zwei=True):
         latest_settings = self.ad_group_source.get_current_settings()
 
         state = settings_obj.get('state')
@@ -1251,7 +1251,8 @@ class AdGroupSourceSettingsWriter(object):
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
-                        actionlog.api.set_ad_group_source_settings(filtered_settings_obj, new_settings.ad_group_source, request)
+                        return actionlog.api.set_ad_group_source_settings(
+                            filtered_settings_obj, new_settings.ad_group_source, request, send=send_to_zwei)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
@@ -1268,7 +1269,10 @@ class AdGroupSourceSettingsWriter(object):
                     'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                     self.ad_group_source
                 )
-                actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings.ad_group_source, request)
+                return actionlog.api.set_ad_group_source_settings(
+                    settings_obj, latest_settings.ad_group_source, request, send=send_to_zwei)
+
+        return []
 
     def can_trigger_action(self):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
