@@ -31,7 +31,7 @@
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
                         <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
-                        <td zem-lazy-popover-template="'popoverContent.html'" zem-lazy-popover-append-to-body="true" zem-lazy-popover-placement="top" zem-lazy-popover-animation-class="fade">{{ item.changesText }}</td>
+                        <td zem-lazy-popover-template="'popoverContent.html'" zem-lazy-popover-append-to-body="true" zem-lazy-popover-placement="bottom" zem-lazy-popover-stay-open-on-hover="true" zem-lazy-popover-animation-class="fade" zem-lazy-popover-custom-classes="agency-history-popover-large">{{ item.changesText }}</td>
                     </tr>
                 </tbody>
             </table>
