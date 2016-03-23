@@ -43,6 +43,7 @@ class AutopilotLogAdmin(admin.ModelAdmin):
         'ad_group',
         'ad_group_source',
         'autopilot_type',
+        'campaign_goal',
         'previous_cpc_cc',
         'new_cpc_cc',
         'previous_daily_budget',

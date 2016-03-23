@@ -27,7 +27,8 @@ class AdGroupSettingsTest(TestCase):
             'created_by',
             'created_by_id',
             'changes_text',
-            'useractionlog'
+            'useractionlog',
+            'system_user'
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
@@ -288,6 +289,7 @@ class CampaignSettingsTest(TestCase):
             'changes_text',
             'useractionlog',
             'campaign_manager_id',
+            'system_user',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
@@ -306,7 +308,9 @@ class CampaignSettingsTest(TestCase):
             'target_regions': [u'CA', u'501'],
             'service_fee': Decimal('0.2000'),
             'campaign_goal': 2,
-            'goal_quantity': Decimal('10.00')
+            'goal_quantity': Decimal('10.00'),
+            'automatic_campaign_stop': False,
+            'landing_mode': False,
         }
 
         self.assertEqual(

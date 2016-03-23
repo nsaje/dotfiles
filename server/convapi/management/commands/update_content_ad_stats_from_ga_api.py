@@ -10,6 +10,7 @@ from dash.models import GAAnalyticsAccount, Account, AdGroupSettings, ContentAd
 from dash.constants import GATrackingType
 
 from convapi.ga_api import GAApiReport
+from reports import refresh
 from reports import update
 from reports.constants import ReportType
 
@@ -54,15 +55,18 @@ class Command(BaseCommand):
         ga_accounts = GAAnalyticsAccount.objects.filter(account__in=accounts_ga_api_enabled)
         for ga_account in ga_accounts:
             ga_reports.download(ga_account)
-        stats_ga_enabled = self._filter_valid_stats(ga_reports.entries, content_ad_ids_ga_api_enabled)
+        stats_ga_enabled = self._filter_valid_stats(ga_reports.get_content_ad_stats(), content_ad_ids_ga_api_enabled)
         update.process_report(ga_date, stats_ga_enabled, ReportType.GOOGLE_ANALYTICS)
+        refresh.put_pub_postclick_stats_to_s3(ga_date, ga_reports.get_publisher_stats())
 
     def _filter_valid_stats(self, ga_report_entries, content_ad_ids_ga_api_enabled):
         ga_stats = []
-        for entry_key in ga_report_entries.keys():
+        for entry in ga_report_entries:
             # filter out the GA entries that came from Z1 (i.e. one of the Zemanta employees clicked the link) and
             # the entries that belong to content ad grops that aren't configured to receive stats via GA API
-            if entry_key[2] != SOURCE_Z1 and entry_key[1] in content_ad_ids_ga_api_enabled:
-                stats = ga_report_entries[entry_key]
-                ga_stats.append(stats)
+            if entry.source_param == SOURCE_Z1 and entry.content_ad_id not in content_ad_ids_ga_api_enabled:
+                continue
+
+            ga_stats.append(entry)
+
         return ga_stats

@@ -7,6 +7,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    $scope.campaignGoals = [],
+    $scope.campaignGoalsDiff = {};
 
     $scope.campaignHasFreshSettings = function () {
         return campaignFreshSettings.promise;
@@ -20,6 +22,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         api.campaignSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.campaignGoals = data.goals;
+
                 $scope.discarded = discarded;
                 campaignFreshSettings.resolve(data.settings.name === 'New campaign');
             },
@@ -37,12 +41,14 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         $scope.discarded = null;
         $scope.requestInProgress = true;
 
-        api.campaignSettings.save($scope.settings).then(
+        api.campaignSettings.save($scope.settings, $scope.campaignGoalsDiff).then(
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
 
-                zemNavigationService.updateCampaignCache($scope.campaign.id, {name: data.settings.name});
+                zemNavigationService.updateCampaignCache(
+                    $scope.campaign.id, {name: data.settings.name}
+                );
 
                 $scope.requestInProgress = false;
                 $scope.saved = true;
@@ -62,6 +68,11 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                         }, 100);
                     });
                 }
+
+                $scope.campaignGoalsDiff.added = [];
+                $scope.campaignGoalsDiff.removed = [];
+                $scope.campaignGoalsDiff.primary = null;
+                $scope.campaignGoalsDiff.modified = {};
             },
             function (data) {
                 $scope.errors = data;

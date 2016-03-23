@@ -1,6 +1,8 @@
 import datetime
 import httplib
 import operator
+
+import codecs
 import mock
 import unittest
 
@@ -66,6 +68,23 @@ def prepare_mock_urlopen(mock_urlopen, exception=None):
     mock_request = mock.Mock()
     mock_request.status_code = httplib.OK
     mock_urlopen.return_value = mock_request
+
+
+def format_csv_content(content):
+    # Expected content - All fields are double-quoted and
+    # BOM_UTF8 magic character is appended at the beginning of the file
+    lines_formatted = []
+    for line in content.split('\r\n'):
+        if not line:
+            continue
+        fields = line.split(',')
+        fields_formatted = map(lambda f: '"'+f+'"', fields)
+        line_formatted = ','.join(fields_formatted)
+        lines_formatted.append(line_formatted)
+
+    formatted_content = codecs.BOM_UTF8
+    formatted_content += '\r\n'.join(lines_formatted) + '\r\n'
+    return formatted_content
 
 
 @unittest.skipUnless(settings.RUN_REDSHIFT_UNITTESTS, 'Only run when redshift tests are enabled')

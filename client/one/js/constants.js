@@ -480,6 +480,7 @@ var constants = {
         CPA: 4,
         CPC: 5,
         CPM: 6,
+        NEW_UNIQUE_VISITORS: 7,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -1045,12 +1046,12 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION},
     ],
     campaignGoalKPIs: [
-        {name: 'time on site in seconds', value: constants.campaignGoalKPI.TIME_ON_SITE},
-        {name: 'max bounce rate %', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE},
+        {name: 'time on site in seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
+        {name: 'max bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
-        {name: '$CPC', value: constants.campaignGoalKPI.CPC},
-        {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA},
-        {name: '$CPM', value: constants.campaignGoalKPI.CPM},
+        {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
+        {name: 'new unique visitors', vlaue: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
+        {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     conversionGoalTypes: [
         {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},
@@ -1079,5 +1080,13 @@ var defaults = {
         {id: 'Shop Now', text: 'Shop Now'},
         {id: 'Sign Up', text: 'Sign Up'},
         {id: 'Watch More', text: 'Watch More'},
+    ],
+    campaignGoalKPI: [
+        {id: constants.campaignGoalKPI.TIME_ON_SITE, value: 30},
+        {id: constants.campaignGoalKPI.MAX_BOUNCE_RATE, value: 75},
+        {id: constants.campaignGoalKPI.PAGES_PER_SESSION, value: 1.2},
+        {id: constants.campaignGoalKPI.CPC, value: 0.35},
+        {id: constants.campaignGoalKPI.CPA, value: 50},
+        {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
     ],
 };

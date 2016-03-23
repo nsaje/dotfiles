@@ -6,6 +6,8 @@ from dash import regions
 # which corresponds to 10 blacklisted publishers per Z1 account
 MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
 
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
+
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
@@ -134,8 +136,8 @@ class InfoboxLevel(ConstantBase):
 
     _VALUES = {
         ADGROUP: 'Ad Group',
-        CAMPAIGN : 'Campaign',
-        ACCOUNT : 'Account',
+        CAMPAIGN: 'Campaign',
+        ACCOUNT: 'Account',
         ALL_ACCOUNTS: 'All Accounts'
     }
 
@@ -1029,6 +1031,7 @@ class CampaignGoalKPI(ConstantBase):
     CPA = 4
     CPC = 5
     CPM = 6
+    NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
         TIME_ON_SITE: 'time on site in seconds',
@@ -1037,6 +1040,7 @@ class CampaignGoalKPI(ConstantBase):
         CPA: '$CPA',
         CPC: '$CPC',
         CPM: '$CPM',
+        NEW_UNIQUE_VISITORS: 'new visitors %',
     }
 
 
@@ -1193,6 +1197,11 @@ class UserActionType(ConstantBase):
     SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
     SET_GLOBAL_PUBLISHER_BLACKLIST = 28
 
+    CREATE_CAMPAIGN_GOAL = 29
+    DELETE_CAMPAIGN_GOAL = 30
+    CHANGE_CAMPAIGN_GOAL_VALUE = 31
+    CHANGE_PRIMARY_CAMPAIGN_GOAL = 32
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1221,7 +1230,11 @@ class UserActionType(ConstantBase):
         SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
         SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
         SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
-        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist',
+        CREATE_CAMPAIGN_GOAL: 'Create Campaign Goal',
+        DELETE_CAMPAIGN_GOAL: 'Delete Campaign Goal',
+        CHANGE_CAMPAIGN_GOAL_VALUE: 'Change Campaign Goal Value',
+        CHANGE_PRIMARY_CAMPAIGN_GOAL: 'Change Primary Campaign Goal'
     }
 
 
@@ -1232,15 +1245,15 @@ class RegionType(ConstantBase):
 
     _VALUES = {
         COUNTRY: 'Country',
-        SUBDIVISION: 'U.S. state', # NOTE update when subdivisions other than U.S. states are added
+        SUBDIVISION: 'U.S. state',  # NOTE update when subdivisions other than U.S. states are added
         DMA: 'DMA',
     }
 
 
 class CreditLineItemStatus(ConstantBase):
-    SIGNED = 1 # Only adding BudgetLineItems is permitted
-    PENDING = 2 # Internal "waiting" status, fields are editable
-    CANCELED = 3 # Adding BudgetLineItems is not permitted
+    SIGNED = 1  # Only adding BudgetLineItems is permitted
+    PENDING = 2  # Internal "waiting" status, fields are editable
+    CANCELED = 3  # Adding BudgetLineItems is not permitted
 
     _VALUES = {
         SIGNED: 'Signed',
@@ -1334,4 +1347,12 @@ class GATrackingType(ConstantBase):
     _VALUES = {
         EMAIL: 'Email',
         API: 'API'
+    }
+
+
+class SystemUserType(ConstantBase):
+    CAMPAIGN_STOP = 1
+
+    _VALUES = {
+        CAMPAIGN_STOP: 'Campaign Stop'
     }

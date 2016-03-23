@@ -1,4 +1,9 @@
 <div class="zem-campaign-goals">
+    <div class="row" ng-show="!campaignGoals.length">
+        <div class="col-xs-7 campaign-goal-row nopadding">
+            Currently there are no defined campaign goals.
+        </div>
+    </div>
     <div class="row campaign-goal-row" ng-repeat="goal in campaignGoals" ng-class="{'primary': goal.primary}">
         <div class="campaign-goal-index col-xs-1" ng-click="setPrimary(goal)">
             <div class="center-area">
@@ -20,20 +25,27 @@
         <div class="campaign-goal-edit col-xs-1" ng-click="editGoal(goal)">
             <div class="center-area">
                 <div class="centered">
-                    <i class="glyphicon glyphicon-edit" title="Edit"></i>
+                    <zem-icon img-class="zem-icon-edit" file="edit-new.svg" title="Edit"></zem-icon>
                 </div>
             </div>
         </div>
-        <div class="campaign-goal-delete col-xs-1" ng-click="removeGoal(goal)">
+        <div class="campaign-goal-delete col-xs-1" ng-click="deleteGoal(goal)">
             <div class="center-area">
                 <div class="centered">
-                    <i class="glyphicon glyphicon-remove" title="Remove"></i>
+                    <zem-icon img-class="zem-icon-remove" file="remove-new.svg" title="Remove"></zem-icon>
                 </div>
             </div>
         </div>
     </div>
-    <button type="button" class="btn btn-default" ng-click="editGoal()">
-        <span class="plus-sign">+</span>
-        <span class="plus-label">Add new goal</span>
-    </button>
+    <div class="row">
+        <div class="col-xs-5 nopadding">
+            <button type="button" class="btn btn-default" ng-click="addGoal()">
+                <span class="plus-sign"><zem-icon img-class="zem-icon-buttons-plus" file="buttons-plus-new.svg"></zem-icon></span>
+                <span class="plus-label">Add new goal</span>
+            </button>
+        </div>
+        <div class="col-xs-7 helper-label nopadding" ng-show="!!campaignGoals.length">
+            Click on a goal to set it as primary
+        </div>
+    </div>
 </div>

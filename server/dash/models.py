@@ -97,6 +97,7 @@ class QuerySetManager(models.Manager):
 
 
 class SettingsQuerySet(models.QuerySet):
+
     def update(self, *args, **kwargs):
         raise AssertionError('Using update not allowed.')
 
@@ -105,6 +106,7 @@ class SettingsQuerySet(models.QuerySet):
 
 
 class CopySettingsMixin(object):
+
     def copy_settings(self):
         new_settings = type(self)()
 
@@ -204,6 +206,7 @@ class HistoryModel(models.Model):
 
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
+    marketer_name = models.CharField(blank=True, null=True, max_length=255)
     used = models.BooleanField(default=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -359,7 +362,6 @@ class Campaign(models.Model, PermissionMixin):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
-    landing_mode = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
 
@@ -447,6 +449,10 @@ class Campaign(models.Model, PermissionMixin):
             new_settings.archived = False
             new_settings.save(request)
 
+    def is_in_landing(self):
+        current_settings = self.get_current_settings()
+        return current_settings.landing_mode
+
     def save(self, request, *args, **kwargs):
         self.modified_by = None
         if request is not None:
@@ -485,6 +491,22 @@ class Campaign(models.Model, PermissionMixin):
                 'campaign__id', flat=True
             )
             return self.exclude(pk__in=archived_campaigns)
+
+        def exclude_landing(self):
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
+
+            excluded = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                models.Q(automatic_campaign_stop=False) |
+                models.Q(landing_mode=True)
+            ).values_list(
+                'campaign__id', flat=True
+            )
+
+            return self.exclude(pk__in=excluded)
 
 
 class SettingsBase(models.Model, CopySettingsMixin):
@@ -599,7 +621,9 @@ class CampaignSettings(SettingsBase):
         'promotion_goal',
         'archived',
         'target_devices',
-        'target_regions'
+        'target_regions',
+        'automatic_campaign_stop',
+        'landing_mode'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -610,7 +634,10 @@ class CampaignSettings(SettingsBase):
     )
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
+                                   null=True, blank=True)
+    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
+                                                   null=True, blank=True)
     campaign_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -646,6 +673,9 @@ class CampaignSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
 
+    automatic_campaign_stop = models.BooleanField(default=False)
+    landing_mode = models.BooleanField(default=False)
+
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
@@ -653,7 +683,10 @@ class CampaignSettings(SettingsBase):
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
-            self.created_by = request.user
+            if request is None:
+                self.created_by = None
+            else:
+                self.created_by = request.user
 
         super(CampaignSettings, self).save(*args, **kwargs)
 
@@ -707,6 +740,8 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'automatic_campaign_stop': 'Automatic Campaign Stop',
+            'landing_mode': 'Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -730,6 +765,10 @@ class CampaignSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
+        elif prop_name == 'automatic_campaign_stop':
+            value = str(value)
+        elif prop_name == 'landing_mode':
+            value = str(value)
         elif prop_name == 'archived':
             value = str(value)
 
@@ -742,6 +781,8 @@ class CampaignGoal(models.Model):
         default=constants.CampaignGoalKPI.TIME_ON_SITE,
         choices=constants.CampaignGoalKPI.get_choices(),
     )
+    primary = models.BooleanField(default=False)
+    conversion_goal = models.ForeignKey('ConversionGoal', null=True, blank=True, on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -749,11 +790,39 @@ class CampaignGoal(models.Model):
                                    on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:
-        unique_together = ('campaign', 'type')
+        unique_together = ('campaign', 'type', 'conversion_goal')
+
+    def to_dict(self, with_values=False):
+        campaign_goal = {
+            'campaign_id': self.campaign.id,
+            'type': self.type,
+            'primary': self.primary,
+            'id': self.pk,
+            'conversion_goal': None,
+        }
+
+        if self.conversion_goal:
+            campaign_goal['conversion_goal'] = {
+                'id': self.conversion_goal.pk,
+                'type': self.conversion_goal.type,
+                'name': self.conversion_goal.name,
+                'conversion_window': self.conversion_goal.conversion_window,
+                'goal_id': self.conversion_goal.goal_id,
+            }
+            if self.conversion_goal.pixel:
+                campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
+
+        if with_values:
+            campaign_goal['values'] = [
+                {'datetime': str(value.created_dt), 'value': value.value}
+                for value in self.values.all()
+            ]
+
+        return campaign_goal
 
 
 class CampaignGoalValue(models.Model):
-    campaign_goal = models.ForeignKey(CampaignGoal)
+    campaign_goal = models.ForeignKey(CampaignGoal, related_name='values')
     value = models.DecimalField(max_digits=15, decimal_places=5)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -976,6 +1045,13 @@ class Source(models.Model):
         choices=constants.SourceSubmissionType.get_choices()
     )
 
+    default_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                         verbose_name='Default CPC')
+    default_mobile_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
+                                                verbose_name='Default CPC (if ad group is targeting mobile only)')
+    default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
+                                                  verbose_name='Default daily budget')
+
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
 
@@ -1102,7 +1178,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC'
+        verbose_name='Default CPC',
+        help_text='This setting has moved. See Source model.'
     )
 
     mobile_cpc_cc = models.DecimalField(
@@ -1110,7 +1187,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default CPC (if ad group is targeting mobile only)'
+        verbose_name='Default CPC (if ad group is targeting mobile only)',
+        help_text='This setting has moved. See Source model.'
     )
 
     daily_budget_cc = models.DecimalField(
@@ -1118,7 +1196,8 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default daily budget'
+        verbose_name='Default daily budget',
+        help_text='This setting has moved. See Source model.'
     )
 
     objects = QuerySetManager()
@@ -1280,6 +1359,7 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |
@@ -1351,6 +1431,19 @@ class AdGroup(models.Model):
 
             ids = set(ad_group_settings) & set(ad_group_source_settings)
             return self.filter(id__in=ids)
+
+        def filter_active(self):
+            """
+            Returns only ad groups that have settings set to active.
+            """
+            latest_ad_group_settings = AdGroupSettings.objects.\
+                filter(ad_group__in=self).\
+                group_current_settings()
+            active_ad_group_ids = AdGroupSettings.objects.\
+                filter(id__in=latest_ad_group_settings).\
+                filter(state=constants.AdGroupSettingsState.ACTIVE).\
+                values_list('ad_group_id', flat=True)
+            return self.filter(id__in=active_ad_group_ids)
 
     class Meta:
         ordering = ('name',)
@@ -1505,6 +1598,8 @@ class AdGroupSettings(SettingsBase):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    on_delete=models.PROTECT, null=True, blank=True)
+    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
+                                                   null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -2230,9 +2325,9 @@ class PublisherBlacklist(models.Model):
 
     def get_blacklist_level(self):
         level = constants.PublisherBlacklistLevel.ADGROUP
-        if self.campaign is not None:
+        if self.campaign_id is not None:
             level = constants.PublisherBlacklistLevel.CAMPAIGN
-        elif self.account is not None:
+        elif self.account_id is not None:
             level = constants.PublisherBlacklistLevel.ACCOUNT
         elif self.everywhere:
             level = constants.PublisherBlacklistLevel.GLOBAL

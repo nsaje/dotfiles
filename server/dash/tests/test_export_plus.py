@@ -1,3 +1,4 @@
+import codecs
 from mock import patch
 import mock
 from decimal import Decimal
@@ -11,6 +12,7 @@ from dash import export_plus
 from dash import models
 from dash import constants
 import reports.redshift as redshift
+from utils import test_helper
 
 from zemauth.models import User
 
@@ -100,6 +102,7 @@ class ExportPlusTestCase(test.TestCase):
 2014-07-01,1000.12,10.10,103,0.0103\r
 2014-07-01,2000.12,23.10,203,0.0203\r
 '''
+        expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
     def test_get_csv_content_with_statuses(self):
@@ -120,6 +123,7 @@ class ExportPlusTestCase(test.TestCase):
 2014-07-01,1000.12,10.10,103,0.0103,Active\r
 2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
 '''
+        expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
     @patch('reports.api_contentads.query')

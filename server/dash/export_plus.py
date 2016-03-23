@@ -1,3 +1,5 @@
+import codecs
+
 import unicodecsv
 import StringIO
 import slugify
@@ -386,34 +388,36 @@ def _adjust_ordering(order, dimensions):
 
 def get_csv_content(fieldnames, data):
     output = StringIO.StringIO()
-    writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
+    output.write(codecs.BOM_UTF8)
+    writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
     writer.writerow(fieldnames)
     for item in data:
-        # Format
         row = {}
         for field in fieldnames.keys():
-            value = item.get(field)
-            formatted_value = value
-
-            if not value and field in FORMAT_EMPTY_TO_0:
-                formatted_value = 0
-                value = 0
-            elif not value and field not in FORMAT_EMPTY_TO_0:
-                formatted_value = ''
-            elif field in FORMAT_DIVIDE_100:
-                value = '{:.4f}'.format(value / 100)
-
-            formatted_value = _format_decimals(value, field)
+            formatted_value = item.get(field)
+            formatted_value = _format_empty_value(formatted_value, field)
+            formatted_value = _format_percentages(formatted_value, field)
+            formatted_value = _format_decimals(formatted_value, field)
             formatted_value = _format_statuses_and_dates(formatted_value, field)
-
-            if ';' in repr(formatted_value):
-                formatted_value = '"' + formatted_value + '"'
-
             row[field] = formatted_value
 
         writer.writerow(row)
 
     return output.getvalue()
+
+
+def _format_empty_value(value, field):
+    if not value and field in FORMAT_EMPTY_TO_0:
+        return 0
+    elif not value and field not in FORMAT_EMPTY_TO_0:
+        return ''
+    return value
+
+
+def _format_percentages(value, field):
+    if value and field in FORMAT_DIVIDE_100:
+        return '{:.4f}'.format(value / 100)
+    return value
 
 
 def _format_statuses_and_dates(value, field):

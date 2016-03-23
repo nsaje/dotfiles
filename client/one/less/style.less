@@ -784,6 +784,11 @@ div[datepicker] {
     box-shadow: none;
 }
 
+img.zem-icon {
+    width: 16px;
+    height: 16px;
+}
+
 .graph-button {
     width: 34px;
     height: 34px;
@@ -2519,6 +2524,24 @@ div[datepicker] {
     background-image: none !important;
 }
 
+.agency-history-popover-large {
+    max-width: 450px;
+
+    &.bottom {
+        margin-top: 0;
+        padding-top: 10px;
+        background: transparent;
+
+        & > .arrow {
+            top: 0;
+
+            &:after {
+                border-bottom-color: #2fa8c7;
+            }
+        }
+    }
+}
+
 .history-popover-table {
     display: table;
     table-layout: fixed;
@@ -2868,6 +2891,10 @@ div[datepicker] {
                 height: 19px;
             }
         }
+    }
+
+    .table-ad-group-sources & {
+        margin-bottom: 32px;
     }
 }
 
@@ -3368,6 +3395,12 @@ zem-editable-currency-field {
                 .form-group {
                     margin-right: 0;
                 }
+
+                .goal-type {
+                    .input-group-addon {
+                        width: 35px;
+                    }
+                }
             }
 
             .add-scheduled-report-form {
@@ -3773,7 +3806,7 @@ select.media-source-select {
                 position: relative;
             }
 
-            color: #c2c2c2;
+            color: #aaaaaa;
             padding-top: 7px;
         }
     }
@@ -3784,6 +3817,25 @@ select.media-source-select {
 }
 
 .zem-campaign-goals {
+    img.zem-icon {
+        display: block;
+        margin: auto;
+        width: 12px;
+        height: 12px;
+
+        &.zem-icon-remove {
+            width: 10px;
+            height: 10px;
+        }
+        &.zem-icon-buttons-plus {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+
+            margin-bottom: 3px;
+        }
+    }
+
     .btn {
         .plus-sign {
             padding-right: 10px;
@@ -3793,6 +3845,12 @@ select.media-source-select {
         .plus-label {
             padding-left: 10px;
         }
+    }
+
+    .helper-label {
+        color: #aaaaaa;
+        text-align: right;
+        font-size: 13px;
     }
 
     .campaign-goal-row {
@@ -3815,10 +3873,14 @@ select.media-source-select {
                 }
             }
         }
+        &.archived, &.archived .camp-goal-text {
+            color: #aaaaaa !important;
+            cursor: default !important;
+        }
 
         & > div {
             border-style: solid;
-            border-color: #d2d2d2;
+            border-color: #aaaaaa;
             border-width: 1px 1px 1px 0;
             min-height: 50px;
             .border-radius(0px);
@@ -3836,7 +3898,7 @@ select.media-source-select {
             &.campaign-goal-index {
                 font-size: 22px;
                 font-weight: 200;
-                color: #c2c2c2;
+                color: #aaaaaa;
                 text-align: center;
             }
 
@@ -3848,7 +3910,7 @@ select.media-source-select {
                 .conv-goal-text {
                     font-size: 11px;
                     line-height: 11px;
-                    color: #c2c2c2;
+                    color: #aaaaaa;
                 }
 
                 .center-area {
@@ -3856,11 +3918,7 @@ select.media-source-select {
                 }
             }
 
-            &.campaign-goal-edit {
-                text-align: center;
-            }
-
-            &.campaign-goal-delete {
+            &.campaign-goal-edit, &.campaign-goal-delete {
                 text-align: center;
             }
 
@@ -3870,6 +3928,8 @@ select.media-source-select {
                 bottom: 0;
                 left: 0;
                 right: 0;
+
+                padding-right: 2px;
 
                 &:before {
                     content: '';
@@ -3882,6 +3942,10 @@ select.media-source-select {
                     display: inline-block;
                     vertical-align: middle;
                 }
+            }
+
+            &.campaign-goal-index .center-area {
+                padding-right: 5px;
             }
         }
     }
@@ -3972,4 +4036,8 @@ select.media-source-select {
             color: #fff;
         }
     }
+}
+
+.nopadding {
+    padding: 0 !important;
 }

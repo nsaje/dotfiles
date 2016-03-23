@@ -6,14 +6,16 @@ import utils.lc_helper
 
 import reports.api_helpers
 from django.db import models
-from django.db.models import Sum, F, ExpressionWrapper
+from django.db.models import Sum, F, ExpressionWrapper, Prefetch
 
 import dash.constants
 import dash.models
+import dash.campaign_goals
 import zemauth.models
 import reports.api_contentads
 import reports.models
 import utils.dates_helper
+import utils.lc_helper
 
 from decimal import Decimal
 
@@ -64,6 +66,7 @@ class OverviewSetting(object):
 
 
 class OverviewSeparator(OverviewSetting):
+
     def __init__(self):
         super(OverviewSeparator, self).__init__('', '', '', setting_type='hr')
 
@@ -560,7 +563,7 @@ def get_adgroup_running_status(ad_group_settings):
     if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if ad_group.campaign.landing_mode:
+    if ad_group.campaign.is_in_landing():
         return dash.constants.InfoboxStatus.LANDING_MODE
 
     return dash.constants.InfoboxStatus.ACTIVE
@@ -571,7 +574,7 @@ def get_campaign_running_status(campaign):
         campaign=campaign
     ).filter_running().count()
     if count_active > 0:
-        if campaign.landing_mode:
+        if campaign.is_in_landing():
             return dash.constants.InfoboxStatus.LANDING_MODE
         return dash.constants.InfoboxStatus.ACTIVE
     return dash.constants.InfoboxStatus.INACTIVE
@@ -615,3 +618,41 @@ def _compute_daily_cap(ad_groups):
             continue
         ret += adgs_settings.get(adgsid) or 0
     return ret
+
+
+def get_campaign_goal_list(user, campaign):
+    prefetch_values = Prefetch(
+        'values',
+        queryset=dash.models.CampaignGoalValue.objects.order_by('-created_dt')
+    )
+    goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
+        prefetch_values
+    ).select_related('conversion_goal')
+
+    settings = []
+    for i, campaign_goal in enumerate(goals):
+        def format_value(val):
+            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
+                or 'N/A'
+
+        goal_values = campaign_goal.values.all()
+        planned_value = goal_values and goal_values[0].value
+
+        current_value = None
+
+        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
+            format_value(current_value)
+        )
+        if campaign_goal.conversion_goal:
+            goal_description += ' on conversion ' + campaign_goal.conversion_goal.name
+
+        settings.append(OverviewSetting(
+            '' if i else 'Campaign Goals:',
+            goal_description,
+            planned_value and '{}planned {}'.format(
+                campaign_goal.primary and 'primary, ' or '',
+                format_value(planned_value),
+            ) or '',
+            section_start=not i,
+        ).as_dict())
+    return settings

@@ -70,6 +70,57 @@
   model: dash.campaign
   pk: 5
 
+# Campaign Settings
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 1'
+    campaign_manager: 1
+    campaign: 1
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 2'
+    campaign_manager: 1
+    campaign: 2
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 2
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 3'
+    campaign_manager: 1
+    campaign: 3
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 3
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 4'
+    campaign_manager: 1
+    campaign: 4
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 4
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 5'
+    campaign_manager: 1
+    campaign: 5
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 5
+
 # Ad Groups
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -181,22 +232,26 @@
 # Source Types
 -   fields:
         type: 'adblade'
+        available_actions: [7] # set end date
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'adblade3'
+        available_actions: [7] # set end date
     model: dash.sourcetype
     pk: 2
 
 -   fields:
         type: 'adalaska'
+        available_actions: [7] # set end date
         budgets_tz: 'US/Alaska'
     model: dash.sourcetype
     pk: 3
 
 -   fields:
         type: 'adtokyo'
+        available_actions: [7] # set end date
         budgets_tz: 'Asia/Tokyo'
     model: dash.sourcetype
     pk: 4
@@ -207,6 +262,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         source_type: 1
+        maintenance: false
     model: dash.source
     pk: 1
 
@@ -216,6 +272,7 @@
         name: AdBanana
         source_type: 2
         tracking_slug: '["fake"]'
+        maintenance: false
     model: dash.source
     pk: 2
 
@@ -225,6 +282,7 @@
         name: AdOrange
         source_type: 1
         tracking_slug: '["fake2"]'
+        maintenance: false
     model: dash.source
     pk: 3
 
@@ -234,6 +292,7 @@
         name: AdAlaska # on UTC-9
         source_type: 3
         tracking_slug: '["fake4"]'
+        maintenance: false
     model: dash.source
     pk: 4
 
@@ -243,6 +302,7 @@
         name: AdTokyo # on UTC+9
         source_type: 4
         tracking_slug: '["fake3"]'
+        maintenance: false
     model: dash.source
     pk: 5
 
