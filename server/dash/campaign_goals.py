@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -54,6 +55,20 @@ CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
 }
+
+INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+    constants.CampaignGoalKPI.CPA,
+    constants.CampaignGoalKPI.CPC,
+)
+
+
+def get_performance_value(goal_type, metric_value, target_value):
+    if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
+        performance = (2 * target_value - metric_value) / target_value
+    else:
+        performance = metric_value / target_value
+    return max(0., min(performance, 2.))
 
 
 def format_value(goal_type, value):
@@ -362,7 +377,13 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value):
-    # TODO: campaign goals part 2
+    if planned_value is None:
+        return constants.CampaignGoalPerformance.AVERAGE
+    performance = get_performance_value(goal_type, Decimal(metric_value), planned_value)
+    if performance < Decimal('0.8'):
+        return constants.CampaignGoalPerformance.UNDERPERFORMING
+    if performance >= Decimal('1.0'):
+        return constants.CampaignGoalPerformance.SUPERPERFORMING
     return constants.CampaignGoalPerformance.AVERAGE
 
 
