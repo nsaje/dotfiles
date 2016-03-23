@@ -9,6 +9,7 @@ import dash
 from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
+from dash.constants import CampaignGoalKPI
 from dash import constants
 import dash.models
 from utils import pagerduty_helper, url_helper
@@ -58,6 +59,21 @@ def get_ad_group_sources_minimum_cpc(ad_group_source):
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source):
     return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
+
+
+def get_goal_column(goal):
+    return autopilot_settings.GOALS_COLUMNS.get(goal.type).get('col')[0] if goal else None
+
+
+def get_goal_column_importance(goal):
+    return autopilot_settings.GOALS_COLUMNS.get(goal.type).get('col')[1] if goal else None
+
+
+def get_optimization_goal_text(camp):
+    goal = dash.campaign_goals.get_primary_campaign_goal(camp)
+    if goal and goal.type != CampaignGoalKPI.CPA:
+        return CampaignGoalKPI.get_text(goal.type)
+    return 'maximum spend'
 
 
 def send_autopilot_changes_emails(email_changes_data, data, initialization):

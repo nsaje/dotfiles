@@ -943,6 +943,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 autopilotBudget: settings.autopilot_daily_budget,
                 retargetingAdGroups: settings.retargeting_ad_groups,
                 autopilotMinBudget: settings.autopilot_min_budget,
+                autopilotOptimizationGoal: settings.autopilot_optimization_goal,
             };
         }
 

@@ -123,6 +123,12 @@ class AutopilotLog(models.Model):
         default=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
         choices=dash.constants.AdGroupSettingsAutopilotState.get_choices()
     )
+    campaign_goal = models.IntegerField(
+        default=None,
+        blank=True,
+        null=True,
+        choices=dash.constants.CampaignGoalKPI.get_choices()
+    )
     created_dt = models.DateTimeField(
         auto_now_add=True,
         blank=True,
