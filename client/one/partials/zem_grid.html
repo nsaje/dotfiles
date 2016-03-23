@@ -1,31 +1,28 @@
 <div class="zem-grid-container">
     <!-- DEBUG PANEL [START] -->
     <!-- TODO: move to development partial and bind with controller  -->
-    <div class="debug-panel">
-        <span>[DEBUG] Breakdowns : </span>
-        <label ng-repeat="(breakdown, enabled) in DEBUG_BREAKDOWNS">
-            <input type="checkbox" ng-model="DEBUG_BREAKDOWNS[breakdown]">
-            {{breakdown}}
-        </label>
-        <button type="submit" class="btn btn-default" ng-click="DEBUG_APPLY_BREAKDOWN()">Submit</button>
-    </div>
-    <div class="debug-panel">
-        <span> [DEBUG] Collapse : </span>
-        <button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(1)">Toggle Level 1</button>
-        <button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(2)">Toggle Level 2</button>
-        <button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(3)">Toggle Level 3</button>
-    </div>
+    <!--<div class="debug-panel">-->
+        <!--<span>[DEBUG] Breakdowns : </span>-->
+        <!--<label ng-repeat="(breakdown, enabled) in DEBUG_BREAKDOWNS">-->
+            <!--<input type="checkbox" ng-model="DEBUG_BREAKDOWNS[breakdown]">-->
+            <!--{{breakdown}}-->
+        <!--</label>-->
+        <!--<button type="submit" class="btn btn-default" ng-click="DEBUG_APPLY_BREAKDOWN()">Submit</button>-->
+    <!--</div>-->
+    <!--<div class="debug-panel">-->
+        <!--<span> [DEBUG] Collapse : </span>-->
+        <!--<button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(1)">Toggle Level 1</button>-->
+        <!--<button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(2)">Toggle Level 2</button>-->
+        <!--<button type="submit" class="btn btn-default" ng-click="toggleCollapseLevel(3)">Toggle Level 3</button>-->
+    <!--</div>-->
     <!-- DEBUG PANEL [END] -->
 
     <table zem-grid-fixed-header class="zem-grid table table-hover">
+    <!--<table class="zem-grid table table-hover">-->
         <thead>
-        <tr>
-            <th ng-repeat="col in header.columns">
-                <span class="col-title">{{ col }}</span>
-            </th>
-        </tr>
+        <tr> <th ng-repeat="col in header.columns"> <span class="col-title">{{ col }}</span> </th> </tr>
         </thead>
-        <tbody>
+        <tbody  vs-scroll-parent=".zem-grid-container" >
         <tr ng-repeat="row in rows track by $index" ng-if="row.visible" ng-class="getRowClass(row)">
             <td ng-if="row.type==GridRowType.STATS" ng-repeat="col in row.data.stats track by $index">
                             <span ng-if="$index===0 && row.data.breakdown && row.level>0">
@@ -52,12 +49,6 @@
             </td>
         </tr>
         </tbody>
-        <tfoot>
-        <tr>
-            <th ng-repeat="col in footer.data.stats">
-                <span class="col-title">{{ col }}</span>
-            </th>
-        </tr>
-        </tfoot>
-    </table></div>
+        <tfoot> <tr> <th ng-repeat="col in footer.data.stats"> <span class="col-title">{{ col }}</span> </th> </tr> </tfoot>
+    </table>
 </div>
