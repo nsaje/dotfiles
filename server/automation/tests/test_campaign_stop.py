@@ -26,7 +26,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 1, 12))
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('1475'), available_tomorrow)
         self.assertEqual({
             1: Decimal('55'),
@@ -41,7 +41,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 5, 12))
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('615'), available_tomorrow)
         self.assertEqual({
             1: Decimal('55'),
@@ -56,7 +56,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 12, 12))
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('900'), available_tomorrow)  # budget that will get the spend today expires tomorrow
         self.assertEqual({
             1: Decimal('55'),
@@ -67,7 +67,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         }, max_daily_budget)
 
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 15, 12))
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('715'), available_tomorrow)  # one budget gets spend today the other expires tomorrow
         self.assertEqual({
             1: Decimal('55'),
@@ -82,7 +82,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 31, 12))
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('0'), available_tomorrow)
         self.assertEqual({
             1: Decimal('55'),
@@ -97,7 +97,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 4, 1, 12))
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('900'), available_tomorrow)
         self.assertEqual({
             1: Decimal('55'),
@@ -112,7 +112,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 4, 11, 12))
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('715'), available_tomorrow)
         self.assertEqual({
             1: Decimal('55'),
@@ -123,7 +123,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
         }, max_daily_budget)
 
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 4, 13, 12))
-        available_today, available_tomorrow, max_daily_budget = campaign_stop.get_minimum_remaining_budget(c1)
+        available_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
         self.assertEqual(Decimal('615'), available_tomorrow)
         self.assertEqual({
             1: Decimal('55'),
@@ -149,7 +149,7 @@ class SwitchToLandingModeTestCase(TestCase):
         new_settings.save(None)
 
     @patch('utils.email_helper.send_notification_mail')
-    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_depleting_budget(self, mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
 
@@ -158,7 +158,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
     @patch('actionlog.zwei_actions.send')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
-    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode(self, mock_get_mrb, mock_send_email, mock_send_actions):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('110')}
 
@@ -187,7 +187,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
     @patch('automation.campaign_stop._switch_to_landing_mode')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
-    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_manual(self, mock_get_mrb, mock_send_email, mock_switch_to_landing):
         mock_get_mrb.return_value = Decimal('100'), Decimal('150')
         mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
@@ -204,7 +204,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
     @patch('automation.campaign_stop._switch_to_landing_mode')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
-    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_already_landing(self, mock_get_mrb, mock_send_email, mock_switch_to_landing):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
 
@@ -221,7 +221,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
     @patch('actionlog.zwei_actions.send')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
-    @patch('automation.campaign_stop.get_minimum_remaining_budget')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
 
