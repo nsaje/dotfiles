@@ -58,38 +58,44 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 }
             }
 
-            var hide = function () {
-                // This function hides the tooltip
-                // it's implemented by removing the tooltip entirely from DOM and angular
-
+            var hideIfPopoverNotOpenOnHover = function () {
                 if (stayOpenOnHover && tooltip && tooltip.is(':hover')) {
                     // In case we want popovers to stay open when hovering over them, we will hide them when mouse
                     // leaves the popover
                     tooltip.on('mouseleave', hide);
                 } else {
-                    // Add fade commands
-                    if (tooltip) {
-                        tooltip.removeClass('in');
-                        tooltip.addClass('out');
-                        tooltip.off('mouseleave', hide);
-                    }
-
-                    // Last thing before destorying the scope is removing the
-                    if (ttScope) {
-                        // If there's fadeout or similar animation, wait a bit with removal
-                        if (ttScope.animationClass) {
-                            // If transition-out has already been initiated, we are on the way out anyway
-                            if (!transitionTimeout) {
-                               // We save the function for closing the current tooltip, so if we're displaying a
-                               // different one we can close it earlier than timeout
-                                transitionTimeout = $timeout(removeTooltip, 500);
-                            }
-                        } else {
-                            removeTooltip();
-                        }
-                    }
-                    element.off(event, hide);
+                    // Otherwise hide the popover immediately
+                    hide();
                 }
+            };
+
+            var hide = function () {
+                // This function hides the tooltip
+                // it's implemented by removing the tooltip entirely from DOM and angular
+
+                // Add fade commands
+                if (tooltip) {
+                    tooltip.removeClass('in');
+                    tooltip.addClass('out');
+                    tooltip.off('mouseleave', hide);
+                }
+
+                // Last thing before destorying the scope is removing the
+                if (ttScope) {
+                    // If there's fadeout or similar animation, wait a bit with removal
+                    if (ttScope.animationClass) {
+                        // If transition-out has already been initiated, we are on the way out anyway
+                        if (!transitionTimeout) {
+                           // We save the function for closing the current tooltip, so if we're displaying a
+                           // different one we can close it earlier than timeout
+                            transitionTimeout = $timeout(removeTooltip, 500);
+                        }
+                    } else {
+                        removeTooltip();
+                    }
+                }
+
+                element.off(event, hideIfPopoverNotOpenOnHover);
             };
 
             element.on('$destroy', hide);
@@ -128,7 +134,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
 
                 ttScope = scope.$new(false);
 
-                element.on(event, hide);
+                element.on(event, hideIfPopoverNotOpenOnHover);
 
                 function haveTemplateContent (templateContent) {
                     if (!ttScope) {
