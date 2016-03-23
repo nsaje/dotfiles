@@ -246,7 +246,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n2014-07-01,/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
+        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n2014-07-01,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -298,7 +298,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         self._assert_row(
             worksheet, 1,
-            [41821.0, '/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+            [41821.0, '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg', u'Test Article unicode Čžš', 'http://testurl.com',
              42056.0, 1000.12, 10.23, 103, 100000, 0.0103]
         )
 
@@ -312,7 +312,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         self._assert_row(
             worksheet, 1,
-            [41821.0, '/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+            [41821.0, '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg', u'Test Article unicode Čžš', 'http://testurl.com',
             42056.0, 'AdsNative', 1000.12, 10.23, 103, 100000, 0.0103]
         )
 
@@ -326,7 +326,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
+        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -378,7 +378,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         self._assert_row(
             worksheet, 1,
-            ['/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+            ['/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg', u'Test Article unicode Čžš', 'http://testurl.com',
              42056.0, 1000.12, 10.23, 103, 100000, 0.0103]
         )
 
@@ -392,7 +392,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
 
         self._assert_row(
             worksheet, 1,
-            ['/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+            ['/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg', u'Test Article unicode Čžš', 'http://testurl.com',
             42056.0, 'AdsNative', 1000.12, 10.23, 103, 100000, 0.0103]
         )
 
