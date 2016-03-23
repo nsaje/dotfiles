@@ -563,7 +563,7 @@ def get_adgroup_running_status(ad_group_settings):
     if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if ad_group.campaign.landing_mode:
+    if ad_group.campaign.is_in_landing():
         return dash.constants.InfoboxStatus.LANDING_MODE
 
     return dash.constants.InfoboxStatus.ACTIVE
@@ -574,7 +574,7 @@ def get_campaign_running_status(campaign):
         campaign=campaign
     ).filter_running().count()
     if count_active > 0:
-        if campaign.landing_mode:
+        if campaign.is_in_landing():
             return dash.constants.InfoboxStatus.LANDING_MODE
         return dash.constants.InfoboxStatus.ACTIVE
     return dash.constants.InfoboxStatus.INACTIVE

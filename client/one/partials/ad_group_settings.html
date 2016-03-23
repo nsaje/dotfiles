@@ -129,7 +129,7 @@
                         <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
                     <div class="form-alert-body">
-                        {{ warnings.retargeting.text }}                   
+                        {{ warnings.retargeting.text }}
                         <ul>
                             <li ng-repeat="source in warnings.retargeting.sources">{{ source }}</label>
                         </ul>
@@ -228,7 +228,7 @@
 
             <div class="form-group indented" ng-if="showAutoPilotDailyBudget()">
                 <div class="col-xs-10">
-                    Auto-Pilot will optimize for <b>Bounce Rate</b>.<br/>
+                    Auto-Pilot will optimize daily budgets for <b>{{settings.autopilotOptimizationGoal}}</b>.<br/>
                     Minimum Total Daily Budget to run Daily Budget Automation Auto-Pilot on this Ad Group is <b>${{settings.autopilotMinBudget}}</b>.<br/>
                 </div>
             </div>

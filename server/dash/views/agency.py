@@ -11,7 +11,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_plus, autopilot_helpers
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -149,7 +149,8 @@ class AdGroupSettings(api_common.BaseApiView):
                     '{:.2f}'.format(settings.autopilot_daily_budget)
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
-                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group)
+                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
+                'autopilot_optimization_goal': autopilot_helpers.get_optimization_goal_text(ad_group.campaign)
             }
 
         return result
@@ -283,7 +284,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        if ad_group.campaign.landing_mode:
+        if ad_group.campaign.is_in_landing():
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSettingsState.ACTIVE and \
@@ -927,7 +928,7 @@ class AccountAgency(api_common.BaseApiView):
         return non_removable_source_ids_list
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
-        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
+        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed).order_by('id')]
         media_sources = ', '.join(source_names)
         if len(source_names) > 1:
             msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)

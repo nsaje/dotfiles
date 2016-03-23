@@ -545,7 +545,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
-            $scope.columns.length - 1,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.campaign_goal_optimization'),
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );

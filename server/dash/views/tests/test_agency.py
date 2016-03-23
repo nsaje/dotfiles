@@ -132,7 +132,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_min_budget': '100'
+                    'autopilot_min_budget': '100',
+                    'autopilot_optimization_goal': 'maximum spend'
                 },
                 'warnings': {}
             },
@@ -237,7 +238,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100'
+                        'autopilot_min_budget': '100',
+                        'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
                 'success': True
@@ -410,7 +412,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100'
+                        'autopilot_min_budget': '100',
+                        'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
                 'success': True
@@ -732,8 +735,9 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
-        ad_group.campaign.landing_mode = True
-        ad_group.campaign.save(None)
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         self.add_permissions(['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -1840,7 +1844,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
                 {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
-                {'name': 'Automatic Landing Mode', 'value': 'False'},
+                {'name': 'Automatic Campaign Stop', 'value': 'False'},
+                {'name': 'Landing Mode', 'value': 'False'},
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'
@@ -2455,7 +2460,7 @@ class AccountAgencyTest(TestCase):
     def test_get_changes_text_for_media_sources(self):
         view = agency.AccountAgency()
 
-        sources = list(models.Source.objects.all())
+        sources = list(models.Source.objects.all().order_by('id'))
         self.assertEqual(
             view.get_changes_text_for_media_sources(sources[0:1], sources[1:2]),
             'Added allowed media sources (Source 1), Removed allowed media sources (Source 2)'
