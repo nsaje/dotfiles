@@ -740,7 +740,7 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
-            'automatic_campaign_stop': 'Automatic Landing Mode',
+            'automatic_campaign_stop': 'Automatic Campaign Stop',
             'landing_mode': 'Landing Mode',
         }
 
