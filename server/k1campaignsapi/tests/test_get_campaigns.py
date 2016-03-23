@@ -57,13 +57,36 @@ class K1CampaignsApiTest(TestCase):
             self._test_ad_group_source_filter(source_types)
 
 
-    def _test_content_ads_filters(source_types, ad_groups):
+    def _test_content_ads_filters(self, source_types=None, ad_groups=None):
         response = self.client.get(
-            reverse('k1campaignsapi.get_ad_groups'),
-            {'source_type': source_types},
+            reverse('k1campaignsapi.get_content_ad_sources'),
+            {'source_type': source_types, 'ad_group': ad_groups},
         )
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
+
+        returned_count = 0
+        for ad_group in data['ad_groups']:
+            for content_ad in ad_group['content_ads']:
+                for content_ad_source in content_ad['content_ad_sources']:
+                    returned_count += 1
+                    db_cas = dash.models.ContentAdSource.objects.get(
+                        id=content_ad_source['id'])
+                    self.assertEqual(ad_group['id'], db_cas.content_ad.ad_group_id)
+                    self.assertEqual(content_ad['id'], db_cas.content_ad_id)
+                    self.assertEqual(content_ad_source['source_id'], db_cas.source_id)
+                    self.assertEqual(content_ad_source['source_tracking_slug'], db_cas.source.tracking_slug)
+                    self.assertEqual(content_ad_source['source_type'], db_cas.source.source_type.type)
+                    self.assertEqual(content_ad_source['source_content_ad_id'], db_cas.source_content_ad_id)
+
+        contentadsources = dash.models.ContentAdSource.objects
+        if ad_groups:
+            contentadsources = contentadsources.filter(
+                content_ad__ad_group_id__in=ad_groups)
+        if source_types:
+            contentadsources = contentadsources.filter(
+                source__source_type__type__in=source_types)
+        self.assertEqual(returned_count, contentadsources.count())
 
 
     def test_get_content_ads(self):
