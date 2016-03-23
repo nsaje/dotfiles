@@ -628,13 +628,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
     settings = []
     first = True
     for status, metric_value, planned_value, campaign_goal in performance:
-        def format_value(val):
-            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
-                or 'N/A'
-
-        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
-            format_value(metric_value)
-        )
+        goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
         if campaign_goal.conversion_goal:
             goal_description += ' on conversion ' + campaign_goal.conversion_goal.name
 
@@ -642,7 +636,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
             '' if not first else 'Campaign Goals:',
             goal_description,
             planned_value and 'planned {}'.format(
-                format_value(planned_value),
+                dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
         )

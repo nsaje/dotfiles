@@ -47,13 +47,24 @@ CAMPAIGN_GOAL_MAP = {
     constants.CampaignGoalKPI.CPC: [],
 }
 
-GOAL_METRIC_MAP = {
+CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'unbounced_visits',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'total_seconds',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
 }
+
+
+def format_value(goal_type, value):
+    return value and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value) \
+        or 'N/A'
+
+
+def format_campaign_goal(goal_type, value):
+    return CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
+        format_value(goal_type, value)
+    )
 
 
 def create_campaign_goal(request, form, campaign, value=None, conversion_goal=None):
@@ -355,21 +366,24 @@ def get_goal_performance_status(goal_type, metric_value, planned_value):
     return constants.CampaignGoalPerformance.AVERAGE
 
 
+def _fetch_goals(campaign, start_date, end_date):
+    prefetch_values = Prefetch(
+        'values',
+        queryset=dash.models.CampaignGoalValue.objects.filter(
+            created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
+            created_dt__lt=end_date + datetime.timedelta(1),
+        ).order_by('-created_dt')
+    )
+    return dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
+        prefetch_values
+    ).select_related('conversion_goal').order_by('-primary', 'created_dt')
+
+
 def get_goal_performance(user, campaign, start_date, end_date,
                          goals=None, conversion_goals=None, stats=None):
     performance = []
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
-    if not goals:
-        prefetch_values = Prefetch(
-            'values',
-            queryset=dash.models.CampaignGoalValue.objects.filter(
-                created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
-                created_dt__lt=end_date + datetime.timedelta(1),
-            ).order_by('-created_dt')
-        )
-        goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
-            prefetch_values
-        ).select_related('conversion_goal').order_by('-primary', 'created_dt')
+    goals = goals or _fetch_goals(campaign, start_date, end_date)
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,
         start_date=start_date,
@@ -382,13 +396,13 @@ def get_goal_performance(user, campaign, start_date, end_date,
 
     conversion_goals_tuple = tuple(sorted(conversion_goals, key=lambda x: x.id))
     for campaign_goal in goals:
-        goal_values = campaign_goal.values.all()
-        planned_value = goal_values and goal_values[0].value or None
+        last_goal_value = campaign_goal.values.all().first()
+        planned_value = last_goal_value and last_goal_value.value or None
         if campaign_goal.type == constants.CampaignGoalKPI.CPA:
             index = conversion_goals_tuple.index(campaign_goal.conversion_goal) + 1
             metric_value = stats.get('conversion_goal_' + str(index))
         else:
-            metric_value = stats.get(GOAL_METRIC_MAP[campaign_goal.type])
+            metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
         performance.append((
             get_goal_performance_status(campaign_goal.type, metric_value, planned_value),
             metric_value,
