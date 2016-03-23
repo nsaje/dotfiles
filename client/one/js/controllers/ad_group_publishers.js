@@ -736,6 +736,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.updateOutbrainPublisherSelection();
                 $scope.updateRowBlacklistInfo();
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.view_pubs_conversion_goals'));
             },
             function (data) {
@@ -821,6 +822,22 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.chartMetricOptions,
                 options.actualCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
+        if ($scope.hasPermission('zemauth.campaign_goal_optimization')) {
+            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+                $scope.campaignGoals,
+                $scope.chartMetricOptions,
+                options.campaignGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+            );
+        }
+        if ($scope.hasPermission('zemauth.campaign_goal_optimization')) {
+            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+                $scope.campaignGoals,
+                $scope.chartMetricOptions,
+                options.campaignGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }
     };

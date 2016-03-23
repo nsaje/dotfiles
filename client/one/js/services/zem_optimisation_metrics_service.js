@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp,constants */
 'use strict';
 
 oneApp.factory('zemOptimisationMetricsService', function () {
@@ -143,9 +143,45 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         });
     }
 
+    function concatChartOptions (goals, chartOptions, newOptions, isInternal, isHidden) {
+        return chartOptions.concat(newOptions.map(function (option) {
+            option.internal = isInternal;
+            option.hidden = isHidden;
+            if (goals) {
+                goals.forEach(function (goal) {
+                    if (goal.fields[option.value] !== undefined) {
+                        options.hidden = isHidden;
+                    }
+                });
+            }
+            return option;
+        }));
+    }
+
+    function updateChartOptionsVisibility (chartOptions, goals) {
+        var columnCats = columnCategories();
+        console.log(chartOptions);
+        console.log(goals);
+        chartOptions.forEach(function (option) {
+            if (columnCats[option.value]) {
+                option.shown = false;
+            }
+
+            if (goals && columnCats[option.value]) {
+                goals.forEach(function (goal) {
+                    if (goal.fields[option.value] !== undefined) {
+                        option.shown = true;
+                    }
+                });
+            }
+        });
+    }
+
     return {
         createColumnCategories: createColumnCategories,
         insertAudienceOptimizationColumns: insertAudienceOptimizationColumns,
         updateVisibility: updateVisibility,
+        concatChartOptions: concatChartOptions,
+        updateChartOptionsVisibility: updateChartOptionsVisibility,
     };
 });

@@ -749,6 +749,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
             },
             function (data) {
                 // error
@@ -1015,6 +1016,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.chartMetricOptions,
                 options.actualCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.campaign_goal_optimization')) {
+            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+                $scope.campaignGoals,
+                $scope.chartMetricOptions,
+                options.campaignGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }
     };
