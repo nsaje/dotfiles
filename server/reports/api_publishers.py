@@ -200,7 +200,7 @@ def prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, 
 
 
 def _convert_exchange_to_source_id(aggregated_blacklist):
-    exchanges = set(filter(lambda x: x is not None, (agg.get('exchange') for agg in aggregated_blacklist)))
+    exchanges = set(agg.get('exchange') for agg in aggregated_blacklist if agg.get('exchange') is not None)
 
     # some matches are in bidder_slug and some in tracking_slug so query and map both
     slugs = Source.objects.filter(Q(bidder_slug__in=exchanges) | Q(tracking_slug__in=exchanges)).values('id',
