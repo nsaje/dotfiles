@@ -12,6 +12,7 @@ from dash import export_plus
 from dash import models
 from dash import constants
 import reports.redshift as redshift
+from utils import test_helper
 
 from zemauth.models import User
 
@@ -97,11 +98,11 @@ class ExportPlusTestCase(test.TestCase):
 
         content = export_plus.get_csv_content(fieldnames, self.data)
 
-        expected_content = codecs.BOM_UTF8
-        expected_content += '''Date,Cost,Data Cost,Clicks,CTR\r
+        expected_content = '''Date,Cost,Data Cost,Clicks,CTR\r
 2014-07-01,1000.12,10.10,103,0.0103\r
 2014-07-01,2000.12,23.10,203,0.0203\r
 '''
+        expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
     def test_get_csv_content_with_statuses(self):
@@ -118,11 +119,11 @@ class ExportPlusTestCase(test.TestCase):
         data[1]['status'] = 2
         content = export_plus.get_csv_content(fieldnames, self.data)
 
-        expected_content = codecs.BOM_UTF8
-        expected_content += '''Date,Cost,Data Cost,Clicks,CTR,Status\r
+        expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
 2014-07-01,1000.12,10.10,103,0.0103,Active\r
 2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
 '''
+        expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
     @patch('reports.api_contentads.query')
@@ -541,22 +542,3 @@ class ExportPlusTestCase(test.TestCase):
             ad_group=None,
             granularity=2,
             order=None)
-
-    def test_format_urls(self):
-        field = 'url'
-        url = 'http://example.org'
-        formatted_url = export_plus._format_urls(url, field)
-        self.assertEqual(url, formatted_url)
-
-        url = 'http://example.org/?param1=value1&param2=value2'
-        formatted_url = export_plus._format_urls(url, field)
-        self.assertEqual(url, formatted_url)
-
-        url = 'http://example.org/?param1=value1&param2=@=+$_.'
-        formatted_url = export_plus._format_urls(url, field)
-        self.assertEqual(url, formatted_url)
-
-        url = 'http://example.org/go;a=1;a.v=2,2;'
-        expected = '"'+url+'"'
-        formatted_url = export_plus._format_urls(url, field)
-        self.assertEqual(expected, formatted_url)

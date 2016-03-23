@@ -1,5 +1,4 @@
 import codecs
-import urllib
 
 import unicodecsv
 import StringIO
@@ -85,9 +84,6 @@ FORMAT_EMPTY_TO_0 = [
     'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
-
-FORMAT_URLS = ['url', 'image_url']
-FORMAT_URLS_CSV_NOT_SAFE_CHARACTERS = [',', ';']
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
@@ -393,7 +389,7 @@ def _adjust_ordering(order, dimensions):
 def get_csv_content(fieldnames, data):
     output = StringIO.StringIO()
     output.write(codecs.BOM_UTF8)
-    writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
+    writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
     writer.writerow(fieldnames)
     for item in data:
         row = {}
@@ -403,7 +399,6 @@ def get_csv_content(fieldnames, data):
             formatted_value = _format_percentages(formatted_value, field)
             formatted_value = _format_decimals(formatted_value, field)
             formatted_value = _format_statuses_and_dates(formatted_value, field)
-            formatted_value = _format_urls(formatted_value, field)
             row[field] = formatted_value
 
         writer.writerow(row)
@@ -440,12 +435,6 @@ def _format_decimals(value, field):
         return '{:.2f}'.format(value)
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(value)
-    return value
-
-
-def _format_urls(value, field):
-    if field in FORMAT_URLS and any(char in value for char in FORMAT_URLS_CSV_NOT_SAFE_CHARACTERS):
-        return '"'+value+'"'
     return value
 
 
