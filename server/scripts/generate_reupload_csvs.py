@@ -19,7 +19,7 @@ for content_ad in content_ads:
     row = {
         'URL': content_ad.url,
         'Title': content_ad.title,
-        'Image URL': 'http://images.zemanta.com/api/image/' + content_ad.image_id,
+        'Image URL': 'http://images2.zemanta.com/' + content_ad.image_id + '.jpg',
     }
 
     if content_ad.tracker_urls:

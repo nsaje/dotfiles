@@ -2012,7 +2012,7 @@ class ContentAd(models.Model):
         if self.image_id is None:
             return None
 
-        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
+        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.IMAGE_ORIGINAL_URL, image_id=self.image_id)
 
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
@@ -2025,9 +2025,9 @@ class ContentAd(models.Model):
             height = self.image_height
 
         return '/'.join([
-            settings.Z3_API_THUMBNAIL_URL,
-            self.image_id,
-            '{}x{}.jpg'.format(width, height)
+            settings.IMAGE_THUMBNAIL_URL,
+            self.image_id + '.jpg',
+            '?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(width, height)
         ])
 
     def url_with_tracking_codes(self, tracking_codes):
