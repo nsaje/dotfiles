@@ -25,7 +25,7 @@ TEMP_EMAILS = [
 
 def switch_low_budget_campaigns_to_landing_mode():
     for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
-        available_today, available_tomorrow, max_daily_budget_per_ags = get_minimum_remaining_budget(campaign)
+        available_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
         max_daily_budget = sum(max_daily_budget_per_ags.itervalues())
         if available_tomorrow < max_daily_budget:
             _switch_to_landing_mode(campaign)
@@ -33,6 +33,48 @@ def switch_low_budget_campaigns_to_landing_mode():
         elif available_tomorrow < max_daily_budget * 2:
             yesterday_spend = _get_yesterday_spend(campaign)
             _send_depleting_budget_notification_email(campaign, available_today, max_daily_budget, yesterday_spend)
+
+
+def get_max_settable_daily_budget(ad_group_source):
+    available_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(
+        ad_group_source.ad_group.campaign)
+
+    max_daily_budget_per_ags[ad_group_source.id] = 0
+    max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+
+    max_today = decimal.Decimal(available_today - max_daily_budget_sum)\
+                       .to_integral_exact(rounding=decimal.ROUND_CEILING)
+    max_tomorrow = decimal.Decimal(available_tomorrow - max_daily_budget_sum)\
+                          .to_integral_exact(rounding=decimal.ROUND_CEILING)
+
+    return max(min(max_today, max_tomorrow), 0)
+
+
+def _get_minimum_remaining_budget(campaign):
+    today = dates_helper.local_today()
+
+    max_daily_budget = _get_max_daily_budget_per_ags(today, campaign)
+    budgets_active_today = _get_budgets_active_on_date(today, campaign)
+    budgets_active_tomorrow = _get_budgets_active_on_date(today + datetime.timedelta(days=1), campaign)
+
+    per_budget_remaining_today = {}
+    budget_to_distribute = sum(max_daily_budget.itervalues())
+    for bli in budgets_active_today.order_by('created_dt'):
+        spend_without_fee_pct = 1 - bli.credit.license_fee
+        spend_available = bli.get_available_amount(date=today - datetime.timedelta(days=1)) * spend_without_fee_pct
+        per_budget_remaining_today[bli.id] = max(0, spend_available - budget_to_distribute)
+        budget_to_distribute = max(0, budget_to_distribute - spend_available)
+
+    if budget_to_distribute > 0:
+        logger.warning('campaign %s could overspend - daily budgets are set wrong', campaign.id)
+
+    available_today = sum(per_budget_remaining_today.itervalues())
+    available_tomorrow = 0
+    for bli in budgets_active_tomorrow.order_by('created_dt'):
+        spend_without_fee_pct = 1 - bli.credit.license_fee
+        available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * spend_without_fee_pct)
+
+    return available_today, available_tomorrow, max_daily_budget
 
 
 def _switch_to_landing_mode(campaign):
@@ -61,48 +103,6 @@ def _switch_to_landing_mode(campaign):
             )
 
     zwei_actions.send(actions)
-
-
-def get_minimum_remaining_budget(campaign):
-    today = dates_helper.local_today()
-
-    max_daily_budget = _get_max_daily_budget_per_ags(today, campaign)
-    budgets_active_today = _get_budgets_active_on_date(today, campaign)
-    budgets_active_tomorrow = _get_budgets_active_on_date(today + datetime.timedelta(days=1), campaign)
-
-    per_budget_remaining_today = {}
-    budget_to_distribute = sum(max_daily_budget.itervalues())
-    for bli in budgets_active_today.order_by('created_dt'):
-        spend_without_fee_pct = 1 - bli.credit.license_fee
-        spend_available = bli.get_available_amount(date=today - datetime.timedelta(days=1)) * spend_without_fee_pct
-        per_budget_remaining_today[bli.id] = max(0, spend_available - budget_to_distribute)
-        budget_to_distribute = max(0, budget_to_distribute - spend_available)
-
-    if budget_to_distribute > 0:
-        logger.warning('campaign %s could overspend - daily budgets are set wrong', campaign.id)
-
-    available_today = sum(per_budget_remaining_today.itervalues())
-    available_tomorrow = 0
-    for bli in budgets_active_tomorrow.order_by('created_dt'):
-        spend_without_fee_pct = 1 - bli.credit.license_fee
-        available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * spend_without_fee_pct)
-
-    return available_today, available_tomorrow, max_daily_budget
-
-
-def get_max_settable_daily_budget(ad_group_source):
-    available_today, available_tomorrow, max_daily_budget_per_ags = get_minimum_remaining_budget(
-        ad_group_source.ad_group.campaign)
-
-    max_daily_budget_per_ags[ad_group_source.id] = 0
-    max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
-
-    max_today = decimal.Decimal(available_today - max_daily_budget_sum)\
-                       .to_integral_exact(rounding=decimal.ROUND_CEILING)
-    max_tomorrow = decimal.Decimal(available_tomorrow - max_daily_budget_sum)\
-                          .to_integral_exact(rounding=decimal.ROUND_CEILING)
-
-    return max(min(max_today, max_tomorrow), 0)
 
 
 def _get_yesterday_spend(campaign):
