@@ -648,7 +648,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
                 $scope.campaignGoals,
                 $scope.chartMetricOptions,
-                options.campaignGoalChartMetrics,
+                options.campaignGoalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
                 $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }
