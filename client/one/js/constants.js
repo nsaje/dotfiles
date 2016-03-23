@@ -62,6 +62,11 @@ var constants = {
         COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
         COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
         COST_PER_NEW_VISITOR: 'avg_cost_for_new_visitor',
+        COST_PER_CONVERSION_GOAL_1: 'avg_cost_per_conversion_goal_1',
+        COST_PER_CONVERSION_GOAL_2: 'avg_cost_per_conversion_goal_2',
+        COST_PER_CONVERSION_GOAL_3: 'avg_cost_per_conversion_goal_3',
+        COST_PER_CONVERSION_GOAL_4: 'avg_cost_per_conversion_goal_4',
+        COST_PER_CONVERSION_GOAL_5: 'avg_cost_per_conversion_goal_5',
     },
     creditLineItemStatus: {
         SIGNED: 1,
@@ -628,7 +633,14 @@ var options = {
         {name: 'Avg. Cost Per Second', value: constants.chartMetric.COST_PER_SECOND, shown: false},
         {name: 'Avg. Cost For Pageview', value: constants.chartMetric.COST_PER_PAGEVIEW, shown: false},
         {name: 'Avg. Cost For Nonbounced Visitor', value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR, shown: false},
-        {name: 'Avg. Cost For New Visitor', value: constants.chartMetric.COST_PER_NEW_VISITOR, shown: false},
+        {name: 'Avg. Cost For New Visitor', value: constants.chartMetric.COST_PER_NEW_VISITOR, shown: false},            
+    ],
+    campaignGoalConversionGoalChartMetrics: [
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_1, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_2, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_3, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_4, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_5, shown: false},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

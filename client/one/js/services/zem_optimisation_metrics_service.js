@@ -150,7 +150,10 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             if (goals) {
                 goals.forEach(function (goal) {
                     if (goal.fields[option.value] !== undefined) {
-                        options.hidden = isHidden;
+                        option.hidden = isHidden;
+                        if (goal.conversion) {
+                            option.name = goal.name + ' (' + goal.conversion + ')';
+                        }
                     }
                 });
             }
@@ -169,6 +172,9 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 goals.forEach(function (goal) {
                     if (goal.fields[option.value] !== undefined) {
                         option.shown = true;
+                        if (goal.conversion) {
+                            option.name = goal.name + ' (' + goal.conversion + ')';
+                        }
                     }
                 });
             }
