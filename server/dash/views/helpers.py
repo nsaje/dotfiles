@@ -868,7 +868,7 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings):
 
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
-            ad_group.campaign.landing_mode or\
+            ad_group.campaign.is_in_landing() or\
             automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source) or\
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings)
@@ -884,7 +884,7 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
 
     if not ad_group_source.source.can_update_daily_budget_automatic() and\
        not ad_group_source.source.can_update_daily_budget_manual() or\
-       ad_group.campaign.landing_mode or\
+       ad_group.campaign.is_in_landing() or\
        _is_end_date_past(ad_group_settings) or\
        ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings)
@@ -901,7 +901,7 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
 
     if ad_group_source.source_id not in allowed_sources:
         message = 'Please contact support to enable this source.'
-    elif ad_group.campaign.landing_mode:
+    elif ad_group.campaign.is_in_landing():
         message = 'Please add additional budget to your campaign to make changes.'
     elif not ad_group_source.source.can_update_state() or (
             ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
@@ -964,7 +964,7 @@ def _get_status_setting_disabled_message_for_target_regions(
 
 
 def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings):
-    if ad_group.campaign.landing_mode:
+    if ad_group.campaign.is_in_landing():
         return 'This value cannot be edited because campaign is in landing mode.'
 
     if ad_group_source.source.maintenance:

@@ -1053,7 +1053,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'autopilot_state' in resource and not autopilot_form.is_valid():
             errors.update(autopilot_form.errors)
 
-        if ad_group.campaign.landing_mode:
+        if ad_group.campaign.is_in_landing():
             for key in resource.keys():
                 errors.update({key: 'Not allowed'})
 
@@ -1074,7 +1074,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             errors.update(exc.ForbiddenError(message='Not allowed'))
 
         campaign_settings = ad_group.campaign.get_current_settings()
-        if 'daily_budget_cc' in resource and campaign_settings.automatic_landing_mode:
+        if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:
             max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
             if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
                 errors.update({

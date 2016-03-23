@@ -1623,7 +1623,7 @@ class CampaignAdGroupsTable(object):
             'enabled': True,
             'message': None
         }
-        if campaign.landing_mode:
+        if campaign.is_in_landing():
             state['enabled'] = False
             state['message'] = 'Please add additional budget to your campaign to make changes.'
         elif row['state'] == constants.AdGroupSettingsState.INACTIVE \

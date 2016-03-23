@@ -781,8 +781,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': None
         })
 
-        ad_group_source.ad_group.campaign.landing_mode = True
-        ad_group_source.ad_group.campaign.save(None)
+        new_campaign_settings = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
@@ -1109,8 +1110,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': None
         })
 
-        ad_group_source.ad_group.campaign.landing_mode = True
-        ad_group_source.ad_group.campaign.save(None)
+        new_campaign_settings = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
@@ -1235,8 +1237,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': None
         })
 
-        ad_group_source.ad_group.campaign.landing_mode = True
-        ad_group_source.ad_group.campaign.save(None)
+        new_campaign_settings = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 

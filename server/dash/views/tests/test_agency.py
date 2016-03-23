@@ -735,8 +735,9 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
-        ad_group.campaign.landing_mode = True
-        ad_group.campaign.save(None)
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         self.add_permissions(['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -1844,6 +1845,7 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'Device targeting', 'value': 'Mobile'},
                 {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
                 {'name': 'Automatic Landing Mode', 'value': 'False'},
+                {'name': 'Landing Mode', 'value': 'False'},
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'
