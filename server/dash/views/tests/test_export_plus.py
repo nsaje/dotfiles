@@ -91,7 +91,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         response = export_plus.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
         expected_content = codecs.BOM_UTF8
-        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Visits\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,http://testurl.com,Inactive,20.230,203,30\r\n'''
+        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Visits\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,30\r\n'''
         filename = '{0}_{1}_{2}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
             slugify.slugify(self.campaign),
@@ -194,7 +194,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         response = export_plus.CampaignAdGroupsExport().get(request, self.campaign_id)
 
         expected_content = codecs.BOM_UTF8
-        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,http://testurl.com,Inactive,20.230,203,200000\r\n'''
+        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,200000\r\n'''
 
         filename = '{0}_{1}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -329,7 +329,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         response = export_plus.AccountCampaignsExport().get(request, self.account_id)
 
         expected_content = codecs.BOM_UTF8
-        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,http://testurl.com,Inactive,20.230,203,200000\r\n'''
+        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,200000\r\n'''
 
         filename = '{0}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name)
@@ -643,7 +643,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         response = export_plus.CampaignSourcesExport().get(request, self.campaign_id)
 
         expected_content = codecs.BOM_UTF8
-        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,http://testurl.com,Active,Taboola,10.230,103,100000\r\n'''
+        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,Taboola,10.230,103,100000\r\n'''
 
         filename = '{0}_{1}_-_by_content_ad_media_source_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
@@ -791,7 +791,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         response = export_plus.AccountSourcesExport().get(request, self.account_id)
 
         expected_content = codecs.BOM_UTF8
-        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,http://testurl.com,Active,Taboola,10.230,103,100000\r\n'''
+        expected_content += '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,Taboola,10.230,103,100000\r\n'''
 
         filename = '{0}_-_by_content_ad_media_source_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name)

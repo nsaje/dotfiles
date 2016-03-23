@@ -193,8 +193,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'id': '1',
             'image_urls': {
-                'landscape': '/123456789/256x160.jpg',
-                'square': '/123456789/160x160.jpg'
+                'landscape': '/123456789.jpg?w=256&h=160&fit=crop&crop=faces&fm=jpg',
+                'square': '/123456789.jpg?w=160&h=160&fit=crop&crop=faces&fm=jpg'
             },
             'impressions': 1000000,
             'status_setting': 1,
@@ -238,8 +238,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'clicks': None,
             'cpc': None,
             'image_urls': {
-                'square': '/123456789/160x160.jpg',
-                'landscape': '/123456789/256x160.jpg'},
+                'square': '/123456789.jpg?w=160&h=160&fit=crop&crop=faces&fm=jpg',
+                'landscape': '/123456789.jpg?w=256&h=160&fit=crop&crop=faces&fm=jpg'},
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'submission_status': [],
             'cost': None,
