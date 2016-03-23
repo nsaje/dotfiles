@@ -1231,6 +1231,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             setting.detailsLabel = setting.details_label;
             setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
+            setting.valueClass = setting.value_class;
             return setting;
         }
     }

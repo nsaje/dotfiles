@@ -24,10 +24,11 @@ class CampaignGoalsTestCase(TestCase):
         self.user = self.request.user
 
         all_goal_types = constants.CampaignGoalKPI.get_all()
-        for goal_type in all_goal_types:
+        for i, goal_type in enumerate(all_goal_types):
             models.CampaignGoal.objects.create(
                 campaign=self.campaign,
                 type=goal_type,
+                primary=not i,
                 created_by=self.user,
             )
 
@@ -55,6 +56,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
     def test_get_primary_campaign_goal(self):
+        models.CampaignGoal.objects.all().delete()
         campaign = models.Campaign.objects.get(pk=1)
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
@@ -242,6 +244,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertItemsEqual(result, cam_goals)
 
     def test_get_goal_performance(self):
+        start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
+
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
@@ -254,16 +258,17 @@ class CampaignGoalsTestCase(TestCase):
             'total_seconds': 10,
             'percent_new_users': 1.2,
         }
-        performance = campaign_goals.get_goal_performance(self.user, self.campaign, stats=stats)
+        performance = campaign_goals.get_goal_performance(self.user, self.campaign,
+                                                          start_date, end_date, stats=stats)
         self.assertEqual(
-            [(p[1], p[2]) for p in sorted(performance.values())],
-            [(None, None), (1.2, None), (10, Decimal('5.00000')), (10, Decimal('10.00000')),
-             (10, Decimal('60.00000')), (10, Decimal('75.00000'))],
+            [(p[1], p[2]) for p in performance],
+            [(10, Decimal('60.00000')), (10, Decimal('10.00000')), (None, None),
+             (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)],
         )
 
     @patch('reports.api_contentads.query')
     def test_infobox(self, mock_contentads_query):
-        start_date, end_date = datetime.date.today(), datetime.date.today() - datetime.timedelta(7)
+        start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
@@ -289,36 +294,35 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': 'Campaign Goals:',
                 'value': '10.00 seconds on site',
-                'description': ''
-            }, {
-                'section_start': False,
-                'type': 'setting',
-                'name': '',
-                'value': '10.00 % bounce rate',
-                'description': ''
-            }, {
-                'section_start': False,
-                'type': 'setting',
-                'name': '', 'value':
-                '10.00 pages per session',
-                'description': ''
+                'value_class': 'primary',
+                'description': 'planned 60.00'
             }, {
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
                 'value': u'$20.00 CPA on conversion test conversion goal',
-                'description': ''
+                'description': 'planned $10.00'
             }, {
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
-                'value': '$0.10 CPC',
-                'description': ''
+                'value': '$0.10 CPC'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '', 'value':
+                '10.00 pages per session',
+                'description': 'planned 5.00'
             }, {
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
-                'value': '1.20 % new unique visitors',
-                'description': ''
+                'value': '10.00 % bounce rate',
+                'description': 'planned 75.00 %'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': '1.20 % new unique visitors'
             }
         ])

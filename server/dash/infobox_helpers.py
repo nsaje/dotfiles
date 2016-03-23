@@ -43,6 +43,7 @@ class OverviewSetting(object):
         self.type = setting_type
         self.tooltip = tooltip
         self.section_start = section_start
+        self.value_class = None
 
     def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
@@ -625,32 +626,34 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
                                                            start_date=start_date, end_date=end_date)
 
     settings = []
-    for i, goal_type in enumerate(performance.keys()):
-        status, metric_value, planned_value, campaign_goal = performance[goal_type]
-
+    first = True
+    for status, metric_value, planned_value, campaign_goal in performance:
         def format_value(val):
-            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](val) \
+            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
                 or 'N/A'
 
-        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
+        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
             format_value(metric_value)
         )
         if campaign_goal.conversion_goal:
             goal_description += ' on conversion ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
-            '' if i else 'Campaign Goals:',
+            '' if not first else 'Campaign Goals:',
             goal_description,
-            planned_value and '{}planned {}'.format(
-                campaign_goal.primary and 'primary, ' or '',
+            planned_value and 'planned {}'.format(
                 format_value(planned_value),
-            ) or '',
-            section_start=not i,
+            ) or None,
+            section_start=first,
         )
+        if campaign_goal.primary:
+            entry.value_class = 'primary'
+
         if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
             entry = entry.performance(True)
         elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
             entry = entry.performance(False)
 
         settings.append(entry.as_dict())
+        first = False
     return settings

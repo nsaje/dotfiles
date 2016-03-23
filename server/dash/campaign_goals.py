@@ -1,5 +1,6 @@
-from django.db import transaction
+import datetime
 
+from django.db import transaction
 from django.db.models import Prefetch
 
 from utils import exc
@@ -354,27 +355,21 @@ def get_goal_performance_status(goal_type, metric_value, planned_value):
     return constants.CampaignGoalPerformance.AVERAGE
 
 
-def get_goal_performance(user, campaign, goals=None, conversion_goals=None,
-                         start_date=None, end_date=None, stats=None):
-    assert stats or start_date and end_date
-    performance = {}
+def get_goal_performance(user, campaign, start_date, end_date,
+                         goals=None, conversion_goals=None, stats=None):
+    performance = []
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
     if not goals:
-        value_constraints = {}
-        if start_date and end_date:
-            value_constraints = {
-                'created_dt__gte': start_date,
-                'created_dt__lte': end_date,
-            }
         prefetch_values = Prefetch(
             'values',
             queryset=dash.models.CampaignGoalValue.objects.filter(
-                **value_constraints
+                created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
+                created_dt__lt=end_date + datetime.timedelta(1),
             ).order_by('-created_dt')
         )
         goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
             prefetch_values
-        ).select_related('conversion_goal')
+        ).select_related('conversion_goal').order_by('-primary', 'created_dt')
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,
         start_date=start_date,
@@ -394,12 +389,11 @@ def get_goal_performance(user, campaign, goals=None, conversion_goals=None,
             metric_value = stats.get('conversion_goal_' + str(index))
         else:
             metric_value = stats.get(GOAL_METRIC_MAP[campaign_goal.type])
-
-        performance[campaign_goal.type] = (
+        performance.append((
             get_goal_performance_status(campaign_goal.type, metric_value, planned_value),
             metric_value,
             planned_value,
             campaign_goal,
-        )
+        ))
 
     return performance
