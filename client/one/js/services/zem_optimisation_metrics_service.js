@@ -160,8 +160,6 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
     function updateChartOptionsVisibility (chartOptions, goals) {
         var columnCats = columnCategories();
-        console.log(chartOptions);
-        console.log(goals);
         chartOptions.forEach(function (option) {
             if (columnCats[option.value]) {
                 option.shown = false;

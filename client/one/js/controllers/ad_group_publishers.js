@@ -832,14 +832,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }
-        if ($scope.hasPermission('zemauth.campaign_goal_optimization')) {
-            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
-                $scope.campaignGoals,
-                $scope.chartMetricOptions,
-                options.campaignGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
-            );
-        }
     };
 
     var getDailyStats = function () {
