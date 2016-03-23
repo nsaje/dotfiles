@@ -89,7 +89,8 @@ def initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False):
 
 
 def _set_paused_ad_group_sources_to_minimum_values(ad_group):
-    ad_group_sources = _get_autopilot_active_sources_settings([ad_group], AdGroupSettingsState.INACTIVE)
+    ad_group_sources = autopilot_helpers.get_autopilot_active_sources_settings([ad_group],
+                                                                               AdGroupSettingsState.INACTIVE)
     new_budgets = {}
     data = {}
     for ag_source_setting in ad_group_sources:
@@ -164,7 +165,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}):
 
 
 def prefetch_autopilot_data(ad_groups):
-    enabled_ag_sources_settings = _get_autopilot_active_sources_settings(ad_groups)
+    enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups)
     sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
     yesterday_data, days_ago_data, campaign_goals = _fetch_data(ad_groups, sources)
     data = {}
@@ -197,16 +198,6 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
     data['old_cpc_cc'] = ag_source_setting.cpc_cc if ag_source_setting.cpc_cc else\
         autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source)
     return data
-
-
-def _get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
-    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
-    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
-        group_current_settings().select_related('ad_group_source__source__source_type')
-    if ad_group_setting_state:
-        return [ag_source_setting for ag_source_setting in ag_sources_settings if
-                ag_source_setting.state == ad_group_setting_state]
-    return ag_sources_settings
 
 
 def _fetch_data(ad_groups, sources):
@@ -326,7 +317,7 @@ def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
     num_sources_on_budget_ap = 0
     num_sources_on_cpc_ap = 0
     ad_groups_and_ap_types = {adgs.ad_group: adgs.autopilot_state for adgs in ad_group_settings}
-    for ag_source_setting in _get_autopilot_active_sources_settings(ad_groups_and_ap_types.keys()):
+    for ag_source_setting in autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_ap_types.keys()):
         ad_group = ag_source_setting.ad_group_source.ad_group
         daily_budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else Decimal(0)
         total_budget_on_all_ap += daily_budget

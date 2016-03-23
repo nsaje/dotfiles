@@ -6,6 +6,7 @@ import textwrap
 from django.core.mail import send_mail
 
 import dash
+from dash.constants import AdGroupSettingsState
 from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
@@ -36,6 +37,16 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
+
+
+def get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
+    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
+    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
+        group_current_settings().select_related('ad_group_source__source__source_type')
+    if ad_group_setting_state:
+        return [ag_source_setting for ag_source_setting in ag_sources_settings if
+                ag_source_setting.state == ad_group_setting_state]
+    return ag_sources_settings
 
 
 def ad_group_source_is_synced(ad_group_source):
