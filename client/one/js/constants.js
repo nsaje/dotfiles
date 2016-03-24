@@ -628,37 +628,37 @@ var options = {
     ],
     campaignGoalChartMetrics: [
         {
-            name: 'Total Seconds', 
+            name: 'Total Seconds',
             value: constants.chartMetric.TOTAL_SECONDS,
             shown: false,
         },
         {
-            name: 'Total Pageviews', 
+            name: 'Total Pageviews',
             value: constants.chartMetric.TOTAL_PAGEVIEWS,
             shown: false,
         },
         {
-            name: 'Unbounced Visitors', 
+            name: 'Unbounced Visitors',
             value: constants.chartMetric.UNBOUNCED_VISITS,
             shown: false,
         },
         {
-            name: 'Avg. Cost Per Second', 
+            name: 'Avg. Cost Per Second',
             value: constants.chartMetric.COST_PER_SECOND,
             shown: false,
         },
         {
-            name: 'Avg. Cost For Pageview', 
+            name: 'Avg. Cost For Pageview',
             value: constants.chartMetric.COST_PER_PAGEVIEW,
             shown: false,
         },
         {
-            name: 'Avg. Cost For Nonbounced Visitor', 
+            name: 'Avg. Cost For Nonbounced Visitor',
             value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR,
             shown: false,
         },
         {
-            name: 'Avg. Cost For New Visitor', 
+            name: 'Avg. Cost For New Visitor',
             value: constants.chartMetric.COST_PER_NEW_VISITOR,
             shown: false,
         },
