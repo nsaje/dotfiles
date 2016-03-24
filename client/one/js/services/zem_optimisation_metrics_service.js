@@ -131,13 +131,45 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             }
 
             goals.forEach(function (goal) {
-                if (goal.fields[column.field] !== undefined) {
-                    column.shown = true;
-                    column.unselectable = false;
+                if (goal.fields[column.field] === undefined) {
+                    return;
+                }
+                column.shown = true;
+                column.unselectable = false;
 
-                    if (goal.conversion) {
-                        column.name = goal.name + ' (' + goal.conversion + ')';
-                    }
+                if (goal.conversion) {
+                    column.name = goal.name + ' (' + goal.conversion + ')';
+                }
+            });
+        });
+    }
+
+    function concatChartOptions (goals, chartOptions, newOptions, isInternal) {
+        return chartOptions.concat(newOptions.map(function (option) {
+            option.internal = isInternal;
+            option.shown = false;
+            return option;
+        }));
+    }
+
+    function updateChartOptionsVisibility (chartOptions, goals) {
+        var columnCats = columnCategories();
+        chartOptions.forEach(function (option) {
+            if (columnCats[option.value]) {
+                option.shown = false;
+            }
+
+            if (!columnCats[option.value]) {
+                return;
+            }
+
+            (goals || []).forEach(function (goal) {
+                if (goal.fields[option.value] === undefined) {
+                    return;
+                }
+                option.shown = true;
+                if (goal.conversion) {
+                    option.name = goal.name + ' (' + goal.conversion + ')';
                 }
             });
         });
@@ -147,5 +179,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         createColumnCategories: createColumnCategories,
         insertAudienceOptimizationColumns: insertAudienceOptimizationColumns,
         updateVisibility: updateVisibility,
+        concatChartOptions: concatChartOptions,
+        updateChartOptionsVisibility: updateChartOptionsVisibility,
     };
 });

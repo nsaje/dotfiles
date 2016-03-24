@@ -377,7 +377,7 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value):
-    if planned_value is None:
+    if planned_value is None or metric_value is None:
         return constants.CampaignGoalPerformance.AVERAGE
     performance = get_performance_value(goal_type, Decimal(metric_value), planned_value)
     if performance < Decimal('0.8'):
