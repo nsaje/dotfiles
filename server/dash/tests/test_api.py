@@ -1623,11 +1623,14 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
-        self.assertFalse(mock_zweiapi_send.called)
 
+        # action has been created
         self.assertEqual(1, len(actions))
         self.assertEqual(self.ad_group_source, actions[0].ad_group_source)
         self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, actions[0].action)
+
+        # action hasn't been sent to zwei
+        self.assertFalse(mock_zweiapi_send.called)
 
         mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request,
                                           'AdsNative Max CPC bid set from $0.12 to $2.00')
