@@ -235,6 +235,9 @@ class AdGroupDailyStats(BaseDailyStatsView):
             request, totals_kwargs, selected_kwargs=selected_kwargs,
             group_key='source', conversion_goals=conversion_goals)
 
+        if request.user.has_perm('zemauth.campaign_goal_optimization'):
+            stats = campaign_goals.create_goals(ad_group.campaign, stats)
+
         can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
             stats,
@@ -278,6 +281,9 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         stats = self.get_stats(request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key='source', conversion_goals=conversion_goals)
+
+        if request.user.has_perm('zemauth.campaign_goal_optimization'):
+            stats = campaign_goals.create_goals(ad_group.campaign, stats)
 
         can_see_conversion_goals = request.user.has_perm('zemauth.view_pubs_conversion_goals')
         return self.create_api_response(self.get_response_dict(
@@ -403,6 +409,9 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals)
+
+        if request.user.has_perm('zemauth.campaign_goal_optimization'):
+            stats = campaign_goals.create_goals(ad_group.campaign, stats)
 
         can_see_conversion_goals = request.user.has_perm('zemauth.conversion_reports')
         return self.create_api_response(self.get_response_dict(
