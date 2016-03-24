@@ -1,4 +1,4 @@
-/* globals oneApp,constants */
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemOptimisationMetricsService', function () {
