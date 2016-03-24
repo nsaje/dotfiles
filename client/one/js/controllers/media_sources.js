@@ -529,6 +529,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 if ($scope.level === constants.level.CAMPAIGNS) {
                     $scope.campaignGoals = data.campaign_goals;
                     zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                    zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
                 }
             },
             function (data) {
@@ -643,6 +644,16 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.chartMetricOptions,
                 options.actualCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
+        if ($scope.hasPermission('zemauth.campaign_goal_optimization') &&
+            (($scope.level === constants.level.CAMPAIGNS) ||
+             ($scope.level === constants.level.AD_GROUPS))) {
+            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+                $scope.campaignGoals,
+                $scope.chartMetricOptions,
+                options.campaignGoalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
+                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }
     };
