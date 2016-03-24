@@ -131,13 +131,14 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             }
 
             goals.forEach(function (goal) {
-                if (goal.fields[column.field] !== undefined) {
-                    column.shown = true;
-                    column.unselectable = false;
+                if (goal.fields[column.field] === undefined) {
+                    return;
+                }
+                column.shown = true;
+                column.unselectable = false;
 
-                    if (goal.conversion) {
-                        column.name = goal.name + ' (' + goal.conversion + ')';
-                    }
+                if (goal.conversion) {
+                    column.name = goal.name + ' (' + goal.conversion + ')';
                 }
             });
         });
@@ -148,11 +149,13 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             option.internal = isInternal;
             option.hidden = isHidden;
             (goals || []).forEach(function (goal) {
-                if (goal.fields[option.value] !== undefined) {
-                    option.hidden = isHidden;
-                    if (goal.conversion) {
-                        option.name = goal.name + ' (' + goal.conversion + ')';
-                    }
+                if (goal.fields[option.value] === undefined) {
+                    return;
+                }
+
+                option.hidden = isHidden;
+                if (goal.conversion) {
+                    option.name = goal.name + ' (' + goal.conversion + ')';
                 }
             });
             }
@@ -172,11 +175,12 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             }
 
             (goals || []).forEach(function (goal) {
-                if (goal.fields[option.value] !== undefined) {
-                    option.shown = true;
-                    if (goal.conversion) {
-                        option.name = goal.name + ' (' + goal.conversion + ')';
-                    }
+                if (goal.fields[option.value] === undefined) {
+                    return;
+                }
+                option.shown = true;
+                if (goal.conversion) {
+                    option.name = goal.name + ' (' + goal.conversion + ')';
                 }
             });
         });
