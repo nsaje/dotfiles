@@ -589,7 +589,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
                 return;
             }
-            api.campaignOverview.get($state.params.id).then(
+            api.campaignOverview.get(
+                $state.params.id,
+                $scope.dateRange.startDate,
+                $scope.dateRange.endDate
+            ).then(
                 function (data) {
                     updateInfoboxData(data);
                 }

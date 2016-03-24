@@ -9,6 +9,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
             label: '=',
             value: '=',
             valueDescription: '=',
+            valueClass: '=',
             detailsVisible: '=',
             detailsLabel: '=',
             detailsHideLabel: '=',
@@ -20,7 +21,6 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
         },
         templateUrl: '/partials/zem_infobox_setting.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-
             $scope.config = config;
             $scope.detailsVisible = false;
             $scope.statusActive = false;

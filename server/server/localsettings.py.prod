@@ -158,7 +158,7 @@ USE_HASH_CACHE = True
 HASH_CACHE_TTL = 24 * 60 * 60
 
 Z3_API_IMAGE_URL = 'https://images-api.zemanta.com/api/image/'
-Z3_API_THUMBNAIL_URL = 'https://images.zemanta.com/api/thumbnail/'
+IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 BROKER_TRANSPORT = 'sqs'
 BROKER_USER = AWS_ACCESS_KEY_ID

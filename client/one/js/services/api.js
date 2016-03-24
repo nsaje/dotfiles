@@ -1196,12 +1196,20 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
     function CampaignOverview () {
 
-        this.get = function (id) {
+        this.get = function (id, startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/campaigns/' + id + '/overview/';
             var config = {
                 params: {}
             };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -1223,6 +1231,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             setting.detailsLabel = setting.details_label;
             setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
+            setting.valueClass = setting.value_class;
             return setting;
         }
     }
