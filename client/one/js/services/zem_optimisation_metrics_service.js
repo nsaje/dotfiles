@@ -147,15 +147,14 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
             option.hidden = isHidden;
-            if (goals) {
-                goals.forEach(function (goal) {
-                    if (goal.fields[option.value] !== undefined) {
-                        option.hidden = isHidden;
-                        if (goal.conversion) {
-                            option.name = goal.name + ' (' + goal.conversion + ')';
-                        }
+            (goals || []).forEach(function (goal) {
+                if (goal.fields[option.value] !== undefined) {
+                    option.hidden = isHidden;
+                    if (goal.conversion) {
+                        option.name = goal.name + ' (' + goal.conversion + ')';
                     }
-                });
+                }
+            });
             }
             return option;
         }));
@@ -168,16 +167,18 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 option.shown = false;
             }
 
-            if (goals && columnCats[option.value]) {
-                goals.forEach(function (goal) {
-                    if (goal.fields[option.value] !== undefined) {
-                        option.shown = true;
-                        if (goal.conversion) {
-                            option.name = goal.name + ' (' + goal.conversion + ')';
-                        }
-                    }
-                });
+            if (!columnCats[option.value]) {
+                return;
             }
+
+            (goals || []).forEach(function (goal) {
+                if (goal.fields[option.value] !== undefined) {
+                    option.shown = true;
+                    if (goal.conversion) {
+                        option.name = goal.name + ' (' + goal.conversion + ')';
+                    }
+                }
+            });
         });
     }
 
