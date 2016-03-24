@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Prefetch
 
-from utils import exc
+from utils import exc, dates_helper
 from dash import models, constants, forms
 from dash.views import helpers
 import dash.stats_helper
@@ -432,3 +432,46 @@ def get_goal_performance(user, campaign, start_date, end_date,
         ))
 
     return performance
+
+
+def get_campaign_goal_metrics(campaign, start_date, end_date):
+    campaign_goal_values = models.CampaignGoalValue.objects.all().\
+        filter(
+            campaign_goal__campaign=campaign,
+            campaign_goal__conversion_goal__isnull=True,
+            created_dt__gte=start_date,
+            created_dt__lte=end_date,
+        ).order_by(
+            'campaign_goal__campaign',
+            'created_dt',
+        ).select_related('campaign_goal')
+
+    cg_series = {}
+    for cg_value in campaign_goal_values:
+        cg = cg_value.campaign_goal
+        name = constants.CampaignGoalKPI.get_text(cg.type)
+        if not cg_series.get(name):
+            cg_series[name] = []
+        cg_series[name].append((cg_value.created_dt, cg_value.value,))
+    return cg_series
+
+
+def get_campaign_conversion_goal_metrics(campaign, start_date, end_date):
+    campaign_goal_values = models.CampaignGoalValue.objects.all().\
+        filter(
+            campaign_goal__campaign=campaign,
+            campaign_goal__conversion_goal__isnull=False,
+            created_dt__gte=start_date,
+            created_dt__lte=end_date,
+        ).order_by(
+            'campaign_goal__campaign',
+            'created_dt',
+        ).select_related('campaign_goal')
+    cg_series = {}
+    for cg_value in campaign_goal_values:
+        cg = cg_value.campaign_goal
+        conversion_name = cg.conversion_goal.name
+        if not cg_series.get(conversion_name):
+            cg_series[conversion_name] = []
+        cg_series[conversion_name].append((cg_value.created_dt, cg_value.value,))
+    return cg_series
