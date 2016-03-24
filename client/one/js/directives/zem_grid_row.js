@@ -13,11 +13,11 @@ oneApp.directive('zemGridRow', ['config', function (config) {
             row: '=',
         },
         template: '' +
-            '<div>' +
-                '<zem-grid-cell ng-repeat="col in ctrl.row.data.stats track by $index"' +
-                    'options="ctrl.options"' +
-                    'cell="col"' +
-                '/>' +
+            '<div class="zem-grid-row">' +
+                '<zem-grid-cell ng-repeat="col in row.data.stats track by $index" ' +
+                    'cell="col" ' +
+                    'options="options" ' +
+                '></zem-grid-cell>' +
             '</div>',
         controller: ['$scope', function ($scope) {
         }],

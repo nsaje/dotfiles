@@ -13,8 +13,8 @@ oneApp.directive('zemGridHeader', ['config', function (config) {
             header: '=',
         },
         template: '' +
-            '<div>' +
-                '<div ng-repeat="col in header.columns">' +
+            '<div class="zem-grid-header">' +
+                '<div class="zem-grid-cell" ng-repeat="col in header.columns">' +
                     '<span class="col-title">{{ col }}</span>' +
                 '</div>' +
             '</div>',

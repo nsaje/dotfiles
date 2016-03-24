@@ -22,15 +22,17 @@ oneApp.directive('zemGridNew', ['config', 'zemDataSourceService', function (conf
         scope: true,
         controllerAs: 'ctrl',
         bindToController: {
-            options: '=',
+            options: '=?',
             dataSource: '=?',
         },
         template: '' +
-            '<div>' +
+        '<div class="zem-grid-new-container">' +
+            '<div class="zem-grid">' +
                 '<zem-grid-header options="ctrl.options" header="ctrl.header"></zem-grid-header>' +
-                '<zem-grid-body options="ctrl.options" header="ctrl.rows"></zem-grid-body>' +
-                '<zem-grid-footer options="ctrl.options" header="ctrl.footer"></zem-grid-footer>' +
-            '</div>',
+                '<zem-grid-body options="ctrl.options" rows="ctrl.rows"></zem-grid-body>' +
+                '<zem-grid-footer options="ctrl.options" footer="ctrl.footer"></zem-grid-footer>' +
+            '</div>' +
+        '</div>',
         controller: ['$scope', function ($scope) {
 
             if (!$scope.dataSource) {

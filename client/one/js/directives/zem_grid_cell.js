@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGridRow', ['config', function (config) {
+oneApp.directive('zemGridCell', ['config', function (config) {
 
     return {
         restrict: 'E',
@@ -12,7 +12,7 @@ oneApp.directive('zemGridRow', ['config', function (config) {
             options: '=',
             cell: '=',
         },
-        template: '<div>{{cell}}</div>',
+        template: '<div class="zem-grid-cell">{{ctrl.cell}}</div>',
         controller: ['$scope', function ($scope) {
         }],
     };
