@@ -1,4 +1,5 @@
 import collections
+import logging
 
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
@@ -11,6 +12,8 @@ from django.conf import settings
 from utils import request_signer
 import sqlparse
 
+logger = logging.getLogger(__name__)
+
 
 def print_sql(query):
     print sqlparse.format(str(query), reindent=True, keyword_case='upper')
@@ -18,12 +21,11 @@ def print_sql(query):
 
 @csrf_exempt
 def get_ad_groups(request):
-    # FIXME
-    # try:
-    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    # except request_signer.SignatureError as e:
-    #     logger.exception('Invalid K1 signature.')
-    #     return _error_response('Invalid K1 signature.', status=401)
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError as e:
+        logger.exception('Invalid K1 signature.')
+        return _error_response('Invalid K1 signature.', status=401)
 
     if settings.DEBUG:
         num_qs_beginning = len(connection.queries)
@@ -138,12 +140,11 @@ def get_ad_groups(request):
 
 @csrf_exempt
 def get_content_ad_sources(request):
-    # FIXME
-    # try:
-    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    # except request_signer.SignatureError as e:
-    #     logger.exception('Invalid K1 signature.')
-    #     return _error_response('Invalid K1 signature.', status=401)
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError as e:
+        logger.exception('Invalid K1 signature.')
+        return _error_response('Invalid K1 signature.', status=401)
 
     if settings.DEBUG:
         num_qs_beginning = len(connection.queries)
@@ -212,3 +213,10 @@ def get_content_ad_sources(request):
         print 'Queries run:', num_qs
 
     return JsonResponse(data)
+
+
+def _error_response(error_msg, status=500):
+    return JsonResponse({
+        'status': 'ERROR',
+        'error': error_msg,
+    }, status=status)
