@@ -144,21 +144,10 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         });
     }
 
-    function concatChartOptions (goals, chartOptions, newOptions, isInternal, isHidden) {
+    function concatChartOptions (goals, chartOptions, newOptions, isInternal) {
         return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
-            option.hidden = isHidden;
-            (goals || []).forEach(function (goal) {
-                if (goal.fields[option.value] === undefined) {
-                    return;
-                }
-
-                option.hidden = isHidden;
-                if (goal.conversion) {
-                    option.name = goal.name + ' (' + goal.conversion + ')';
-                }
-            });
-            }
+            option.shown = false;
             return option;
         }));
     }
