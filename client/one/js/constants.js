@@ -56,9 +56,9 @@ var constants = {
         CONVERSION_GOAL4: 'conversion_goal_4',
         CONVERSION_GOAL5: 'conversion_goal_5',
         TOTAL_SECONDS: 'total_seconds',
-        TOTAL_PAGEVIEWS: 'total_pageviews',    
+        TOTAL_PAGEVIEWS: 'total_pageviews',
         UNBOUNCED_VISITS: 'unbounced_visits',
-        COST_PER_SECOND: 'avg_cost_per_second', 
+        COST_PER_SECOND: 'avg_cost_per_second',
         COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
         COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
         COST_PER_NEW_VISITOR: 'avg_cost_for_new_visitor',
@@ -627,13 +627,41 @@ var options = {
         {name: '', value: constants.chartMetric.CONVERSION_GOAL5, shown: false},
     ],
     campaignGoalChartMetrics: [
-        {name: 'Total Seconds', value: constants.chartMetric.TOTAL_SECONDS, shown: false},
-        {name: 'Total Pageviews', value: constants.chartMetric.TOTAL_PAGEVIEWS, shown: false},
-        {name: 'Unbounced Visitors', value: constants.chartMetric.UNBOUNCED_VISITS, shown: false},
-        {name: 'Avg. Cost Per Second', value: constants.chartMetric.COST_PER_SECOND, shown: false},
-        {name: 'Avg. Cost For Pageview', value: constants.chartMetric.COST_PER_PAGEVIEW, shown: false},
-        {name: 'Avg. Cost For Nonbounced Visitor', value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR, shown: false},
-        {name: 'Avg. Cost For New Visitor', value: constants.chartMetric.COST_PER_NEW_VISITOR, shown: false},            
+        {
+            name: 'Total Seconds', 
+            value: constants.chartMetric.TOTAL_SECONDS, 
+            shown: false
+        },
+        {
+            name: 'Total Pageviews', 
+            value: constants.chartMetric.TOTAL_PAGEVIEWS, 
+            shown: false
+        },
+        {
+            name: 'Unbounced Visitors', 
+            value: constants.chartMetric.UNBOUNCED_VISITS, 
+            shown: false
+        },
+        {
+            name: 'Avg. Cost Per Second', 
+            value: constants.chartMetric.COST_PER_SECOND, 
+            shown: false
+        },
+        {
+            name: 'Avg. Cost For Pageview', 
+            value: constants.chartMetric.COST_PER_PAGEVIEW, 
+            shown: false
+        },
+        {
+            name: 'Avg. Cost For Nonbounced Visitor', 
+            value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR, 
+            shown: false
+        },
+        {
+            name: 'Avg. Cost For New Visitor', 
+            value: constants.chartMetric.COST_PER_NEW_VISITOR, 
+            shown: false
+        },
     ],
     campaignGoalConversionGoalChartMetrics: [
         {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_1, shown: false},
