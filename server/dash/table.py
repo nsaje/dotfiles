@@ -1446,10 +1446,12 @@ class CampaignAdGroupsTable(object):
                 filtered_sources
             ) if has_aggregate_postclick_permission(user) else False
 
-        ad_groups_status_dict = self.get_per_ad_group_running_status_dict(ad_groups, ad_groups_settings, filtered_sources)
+        ad_groups_status_dict = self.get_per_ad_group_running_status_dict(
+            ad_groups, ad_groups_settings, filtered_sources)
 
         e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources)
-        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources, actual=True)
+        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(
+            reports_api, campaign, filtered_sources, actual=True)
 
         rows = self.get_rows(
             user,
@@ -1499,7 +1501,7 @@ class CampaignAdGroupsTable(object):
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
             conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                            for cg in conversion_goals]
+                                    for cg in conversion_goals]
 
             response['conversion_goals'] = conversion_goals_lst
 
@@ -1642,7 +1644,8 @@ class AccountCampaignsTable(object):
             user.has_perm('zemauth.view_archived_entities')
 
         campaigns = models.Campaign.objects.all().filter_by_user(user).\
-            filter(account=account_id).filter_by_sources(filtered_sources)
+            filter(account=account_id).filter_by_sources(filtered_sources).\
+            prefetch_related('conversiongoal_set')
 
         campaigns_settings = models.CampaignSettings.objects\
             .filter(campaign__in=campaigns)\
@@ -1695,6 +1698,8 @@ class AccountCampaignsTable(object):
 
         campaign_status_dict = self.get_per_campaign_running_status_dict(campaigns, filtered_sources)
 
+        self._set_goal_performance(user, stats, campaigns, start_date, end_date)
+
         response = {
             'rows': self.get_rows(
                 user,
@@ -1731,6 +1736,50 @@ class AccountCampaignsTable(object):
             )
 
         return response
+
+    def _set_goal_performance(self, user, stats, campaigns, start_date, end_date):
+        if not user.has_perm('zemauth.campaign_goal_optimization'):
+            return
+        campaign_id_map = {
+            c.pk: c for c in campaigns
+        }
+        all_campaign_goals = campaign_goals.fetch_goals(
+            [stat['campaign'] for stat in stats], start_date, end_date
+        )
+        campaign_goals_list = {}
+        for goal in all_campaign_goals:
+            campaign_goals_list.setdefault(goal.campaign_id, []).append(goal)
+
+        for stat in stats:
+            stat['campaign_goal'] = {
+                'status': None,
+                'positive_columns': [],
+                'negative_columns': [],
+            }
+            campaign = campaign_id_map[stat['campaign']]
+            goals = campaign_goals_list.get(campaign.pk)
+            if not goals:
+                continue
+
+            performance = campaign_goals.get_goal_performance(
+                user, campaign, start_date, end_date,
+                goals=goals, stats=stat, conversion_goals=campaign.conversiongoal_set.all()
+            )
+
+            if not performance:
+                continue
+
+            stat['campaign_goal']['status'] = min((p[0] for p in performance))
+            primary_goal_performance = ([p for p in performance if p[3].primary] or [None])[0]
+            if not primary_goal_performance:
+                continue
+
+            primary_status, _, _, primary_goal = primary_goal_performance
+            goal_columns = campaign_goals.CAMPAIGN_GOAL_MAP[primary_goal.type]
+            if primary_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
+                stat['campaign_goal']['positive_columns'].extend(goal_columns)
+            if primary_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+                stat['campaign_goal']['negative_columns'].extend(goal_columns)
 
     def get_per_campaign_running_status_dict(self, campaigns, filtered_sources):
         """

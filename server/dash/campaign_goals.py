@@ -387,7 +387,7 @@ def get_goal_performance_status(goal_type, metric_value, planned_value):
     return constants.CampaignGoalPerformance.AVERAGE
 
 
-def _fetch_goals(campaign, start_date, end_date):
+def fetch_goals(campaign_ids, start_date, end_date):
     prefetch_values = Prefetch(
         'values',
         queryset=dash.models.CampaignGoalValue.objects.filter(
@@ -395,16 +395,16 @@ def _fetch_goals(campaign, start_date, end_date):
             created_dt__lt=end_date + datetime.timedelta(1),
         ).order_by('-created_dt')
     )
-    return dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
+    return dash.models.CampaignGoal.objects.filter(campaign_id__in=campaign_ids).prefetch_related(
         prefetch_values
-    ).select_related('conversion_goal').order_by('-primary', 'created_dt')
+    ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
 
 
 def get_goal_performance(user, campaign, start_date, end_date,
                          goals=None, conversion_goals=None, stats=None):
     performance = []
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
-    goals = goals or _fetch_goals(campaign, start_date, end_date)
+    goals = goals or fetch_goals([campaign.pk], start_date, end_date)
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,
         start_date=start_date,
