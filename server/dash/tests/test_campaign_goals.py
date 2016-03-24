@@ -1,5 +1,6 @@
 from mock import patch
 from decimal import Decimal
+import datetime
 
 from django.test import TestCase
 from django.http.request import HttpRequest
@@ -7,6 +8,7 @@ from django.http.request import HttpRequest
 from utils import exc
 from dash import models, constants, forms
 from dash import campaign_goals
+from dash import infobox_helpers
 from zemauth.models import User
 
 
@@ -22,10 +24,11 @@ class CampaignGoalsTestCase(TestCase):
         self.user = self.request.user
 
         all_goal_types = constants.CampaignGoalKPI.get_all()
-        for goal_type in all_goal_types:
+        for i, goal_type in enumerate(all_goal_types):
             models.CampaignGoal.objects.create(
                 campaign=self.campaign,
                 type=goal_type,
+                primary=not i,
                 created_by=self.user,
             )
 
@@ -34,6 +37,7 @@ class CampaignGoalsTestCase(TestCase):
             campaign=self.campaign,
             type=constants.ConversionGoalType.GA,
             name='test conversion goal',
+            goal_id='123',
         )
         cpa_goal.conversion_goal = conversion_goal
         cpa_goal.save()
@@ -52,6 +56,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
     def test_get_primary_campaign_goal(self):
+        models.CampaignGoal.objects.all().delete()
         campaign = models.Campaign.objects.get(pk=1)
         self.assertTrue(campaign_goals.get_primary_campaign_goal(campaign) is None)
 
@@ -237,3 +242,193 @@ class CampaignGoalsTestCase(TestCase):
         ]
 
         self.assertItemsEqual(result, cam_goals)
+
+    def test_get_goal_performance(self):
+        start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
+
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
+        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+        self._add_value(constants.CampaignGoalKPI.CPA, 10)
+
+        stats = {
+            'conversion_goal_1': 10,
+            'unbounced_visits': 10,
+            'total_pageviews': 10,
+            'total_seconds': 10,
+            'percent_new_users': 1.2,
+        }
+        performance = campaign_goals.get_goal_performance(self.user, self.campaign,
+                                                          start_date, end_date, stats=stats)
+        self.assertEqual(
+            [(p[1], p[2]) for p in performance],
+            [(10, Decimal('60.00000')), (10, Decimal('10.00000')), (None, None),
+             (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)],
+        )
+
+    @patch('reports.api_contentads.query')
+    def test_infobox(self, mock_contentads_query):
+        start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
+
+        self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
+        self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
+        self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+        self._add_value(constants.CampaignGoalKPI.CPA, 10)
+
+        mock_contentads_query.return_value = {
+            'unbounced_visits': 10,
+            'total_pageviews': 10,
+            'total_seconds': 10,
+            'cpc': 0.1,
+            'percent_new_users': 1.2,
+            'conversions': {
+                'ga__123': 20.00,
+            },
+        }
+
+        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, self.campaign,
+                                                               start_date, end_date)
+        self.assertEqual(goals_infobox, [
+            {
+                'section_start': True,
+                'type': 'setting',
+                'name': 'Campaign Goals:',
+                'value': '10.00 seconds on site',
+                'value_class': 'primary',
+                'icon': 'sad',
+                'description': 'planned 60.00'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'icon': 'sad',
+                'value': u'$20.00 CPA - test conversion goal',
+                'description': 'planned $10.00'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': '$0.10 CPC'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'icon': 'happy',
+                'name': '', 'value':
+                '10.00 pages per session',
+                'description': 'planned 5.00'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'icon': 'happy',
+                'value': '10.00 % bounce rate',
+                'description': 'planned 75.00 %'
+            }, {
+                'section_start': False,
+                'type': 'setting',
+                'name': '',
+                'value': '1.20 % new unique visitors'
+            }
+        ])
+
+    def test_get_performance_value(self):
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                Decimal('1'),
+                Decimal('1'),
+            ),
+            Decimal('1'),
+        )
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                Decimal('1'),
+                Decimal('1.1'),
+            ),
+            Decimal('0.9090909090909090909090909091'),
+        )
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                Decimal('0.5'),
+                Decimal('1'),
+            ),
+            Decimal('0.5'),
+        )
+
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('1'),
+                Decimal('1'),
+            ),
+            Decimal('1'),
+        )
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('1.5'),
+                Decimal('1'),
+            ),
+            Decimal('0.5'),
+        )
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('0.5'),
+                Decimal('1'),
+            ),
+            Decimal('1.5'),
+        )
+
+    def test_get_goal_performance_status(self):
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                Decimal('1'),
+                Decimal('1'),
+            ),
+            constants.CampaignGoalPerformance.SUPERPERFORMING,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                Decimal('1'),
+                Decimal('1.1'),
+            ),
+            constants.CampaignGoalPerformance.AVERAGE,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                Decimal('0.5'),
+                Decimal('1'),
+            ),
+            constants.CampaignGoalPerformance.UNDERPERFORMING,
+        )
+
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('1'),
+                Decimal('1'),
+            ),
+            constants.CampaignGoalPerformance.SUPERPERFORMING,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('1.5'),
+                Decimal('1'),
+            ),
+            constants.CampaignGoalPerformance.UNDERPERFORMING,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('1.1'),
+                Decimal('1'),
+            ),
+            constants.CampaignGoalPerformance.AVERAGE,
+        )

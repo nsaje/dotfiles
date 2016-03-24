@@ -1,4 +1,4 @@
-/* globals oneApp,constants */
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemOptimisationMetricsService', function () {
@@ -131,32 +131,23 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             }
 
             goals.forEach(function (goal) {
-                if (goal.fields[column.field] !== undefined) {
-                    column.shown = true;
-                    column.unselectable = false;
+                if (goal.fields[column.field] === undefined) {
+                    return;
+                }
+                column.shown = true;
+                column.unselectable = false;
 
-                    if (goal.conversion) {
-                        column.name = goal.name + ' (' + goal.conversion + ')';
-                    }
+                if (goal.conversion) {
+                    column.name = goal.name + ' (' + goal.conversion + ')';
                 }
             });
         });
     }
 
-    function concatChartOptions (goals, chartOptions, newOptions, isInternal, isHidden) {
+    function concatChartOptions (goals, chartOptions, newOptions, isInternal) {
         return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
-            option.hidden = isHidden;
-            if (goals) {
-                goals.forEach(function (goal) {
-                    if (goal.fields[option.value] !== undefined) {
-                        option.hidden = isHidden;
-                        if (goal.conversion) {
-                            option.name = goal.name + ' (' + goal.conversion + ')';
-                        }
-                    }
-                });
-            }
+            option.shown = false;
             return option;
         }));
     }
@@ -168,16 +159,19 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 option.shown = false;
             }
 
-            if (goals && columnCats[option.value]) {
-                goals.forEach(function (goal) {
-                    if (goal.fields[option.value] !== undefined) {
-                        option.shown = true;
-                        if (goal.conversion) {
-                            option.name = goal.name + ' (' + goal.conversion + ')';
-                        }
-                    }
-                });
+            if (!columnCats[option.value]) {
+                return;
             }
+
+            (goals || []).forEach(function (goal) {
+                if (goal.fields[option.value] === undefined) {
+                    return;
+                }
+                option.shown = true;
+                if (goal.conversion) {
+                    option.name = goal.name + ' (' + goal.conversion + ')';
+                }
+            });
         });
     }
 

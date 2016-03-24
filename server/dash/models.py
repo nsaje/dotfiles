@@ -2070,11 +2070,9 @@ class ContentAd(models.Model):
         if height is None:
             height = self.image_height
 
-        return '/'.join([
-            settings.Z3_API_THUMBNAIL_URL,
-            self.image_id,
-            '{}x{}.jpg'.format(width, height)
-        ])
+        path = '/{}.jpg?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(
+                self.image_id, width, height)
+        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
 
     def url_with_tracking_codes(self, tracking_codes):
         if not tracking_codes:
