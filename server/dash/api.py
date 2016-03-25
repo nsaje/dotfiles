@@ -1208,7 +1208,7 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj, request, send_action=True, send_to_zwei=True):
+    def set(self, settings_obj, request, send_action=True, send_to_zwei=True, system_user=None):
         latest_settings = self.ad_group_source.get_current_settings()
 
         state = settings_obj.get('state')
@@ -1243,6 +1243,8 @@ class AdGroupSourceSettingsWriter(object):
             if daily_budget_cc is not None:
                 old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
                 new_settings.daily_budget_cc = daily_budget_cc
+            if system_user and system_user in constants.SystemUserType.get_all():
+                new_settings.system_user = system_user
             new_settings.save(request)
 
             self.add_to_history_and_notify(settings_obj, old_settings_obj, request)

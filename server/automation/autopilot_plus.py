@@ -156,7 +156,7 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
         ).save()
 
 
-def set_autopilot_changes(cpc_changes={}, budget_changes={}):
+def set_autopilot_changes(cpc_changes={}, budget_changes={}, system_user=None):
     actions = []
     for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
         changes = {}
@@ -165,7 +165,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}):
         if budget_changes and budget_changes[ag_source]['old_budget'] != budget_changes[ag_source]['new_budget']:
             changes['daily_budget_cc'] = budget_changes[ag_source]['new_budget']
         if changes:
-            actions.extend(autopilot_helpers.update_ad_group_source_values(ag_source, changes))
+            actions.extend(autopilot_helpers.update_ad_group_source_values(ag_source, changes, system_user))
     return actions
 
 
