@@ -20,15 +20,15 @@ def print_sql(query):
 
 
 @csrf_exempt
-def get_ad_groups(request):
+def get_ad_group_sources(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError as e:
         logger.exception('Invalid K1 signature.')
         return _error_response('Invalid K1 signature.', status=401)
 
-    if settings.DEBUG:
-        num_qs_beginning = len(connection.queries)
+    # if settings.DEBUG:
+    #     num_qs_beginning = len(connection.queries)
 
     source_types_filter = request.GET.getlist('source_type')
 
@@ -46,6 +46,8 @@ def get_ad_groups(request):
     )
     if source_types_filter:
         adgroupsources = adgroupsources.filter(source__source_type__type__in=source_types_filter)
+
+    adgroupsources = adgroupsources[:10]
 
     adgroup_ids = {adgroupsource['ad_group_id'] for adgroupsource in adgroupsources}
     adgroups = (
@@ -128,13 +130,13 @@ def get_ad_groups(request):
             'campaigns': campaigns_by_account[account_id]
         })
 
-    if settings.DEBUG:
-        import json
-        print json.dumps(data, indent=4)
-        num_qs = len(connection.queries) - num_qs_beginning
-        for q in connection.queries[-num_qs:]:
-            print_sql(q['sql'])
-        print 'Queries run:', num_qs
+    # if settings.DEBUG:
+    #     import json
+    #     print json.dumps(data, indent=4)
+    #     num_qs = len(connection.queries) - num_qs_beginning
+    #     for q in connection.queries[-num_qs:]:
+    #         print_sql(q['sql'])
+    #     print 'Queries run:', num_qs
     return JsonResponse(data)
 
 
@@ -146,8 +148,8 @@ def get_content_ad_sources(request):
         logger.exception('Invalid K1 signature.')
         return _error_response('Invalid K1 signature.', status=401)
 
-    if settings.DEBUG:
-        num_qs_beginning = len(connection.queries)
+    # if settings.DEBUG:
+    #     num_qs_beginning = len(connection.queries)
 
     contentadsources = (
         dash.models.ContentAdSource.objects
@@ -204,13 +206,13 @@ def get_content_ad_sources(request):
             'content_ads': content_ads,
         })
 
-    if settings.DEBUG:
-        import json
-        print json.dumps(data, indent=4)
-        num_qs = len(connection.queries) - num_qs_beginning
-        for q in connection.queries[-num_qs:]:
-            print_sql(q['sql'])
-        print 'Queries run:', num_qs
+    # if settings.DEBUG:
+    #     import json
+    #     print json.dumps(data, indent=4)
+    #     num_qs = len(connection.queries) - num_qs_beginning
+    #     for q in connection.queries[-num_qs:]:
+    #         print_sql(q['sql'])
+    #     print 'Queries run:', num_qs
 
     return JsonResponse(data)
 
