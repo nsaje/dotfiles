@@ -1107,7 +1107,7 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
         {name: 'new unique visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
-        {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA, unit: '$'},
+        {name: 'CPA - Setup new conversion tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     conversionGoalTypes: [
         {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},

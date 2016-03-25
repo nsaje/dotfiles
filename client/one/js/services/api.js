@@ -1821,7 +1821,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         deferred.reject(data);
                     }
                     deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings)
+                        settings: convertSettingsFromApi(data.data.settings),
+                        goals: convertCampaignGoalsFromApi(data.data.goals)
                     });
                 }).
                 error(function (data, status, headers, config) {
@@ -3123,7 +3124,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 return data;
             },
             errorsFromApi: function (resp) {
-                return resp.data.data.errors;
+                var errors = resp.data.data.errors;
+                errors.conversionGoal = {
+                    goalId: errors.conversion_goal.goal_id,
+                    name: errors.conversion_goal.name,
+                    type: errors.conversion_goal.type,
+                };
+                return errors;
             }
         };
 

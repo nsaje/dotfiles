@@ -17,9 +17,9 @@
                 </div>
                 <div class="col-xs-5" ng-class="{'has-error': errors.value}">
                     <ui-select ng-disabled="!!campaignGoal.id" theme="select2" search-enabled="false" id="goal-type-select" class="form-control" ng-model="campaignGoal.type" on-select="updateTypeChange($select.selected.unit)">
-                        <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
+                        <ui-select-match placeholder="Choose type">{{ prepareName($select.selected) }}</ui-select-match>
                         <ui-select-choices repeat="goal.value as goal in campaignGoalKPIs">
-                            {{goal.name}}
+                            {{ goal.name }}
                         </ui-select-choices>
                     </ui-select>
                     <label ng-repeat="error in errors.type" class="error" for="goal-type-select">{{ error }}</label>
@@ -140,7 +140,7 @@
             <div class="col-xs-4" ng-if="!showAddConversionGoalForm()">
                 <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">
                     <span ng-if="newCampaignGoal">Add goal</span>
-                    <span ng-if="!newCampaignGoal">Save goal</span>
+                    <span ng-if="!newCampaignGoal">Update goal</span>
                 </button>
             </div>
             <div class="col-xs-6" ng-if="showAddConversionGoalForm()">
