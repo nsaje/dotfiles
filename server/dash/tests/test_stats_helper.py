@@ -540,9 +540,10 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
         mock_stats = [{
             'date': date.isoformat(),
             'conversion_count': 64,
-            'slug': 'test conversion goal',
+            'slug': 'test',
             'source': 7,
-            'publisher': 'example.com'
+            'publisher': 'example.com',
+            'account': 1,
         }]
         return mock_stats
 
