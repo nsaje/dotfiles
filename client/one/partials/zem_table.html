@@ -30,9 +30,9 @@
                     <tr ng-show="(!rows || !rows.length) && !showLoader">
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
-                    <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}" ng-style="getRowStyle(row)">
-                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
-                            <span ng-switch="col.type">
+                    <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}" class="zem-table-row {{ row.performance }}">
+                        <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image', 'table-icon': col.type === 'icon' }" class="{{ col.extraTdCss }} {{ additionalColumnClass(row, col) }}" ng-repeat="col in columns | filter: {checked: true}">
+                            <span ng-switch="col.type" class="zem-table-column-value">
                                 <span ng-switch-when="image">
                                     <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" zem-lazy-popover-template="'thumbnailPopover.html'" zem-lazy-popover-placement="left" zem-lazy-popover-animation-class="fade" zem-lazy-popover-append-to-body="true"/>
                                     <img ng-show="!row[col.field].square"/>
@@ -40,6 +40,21 @@
                                 <span ng-switch-when="submissionStatus">
                                     <zem-submission-status status-items="row[col.field]" archived="row[col.archivedField]" />
                                 </span>
+								<span ng-switch-when="icon">
+									<div ng-if="row[col.field] === 'happy'">
+										<zem-icon img-class="zem-icon-happy" file="happy_face.svg"></zem-icon>
+
+									</div>
+
+									<div ng-if="row[col.field] === 'sad'">
+										<zem-icon img-class="zem-icon-sad}}" file="sad_face.svg"></zem-icon>
+									</div>
+									
+									<div ng-if="row[col.field] === 'neutral'">
+										<zem-icon img-class="zem-icon-neutral}}" file="neutral_face.svg"></zem-icon>
+									</div>
+									
+								</span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
                                         <span ng-if="col.settingsField" zem-lazy-popover-append-to-body="true" zem-lazy-popover-html-unsafe="{{ getSettingsFieldMessage(row, col.field) }}" zem-lazy-popover-placement="right" zem-lazy-popover-animation-class="fade">

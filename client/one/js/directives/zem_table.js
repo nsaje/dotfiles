@@ -85,6 +85,10 @@ oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
                 $window.open(data.destinationUrl || data.url, '_blank');
             };
 
+            $scope.additionalColumnClass = function (row, col) {
+                return (row.styles || {})[col.field] ||  'default-class';
+            };
+
             // HACK: campaign goals experiment
             // to be removed when this is ready https://trello.com/c/vUBH4tz1/591-campaign-goals
             $scope.getRowStyle = function (row) {

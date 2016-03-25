@@ -122,7 +122,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             breakdown=['content_ad'],
             order=[],
             ignore_diff_rows=True,
-            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(
+                type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
             source=sources_matcher
         )
@@ -133,7 +134,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             ad_group=ad_group,
             breakdown=[],
             order=[],
-            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(
+                type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -352,7 +354,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=['content_ad'],
             order=[],
-            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(
+                type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
             ignore_diff_rows=True,
             source=sources_matcher
@@ -363,7 +366,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=[],
             order=[],
-            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(
+                type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
@@ -426,7 +430,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=['content_ad'],
             order=[],
-            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(
+                type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
@@ -438,7 +443,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             ad_group=ad_group,
             breakdown=[],
             order=[],
-            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(
+                type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -573,6 +579,89 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
         self.assertIn('rows', result['data'])
+
+    def test_goal_performance(self, mock_query, mock_touchpointconversins_query):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        date = datetime.date(2015, 2, 22)
+        mock_stats1 = {
+            'ctr': '12.5000',
+            'content_ad': 1,
+            'date': date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000,
+            'impressions': 1000000,
+            'cost': 100,
+            'media_cost': 100,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': 100,
+            'total_cost': 110,
+            'billing_cost': 110,
+            'license_fee': 10,
+            'visits': 40,
+            'click_discrepancy': 0.2,
+            'pageviews': 123,
+            'percent_new_users': 33.0,
+            'bounce_rate': 12.0,
+            'pv_per_visit': 0.9,
+            'avg_tos': 1.0,
+        }
+        mock_stats2 = {
+            'date': date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'media_cost': 200,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'total_cost': 200,
+            'billing_cost': 200,
+            'license_fee': 0,
+            'ctr': '15.5000',
+            'content_ad': 2,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
+        }
+
+        def copy(d):
+            return {k: v for k, v in d.iteritems()}
+        stats = [copy(mock_stats1), copy(mock_stats2)]
+
+        table.set_goal_performance(self.user,
+                                   stats,
+                                   date,
+                                   date,
+                                   campaign=ad_group.campaign)
+
+        self.assertEqual(stats[0]['performance'], None)
+        self.assertEqual(stats[1]['performance'], None)
+
+        stats = [copy(mock_stats1), copy(mock_stats2)]
+        goal = models.CampaignGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.CampaignGoalKPI.CPC,
+            created_dt=date,
+        )
+        models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=0.015,
+            created_dt=date,
+        )
+        table.set_goal_performance(self.user,
+                                   stats,
+                                   date,
+                                   date,
+                                   campaign=ad_group.campaign)
+
+        self.assertEqual(stats[0]['performance'], 'happy')
+        self.assertEqual(stats[1]['performance'], 'sad')
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
@@ -804,7 +893,8 @@ class AdGroupPublishersTableTest(TestCase):
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1012,7 +1102,8 @@ class AdGroupPublishersTableTest(TestCase):
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1344,7 +1435,8 @@ class AdGroupPublishersTableTest(TestCase):
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1559,7 +1651,8 @@ class AdGroupPublishersTableTest(TestCase):
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,

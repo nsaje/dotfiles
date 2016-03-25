@@ -45,7 +45,7 @@ CAMPAIGN_GOAL_MAP = {
         'avg_cost_for_new_visitor',
     ],
     constants.CampaignGoalKPI.CPA: [],
-    constants.CampaignGoalKPI.CPC: [],
+    constants.CampaignGoalKPI.CPC: ['cpc'],
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
@@ -61,6 +61,14 @@ INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.CPA,
     constants.CampaignGoalKPI.CPC,
 )
+
+STATUS_TO_ICON_MAP = {
+    constants.CampaignGoalPerformance.SUPERPERFORMING: 'happy',
+    constants.CampaignGoalPerformance.UNDERPERFORMING: 'sad',
+    constants.CampaignGoalPerformance.AVERAGE: 'neutral',
+}
+
+EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
 
 def get_performance_value(goal_type, metric_value, target_value):
@@ -306,6 +314,8 @@ def exclude_goal_columns(row, goal_types):
     for excluded_goal in excluded_goals:
         goal_strings = CAMPAIGN_GOAL_MAP.get(excluded_goal, [])
         for goal_string in goal_strings:
+            if goal_string in EXISTING_COLUMNS_FOR_GOALS:
+                continue
             ret_row.pop(goal_string, None)
 
     return ret_row
