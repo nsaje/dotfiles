@@ -743,7 +743,8 @@ class OmnitureReport(Report):
                 break
 
             # totals row in case it is second in a table should includes special characters that don't belong to
-            # tracking codes, such as space (in case of quicken)
+            # tracking codes, such as space (based on quicken reports). In case they do not include spaces
+            # we can't be sure this is not a tracking code.
             if body_found and row_idx == header_row_idx + 1 and ' ' in omniture_row_dict.get(tracking_code_col, ''):
                 total_row = omniture_row_dict
                 continue
