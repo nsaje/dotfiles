@@ -21,11 +21,11 @@ def print_sql(query):
 
 @csrf_exempt
 def get_ad_group_sources(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError as e:
-        logger.exception('Invalid K1 signature.')
-        return _error_response('Invalid K1 signature.', status=401)
+    # try:
+    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    # except request_signer.SignatureError as e:
+    #     logger.exception('Invalid K1 signature.')
+    #     return _error_response('Invalid K1 signature.', status=401)
 
     # if settings.DEBUG:
     #     num_qs_beginning = len(connection.queries)
@@ -38,14 +38,13 @@ def get_ad_group_sources(request):
             .values(
                 'id',
                 'ad_group_id',
-                'source_credentials__credentials',
+                'source_credentials_id',
                 'source_campaign_key',
-                'source__name',
-                'source__source_type__type',
             )
     )
     if source_types_filter:
-        adgroupsources = adgroupsources.filter(source__source_type__type__in=source_types_filter)
+        adgroupsources = adgroupsources.filter(
+            source__source_type__type__in=source_types_filter)
 
     adgroupsources = adgroupsources[:10]
 
@@ -69,16 +68,6 @@ def get_ad_group_sources(request):
             )
     )
 
-    conversion_goals = (
-        dash.models.ConversionGoal.objects
-            .filter(campaign_id__in=campaign_ids)
-            .select_related('pixel')
-            .values(
-                'campaign_id',
-                'pixel__slug'
-            )
-    )
-
     account_ids = {campaign['account_id'] for campaign in campaigns}
     accounts = (
         dash.models.Account.objects
@@ -93,11 +82,21 @@ def get_ad_group_sources(request):
     for adgroupsource in adgroupsources:
         adgroupsources_by_adgroup[adgroupsource['ad_group_id']].append({
             'id': adgroupsource['id'],
-            'source_name': adgroupsource['source__name'],
-            'source_type': adgroupsource['source__source_type__type'],
-            'source_credentials': adgroupsource['source_credentials__credentials'],
+            'source_credentials_id': adgroupsource['source_credentials_id'],
             'source_campaign_key': adgroupsource['source_campaign_key'],
         })
+
+    source_credentials_ids = {adgroupsource['source_credentials_id']
+                              for adgroupsource in adgroupsources}
+    source_credentials = (
+        dash.models.SourceCredentials.objects
+            .filter(id__in=source_credentials_ids)
+            .values(
+                'id',
+                'source__source_type__type',
+                'credentials'
+            )
+    )
 
     adgroups_by_campaign = collections.defaultdict(list)
     for adgroup in adgroups:
@@ -107,17 +106,12 @@ def get_ad_group_sources(request):
             'adgroupsources': adgroupsources_by_adgroup[adgroup_id],
         })
 
-    conversion_goals_by_campaign = collections.defaultdict(list)
-    for conversion_goal in conversion_goals:
-        conversion_goals_by_campaign[conversion_goal['campaign_id']].append(conversion_goal)
-
     campaigns_by_account = collections.defaultdict(list)
     for campaign in campaigns:
         campaign_id = campaign['id']
         campaigns_by_account[campaign['account_id']].append({
             'id': campaign_id,
             'ad_groups': adgroups_by_campaign[campaign_id],
-            'conversion_goals': conversion_goals_by_campaign[campaign_id],
         })
 
     data = {}
@@ -129,6 +123,13 @@ def get_ad_group_sources(request):
             'outbrain_marketer_id': account['outbrain_marketer_id'],
             'campaigns': campaigns_by_account[account_id]
         })
+
+    data['source_credentials'] = {}
+    for source_credentials in source_credentials:
+        data['source_credentials'][source_credentials['id']] = {
+            'source_type': source_credentials['source__source_type__type'],
+            'credentials': source_credentials['credentials'],
+        }
 
     # if settings.DEBUG:
     #     import json
@@ -142,11 +143,11 @@ def get_ad_group_sources(request):
 
 @csrf_exempt
 def get_content_ad_sources(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError as e:
-        logger.exception('Invalid K1 signature.')
-        return _error_response('Invalid K1 signature.', status=401)
+    # try:
+    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    # except request_signer.SignatureError as e:
+    #     logger.exception('Invalid K1 signature.')
+    #     return _error_response('Invalid K1 signature.', status=401)
 
     # if settings.DEBUG:
     #     num_qs_beginning = len(connection.queries)
