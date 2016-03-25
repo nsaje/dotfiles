@@ -705,7 +705,6 @@ class OmnitureReport(Report):
         total_row = None
         header_row_idx = None
 
-        print 'PARSE'
         for row_idx in range(0, sheet.nrows):
             line = self._parse_row(sheet, row_idx)
             line_lower = [x.lower() for x in line]
