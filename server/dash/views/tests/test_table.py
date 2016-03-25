@@ -634,11 +634,11 @@ class AdGroupAdsPlusTableTest(TestCase):
             return {k: v for k, v in d.iteritems()}
         stats = [copy(mock_stats1), copy(mock_stats2)]
 
-        table.set_goal_performance(self.user,
-                                   stats,
-                                   date,
-                                   date,
-                                   campaign=ad_group.campaign)
+        table.set_rows_goals_performance(self.user,
+                                         stats,
+                                         date,
+                                         date,
+                                         [ad_group.campaign])
 
         self.assertEqual(stats[0]['performance'], None)
         self.assertEqual(stats[1]['performance'], None)
@@ -654,14 +654,14 @@ class AdGroupAdsPlusTableTest(TestCase):
             value=0.015,
             created_dt=date,
         )
-        table.set_goal_performance(self.user,
-                                   stats,
-                                   date,
-                                   date,
-                                   campaign=ad_group.campaign)
+        table.set_rows_goals_performance(self.user,
+                                         stats,
+                                         date,
+                                         date,
+                                         [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], 'happy')
-        self.assertEqual(stats[1]['performance'], 'sad')
+        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):

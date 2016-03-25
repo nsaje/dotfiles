@@ -54,7 +54,7 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = 'happy' if ok else 'sad'
+        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -622,8 +622,8 @@ def _compute_daily_cap(ad_groups):
 
 
 def get_campaign_goal_list(user, campaign, start_date, end_date):
-    performance = dash.campaign_goals.get_goal_performance(user, campaign,
-                                                           start_date=start_date, end_date=end_date)
+    performance = dash.campaign_goals.get_goals_performance(user, campaign,
+                                                            start_date=start_date, end_date=end_date)
 
     settings = []
     first = True

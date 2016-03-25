@@ -62,10 +62,10 @@ INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.CPC,
 )
 
-STATUS_TO_ICON_MAP = {
-    constants.CampaignGoalPerformance.SUPERPERFORMING: 'happy',
-    constants.CampaignGoalPerformance.UNDERPERFORMING: 'sad',
-    constants.CampaignGoalPerformance.AVERAGE: 'neutral',
+STATUS_TO_EMOTICON_MAP = {
+    constants.CampaignGoalPerformance.SUPERPERFORMING: constants.Emoticon.HAPPY,
+    constants.CampaignGoalPerformance.UNDERPERFORMING: constants.Emoticon.SAD,
+    constants.CampaignGoalPerformance.AVERAGE: constants.Emoticon.NEUTRAL,
 }
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
@@ -330,7 +330,7 @@ def calculate_goal_values(row, goal_type, cost):
             goal_name = 'conversion_goal_{}'.format(goal_index)
             if goal_name in row:
                 ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
-                    float(cost) / row[goal_name] if row[goal_name] != 0 else 0
+                    float(cost) / row[goal_name] if row[goal_name] else 0
             goal_index += 1
     return ret
 
@@ -410,8 +410,8 @@ def fetch_goals(campaign_ids, start_date, end_date):
     ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
 
 
-def get_goal_performance(user, campaign, start_date, end_date,
-                         goals=None, conversion_goals=None, stats=None):
+def get_goals_performance(user, campaign, start_date, end_date,
+                          goals=None, conversion_goals=None, stats=None):
     performance = []
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
     goals = goals or fetch_goals([campaign.pk], start_date, end_date)

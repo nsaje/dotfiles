@@ -87,36 +87,31 @@ def get_conversion_pixels_last_sync(conversion_pixels):
     return datetime.datetime.utcnow()
 
 
-def set_goal_performance(user, stats, start_date, end_date, campaign=None, campaigns=None):
+def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
     if not user.has_perm('zemauth.campaign_goal_optimization'):
         return
-    campaign_goals_list = {}
-    campaign_id_map = {}
-    if campaigns:
-        campaign_id_map = {
-            c.pk: c for c in campaigns
-        }
-        all_campaign_goals = campaign_goals.fetch_goals(
-            [stat['campaign'] for stat in stats], start_date, end_date
-        )
-        for goal in all_campaign_goals:
-            campaign_goals_list.setdefault(goal.campaign_id, []).append(goal)
-    elif campaign:
-        campaign_goals_list[campaign.pk] = campaign_goals.fetch_goals(
-            [campaign.pk], start_date, end_date
-        )
-    else:
-        return
+    campaign_goals_map = {}
+    campaign_id_map = {
+        c.pk: c for c in campaigns
+    }
+    all_campaign_goals = campaign_goals.fetch_goals(
+        [campaign.pk for campaign in campaigns], start_date, end_date
+    )
+    for goal in all_campaign_goals:
+        campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)
 
     for stat in stats:
         stat['performance'] = None
         stat['styles'] = {}
-        campaign = campaign or campaign_id_map[stat['campaign']]
-        goals = campaign_goals_list.get(campaign.pk)
+        if 'campaign' in stat:
+            campaign = campaign_id_map[stat['campaign']]
+        else:
+            campaign = campaigns[0]
+        goals = campaign_goals_map.get(campaign.pk)
         if not goals:
             continue
 
-        performance = campaign_goals.get_goal_performance(
+        performance = campaign_goals.get_goals_performance(
             user, campaign, start_date, end_date,
             goals=goals, stats=stat, conversion_goals=campaign.conversiongoal_set.all()
         )
@@ -124,7 +119,7 @@ def set_goal_performance(user, stats, start_date, end_date, campaign=None, campa
         if not performance:
             continue
 
-        stat['performance'] = campaign_goals.STATUS_TO_ICON_MAP[
+        stat['performance'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
             min((p[0] for p in performance))
         ]
         primary_goal_performance = ([p for p in performance if p[3].primary] or [None])[0]
@@ -134,9 +129,9 @@ def set_goal_performance(user, stats, start_date, end_date, campaign=None, campa
         primary_status, _, _, primary_goal = primary_goal_performance
         for column in campaign_goals.CAMPAIGN_GOAL_MAP[primary_goal.type]:
             if primary_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
-                stat['styles'][column] = 'superperforming'
+                stat['styles'][column] = 1
             if primary_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
-                stat['styles'][column] = 'underperforming'
+                stat['styles'][column] = -1
 
 
 class AllAccountsSourcesTable(object):
@@ -1231,7 +1226,7 @@ class AdGroupAdsPlusTable(object):
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
 
-        set_goal_performance(user, stats, start_date, end_date, campaign=ad_group.campaign)
+        set_rows_goals_performance(user, stats, start_date, end_date, [ad_group.campaign])
 
         rows = self._get_rows(
             content_ads,
@@ -1507,7 +1502,7 @@ class CampaignAdGroupsTable(object):
         yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(
             reports_api, campaign, filtered_sources, actual=True)
 
-        set_goal_performance(user, stats, start_date, end_date, campaign=campaign)
+        set_rows_goals_performance(user, stats, start_date, end_date, [campaign])
 
         rows = self.get_rows(
             user,
@@ -1754,7 +1749,7 @@ class AccountCampaignsTable(object):
 
         campaign_status_dict = self.get_per_campaign_running_status_dict(campaigns, filtered_sources)
 
-        set_goal_performance(user, stats, start_date, end_date, campaigns=campaigns)
+        set_rows_goals_performance(user, stats, start_date, end_date, campaigns)
 
         response = {
             'rows': self.get_rows(
