@@ -126,13 +126,13 @@ def _set_new_daily_budgets(campaign):
 
     per_ad_group_autopilot_data = autopilot_plus.prefetch_autopilot_data(ad_groups)
     remaining_today, _, _ = _get_minimum_remaining_budget(campaign)
+    ad_group_daily_budget_cap = remaining_today // len(ad_groups)
 
     actions = []
     for ad_group in ad_groups:
-        daily_budget_cap = remaining_today // len(ad_groups)
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
             ad_group,
-            daily_budget_cap,
+            ad_group_daily_budget_cap,
             per_ad_group_autopilot_data[ad_group],
             goal=None  # use default goal to maximize spend
         )
