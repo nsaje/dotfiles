@@ -142,7 +142,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             unselectable: true,
             checked: true,
             type: 'icon',
-            shown: true,
             totalRow: false,
             help: 'Goal performance indicator',
             order: true,

@@ -113,7 +113,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             unselectable: true,
             checked: true,
             type: 'icon',
-            shown: true,
             totalRow: false,
             help: 'Goal performance indicator',
             order: true,
