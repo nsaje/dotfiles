@@ -47,7 +47,8 @@ module.exports = function (grunt) {
                     'one/js/services/**/*.js',
                     'one/js/controllers/**/*.js',
                     'one/js/filters/**/*.js',
-                    'one/js/demo.js'
+                    'one/components/**/*.js',
+                    'one/js/demo.js',
                 ],
                 dest: 'dist/one/zemanta-one.js'
             },
@@ -174,7 +175,7 @@ module.exports = function (grunt) {
             },
             one: {
                 files: {
-                    'dist/one/zemanta-one.min.css': 'one/less/**/*.less'
+                    'dist/one/zemanta-one.min.css': 'one/**/*.less'
                 }
             },
             actionlog: {
@@ -189,7 +190,7 @@ module.exports = function (grunt) {
             },
             one_js: {
                 files: [
-                    'one/js/**/*.js',
+                    'one/**/*.js',
                 ],
                 tasks: ['concat:one']
             },
@@ -301,6 +302,7 @@ module.exports = function (grunt) {
                     'one/js/services/**/*.js',
                     'one/js/controllers/**/*.js',
                     'one/js/filters/**/*.js',
+                    'one/components/**/*.js',
                     'one/js/demo.js'
                 ],
                 exclude: [],
