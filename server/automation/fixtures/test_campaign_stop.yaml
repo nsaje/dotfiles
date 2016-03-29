@@ -314,7 +314,7 @@
 
 - fields:
     ad_group_id: 7
-    created_dt: '2016-09-29T12:00:00'
+    created_dt: '2016-02-29T12:00:00'
     created_by: null
     system_user: 1
     state: 1
