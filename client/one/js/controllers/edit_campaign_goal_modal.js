@@ -15,6 +15,12 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             primary: false,
             conversionGoal: {},
         };
+    } else {
+        options.campaignGoalKPIs.forEach(function (kpiDefault) {
+            if (kpiDefault.value === $scope.campaignGoal.type) {
+                $scope.unit = kpiDefault.unit;
+            }
+        });
     }
 
     $scope.errors = {
@@ -31,6 +37,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 defaultValue = kpiDefault.value;
             }
         });
+
         $scope.campaignGoal.value = defaultValue;
     };
 
@@ -167,7 +174,19 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.setDefaultValue();
         $scope.unit = unit || '';
     };
+
+    $scope.prepareName = function (option) {
+        if ($scope.newCampaignGoal) {
+            return option && option.name || undefined;
+        }
+        if ($scope.campaignGoal.type !== constants.campaignGoalKPI.CPA) {
+            return option.name;
+        }
+        return 'CPA - ' + $scope.campaignGoal.conversionGoal.name;
+    };
+
     $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
+
     api.conversionPixel.list($scope.account.id).then(function (data) {
         $scope.availablePixels = data.rows;
         $scope.loadingPixels = false;

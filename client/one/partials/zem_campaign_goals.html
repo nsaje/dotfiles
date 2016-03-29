@@ -44,8 +44,8 @@
                 <span class="plus-label">Add new goal</span>
             </button>
         </div>
-        <div class="col-xs-7 helper-label nopadding" ng-show="!!campaignGoals.length">
-            Click on a goal to set it as primary
+        <div class="col-xs-7 helper-label nopadding" ng-show="(campaignGoals.length || 0) > 1">
+            Click on a goal to set it as primary <zem-help-popover content="Primary goal will be used for autooptimizing your campaign." placement="top"></zem-help-popover>
         </div>
     </div>
 </div>

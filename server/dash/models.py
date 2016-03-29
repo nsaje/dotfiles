@@ -830,7 +830,8 @@ class CampaignGoal(models.Model):
 
         if with_values:
             campaign_goal['values'] = [
-                {'datetime': str(value.created_dt), 'value': value.value}
+                {'datetime': str(value.created_dt),
+                 'value': Decimal(value.value).quantize(Decimal('1.00'))}
                 for value in self.values.all()
             ]
 
@@ -2089,7 +2090,7 @@ class ContentAd(models.Model):
             height = self.image_height
 
         path = '/{}.jpg?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(
-                self.image_id, width, height)
+            self.image_id, width, height)
         return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
 
     def url_with_tracking_codes(self, tracking_codes):
