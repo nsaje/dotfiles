@@ -725,7 +725,8 @@ class OmnitureReport(Report):
                     if tracking_code_col:
                         tracking_code_col = line[line_lower.index(tracking_code_col)]
                     else:
-                        # try to find it - use the first non-empty header, tracking codes should be in 1 line to the right
+                        # try to find it - use the first non-empty header, tracking codes should be in 1 column to the right
+                        # of this header (but they don't have a header)
                         tracking_code_col = next(x for x in line if x)
                         columns_dict[tracking_code_col] += 1
 
@@ -743,7 +744,7 @@ class OmnitureReport(Report):
                 total_row = omniture_row_dict
                 break
 
-            # totals row in case it is second in a table should have no data under "tracking codes" - empty.
+            # totals row in case it is second in a table should have no data under in column with tracking codes
             if body_found and row_idx == header_row_idx + 1 and not omniture_row_dict.get(tracking_code_col, ''):
                 total_row = omniture_row_dict
                 continue
