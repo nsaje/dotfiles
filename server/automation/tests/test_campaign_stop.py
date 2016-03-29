@@ -376,6 +376,12 @@ class SwitchCampaignToLandingModeTestCase(TestCase):
         new_settings = campaign.get_current_settings()
         self.assertTrue(new_settings.landing_mode)
 
+        for ad_group in campaign.adgroup_set.all():
+            if ad_group.id in campaign.adgroup_set.all().filter_active().values_list('id', flat=True):
+                self.assertTrue(ad_group.get_current_settings().landing_mode)
+            else:
+                self.assertFalse(ad_group.get_current_settings().landing_mode)
+
 
 class SetAdGroupEndDateTestCase(TestCase):
 

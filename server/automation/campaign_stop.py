@@ -96,6 +96,12 @@ def _switch_campaign_to_landing_mode(campaign):
     new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
     new_campaign_settings.save(None)
 
+    for ad_group in campaign.adgroup_set.all().filter_active():
+        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.landing_mode = True
+        new_ad_group_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
+        new_ad_group_settings.save(None)
+
 
 def _set_ad_group_end_date(ad_group, end_date):
     current_ag_settings = ad_group.get_current_settings()
@@ -225,6 +231,7 @@ def _get_ag_ids_active_on_date(date, campaign):
     )
 
     latest_ad_group_settings_before_date = dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=campaign.adgroup_set.all(),
         created_dt__lt=date,
     ).group_current_settings().values('ad_group_id', 'state')
     for ag_sett in latest_ad_group_settings_before_date.iterator():
