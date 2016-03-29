@@ -197,7 +197,7 @@ def _get_rows_string(cols, rows):
 def _get_rows_params(cols, rows):
     params = []
     for row in rows:
-        params.append([row.get(k) for k in cols])
+        params.extend([row.get(k) for k in cols])
     return params
 
 
