@@ -320,7 +320,7 @@ def calculate_goal_values(row, goal_type, cost):
             goal_name = 'conversion_goal_{}'.format(goal_index)
             if goal_name in row:
                 ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
-                    float(cost) / row[goal_name] if row[goal_name] != 0 else 0
+                    float(cost) / row[goal_name] if row[goal_name] else 0
             goal_index += 1
     return ret
 
