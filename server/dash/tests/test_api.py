@@ -1479,8 +1479,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.writer = api.AdGroupSourceSettingsWriter(self.ad_group_source)
         self.ad_group_settings = \
             models.AdGroupSettings.objects \
-                .filter(ad_group=self.ad_group_source.ad_group) \
-                .latest('created_dt')
+                                  .filter(ad_group=self.ad_group_source.ad_group) \
+                                  .latest('created_dt')
         assert self.ad_group_settings.state == 2
 
     def test_can_not_trigger_action_if_ad_group_disabled(self):
@@ -1599,7 +1599,41 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request,
+                                          'AdsNative Max CPC bid set from $0.12 to $2.00')
+
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
+    @mock.patch('actionlog.zwei_actions.send')
+    def test_should_not_send_to_zwei_if_set(self, mock_zweiapi_send, mock_send_mail):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        request = HttpRequest()
+        request.user = User.objects.create_user('test@example.com')
+
+        actions = self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_to_zwei=False)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+
+        # action has been created
+        self.assertEqual(1, len(actions))
+        self.assertEqual(self.ad_group_source, actions[0].ad_group_source)
+        self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, actions[0].action)
+
+        # action hasn't been sent to zwei
+        self.assertFalse(mock_zweiapi_send.called)
+
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request,
+                                          'AdsNative Max CPC bid set from $0.12 to $2.00')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1623,6 +1657,48 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertFalse(set_ad_group_source_settings.called)
 
         self.assertFalse(mock_send_mail.called)
+
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_set_system_user_valid(self, set_ad_group_source_settings, mock_send_mail):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None,
+                        system_user=constants.SystemUserType.CAMPAIGN_STOP)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertEqual(1, new_latest_settings.system_user)
+
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_set_system_user_not_valid(self, set_ad_group_source_settings, mock_send_mail):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None,
+                        10289340)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertEqual(None, new_latest_settings.system_user)
 
 
 class AdGroupSettingsOrderTest(TestCase):

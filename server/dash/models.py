@@ -508,6 +508,22 @@ class Campaign(models.Model, PermissionMixin):
 
             return self.exclude(pk__in=excluded)
 
+        def filter_landing(self):
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
+
+            filtered = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                automatic_campaign_stop=True,
+                landing_mode=True
+            ).values_list(
+                'campaign__id', flat=True
+            )
+
+            return self.exclude(pk__in=filtered)
+
 
 class SettingsBase(models.Model, CopySettingsMixin):
     _settings_fields = None
@@ -814,7 +830,8 @@ class CampaignGoal(models.Model):
 
         if with_values:
             campaign_goal['values'] = [
-                {'datetime': str(value.created_dt), 'value': value.value}
+                {'datetime': str(value.created_dt),
+                 'value': Decimal(value.value).quantize(Decimal('1.00'))}
                 for value in self.values.all()
             ]
 
@@ -1392,9 +1409,9 @@ class AdGroup(models.Model):
 
         def filter_running(self):
             """
-            This function checks if adgroup is active on arbitrary number of adgroups
+            This function checks if adgroup is running on arbitrary number of adgroups
             with a fixed amount of queries.
-            An adgroup is active if:
+            An adgroup is running if:
                 - it was set as active(adgroupsettings)
                 - current date is between start and stop(flight time)
                 - has at least one running mediasource(adgroupsourcesettings)
@@ -1933,6 +1950,8 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
+    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
+                                                   null=True, blank=True)
 
     objects = QuerySetManager()
 
@@ -2071,7 +2090,7 @@ class ContentAd(models.Model):
             height = self.image_height
 
         path = '/{}.jpg?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(
-                self.image_id, width, height)
+            self.image_id, width, height)
         return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
 
     def url_with_tracking_codes(self, tracking_codes):
