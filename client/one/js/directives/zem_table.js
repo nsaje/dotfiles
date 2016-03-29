@@ -88,8 +88,8 @@ oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
             $scope.additionalColumnClass = function (row, col) {
                 var classValue = (row.styles || {})[col.field],
                     classMap = {};
-                classMap[constants.Emoticon.HAPPY] = 'superperforming';
-                classMap[constants.Emoticon.SAD] = 'underperforming';
+                classMap[constants.emoticon.HAPPY] = 'superperforming';
+                classMap[constants.emoticon.SAD] = 'underperforming';
                 return classMap[classValue]  ||  'default-class';
             };
 
