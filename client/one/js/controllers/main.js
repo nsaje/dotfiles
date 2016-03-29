@@ -342,6 +342,25 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             $state.is('main.allAccounts.sources');
     };
 
+    $scope.defaultChartMetrics = function (chartMetric1, chartMetric2, chartMetricOptions) {
+        var values = chartMetricOptions.reduce(function (map, obj) {
+            map[obj.value] = obj.shown;
+            return map;
+        }, {});
+
+        var metric1, metric2;
+        if (values[chartMetric1] === false) {
+            metric1 = constants.chartMetric.CLICKS;
+        }
+        if (values[chartMetric2] === false) {
+            metric2 = constants.chartMetric.IMPRESSIONS;
+        }
+        return {
+            metric1: metric1,
+            metric2: metric2,
+        };
+    };
+
     $scope.getAdGroupStatusClass = function (adGroup, campaign) {
         if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
              adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
