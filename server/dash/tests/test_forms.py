@@ -484,7 +484,6 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                                       [self.url, self.title, self.image_url, self.tracker_urls], []])
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['content_ads'][0]['tracker_urls'], self.tracker_urls)
 
     def test_csv_impression_trackers_column(self):
         csv_file = self._get_csv_file(
