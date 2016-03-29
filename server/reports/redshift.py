@@ -94,7 +94,7 @@ def insert_touchpoint_conversions(rows):
             cols=','.join(cols),
             rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
 
-    cursor.execute(query, [])
+    cursor.execute(query, None)
     cursor.close()
 
 
