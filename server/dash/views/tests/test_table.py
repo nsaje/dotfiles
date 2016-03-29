@@ -703,8 +703,8 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
         self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
-        self.assertEqual(stats[0]['styles'], {'cpc': 1})
-        self.assertEqual(stats[1]['styles'], {'cpc': -1})
+        self.assertEqual(stats[0]['styles'], {'cpc': constants.Emoticon.HAPPY})
+        self.assertEqual(stats[1]['styles'], {'cpc': constants.Emoticon.SAD})
 
     def test_primary_goals_permissions(self, mock_query, mock_tpc_query):
         ad_group = models.AdGroup.objects.get(pk=1)

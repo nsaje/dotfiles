@@ -129,9 +129,9 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         primary_status, _, _, primary_goal = primary_goal_performance
         for column in campaign_goals.CAMPAIGN_GOAL_MAP[primary_goal.type]:
             if primary_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
-                stat['styles'][column] = 1
+                stat['styles'][column] = constants.Emoticon.HAPPY
             if primary_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
-                stat['styles'][column] = -1
+                stat['styles'][column] = constants.Emoticon.SAD
 
 
 class AllAccountsSourcesTable(object):
