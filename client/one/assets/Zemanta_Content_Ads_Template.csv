@@ -1,2 +1,2 @@
-URL,Title,Image URL,Description (optional),Crop Areas (optional),Tracker URL (optional)
-http://www.example.com/content,Example content ad,http://www.example.com/image.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://www.example.com/tracker
+URL,Title,Image URL,Description (optional),Impression trackers (optional)
+http://www.zemanta.com/blog-posts/news/the-rise-of-content-ads,The Rise of Content Ads,http://www.topbestalternatives.com/wp-content/uploads/2016/01/zemanta-580x304.jpg,Tech Talk with Zemanta: How Content Ads Will Come to Dominant Publishers Advertising Efforts,http://www.example.com/tracker
