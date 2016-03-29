@@ -23,6 +23,10 @@ import actionlog.constants
 import reports.redshift as redshift
 
 
+def copy(d):
+    return {k: v for k, v in d.iteritems()}
+
+
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
@@ -43,6 +47,54 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.patcher = patch('reports.api_contentads.has_complete_postclick_metrics')
         mock_has_complete_postclick_metrics = self.patcher.start()
         mock_has_complete_postclick_metrics.return_value = True
+
+        self.mock_date = datetime.date(2015, 2, 22)
+        self.mock_stats1 = {
+            'ctr': '12.5000',
+            'content_ad': 1,
+            'date': self.mock_date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000,
+            'impressions': 1000000,
+            'cost': 100,
+            'media_cost': 100,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': 100,
+            'total_cost': 110,
+            'billing_cost': 110,
+            'license_fee': 10,
+            'visits': 40,
+            'click_discrepancy': 0.2,
+            'pageviews': 123,
+            'percent_new_users': 33.0,
+            'bounce_rate': 12.0,
+            'pv_per_visit': 0.9,
+            'avg_tos': 1.0,
+        }
+        self.mock_stats2 = {
+            'date': self.mock_date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'media_cost': 200,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'total_cost': 200,
+            'billing_cost': 200,
+            'license_fee': 0,
+            'ctr': '15.5000',
+            'content_ad': 2,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
+        }
 
     def tearDown(self):
         self.patcher.stop()
@@ -582,86 +634,75 @@ class AdGroupAdsPlusTableTest(TestCase):
 
     def test_goal_performance(self, mock_query, mock_touchpointconversins_query):
         ad_group = models.AdGroup.objects.get(pk=1)
-        date = datetime.date(2015, 2, 22)
-        mock_stats1 = {
-            'ctr': '12.5000',
-            'content_ad': 1,
-            'date': date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000,
-            'impressions': 1000000,
-            'cost': 100,
-            'media_cost': 100,
-            'data_cost': None,
-            'e_data_cost': None,
-            'e_media_cost': 100,
-            'total_cost': 110,
-            'billing_cost': 110,
-            'license_fee': 10,
-            'visits': 40,
-            'click_discrepancy': 0.2,
-            'pageviews': 123,
-            'percent_new_users': 33.0,
-            'bounce_rate': 12.0,
-            'pv_per_visit': 0.9,
-            'avg_tos': 1.0,
-        }
-        mock_stats2 = {
-            'date': date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500,
-            'impressions': 2000000,
-            'cost': 200,
-            'media_cost': 200,
-            'data_cost': None,
-            'e_data_cost': None,
-            'e_media_cost': None,
-            'total_cost': 200,
-            'billing_cost': 200,
-            'license_fee': 0,
-            'ctr': '15.5000',
-            'content_ad': 2,
-            'visits': 30,
-            'click_discrepancy': 0.1,
-            'pageviews': 122,
-            'percent_new_users': 32.0,
-            'bounce_rate': 11.0,
-            'pv_per_visit': 0.8,
-            'avg_tos': 0.9,
-        }
 
-        def copy(d):
-            return {k: v for k, v in d.iteritems()}
-        stats = [copy(mock_stats1), copy(mock_stats2)]
+        stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
 
         table.set_rows_goals_performance(self.user,
                                          stats,
-                                         date,
-                                         date,
+                                         self.mock_date,
+                                         self.mock_date,
                                          [ad_group.campaign])
 
         self.assertEqual(stats[0]['performance'], None)
         self.assertEqual(stats[1]['performance'], None)
 
-        stats = [copy(mock_stats1), copy(mock_stats2)]
+        stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
         goal = models.CampaignGoal.objects.create(
             campaign=ad_group.campaign,
             type=constants.CampaignGoalKPI.CPC,
-            created_dt=date,
+            created_dt=self.mock_date,
         )
         models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=date,
+            created_dt=self.mock_date,
         )
         table.set_rows_goals_performance(self.user,
                                          stats,
-                                         date,
-                                         date,
+                                         self.mock_date,
+                                         self.mock_date,
                                          [ad_group.campaign])
 
         self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
         self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+
+    def test_primary_goal_styles(self, mock_query, mock_touchpointconversions_query):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
+        goal = models.CampaignGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.CampaignGoalKPI.CPC,
+            created_dt=self.mock_date,
+        )
+        models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=0.015,
+            created_dt=self.mock_date,
+        )
+        table.set_rows_goals_performance(self.user,
+                                         stats,
+                                         self.mock_date,
+                                         self.mock_date,
+                                         [ad_group.campaign])
+
+        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['styles'], {})
+        self.assertEqual(stats[1]['styles'], {})
+
+        goal.primary = True
+        goal.save()
+        stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
+        table.set_rows_goals_performance(self.user,
+                                         stats,
+                                         self.mock_date,
+                                         self.mock_date,
+                                         [ad_group.campaign])
+
+        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['styles'], {'cpc': 1})
+        self.assertEqual(stats[1]['styles'], {'cpc': -1})
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
