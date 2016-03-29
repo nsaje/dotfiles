@@ -533,6 +533,7 @@ class UserForm(forms.Form):
 DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
+IGNORED_CSV_FIELDS = ['errors']
 
 
 class DisplayURLField(forms.URLField):
@@ -631,7 +632,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # For simplicity, consistency and backward compatibility this field name is reverted here
             if field == "impression_trackers":
                 field = "tracker_urls"
-            if n >= 3 and field not in OPTIONAL_CSV_FIELDS:
+            if n >= 3 and (field not in OPTIONAL_CSV_FIELDS or field not in IGNORED_CSV_FIELDS):
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
@@ -655,6 +656,9 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                 del row[None]
 
             count_rows += 1
+
+            for ignored_field in IGNORED_CSV_FIELDS:
+                del row[ignored_field] if ignored_field in row else None
 
             data.append(row)
 
