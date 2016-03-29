@@ -196,7 +196,7 @@ module.exports = function (grunt) {
             },
             one_styles: {
                 files: [
-                    'one/less/**/*.less',
+                    'one/**/*.less',
                 ],
                 tasks: ['less:one']
             },
