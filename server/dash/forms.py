@@ -533,6 +533,7 @@ class UserForm(forms.Form):
 DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
+IGNORED_CSV_FIELDS = ['errors']
 
 
 class DisplayURLField(forms.URLField):
@@ -627,7 +628,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # accept both variants
             if field == "tracker_url":
                 field = "tracker_urls"
-            if n >= 3 and field not in OPTIONAL_CSV_FIELDS:
+            # Tracker Urls column has been renamed to Impression Trackers
+            # For simplicity, consistency and backward compatibility this field name is reverted here
+            if field == "impression_trackers":
+                field = "tracker_urls"
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
@@ -651,6 +656,10 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                 del row[None]
 
             count_rows += 1
+
+            # Remove ignored fields from row dict
+            for ignored_field in IGNORED_CSV_FIELDS:
+                row.pop(ignored_field, None)
 
             data.append(row)
 
@@ -683,7 +692,8 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # slow, we can instead save the file to a temporary
         # location on upload and then open it with 'rU'
         # (universal-newline mode).
-        lines = file_content.splitlines()
+        # Additionally remove empty lines if any.
+        lines = [line for line in file_content.splitlines() if line]
 
         encodings = ['utf-8', 'windows-1252']
         data = None

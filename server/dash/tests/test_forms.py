@@ -479,6 +479,30 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['display_url'], 'teststring.com/this')
 
+    def test_csv_empty_lines(self):
+        csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Impression Trackers'], [],
+                                      [self.url, self.title, self.image_url, self.tracker_urls], []])
+        form = self._init_form(csv_file, None)
+        self.assertTrue(form.is_valid())
+
+    def test_csv_impression_trackers_column(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Impression Trackers'],
+            [[self.url, self.title, self.image_url, self.tracker_urls]])
+
+        form = self._init_form(csv_file, None)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['content_ads'][0]['tracker_urls'], self.tracker_urls)
+
+    def test_csv_ignore_errors_column(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Errors'],
+            [[self.url, self.title, self.image_url, 'some errors']])
+
+        form = self._init_form(csv_file, None)
+        self.assertTrue(form.is_valid())
+        self.assertTrue('errors' not in form.cleaned_data['content_ads'][0])
+
     def test_display_url_over_max_length(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
