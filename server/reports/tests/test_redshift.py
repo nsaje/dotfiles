@@ -109,7 +109,7 @@ class RedshiftTest(TestCase):
 
         mock_cursor.mogrify.assert_any_call('(%s,%s)', ['a', 1])
         mock_cursor.mogrify.assert_any_call('(%s,%s)', ['b', 2])
-        mock_cursor.execute.assert_called_with(query, [])
+        mock_cursor.execute.assert_called_with(query, None)
 
     def test_delete_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
