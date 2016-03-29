@@ -386,7 +386,7 @@ def calculate_yesterday_account_spend(account):
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     filled_daily_ratio = None
     if daily_budget > 0:
-        filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
+        filled_daily_ratio = float(yesterday_cost or 0) / float(daily_budget)
 
     if filled_daily_ratio:
         daily_ratio_description = '{:.2f}% of daily budget'.format(abs(filled_daily_ratio) * 100)

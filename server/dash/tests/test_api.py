@@ -1658,6 +1658,48 @@ class AdGroupSourceSettingsWriterTest(TestCase):
 
         self.assertFalse(mock_send_mail.called)
 
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_set_system_user_valid(self, set_ad_group_source_settings, mock_send_mail):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None,
+                        system_user=constants.SystemUserType.CAMPAIGN_STOP)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertEqual(1, new_latest_settings.system_user)
+
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_set_system_user_not_valid(self, set_ad_group_source_settings, mock_send_mail):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None,
+                        10289340)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertEqual(None, new_latest_settings.system_user)
+
 
 class AdGroupSettingsOrderTest(TestCase):
 
