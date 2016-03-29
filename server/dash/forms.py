@@ -632,7 +632,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # For simplicity, consistency and backward compatibility this field name is reverted here
             if field == "impression_trackers":
                 field = "tracker_urls"
-            if n >= 3 and (field not in OPTIONAL_CSV_FIELDS or field not in IGNORED_CSV_FIELDS):
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
