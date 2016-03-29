@@ -627,6 +627,10 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # accept both variants
             if field == "tracker_url":
                 field = "tracker_urls"
+            # Tracker Urls column has been renamed to Impression Trackers
+            # For simplicity, consistency and backward compatibility this field name is reverted here
+            if field == "impression_trackers":
+                field = "tracker_urls"
             if n >= 3 and field not in OPTIONAL_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
