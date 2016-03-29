@@ -27,26 +27,25 @@ TEMP_EMAILS = [
 def switch_low_budget_campaigns_to_landing_mode():
     for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
         remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
-        max_daily_budget = sum(max_daily_budget_per_ags.itervalues())
-        if available_tomorrow < max_daily_budget:
+        max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+        if available_tomorrow < max_daily_budget_sum:
             with transaction.atomic():
                 _switch_campaign_to_landing_mode(campaign)
                 actions = _set_end_date_to_today(campaign)
             zwei_actions.send(actions)
             _send_campaign_stop_notification_email(campaign)
-        elif available_tomorrow < max_daily_budget * 2:
+        elif available_tomorrow < max_daily_budget_sum * 2:
             yesterday_spend = _get_yesterday_spend(campaign)
-            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
 
 
 def update_campaigns_in_landing():
-    actions = []
     for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+        actions = []
         with transaction.atomic():
             actions.extend(_set_new_daily_budgets(campaign))
             actions.extend(_set_end_date_to_today(campaign))
-
-    zwei_actions.send(actions)
+        zwei_actions.send(actions)
 
 
 def get_max_settable_daily_budget(ad_group_source):
@@ -175,7 +174,7 @@ def _get_ags_settings_dict(date, ad_group_sources):
 
 
 def _get_max_daily_budget_per_ags(date, campaign):
-    ad_groups = _get_ad_groups_active_on_date(date, campaign)
+    ad_groups = _get_ad_groups_running_on_date(date, campaign)
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups,
     ).select_related('source__source_type')
@@ -207,41 +206,45 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings
     return ags_max_daily_budget
 
 
-def _get_ag_settings_dict(date, campaign):
-    ad_group_settings_on_date = dash.models.AdGroupSettings.objects.filter(
-        ad_group__in=campaign.adgroup_set.all(),
-        created_dt__lt=date+datetime.timedelta(days=1),
-        created_dt__gte=date,
-    ).order_by('-created_dt')
+def _get_ad_groups_user_end_dates(ad_groups):
+    ag_settings = dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups,
+        landing_mode=False
+    ).group_current_settings().values('ad_group_id', 'end_date')
+    return {sett['ad_group_id']: sett['end_date'] for sett in ag_settings}
 
-    ret = defaultdict(list)
-    for ag_sett in ad_group_settings_on_date.iterator():
-        ret[ag_sett.ad_group_id].append(ag_sett)
+
+def _get_ag_ids_active_on_date(date, campaign):
+    ag_ids_active_on_date = set(
+        dash.models.AdGroupSettings.objects.filter(
+            ad_group__in=campaign.adgroup_set.all(),
+            created_dt__lt=date+datetime.timedelta(days=1),
+            created_dt__gte=date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+        ).order_by('-created_dt').values_list('ad_group_id', flat=True).iterator()
+    )
 
     latest_ad_group_settings_before_date = dash.models.AdGroupSettings.objects.filter(
         created_dt__lt=date,
-    ).group_current_settings()
-
+    ).group_current_settings().values('ad_group_id', 'state')
     for ag_sett in latest_ad_group_settings_before_date.iterator():
-        ret[ag_sett.ad_group_id].append(ag_sett)
+        if ag_sett['state'] == dash.constants.AdGroupSettingsState.ACTIVE:
+            ag_ids_active_on_date.add(ag_sett['ad_group_id'])
 
-    return ret
+    return ag_ids_active_on_date
 
 
-def _get_ad_groups_active_on_date(date, campaign):
-    ad_groups_settings = _get_ag_settings_dict(date, campaign)
-    active_ad_groups = set()
+def _get_ad_groups_running_on_date(date, campaign):
+    ad_group_end_dates = _get_ad_groups_user_end_dates(campaign.adgroup_set.all())
+    ag_ids_active_on_date = _get_ag_ids_active_on_date(date, campaign)
+
+    running_ad_groups = set()
     for ad_group in campaign.adgroup_set.all():
-        for sett in ad_groups_settings[ad_group.id]:
-            if (not sett.end_date or sett.end_date >= date) and\
-               sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
-                active_ad_groups.add(ad_group)
-                break
+        end_date = ad_group_end_dates.get(ad_group.id)
+        if ad_group.id in ag_ids_active_on_date and (end_date is None or end_date >= date):
+            running_ad_groups.add(ad_group)
 
-            if sett.created_dt.date() < date:
-                break
-
-    return active_ad_groups
+    return running_ad_groups
 
 
 def _send_campaign_stop_notification_email(campaign):

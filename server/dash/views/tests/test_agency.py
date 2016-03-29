@@ -845,6 +845,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
             follow=True
         )
 
+        self.maxDiff = None
         mock_is_waiting.assert_called_once(ad_group)
         self.assertEqual(json.loads(response.content), {
             u'data': {
@@ -876,6 +877,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'Adobe tracking parameter', u'value': u''},
                         {u'name': u'Auto-Pilot', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
+                        {u'name': u'Landing Mode', u'value': False},
                     ],
                     u'show_old_settings': False
                 }, {
@@ -904,6 +906,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
                         {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
+                        {u'name': u'Landing Mode', u'old_value': False, u'value': False},
                     ],
                     u'show_old_settings': True
                 }]
