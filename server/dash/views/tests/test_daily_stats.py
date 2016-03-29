@@ -427,10 +427,12 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             'date': start_date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
+            'account': 1,
         }, {
             'date': start_date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
+            'account': 1,
         }]
         mock_touchpointconversins_query.return_value = mock_stats2
 

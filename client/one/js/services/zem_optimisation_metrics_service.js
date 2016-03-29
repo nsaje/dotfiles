@@ -106,6 +106,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             avg_cost_per_second: true,
             avg_cost_per_pageview: true,
             avg_cost_per_non_bounced_visitor: true,
+            avg_cost_for_new_visitor: true,
             cpa: true,
         };
         for (var i = 0; i < 5; i++) {
