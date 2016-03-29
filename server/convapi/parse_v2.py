@@ -721,12 +721,13 @@ class OmnitureReport(Report):
                     header_row_idx = row_idx
 
                     # find 'tracking code' header
-                    tracking_code_col = None
-                    if 'tracking code' in line_lower:
-                        tracking_code_col = line[line_lower.index('tracking code')]
+                    tracking_code_col = next((x for x in line_lower if 'tracking code' in x), None)
+                    if tracking_code_col:
+                        tracking_code_col = line[line_lower.index(tracking_code_col)]
                     else:
-                        # try to find it - use the first non-empty header
+                        # try to find it - use the first non-empty header, tracking codes should be in 1 line to the right
                         tracking_code_col = next(x for x in line if x)
+                        columns_dict[tracking_code_col] += 1
 
                 continue
 
@@ -742,10 +743,8 @@ class OmnitureReport(Report):
                 total_row = omniture_row_dict
                 break
 
-            # totals row in case it is second in a table should includes special characters that don't belong to
-            # tracking codes, such as space (based on quicken reports). In case they do not include spaces
-            # we can't be sure this is not a tracking code.
-            if body_found and row_idx == header_row_idx + 1 and ' ' in omniture_row_dict.get(tracking_code_col, ''):
+            # totals row in case it is second in a table should have no data under "tracking codes" - empty.
+            if body_found and row_idx == header_row_idx + 1 and not omniture_row_dict.get(tracking_code_col, ''):
                 total_row = omniture_row_dict
                 continue
 
