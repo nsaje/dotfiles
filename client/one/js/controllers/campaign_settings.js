@@ -46,8 +46,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                 $scope.errors = {};
                 $scope.settings = data.settings;
 
-                $scope.campaignGoals.length = 0;
                 if (data.goals) {
+                    $scope.campaignGoals.length = 0;
                     Array.prototype.push.apply($scope.campaignGoals, data.goals);
                 }
 
