@@ -613,6 +613,9 @@ class GAReportFromCSV(GAReport):
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(index_lines))
 
 
+OMNITURE_REQUIRED_HEADERS = {'visits', 'page views', 'unique visitors', 'total seconds spent'}
+
+
 class OmnitureReport(Report):
 
     def __init__(self, xlsx_report_blob):
@@ -666,6 +669,26 @@ class OmnitureReport(Report):
                     sessions_total, sessions_sum)
             )
 
+    def _parse_row(self, sheet, row_idx):
+        line = []
+        for col_idx in range(0, sheet.ncols):
+            raw_val = sheet.cell_value(row_idx, col_idx)
+            value = (unicode(raw_val).encode('utf-8') or '').strip()
+            line.append(value)
+        return line
+
+    def _process_row(self, omniture_row_dict, tracking_code_col):
+        keyword = omniture_row_dict.get(tracking_code_col, '')
+        content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
+        report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param, publisher_param)
+        self.add_imported_visits(report_entry.visits or 0)
+
+        existing_entry = self.entries.get(report_entry.key())
+        if existing_entry is None:
+            self.entries[report_entry.key()] = report_entry
+        else:
+            existing_entry.merge_with(report_entry)
+
     @statsd_timer('convapi.parse_v2', 'omni_parse')
     @influx.timer('convapi.parse_v2', source='omni_parse')
     def parse(self):
@@ -677,48 +700,56 @@ class OmnitureReport(Report):
 
         body_found = False
 
-        all_columns = []
-        enum_columns = []
         sheet = workbook.sheet_by_index(0)
-        for row_idx in range(0, sheet.nrows):
-            line = []
-            for col_idx in range(0, sheet.ncols):
-                raw_val = sheet.cell_value(row_idx, col_idx)
-                value = (unicode(raw_val).encode('utf-8') or '').strip()
-                line.append(value)
 
+        total_row = None
+        header_row_idx = None
+
+        for row_idx in range(0, sheet.nrows):
+            line = self._parse_row(sheet, row_idx)
+            line_lower = [x.lower() for x in line]
+
+            # search for table header
             if not body_found:
                 if len(line) > 0 and ':' in line[0]:
-                    continue  # header
-                if 'tracking code' not in ' '.join(line[1:]).lower():
-                    continue
-                else:
-                    body_found = True
-                    all_columns = line
-                    enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
-                    continue
+                    continue  # header, key: val
 
-            # valid data is data with known column name(many columns are empty
-            # in sample reports)
-            keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
-            values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
-            omniture_row_dict = dict(zip(keys, values))
-            if 'Total' in line:  # footer with summary
-                self._check_session_counts(omniture_row_dict)
+                # does line include all table header column names
+                if set(line_lower) & OMNITURE_REQUIRED_HEADERS == OMNITURE_REQUIRED_HEADERS:
+                    body_found = True
+                    columns_dict = {el: idx for idx, el in enumerate(line) if el}
+                    header_row_idx = row_idx
+
+                    # find 'tracking code' header
+                    tracking_code_col = None
+                    if 'tracking code' in line_lower:
+                        tracking_code_col = line[line_lower.index('tracking code')]
+                    else:
+                        # try to find it - use the first non-empty header
+                        tracking_code_col = next(x for x in line if x)
+
+                continue
+
+            omniture_row_dict = {k: line[i] for k, i in columns_dict.items()}
+
+            # search for table totals, it can either be directly under table header or the last row in body
+            if body_found and 'total' in line_lower:
+
+                # if we find totals in the end we need to process the reserved second row after header as normal row
+                if total_row:
+                    self._process_row(total_row, tracking_code_col)
+
+                total_row = omniture_row_dict
                 break
 
-            tracking_code_col = 'Tracking Code'
-            for key in keys:
-                if 'tracking code' in key.lower():
-                    tracking_code_col = key
+            # totals row in case it is second in a table should includes special characters that don't belong to
+            # tracking codes, such as space (based on quicken reports). In case they do not include spaces
+            # we can't be sure this is not a tracking code.
+            if body_found and row_idx == header_row_idx + 1 and ' ' in omniture_row_dict.get(tracking_code_col, ''):
+                total_row = omniture_row_dict
+                continue
 
-            keyword = omniture_row_dict.get(tracking_code_col, '')
-            content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
-            report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param, publisher_param)
-            self.add_imported_visits(report_entry.visits or 0)
+            self._process_row(omniture_row_dict, tracking_code_col)
 
-            existing_entry = self.entries.get(report_entry.key())
-            if existing_entry is None:
-                self.entries[report_entry.key()] = report_entry
-            else:
-                existing_entry.merge_with(report_entry)
+        if total_row:
+            self._check_session_counts(total_row)
