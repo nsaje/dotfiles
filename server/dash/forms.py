@@ -657,8 +657,9 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
             count_rows += 1
 
+            # Remove ignored fields from row dict
             for ignored_field in IGNORED_CSV_FIELDS:
-                del row[ignored_field] if ignored_field in row else None
+                row.pop(ignored_field, None)
 
             data.append(row)
 
