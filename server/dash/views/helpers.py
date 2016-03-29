@@ -24,6 +24,8 @@ import automation.autopilot
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
+SPECIAL_COLUMNS = ['performance', 'styles']
+
 
 def parse_datetime(dt_string):
     if dt_string is None or not len(dt_string):
@@ -832,6 +834,10 @@ def copy_stats_to_row(stat, row):
 
     for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
         row[key] = stat.get(key)
+
+    for key in SPECIAL_COLUMNS:
+        if key in stat:
+            row[key] = stat[key]
 
 
 def _is_end_date_past(ad_group_settings):

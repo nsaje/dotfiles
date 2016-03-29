@@ -909,6 +909,9 @@ img.zem-icon {
 
 .infobox-footer {
     height: 70px;
+    overflow-y: auto;
+    // due to scroller
+    margin-right: -5px;
 }
 
 .infobox-header-row {
@@ -1439,6 +1442,41 @@ img.zem-icon {
     opacity: 0.2;
     filter: alpha(opacity=20); /* For IE8 and earlier */
 }
+
+.table-icon div {
+    img.zem-icon {
+        width: 12px;
+        height: 12px;
+        margin-bottom: 4px;
+    }
+}
+
+.zem-table-row {
+    &.happy {
+        td:first-child {
+            border-left: 5px solid #73BF44;
+        }
+    }
+    &.sad {
+        td:first-child {
+            border-left: 5px solid #CB2027;
+        }
+    }
+    &.average {
+        td:first-child {
+            border-left: 5px solid #fff;
+        }
+    }
+
+    &.superperforming .zem-table-column-value {
+        color: #73BF44;
+    }
+
+    &.underperforming .zem-table-column-value {
+        color: #CB2027;
+    }
+}
+
 
 
 .help-popover,
@@ -2605,6 +2643,15 @@ img.zem-icon {
     display: inline-block;
     margin-bottom: -2px;
     background-image: url('img/data_status_icon.svg');
+}
+
+.performance-icon {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    background-size: 12px;
+    margin-bottom: -2px;
+    background-image: url('img/neutral_face.svg');
 }
 
 .adgroup-status-icon-placeholder() {

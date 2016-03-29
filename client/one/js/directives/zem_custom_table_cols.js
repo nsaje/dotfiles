@@ -1,4 +1,4 @@
-/*global $,oneApp*/
+/*global $,oneApp,constants*/
 'use strict';
 
 oneApp.directive('zemCustomTableCols', ['config', function (config) {
@@ -24,6 +24,7 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
         controller: ['$scope', '$element', '$attrs', 'zemCustomTableColsService', function ($scope, $element, $attrs, zemCustomTableColsService) {
             $scope.categoryColumns = [];
             $scope.hasCategories = false;
+            $scope.constants = constants;
 
             zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
 

@@ -2,11 +2,11 @@
     <div class="infobox-setting-label">{{label}}</div>
     
     <div class="infobox-setting-value-container {{valueClass}}">
-        <div ng-if="isSet(icon) && icon === 'happy'" style="" class="infobox-setting-icon">
+        <div ng-if="isSet(icon) && icon === constants.emoticon.HAPPY" style="" class="infobox-setting-icon">
             <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
         </div>
 
-        <div ng-if="isSet(icon) && icon === 'sad'" style="" class="infobox-setting-icon">
+        <div ng-if="isSet(icon) && icon === constants.emoticon.SAD" style="" class="infobox-setting-icon">
             <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/sad_face.svg"></img>
         </div>
         
