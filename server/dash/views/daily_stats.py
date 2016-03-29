@@ -406,7 +406,6 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         metrics = request.GET.getlist('metrics')
-
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals)
 
