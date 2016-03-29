@@ -262,7 +262,7 @@ class CampaignGoalsTestCase(TestCase):
                                                            start_date, end_date, stats=stats)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
-            [(10, Decimal('60.00000')), (10, Decimal('10.00000')), (None, None),
+            [(10, Decimal('60.00000')), (None, Decimal('10.00000')), (None, None),
              (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)],
         )
 
@@ -280,6 +280,7 @@ class CampaignGoalsTestCase(TestCase):
             'total_pageviews': 10,
             'total_seconds': 10,
             'cpc': 0.1,
+            'media_cost': 5,
             'percent_new_users': 1.2,
             'conversions': {
                 'ga__123': 20.00,
@@ -301,8 +302,8 @@ class CampaignGoalsTestCase(TestCase):
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
-                'icon': constants.Emoticon.SAD,
-                'value': u'$20.00 CPA - test conversion goal',
+                'icon': constants.Emoticon.HAPPY,
+                'value': u'$4.00 CPA - test conversion goal',
                 'description': 'planned $10.00'
             }, {
                 'section_start': False,

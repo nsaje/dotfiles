@@ -70,6 +70,8 @@ STATUS_TO_EMOTICON_MAP = {
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
+DEFAULT_COST_COLUMN = 'media_cost'
+
 
 def get_performance_value(goal_type, metric_value, target_value):
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
@@ -263,7 +265,7 @@ def create_conversion_goal(request, form, campaign, value=None):
 
 
 def extract_cost(data):
-    return data.get('media_cost', 0)
+    return data.get(DEFAULT_COST_COLUMN, 0)
 
 
 def create_goals(campaign, data):
@@ -431,7 +433,8 @@ def get_goals_performance(user, campaign, start_date, end_date,
         planned_value = last_goal_value and last_goal_value.value or None
         if campaign_goal.type == constants.CampaignGoalKPI.CPA:
             index = conversion_goals_tuple.index(campaign_goal.conversion_goal) + 1
-            metric_value = stats.get('conversion_goal_' + str(index))
+            cost = extract_cost(stats)
+            metric_value = (stats.get('conversion_goal_' + str(index), 0) / cost) if cost else None
         else:
             metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
         performance.append((
