@@ -687,7 +687,8 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # slow, we can instead save the file to a temporary
         # location on upload and then open it with 'rU'
         # (universal-newline mode).
-        lines = file_content.splitlines()
+        # Additionally remove empty lines if any.
+        lines = [line for line in file_content.splitlines() if line]
 
         encodings = ['utf-8', 'windows-1252']
         data = None
