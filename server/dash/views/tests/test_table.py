@@ -279,6 +279,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
+            'performance': None,
+            'styles': {},
         }
 
         expected_row_2 = {
@@ -703,6 +705,49 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
         self.assertEqual(stats[0]['styles'], {'cpc': 1})
         self.assertEqual(stats[1]['styles'], {'cpc': -1})
+
+    def test_primary_goals_permissions(self, mock_query, mock_tpc_query):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_query.side_effect = [[copy(self.mock_stats1)], copy(self.mock_stats2)]
+
+        user = User.objects.create_user('some@email.si', 'secret2')
+        ad_group.campaign.users.add(user)
+        self.client.login(username=user.email, password='secret2')
+        user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="new_content_ads_tab")
+        )
+
+        params = {
+            'page': 1,
+            'order': '-cost',
+            'size': 2,
+            'start_date': self.mock_date.isoformat(),
+            'end_date': self.mock_date.isoformat(),
+        }
+        response = self.client.get(
+            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            params,
+            follow=True
+        )
+        data = json.loads(response.content)
+
+        self.assertFalse('performance' in data['data']['rows'][0])
+
+        mock_query.side_effect = [[copy(self.mock_stats1)], copy(self.mock_stats2)]
+        user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="campaign_goal_optimization")
+        )
+        user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="can_see_campaign_goals")
+        )
+
+        response = self.client.get(
+            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            params,
+            follow=True
+        )
+        data = json.loads(response.content)
+        self.assertEqual(data['data']['rows'][0]['performance'], None)
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
@@ -1398,7 +1443,8 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active',
+                             u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
     """
 
     def test_get_outbrain_blacklisted_over_quota(self, mock_query, mock_touchpointconversins_query):

@@ -1222,6 +1222,7 @@ class AdGroupAdsPlusTable(object):
             conversion_goals=conversion_goals,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
+
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
