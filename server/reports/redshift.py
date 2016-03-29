@@ -191,7 +191,7 @@ def load_publishers(s3_key):
 
 def _get_rows_string(cols, rows):
     template_string = '(' + ','.join(itertools.repeat('%s', len(cols))) + ')'
-    return (template_string + ',') * len(rows) + template_string
+    return (template_string + ',') * (len(rows) - 1) + template_string
 
 
 def _get_rows_params(cols, rows):
