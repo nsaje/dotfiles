@@ -845,7 +845,6 @@ class AdGroupAgencyTest(AgencyViewTestCase):
             follow=True
         )
 
-        self.maxDiff = None
         mock_is_waiting.assert_called_once(ad_group)
         self.assertEqual(json.loads(response.content), {
             u'data': {
