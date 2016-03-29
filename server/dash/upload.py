@@ -312,7 +312,7 @@ def _clean_image(image_url, crop_areas):
         if error_status == 'image-size-error':
             message = 'Image too big (max height is 3000px, max width is 4000px)'
         elif error_status == 'image-small-size-error':
-            message = 'Image too small (min height is 300px, min width is 400px)'
+            message = 'Image too small (min height is 2px, min width is 2px)'
         elif error_status == 'download-error':
             message = 'Image could not be downloaded'
         else:
