@@ -4,14 +4,21 @@ import datetime
 import logging
 import decimal
 
+from dateutil import rrule
 from django.db import transaction
 
+import actionlog.api
 from actionlog import zwei_actions
+
 from automation import autopilot_budgets, autopilot_plus
+
 import dash.constants
 import dash.models
+
+import reports.api_contentads
 import reports.budget_helpers
 import reports.models
+
 from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
@@ -114,6 +121,18 @@ def _set_ad_group_end_date(ad_group, end_date):
     )
 
 
+def _stop_ad_group(ad_group):
+    current_settings = ad_group.get_current_settings()
+    if current_settings.state == dash.constants.AdGroupSettingsState.ACTIVE:
+        return []
+
+    new_settings = current_settings.copy_settings()
+    new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+    new_settings.save(None)
+
+    return actionlog.api.init_set_ad_group_state(ad_group, new_settings.state, request=None, send=False)
+
+
 def _set_end_date_to_today(campaign):
     actions = []
     for ad_group in campaign.adgroup_set.all().filter_active():
@@ -126,13 +145,18 @@ def _set_new_daily_budgets(campaign):
 
     per_ad_group_autopilot_data = autopilot_plus.prefetch_autopilot_data(ad_groups)
     remaining_today, _, _ = _get_minimum_remaining_budget(campaign)
-    ad_group_daily_budget_cap = remaining_today // len(ad_groups)
+    ad_group_daily_cap_ratios = _get_ad_group_ratios(ad_groups)
 
     actions = []
     for ad_group in ad_groups:
+        ad_group_daily_cap = int(remaining_today * ad_group_daily_cap_ratios.get(ad_group.id, 0))
+        if ad_group_daily_cap == 0:
+            actions.extend(_stop_ad_group(ad_group))
+            continue
+
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
             ad_group,
-            ad_group_daily_budget_cap,
+            ad_group_daily_cap,
             per_ad_group_autopilot_data[ad_group],
             goal=None  # use default goal to maximize spend
         )
@@ -141,6 +165,44 @@ def _set_new_daily_budgets(campaign):
             budget_changes=budget_changes, system_user=dash.constants.SystemUserType.CAMPAIGN_STOP))
 
     return actions
+
+
+def _get_past_data(ad_groups, start_date, end_date):
+    data = reports.api_contentads.query(
+        start_date=start_date,
+        end_date=end_date,
+        breakdown=['date', 'ad_group'],
+        ad_group=ad_groups
+    )
+
+    by_breakdown = {}
+    for item in data:
+        by_breakdown[(item['ad_group'], item['date'])] = item['cost'] + item['data_cost']
+
+    return by_breakdown
+
+
+def _get_ad_group_ratios(ad_groups):
+    before_7_days = dates_helper.local_today() - datetime.timedelta(days=7)
+    yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
+    data = _get_past_data(ad_groups, start_date=before_7_days, end_date=yesterday)
+
+    spend_per_ad_group = defaultdict(list)
+    for date in rrule.rrule(rrule.DAILY, dtstart=before_7_days, until=yesterday):
+        active_ad_groups = _get_ad_groups_active_on_date(date, ad_groups)
+        for ad_group in active_ad_groups:
+            spend_per_ad_group[ad_group.id].append(data[ad_group.id, date])
+
+    avg_spends = {}
+    for ad_group_id, spends in spend_per_ad_group.iteritems():
+        avg_spends[ad_group_id] = sum(spends) / len(spends)
+
+    total = sum(avg_spends.itervalues())
+    normalized = {}
+    for ad_group_id, avg_spend in avg_spends.iteritems():
+        normalized[ad_group_id] = avg_spend / total
+
+    return normalized
 
 
 def _get_yesterday_spend(campaign):
@@ -175,7 +237,7 @@ def _get_ags_settings_dict(date, ad_group_sources):
 
 
 def _get_max_daily_budget_per_ags(date, campaign):
-    ad_groups = _get_ad_groups_active_on_date(date, campaign)
+    ad_groups = _get_ad_groups_active_on_date(date, campaign.adgroup_set.all())
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups,
     ).select_related('source__source_type')
@@ -207,9 +269,9 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings
     return ags_max_daily_budget
 
 
-def _get_ag_settings_dict(date, campaign):
+def _get_ag_settings_dict(date, ad_groups):
     ad_group_settings_on_date = dash.models.AdGroupSettings.objects.filter(
-        ad_group__in=campaign.adgroup_set.all(),
+        ad_group__in=ad_groups,
         created_dt__lt=date+datetime.timedelta(days=1),
         created_dt__gte=date,
     ).order_by('-created_dt')
@@ -228,10 +290,10 @@ def _get_ag_settings_dict(date, campaign):
     return ret
 
 
-def _get_ad_groups_active_on_date(date, campaign):
-    ad_groups_settings = _get_ag_settings_dict(date, campaign)
+def _get_ad_groups_active_on_date(date, ad_groups):
+    ad_groups_settings = _get_ag_settings_dict(date, ad_groups)
     active_ad_groups = set()
-    for ad_group in campaign.adgroup_set.all():
+    for ad_group in ad_groups:
         for sett in ad_groups_settings[ad_group.id]:
             if (not sett.end_date or sett.end_date >= date) and\
                sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
