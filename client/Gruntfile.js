@@ -21,7 +21,7 @@ module.exports = function (grunt) {
                 options: {
                     base: 'one/',
                 },
-                src: ['one/partials/**/*.html'],
+                src: ['one/**/*.html'],
                 dest: 'dist/one/zemanta-one.templates.js'
             }
         },
@@ -202,7 +202,7 @@ module.exports = function (grunt) {
             },
             one_templates: {
                 files: [
-                    'one/partials/**/*.html',
+                    'one/**/*.html',
                     'one/img/**/*',
                     'one/assets/**/*',
                 ],
