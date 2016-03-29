@@ -12,13 +12,7 @@ oneApp.directive('zemGridBody', ['config', function (config) {
             options: '=',
             rows: '=',
         },
-        template: '' +
-            '<div class="zem-grid-body">' +
-                '<zem-grid-row ng-repeat="row in rows track by $index" ng-if="row.visible" ' +
-                    'row="row" ' +
-                    'options="ctrl.options" ' +
-                '></zem-grid-row>' +
-            '</div>',
+        templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
         controller: ['$scope', function ($scope) {
         }],
     };

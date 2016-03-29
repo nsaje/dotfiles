@@ -12,12 +12,7 @@ oneApp.directive('zemGridFooter', ['config', function (config) {
             options: '=',
             footer: '=',
         },
-        template: '' +
-            '<div class="zem-grid-footer">' +
-                '<div class="zem-grid-cell" ng-repeat="col in footer.data.stats">' +
-                    '<span class="col-title">{{ col }}</span>' +
-                '</div>' +
-            '</div>',
+        templateUrl: '/components/zem-grid/templates/zem_grid_footer.html',
         controller: ['$scope', function ($scope) {
         }],
     };
