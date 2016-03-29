@@ -32,9 +32,11 @@ class RedshiftTest(TestCase):
 
         redshift.insert_contentadstats(rows)
 
-        query = "INSERT INTO contentadstats (y,x) VALUES (%s,%s),(%s,%s)"
+        query = "INSERT INTO contentadstats (y,x) VALUES ('a',1),('b',2)"
 
-        mock_cursor().execute.assert_called_with(query, rows)
+        mock_cursor().mogrify.assert_any_call('(%s,%s)', ['a', 1])
+        mock_cursor().mogrify.assert_any_call('(%s,%s)', ['b', 2])
+        mock_cursor().execute.assert_called_with(query, [])
 
     @override_settings(AWS_ACCESS_KEY_ID='access_key')
     @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
@@ -103,9 +105,11 @@ class RedshiftTest(TestCase):
 
         redshift.insert_touchpoint_conversions(rows)
 
-        query = "INSERT INTO touchpointconversions (y,x) VALUES (%s,%s),(%s,%s)"
+        query = "INSERT INTO touchpointconversions (y,x) VALUES ('a',1),('b',2)"
 
-        mock_cursor.execute.assert_called_with(query, rows)
+        mock_cursor.mogrify.assert_any_call('(%s,%s)', ['a', 1])
+        mock_cursor.mogrify.assert_any_call('(%s,%s)', ['b', 2])
+        mock_cursor.execute.assert_called_with(query, [])
 
     def test_delete_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
