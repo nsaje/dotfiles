@@ -1110,6 +1110,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'state' in resource:
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
+            enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group_settings)
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group,
@@ -1118,6 +1119,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
                 allowed_sources,
+                enabling_autopilot_sources_allowed
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text
         })
