@@ -104,11 +104,12 @@ def _get_optimistic_autopilot_budget_constraints(active_sources):
         current_budget = source_settings.daily_budget_cc
         source = source_settings.ad_group_source
         if not current_budget:
-            current_budget = autopilot_settings.MIN_SOURCE_BUDGET
+            current_budget = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
         max_budgets[source] = Decimal((current_budget * autopilot_settings.MAX_BUDGET_GAIN).
                                       to_integral_exact(rounding=ROUND_CEILING))
         min_budgets[source] = max(Decimal((current_budget * autopilot_settings.MAX_BUDGET_LOSS).
-                                  to_integral_exact(rounding=ROUND_CEILING)), autopilot_settings.MIN_SOURCE_BUDGET,
+                                  to_integral_exact(rounding=ROUND_CEILING)),
+                                  autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET,
                                   source.source.source_type.min_daily_budget)
         old_budgets[source] = current_budget
     return max_budgets, min_budgets, old_budgets
@@ -126,7 +127,7 @@ def _get_minimum_autopilot_budget_constraints(active_sources):
 
 def predict_outcome_success(source, data, goal, min_value_of_goal, max_value_of_goal, new_budget=None):
     spend_perc = data.get('spend_perc') if not new_budget else\
-        data.get('yesterdays_spend_cc') / max(new_budget, autopilot_settings.MIN_SOURCE_BUDGET)
+        data.get('yesterdays_spend_cc') / max(new_budget, autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET)
     if not goal or goal.type == CampaignGoalKPI.CPA:
         return spend_perc > random()
 

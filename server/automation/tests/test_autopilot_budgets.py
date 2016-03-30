@@ -62,7 +62,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
         mock_min_constr.assert_called_with(sources)
 
     @patch('automation.autopilot_settings.MAX_BUDGET_GAIN', Decimal('10'))
-    @patch('automation.autopilot_settings.MIN_SOURCE_BUDGET', Decimal('3'))
+    @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('3'))
     def test_get_minimum_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
         max_budgets, min_budgets = autopilot_budgets._get_minimum_autopilot_budget_constraints(sources)
@@ -76,7 +76,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
         })
 
     @patch('automation.autopilot_settings.MAX_BUDGET_GAIN', Decimal('10'))
-    @patch('automation.autopilot_settings.MIN_SOURCE_BUDGET', Decimal('3'))
+    @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('3'))
     @patch('automation.autopilot_settings.MAX_BUDGET_LOSS', Decimal('0.5'))
     def test_get_optimistic_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
