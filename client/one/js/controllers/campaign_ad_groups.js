@@ -146,8 +146,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             help: 'Goal performance indicator',
             order: true,
             initialOrder: 'asc',
-            internal: $scope.isPermissionInternal('zemauth.campaign_goal_optimization'),
-            shown: $scope.hasPermission('zemauth.campaign_goal_optimization')
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance')
         },
         {
             name: 'Status',

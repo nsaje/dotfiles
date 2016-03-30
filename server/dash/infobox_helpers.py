@@ -31,6 +31,7 @@ class OverviewSetting(object):
                  tooltip=None,
                  setting_type='setting',
                  section_start=None,
+                 internal=False,
                  warning=None):
         self.name = name
         self.value = value
@@ -39,6 +40,7 @@ class OverviewSetting(object):
         self.details_hide_label = None
         self.details_content = None
         self.icon = None
+        self.internal = internal
         self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
@@ -627,6 +629,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
 
     settings = []
     first = True
+    permissions = user.get_all_permissions_with_access_levels()
     for status, metric_value, planned_value, campaign_goal in performance:
         goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
         if campaign_goal.conversion_goal:
@@ -639,6 +642,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
+            internal=first and 'zemauth.campaign_goal_performance' in permissions,
         )
         if campaign_goal.primary:
             entry.value_class = 'primary'
