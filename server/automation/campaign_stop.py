@@ -28,14 +28,14 @@ def switch_low_budget_campaigns_to_landing_mode():
     for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
         remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
         max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+        yesterday_spend = _get_yesterday_spend(campaign)
         if available_tomorrow < max_daily_budget_sum:
             with transaction.atomic():
                 _switch_campaign_to_landing_mode(campaign)
                 actions = _set_end_date_to_today(campaign)
             zwei_actions.send(actions)
-            _send_campaign_stop_notification_email(campaign)
+            _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
         elif available_tomorrow < max_daily_budget_sum * 2:
-            yesterday_spend = _get_yesterday_spend(campaign)
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
 
 
@@ -254,11 +254,13 @@ def _get_ad_groups_running_on_date(date, campaign):
     return running_ad_groups
 
 
-def _send_campaign_stop_notification_email(campaign):
+def _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
     subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is switching to landing mode'
     body = u'''Hi, campaign manager,
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
+
+The available budget remaining today is ${remaining_today:.2f}, current daily cap is ${max_daily_budget:.2f} and yesterday's spend was ${yesterday_spend:.2f}.
 
 Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode.
 
@@ -275,6 +277,9 @@ Zemanta'''  # noqa
         campaign_name=campaign.name,
         account_name=campaign.account.name,
         campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget-plus'.format(campaign.pk)),
+        remaining_today=remaining_today,
+        max_daily_budget=max_daily_budget,
+        yesterday_spend=yesterday_spend,
     )
 
     email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
