@@ -88,7 +88,7 @@ FORMAT_EMPTY_TO_0 = [
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
                    conversion_goals, include_settings=False, include_budgets=False, include_flat_fees=False,
-                   include_projections=False, **constraints):
+                   include_projections=False, include_model_ids=True, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -116,15 +116,20 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         stat['start_date'] = start_date
         stat['end_date'] = end_date
 
+        model = None
         if 'content_ad' in dimensions:
-            stat = _populate_content_ad_stat(stat, prefetched_data[stat['content_ad']])
+            model = prefetched_data[stat['content_ad']]
+            stat = _populate_content_ad_stat(stat, model)
         elif 'ad_group' in dimensions:
-            stat = _populate_ad_group_stat(stat, prefetched_data[stat['ad_group']], statuses=statuses)
+            model = prefetched_data[stat['ad_group']]
+            stat = _populate_ad_group_stat(stat, model, statuses=statuses)
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, prefetched_data[stat['campaign']],
+            model = prefetched_data[stat['campaign']]
+            stat = _populate_campaign_stat(stat, model,
                                            settings=settings, statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
-            stat = _populate_account_stat(stat, prefetched_data, statuses,
+            model = prefetched_data[stat['account']]
+            stat = _populate_account_stat(stat, model, statuses,
                                           settings=settings, projections=projections,
                                           budgets=budgets, flat_fees=flat_fees)
         else:
@@ -132,6 +137,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
                 source=stat['source'])
             stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
+
+        if include_model_ids and model:
+            _populate_model_ids(stat, model)
 
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
@@ -315,7 +323,7 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
     return stat
 
 
-def _populate_account_stat(stat, prefetched_data, statuses, settings=None, projections=None,
+def _populate_account_stat(stat, account, statuses, settings=None, projections=None,
                            budgets=None, flat_fees=None):
     if settings and stat['account'] in settings:
         setting = settings[stat['account']]
@@ -337,8 +345,23 @@ def _populate_account_stat(stat, prefetched_data, statuses, settings=None, proje
     stat['status'] = statuses[stat['account']]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
-    stat['account'] = prefetched_data[stat['account']].name
+    stat['account'] = account.name
     return stat
+
+
+def _populate_model_ids(stat, model):
+    # Add model and all it's parent ids to stat
+    if isinstance(model, models.ContentAd):
+        stat['content_ad_id'] = model.id
+        model = model.ad_group
+    if isinstance(model, models.AdGroup):
+        stat['ad_group_id'] = model.id
+        model = model.campaign
+    if isinstance(model, models.Campaign):
+        stat['campaign_id'] = model.id
+        model = model.account
+    if isinstance(model, models.Account):
+        stat['account_id'] = model.id
 
 
 def _get_sources_state(ad_group_sources):
