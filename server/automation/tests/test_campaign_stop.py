@@ -324,17 +324,20 @@ class GetMaximumDailyBudgetTestCase(TestCase):
             6: Decimal('80'),
         }, campaign_stop._get_max_daily_budget_per_ags(date, c))
 
-    def test_get_active_ad_groups_on_date(self):
+    def test_get_running_ad_groups_on_date(self):
         c1 = dash.models.Campaign.objects.get(id=1)  # ad group started on date
         c2 = dash.models.Campaign.objects.get(id=2)  # ad group stopped date before
         c3 = dash.models.Campaign.objects.get(id=3)  # active ad group from day before, stopped mid-day
         c4 = dash.models.Campaign.objects.get(id=4)  # active ad group but end date past
+        c5 = dash.models.Campaign.objects.get(id=5)  # switched to landing mode one day before (end dt on midnight)
 
         date = datetime.date(2016, 3, 1)
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c1), set(c1.adgroup_set.all().exclude(id=3)))
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c2), set())
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c3), set(c3.adgroup_set.all()))
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c4), set())
+        self.assertEqual(campaign_stop._get_ad_groups_running_on_date(date, c1),
+                         set(c1.adgroup_set.all().exclude(id=3)))
+        self.assertEqual(campaign_stop._get_ad_groups_running_on_date(date, c2), set())
+        self.assertEqual(campaign_stop._get_ad_groups_running_on_date(date, c3), set(c3.adgroup_set.all()))
+        self.assertEqual(campaign_stop._get_ad_groups_running_on_date(date, c4), set())
+        self.assertEqual(campaign_stop._get_ad_groups_running_on_date(date, c5), set(c5.adgroup_set.all()))
 
     def test_get_source_max_daily_budget(self):
         ags_settings = dash.models.AdGroupSourceSettings.objects.all().order_by('-created_dt')
@@ -372,6 +375,12 @@ class SwitchCampaignToLandingModeTestCase(TestCase):
 
         new_settings = campaign.get_current_settings()
         self.assertTrue(new_settings.landing_mode)
+
+        for ad_group in campaign.adgroup_set.all():
+            if ad_group.id in campaign.adgroup_set.all().filter_active().values_list('id', flat=True):
+                self.assertTrue(ad_group.get_current_settings().landing_mode)
+            else:
+                self.assertFalse(ad_group.get_current_settings().landing_mode)
 
 
 class SetAdGroupEndDateTestCase(TestCase):

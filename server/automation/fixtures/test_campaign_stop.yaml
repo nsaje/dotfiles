@@ -70,6 +70,15 @@
   model: dash.campaign
   pk: 5
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 6'
+  model: dash.campaign
+  pk: 6
+
 # Campaign Settings
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -121,6 +130,28 @@
   model: dash.campaignsettings
   pk: 5
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 6'
+    campaign_manager: 1
+    campaign: 6
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 6
+
+- fields:
+    created_dt: '2016-02-29T12:00:00'
+    created_by: null
+    system_user: 1
+    name: 'Campaign Settings 7'
+    campaign_manager: 1
+    campaign: 6
+    automatic_campaign_stop: True
+    landing_mode: True
+  model: dash.campaignsettings
+  pk: 7
+
 # Ad Groups
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -167,7 +198,6 @@
   model: dash.adgroup
   pk: 5
 
-
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
@@ -177,6 +207,14 @@
   model: dash.adgroup
   pk: 6
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 6
+    name: 'Test AdGroup 7'
+  model: dash.adgroup
+  pk: 7
 
 # Ad Group Settings
 - fields:
@@ -248,7 +286,7 @@
   pk: 8
 
 - fields:
-    ad_group_id: 6
+    ad_group_id: 7
     created_dt: '2016-02-28T09:58:21'
     created_by: 1
     state: 1
@@ -257,13 +295,33 @@
   pk: 9
 
 - fields:
-    ad_group_id: 6
+    ad_group_id: 7
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 1
     end_date: '2016-02-29'
   model: dash.adgroupsettings
   pk: 10
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2014-06-04T09:57:21'
+    created_by: 1
+    state: 1
+    end_date: '2016-12-31'
+  model: dash.adgroupsettings
+  pk: 10
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2016-02-29T12:00:00'
+    created_by: null
+    system_user: 1
+    state: 1
+    end_date: '2016-12-31'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 11
 
 # Source Types
 -   fields:
