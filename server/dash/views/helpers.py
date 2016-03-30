@@ -15,6 +15,7 @@ import actionlog.models
 import actionlog.zwei_actions
 import automation.autopilot
 import automation.autopilot_budgets
+import automation.autopilot_settings
 from dash import models
 from dash import constants
 from dash import api
@@ -851,8 +852,7 @@ def _is_end_date_past(ad_group_settings):
     return end_utc_datetime < datetime.datetime.utcnow()
 
 
-def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings,
-                        user, allowed_sources, enabling_autopilot_sources_allowed):
+def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, user, allowed_sources):
     editable_fields = {}
 
     if not user.has_perm('zemauth.set_ad_group_source_settings'):
@@ -863,8 +863,7 @@ def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_s
         ad_group_source,
         ad_group_settings,
         ad_group_source_settings,
-        allowed_sources,
-        enabling_autopilot_sources_allowed
+        allowed_sources
     )
     editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings)
     editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings)
@@ -904,7 +903,7 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
 
 
 def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_settings,
-                                        ad_group_source_settings, allowed_sources, enabling_autopilot_sources_allowed):
+                                        ad_group_source_settings, allowed_sources):
     message = None
 
     if ad_group_source.source_id not in allowed_sources:
@@ -925,10 +924,6 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
             not (ad_group_source.source.can_modify_retargeting_automatically() or
                  ad_group_source.source.can_modify_retargeting_manually()):
         message = 'This source can not be enabled because it does not support retargeting.'
-
-    if message is None and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE and\
-            not enabling_autopilot_sources_allowed:
-        message = 'To enable this Media Source please add more funds to Auto-Pilot\'s total Daily Budget.'
 
     return {
         'enabled': message is None,
@@ -996,7 +991,8 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
 
 
 def enabling_autopilot_sources_allowed(ad_group_settings):
-    return ad_group_settings.autopilot_daily_budget >\
+    return ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+        ad_group_settings.autopilot_daily_budget - automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET >=\
         automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group)
 
 

@@ -18,7 +18,8 @@ oneApp.directive('zemStateSelector', function () {
             autopilotPausedValue: '=',
             autopilotValue: '=',
             autopilotInternal: '=',
-            autopilotShown: '='
+            autopilotShown: '=',
+            enablingAutopilotSourcesNotAllowed: '='
         },
         templateUrl: '/partials/zem_state_selector.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
@@ -29,6 +30,11 @@ oneApp.directive('zemStateSelector', function () {
 
                 // prevent autopilot enabling when media source is paused
                 if ($scope.autopilotEnabledValue && !$scope.active && autopilotState === $scope.autopilotEnabledValue) {
+                    return;
+                }
+
+                // prevent enabling source when enabling not allowed by the autopilot
+                if(!$scope.active && $scope.enablingAutopilotSourcesNotAllowed) {
                     return;
                 }
 

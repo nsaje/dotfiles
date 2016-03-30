@@ -1113,6 +1113,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                                             ad_group=ad_group)
 
         autopilot_changed_sources_text = ''
+        enabling_autopilot_sources_allowed = True
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
                 'state' in resource:
@@ -1126,10 +1127,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
-                allowed_sources,
-                enabling_autopilot_sources_allowed
+                allowed_sources
             ),
-            'autopilot_changed_sources': autopilot_changed_sources_text
+            'autopilot_changed_sources': autopilot_changed_sources_text,
+            'enabling_autopilot_sources_allowed': enabling_autopilot_sources_allowed
         })
 
 

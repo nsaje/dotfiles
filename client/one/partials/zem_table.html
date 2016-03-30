@@ -49,11 +49,11 @@
                                     <div ng-if="row[col.field] === constants.emoticon.SAD">
                                         <zem-icon img-class="zem-icon-sad" file="sad_face.svg"></zem-icon>
                                     </div>
-                                    
+
                                     <div ng-if="row[col.field] === constants.emoticon.NEUTRAL">
                                         <zem-icon img-class="zem-icon-neutral" file="neutral_face.svg"></zem-icon>
                                     </div>
-                                    
+
                                 </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
@@ -183,6 +183,7 @@
                                         autopilot-value="row.autopilot_state"
                                         autopilot-internal="col.autopilotInternal"
                                         autopilot-shown="col.autopilotShown"
+                                        enabling-autopilot-sources-not-allowed="col.enablingAutopilotSourcesNotAllowed()"
                                         disabled-message="col.getDisabledMessage(row)"
                                         archived="row[col.archivedField]">
                                     </zem-state-selector>
