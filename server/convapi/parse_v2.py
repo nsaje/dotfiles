@@ -207,6 +207,7 @@ class OmnitureReportRow(ReportRow):
         self.source_param = source_param
         self.publisher_param = publisher_param
         self.goals = self._parse_goals(omniture_row_dict)
+        self.needs_goals_validation = False  # check if parsed goals exist in database
 
     def _parse_goals(self, row_dict):
         goals = {}
@@ -222,6 +223,7 @@ class OmnitureReportRow(ReportRow):
         if not goals:
             for key, val in row_dict.items():
                 if key.lower() not in OMNITURE_KNOWN_HEADERS:
+                    self.needs_goals_validation = True
                     goal_name = key
                     goal_val = _report_atoi(val)
                     if goal_name in goals:
@@ -229,6 +231,10 @@ class OmnitureReportRow(ReportRow):
                     goals[goal_name] = goal_val
 
         return goals
+
+    def clean_goals(self, acceptable_goal_names):
+        if self.goals:
+            self.goals = {k: self.goals[k] for k in acceptable_goal_names if k in self.goals}
 
     def key(self):
         return (self.report_date, self.content_ad_id, self.source_param, self.publisher_param)
@@ -765,3 +771,25 @@ class OmnitureReport(Report):
 
         if total_row:
             self._check_session_counts(total_row)
+
+    def validate(self):
+        super(OmnitureReport, self).validate()
+
+        campaign_goal_map = {}
+
+        for entry in self.entries.values():
+            if entry.needs_goals_validation:
+                content_ad_id = entry.content_ad_id
+                try:
+                    content_ad = dash.models.ContentAd.objects.get(pk=content_ad_id)
+                except dash.models.ContentAd.DoesNotExist as e:
+                    continue
+                else:
+                    campaign_id = content_ad.ad_group.campaign_id
+                    if campaign_id not in campaign_goal_map:
+                        campaign = content_ad.ad_group.campaign
+                        campaign_goal_map[campaign_id] = campaign.conversiongoal_set.values_list('name', flat=True)
+
+                    acceptable_goal_names = campaign_goal_map[campaign_id]
+
+                    entry.clean_goals(acceptable_goal_names)
