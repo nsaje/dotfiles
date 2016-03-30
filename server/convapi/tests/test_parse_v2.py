@@ -956,6 +956,9 @@ Segment: All Visits (No Segment),,,,,,,,,,
         report.validate()
 
         self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
+        valid_entries = report.get_content_ad_stats()
+        entry = valid_entries[0]
+        self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
 
         self.assertEqual(10, entry.visits)
         self.assertEqual(40, entry.pageviews)
