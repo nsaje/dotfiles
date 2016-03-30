@@ -448,7 +448,7 @@ a:visited {
     }
 }
 
-.warning-paused {
+.tabset-label {
     margin-left: 8px;
     margin-top: 12px;
     display: inline-block;
@@ -456,16 +456,36 @@ a:visited {
     font-size: 12px;
 }
 
-.little-red-square {
+.warning-paused {
+    .tabset-label;
+    color: #bd0a00;
+}
+
+.info-landing-mode {
+    .tabset-label;
+    color: @default-color;
+}
+
+.tabset-icon {
     margin-left: 24px;
-    width: 9px;
-    height: 9px;
-    background-color: #bd0a00;
     display: inline-block;
     margin-top: 12px;
     border-radius: 2px;
 }
 
+.tabset-landing-mode-icon {
+    .tabset-icon;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+    width: 17px;
+    height: 10px;
+}
+
+.tabset-little-red-square {
+    .tabset-icon;
+    width: 9px;
+    height: 9px;
+    background-color: #bd0a00;
+}
 
 .input-group {
     .input-group-addon {
