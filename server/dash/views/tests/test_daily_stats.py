@@ -58,6 +58,7 @@ class BaseDailyStatsTest(TestCase):
         return params
 
     def _assert_response(self, response, selected_id, selected_name):
+        from pudb import set_trace; set_trace()
         self.assertEqual(json.loads(response.content), {
             'data': {
                 'chart_data': [{
@@ -86,6 +87,19 @@ class BaseDailyStatsTest(TestCase):
             },
             'success': True
         })
+        """
+            'campaign_goals': {
+                'reports': [],
+                'conversions': ListMatcher([
+                    {'id': 'Test Cg', 'name': 'test conversion goal 5'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
+                ]),
+            },
+
+        """
 
 
 class AccountsDailyStatsTest(BaseDailyStatsTest):

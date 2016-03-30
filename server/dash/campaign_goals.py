@@ -489,3 +489,11 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date):
             cg_series[conversion_name] = []
         cg_series[conversion_name].append((cg_value.created_dt, cg_value.value,))
     return cg_series
+
+def inverted_campaign_goal_map():
+    # map from particular fields to goals
+    ret = {}
+    for goal, fields in CAMPAIGN_GOAL_MAP.iteritems():
+        for field in fields:
+            ret[field] = constants.CampaignGoalKPI.get_text(goal)
+    return ret
