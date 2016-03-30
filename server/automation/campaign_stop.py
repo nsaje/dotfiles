@@ -260,7 +260,7 @@ def _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
 
-The available budget remaining today is ${remaining_today:.2f}, current daily cap is ${max_daily_budget:.2f} and yesterday's spend was ${yesterday_spend:.2f}.
+The available media budget remaining today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
 Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode.
 
@@ -291,7 +291,7 @@ def _send_depleting_budget_notification_email(campaign, remaining_today, max_dai
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
 
-The available budget remaining today is ${remaining_today:.2f}, current daily cap is ${max_daily_budget:.2f} and yesterday's spend was ${yesterday_spend:.2f}.
+The available media budget remaining today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
 Please add the budget and continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
