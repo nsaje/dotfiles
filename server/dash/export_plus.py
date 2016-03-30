@@ -765,8 +765,6 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
 
     granularity = get_granularity_from_type(request.GET.get('type'))
 
-    include_model_ids = request.GET.get('include_ids')
-
     return _get_report(
         request.user,
         helpers.get_stats_start_date(request.GET.get('start_date')),
@@ -778,7 +776,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         breakdown=get_breakdown_from_granularity(granularity),
         by_source=by_source,
         by_day=helpers.get_by_day(request.GET.get('by_day')),
-        include_model_ids=include_model_ids,
+        include_model_ids=request.GET.get('include_ids'),
         ad_group=ad_group,
         campaign=campaign,
         account=account
@@ -803,6 +801,9 @@ def _get_report(
 
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
+
+    if not user.has_perm('zemauth.can_include_ids_in_reports'):
+        include_model_ids = False
 
     if not filtered_sources:
         filtered_sources = []
