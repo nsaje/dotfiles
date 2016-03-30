@@ -250,7 +250,10 @@ class OmnitureReportRow(ReportRow):
 
         for goal in omniture_report_row.goals:
             self.goals.setdefault(goal, 0)
-            self.goals[goal] += omniture_report_row.goals[goal]
+            if self.goals[goal] is None:
+                self.goals[goal] = omniture_report_row.goals[goal]
+            elif omniture_report_row.goals[goal] is not None:
+                self.goals[goal] += omniture_report_row.goals[goal]
 
 
 class Report(object):
