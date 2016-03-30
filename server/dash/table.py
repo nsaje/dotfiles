@@ -88,7 +88,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
 
 
 def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
-    if not user.has_perm('zemauth.campaign_goal_optimization'):
+    if not user.has_perm('zemauth.campaign_goal_performance'):
         return
     campaign_goals_map = {}
     campaign_id_map = {
