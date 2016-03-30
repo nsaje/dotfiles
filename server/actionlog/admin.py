@@ -198,7 +198,7 @@ class ActionLogAdminAdmin(SaveWithRequestMixin, admin.ModelAdmin):
             if prop == 'state':
                 value = dash.constants.AdGroupSourceSettingsState.get_text(value)
             elif isinstance(value, list):
-                value = ', '.join(value)
+                value = ', '.join([str(v) for v in value])
 
             description = '{} to {}'.format(
                 prop or '\(O_o)/',
