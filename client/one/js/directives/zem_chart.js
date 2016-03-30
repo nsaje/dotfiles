@@ -167,7 +167,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
             $scope.$watch('data', function (newValue, oldValue) {
                 var i = 0;
-                var data = newValue;
+                var data = newValue && newValue.groups;
                 var color = null;
                 var seriesData = null;
                 var metrics = null;
@@ -232,7 +232,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                             yAxis: commonYAxis ? 0 : index,
                             data: seriesData,
                             tooltip: {
-                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(0) + '</b></br>'
                             },
                             marker: {
                                 radius: 3,
@@ -244,6 +244,9 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                         });
                     });
                 });
+
+                console.log(newValue);
+                updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
 
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
@@ -258,6 +261,37 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     }
                 }
             });
+
+            var updateCampaignGoals = function (campaignGoals, fieldGoalMap) {
+                if (!campaignGoals || !fieldGoalMap) {
+                    return;
+                }
+                if ($scope.metric1) {
+                    var goalName = fieldGoalMap[$scope.metric1];
+                    if (goalName) {
+                        var color = getColor($scope.metric1);
+                        $scope.config.series.unshift({
+                            name: goalName,
+                            color: color,
+                            yAxis: 1,
+                            connectNulls: true,
+                            data: campaignGoals[goalName],
+                            dashStyle: 'ShortDash',
+                            step: 'left',
+                            marker: {
+                                enabled: false,   
+                            },
+                        });
+                        console.log(campaignGoals, $scope.config.series);
+                    }
+                }
+
+                /*
+                tooltip: {
+                  pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(0) + '</b></br>'
+                },
+                */
+            };
 
 
             /////////////

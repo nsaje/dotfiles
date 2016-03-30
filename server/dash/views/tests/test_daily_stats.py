@@ -58,7 +58,6 @@ class BaseDailyStatsTest(TestCase):
         return params
 
     def _assert_response(self, response, selected_id, selected_name):
-        from pudb import set_trace; set_trace()
         self.assertEqual(json.loads(response.content), {
             'data': {
                 'chart_data': [{

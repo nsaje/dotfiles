@@ -884,7 +884,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function (group) {
+        $scope.chartData.groups.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }

@@ -4,11 +4,12 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Prefetch
 
-from utils import exc, dates_helper
+from utils import exc
 from dash import models, constants, forms
 from dash.views import helpers
 import dash.stats_helper
 import utils.lc_helper
+from utils import dates_helper
 
 CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: '{} seconds on site',
@@ -448,7 +449,7 @@ def get_goals_performance(user, campaign, start_date, end_date,
     return performance
 
 
-def get_campaign_goal_metrics(campaign, start_date, end_date):
+def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
     campaign_goal_values = models.CampaignGoalValue.objects.all().\
         filter(
             campaign_goal__campaign=campaign,
@@ -460,14 +461,66 @@ def get_campaign_goal_metrics(campaign, start_date, end_date):
             'created_dt',
         ).select_related('campaign_goal')
 
+
+    pre_cg_vals = get_pre_campaign_goal_values(campaign, start_date)
+    last_cg_vals = {}
+
+    # we also need one datapoint before current date range in case
+    # first data point in range is not the first one in history
     cg_series = {}
-    for cg_value in campaign_goal_values:
+    for i, cg_value in enumerate(campaign_goal_values):
         cg = cg_value.campaign_goal
         name = constants.CampaignGoalKPI.get_text(cg.type)
+        last_cg_vals[name] = cg_value
+
+        if i == 0 and cg.id in pre_cg_vals and\
+                cg_value.created_dt > pre_cg_vals[cg.id].created_dt:
+            # insert data point for reference before the selected date range
+            cg_series[name] = [
+                campaign_goal_dp(
+                    pre_cg_vals[cg.id],
+                    override_date=start_date
+                ),
+            ]
+
         if not cg_series.get(name):
             cg_series[name] = []
-        cg_series[name].append((cg_value.created_dt, cg_value.value,))
+        else:
+            cg_series[name] = cg_series[name] + generate_missing(
+                cg_series[name][-1],
+                cg_value.created_dt
+            )
+        cg_series[name].append(campaign_goal_dp(cg_value))
+
+    for name, last_cg_val in last_cg_vals.iteritems():
+        if last_cg_val.created_dt.date() >= end_date:
+            continue
+
+        cg_series[name] = cg_series[name] + generate_missing(
+            last_cg_val,
+            end_date
+        )
+
+        # duplicate last data point with date set to end date
+        cg_series[name].append(
+            campaign_goal_dp(
+                last_cg_val,
+                override_date=end_date
+            ),
+        )
+
     return cg_series
+
+
+def generate_missing(start_cg_value, end_date):
+    start_date = start_cg_value.created_dt + datetime.timedelta(days=1)
+    if start_date.date() >= end_date:
+        return []
+
+    ret = []
+    for date in dates_helper.date_range(start_date.date(), end_date):
+        ret.append(campaign_goal_dp(start_cg_value, override_date=date))
+    return ret
 
 
 def get_campaign_conversion_goal_metrics(campaign, start_date, end_date):
@@ -487,8 +540,43 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date):
         conversion_name = cg.conversion_goal.name
         if not cg_series.get(conversion_name):
             cg_series[conversion_name] = []
-        cg_series[conversion_name].append((cg_value.created_dt, cg_value.value,))
+        cg_series[conversion_name].append(campaign_goal_dp(cg_value))
     return cg_series
+
+
+def get_pre_campaign_goal_values(campaign, date):
+    '''
+    For each campaign goal get first value before given date.
+    Returns a dict mapping from campaign goal id to campaign goal value.
+    '''
+    campaign_goal_values = models.CampaignGoalValue.objects.all().\
+        filter(
+            campaign_goal__campaign=campaign,
+            created_dt__lt=date,
+        ).order_by(
+            'campaign_goal',
+            '-created_dt',
+        ).distinct(
+            'campaign_goal',
+            'created_dt'
+        ).select_related('campaign_goal')
+    return {
+        cgv.campaign_goal.id: cgv for cgv in campaign_goal_values
+    }
+
+
+def campaign_goal_dp(campaign_goal_value, override_date=None, convert=True):
+    date = campaign_goal_value.created_dt.date()
+    if override_date is not None:
+        date = override_date
+
+    if convert:
+        dt = (date - datetime.date(1970,1,1)).\
+            total_seconds() * 1000
+        return (dt, float(campaign_goal_value.value),)
+    else:
+        return (date, campaign_goal_value.value,)
+
 
 def inverted_campaign_goal_map():
     # map from particular fields to goals
