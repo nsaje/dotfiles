@@ -528,6 +528,10 @@ class SourcesTable(object):
 
         ad_group_sources = level_sources_table.active_ad_group_sources
 
+        if level_ not in ('all_accounts', 'accounts', ):
+            campaign = kwargs.get('campaign') or kwargs['ad_group'].campaign
+            set_rows_goals_performance(user, sources_data, start_date, end_date, [campaign])
+
         rows = self.get_rows(
             id_,
             level_,
