@@ -423,19 +423,16 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual("$50.00", setting.value)
         self.assertEqual("50.00% of daily budget", setting.description)
-        self.assertEqual(dash.constants.Emoticon.SAD, setting.icon)
 
         setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
 
         self.assertEqual("$110.00", setting_1.value)
         self.assertEqual("110.00% of daily budget", setting_1.description)
-        self.assertEqual(dash.constants.Emoticon.HAPPY, setting_1.icon)
 
         setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
 
         self.assertEqual("$50.00", setting_0.value)
         self.assertEqual("N/A", setting_0.description)
-        self.assertEqual(dash.constants.Emoticon.SAD, setting_0.icon)
 
 
 class InfoBoxAccountHelpersTest(TestCase):
