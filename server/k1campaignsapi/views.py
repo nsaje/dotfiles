@@ -63,11 +63,11 @@ def get_ad_group_sources(request):
     ad_group_sources = (
         dash.models.AdGroupSource.objects
             .filter(ad_group_id__in=ad_group_ids)
-            .select_related('source_credentials')
             .values(
                 'id',
                 'ad_group_id',
                 'source_credentials_id',
+                'source__name',
                 'source_campaign_key',
             )
     )
@@ -81,69 +81,76 @@ def get_ad_group_sources(request):
     # if not include_deprecated:
     ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
 
-    source_credentials_ids = {ad_group_source['source_credentials_id']
-                              for ad_group_source in ad_group_sources}
-    source_credentials = (
-        dash.models.SourceCredentials.objects
-            .filter(id__in=source_credentials_ids)
-            .values(
-                'id',
-                'source__source_type__type',
-                'credentials'
-            )
-    )
-
-    # FIXME slice it
-    # ad_group_sources = ad_group_sources[:10]
-
-    # index objects by their parent ids
-    ad_group_sources_by_ad_group = collections.defaultdict(list)
+    # first, partition by source credentials
+    ad_group_sources_by_source_credentials = collections.defaultdict(list)
     for ad_group_source in ad_group_sources:
-        ad_group_sources_by_ad_group[ad_group_source['ad_group_id']].append({
-            'id': ad_group_source['id'],
-            'source_credentials_id': ad_group_source['source_credentials_id'],
-            'source_campaign_key': ad_group_source['source_campaign_key'],
-        })
+        ad_group_sources_by_source_credentials[
+            ad_group_source['source_credentials_id']].append(ad_group_source)
 
-    ad_groups_by_campaign = collections.defaultdict(list)
-    for ad_group in ad_groups:
-        ad_group_id = ad_group['id']
-        if not ad_group_sources_by_ad_group[ad_group_id]:
-            continue
-        ad_groups_by_campaign[ad_group['campaign_id']].append({
-            'id': ad_group_id,
-            'ad_group_sources': ad_group_sources_by_ad_group[ad_group_id],
-        })
+    # build object tree per source credentials
+    # FIXME rename ad_group_sources to something indicating it's per-source-credentials
+    source_credentials_entities = []
+    for source_credentials_id, ad_group_sources in ad_group_sources_by_source_credentials.items():
+        # index objects by their parent ids
+        ad_group_sources_by_ad_group = collections.defaultdict(list)
+        for ad_group_source in ad_group_sources:
+            ad_group_sources_by_ad_group[ad_group_source['ad_group_id']].append({
+                'id': ad_group_source['id'],
+                'source_credentials_id': ad_group_source['source_credentials_id'],
+                'source_campaign_key': ad_group_source['source_campaign_key'],
+                # we need source details per-adgroupsource since source_credentials'
+                # source may differ from adgroup source on b1 sources
+                'source_name': ad_group_source['source__name'],
+            })
 
-    campaigns_by_account = collections.defaultdict(list)
-    for campaign in campaigns:
-        campaign_id = campaign['id']
-        if not ad_groups_by_campaign[campaign_id]:
-            continue
-        campaigns_by_account[campaign['account_id']].append({
-            'id': campaign_id,
-            'ad_groups': ad_groups_by_campaign[campaign_id],
+        ad_groups_by_campaign = collections.defaultdict(list)
+        for ad_group in ad_groups:
+            ad_group_id = ad_group['id']
+            if not ad_group_sources_by_ad_group[ad_group_id]:
+                continue
+            ad_groups_by_campaign[ad_group['campaign_id']].append({
+                'id': ad_group_id,
+                'ad_group_sources': ad_group_sources_by_ad_group[ad_group_id],
+            })
+
+        campaigns_by_account = collections.defaultdict(list)
+        for campaign in campaigns:
+            campaign_id = campaign['id']
+            if not ad_groups_by_campaign[campaign_id]:
+                continue
+            campaigns_by_account[campaign['account_id']].append({
+                'id': campaign_id,
+                'ad_groups': ad_groups_by_campaign[campaign_id],
+            })
+
+        source_credentials_accounts = []
+        for account in accounts:
+            account_id = account['id']
+            if not campaigns_by_account[account_id]:
+                continue
+            source_credentials_accounts.append({
+                'id': account_id,
+                'outbrain_marketer_id': account['outbrain_marketer_id'],
+                'campaigns': campaigns_by_account[account_id]
+            })
+
+        source_credentials = (
+            dash.models.SourceCredentials.objects
+            .only(
+                'credentials',
+                'source__source_type__type',
+            )
+            .get(pk=source_credentials_id)
+        )
+        source_credentials_entities.append({
+            'source_type': source_credentials.source.source_type.type,
+            'credentials': source_credentials.credentials,
+            'accounts': source_credentials_accounts,
         })
 
     # construct response dict
     data = {}
-    data['accounts'] = []
-    for account in accounts:
-        account_id = account['id']
-        if not campaigns_by_account[account_id]:
-            continue
-        data['accounts'].append({
-            'id': account_id,
-            'outbrain_marketer_id': account['outbrain_marketer_id'],
-            'campaigns': campaigns_by_account[account_id]
-        })
-
-    data['source_credentials'] = {}
-    for source_credentials in source_credentials:
-        data['source_credentials'][source_credentials['id']] = {
-            'source_type': source_credentials['source__source_type__type'],
-            'credentials': source_credentials['credentials'],
-        }
+    data['source_credentials'] = source_credentials_entities
 
     return JsonResponse(data)
 
