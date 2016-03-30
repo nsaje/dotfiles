@@ -508,7 +508,7 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 class AllAccountsExport(object):
 
     def get_data(self, user, filtered_sources, start_date, end_date, order,
-                 additional_fields, breakdown=None, by_source=False, by_day=False):
+                 additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
@@ -566,6 +566,7 @@ class AllAccountsExport(object):
             include_budgets=include_budgets,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
+            include_model_ids=include_model_ids,
             account=accounts,
             source=filtered_sources)
 
@@ -575,7 +576,7 @@ class AllAccountsExport(object):
 class AccountExport(object):
 
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         account = helpers.get_account(user, account_id)
 
         dimensions = ['account']
@@ -619,6 +620,7 @@ class AccountExport(object):
             [],
             include_settings=include_settings,
             include_budgets=include_budgets,
+            include_model_ids=include_model_ids,
             account=account,
             source=filtered_sources)
 
@@ -628,7 +630,7 @@ class AccountExport(object):
 class CampaignExport(object):
 
     def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
@@ -657,6 +659,7 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            include_model_ids=include_model_ids,
             campaign=campaign,
             source=filtered_sources)
 
@@ -666,7 +669,7 @@ class CampaignExport(object):
 class AdGroupExport(object):
 
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -696,6 +699,7 @@ class AdGroupExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            include_model_ids=include_model_ids,
             ad_group=ad_group,
             source=filtered_sources)
 
@@ -761,6 +765,8 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
 
     granularity = get_granularity_from_type(request.GET.get('type'))
 
+    include_model_ids = request.GET.get('include_ids')
+
     return _get_report(
         request.user,
         helpers.get_stats_start_date(request.GET.get('start_date')),
@@ -772,6 +778,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         breakdown=get_breakdown_from_granularity(granularity),
         by_source=by_source,
         by_day=helpers.get_by_day(request.GET.get('by_day')),
+        include_model_ids=include_model_ids,
         ad_group=ad_group,
         campaign=campaign,
         account=account
@@ -789,6 +796,7 @@ def _get_report(
         breakdown=None,
         by_day=False,
         by_source=False,
+        include_model_ids=False,
         ad_group=None,
         campaign=None,
         account=None):
@@ -827,6 +835,7 @@ def _get_report(
         breakdown=breakdown,
         by_source=by_source,
         by_day=by_day,
+        include_model_ids=include_model_ids,
         account_id=account_id,
         campaign_id=campaign_id,
         ad_group_id=ad_group_id)
@@ -846,7 +855,8 @@ def _get_report(
 
 
 def _get_report_contents(user, filtered_sources, start_date, end_date, order, additional_fields,
-                         breakdown, by_source, by_day, account_id=None, campaign_id=None, ad_group_id=None):
+                         breakdown, by_source, by_day, include_model_ids=False,
+                         account_id=None, campaign_id=None, ad_group_id=None):
     arguments = {
         'user': user,
         'filtered_sources': filtered_sources,
@@ -856,7 +866,8 @@ def _get_report_contents(user, filtered_sources, start_date, end_date, order, ad
         'additional_fields': additional_fields,
         'breakdown': breakdown,
         'by_source': by_source,
-        'by_day': by_day
+        'by_day': by_day,
+        'include_model_ids': include_model_ids
     }
 
     if account_id:
