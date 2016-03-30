@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytz
 from django.db.models.signals import pre_save
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
 from django.conf import settings
 
@@ -27,7 +27,8 @@ class AdGroupSettingsTest(TestCase):
             'created_by',
             'created_by_id',
             'changes_text',
-            'useractionlog'
+            'useractionlog',
+            'system_user'
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
@@ -58,6 +59,7 @@ class AdGroupSettingsTest(TestCase):
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
             'ga_tracking_type': GATrackingType.EMAIL,
+            'landing_mode': False,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -288,6 +290,7 @@ class CampaignSettingsTest(TestCase):
             'changes_text',
             'useractionlog',
             'campaign_manager_id',
+            'system_user',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
@@ -307,7 +310,8 @@ class CampaignSettingsTest(TestCase):
             'service_fee': Decimal('0.2000'),
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
-            'automatic_landing_mode': False,
+            'automatic_campaign_stop': False,
+            'landing_mode': False,
         }
 
         self.assertEqual(
@@ -395,6 +399,9 @@ class AdGroupSourceTest(TestCase):
         )
 
 
+@override_settings(
+    IMAGE_THUMBNAIL_URL='http://test.com',
+)
 class ContentAdTest(TestCase):
 
     def test_url_with_tracking_codes(self):
@@ -412,6 +419,18 @@ class ContentAdTest(TestCase):
 
         content_ad.url = 'http://ad.doubleclick.net/ddm/clk/289560433;116564310;c?http://d.agkn.com/pixel/2389/?che=%25n&col=%25ebuy!,1922531,%25epid!,%25eaid!,%25erid!&l0=http://analytics.bluekai.com/site/15823?phint=event%3Dclick&phint=aid%3D%25eadv!&phint=pid%3D%25epid!&phint=cid%3D%25ebuy!&phint=crid%3D%25ecid!&done=http%3A%2F%2Fiq.intel.com%2Fcrazy-for-march-madness-data%2F%3Fdfaid%3D1%26crtvid%3D%25ecid!%26dclid%3D1-%25eadv!-%25ebuy!-%25epid!-%25eaid!-%25erid!%26sr_source%3Dlift_zemanta%26ver%3D167_t1_i1%26_z1_msid%3D{sourceDomain}%26_z1_adgid%3D537'
         self.assertEqual(content_ad.url_with_tracking_codes('a=b'), 'http://ad.doubleclick.net/ddm/clk/289560433;116564310;c?http://d.agkn.com/pixel/2389/?che=%25n&col=%25ebuy!,1922531,%25epid!,%25eaid!,%25erid!&l0=http://analytics.bluekai.com/site/15823?phint=event%3Dclick&phint=aid%3D%25eadv!&phint=pid%3D%25epid!&phint=cid%3D%25ebuy!&phint=crid%3D%25ecid!&done=http%3A%2F%2Fiq.intel.com%2Fcrazy-for-march-madness-data%2F%3Fdfaid%3D1%26crtvid%3D%25ecid!%26dclid%3D1-%25eadv!-%25ebuy!-%25epid!-%25eaid!-%25erid!%26sr_source%3Dlift_zemanta%26ver%3D167_t1_i1%26_z1_msid%3D{sourceDomain}%26_z1_adgid%3D537&a=b')
+
+    def test_get_image_url(self):
+        content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
+        image_url = content_ad.get_image_url(500, 600)
+        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=faces&fm=jpg')
+
+        image_url = content_ad.get_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=faces&fm=jpg')
+
+        content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
+        image_url = content_ad.get_image_url()
+        self.assertEqual(image_url, None)
 
 
 def created_by_patch(sender, instance, **kwargs):

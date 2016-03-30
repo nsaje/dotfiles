@@ -1,8 +1,13 @@
+import datetime
+from decimal import Decimal
+
 from django.db import transaction
+from django.db.models import Prefetch
 
 from utils import exc
 from dash import models, constants, forms
 from dash.views import helpers
+import dash.stats_helper
 import utils.lc_helper
 
 CAMPAIGN_GOAL_NAME_FORMAT = {
@@ -12,17 +17,15 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
-    constants.CampaignGoalKPI.CPM: '{} CPM',
 }
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
-    constants.CampaignGoalKPI.TIME_ON_SITE: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.TIME_ON_SITE: lambda x: '{:.2f}'.format(x),
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: lambda x: '{:.2f} %'.format(x),
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f} s'.format(x),
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f}'.format(x),
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: lambda x: '{:.2f} %'.format(x),
     constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CPC: utils.lc_helper.default_currency,
-    constants.CampaignGoalKPI.CPM: utils.lc_helper.default_currency,
 }
 
 CAMPAIGN_GOAL_MAP = {
@@ -42,9 +45,51 @@ CAMPAIGN_GOAL_MAP = {
         'avg_cost_for_new_visitor',
     ],
     constants.CampaignGoalKPI.CPA: [],
-    constants.CampaignGoalKPI.CPC: [],
-    constants.CampaignGoalKPI.CPM: [],
+    constants.CampaignGoalKPI.CPC: ['cpc'],
 }
+
+CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'unbounced_visits',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
+    constants.CampaignGoalKPI.TIME_ON_SITE: 'total_seconds',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
+    constants.CampaignGoalKPI.CPC: 'cpc',
+}
+
+INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+    constants.CampaignGoalKPI.CPA,
+    constants.CampaignGoalKPI.CPC,
+)
+
+STATUS_TO_EMOTICON_MAP = {
+    constants.CampaignGoalPerformance.SUPERPERFORMING: constants.Emoticon.HAPPY,
+    constants.CampaignGoalPerformance.UNDERPERFORMING: constants.Emoticon.SAD,
+    constants.CampaignGoalPerformance.AVERAGE: constants.Emoticon.NEUTRAL,
+}
+
+EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
+
+DEFAULT_COST_COLUMN = 'media_cost'
+
+
+def get_performance_value(goal_type, metric_value, target_value):
+    if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
+        performance = (2 * target_value - metric_value) / target_value
+    else:
+        performance = metric_value / target_value
+    return max(Decimal('0'), min(performance, Decimal('2')))
+
+
+def format_value(goal_type, value):
+    return value and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value) \
+        or 'N/A'
+
+
+def format_campaign_goal(goal_type, value):
+    return CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
+        format_value(goal_type, value)
+    )
 
 
 def create_campaign_goal(request, form, campaign, value=None, conversion_goal=None):
@@ -136,6 +181,15 @@ def get_primary_campaign_goal(campaign):
         return None
 
 
+def get_primary_goals(campaigns):
+    return {
+        goal.campaign_id: goal for goal in
+        models.CampaignGoal.objects.filter(campaign__in=campaigns, primary=True).select_related(
+            'conversion_goal'
+        )
+    }
+
+
 def delete_conversion_goal(request, conversion_goal_id, campaign):
     try:
         conversion_goal = models.ConversionGoal.objects.get(
@@ -211,7 +265,7 @@ def create_conversion_goal(request, form, campaign, value=None):
 
 
 def extract_cost(data):
-    return data.get('media_cost', 0)
+    return data.get(DEFAULT_COST_COLUMN, 0)
 
 
 def create_goals(campaign, data):
@@ -257,11 +311,13 @@ def exclude_goal_columns(row, goal_types):
     ret_row = dict(row)
 
     excluded_goals = set(constants.CampaignGoalKPI.get_all()) -\
-       set(map(lambda gv: gv.campaign_goal.type, goal_types))
+        set(map(lambda gv: gv.campaign_goal.type, goal_types))
 
     for excluded_goal in excluded_goals:
         goal_strings = CAMPAIGN_GOAL_MAP.get(excluded_goal, [])
         for goal_string in goal_strings:
+            if goal_string in EXISTING_COLUMNS_FOR_GOALS:
+                continue
             ret_row.pop(goal_string, None)
 
     return ret_row
@@ -276,7 +332,7 @@ def calculate_goal_values(row, goal_type, cost):
             goal_name = 'conversion_goal_{}'.format(goal_index)
             if goal_name in row:
                 ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
-                    float(cost) / row[goal_name] if row[goal_name] != 0 else 0
+                    float(cost) / row[goal_name] if row[goal_name] else 0
             goal_index += 1
     return ret
 
@@ -330,3 +386,63 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
         action_type,
         campaign=campaign
     )
+
+
+def get_goal_performance_status(goal_type, metric_value, planned_value):
+    if planned_value is None or metric_value is None:
+        return constants.CampaignGoalPerformance.AVERAGE
+    performance = get_performance_value(goal_type, Decimal(metric_value), planned_value)
+    if performance < Decimal('0.8'):
+        return constants.CampaignGoalPerformance.UNDERPERFORMING
+    if performance >= Decimal('1.0'):
+        return constants.CampaignGoalPerformance.SUPERPERFORMING
+    return constants.CampaignGoalPerformance.AVERAGE
+
+
+def fetch_goals(campaign_ids, start_date, end_date):
+    prefetch_values = Prefetch(
+        'values',
+        queryset=dash.models.CampaignGoalValue.objects.filter(
+            created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
+            created_dt__lt=end_date + datetime.timedelta(1),
+        ).order_by('-created_dt')
+    )
+    return dash.models.CampaignGoal.objects.filter(campaign_id__in=campaign_ids).prefetch_related(
+        prefetch_values
+    ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
+
+
+def get_goals_performance(user, campaign, start_date, end_date,
+                          goals=None, conversion_goals=None, stats=None):
+    performance = []
+    conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
+    goals = goals or fetch_goals([campaign.pk], start_date, end_date)
+    stats = stats or dash.stats_helper.get_stats_with_conversions(
+        user,
+        start_date=start_date,
+        end_date=end_date,
+        conversion_goals=conversion_goals,
+        constraints={
+            'campaign': campaign,
+        }
+    )
+
+    conversion_goals_tuple = tuple(sorted(conversion_goals, key=lambda x: x.id))
+    for campaign_goal in goals:
+        last_goal_value = campaign_goal.values.all().first()
+        planned_value = last_goal_value and last_goal_value.value or None
+        if campaign_goal.type == constants.CampaignGoalKPI.CPA:
+            index = conversion_goals_tuple.index(campaign_goal.conversion_goal) + 1
+            cost = extract_cost(stats)
+            metric = stats.get('conversion_goal_' + str(index), 0)
+            metric_value = (cost / metric) if metric else None
+        else:
+            metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
+        performance.append((
+            get_goal_performance_status(campaign_goal.type, metric_value, planned_value),
+            metric_value,
+            planned_value,
+            campaign_goal,
+        ))
+
+    return performance

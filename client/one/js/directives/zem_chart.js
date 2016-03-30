@@ -280,6 +280,18 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
             metricFormats[constants.chartMetric.AVG_TOS] = {'type': 'time', 'fractionSize': 1};
             metricFormats[constants.chartMetric.CLICK_DISCREPANCY] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.TOTAL_SECONDS] = {};
+            metricFormats[constants.chartMetric.TOTAL_PAGEVIEWS] = {};
+            metricFormats[constants.chartMetric.UNBOUNCED_VISITS] = {};
+            metricFormats[constants.chartMetric.COST_PER_SECOND] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_PAGEVIEW] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_UNBOUNCED_VISITOR] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_NEW_VISITOR] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_1] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_2] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_3] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_4] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_5] = {'type': 'currency', 'fractionSize': 2};
 
             var getMetricName = function (metricId) {
                 var name = null;

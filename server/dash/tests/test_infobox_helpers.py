@@ -423,19 +423,16 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual("$50.00", setting.value)
         self.assertEqual("50.00% of daily budget", setting.description)
-        self.assertEqual('sad', setting.icon)
 
         setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
 
         self.assertEqual("$110.00", setting_1.value)
         self.assertEqual("110.00% of daily budget", setting_1.description)
-        self.assertEqual('happy', setting_1.icon)
 
         setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
 
         self.assertEqual("$50.00", setting_0.value)
         self.assertEqual("N/A", setting_0.description)
-        self.assertEqual('sad', setting_0.icon)
 
 
 class InfoBoxAccountHelpersTest(TestCase):
@@ -657,7 +654,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.models.UserActionLog.objects.create(
                 action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
                 ad_group=dash.models.AdGroup.objects.get(pk=1),
-                created_dt=datetime.datetime.utcnow()-datetime.timedelta(hours=24),
+                created_dt=datetime.datetime.utcnow() - datetime.timedelta(hours=24),
                 created_by=u,
             )
 
@@ -753,8 +750,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         # adgroup is active, sources are active and campaign is in landing mode
-        ad_group.campaign.landing_mode = True
-        ad_group.campaign.save(None)
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
@@ -762,8 +760,9 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
-        ad_group.campaign.landing_mode = False
-        ad_group.campaign.save(None)
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = False
+        new_campaign_settings.save(None)
 
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
@@ -831,8 +830,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         # campaign is in landing mode
-        campaign.landing_mode = True
-        campaign.save(None)
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         self.assertEqual(
             dash.constants.InfoboxStatus.LANDING_MODE,
@@ -963,7 +963,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             start_date=start_date,
             end_date=end_date,
             created_by=user,
-            freed_cc=10*1e4
+            freed_cc=10 * 1e4
         )
 
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)

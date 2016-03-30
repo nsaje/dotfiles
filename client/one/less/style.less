@@ -909,6 +909,9 @@ img.zem-icon {
 
 .infobox-footer {
     height: 70px;
+    overflow-y: auto;
+    // due to scroller
+    margin-right: -5px;
 }
 
 .infobox-header-row {
@@ -1001,6 +1004,9 @@ img.zem-icon {
     display: table-cell;
     line-height: 16px;
     vertical-align: text-top;
+    &.primary .infobox-setting-value {
+        font-weight: bold;
+    }
 }
 
 .infobox-setting-label {
@@ -1437,6 +1443,41 @@ img.zem-icon {
     filter: alpha(opacity=20); /* For IE8 and earlier */
 }
 
+.table-icon div {
+    img.zem-icon {
+        width: 12px;
+        height: 12px;
+        margin-bottom: 4px;
+    }
+}
+
+.zem-table-row {
+    &.happy {
+        td:first-child {
+            border-left: 5px solid #73BF44;
+        }
+    }
+    &.sad {
+        td:first-child {
+            border-left: 5px solid #CB2027;
+        }
+    }
+    &.average {
+        td:first-child {
+            border-left: 5px solid #fff;
+        }
+    }
+
+    &.superperforming .zem-table-column-value {
+        color: #73BF44;
+    }
+
+    &.underperforming .zem-table-column-value {
+        color: #CB2027;
+    }
+}
+
+
 
 .help-popover,
 .help-popover:hover,
@@ -1479,6 +1520,7 @@ img.zem-icon {
 }
 
 .select2-drop,
+.infobox-setting,
 .table-container {
      zem-internal-feature .internal {
         margin-right: 0.5em;
@@ -2453,6 +2495,24 @@ img.zem-icon {
     background-image: none !important;
 }
 
+.agency-history-popover-large {
+    max-width: 450px;
+
+    &.bottom {
+        margin-top: 0;
+        padding-top: 10px;
+        background: transparent;
+
+        & > .arrow {
+            top: 0;
+
+            &:after {
+                border-bottom-color: #2fa8c7;
+            }
+        }
+    }
+}
+
 .history-popover-table {
     display: table;
     table-layout: fixed;
@@ -2584,6 +2644,15 @@ img.zem-icon {
     display: inline-block;
     margin-bottom: -2px;
     background-image: url('img/data_status_icon.svg');
+}
+
+.performance-icon {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    background-size: 12px;
+    margin-bottom: -2px;
+    background-image: url('img/neutral_face.svg');
 }
 
 .adgroup-status-icon-placeholder() {
@@ -3733,7 +3802,7 @@ select.media-source-select {
         margin: auto;
         width: 12px;
         height: 12px;
-        
+
         &.zem-icon-remove {
             width: 10px;
             height: 10px;
@@ -3746,7 +3815,7 @@ select.media-source-select {
             margin-bottom: 3px;
         }
     }
-    
+
     .btn {
         .plus-sign {
             padding-right: 10px;
@@ -3839,7 +3908,7 @@ select.media-source-select {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                
+
                 padding-right: 2px;
 
                 &:before {
@@ -3854,7 +3923,7 @@ select.media-source-select {
                     vertical-align: middle;
                 }
             }
-            
+
             &.campaign-goal-index .center-area {
                 padding-right: 5px;
             }

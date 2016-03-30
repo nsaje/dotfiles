@@ -735,8 +735,9 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
-        ad_group.campaign.landing_mode = True
-        ad_group.campaign.save(None)
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         self.add_permissions(['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -875,6 +876,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'Adobe tracking parameter', u'value': u''},
                         {u'name': u'Auto-Pilot', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
+                        {u'name': u'Landing Mode', u'value': False},
                     ],
                     u'show_old_settings': False
                 }, {
@@ -903,6 +905,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
                         {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
+                        {u'name': u'Landing Mode', u'old_value': False, u'value': False},
                     ],
                     u'show_old_settings': True
                 }]
@@ -1843,7 +1846,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
                 {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
-                {'name': 'Automatic Landing Mode', 'value': 'False'},
+                {'name': 'Automatic Campaign Stop', 'value': 'False'},
+                {'name': 'Landing Mode', 'value': 'False'},
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'

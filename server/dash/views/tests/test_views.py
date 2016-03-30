@@ -29,16 +29,19 @@ class UserTest(TestCase):
     fixtures = ['test_views.yaml']
 
     class MockDatetime(datetime.datetime):
+
         @classmethod
         def utcnow(cls):
             return datetime.datetime(2015, 3, 1)
 
     class MockDatetimeNonExistent(datetime.datetime):
+
         @classmethod
         def utcnow(cls):
             return datetime.datetime(2015, 3, 8, 2, 30)
 
     class MockDatetimeAmbiguous(datetime.datetime):
+
         @classmethod
         def utcnow(cls):
             return datetime.datetime(2002, 10, 27, 1, 30, 00)
@@ -113,6 +116,7 @@ class AccountCampaignsTest(TestCase):
     fixtures = ['test_views.yaml']
 
     class MockSettingsWriter(object):
+
         def __init__(self, init):
             pass
 
@@ -160,6 +164,7 @@ class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml', ]
 
     class MockSettingsWriter(object):
+
         def __init__(self, init):
             pass
 
@@ -178,13 +183,14 @@ class AdGroupSourceSettingsTest(TestCase):
         new_settings.save(None)
 
     def _set_campaign_landing_mode(self):
-        self.ad_group.campaign.landing_mode = True
-        self.ad_group.campaign.save(None)
+        new_campaign_settings = self.ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
-    def _set_campaign_automatic_landing_mode(self, automatic_landing_mode):
+    def _set_campaign_automatic_campaign_stop(self, automatic_campaign_stop):
         current_settings = self.ad_group.campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
-        new_settings.automatic_landing_mode = automatic_landing_mode
+        new_settings.automatic_campaign_stop = automatic_campaign_stop
         request = HttpRequest()
         request.user = User.objects.get(id=1)
         new_settings.save(request)
@@ -252,14 +258,14 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_daily_budget_over_max_settable(self, mock_max_daily_budget):
         mock_max_daily_budget.return_value = decimal.Decimal('500')
         self._set_ad_group_end_date(days_delta=3)
-        self._set_campaign_automatic_landing_mode(False)
+        self._set_campaign_automatic_campaign_stop(False)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'daily_budget_cc': '600'})
         )
         self.assertEqual(response.status_code, 200)
 
-        self._set_campaign_automatic_landing_mode(True)
+        self._set_campaign_automatic_campaign_stop(True)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'daily_budget_cc': '600'})
@@ -416,10 +422,9 @@ class CampaignAdGroups(TestCase):
         self.assertEqual(waiting_ad_group_sources, [])
 
         self.assertEqual(
-                ad_group_settings.changes_text,
-                'Created settings and automatically created campaigns for 1 sources (AdBlade)'
+            ad_group_settings.changes_text,
+            'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
-
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
             ad_group_source__ad_group=ad_group
@@ -776,6 +781,7 @@ class AdGroupArchiveRestoreTest(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml', ]
 
     class MockSettingsWriter(object):
+
         def __init__(self, init):
             pass
 
@@ -1284,7 +1290,8 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         ad_group_settings.save(request)
 
-        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
+        mock_file = SimpleUploadedFile(
+            'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
@@ -1316,7 +1323,8 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         ad_group_settings.save(request)
 
-        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
+        mock_file = SimpleUploadedFile(
+            'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
@@ -1332,21 +1340,21 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content),
-                    {
-                        'data': {
-                        "message": None,
-                        "data": None,
-                        "errors": {
-                            "display_url": ["This field is required."],
-                            "call_to_action": ["This field is required."],
-                            "brand_name": ["This field is required."],
-                            "description": ["This field is required."],
-                            },
+                         {
+            'data': {
+                "message": None,
+                "data": None,
+                "errors": {
+                    "display_url": ["This field is required."],
+                    "call_to_action": ["This field is required."],
+                    "brand_name": ["This field is required."],
+                    "description": ["This field is required."],
+                },
 
-                        "error_code": "ValidationError"
-                        },
-                        "success": False
-                    })
+                "error_code": "ValidationError"
+            },
+            "success": False
+        })
         self.assertFalse(mock_process_async.called)
 
     def test_validation_error(self):
@@ -1375,7 +1383,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
             {
-                'description': 'a'*141
+                'description': 'a' * 141
             },
             follow=True
         )
@@ -1387,7 +1395,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
             {
-                'description': 'a'*140
+                'description': 'a' * 140
             },
             follow=True
         )
@@ -1710,15 +1718,16 @@ class AdGroupSourcesTest(TestCase):
 
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
-            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False,
+                'can_retarget': True},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
     def test_available_sources(self):
         response = self.client.get(
-                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
-                follow=True
+            reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+            follow=True
         )
         # Expected sources - 9 (Sharethrough)
         # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
@@ -1728,9 +1737,9 @@ class AdGroupSourcesTest(TestCase):
 
     def test_available_sources_with_filter(self):
         response = self.client.get(
-                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
-                {'filtered_sources': '7,8,9'},
-                follow=True
+            reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+            {'filtered_sources': '7,8,9'},
+            follow=True
         )
         # Expected sources - 9 (Sharethrough)
         # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
@@ -2002,15 +2011,15 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     @patch('reports.redshift.get_cursor')
     def test_post_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'掌上留园－6park',  # an actual domain from production
-            'ctr': 0.0,
-            'exchange': 'adiant',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'掌上留园－6park',  # an actual domain from production
+                'ctr': 0.0,
+                'exchange': 'adiant',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2040,7 +2049,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                     u"source_id": 7,
                     u"domain": u"掌上留园－6park",
                     u"ad_group_id": 1
-                    }]
+                }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
@@ -2063,10 +2072,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         )
 
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
 
         start_date = datetime.datetime.utcnow()
@@ -2077,8 +2086,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
-            "publishers_selected":[],
-            "publishers_not_selected":[]
+            "publishers_selected": [],
+            "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
@@ -2095,7 +2104,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                     u"source_id": 7,
                     u"domain": u"zemanta.com",
                     u"ad_group_id": 1
-                    }]
+                }]
             }, publisher_blacklist_action.first().payload['args'])
 
         self.assertTrue(res['success'])
@@ -2111,10 +2120,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     @patch('reports.redshift.get_cursor')
     def test_post_global_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2157,10 +2166,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     @patch('reports.redshift.get_cursor')
     def test_post_global_blacklist_1(self, cursor):
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2213,10 +2222,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         # simulate select all
         # unselect the only publisher
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2260,10 +2269,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         )
 
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2286,7 +2295,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertTrue(res['success'])
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
-
     @patch('reports.redshift.get_cursor')
     def test_post_global_all_but_enable_1(self, cursor):
         models.PublisherBlacklist.objects.create(
@@ -2299,10 +2307,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         # simulate select all
         # unselect the only publisher
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2336,10 +2344,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     def test_post_campaign_blacklist(self, cursor):
 
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
 
         start_date = datetime.datetime.utcnow()
@@ -2350,8 +2358,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
-            "publishers_selected":[],
-            "publishers_not_selected":[]
+            "publishers_selected": [],
+            "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
@@ -2364,17 +2372,17 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"state": 2,
                 u"level": u"campaign",
                 u"publishers": [{
-                        u"exchange": u"adiant",
-                        u"source_id": 7,
-                        u"domain": u"zemanta.com",
-                        u"ad_group_id": 1
-                    },
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
+                },
                     {
                         u'ad_group_id': 9,
                         u'domain': u'zemanta.com',
                         u'exchange': u'adiant',
                         u'source_id': 7
-                    }
+                }
                 ]
             }, publisher_blacklist_action.first().payload['args'])
 
@@ -2388,7 +2396,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(1, publisher_blacklist.campaign.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
-
 
         adg1 = models.AdGroup.objects.get(pk=1)
         settings1 = adg1.get_current_settings()
@@ -2413,14 +2420,13 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         for useractionlog in useractionlogs:
             self.assertTrue(useractionlog.ad_group.id in (1, 9))
 
-
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
 
         start_date = datetime.datetime.utcnow()
@@ -2431,8 +2437,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
-            "publishers_selected":[],
-            "publishers_not_selected":[{
+            "publishers_selected": [],
+            "publishers_not_selected": [{
                 "blacklisted": "Enabled",
                 "checked": True,
                 "domain": "zemanta.com",
@@ -2458,10 +2464,10 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         )
 
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'exchange': 'adiant',
-        },
+            {
+                'domain': u'zemanta.com',
+                'exchange': 'adiant',
+            },
         ]
 
         start_date = datetime.datetime.utcnow()
@@ -2472,8 +2478,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
-            "publishers_selected":[],
-            "publishers_not_selected":[]
+            "publishers_selected": [],
+            "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
@@ -2487,16 +2493,16 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     @patch('reports.redshift.get_cursor')
     def test_post_outbrain_account_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'Test',
-            'ctr': 0.0,
-            'exchange': 'outbrain',
-            'external_id': 'sfdafkl1230899012asldas',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'Test',
+                'ctr': 0.0,
+                'exchange': 'outbrain',
+                'external_id': 'sfdafkl1230899012asldas',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2527,7 +2533,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                     u"domain": u"Test",
                     u"ad_group_id": 1,
                     u"external_id": u"sfdafkl1230899012asldas"
-                    }]
+                }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
@@ -2541,16 +2547,16 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     @patch('reports.redshift.get_cursor')
     def test_post_outbrain_invalid_level_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'Test',
-            'ctr': 0.0,
-            'exchange': 'outbrain',
-            'external_id': 'sfdafkl1230899012asldas',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'Test',
+                'ctr': 0.0,
+                'exchange': 'outbrain',
+                'external_id': 'sfdafkl1230899012asldas',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2587,16 +2593,16 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             )
 
         cursor().dictfetchall.return_value = [
-        {
-            'domain': u'Test',
-            'ctr': 0.0,
-            'exchange': 'outbrain',
-            'external_id': 'sfdafkl1230899012asldas',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'Test',
+                'ctr': 0.0,
+                'exchange': 'outbrain',
+                'external_id': 'sfdafkl1230899012asldas',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
@@ -2643,8 +2649,8 @@ class AdGroupOverviewTest(TestCase):
     def _get_ad_group_overview(self, ad_group_id, with_status=False):
         self.client.login(username=self.user.username, password='norris')
         reversed_url = reverse(
-                'ad_group_overview',
-                kwargs={'ad_group_id': ad_group_id})
+            'ad_group_overview',
+            kwargs={'ad_group_id': ad_group_id})
 
         response = self.client.get(
             reversed_url,
@@ -2755,7 +2761,7 @@ class AdGroupOverviewTest(TestCase):
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('$0.00', pacing_setting['value'])
         self.assertEqual('0.00% on plan', pacing_setting['description'])
-        self.assertEqual('sad', pacing_setting['icon'])
+        self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
 
         retargeting_setting = self._get_setting(settings, 'retargeting')
         self.assertIsNone(retargeting_setting, 'no permission')
@@ -2873,8 +2879,8 @@ class CampaignOverviewTest(TestCase):
     def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
         self.client.login(username=self.user.username, password='norris')
         reversed_url = reverse(
-                'campaign_overview',
-                kwargs={'campaign_id': campaign_id})
+            'campaign_overview',
+            kwargs={'campaign_id': campaign_id})
         response = self.client.get(
             reversed_url,
             follow=True
@@ -2999,7 +3005,7 @@ class CampaignOverviewTest(TestCase):
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('$0.00', pacing_setting['value'])
         self.assertEqual('0.00% on plan', pacing_setting['description'])
-        self.assertEqual('sad', pacing_setting['icon'])
+        self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
 
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
         self.assertEqual([], goal_setting)
@@ -3026,8 +3032,8 @@ class AccountOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
-                'account_overview',
-                kwargs={'account_id': account_id})
+            'account_overview',
+            kwargs={'account_id': account_id})
         response = self.client.get(
             reversed_url,
             follow=True

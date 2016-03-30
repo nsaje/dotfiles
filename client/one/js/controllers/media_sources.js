@@ -516,6 +516,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
@@ -529,6 +530,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 if ($scope.level === constants.level.CAMPAIGNS) {
                     $scope.campaignGoals = data.campaign_goals;
                     zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                    zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
+                    // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
+                    // make sure chart selection gets updated
+                    defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+                    $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
+                    $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
                 }
             },
             function (data) {
@@ -588,7 +595,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
                 return;
             }
-            api.campaignOverview.get($state.params.id).then(
+            api.campaignOverview.get(
+                $state.params.id,
+                $scope.dateRange.startDate,
+                $scope.dateRange.endDate
+            ).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
@@ -639,6 +650,16 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.chartMetricOptions,
                 options.actualCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
+        if ($scope.hasPermission('zemauth.campaign_goal_optimization') &&
+            (($scope.level === constants.level.CAMPAIGNS) ||
+             ($scope.level === constants.level.AD_GROUPS))) {
+            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+                $scope.campaignGoals,
+                $scope.chartMetricOptions,
+                options.campaignGoalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
+                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }
     };

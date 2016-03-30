@@ -65,9 +65,9 @@ def insert_contentadstats(rows):
 
     query = 'INSERT INTO contentadstats ({cols}) VALUES {rows}'.format(
             cols=','.join(cols),
-            rows=','.join(str(_get_row_string(cursor, cols, row)) for row in rows))
+            rows=_get_rows_string(cols, rows))
 
-    cursor.execute(query, [])
+    cursor.execute(query, _get_rows_params(cols, rows))
     cursor.close()
 
 
@@ -92,9 +92,9 @@ def insert_touchpoint_conversions(rows):
 
     query = 'INSERT INTO touchpointconversions ({cols}) VALUES {rows}'.format(
             cols=','.join(cols),
-            rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
+            rows=_get_rows_string(cols, rows))
 
-    cursor.execute(query, [])
+    cursor.execute(query, _get_rows_params(cols, rows))
     cursor.close()
 
 
@@ -189,9 +189,16 @@ def load_publishers(s3_key):
     _execute(query, params)
 
 
-def _get_row_string(cursor, cols, row):
+def _get_rows_string(cols, rows):
     template_string = '(' + ','.join(itertools.repeat('%s', len(cols))) + ')'
-    return cursor.mogrify(template_string, [row[col] for col in cols])
+    return (template_string + ',') * (len(rows) - 1) + template_string
+
+
+def _get_rows_params(cols, rows):
+    params = []
+    for row in rows:
+        params.extend([row.get(k) for k in cols])
+    return params
 
 
 def grouper(n, iterable):
