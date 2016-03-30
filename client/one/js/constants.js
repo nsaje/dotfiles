@@ -563,6 +563,11 @@ var constants = {
         ZEMANTA: 'Zemanta',
         B1: 'B1',
     },
+    emoticon: {
+        HAPPY: 1,
+        NEUTRAL: 2,
+        SAD: 3,
+    },
 };
 
 var options = {

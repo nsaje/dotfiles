@@ -253,16 +253,17 @@ class CampaignGoalsTestCase(TestCase):
 
         stats = {
             'conversion_goal_1': 10,
+            'media_cost': 5,
             'unbounced_visits': 10,
             'total_pageviews': 10,
             'total_seconds': 10,
             'percent_new_users': 1.2,
         }
-        performance = campaign_goals.get_goal_performance(self.user, self.campaign,
-                                                          start_date, end_date, stats=stats)
+        performance = campaign_goals.get_goals_performance(self.user, self.campaign,
+                                                           start_date, end_date, stats=stats)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
-            [(10, Decimal('60.00000')), (10, Decimal('10.00000')), (None, None),
+            [(10, Decimal('60.00000')), (0, Decimal('10.00000')), (None, None),
              (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)],
         )
 
@@ -280,6 +281,7 @@ class CampaignGoalsTestCase(TestCase):
             'total_pageviews': 10,
             'total_seconds': 10,
             'cpc': 0.1,
+            'media_cost': 5,
             'percent_new_users': 1.2,
             'conversions': {
                 'ga__123': 20.00,
@@ -295,14 +297,14 @@ class CampaignGoalsTestCase(TestCase):
                 'name': 'Campaign Goals:',
                 'value': '10.00 seconds on site',
                 'value_class': 'primary',
-                'icon': 'sad',
+                'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
             }, {
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
-                'icon': 'sad',
-                'value': u'$20.00 CPA - test conversion goal',
+                'icon': constants.Emoticon.HAPPY,
+                'value': u'$0.25 CPA - test conversion goal',
                 'description': 'planned $10.00'
             }, {
                 'section_start': False,
@@ -312,7 +314,7 @@ class CampaignGoalsTestCase(TestCase):
             }, {
                 'section_start': False,
                 'type': 'setting',
-                'icon': 'happy',
+                'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
                 '10.00 pages per session',
                 'description': 'planned 5.00'
@@ -320,7 +322,7 @@ class CampaignGoalsTestCase(TestCase):
                 'section_start': False,
                 'type': 'setting',
                 'name': '',
-                'icon': 'happy',
+                'icon': constants.Emoticon.HAPPY,
                 'value': '10.00 % bounce rate',
                 'description': 'planned 75.00 %'
             }, {

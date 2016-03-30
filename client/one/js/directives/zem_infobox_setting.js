@@ -22,6 +22,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
         templateUrl: '/partials/zem_infobox_setting.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.config = config;
+            $scope.constants = constants;
             $scope.detailsVisible = false;
             $scope.statusActive = false;
 

@@ -676,7 +676,7 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.extend(common_settings)
 
-        if user.has_perm('zemauth.can_see_campaign_goals'):
+        if user.has_perm('zemauth.can_see_campaign_goals') and user.has_perm('zemauth.campaign_goal_optimization'):
             settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
                                                                    start_date, end_date))
 

@@ -59,7 +59,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. Cost For Non-bounced Visitor',
+            name: 'Avg. Cost For Unbounced Visitor',
             field: 'avg_cost_per_non_bounced_visitor',
             checked: true,
             type: 'currency',

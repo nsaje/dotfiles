@@ -1056,6 +1056,18 @@ class CampaignGoalPerformance(ConstantBase):
     }
 
 
+class Emoticon(ConstantBase):
+    HAPPY = 1
+    NEUTRAL = 2
+    SAD = 3
+
+    _VALUES = {
+        HAPPY: 'Happy',
+        SAD: 'Sad',
+        NEUTRAL: 'Neutral',
+    }
+
+
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2
