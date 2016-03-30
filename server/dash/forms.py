@@ -543,6 +543,7 @@ EXAMPLE_CSV_CONTENT = 'http://www.zemanta.com/blog-posts/news/the-rise-of-conten
                       'Tech Talk with Zemanta: How Content Ads Will Come to Dominant Publishers Advertising Efforts,' \
                       'http://www.example.com/tracker'
 
+
 class DisplayURLField(forms.URLField):
 
     def clean(self, value):
