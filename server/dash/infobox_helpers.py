@@ -398,8 +398,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
         tooltip='Yesterday media spend'
-    ).performance(
-        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
