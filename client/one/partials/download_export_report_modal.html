@@ -36,6 +36,19 @@
           </div>
         </div>
 
+        <!-- TODO - add permission, internal feature -->
+        <div class="form-group">
+            <div class="col-xs-4">
+                <label for="by-day-checkbox" class="control-label">Add IDs to report</label>
+            </div>
+            <div class="col-xs-4">
+                <input id="add-ids-checkbox"
+                       type="checkbox"
+                       ng-model="export.addIds"
+                       class="checkbox">
+            </div>
+        </div>
+
         <div class="form-group">
             <div class="col-xs-4">
                 <button type="submit" class="btn btn-default" ng-disabled="!downloadAllowed">Download Now</button>

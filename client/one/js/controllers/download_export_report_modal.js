@@ -49,13 +49,16 @@ oneApp.controller('DownloadExportReportModalCtrl',
         }
     };
 
-      $scope.downloadReport = function () {
+    $scope.downloadReport = function () {
         var url = $scope.baseUrl + 'export_plus/?type=' + $scope.export.type.value +
                   '&start_date=' + $scope.startDate.format() +
                   '&end_date=' + $scope.endDate.format() +
                   '&order=' + $scope.order +
                   '&by_day=' + $scope.export.byDay;
 
+        if (true) {
+            url += '&add_ids=' + $scope.export.addIds;
+        }
         if (zemFilterService.isSourceFilterOn()) {
             url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
         }
