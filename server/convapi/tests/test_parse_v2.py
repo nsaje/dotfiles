@@ -971,4 +971,3 @@ Segment: All Visits (No Segment),,,,,,,,,,
 
         # all other unknown keys should be stripped away
         self.assertEqual({'Carts': 5}, entry.goals)
-
