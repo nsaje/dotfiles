@@ -168,7 +168,7 @@ class GaReportRow(ReportRow):
 
 class OmnitureReportRow(ReportRow):
 
-    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param, publisher_param):
+    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param, publisher_param, tracking_code_col):
         ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
         self.raw_row = json.dumps(omniture_row_dict or {})
@@ -206,10 +206,10 @@ class OmnitureReportRow(ReportRow):
         self.ad_group_id = None
         self.source_param = source_param
         self.publisher_param = publisher_param
-        self.goals = self._parse_goals(omniture_row_dict)
         self.needs_goals_validation = False  # check if parsed goals exist in database
+        self.goals = self._parse_goals(omniture_row_dict, tracking_code_col)
 
-    def _parse_goals(self, row_dict):
+    def _parse_goals(self, row_dict, tracking_code_col):
         goals = {}
         for key, val in row_dict.items():
             if re.search(r' \(Event \d+\)$', key):
@@ -222,7 +222,7 @@ class OmnitureReportRow(ReportRow):
         # if goals weren't found by this keys, just accept all unknown headers as they are
         if not goals:
             for key, val in row_dict.items():
-                if key.lower() not in OMNITURE_KNOWN_HEADERS:
+                if key.lower() not in OMNITURE_KNOWN_HEADERS and key != tracking_code_col:
                     self.needs_goals_validation = True
                     goal_name = key
                     goal_val = _report_atoi(val)
@@ -698,7 +698,7 @@ class OmnitureReport(Report):
     def _process_row(self, omniture_row_dict, tracking_code_col):
         keyword = omniture_row_dict.get(tracking_code_col, '')
         content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
-        report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param, publisher_param)
+        report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param, publisher_param, tracking_code_col)
         self.add_imported_visits(report_entry.visits or 0)
 
         existing_entry = self.entries.get(report_entry.key())
