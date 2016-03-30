@@ -217,6 +217,17 @@ class OmnitureReportRow(ReportRow):
                 if goal_name in goals:
                     raise exc.CsvParseException('Two or more goals with same name in report.')
                 goals[goal_name] = goal_val
+
+        # if goals weren't found by this keys, just accept all unknown headers as they are
+        if not goals:
+            for key, val in row_dict.items():
+                if key.lower() not in OMNITURE_KNOWN_HEADERS:
+                    goal_name = key
+                    goal_val = _report_atoi(val)
+                    if goal_name in goals:
+                        raise exc.CsvParseException('Two or more goals with same name in report.')
+                    goals[goal_name] = goal_val
+
         return goals
 
     def key(self):
@@ -613,7 +624,8 @@ class GAReportFromCSV(GAReport):
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(index_lines))
 
 
-OMNITURE_REQUIRED_HEADERS = {'visits', 'page views', 'unique visitors', 'total seconds spent'}
+OMNITURE_REQUIRED_HEADERS = {'visits', 'page views', 'total seconds spent'}
+OMNITURE_KNOWN_HEADERS = OMNITURE_REQUIRED_HEADERS | {'unique visits', 'unique visitors', 'bounce rate', 'bounces'}
 
 
 class OmnitureReport(Report):
