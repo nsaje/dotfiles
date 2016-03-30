@@ -57,8 +57,12 @@ def get_ad_group_sources_minimum_cpc(ad_group_source):
     return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
 
 
-def get_ad_group_sources_minimum_daily_budget(ad_group_source):
-    return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
+def get_ad_group_sources_minimum_daily_budget(ad_group_source,
+                                              ap_type=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
+    source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
+    if ap_type != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        return source_min_daily_budget
+    return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
 def get_goal_column(goal):
