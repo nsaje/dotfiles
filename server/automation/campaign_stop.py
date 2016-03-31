@@ -49,9 +49,12 @@ def switch_low_budget_campaigns_to_landing_mode():
 def update_campaigns_in_landing():
     actions = []
     for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
-        with transaction.atomic():
-            actions.extend(_set_new_daily_budgets(campaign))
-            actions.extend(_set_end_date_to_today(campaign))
+        try:
+            with transaction.atomic():
+                actions.extend(_set_new_daily_budgets(campaign))
+                actions.extend(_set_end_date_to_today(campaign))
+        except:
+            logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
 
     zwei_actions.send(actions)
 
@@ -164,7 +167,9 @@ def _set_new_daily_budgets(campaign):
             continue
 
         actions.extend(autopilot_plus.set_autopilot_changes(
-            budget_changes=budget_changes, system_user=dash.constants.SystemUserType.CAMPAIGN_STOP))
+            budget_changes=budget_changes,
+            system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+            landing_mode=True))
 
     return actions
 
@@ -191,6 +196,7 @@ def _get_ad_group_ratios(ad_groups):
 
     spend_per_ad_group = defaultdict(list)
     for date in rrule.rrule(rrule.DAILY, dtstart=before_7_days, until=yesterday):
+        date = date.date()
         active_ad_groups = _get_ad_groups_active_on_date(date, ad_groups)
         for ad_group in active_ad_groups:
             spend_per_ad_group[ad_group.id].append(data[ad_group.id, date])
