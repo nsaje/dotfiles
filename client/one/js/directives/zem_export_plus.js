@@ -12,15 +12,17 @@ oneApp.directive('zemExportPlus', function () {
             columns: '=',
             order: '=',
             level: '=',
-            exportSources: '='
+            exportSources: '=',
+            hasPermission: '=zemHasPermission',
+            isPermissionInternal: '=zemIsPermissionInternal'
         },
         templateUrl: '/partials/zem_export_plus.html',
         controller: ['$scope', '$modal', function ($scope, $modal) {
-            // WORKAROUND: zemExportPlus directive uses isolated scope therefor it is not possible
-            // to access permission methods from MainCtrl controller directly (i.e. $scope.hasPermission(perm))
-            // FIXME: Find better solution for accessing permissions methods (e.g. dedicated service?)
-            $scope.hasPermission = $scope.$parent.$parent.hasPermission;
-            $scope.isPermissionInternal = $scope.$parent.$parent.isPermissionInternal;
+            //// WORKAROUND: zemExportPlus directive uses isolated scope therefor it is not possible
+            //// to access permission methods from MainCtrl controller directly (i.e. $scope.hasPermission(perm))
+            //// FIXME: Find better solution for accessing permissions methods (e.g. dedicated service?)
+            //$scope.hasPermission = $scope.$parent.$parent.hasPermission;
+            //$scope.isPermissionInternal = $scope.$parent.$parent.isPermissionInternal;
 
             $scope.exportModalTypes = [{
                 name: 'Download',

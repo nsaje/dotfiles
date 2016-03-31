@@ -35,7 +35,7 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
         };
 
         if ($scope.hasPermission('zemauth.can_include_model_ids_in_reports')) {
-            data['&include_model_ids'] = $scope.export.includeIds;
+            data['include_model_ids'] = $scope.export.includeIds;
         }
 
         api.scheduledReports.addScheduledReport(url, data).then(
