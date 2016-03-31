@@ -137,6 +137,19 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'asc'
         },
         {
+            nameCssClass: 'performance-icon',
+            field: 'performance',
+            unselectable: true,
+            checked: true,
+            type: 'icon',
+            totalRow: false,
+            help: 'Goal performance indicator',
+            order: true,
+            initialOrder: 'asc',
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance')
+        },
+        {
             name: 'Status',
             field: 'stateText',
             unselectable: true,
@@ -580,6 +593,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
                 $scope.totalRow.checked = $scope.selectedTotals;
@@ -615,6 +629,11 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
                 zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
+                // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
+                // make sure chart selection gets updated
+                defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+                $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
+                $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
             },
             function (data) {
                 // error

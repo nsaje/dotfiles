@@ -31,6 +31,7 @@ class OverviewSetting(object):
                  tooltip=None,
                  setting_type='setting',
                  section_start=None,
+                 internal=False,
                  warning=None):
         self.name = name
         self.value = value
@@ -39,6 +40,7 @@ class OverviewSetting(object):
         self.details_hide_label = None
         self.details_content = None
         self.icon = None
+        self.internal = internal
         self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
@@ -54,7 +56,7 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = 'happy' if ok else 'sad'
+        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -398,8 +400,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
         tooltip='Yesterday media spend'
-    ).performance(
-        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
@@ -561,11 +561,11 @@ def get_adgroup_running_status(ad_group_settings):
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.STOPPED
 
-    if state == dash.constants.AdGroupSettingsState.INACTIVE:
-        return dash.constants.InfoboxStatus.INACTIVE
-
     if ad_group.campaign.is_in_landing():
         return dash.constants.InfoboxStatus.LANDING_MODE
+
+    if state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return dash.constants.InfoboxStatus.INACTIVE
 
     return dash.constants.InfoboxStatus.ACTIVE
 
@@ -622,11 +622,12 @@ def _compute_daily_cap(ad_groups):
 
 
 def get_campaign_goal_list(user, campaign, start_date, end_date):
-    performance = dash.campaign_goals.get_goal_performance(user, campaign,
-                                                           start_date=start_date, end_date=end_date)
+    performance = dash.campaign_goals.get_goals_performance(user, campaign,
+                                                            start_date=start_date, end_date=end_date)
 
     settings = []
     first = True
+    permissions = user.get_all_permissions_with_access_levels()
     for status, metric_value, planned_value, campaign_goal in performance:
         goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
         if campaign_goal.conversion_goal:
@@ -639,6 +640,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
+            internal=first and 'zemauth.campaign_goal_performance' in permissions,
         )
         if campaign_goal.primary:
             entry.value_class = 'primary'

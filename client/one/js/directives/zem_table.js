@@ -85,6 +85,22 @@ oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
                 $window.open(data.destinationUrl || data.url, '_blank');
             };
 
+            $scope.additionalColumnClass = function (row, col) {
+                var classValue = (row.styles || {})[col.field],
+                    classMap = {};
+                classMap[constants.emoticon.HAPPY] = 'superperforming';
+                classMap[constants.emoticon.SAD] = 'underperforming';
+                return classMap[classValue]  ||  'default-class';
+            };
+
+            $scope.performance = function (status) {
+                var classMap = {};
+                classMap[constants.emoticon.HAPPY] = 'happy';
+                classMap[constants.emoticon.SAD] = 'sad';
+                classMap[constants.emoticon.NEUTRAL] = 'neutral';
+                return classMap[status];
+            };
+
             // HACK: campaign goals experiment
             // to be removed when this is ready https://trello.com/c/vUBH4tz1/591-campaign-goals
             $scope.getRowStyle = function (row) {

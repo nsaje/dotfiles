@@ -34,7 +34,7 @@ CPC_CHANGE_ALLOWED_COMMENTS = [
 # Budget Autopilot Settings
 MAX_BUDGET_GAIN = Decimal(1.2)
 MAX_BUDGET_LOSS = Decimal(0.8)
-MIN_SOURCE_BUDGET = Decimal(5.0)
+BUDGET_AP_MIN_SOURCE_BUDGET = Decimal(5.0)
 GOALS_COLUMNS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.TIME_ON_SITE: {'col': ['avg_tos', 0.7], 'spend_perc': Decimal(0.3)},

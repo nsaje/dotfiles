@@ -30,7 +30,6 @@ class AutopilotCpcTestCase(test.TestCase):
     @patch('automation.autopilot_settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE', Decimal('0.3'))
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE', Decimal('0.05'))
     @patch('automation.autopilot_settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE', Decimal('0.25'))
-    @patch('automation.autopilot_settings.MIN_SOURCE_BUDGET', Decimal('0.00001'))
     def test_calculate_new_autopilot_cpc(self):
         test_cases = (
             #  cpc, daily_budget, yesterday_spend, new_cpc, comments
@@ -42,7 +41,6 @@ class AutopilotCpcTestCase(test.TestCase):
             ('0.5', '10', '2', '0.55', []),
             ('0.5', '10', '0', '0.55', []),  # no yesterday spend
             ('0.5', '10', '5', '0.55', []),
-            ('0.5', '0', '5', '0.5', [CpcChangeComment.BUDGET_NOT_SET]),
             ('0.5', '-10', '5', '0.5', [CpcChangeComment.BUDGET_NOT_SET]),
             ('0.5', '10', '-5', '0.5', []),
             ('-0.5', '10', '5', '0.1', [CpcChangeComment.CPC_NOT_SET,

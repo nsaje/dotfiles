@@ -293,7 +293,12 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
     stat['uploaded'] = content_ad.created_dt.date()
-    stat['status'] = content_ad.state
+
+    if content_ad.archived:
+        stat['status'] = constants.ExportPlusStatus.ARCHIVED
+    else:
+        stat['status'] = content_ad.state
+
     return stat
 
 

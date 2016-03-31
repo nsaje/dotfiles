@@ -676,7 +676,7 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.extend(common_settings)
 
-        if user.has_perm('zemauth.can_see_campaign_goals'):
+        if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
                                                                    start_date, end_date))
 
@@ -1086,10 +1086,11 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
             if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
                 errors.update({
-                    'daily_budget_cc': 'Daily budget is too high. '
-                                       'Maximum daily budget can be up to {max_daily_budget}.'.format(
-                                           max_daily_budget=max_daily_budget
-                                       )
+                    'daily_budget_cc': [
+                        'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
+                            max_daily_budget=max_daily_budget
+                        )
+                    ]
                 })
 
         if errors:

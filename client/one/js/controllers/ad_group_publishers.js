@@ -723,6 +723,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
@@ -737,6 +738,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.updateRowBlacklistInfo();
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
                 zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
+                // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
+                // make sure chart selection gets updated
+                defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+                $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
+                $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.view_pubs_conversion_goals'));
             },
             function (data) {

@@ -27,11 +27,21 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
     ad_group_settings_on_autopilot = []
     ad_group_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()\
         .select_related('ad_group')
+    campaigns_in_landing = set(
+        dash.models.CampaignSettings.objects.all().filter(
+            id__in=dash.models.CampaignSettings.objects.all().group_current_settings(),
+            landing_mode=True).values_list('campaign_id', flat=True)
+    )
+
     for ags in ad_group_settings:
         if ags.autopilot_state in states:
             ad_group = ags.ad_group
             ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.\
                 filter(ad_group_source__ad_group=ad_group).group_current_settings()
+
+            if ad_group.campaign_id in campaigns_in_landing:
+                continue
+
             if ad_group.get_running_status(ags, ad_groups_sources_settings) == constants.AdGroupRunningStatus.ACTIVE:
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
@@ -57,8 +67,12 @@ def get_ad_group_sources_minimum_cpc(ad_group_source):
     return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
 
 
-def get_ad_group_sources_minimum_daily_budget(ad_group_source):
-    return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
+def get_ad_group_sources_minimum_daily_budget(ad_group_source,
+                                              ap_type=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
+    source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
+    if ap_type != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        return source_min_daily_budget
+    return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
 
 def get_goal_column(goal):

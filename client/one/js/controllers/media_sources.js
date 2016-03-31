@@ -22,7 +22,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
     $scope.hasInfoboxPermission = false;
-    var userSettings = null;
+    var userSettings = null,
+        hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
 
     $scope.updateSelectedSources = function (sourceId) {
         var i = $scope.selectedSourceIds.indexOf(sourceId);
@@ -117,6 +118,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             help: 'A media source where your content is being promoted.',
             order: true,
             initialOrder: 'asc'
+        },
+        {
+            nameCssClass: 'performance-icon',
+            field: 'performance',
+            unselectable: true,
+            checked: true,
+            type: 'icon',
+            totalRow: false,
+            help: 'Goal performance indicator',
+            order: true,
+            initialOrder: 'asc',
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance') && hasCampaignGoals
         },
         {
             name: 'Status',
@@ -516,6 +530,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
@@ -530,6 +545,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                     $scope.campaignGoals = data.campaign_goals;
                     zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
                     zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
+                    // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
+                    // make sure chart selection gets updated
+                    defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+                    $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
+                    $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
                 }
             },
             function (data) {

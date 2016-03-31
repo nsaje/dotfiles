@@ -63,12 +63,15 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
 
 
 class ExportPlusStatus(ConstantBase):
+    # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
     INACTIVE = 2
+    ARCHIVED = 3
 
     _VALUES = {
         ACTIVE: 'Active',
-        INACTIVE: 'Inactive'
+        INACTIVE: 'Inactive',
+        ARCHIVED: 'Archived'
     }
 
 
@@ -1053,6 +1056,18 @@ class CampaignGoalPerformance(ConstantBase):
         UNDERPERFORMING: 'Underperforming',
         AVERAGE: 'Average performance',
         SUPERPERFORMING: 'Superperforming',
+    }
+
+
+class Emoticon(ConstantBase):
+    HAPPY = 1
+    NEUTRAL = 2
+    SAD = 3
+
+    _VALUES = {
+        HAPPY: 'Happy',
+        SAD: 'Sad',
+        NEUTRAL: 'Neutral',
     }
 
 
