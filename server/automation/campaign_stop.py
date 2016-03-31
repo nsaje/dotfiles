@@ -123,7 +123,7 @@ def _set_ad_group_end_date(ad_group, end_date):
 
 def _stop_ad_group(ad_group):
     current_settings = ad_group.get_current_settings()
-    if current_settings.state == dash.constants.AdGroupSettingsState.ACTIVE:
+    if current_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
         return []
 
     new_settings = current_settings.copy_settings()
@@ -149,10 +149,7 @@ def _set_new_daily_budgets(campaign):
 
     actions = []
     for ad_group in ad_groups:
-        ad_group_daily_cap = int(remaining_today * ad_group_daily_cap_ratios.get(ad_group.id, 0))
-        if ad_group_daily_cap == 0:
-            actions.extend(_stop_ad_group(ad_group))
-            continue
+        ad_group_daily_cap = int(float(remaining_today) * ad_group_daily_cap_ratios.get(ad_group.id, 0))
 
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
             ad_group,
@@ -160,6 +157,11 @@ def _set_new_daily_budgets(campaign):
             per_ad_group_autopilot_data[ad_group],
             goal=None  # use default goal to maximize spend
         )
+
+        ap_budget_sum = sum(bc['new_budget'] for bc in budget_changes.values())
+        if ap_budget_sum > ad_group_daily_cap:
+            actions.extend(_stop_ad_group(ad_group))
+            continue
 
         actions.extend(autopilot_plus.set_autopilot_changes(
             budget_changes=budget_changes, system_user=dash.constants.SystemUserType.CAMPAIGN_STOP))

@@ -331,10 +331,15 @@ class GetMaximumDailyBudgetTestCase(TestCase):
         c4 = dash.models.Campaign.objects.get(id=4)  # active ad group but end date past
 
         date = datetime.date(2016, 3, 1)
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c1), set(c1.adgroup_set.all().exclude(id=3)))
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c2), set())
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c3), set(c3.adgroup_set.all()))
-        self.assertEqual(campaign_stop._get_ad_groups_active_on_date(date, c4), set())
+        self.assertEqual(
+            campaign_stop._get_ad_groups_active_on_date(
+                date, c1.adgroup_set.all()), set(c1.adgroup_set.all().exclude(id=3)))
+        self.assertEqual(
+            campaign_stop._get_ad_groups_active_on_date(date, c2.adgroup_set.all()), set())
+        self.assertEqual(
+            campaign_stop._get_ad_groups_active_on_date(date, c3.adgroup_set.all()), set(c3.adgroup_set.all()))
+        self.assertEqual(
+            campaign_stop._get_ad_groups_active_on_date(date, c4.adgroup_set.all()), set())
 
     def test_get_source_max_daily_budget(self):
         ags_settings = dash.models.AdGroupSourceSettings.objects.all().order_by('-created_dt')
@@ -409,7 +414,9 @@ class UpadateCampaignsInLandingTestCase(TestCase):
     @patch('automation.autopilot_plus.prefetch_autopilot_data')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('automation.autopilot_budgets.get_autopilot_daily_budget_recommendations')
-    def test_set_new_daily_budgets(self, mock_get_ap_rec, mock_get_mrb, mock_prefetch_ap_data, mock_zwei_send):
+    @patch('automation.campaign_stop._get_ad_group_ratios')
+    def test_set_new_daily_budgets(self, mock_ag_ratios, mock_get_ap_rec, mock_get_mrb,
+                                   mock_prefetch_ap_data, mock_zwei_send):
         ag1 = dash.models.AdGroup.objects.get(id=1)
         ag2 = dash.models.AdGroup.objects.get(id=2)
 
@@ -417,6 +424,11 @@ class UpadateCampaignsInLandingTestCase(TestCase):
         mock_prefetch_ap_data.return_value = {
             ag1: "Ad group 1 mock data",
             ag2: "Ad group 2 mock data",
+        }
+
+        mock_ag_ratios.return_value = {
+            1: 0.5,
+            2: 0.5
         }
 
         def ret_get_ap_rec(ad_group, daily_budget_cap, data, goal):
