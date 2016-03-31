@@ -57,7 +57,7 @@ oneApp.controller('DownloadExportReportModalCtrl',
                   '&by_day=' + $scope.export.byDay;
 
         if (true) {
-            url += '&add_ids=' + $scope.export.addIds;
+            url += '&include_model_ids=' + $scope.export.includeIds;
         }
         if (zemFilterService.isSourceFilterOn()) {
             url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');

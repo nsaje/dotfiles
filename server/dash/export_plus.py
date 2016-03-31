@@ -18,6 +18,10 @@ from utils import exc
 from utils.sort_helper import sort_results
 
 FIELDNAMES = {
+    'account_id': 'Account Id',
+    'campaign_id': 'Campaign Id',
+    'ad_group_id': 'Ad Group Id',
+    'content_ad_id': 'Content Ad Id',
     'account': 'Account',
     'ad_group': 'Ad Group',
     'available_budget': 'Available Budget',
@@ -88,7 +92,7 @@ FORMAT_EMPTY_TO_0 = [
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
                    conversion_goals, include_settings=False, include_budgets=False, include_flat_fees=False,
-                   include_projections=False, include_model_ids=True, **constraints):
+                   include_projections=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -138,8 +142,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 source=stat['source'])
             stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
 
-        if include_model_ids and model:
-            _populate_model_ids(stat, model)
+        _populate_model_ids(stat, model)
 
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
@@ -518,6 +521,7 @@ class AllAccountsExport(object):
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
 
+        model_id_fields = []
         required_fields = ['start_date', 'end_date']
         dimensions = []
         exclude_fields = []
@@ -525,13 +529,19 @@ class AllAccountsExport(object):
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
+            model_id_fields.extend(['account_id'])
         elif breakdown == 'campaign':
             required_fields.extend(['account', 'campaign'])
             dimensions.extend(['account', 'campaign'])
+            model_id_fields.extend(['account_id', 'campaign_id'])
         elif breakdown == 'ad_group':
             required_fields.extend(['account', 'campaign', 'ad_group'])
             dimensions.extend(['account', 'campaign', 'ad_group'])
+            model_id_fields.extend(['account_id', 'campaign_id', 'ad_group_id'])
         required_fields.extend(['status'])
+
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
 
         supported_settings_fields = ['default_account_manager', 'default_sales_representative']
         include_settings = breakdown == 'account' and \
@@ -571,7 +581,6 @@ class AllAccountsExport(object):
             include_budgets=include_budgets,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
-            include_model_ids=include_model_ids,
             account=accounts,
             source=filtered_sources)
 
@@ -625,7 +634,6 @@ class AccountExport(object):
             [],
             include_settings=include_settings,
             include_budgets=include_budgets,
-            include_model_ids=include_model_ids,
             account=account,
             source=filtered_sources)
 
@@ -664,7 +672,6 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
-            include_model_ids=include_model_ids,
             campaign=campaign,
             source=filtered_sources)
 
@@ -704,7 +711,6 @@ class AdGroupExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
-            include_model_ids=include_model_ids,
             ad_group=ad_group,
             source=filtered_sources)
 
