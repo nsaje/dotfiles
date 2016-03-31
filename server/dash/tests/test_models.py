@@ -59,6 +59,7 @@ class AdGroupSettingsTest(TestCase):
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
             'ga_tracking_type': GATrackingType.EMAIL,
+            'landing_mode': False,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),

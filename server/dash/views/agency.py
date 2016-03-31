@@ -358,9 +358,16 @@ class CampaignAgency(api_common.BaseApiView):
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
 
+            if new_settings.created_by is None and new_settings.system_user is not None:
+                changed_by = constants.SystemUserType.get_text(new_settings.system_user)
+            elif new_settings.created_by is None and new_settings.system_user is None:
+                changed_by = automation.settings.AUTOMATION_AI_NAME
+            else:
+                changed_by = new_settings.created_by.email
+
             history.append({
                 'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
+                'changed_by': changed_by,
                 'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None

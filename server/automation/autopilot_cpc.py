@@ -48,7 +48,7 @@ def _round_cpc(num):
 
 
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
-    underspend_perc = yesterdays_spend / max(current_daily_budget, autopilot_settings.MIN_SOURCE_BUDGET) - 1
+    underspend_perc = yesterdays_spend / current_daily_budget - 1
     current_cpc, cpc_change_comments = _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend)
     if cpc_change_comments:
         return (current_cpc, cpc_change_comments)

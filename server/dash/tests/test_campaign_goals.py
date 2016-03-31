@@ -293,6 +293,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(goals_infobox, [
             {
                 'section_start': True,
+                'internal': True,
                 'type': 'setting',
                 'name': 'Campaign Goals:',
                 'value': '10.00 seconds on site',
@@ -301,6 +302,7 @@ class CampaignGoalsTestCase(TestCase):
                 'description': 'planned 60.00'
             }, {
                 'section_start': False,
+                'internal': False,
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
@@ -308,11 +310,13 @@ class CampaignGoalsTestCase(TestCase):
                 'description': 'planned $10.00'
             }, {
                 'section_start': False,
+                'internal': False,
                 'type': 'setting',
                 'name': '',
                 'value': '$0.10 CPC'
             }, {
                 'section_start': False,
+                'internal': False,
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
@@ -320,6 +324,7 @@ class CampaignGoalsTestCase(TestCase):
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,
+                'internal': False,
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
@@ -327,6 +332,7 @@ class CampaignGoalsTestCase(TestCase):
                 'description': 'planned 75.00 %'
             }, {
                 'section_start': False,
+                'internal': False,
                 'type': 'setting',
                 'name': '',
                 'value': '1.20 % new unique visitors'

@@ -1608,6 +1608,7 @@ class AdGroupSettings(SettingsBase):
         'adobe_tracking_param',
         'autopilot_state',
         'autopilot_daily_budget',
+        'landing_mode',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1668,6 +1669,7 @@ class AdGroupSettings(SettingsBase):
         verbose_name='Auto-Pilot\'s Daily Budget',
         default=0
     )
+    landing_mode = models.BooleanField(default=False)
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -1732,7 +1734,8 @@ class AdGroupSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US'],
             'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-            'autopilot_daily_budget': 0.00
+            'autopilot_daily_budget': 0.00,
+            'landing_mode': False,
         }
 
     @classmethod
@@ -1758,7 +1761,8 @@ class AdGroupSettings(SettingsBase):
             'autopilot_state': 'Auto-Pilot',
             'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
-            'adobe_tracking_param': 'Adobe tracking parameter'
+            'adobe_tracking_param': 'Adobe tracking parameter',
+            'landing_mode': 'Landing Mode',
         }
 
         return NAMES[prop_name]

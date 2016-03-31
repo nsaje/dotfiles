@@ -179,6 +179,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'asc'
         },
         {
+            nameCssClass: 'performance-icon',
+            field: 'performance',
+            unselectable: true,
+            checked: true,
+            type: 'icon',
+            totalRow: false,
+            help: 'Goal performance indicator',
+            order: true,
+            initialOrder: 'asc',
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance')
+        },
+        {
             name: 'Status',
             field: 'status',
             unselectable: true,

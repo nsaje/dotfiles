@@ -34,29 +34,28 @@ TEMP_EMAILS = [
 def switch_low_budget_campaigns_to_landing_mode():
     for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
         remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
-        max_daily_budget = sum(max_daily_budget_per_ags.itervalues())
-        if available_tomorrow < max_daily_budget:
+        max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+        yesterday_spend = _get_yesterday_spend(campaign)
+        if available_tomorrow < max_daily_budget_sum:
             with transaction.atomic():
                 _switch_campaign_to_landing_mode(campaign)
                 actions = _set_end_date_to_today(campaign)
             zwei_actions.send(actions)
-            _send_campaign_stop_notification_email(campaign)
-        elif available_tomorrow < max_daily_budget * 2:
-            yesterday_spend = _get_yesterday_spend(campaign)
-            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+            _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
+        elif available_tomorrow < max_daily_budget_sum * 2:
+            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
 
 
 def update_campaigns_in_landing():
-    actions = []
     for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+        actions = []
         try:
             with transaction.atomic():
                 actions.extend(_set_new_daily_budgets(campaign))
                 actions.extend(_set_end_date_to_today(campaign))
         except:
             logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
-
-    zwei_actions.send(actions)
+        zwei_actions.send(actions)
 
 
 def get_max_settable_daily_budget(ad_group_source):
@@ -107,6 +106,12 @@ def _switch_campaign_to_landing_mode(campaign):
     new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
     new_campaign_settings.save(None)
 
+    for ad_group in campaign.adgroup_set.all().filter_active():
+        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.landing_mode = True
+        new_ad_group_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
+        new_ad_group_settings.save(None)
+
 
 def _set_ad_group_end_date(ad_group, end_date):
     current_ag_settings = ad_group.get_current_settings()
@@ -146,7 +151,7 @@ def _set_end_date_to_today(campaign):
 def _set_new_daily_budgets(campaign):
     ad_groups = campaign.adgroup_set.all().filter_active()
 
-    per_ad_group_autopilot_data = autopilot_plus.prefetch_autopilot_data(ad_groups)
+    per_ad_group_autopilot_data, _ = autopilot_plus.prefetch_autopilot_data(ad_groups)
     remaining_today, _, _ = _get_minimum_remaining_budget(campaign)
     ad_group_daily_cap_ratios = _get_ad_group_ratios(ad_groups)
 
@@ -245,7 +250,7 @@ def _get_ags_settings_dict(date, ad_group_sources):
 
 
 def _get_max_daily_budget_per_ags(date, campaign):
-    ad_groups = _get_ad_groups_active_on_date(date, campaign.adgroup_set.all())
+    ad_groups = _get_ad_groups_running_on_date(date, campaign.adgroup_set.all())
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups,
     ).select_related('source__source_type')
@@ -277,48 +282,55 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings
     return ags_max_daily_budget
 
 
-def _get_ag_settings_dict(date, ad_groups):
-    ad_group_settings_on_date = dash.models.AdGroupSettings.objects.filter(
+def _get_ad_groups_user_end_dates(ad_groups):
+    ag_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups,
-        created_dt__lt=date+datetime.timedelta(days=1),
-        created_dt__gte=date,
-    ).order_by('-created_dt')
+        landing_mode=False
+    ).group_current_settings().values('ad_group_id', 'end_date')
+    return {sett['ad_group_id']: sett['end_date'] for sett in ag_settings}
 
-    ret = defaultdict(list)
-    for ag_sett in ad_group_settings_on_date.iterator():
-        ret[ag_sett.ad_group_id].append(ag_sett)
+
+def _get_ag_ids_active_on_date(date, ad_groups):
+    ag_ids_active_on_date = set(
+        dash.models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups,
+            created_dt__lt=date+datetime.timedelta(days=1),
+            created_dt__gte=date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+        ).order_by('-created_dt').values_list('ad_group_id', flat=True).iterator()
+    )
 
     latest_ad_group_settings_before_date = dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups,
         created_dt__lt=date,
-    ).group_current_settings()
-
+    ).group_current_settings().values('ad_group_id', 'state')
     for ag_sett in latest_ad_group_settings_before_date.iterator():
-        ret[ag_sett.ad_group_id].append(ag_sett)
+        if ag_sett['state'] == dash.constants.AdGroupSettingsState.ACTIVE:
+            ag_ids_active_on_date.add(ag_sett['ad_group_id'])
 
-    return ret
+    return ag_ids_active_on_date
 
 
-def _get_ad_groups_active_on_date(date, ad_groups):
-    ad_groups_settings = _get_ag_settings_dict(date, ad_groups)
-    active_ad_groups = set()
+def _get_ad_groups_running_on_date(date, ad_groups):
+    ad_group_end_dates = _get_ad_groups_user_end_dates(ad_groups)
+    ag_ids_active_on_date = _get_ag_ids_active_on_date(date, ad_groups)
+
+    running_ad_groups = set()
     for ad_group in ad_groups:
-        for sett in ad_groups_settings[ad_group.id]:
-            if (not sett.end_date or sett.end_date >= date) and\
-               sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
-                active_ad_groups.add(ad_group)
-                break
+        end_date = ad_group_end_dates.get(ad_group.id)
+        if ad_group.id in ag_ids_active_on_date and (end_date is None or end_date >= date):
+            running_ad_groups.add(ad_group)
 
-            if sett.created_dt.date() < date:
-                break
-
-    return active_ad_groups
+    return running_ad_groups
 
 
-def _send_campaign_stop_notification_email(campaign):
+def _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
     subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is switching to landing mode'
     body = u'''Hi, campaign manager,
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
+
+The available media budget remaining today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
 Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode.
 
@@ -335,6 +347,9 @@ Zemanta'''  # noqa
         campaign_name=campaign.name,
         account_name=campaign.account.name,
         campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget-plus'.format(campaign.pk)),
+        remaining_today=remaining_today,
+        max_daily_budget=max_daily_budget,
+        yesterday_spend=yesterday_spend,
     )
 
     email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
@@ -346,7 +361,7 @@ def _send_depleting_budget_notification_email(campaign, remaining_today, max_dai
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
 
-The available budget remaining today is ${remaining_today:.2f}, current daily cap is ${max_daily_budget:.2f} and yesterday's spend was ${yesterday_spend:.2f}.
+The available media budget remaining today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
 Please add the budget and continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 

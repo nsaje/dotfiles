@@ -88,7 +88,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
 
 
 def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
-    if not user.has_perm('zemauth.campaign_goal_optimization'):
+    if not user.has_perm('zemauth.campaign_goal_performance'):
         return
     campaign_goals_map = {}
     campaign_id_map = {
@@ -527,6 +527,10 @@ class SourcesTable(object):
                     start_date, end_date)
 
         ad_group_sources = level_sources_table.active_ad_group_sources
+
+        if level_ not in ('all_accounts', 'accounts', ):
+            campaign = kwargs.get('campaign') or kwargs['ad_group'].campaign
+            set_rows_goals_performance(user, sources_data, start_date, end_date, [campaign])
 
         rows = self.get_rows(
             id_,

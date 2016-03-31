@@ -1,6 +1,5 @@
 <div class="infobox-setting">
-    <div class="infobox-setting-label">{{label}}</div>
-    
+    <div class="infobox-setting-label"><zem-internal-feature ng-if="internal" popover-placement="left"></zem-internal-feature>{{label}}</div>
     <div class="infobox-setting-value-container {{valueClass}}">
         <div ng-if="isSet(icon) && icon === constants.emoticon.HAPPY" style="" class="infobox-setting-icon">
             <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
