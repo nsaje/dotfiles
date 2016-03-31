@@ -522,7 +522,7 @@ class Campaign(models.Model, PermissionMixin):
                 'campaign__id', flat=True
             )
 
-            return self.exclude(pk__in=filtered)
+            return self.filter(pk__in=filtered)
 
 
 class SettingsBase(models.Model, CopySettingsMixin):
@@ -1954,8 +1954,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
-    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
-                                                   null=True, blank=True)
+    landing_mode = models.BooleanField(default=False)
 
     objects = QuerySetManager()
 

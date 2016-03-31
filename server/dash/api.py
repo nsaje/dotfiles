@@ -1252,7 +1252,7 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj, request, send_action=True, send_to_zwei=True, system_user=None):
+    def set(self, settings_obj, request, send_action=True, send_to_zwei=True, system_user=None, landing_mode=None):
         latest_settings = self.ad_group_source.get_current_settings()
 
         state = settings_obj.get('state')
@@ -1287,11 +1287,11 @@ class AdGroupSourceSettingsWriter(object):
             if daily_budget_cc is not None:
                 old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
                 new_settings.daily_budget_cc = daily_budget_cc
-            if system_user and system_user in constants.SystemUserType.get_all():
-                new_settings.system_user = system_user
+            if landing_mode is not None:
+                new_settings.landing_mode = landing_mode
             new_settings.save(request)
 
-            self.add_to_history_and_notify(settings_obj, old_settings_obj, request)
+            self.add_to_history_and_notify(settings_obj, old_settings_obj, request, system_user)
 
             if send_action:
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
@@ -1324,7 +1324,7 @@ class AdGroupSourceSettingsWriter(object):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
         return models.AdGroup.is_ad_group_active(ad_group_settings)
 
-    def add_to_history_and_notify(self, change_obj, old_change_obj, request):
+    def add_to_history_and_notify(self, change_obj, old_change_obj, request, system_user):
         changes_text_parts = []
         for key, val in change_obj.items():
             if val is None:
@@ -1346,6 +1346,10 @@ class AdGroupSourceSettingsWriter(object):
 
         settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = ', '.join(changes_text_parts)
+
+        if not request:
+            settings.system_user = system_user
+
         settings.save(request)
 
         if request:
