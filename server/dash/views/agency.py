@@ -130,6 +130,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'id': str(ad_group.pk),
                 'name': ad_group.name,
                 'state': settings.state,
+                'landing_mode': settings.landing_mode,
                 'start_date': settings.start_date,
                 'end_date': settings.end_date,
                 'cpc_cc':
