@@ -8,13 +8,8 @@ from django.db.models import F
 from django.conf import settings
 
 from utils import request_signer
-import sqlparse
 
 logger = logging.getLogger(__name__)
-
-
-def print_sql(query):
-    print sqlparse.format(str(query), reindent=True, keyword_case='upper')
 
 
 @csrf_exempt

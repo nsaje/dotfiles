@@ -9,13 +9,24 @@ import dash.constants
 import dash.models
 
 
-class K1CampaignsApiTest(TestCase):
+class K1ApiTest(TestCase):
 
-    fixtures = ['test_k1_campaigns_api.yaml']
+    fixtures = ['test_k1_api.yaml']
+
+    def test_no_signature(self):
+        response = self.client.get(
+            reverse('k1api.get_ad_group_sources'),
+        )
+        self.assertEqual(response.status_code, 401)
+
+        response = self.client.get(
+            reverse('k1api.get_content_ad_sources'),
+        )
+        self.assertEqual(response.status_code, 401)
 
     def _test_ad_group_source_filter(self, mock_verify_wsgi_request, source_types=None):
         response = self.client.get(
-            reverse('k1campaignsapi.get_ad_group_sources'),
+            reverse('k1api.get_ad_group_sources'),
             {'source_type': source_types},
         )
         self.assertEqual(response.status_code, 200)
@@ -65,7 +76,7 @@ class K1CampaignsApiTest(TestCase):
 
     def _test_content_ads_filters(self, mock_verify_wsgi_request, source_types=None, ad_groups=None):
         response = self.client.get(
-            reverse('k1campaignsapi.get_content_ad_sources'),
+            reverse('k1api.get_content_ad_sources'),
             {'source_type': source_types, 'ad_group': ad_groups},
         )
         self.assertEqual(response.status_code, 200)

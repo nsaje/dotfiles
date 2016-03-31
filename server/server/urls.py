@@ -11,7 +11,7 @@ import utils.statsd_helper
 from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
-import k1campaignsapi.views
+import k1api.views
 import actionlog.views
 import convapi.views
 import reports.views
@@ -520,18 +520,18 @@ urlpatterns += patterns(
     )
 )
 
-# K1 Campaigns Api
+# K1 Api
 urlpatterns += patterns(
     '',
     url(
-        r'^k1campaignsapi/get_ad_group_sources$',
-        k1campaignsapi.views.get_ad_group_sources,
-        name='k1campaignsapi.get_ad_group_sources',
+        r'^k1api/get_ad_group_sources$',
+        k1api.views.get_ad_group_sources,
+        name='k1api.get_ad_group_sources',
     ),
     url(
-        r'^k1campaignsapi/get_content_ad_sources$',
-        k1campaignsapi.views.get_content_ad_sources,
-        name='k1campaignsapi.get_content_ad_sources',
+        r'^k1api/get_content_ad_sources$',
+        k1api.views.get_content_ad_sources,
+        name='k1api.get_content_ad_sources',
     ),
 )
 
