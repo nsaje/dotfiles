@@ -594,23 +594,30 @@ class AccountExport(object):
         account = helpers.get_account(user, account_id)
 
         dimensions = ['account']
+        model_id_fields = ['account_id']
         required_fields = ['start_date', 'end_date', 'account']
         exclude_fields = []
         exclude_budgets = False
         if breakdown == 'campaign':
             required_fields.extend(['campaign'])
             dimensions.extend(['campaign'])
+            model_id_fields.extend(['campaign_id'])
         elif breakdown == 'ad_group':
             required_fields.extend(['campaign', 'ad_group'])
             dimensions.extend(['campaign', 'ad_group'])
+            model_id_fields.extend(['campaign_id', 'ad_group_id'])
             exclude_budgets = True
         elif breakdown == 'content_ad':
             required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
+            model_id_fields.extend(['campaign_id', 'ad_group_id', 'content_ad_id'])
             exclude_budgets = True
         if exclude_budgets or by_day:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
+
         required_fields.extend(['status'])
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
@@ -647,15 +654,20 @@ class CampaignExport(object):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
+        model_id_fields = ['account_id', 'campaign_id']
         required_fields = ['start_date', 'end_date', 'account', 'campaign']
 
         if breakdown == 'ad_group':
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
+            model_id_fields.extend(['ad_group_id'])
         elif breakdown == 'content_ad':
             required_fields.extend(['ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
+            model_id_fields.extend(['ad_group_id', 'content_ad_id'])
         required_fields.extend(['status'])
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
@@ -685,15 +697,20 @@ class AdGroupExport(object):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
+        model_id_fields = ['account_id', 'campaign_id']
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
         dimensions = []
 
         if breakdown == 'ad_group':
             dimensions.extend(['ad_group'])
+            model_id_fields.extend(['ad_group_id'])
         elif breakdown == 'content_ad':
             required_fields.extend(['title', 'image_url', 'url'])
             dimensions.extend(['content_ad'])
+            model_id_fields.extend(['ad_group_id', 'content_ad_id'])
         required_fields.extend(['status'])
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
