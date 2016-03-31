@@ -2,6 +2,12 @@
 oneApp.controller('DownloadExportReportModalCtrl',
   ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state',
   function ($scope, $modalInstance, api, zemFilterService, $window, $state) {
+      // WORKAROUND: zemExportPlus directive uses isolated scope therefor it is not possible
+      // to access permission methods from MainCtrl controller directly (i.e. $scope.hasPermission(perm))
+      // FIXME: Find better solution for accessing permissions methods (e.g. dedicated service?)
+      $scope.hasPermission = $scope.$parent.$parent.hasPermission;
+      $scope.isPermissionInternal = $scope.$parent.$parent.isPermissionInternal;
+
       $scope.showInProgress = false;
       $scope.export = {};
 

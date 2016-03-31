@@ -36,9 +36,9 @@
           </div>
         </div>
 
-        <!-- TODO - add permission, internal feature -->
-        <div class="form-group">
+        <div class="form-group" ng-if="!!hasPermission('zemauth.can_include_model_ids_in_reports')">
             <div class="col-xs-4">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_include_model_ids_in_reports')" popover-placement="right"></zem-internal-feature>
                 <label for="by-day-checkbox" class="control-label">Add IDs to report</label>
             </div>
             <div class="col-xs-4">
