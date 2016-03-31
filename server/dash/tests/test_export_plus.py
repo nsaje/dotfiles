@@ -64,7 +64,8 @@ class ExportPlusTestCase(test.TestCase):
                 'impressions': 300000,
                 'ctr': 3.03,
                 'some_random_metric': 14,
-                'source': 3
+                'source': 3,
+                'is_archived': True
             }
         ]
 
@@ -145,7 +146,7 @@ class ExportPlusTestCase(test.TestCase):
         data = self.data
         data[0]['status'] = 1
         data[1]['status'] = 2
-        data[2]['status'] = 3
+        data[2]['status'] = 2
         content = export_plus.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
@@ -214,6 +215,7 @@ class ExportPlusTestCase(test.TestCase):
             'impressions': 100000,
             'clicks': 103,
             'status': 1,
+            'is_archived': False
         }, {
             'uploaded': datetime.date(2015, 2, 21),
             'end_date': datetime.date(2014, 7, 2),
@@ -233,7 +235,8 @@ class ExportPlusTestCase(test.TestCase):
             'date': datetime.date(2014, 7, 1),
             'impressions': 200000,
             'clicks': 203,
-            'status': 2
+            'status': 2,
+            'is_archived': False
         }, {
             'uploaded': datetime.date(2015, 2, 23),
             'end_date': datetime.date(2014, 7, 2),
@@ -253,7 +256,8 @@ class ExportPlusTestCase(test.TestCase):
             'date': datetime.date(2014, 7, 1),
             'impressions': 300000,
             'clicks': 303,
-            'status': 3
+            'status': 2,
+            'is_archived': True
         }])
 
     @patch('reports.api_contentads.query')
@@ -467,7 +471,7 @@ class ExportPlusTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
-        self.assertEqual(rows[0].get('status'), constants.ExportPlusStatus.ARCHIVED)
+        self.assertEqual(rows[0].get('status'), constants.ExportPlusStatus.INACTIVE)
         self.assertEqual(rows[1].get('status'), constants.ExportPlusStatus.INACTIVE)
         self.assertEqual(rows[2].get('status'), constants.ExportPlusStatus.ACTIVE)
 

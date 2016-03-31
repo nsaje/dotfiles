@@ -285,12 +285,8 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
     stat['uploaded'] = content_ad.created_dt.date()
-
-    if content_ad.archived:
-        stat['status'] = constants.ExportPlusStatus.ARCHIVED
-    else:
-        stat['status'] = content_ad.state
-
+    stat['status'] = content_ad.state
+    stat['is_archived'] = content_ad.archived
     return stat
 
 
@@ -301,6 +297,7 @@ def _populate_ad_group_stat(stat, ad_group, statuses):
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
     stat['ad_group'] = ad_group.name
+    stat['is_archived'] = ad_group.is_archived()
     return stat
 
 
@@ -398,12 +395,13 @@ def get_csv_content(fieldnames, data):
     writer.writerow(fieldnames)
     for item in data:
         row = {}
+        is_archived = item.get('is_archived', False)
         for field in fieldnames.keys():
             formatted_value = item.get(field)
             formatted_value = _format_empty_value(formatted_value, field)
             formatted_value = _format_percentages(formatted_value, field)
             formatted_value = _format_decimals(formatted_value, field)
-            formatted_value = _format_statuses_and_dates(formatted_value, field)
+            formatted_value = _format_statuses_and_dates(formatted_value, field, is_archived)
             row[field] = formatted_value
 
         writer.writerow(row)
@@ -425,10 +423,12 @@ def _format_percentages(value, field):
     return value
 
 
-def _format_statuses_and_dates(value, field):
+def _format_statuses_and_dates(value, field, is_archived):
     if field == 'date':
         return value.strftime('%Y-%m-%d')
     elif field == 'status':
+        if is_archived:
+            value = constants.ExportPlusStatus.ARCHIVED
         return constants.ExportPlusStatus.get_text(value)
     return value
 
