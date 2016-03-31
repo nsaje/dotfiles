@@ -50,7 +50,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 'enable_adobe_tracking': False,
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
-                'autopilot_min_budget': '100'
+                'autopilot_min_budget': '0'
             }
         }
 
@@ -132,7 +132,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_min_budget': '100',
+                    'autopilot_min_budget': '0',
                     'autopilot_optimization_goal': 'maximum spend'
                 },
                 'warnings': {}
@@ -238,7 +238,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100',
+                        'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
@@ -412,7 +412,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100',
+                        'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': 'maximum spend'
                     }
                 },

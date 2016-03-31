@@ -992,7 +992,7 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
 
 def enabling_autopilot_sources_allowed(ad_group_settings):
     return ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-        ad_group_settings.autopilot_daily_budget - automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET >=\
+        ad_group_settings.autopilot_daily_budget - automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC >=\
         automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group)
 
 
