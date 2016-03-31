@@ -142,7 +142,16 @@ def _stop_ad_group(ad_group):
     new_settings.end_date = user_end_date
     new_settings.save(None)
 
-    return actionlog.api.init_set_ad_group_state(ad_group, new_settings.state, request=None, send=False)
+    actions = dash.api.order_ad_group_settings_update(
+        ad_group,
+        current_settings,
+        new_settings,
+        request=None,
+        send=False,
+    )
+
+    actions.extend(actionlog.api.init_set_ad_group_state(ad_group, new_settings.state, request=None, send=False))
+    return actions
 
 
 def _set_end_date_to_today(campaign):
