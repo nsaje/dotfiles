@@ -19,11 +19,11 @@ def print_sql(query):
 
 @csrf_exempt
 def get_ad_group_sources(request):
-    # try:
-    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    # except request_signer.SignatureError as e:
-    #     logger.exception('Invalid K1 signature.')
-    #     return _error_response('Invalid K1 signature.', status=401)
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        return _error_response('Invalid K1 signature.', status=401)
 
     source_types_filter = request.GET.getlist('source_type')
 
@@ -74,11 +74,7 @@ def get_ad_group_sources(request):
     if source_types_filter:
         ad_group_sources = ad_group_sources.filter(
             source__source_type__type__in=source_types_filter)
-
-    # if not include_maintenance:
     ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
-
-    # if not include_deprecated:
     ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
 
     # first, partition by source credentials
@@ -88,7 +84,6 @@ def get_ad_group_sources(request):
             ad_group_source['source_credentials_id']].append(ad_group_source)
 
     # build object tree per source credentials
-    # FIXME rename ad_group_sources to something indicating it's per-source-credentials
     source_credentials_entities = []
     for source_credentials_id, ad_group_sources in ad_group_sources_by_source_credentials.items():
         # index objects by their parent ids
@@ -96,7 +91,6 @@ def get_ad_group_sources(request):
         for ad_group_source in ad_group_sources:
             ad_group_sources_by_ad_group[ad_group_source['ad_group_id']].append({
                 'id': ad_group_source['id'],
-                'source_credentials_id': ad_group_source['source_credentials_id'],
                 'source_campaign_key': ad_group_source['source_campaign_key'],
                 # we need source details per-adgroupsource since source_credentials'
                 # source may differ from adgroup source on b1 sources
@@ -157,14 +151,16 @@ def get_ad_group_sources(request):
 
 @csrf_exempt
 def get_content_ad_sources(request):
-    # try:
-    #     request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    # except request_signer.SignatureError as e:
-    #     logger.exception('Invalid K1 signature.')
-    #     return _error_response('Invalid K1 signature.', status=401)
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        return _error_response('Invalid K1 signature.', status=401)
 
     contentadsources = (
         dash.models.ContentAdSource.objects
+        .filter(content_ad__archived=False)
+        .filter(source_content_ad_id__isnull=False)
         .annotate(
             ad_group_id=F('content_ad__ad_group_id'),
             source_name=F('source__name'),

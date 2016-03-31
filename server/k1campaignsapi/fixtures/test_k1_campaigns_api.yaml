@@ -79,6 +79,7 @@
         name: AdBlade
         tracking_slug: 'adblade'
         source_type: 1
+        maintenance: False
     model: dash.source
     pk: 1
 
@@ -88,6 +89,7 @@
         name: Gravity
         tracking_slug: 'gravity'
         source_type: 2
+        maintenance: False
     model: dash.source
     pk: 2
 
@@ -107,6 +109,7 @@
         name: Taboola
         tracking_slug: 'taboola'
         source_type: 4
+        maintenance: False
     model: dash.source
     pk: 4
 
@@ -116,6 +119,7 @@
         name: Yahoo
         tracking_slug: 'yahoo'
         source_type: 5
+        maintenance: False
     model: dash.source
     pk: 5
 
@@ -126,6 +130,7 @@
         tracking_slug: 'adiant'
         source_type: 6
         content_ad_submission_type: 2
+        maintenance: False
     model: dash.source
     pk: 6
 
@@ -195,6 +200,16 @@
     model: dash.adgroup
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
+
 # test adgroupsource
 
 -   fields:
@@ -245,6 +260,22 @@
         source_credentials: 6
     model: dash.adgroupsource
     pk: 6
+
+-   fields:
+        source: 5
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 7
+
+-   fields:
+        source: 4
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 8
 
 # test adgroupsourcestate
 
@@ -451,6 +482,7 @@
         submission_status: -1
         state: 2
         source_state: 2
+        source_content_ad_id: '123456790'
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
@@ -462,6 +494,7 @@
         submission_status: 2
         state: 2
         source_state: 2
+        source_content_ad_id: '123456791'
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource

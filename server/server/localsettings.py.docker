@@ -18,20 +18,12 @@ STATS_E2E_DB_NAME = 'stats_e2e'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    	'HOST': 'development-zemantaone.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
-    	'PORT': 5432,
-        'NAME': 'one',
-        'USER': 'eins23',
-        'PASSWORD': Secret('plain::RDSdev123!').get()
+        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-    #     'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
-    #     'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
-    #     'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
-    #     'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
-    # },
     'e2e': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',

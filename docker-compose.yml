@@ -32,7 +32,6 @@ telegraf:
     command: udp-recv:8135 -
     tty: true
 
-
 memcached:
     image: memcached
     expose:
@@ -56,7 +55,7 @@ eins:
     hostname: eins
     image: zemanta/z1
     ports:
-      - "8001:8000"
+      - "8000:8000"
     links:
       - "postgres"
       - "postgres:db"
