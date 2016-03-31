@@ -48,4 +48,3 @@ secretcrypt==0.4.1
 # Statsd and influx
 statsd==3.2.1
 git+https://github.com/Zemanta/django-statsd-influx.git@v0.1
-sqlparse==0.1.19
