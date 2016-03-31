@@ -928,7 +928,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 id: settings.id,
                 name: settings.name,
                 state: settings.state,
-                landingMode: settings.landing_mode,
                 startDate: settings.start_date ? moment(settings.start_date).toDate() : null,
                 endDate: settings.end_date ? moment(settings.end_date).toDate() : null,
                 manualStop: !settings.end_date,

@@ -187,12 +187,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         new_settings.landing_mode = True
         new_settings.save(req)
 
-        """
-        for source_settings in models.AdGroupSourceSettings.objects.all():
-            new_source_settings = source_settings.copy_settings()
-            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
-            new_source_settings.save(req)
-        """
         self.add_permissions(['settings_view'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -391,6 +385,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
+            self.maxDiff = None
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
