@@ -202,7 +202,7 @@ def _get_ad_group_ratios(ad_groups):
     spend_per_ad_group = defaultdict(list)
     for date in rrule.rrule(rrule.DAILY, dtstart=before_7_days, until=yesterday):
         date = date.date()
-        active_ad_groups = _get_ad_groups_active_on_date(date, ad_groups)
+        active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups)
         for ad_group in active_ad_groups:
             spend_per_ad_group[ad_group.id].append(data[ad_group.id, date])
 
