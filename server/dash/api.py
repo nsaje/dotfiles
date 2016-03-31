@@ -839,38 +839,58 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                         )
                     )
             else:
-                if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
-                    # do not create an action - only used for our redirector
-                    continue
-
-                if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
-                    continue
-
-                if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
-                    continue
-
-                if field_name == 'tracking_code':
-                    tracking_slug = ad_group_source.source.tracking_slug
-                    new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
-
-                if field_name == 'target_regions':
-                    if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
-                        continue
-
-                    new_field_value = _get_manual_action_target_regions_value(
-                        ad_group_source,
-                        current_settings,
-                        new_settings
-                    )
-
-                actionlog.api.init_set_ad_group_manual_property(
-                    ad_group_source,
+                ad_group_setting_manual_update(
                     request,
+                    ad_group_source,
+                    source,
                     field_name,
-                    new_field_value
+                    new_field_value,
+                    current_settings,
+                    new_settings
                 )
 
     return actions
+
+
+def ad_group_setting_manual_update(
+    request,
+    ad_group_source,
+    source,
+    field_name,
+    field_value,
+    current_settings,
+    new_settings
+):
+    if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
+        # do not create an action - only used for our redirector
+        return
+
+    if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
+        return
+
+    if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
+        return
+
+    if field_name == 'tracking_code':
+        tracking_slug = ad_group_source.source.tracking_slug
+        field_value = _substitute_tracking_macros(field_value, tracking_slug)
+
+    if field_name == 'target_regions':
+        if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
+            return
+
+        field_value = _get_manual_action_target_regions_value(
+            ad_group_source,
+            current_settings,
+            new_settings
+        )
+
+    actionlog.api.init_set_ad_group_manual_property(
+        ad_group_source,
+        request,
+        field_name,
+        field_value
+    )
 
 
 def create_global_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist, send=True):
