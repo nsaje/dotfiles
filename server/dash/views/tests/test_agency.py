@@ -199,8 +199,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             follow=True
         )
 
-        self.maxDiff = None
-        from pudb import set_trace; set_trace()
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'end_date': {
