@@ -561,11 +561,11 @@ def get_adgroup_running_status(ad_group_settings):
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.STOPPED
 
-    if state == dash.constants.AdGroupSettingsState.INACTIVE:
-        return dash.constants.InfoboxStatus.INACTIVE
-
     if ad_group.campaign.is_in_landing():
         return dash.constants.InfoboxStatus.LANDING_MODE
+
+    if state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return dash.constants.InfoboxStatus.INACTIVE
 
     return dash.constants.InfoboxStatus.ACTIVE
 
