@@ -27,7 +27,7 @@ class AutopilotPlusTestCase(test.TestCase):
             'new_cpc_cc': Decimal('0.2')
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes)
-        mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')}, None)
+        mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')}, None, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -38,7 +38,7 @@ class AutopilotPlusTestCase(test.TestCase):
             'new_budget': Decimal('200')
         }}
         autopilot_plus.set_autopilot_changes(budget_changes=budget_changes)
-        mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')}, None)
+        mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')}, None, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -54,7 +54,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
         mock_update_values.assert_called_with(
-            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, None)
+            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, None, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')

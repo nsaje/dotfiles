@@ -467,4 +467,4 @@ class UpadateCampaignsInLandingTestCase(TestCase):
             self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, action.action)
 
             current_settings = action.ad_group_source.get_current_settings()
-            self.assertEqual(dash.constants.SystemUserType.CAMPAIGN_STOP, current_settings.system_user)
+            self.assertTrue(current_settings.landing_mode)
