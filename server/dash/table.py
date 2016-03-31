@@ -608,12 +608,8 @@ class SourcesTable(object):
                 )
             response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
-            enabling_autopilot_sources_allowed = True
-            if level_sources_table.ad_group_settings.autopilot_state ==\
-                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-                enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
-                    level_sources_table.ad_group_settings)
-            response['enabling_autopilot_sources_allowed'] = enabling_autopilot_sources_allowed
+            response['enabling_autopilot_sources_allowed'] = helpers.enabling_autopilot_sources_allowed(
+                level_sources_table.ad_group_settings)
 
         if user.has_perm('zemauth.campaign_goal_optimization') and\
                 level_ in ('ad_groups', 'campaigns'):

@@ -34,7 +34,7 @@ oneApp.directive('zemStateSelector', function () {
                 }
 
                 // prevent enabling source when enabling not allowed by the autopilot
-                if(!$scope.active && $scope.enablingAutopilotSourcesNotAllowed) {
+                if (!$scope.active && $scope.enablingAutopilotSourcesNotAllowed) {
                     return;
                 }
 
