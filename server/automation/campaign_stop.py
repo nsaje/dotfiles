@@ -31,8 +31,8 @@ def switch_low_budget_campaigns_to_landing_mode():
         yesterday_spend = _get_yesterday_spend(campaign)
         if available_tomorrow < max_daily_budget_sum:
             with transaction.atomic():
-                _switch_campaign_to_landing_mode(campaign)
                 actions = _set_end_date_to_today(campaign)
+                _switch_campaign_to_landing_mode(campaign)
             zwei_actions.send(actions)
             _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
         elif available_tomorrow < max_daily_budget_sum * 2:

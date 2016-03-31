@@ -835,7 +835,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 def is_adg_setting_auto_updateable(field_name, source, current_settings, new_settings):
     setting_updateable = (
         field_name == 'start_date' and source.can_modify_start_date(),
-        field_name == 'end_date' and not new_settings.landing_mode and source.can_modify_end_date(),
+        field_name == 'end_date' and not current_settings.landing_mode and source.can_modify_end_date(),
         field_name == 'target_devices' and source.can_modify_device_targeting(),
         (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
         source.update_tracking_codes_on_content_ads()),
