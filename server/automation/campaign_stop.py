@@ -130,12 +130,15 @@ def _set_ad_group_end_date(ad_group, end_date):
 
 
 def _stop_ad_group(ad_group):
+    user_end_date = _get_ad_groups_user_end_dates([ad_group])[ad_group.id]
     current_settings = ad_group.get_current_settings()
     if current_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
         return []
 
     new_settings = current_settings.copy_settings()
     new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+    new_settings.landing_mode = False
+    new_settings.end_date = user_end_date
     new_settings.save(None)
 
     return actionlog.api.init_set_ad_group_state(ad_group, new_settings.state, request=None, send=False)
@@ -202,7 +205,7 @@ def _get_ad_group_ratios(ad_groups):
     spend_per_ad_group = defaultdict(list)
     for date in rrule.rrule(rrule.DAILY, dtstart=before_7_days, until=yesterday):
         date = date.date()
-        active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups)
+        active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=True)
         for ad_group in active_ad_groups:
             spend_per_ad_group[ad_group.id].append(data[ad_group.id, date])
 
@@ -290,6 +293,13 @@ def _get_ad_groups_user_end_dates(ad_groups):
     return {sett['ad_group_id']: sett['end_date'] for sett in ag_settings}
 
 
+def _get_ad_groups_latest_end_dates(ad_groups):
+    ag_settings = dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups,
+    ).group_current_settings().values('ad_group_id', 'end_date')
+    return {sett['ad_group_id']: sett['end_date'] for sett in ag_settings}
+
+
 def _get_ag_ids_active_on_date(date, ad_groups):
     ag_ids_active_on_date = set(
         dash.models.AdGroupSettings.objects.filter(
@@ -311,8 +321,11 @@ def _get_ag_ids_active_on_date(date, ad_groups):
     return ag_ids_active_on_date
 
 
-def _get_ad_groups_running_on_date(date, ad_groups):
-    ad_group_end_dates = _get_ad_groups_user_end_dates(ad_groups)
+def _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=False):
+    if user_end_dates:
+        ad_group_end_dates = _get_ad_groups_user_end_dates(ad_groups)
+    else:
+        ad_group_end_dates = _get_ad_groups_latest_end_dates(ad_groups)
     ag_ids_active_on_date = _get_ag_ids_active_on_date(date, ad_groups)
 
     running_ad_groups = set()
