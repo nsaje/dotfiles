@@ -634,7 +634,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
             goal_description += ' - ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
-            '' if not first else 'Campaign Goals:',
+            '' if not first else 'Campaign goals:',
             goal_description,
             planned_value and 'planned {}'.format(
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
