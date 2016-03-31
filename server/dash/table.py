@@ -87,6 +87,27 @@ def get_conversion_pixels_last_sync(conversion_pixels):
     return datetime.datetime.utcnow()
 
 
+def _set_goal_meta_on_row(stat, performance):
+    for goal_status, goal_metric, goal_value, goal in performance:
+        stat['performance']['list'].append({
+            'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
+            'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
+        })
+
+        if not goal.primary:
+            continue
+
+        goal_columns = list(set(
+            campaign_goals.CAMPAIGN_GOAL_MAP[goal.type] +
+            [campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[goal.type]]
+        ))
+        for column in goal_columns:
+            if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
+                stat['styles'][column] = constants.Emoticon.HAPPY
+            if goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+                stat['styles'][column] = constants.Emoticon.SAD
+
+
 def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
     if not user.has_perm('zemauth.campaign_goal_performance'):
         return
@@ -101,7 +122,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)
 
     for stat in stats:
-        stat['performance'] = None
+        stat['performance'] = {'overall': None, 'list': []}
         stat['styles'] = {}
         if 'campaign' in stat:
             campaign = campaign_id_map[stat['campaign']]
@@ -119,19 +140,11 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         if not performance:
             continue
 
-        stat['performance'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
+        stat['performance']['overall'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
             min((p[0] for p in performance))
         ]
-        primary_goal_performance = ([p for p in performance if p[3].primary] or [None])[0]
-        if not primary_goal_performance:
-            continue
 
-        primary_status, _, _, primary_goal = primary_goal_performance
-        for column in campaign_goals.CAMPAIGN_GOAL_MAP[primary_goal.type]:
-            if primary_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
-                stat['styles'][column] = constants.Emoticon.HAPPY
-            if primary_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
-                stat['styles'][column] = constants.Emoticon.SAD
+        _set_goal_meta_on_row(stat, performance)
 
 
 class AllAccountsSourcesTable(object):

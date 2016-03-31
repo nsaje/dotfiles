@@ -40,6 +40,9 @@
                                 <span ng-switch-when="submissionStatus">
                                     <zem-submission-status status-items="row[col.field]" archived="row[col.archivedField]" />
                                 </span>
+                                <span ng-switch-when="icon-list">
+                                    <zem-icon-list statuses="row[col.field]"></zem-icon-list>
+                                </span>
                                 <span ng-switch-when="icon">
                                     <div ng-if="row[col.field] === constants.emoticon.HAPPY">
                                         <zem-icon img-class="zem-icon-happy" file="happy_face.svg"></zem-icon>

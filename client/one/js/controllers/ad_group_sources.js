@@ -183,7 +183,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             field: 'performance',
             unselectable: true,
             checked: true,
-            type: 'icon',
+            type: 'icon-list',
             totalRow: false,
             help: 'Goal performance indicator',
             order: true,

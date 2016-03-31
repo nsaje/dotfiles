@@ -124,7 +124,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             field: 'performance',
             unselectable: true,
             checked: true,
-            type: 'icon',
+            type: 'icon-list',
             totalRow: false,
             help: 'Goal performance indicator',
             order: true,
