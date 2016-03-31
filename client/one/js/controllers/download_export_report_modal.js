@@ -1,19 +1,12 @@
-/* globals oneApp,options */
-oneApp.controller('DownloadExportReportModalCtrl',
-  ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state',
-  function ($scope, $modalInstance, api, zemFilterService, $window, $state) {
-      // WORKAROUND: zemExportPlus directive uses isolated scope therefor it is not possible
-      // to access permission methods from MainCtrl controller directly (i.e. $scope.hasPermission(perm))
-      // FIXME: Find better solution for accessing permissions methods (e.g. dedicated service?)
-      $scope.hasPermission = $scope.$parent.$parent.hasPermission;
-      $scope.isPermissionInternal = $scope.$parent.$parent.isPermissionInternal;
+/* globals oneApp, constants */
+oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state', function ($scope, $modalInstance, api, zemFilterService, $window, $state) {  // eslint-disable-line max-len
+    $scope.showInProgress = false;
+    $scope.export = {};
 
-      $scope.showInProgress = false;
-      $scope.export = {};
-
-      $scope.setDisabledExportOptions = function () {
+    $scope.setDisabledExportOptions = function () {
         $scope.showInProgress = true;
-        api.exportPlusAllowed.get($state.params.id, $scope.level, $scope.exportSources, $scope.startDate, $scope.endDate).then(
+        api.exportPlusAllowed.get($state.params.id, $scope.level,
+            $scope.exportSources, $scope.startDate, $scope.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {
                     if (opt.value === constants.exportType.CONTENT_AD) {
@@ -34,35 +27,37 @@ oneApp.controller('DownloadExportReportModalCtrl',
                     }
                 });
             }
-         ).finally( function () {
-             $scope.checkDownloadAllowed();
-             $scope.showInProgress = false;
-         });
+        ).finally(function () {
+            $scope.checkDownloadAllowed();
+            $scope.showInProgress = false;
+        });
     };
 
-      $scope.checkDownloadAllowed = function () {
+    $scope.checkDownloadAllowed = function () {
         var option = getOptionByValue($scope.export.type.value);
         $scope.downloadAllowed = true;
         $scope.downloadNotAllowedMessage = '';
 
-        if ( option.disabledByDay && $scope.export.byDay ) {
-            $scope.downloadNotAllowedMessage = 'Please select shorter date range to download report with breakdown by day.';
+        if (option.disabledByDay && $scope.export.byDay) {
+            $scope.downloadNotAllowedMessage = 'Please select shorter date range to download report ' +
+                'with breakdown by day.';
             $scope.downloadAllowed = false;
         }
-        if ( option.disabled ) {
-            $scope.downloadNotAllowedMessage = 'This report is not available for download due to the volume of content. Please select shorter date range or different granularity.';
+        if (option.disabled) {
+            $scope.downloadNotAllowedMessage = 'This report is not available for download due to the ' +
+                'volume of content. Please select shorter date range or different granularity.';
             $scope.downloadAllowed = false;
         }
     };
 
     $scope.downloadReport = function () {
         var url = $scope.baseUrl + 'export_plus/?type=' + $scope.export.type.value +
-                  '&start_date=' + $scope.startDate.format() +
-                  '&end_date=' + $scope.endDate.format() +
-                  '&order=' + $scope.order +
-                  '&by_day=' + $scope.export.byDay;
+            '&start_date=' + $scope.startDate.format() +
+            '&end_date=' + $scope.endDate.format() +
+            '&order=' + $scope.order +
+            '&by_day=' + $scope.export.byDay;
 
-        if (true) {
+        if ($scope.hasPermission('zemauth.can_include_model_ids_in_reports')) {
             url += '&include_model_ids=' + $scope.export.includeIds;
         }
         if (zemFilterService.isSourceFilterOn()) {
@@ -73,13 +68,13 @@ oneApp.controller('DownloadExportReportModalCtrl',
         $modalInstance.close();
     };
 
-      $scope.init = function () {
+    $scope.init = function () {
         $scope.export.type = $scope.options[0];
         $scope.setDisabledExportOptions();
     };
-      $scope.init();
+    $scope.init();
 
-      function getOptionByValue (value) {
+    function getOptionByValue (value) {
         var option = null;
         $scope.options.forEach(function (opt) {
             if (opt.value === value) {
@@ -88,4 +83,4 @@ oneApp.controller('DownloadExportReportModalCtrl',
         });
         return option;
     }
-  }]);
+}]);
