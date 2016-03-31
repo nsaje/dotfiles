@@ -522,7 +522,7 @@ class Campaign(models.Model, PermissionMixin):
                 'campaign__id', flat=True
             )
 
-            return self.exclude(pk__in=filtered)
+            return self.filter(pk__in=filtered)
 
 
 class SettingsBase(models.Model, CopySettingsMixin):
