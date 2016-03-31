@@ -176,6 +176,42 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             }
         )
 
+
+    def test_get_landing(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        new_settings = ad_group.get_current_settings().copy_settings()
+        new_settings.landing_mode = True
+        new_settings.save(req)
+
+        """
+        for source_settings in models.AdGroupSourceSettings.objects.all():
+            new_source_settings = source_settings.copy_settings()
+            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_source_settings.save(req)
+        """
+        self.add_permissions(['settings_view'])
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.maxDiff = None
+        from pudb import set_trace; set_trace()
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings'], {
+                'end_date': {
+                    'text': 'Your campaign has been switched to landing mode. '
+                    'Please add the budget and continue to adjust settings by your needs. '
+                    '<a href="http://testserver/campaigns/1/budget-plus/">Add budget</a>'
+                }
+            }
+        )
+
+
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
