@@ -752,6 +752,7 @@ def get_report_from_export_report(export_report, start_date, end_date):
         by_source=export_report.breakdown_by_source,
         by_day=export_report.breakdown_by_day,
         ad_group=export_report.ad_group,
+        include_model_ids=export_report.include_model_ids,
         campaign=export_report.campaign,
         account=export_report.account
     )
@@ -776,7 +777,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         breakdown=get_breakdown_from_granularity(granularity),
         by_source=by_source,
         by_day=helpers.get_by_day(request.GET.get('by_day')),
-        include_model_ids=request.GET.get('include_ids'),
+        include_model_ids=request.GET.get('include_model_ids'),
         ad_group=ad_group,
         campaign=campaign,
         account=account

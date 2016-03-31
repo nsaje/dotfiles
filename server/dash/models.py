@@ -2855,6 +2855,7 @@ class ExportReport(models.Model):
 
     breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
     breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
+    include_model_ids = models.BooleanField(null=False, blank=False, default=False)
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
