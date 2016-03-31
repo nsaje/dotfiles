@@ -56,13 +56,13 @@
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
 
-            <div ng-if="warnings.endDate === undefined" class="col-xs-2">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" min-date="minEndDate" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+            <div class="col-xs-2">
+                <input ng-disabled="warnings.endDate !== undefined" id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" min-date="minEndDate" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
 
-            <div ng-if="warnings.endDate === undefined" class="checkbox col-xs-2">
+            <div class="checkbox col-xs-2">
                 <label>
-                    <input type="checkbox" id="manual-stop-cb" ng-model="settings.manualStop"> I'll stop it myself
+                    <input ng-disabled="warnings.endDate !== undefined" type="checkbox" id="manual-stop-cb" ng-model="settings.manualStop"> I'll stop it myself
                 </label>
             </div>
 
