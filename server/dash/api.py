@@ -838,7 +838,7 @@ def is_adg_setting_auto_updateable(field_name, source, current_settings, new_set
         field_name == 'end_date' and source.can_modify_end_date(),
         field_name == 'target_devices' and source.can_modify_device_targeting(),
         (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
-        source.update_tracking_codes_on_content_ads()),
+            source.update_tracking_codes_on_content_ads()),
         field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic(),
         field_name == 'ad_group_name' and source.can_modify_ad_group_name(),
         field_name == 'retargeting_ad_groups' and source.can_modify_retargeting_automatically(),

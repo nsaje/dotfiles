@@ -176,7 +176,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             }
         )
 
-
     def test_get_landing(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -202,7 +201,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 }
             }
         )
-
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')

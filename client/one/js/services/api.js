@@ -1021,7 +1021,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return {
                 retargeting: warnings.retargeting,
                 endDate: warnings.end_date,
-            }
+            };
         }
 
         this.get = function (id) {
