@@ -423,10 +423,10 @@ class UpadateCampaignsInLandingTestCase(TestCase):
         ag2 = dash.models.AdGroup.objects.get(id=2)
 
         mock_get_mrb.return_value = Decimal(401), None, None
-        mock_prefetch_ap_data.return_value = {
+        mock_prefetch_ap_data.return_value = ({
             ag1: "Ad group 1 mock data",
             ag2: "Ad group 2 mock data",
-        }
+        }, None)
 
         def ret_get_ap_rec(ad_group, daily_budget_cap, data, goal):
             # mock old daily budgets, they're not taken from fixtures

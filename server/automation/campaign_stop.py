@@ -129,7 +129,7 @@ def _set_end_date_to_today(campaign):
 def _set_new_daily_budgets(campaign):
     ad_groups = campaign.adgroup_set.all().filter_active()
 
-    per_ad_group_autopilot_data = autopilot_plus.prefetch_autopilot_data(ad_groups)
+    per_ad_group_autopilot_data, _ = autopilot_plus.prefetch_autopilot_data(ad_groups)
     remaining_today, _, _ = _get_minimum_remaining_budget(campaign)
     ad_group_daily_budget_cap = remaining_today // len(ad_groups)
 
