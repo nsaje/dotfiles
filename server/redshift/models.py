@@ -13,6 +13,7 @@ CGA = ColumnGroup.AGGREGATES
 CGS = ColumnGroup.SPECIAL
 
 
+# column definition shortcuts
 SumColumn = partial(TemplateColumn, 'part_sum.sql', group=CGA)
 SumCCColumn = partial(TemplateColumn, 'part_sum_cc.sql', group=CGA)
 SumNanoColumn = partial(TemplateColumn, 'part_sum_nano.sql', group=CGA)

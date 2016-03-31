@@ -1,18 +1,8 @@
 from django.template import loader
 
 def generate_query(template_name, context):
-    q = Query(template_name)
-    return q.generate(context)
-
-
-class Query(object):
-    # TODO is this needed? Probably just prepare_query
-    def __init__(self, template_name):
-        self.template_name = template_name
-
-    def generate(self, context):
-        template = loader.get_template(self.template_name)
-        return template.render(context)
+    template = loader.get_template(self.template_name)
+    return template.render(context)
 
 
 class Model(object):
