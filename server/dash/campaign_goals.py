@@ -465,39 +465,47 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
     pre_cg_vals = get_pre_campaign_goal_values(campaign, start_date)
     last_cg_vals = {}
 
-    # we also need one datapoint before current date range in case
-    # first data point in range is not the first one in history
     cg_series = {}
-    for i, cg_value in enumerate(campaign_goal_values):
+    for cg_value in campaign_goal_values:
         cg = cg_value.campaign_goal
         name = constants.CampaignGoalKPI.get_text(cg.type)
         last_cg_vals[name] = cg_value
-
-        if i == 0 and cg.id in pre_cg_vals and\
-                cg_value.created_dt > pre_cg_vals[cg.id].created_dt:
-            # insert data point for reference before the selected date range
-            cg_series[name] = [
-                campaign_goal_dp(
-                    pre_cg_vals[cg.id],
-                    override_date=start_date
-                ),
-            ]
 
         if not cg_series.get(name):
             cg_series[name] = []
         else:
             cg_series[name] = cg_series[name] + generate_missing(
-                cg_series[name][-1],
-                cg_value.created_dt
+                cg_series[name][-1][0],
+                cg_value.created_dt.date()
             )
         cg_series[name].append(campaign_goal_dp(cg_value))
+
+    # if starting campaign goal was defined before current range
+    # or if no values are defined within current range(but exist before)
+    # make sure to insert campaign goal value datapoints
+    for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
+        pre_cg = pre_cg_val.campaign_goal
+        pre_name = constants.CampaignGoalKPI.get_text(pre_cg.type)
+
+        if pre_name not in cg_series:
+            cg_series[pre_name] = [
+                campaign_goal_dp(pre_cg_val, override_date=start_date),
+            ]
+        else:
+            first = cg_series[pre_name][0]
+            if first[0] > pre_cg.created_dt.date():
+                cg_series[pre_name].insert(
+                    0,
+                    campaign_goal_dp(pre_cg_val, override_date=start_date),
+                )
+
 
     for name, last_cg_val in last_cg_vals.iteritems():
         if last_cg_val.created_dt.date() >= end_date:
             continue
 
         cg_series[name] = cg_series[name] + generate_missing(
-            last_cg_val,
+            last_cg_val.created_dt.date(),
             end_date,
         )
 
@@ -509,16 +517,42 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
             ),
         )
 
+    # if current date range features no campaign goals and
+    # one was valid before current date range make sure
+    # to add on
+    for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
+        pre_cg = pre_cg_val.campaign_goal
+        pre_name = constants.CampaignGoalKPI.get_text(pre_cg.type)
+
+        last_cg = cg_series[pre_name][-1]
+        if last_cg[0] < end_date:
+            cg_series[pre_name] = cg_series[pre_name] + generate_missing(
+                last_cg[0],
+                end_date,
+            )
+
+            # find last entry with value to duplicate at the end
+            val = None
+            for dp in cg_series[pre_name]:
+                if dp[1]:
+                    val = dp[1]
+
+            # duplicate last data point with date set to end date
+            cg_series[pre_name].append(
+                (end_date, val,)
+            )
+
+
     return cg_series
 
 
-def generate_missing(start_cg_value, end_date):
-    start_date = start_cg_value.created_dt + datetime.timedelta(days=1)
-    if start_date.date() >= end_date:
+def generate_missing(from_date, end_date):
+    start_date = from_date + datetime.timedelta(days=1)
+    if start_date >= end_date:
         return []
 
     ret = []
-    for date in dates_helper.date_range(start_date.date(), end_date):
+    for date in dates_helper.date_range(start_date, end_date):
         ret.append((date, None,))
     return ret
 

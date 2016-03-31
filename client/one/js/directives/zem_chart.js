@@ -265,21 +265,21 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 if (!campaignGoals || !fieldGoalMap) {
                     return;
                 }
-                if ($scope.metric1) {
-                    var goalName = fieldGoalMap[$scope.metric1];
-
-                    // TODO: transform date in mogoce fill gaps
-                    if (goalName) {
+                var goalName1 = fieldGoalMap[$scope.metric1];
+                if ($scope.metric1 && campaignGoals[goalName1]) {
+                    var series = transformDate(campaignGoals[goalName1]);
+                    if (goalName1) {
                         var color = getColor($scope.metric1)[0];
                         $scope.config.series.unshift({
-                            name: goalName,
+                            name: goalName1,
                             color: color,
                             yAxis: 1,
-                            data: transformDate(campaignGoals[goalName]),
+                            data: series,
+                            step: true,
                             dashStyle: 'ShortDash',
                             connectNulls: true,
                             tooltip: {
-                                pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(0) + '</b></br>'
+                                pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName1 + ': <b>' + getPointFormat(0) + '</b></br>'
                             },
                             marker: {
                                 enabled: false,
@@ -287,12 +287,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                         });
                     }
                 }
-
-                /*
-                tooltip: {
-                  pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(0) + '</b></br>'
-                },
-                */
             };
 
 
