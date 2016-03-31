@@ -12,6 +12,53 @@ from utils import request_signer
 logger = logging.getLogger(__name__)
 
 
+def _build_entity_tree(accounts, campaigns, ad_groups, ad_group_sources):
+    # index objects by their parent ids
+    ad_group_sources_by_ad_group = collections.defaultdict(list)
+    for ad_group_source in ad_group_sources:
+        ad_group_sources_by_ad_group[ad_group_source['ad_group_id']].append({
+            'id': ad_group_source['id'],
+            'source_campaign_key': ad_group_source['source_campaign_key'],
+            # we need source details per-adgroupsource since source_credentials'
+            # source may differ from adgroup source on b1 sources
+            'source_name': ad_group_source['source__name'],
+        })
+
+    ad_groups_by_campaign = collections.defaultdict(list)
+    for ad_group in ad_groups:
+        ad_group_id = ad_group['id']
+        if not ad_group_sources_by_ad_group[ad_group_id]:
+            continue
+        ad_groups_by_campaign[ad_group['campaign_id']].append({
+            'id': ad_group_id,
+            'ad_group_sources': ad_group_sources_by_ad_group[ad_group_id],
+        })
+
+    campaigns_by_account = collections.defaultdict(list)
+    for campaign in campaigns:
+        campaign_id = campaign['id']
+        if not ad_groups_by_campaign[campaign_id]:
+            continue
+        campaigns_by_account[campaign['account_id']].append({
+            'id': campaign_id,
+            'ad_groups': ad_groups_by_campaign[campaign_id],
+        })
+
+    tree = {}
+    tree['accounts'] = []
+    for account in accounts:
+        account_id = account['id']
+        if not campaigns_by_account[account_id]:
+            continue
+        tree['accounts'].append({
+            'id': account_id,
+            'outbrain_marketer_id': account['outbrain_marketer_id'],
+            'campaigns': campaigns_by_account[account_id]
+        })
+
+    return tree
+
+
 @csrf_exempt
 def get_ad_group_sources(request):
     try:
@@ -78,51 +125,15 @@ def get_ad_group_sources(request):
         ad_group_sources_by_source_credentials[
             ad_group_source['source_credentials_id']].append(ad_group_source)
 
-    # build object tree per source credentials
+    # build entity tree per source credentials
     source_credentials_entities = []
-    for source_credentials_id, ad_group_sources in ad_group_sources_by_source_credentials.items():
-        # index objects by their parent ids
-        ad_group_sources_by_ad_group = collections.defaultdict(list)
-        for ad_group_source in ad_group_sources:
-            ad_group_sources_by_ad_group[ad_group_source['ad_group_id']].append({
-                'id': ad_group_source['id'],
-                'source_campaign_key': ad_group_source['source_campaign_key'],
-                # we need source details per-adgroupsource since source_credentials'
-                # source may differ from adgroup source on b1 sources
-                'source_name': ad_group_source['source__name'],
-            })
-
-        ad_groups_by_campaign = collections.defaultdict(list)
-        for ad_group in ad_groups:
-            ad_group_id = ad_group['id']
-            if not ad_group_sources_by_ad_group[ad_group_id]:
-                continue
-            ad_groups_by_campaign[ad_group['campaign_id']].append({
-                'id': ad_group_id,
-                'ad_group_sources': ad_group_sources_by_ad_group[ad_group_id],
-            })
-
-        campaigns_by_account = collections.defaultdict(list)
-        for campaign in campaigns:
-            campaign_id = campaign['id']
-            if not ad_groups_by_campaign[campaign_id]:
-                continue
-            campaigns_by_account[campaign['account_id']].append({
-                'id': campaign_id,
-                'ad_groups': ad_groups_by_campaign[campaign_id],
-            })
-
-        source_credentials_accounts = []
-        for account in accounts:
-            account_id = account['id']
-            if not campaigns_by_account[account_id]:
-                continue
-            source_credentials_accounts.append({
-                'id': account_id,
-                'outbrain_marketer_id': account['outbrain_marketer_id'],
-                'campaigns': campaigns_by_account[account_id]
-            })
-
+    for source_credentials_id, ad_group_sources_for_source in ad_group_sources_by_source_credentials.items():
+        entity_tree = _build_entity_tree(
+            accounts,
+            campaigns,
+            ad_groups,
+            ad_group_sources_for_source
+        )
         source_credentials = (
             dash.models.SourceCredentials.objects
             .only(
@@ -134,7 +145,7 @@ def get_ad_group_sources(request):
         source_credentials_entities.append({
             'source_type': source_credentials.source.source_type.type,
             'credentials': source_credentials.credentials,
-            'accounts': source_credentials_accounts,
+            'accounts': entity_tree['accounts'],
         })
 
     # construct response dict
