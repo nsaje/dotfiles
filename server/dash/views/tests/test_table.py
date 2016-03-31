@@ -735,10 +735,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         mock_query.side_effect = [[copy(self.mock_stats1)], copy(self.mock_stats2)]
         user.user_permissions.add(
-            authmodels.Permission.objects.get(codename="campaign_goal_optimization")
-        )
-        user.user_permissions.add(
-            authmodels.Permission.objects.get(codename="can_see_campaign_goals")
+            authmodels.Permission.objects.get(codename="campaign_goal_performance")
         )
 
         response = self.client.get(

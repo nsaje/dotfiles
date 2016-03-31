@@ -27,7 +27,7 @@ class AutopilotPlusTestCase(test.TestCase):
             'new_cpc_cc': Decimal('0.2')
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes)
-        mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')}, None)
+        mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')}, None, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -38,7 +38,7 @@ class AutopilotPlusTestCase(test.TestCase):
             'new_budget': Decimal('200')
         }}
         autopilot_plus.set_autopilot_changes(budget_changes=budget_changes)
-        mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')}, None)
+        mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')}, None, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -54,7 +54,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
         mock_update_values.assert_called_with(
-            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, None)
+            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, None, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -106,7 +106,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(autopilot_plus._find_corresponding_source_data(source2, days_ago_data, yesterday_data),
                          (days_ago_data[3], 2, 2))
 
-    @patch('automation.autopilot_settings.MIN_SOURCE_BUDGET', Decimal('0.3'))
+    @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('0.3'))
     def test_set_paused_ad_group_sources_to_minimum_values(self):
         adg = dash.models.AdGroup.objects.get(id=4)
         paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6).copy_settings()
