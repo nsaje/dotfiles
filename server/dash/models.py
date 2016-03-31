@@ -1954,8 +1954,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
-    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
-                                                   null=True, blank=True)
+    landing_mode = models.BooleanField(default=False)
 
     objects = QuerySetManager()
 
