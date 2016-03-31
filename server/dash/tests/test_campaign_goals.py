@@ -254,9 +254,9 @@ class CampaignGoalsTestCase(TestCase):
         stats = {
             'conversion_goal_1': 10,
             'media_cost': 5,
-            'unbounced_visits': 10,
+            'bounce_rate': 10,
             'total_pageviews': 10,
-            'total_seconds': 10,
+            'avg_tos': 10,
             'percent_new_users': 1.2,
         }
         performance = campaign_goals.get_goals_performance(self.user, self.campaign,
@@ -277,9 +277,9 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
 
         mock_contentads_query.return_value = {
-            'unbounced_visits': 10,
+            'bounce_rate': 10,
             'total_pageviews': 10,
-            'total_seconds': 10,
+            'avg_tos': 10,
             'cpc': 0.1,
             'media_cost': 5,
             'percent_new_users': 1.2,
@@ -296,7 +296,7 @@ class CampaignGoalsTestCase(TestCase):
                 'internal': True,
                 'type': 'setting',
                 'name': 'Campaign Goals:',
-                'value': '10.00 seconds on site',
+                'value': '10.00 time on site in seconds',
                 'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
