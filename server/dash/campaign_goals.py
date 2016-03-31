@@ -498,7 +498,7 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
 
         cg_series[name] = cg_series[name] + generate_missing(
             last_cg_val,
-            end_date
+            end_date,
         )
 
         # duplicate last data point with date set to end date
@@ -519,7 +519,7 @@ def generate_missing(start_cg_value, end_date):
 
     ret = []
     for date in dates_helper.date_range(start_date.date(), end_date):
-        ret.append(campaign_goal_dp(start_cg_value, override_date=date))
+        ret.append((date, None,))
     return ret
 
 
@@ -565,17 +565,14 @@ def get_pre_campaign_goal_values(campaign, date):
     }
 
 
-def campaign_goal_dp(campaign_goal_value, override_date=None, convert=True):
+def campaign_goal_dp(campaign_goal_value, override_date=None, override_value=None):
     date = campaign_goal_value.created_dt.date()
     if override_date is not None:
         date = override_date
-
-    if convert:
-        dt = (date - datetime.date(1970,1,1)).\
-            total_seconds() * 1000
-        return (dt, float(campaign_goal_value.value),)
-    else:
-        return (date, campaign_goal_value.value,)
+    value = float(campaign_goal_value.value)
+    if override_value is not None:
+        value = override_value
+    return (date, value,)
 
 
 def inverted_campaign_goal_map():

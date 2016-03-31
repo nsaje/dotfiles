@@ -245,7 +245,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     });
                 });
 
-                console.log(newValue);
                 updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
 
                 // HACK: we need this in order to force the chart to display
@@ -268,21 +267,24 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 }
                 if ($scope.metric1) {
                     var goalName = fieldGoalMap[$scope.metric1];
+
+                    // TODO: transform date in mogoce fill gaps
                     if (goalName) {
-                        var color = getColor($scope.metric1);
+                        var color = getColor($scope.metric1)[0];
                         $scope.config.series.unshift({
                             name: goalName,
                             color: color,
                             yAxis: 1,
-                            connectNulls: true,
-                            data: campaignGoals[goalName],
+                            data: transformDate(campaignGoals[goalName]),
                             dashStyle: 'ShortDash',
-                            step: 'left',
+                            connectNulls: true,
+                            tooltip: {
+                                pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(0) + '</b></br>'
+                            },
                             marker: {
-                                enabled: false,   
+                                enabled: false,
                             },
                         });
-                        console.log(campaignGoals, $scope.config.series);
                     }
                 }
 
