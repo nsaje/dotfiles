@@ -1,7 +1,8 @@
 import itertools
 import json
+from mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 
 import dash.constants
@@ -12,12 +13,14 @@ class K1CampaignsApiTest(TestCase):
 
     fixtures = ['test_k1_campaigns_api.yaml']
 
-    def _test_ad_group_source_filter(self, source_types=None):
+    def _test_ad_group_source_filter(self, mock_verify_wsgi_request, source_types=None):
         response = self.client.get(
             reverse('k1campaignsapi.get_ad_group_sources'),
             {'source_type': source_types},
         )
         self.assertEqual(response.status_code, 200)
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
         data = json.loads(response.content)
 
         returned_count = 0
@@ -49,21 +52,25 @@ class K1CampaignsApiTest(TestCase):
                 source__source_type__type__in=source_types)
         self.assertEqual(returned_count, ad_group_sources.count())
 
-    def test_get_ad_group_sources(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_group_sources(self, mock_verify_wsgi_request):
         test_cases = [
             [],
             ['b1'],
             ['b1', 'outbrain', 'yahoo'],
         ]
         for source_types in test_cases:
-            self._test_ad_group_source_filter(source_types)
+            self._test_ad_group_source_filter(mock_verify_wsgi_request, source_types)
 
-    def _test_content_ads_filters(self, source_types=None, ad_groups=None):
+    def _test_content_ads_filters(self, mock_verify_wsgi_request, source_types=None, ad_groups=None):
         response = self.client.get(
             reverse('k1campaignsapi.get_content_ad_sources'),
             {'source_type': source_types, 'ad_group': ad_groups},
         )
         self.assertEqual(response.status_code, 200)
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
         data = json.loads(response.content)
 
         returned_count = 0
@@ -86,7 +93,9 @@ class K1CampaignsApiTest(TestCase):
                 source__source_type__type__in=source_types)
         self.assertEqual(returned_count, contentadsources.count(), data)
 
-    def test_get_content_ads(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ads(self, mock_verify_wsgi_request):
         test_source_filters = [
             [],
             ['b1'],
@@ -100,4 +109,4 @@ class K1CampaignsApiTest(TestCase):
         ]
         test_cases = itertools.product(test_source_filters, test_ad_group_filters)
         for source_types, ad_groups in test_cases:
-            self._test_content_ads_filters(source_types, ad_groups)
+            self._test_content_ads_filters(mock_verify_wsgi_request, source_types, ad_groups)
