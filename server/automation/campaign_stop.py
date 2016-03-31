@@ -48,6 +48,7 @@ def switch_low_budget_campaigns_to_landing_mode():
 
 def update_campaigns_in_landing():
     for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+        logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
         try:
             with transaction.atomic():
