@@ -11,7 +11,7 @@ import dash.stats_helper
 import utils.lc_helper
 
 CAMPAIGN_GOAL_NAME_FORMAT = {
-    constants.CampaignGoalKPI.TIME_ON_SITE: '{} seconds on site',
+    constants.CampaignGoalKPI.TIME_ON_SITE: '{} time on site in seconds',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} bounce rate',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} new unique visitors',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
@@ -49,9 +49,9 @@ CAMPAIGN_GOAL_MAP = {
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'unbounced_visits',
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
-    constants.CampaignGoalKPI.TIME_ON_SITE: 'total_seconds',
+    constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
 }
