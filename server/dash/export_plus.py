@@ -671,7 +671,7 @@ class CampaignExport(object):
             dimensions.extend(['ad_group', 'content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:
-            required_fields = _include_model_ids()
+            required_fields = _include_model_ids(required_fields)
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
@@ -711,7 +711,7 @@ class AdGroupExport(object):
             dimensions.extend(['content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:
-            required_fields = _include_model_ids()
+            required_fields = _include_model_ids(required_fields)
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
