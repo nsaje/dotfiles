@@ -7,6 +7,7 @@ from collections import OrderedDict
 from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -120,6 +121,20 @@ class AdGroupSettings(api_common.BaseApiView):
                 'sources': [s.name for s in unsupported_sources]
             }
             warnings['retargeting'] = retargeting_warning
+
+        if ad_group_settings.landing_mode:
+            warnings['end_date'] = {
+                'text': 'Your campaign has been switched to landing mode. '
+                'Please add the budget and continue to adjust settings by your needs. '
+                '<a href="{link}">Add budget</a>'.format(
+                    link=request.build_absolute_uri(
+                        '/campaigns/{campaign_id}/budget-plus/'.format(
+                            campaign_id=ad_group_settings.ad_group.campaign.id
+                        ),
+                    )
+                )
+            }
+
         return warnings
 
     def get_dict(self, settings, ad_group):

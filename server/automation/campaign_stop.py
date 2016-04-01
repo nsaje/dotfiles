@@ -56,6 +56,8 @@ def update_campaigns_in_landing():
                 actions.extend(_set_end_date_to_today(campaign))
         except:
             logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
+            continue
+
         zwei_actions.send(actions)
 
 

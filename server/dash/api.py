@@ -794,20 +794,12 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
-            if (field_name == 'start_date' and source.can_modify_start_date() or
-               field_name == 'end_date' and source.can_modify_end_date() or
-               field_name == 'target_devices' and source.can_modify_device_targeting() or
-               (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
-                source.update_tracking_codes_on_content_ads()) or
-               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
-               field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
-               field_name == 'retargeting_ad_groups' and source.can_modify_retargeting_automatically() or
-               field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
-                   source, current_settings, new_settings)) and not force_manual_change:
+            if is_adg_setting_auto_updateable(
+                field_name, source, current_settings, new_settings
+            ) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
-
                 actions.extend(
                     actionlog.api.set_ad_group_source_settings(
                         {new_field_name: new_field_value},
@@ -819,58 +811,110 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 )
 
             elif field_name == 'tracking_code' and source.update_tracking_codes_on_content_ads() and source.can_modify_tracking_codes():
-                if not ad_group_source.can_manage_content_ads:
-                    continue
-
-                for cas in models.ContentAdSource.objects.filter(
-                        content_ad__ad_group_id=ad_group_source.ad_group_id,
-                        source_id=ad_group_source.source_id
-                ).select_related('content_ad'):
-                    changes = {
-                        'url': cas.content_ad.url_with_tracking_codes(new_field_value),
-                    }
-
-                    actions.append(
-                        actionlog.api_contentads.init_update_content_ad_action(
-                            cas,
-                            changes,
-                            request,
-                            send=send
-                        )
-                    )
-            else:
-                if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
-                    # do not create an action - only used for our redirector
-                    continue
-
-                if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
-                    continue
-
-                if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
-                    continue
-
-                if field_name == 'tracking_code':
-                    tracking_slug = ad_group_source.source.tracking_slug
-                    new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
-
-                if field_name == 'target_regions':
-                    if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
-                        continue
-
-                    new_field_value = _get_manual_action_target_regions_value(
+                actions.extend(
+                    adg_tracking_code_setting_update_actions(
                         ad_group_source,
-                        current_settings,
-                        new_settings
+                        new_field_value,
+                        request,
+                        send=send
                     )
-
-                actionlog.api.init_set_ad_group_manual_property(
-                    ad_group_source,
+                )
+            else:
+                adg_setting_manual_update(
                     request,
+                    ad_group_source,
                     field_name,
-                    new_field_value
+                    new_field_value,
+                    current_settings,
+                    new_settings
                 )
 
     return actions
+
+
+def is_adg_setting_auto_updateable(field_name, source, current_settings, new_settings):
+    setting_updateable = (
+        field_name == 'start_date' and source.can_modify_start_date(),
+        field_name == 'end_date' and source.can_modify_end_date(),
+        field_name == 'target_devices' and source.can_modify_device_targeting(),
+        (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
+            source.update_tracking_codes_on_content_ads()),
+        field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic(),
+        field_name == 'ad_group_name' and source.can_modify_ad_group_name(),
+        field_name == 'retargeting_ad_groups' and source.can_modify_retargeting_automatically(),
+        field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
+            source,
+            current_settings,
+            new_settings
+        ),
+    )
+    return any(setting_updateable)
+
+
+def adg_tracking_code_setting_update_actions(ad_group_source, field_value, request, send=True):
+    if not ad_group_source.can_manage_content_ads:
+        return []
+
+    ret = []
+    for cas in models.ContentAdSource.objects.filter(
+            content_ad__ad_group_id=ad_group_source.ad_group_id,
+            source_id=ad_group_source.source_id
+    ).select_related('content_ad'):
+        changes = {
+            'url': cas.content_ad.url_with_tracking_codes(field_value),
+        }
+
+        ret.append(
+            actionlog.api_contentads.init_update_content_ad_action(
+                cas,
+                changes,
+                request,
+                send=send
+            )
+        )
+    return ret
+
+
+def adg_setting_manual_update(
+    request,
+    ad_group_source,
+    field_name,
+    field_value,
+    current_settings,
+    new_settings
+):
+    source = ad_group_source.source
+
+    if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
+        # do not create an action - only used for our redirector
+        return
+
+    if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
+        return
+
+    if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
+        return
+
+    if field_name == 'tracking_code':
+        tracking_slug = ad_group_source.source.tracking_slug
+        field_value = _substitute_tracking_macros(field_value, tracking_slug)
+
+    if field_name == 'target_regions':
+        if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
+            return
+
+        field_value = _get_manual_action_target_regions_value(
+            ad_group_source,
+            current_settings,
+            new_settings
+        )
+
+    actionlog.api.init_set_ad_group_manual_property(
+        ad_group_source,
+        request,
+        field_name,
+        field_value
+    )
 
 
 def create_global_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist, send=True):
