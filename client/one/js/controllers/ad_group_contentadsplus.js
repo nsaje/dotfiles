@@ -222,7 +222,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         field: 'performance',
         unselectable: true,
         checked: true,
-        type: 'icon',
+        type: 'icon-list',
         totalRow: false,
         help: 'Goal performance indicator',
         order: true,

@@ -87,6 +87,33 @@ def get_conversion_pixels_last_sync(conversion_pixels):
     return datetime.datetime.utcnow()
 
 
+def _set_goal_meta_on_row(stat, performance):
+    for goal_status, goal_metric, goal_value, goal in performance:
+        performance_item = {
+            'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
+            'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
+        }
+        if goal_value:
+            performance_item['text'] += ' (planned {})'.format(
+                campaign_goals.format_value(goal.type, goal_value)
+            )
+
+        stat['performance']['list'].append(performance_item)
+
+        if not goal.primary:
+            continue
+
+        goal_columns = set(campaign_goals.CAMPAIGN_GOAL_MAP[goal.type])
+        if goal.type in campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP:
+            goal_columns.add(campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[goal.type])
+        goal_columns = list(goal_columns)
+        for column in goal_columns:
+            if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
+                stat['styles'][column] = constants.Emoticon.HAPPY
+            if goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+                stat['styles'][column] = constants.Emoticon.SAD
+
+
 def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
     if not user.has_perm('zemauth.campaign_goal_performance'):
         return
@@ -101,7 +128,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)
 
     for stat in stats:
-        stat['performance'] = None
+        stat['performance'] = {'overall': None, 'list': []}
         stat['styles'] = {}
         if 'campaign' in stat:
             campaign = campaign_id_map[stat['campaign']]
@@ -119,19 +146,11 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         if not performance:
             continue
 
-        stat['performance'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
+        stat['performance']['overall'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
             min((p[0] for p in performance))
         ]
-        primary_goal_performance = ([p for p in performance if p[3].primary] or [None])[0]
-        if not primary_goal_performance:
-            continue
 
-        primary_status, _, _, primary_goal = primary_goal_performance
-        for column in campaign_goals.CAMPAIGN_GOAL_MAP[primary_goal.type]:
-            if primary_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
-                stat['styles'][column] = constants.Emoticon.HAPPY
-            if primary_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
-                stat['styles'][column] = constants.Emoticon.SAD
+        _set_goal_meta_on_row(stat, performance)
 
 
 class AllAccountsSourcesTable(object):
@@ -612,6 +631,9 @@ class SourcesTable(object):
                 )
             response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
+            response['enabling_autopilot_sources_allowed'] = helpers.enabling_autopilot_sources_allowed(
+                level_sources_table.ad_group_settings)
+
         if user.has_perm('zemauth.campaign_goal_optimization') and\
                 level_ in ('ad_groups', 'campaigns'):
             if level_ == 'ad_groups':
@@ -770,7 +792,7 @@ class SourcesTable(object):
                     ad_group_settings,
                     source_settings,
                     user,
-                    allowed_sources,
+                    allowed_sources
                 )
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
