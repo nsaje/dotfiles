@@ -71,13 +71,19 @@ class GetStatsWithConversionsTestCase(test.TestCase):
                 'conversion_count': 5,
             }
         ]
-        defaults = {'slug': [cg.pixel.slug for cg in conversion_goals], 'account': [cg.pixel.account_id for cg in conversion_goals]}
+        defaults = {
+            'slug': [cg.pixel.slug for cg in conversion_goals],
+            'account': [cg.pixel.account_id for cg in conversion_goals],
+            'conversion_window': [cg.conversion_window for cg in conversion_goals]
+        }
         if self.use_separate_rows_for_tp_conversions:
             for b in set(breakdown) - set(['slug']):
                 defaults[b] = [9999 for cg in conversion_goals]
 
-        _update_with_defaults(touchpoint_conversion_stats, breakdown + ['slug', 'account'],
+        _update_with_defaults(touchpoint_conversion_stats, breakdown + ['slug', 'account', 'conversion_window'],
                               defaults=defaults)
+        import json
+        print 'ASD', breakdown, json.dumps(touchpoint_conversion_stats, indent=4)
         return touchpoint_conversion_stats
 
     def setUp(self):
@@ -402,7 +408,8 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'touchpoint_count': 10,
             'conversion_count': 5,
             'account': conversion_goals[0].pixel.account_id,
-            'slug': conversion_goals[0].pixel.slug
+            'slug': conversion_goals[0].pixel.slug,
+            'conversion_window': conversion_goals[0].conversion_window
         }]
 
         stats = stats_helper.get_stats_with_conversions(self.superuser, datetime.date(2015, 11, 30), datetime.date(2015, 12, 1),
@@ -543,6 +550,7 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             'slug': 'test',
             'source': 7,
             'publisher': 'example.com',
+            'conversion_window': 168,
             'account': 1,
         }]
         return mock_stats

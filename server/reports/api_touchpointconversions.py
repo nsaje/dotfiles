@@ -56,7 +56,6 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
         results = []
         for conversion_goals_batch in _split_goals_by_pixels(conversion_goals):
             batch_results = _query(cursor, conversion_goals_batch, constraints, constraints_list, breakdown, order)
-            _insert_conversion_window(batch_results, conversion_goals_batch)
             results.extend(batch_results)
         cursor.close()
     else:
@@ -94,6 +93,8 @@ def _query(cursor, conversion_goals, constraints, constraints_list, breakdown, o
         constraints_list=constraints_list,
     )
 
+    _insert_conversion_window(results, conversion_goals)
+
     return results
 
 
@@ -124,7 +125,8 @@ def _split_goals_by_pixels(conversion_goals):
 
 
 def _insert_conversion_window(result, conversion_goals):
-    conversion_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id): cg for cg in conversion_goals}
+    conversion_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id): cg for cg in
+                                conversion_goals if cg.pixel}
     for row in result:
-        cg = conversion_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'])]
-        row['conversion_window'] = cg.pixel.conversion_window
+        cg = conversion_goals_by_slug.get((tp_conv_stat['slug'], tp_conv_stat['account'],))
+        row['conversion_window'] = cg.conversion_window if cg else None
