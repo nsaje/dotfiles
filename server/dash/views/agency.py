@@ -675,7 +675,10 @@ class CampaignSettings(api_common.BaseApiView):
 
         new_primary_id = new_primary_id or changes['primary']
         if new_primary_id and new_primary_id not in removed_goals:
-            campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+            try:
+                campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+            except exc.ValidationError as error:
+                errors.append(str(error))
 
         return errors
 
