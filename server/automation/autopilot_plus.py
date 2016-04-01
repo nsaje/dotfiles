@@ -185,7 +185,7 @@ def prefetch_autopilot_data(ad_groups):
         data[adg][ag_source] = _populate_prefetch_adgroup_source_data(ag_source, source_setting,
                                                                       yesterdays_spend_cc, yesterdays_clicks)
         campaign_goal = campaign_goals.get(adg.campaign)
-        if campaign_goal and campaign_goal.type not in [CampaignGoalKPI.CPC, CampaignGoalKPI.CPA]:
+        if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
             col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
             data[adg][ag_source][col] = autopilot_settings.GOALS_WORST_VALUE.get(col)
             if col in row and row[col]:
@@ -252,7 +252,7 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
             break
     for r in yesterday_data:
         if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            yesterdays_spend_cc = Decimal(r.get('billing_cost'))
+            yesterdays_spend_cc = Decimal(r.get('cost'))
             yesterdays_clicks = r.get('clicks')
             break
     return row, yesterdays_spend_cc, yesterdays_clicks
@@ -296,7 +296,7 @@ def _report_adgroups_data_to_statsd(ad_groups_settings):
         yesterday_spend = Decimal('0')
         for row in yesterday_data:
             if row['ad_group'] == ad_group_setting.ad_group.id:
-                yesterday_spend = Decimal(row.get('billing_cost'))
+                yesterday_spend = Decimal(row.get('cost'))
                 break
         if ad_group_setting.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             num_on_budget_ap += 1
