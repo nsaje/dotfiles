@@ -8,6 +8,10 @@
         <div ng-if="isSet(icon) && icon === constants.emoticon.SAD" style="" class="infobox-setting-icon">
             <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/sad_face.svg"></img>
         </div>
+
+		<div ng-if="isSet(icon) && icon === constants.emoticon.NEUTRAL" style="" class="infobox-setting-icon">
+            <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/neutral_face.svg"></img>
+        </div>
         
         <div class="infobox-setting-value">{{value}}</div>
 

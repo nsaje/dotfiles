@@ -56,7 +56,10 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
+        if ok is None:
+            ret.icon = dash.constants.Emoticon.NEUTRAL
+        else:
+            ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -651,11 +654,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
         if campaign_goal.primary:
             entry.value_class = 'primary'
 
-        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
-            entry = entry.performance(True)
-        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
-            entry = entry.performance(False)
-
+        entry.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]
         settings.append(entry.as_dict())
         first = False
     return settings
