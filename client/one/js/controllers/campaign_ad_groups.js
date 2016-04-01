@@ -72,6 +72,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     ];
 
     $scope.exportPlusOptions = [
+      {name: 'By Campaign (totals)', value: 'campaign-csv'},
       {name: 'Current View', value: 'adgroup-csv'},
       {name: 'By content Ad', value: 'contentad-csv'}
     ];
