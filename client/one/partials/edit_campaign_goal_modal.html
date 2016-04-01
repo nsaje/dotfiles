@@ -68,7 +68,7 @@
                     <div class="loader"></div>
                 </div>
                 <div class="col-xs-4" ng-if="availablePixels.length">
-                    <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="campaignGoal.conversionGoal.goalId"  ng-disabled="!!campaignGoal.id" on-select="refreshConversionWindows(campaignGoal.conversionGoal.goalId)">
+                    <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="campaignGoal.conversionGoal.goalId"  on-select="refreshConversionWindows(campaignGoal.conversionGoal.goalId)" ng-disabled="!!campaignGoal.id">
                         <ui-select-match>{{$select.selected.slug}}</ui-select-match>
                         <ui-select-choices repeat="pixel.id as pixel in availablePixels">
                             {{pixel.slug}}
@@ -147,7 +147,7 @@
                 </button>
             </div>
             <div class="col-xs-6" ng-if="showAddConversionGoalForm()">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}">
+                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId">
                     <span ng-if="newCampaignGoal">Add goal and conversion tracking</span>
                     <span ng-if="!newCampaignGoal">Save goal and conversion tracking</span>
                 </button>
