@@ -295,7 +295,7 @@ class CampaignGoalsTestCase(TestCase):
                 'section_start': True,
                 'internal': True,
                 'type': 'setting',
-                'name': 'Campaign Goals:',
+                'name': 'Campaign goals:',
                 'value': '10.00 time on site in seconds',
                 'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,

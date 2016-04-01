@@ -720,7 +720,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             return;
         }
 
-        api.adGroupOverview.get($state.params.id).then(
+        api.adGroupOverview.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
