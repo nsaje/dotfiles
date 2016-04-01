@@ -55,17 +55,26 @@
                 End date
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
+
             <div class="col-xs-2">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" min-date="minEndDate" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+                <input ng-disabled="warnings.endDate !== undefined" id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" min-date="minEndDate" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
 
             <div class="checkbox col-xs-2">
                 <label>
-                    <input type="checkbox" id="manual-stop-cb" ng-model="settings.manualStop"> I'll stop it myself
+                    <input ng-disabled="warnings.endDate !== undefined" type="checkbox" id="manual-stop-cb" ng-model="settings.manualStop"> I'll stop it myself
                 </label>
             </div>
 
-            <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
+            <label ng-if="warnings.endDate === undefined" ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
+
+            <div class="col-xs-6 alert alert-info form-alert-box" ng-if="warnings.endDate !== undefined" >
+                <div class="form-alert-exclamation">
+                    <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
+                </div>
+                <div class="form-alert-body" ng-bind-html="warnings.endDate.text"></div>
+            </div>
+
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.cpc}" ng-if="hasPermission('zemauth.can_set_ad_group_max_cpc')">

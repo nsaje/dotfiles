@@ -143,6 +143,9 @@ class AdGroupSettingsForm(forms.Form):
             if end_date < datetime.date.today() and state == constants.AdGroupSettingsState.ACTIVE:
                 raise forms.ValidationError('End date cannot be set in the past.')
 
+        if self.ad_group.get_current_settings().landing_mode:
+            raise forms.ValidationError('End date cannot be set when campaign is in landing mode.')
+
         return end_date
 
     def clean_enable_ga_tracking(self):

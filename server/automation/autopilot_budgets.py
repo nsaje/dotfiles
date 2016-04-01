@@ -162,7 +162,8 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
 
 
 def get_adgroup_minimum_daily_budget(adgroup=None):
-    return autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET
+    return len(autopilot_helpers.get_autopilot_active_sources_settings([adgroup])) *\
+        autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
 
 
 class BetaBandit(object):

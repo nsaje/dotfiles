@@ -5,7 +5,7 @@ from django import test
 
 from automation import autopilot_helpers
 import dash.models
-from dash.constants import AdGroupSettingsAutopilotState, AdGroupRunningStatus
+from dash.constants import AdGroupSettingsAutopilotState, AdGroupRunningStatus, AdGroupSettingsState
 from reports import refresh
 
 
@@ -61,3 +61,18 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertNotEqual(ag_source_settings, new_ag_source_settings)
         self.assertEqual(new_ag_source_settings.daily_budget_cc, old_daily_budget+Decimal('10'))
         self.assertEqual(new_ag_source_settings.cpc_cc, old_cpc+Decimal('0.5'))
+
+    def test_get_autopilot_active_sources_settings(self):
+        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3])
+        active_enabled_sources = autopilot_helpers.get_autopilot_active_sources_settings(adgroups)
+        for ag_source_setting in active_enabled_sources:
+            self.assertTrue(ag_source_setting.state == AdGroupSettingsState.ACTIVE)
+            self.assertTrue(ag_source_setting.ad_group_source.ad_group in adgroups)
+
+        source = dash.models.AdGroupSource.objects.get(id=1)
+        self.assertTrue(source in [setting.ad_group_source for setting in active_enabled_sources])
+        settings_writer = dash.api.AdGroupSourceSettingsWriter(source)
+        settings_writer.set({'state': AdGroupSettingsState.INACTIVE}, None)
+        self.assertEqual(source.get_current_settings().state, AdGroupSettingsState.INACTIVE)
+        self.assertFalse(source in [setting.ad_group_source for setting in
+                                    autopilot_helpers.get_autopilot_active_sources_settings(adgroups)])

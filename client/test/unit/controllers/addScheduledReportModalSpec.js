@@ -38,6 +38,8 @@ describe('AddScheduledReportModalCtrl', function () {
             close: function () {},
             opened: openedDeferred.promise
         };
+        $scope.isPermissionInternal = function () { return true; };
+        $scope.hasPermission = function () { return true; };
         $scope.getAdditionalColumns = function () { return []; };
         var mockApiFunc = function () {
             return {
@@ -89,7 +91,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
-                    report_name: undefined
+                    report_name: undefined,
+                    include_model_ids: undefined
                 }
             );
             expect($scope.showInProgress).toBe(true);
@@ -131,7 +134,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
-                    report_name: undefined
+                    report_name: undefined,
+                    include_model_ids: undefined
                 }
             );
             expect($scope.showInProgress).toBe(true);
@@ -173,7 +177,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
-                    report_name: undefined
+                    report_name: undefined,
+                    include_model_ids: undefined
                 }
 
             );
