@@ -6,9 +6,11 @@ import textwrap
 from django.core.mail import send_mail
 
 import dash
+from dash.constants import AdGroupSettingsState
 from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
+from dash.constants import CampaignGoalKPI
 from dash import constants
 import dash.models
 from utils import pagerduty_helper, url_helper
@@ -26,15 +28,35 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
     ad_group_settings_on_autopilot = []
     ad_group_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()\
         .select_related('ad_group')
+    campaigns_in_landing = set(
+        dash.models.CampaignSettings.objects.all().filter(
+            id__in=dash.models.CampaignSettings.objects.all().group_current_settings(),
+            landing_mode=True).values_list('campaign_id', flat=True)
+    )
+
     for ags in ad_group_settings:
         if ags.autopilot_state in states:
             ad_group = ags.ad_group
             ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.\
                 filter(ad_group_source__ad_group=ad_group).group_current_settings()
+
+            if ad_group.campaign_id in campaigns_in_landing:
+                continue
+
             if ad_group.get_running_status(ags, ad_groups_sources_settings) == constants.AdGroupRunningStatus.ACTIVE:
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
+
+
+def get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
+    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
+    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
+        group_current_settings().select_related('ad_group_source__source__source_type')
+    if ad_group_setting_state:
+        return [ag_source_setting for ag_source_setting in ag_sources_settings if
+                ag_source_setting.state == ad_group_setting_state]
+    return ag_sources_settings
 
 
 def ad_group_source_is_synced(ad_group_source):
@@ -47,17 +69,36 @@ def ad_group_source_is_synced(ad_group_source):
     return last_sync >= min_sync_date
 
 
-def update_ad_group_source_values(ad_group_source, changes):
+def update_ad_group_source_values(ad_group_source, changes, system_user=None, landing_mode=None):
     settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(changes, None)
+    return settings_writer.set(changes, None, system_user=system_user, landing_mode=landing_mode, send_to_zwei=False)
 
 
 def get_ad_group_sources_minimum_cpc(ad_group_source):
     return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
 
 
-def get_ad_group_sources_minimum_daily_budget(ad_group_source):
-    return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
+def get_ad_group_sources_minimum_daily_budget(ad_group_source,
+                                              ap_type=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
+    source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
+    if ap_type != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        return source_min_daily_budget
+    return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
+
+
+def get_goal_column(goal):
+    return autopilot_settings.GOALS_COLUMNS.get(goal.type).get('col')[0] if goal else None
+
+
+def get_goal_column_importance(goal):
+    return autopilot_settings.GOALS_COLUMNS.get(goal.type).get('col')[1] if goal else None
+
+
+def get_optimization_goal_text(camp):
+    goal = dash.campaign_goals.get_primary_campaign_goal(camp)
+    if goal and goal.type != CampaignGoalKPI.CPA:
+        return CampaignGoalKPI.get_text(goal.type)
+    return 'maximum spend'
 
 
 def send_autopilot_changes_emails(email_changes_data, data, initialization):

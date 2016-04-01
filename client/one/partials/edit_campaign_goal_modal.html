@@ -17,9 +17,9 @@
                 </div>
                 <div class="col-xs-5" ng-class="{'has-error': errors.value}">
                     <ui-select ng-disabled="!!campaignGoal.id" theme="select2" search-enabled="false" id="goal-type-select" class="form-control" ng-model="campaignGoal.type" on-select="updateTypeChange($select.selected.unit)">
-                        <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
+                        <ui-select-match placeholder="Choose type">{{ prepareName($select.selected) }}</ui-select-match>
                         <ui-select-choices repeat="goal.value as goal in campaignGoalKPIs">
-                            {{goal.name}}
+                            {{ goal.name }}
                         </ui-select-choices>
                     </ui-select>
                     <label ng-repeat="error in errors.type" class="error" for="goal-type-select">{{ error }}</label>
@@ -68,7 +68,7 @@
                     <div class="loader"></div>
                 </div>
                 <div class="col-xs-4" ng-if="availablePixels.length">
-                    <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="campaignGoal.conversionGoal.goalId"  ng-disabled="!!campaignGoal.id">
+                    <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="campaignGoal.conversionGoal.goalId"  ng-disabled="!!campaignGoal.id" on-select="refreshConversionWindows(campaignGoal.conversionGoal.goalId)">
                         <ui-select-match>{{$select.selected.slug}}</ui-select-match>
                         <ui-select-choices repeat="pixel.id as pixel in availablePixels">
                             {{pixel.slug}}
@@ -91,18 +91,21 @@
                 </div>
             </div>
 
-            <div class="form-group" ng-if="showConversionPixelForm()" ng-class="{'has-error': !!errors.conversionWindow}">
+            <div class="form-group" ng-if="showConversionPixelForm()" ng-class="{'has-error': !!errors.conversionGoal.conversionWindow}">
                 <label for="pixel-conversion-window-select" class="col-xs-4 control-label">
                     Conversion window
                     <zem-help-popover content="Conversion will be counted if less than the specified amount of time has passed before the first visit and the actual conversion." placement="top"></zem-help-popover>
                 </label>
-                <div class="col-xs-4">
+                <div class="col-xs-4" ng-show="conversionWindows.length">
                     <ui-select theme="select2" search-enabled="false" id="pixel-conversion-window-select" class="form-control" ng-model="campaignGoal.conversionGoal.conversionWindow"  ng-disabled="!!campaignGoal.id">
                         <ui-select-match>{{$select.selected.name}}</ui-select-match>
                         <ui-select-choices repeat="window.value as window in conversionWindows">
                             {{window.name}}
                         </ui-select-choices>
                     </ui-select>
+                </div>
+                <div class="col-xs-4" ng-show="!conversionWindows.length">
+                    There are no more available conversion windows for this pixie.
                 </div>
                 <div class="col-xs-4">
                     <label ng-repeat="error in errors.conversionGoal.conversionWindow" class="control-label small error" for="pixel-conversion-window-select">{{ error }}</label>
@@ -138,9 +141,9 @@
 
         <div class="form-group">
             <div class="col-xs-4" ng-if="!showAddConversionGoalForm()">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}">
+                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">
                     <span ng-if="newCampaignGoal">Add goal</span>
-                    <span ng-if="!newCampaignGoal">Save goal</span>
+                    <span ng-if="!newCampaignGoal">Update goal</span>
                 </button>
             </div>
             <div class="col-xs-6" ng-if="showAddConversionGoalForm()">

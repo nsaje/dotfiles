@@ -1,3 +1,4 @@
+import codecs
 from mock import patch
 import mock
 from decimal import Decimal
@@ -11,6 +12,7 @@ from dash import export_plus
 from dash import models
 from dash import constants
 import reports.redshift as redshift
+from utils import test_helper
 
 from zemauth.models import User
 
@@ -50,6 +52,19 @@ class ExportPlusTestCase(test.TestCase):
                 'ctr': 2.03,
                 'some_random_metric': 13,
                 'source': 3
+            }, {
+                'ad_group': 3,
+                'campaign': 3,
+                'account': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 3000.12,
+                'data_cost': 33.10,
+                'cpc': 30.23,
+                'clicks': 303,
+                'impressions': 300000,
+                'ctr': 3.03,
+                'some_random_metric': 14,
+                'source': 3
             }
         ]
 
@@ -83,6 +98,20 @@ class ExportPlusTestCase(test.TestCase):
             'ctr': 2.03,
             'some_random_metric': 13,
             'source': 3
+        }, {
+            'ad_group': 1,
+            'campaign': 1,
+            'account': 1,
+            'content_ad': 3,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 3000.12,
+            'data_cost': 33.10,
+            'cpc': 30.23,
+            'clicks': 303,
+            'impressions': 300000,
+            'ctr': 3.03,
+            'some_random_metric': 14,
+            'source': 3
         }]
 
     def test_get_csv_content(self):
@@ -99,7 +128,9 @@ class ExportPlusTestCase(test.TestCase):
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR\r
 2014-07-01,1000.12,10.10,103,0.0103\r
 2014-07-01,2000.12,23.10,203,0.0203\r
+2014-07-01,3000.12,33.10,303,0.0303\r
 '''
+        expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
     def test_get_csv_content_with_statuses(self):
@@ -114,12 +145,15 @@ class ExportPlusTestCase(test.TestCase):
         data = self.data
         data[0]['status'] = 1
         data[1]['status'] = 2
+        data[2]['status'] = 3
         content = export_plus.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
 2014-07-01,1000.12,10.10,103,0.0103,Active\r
 2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
+2014-07-01,3000.12,33.10,303,0.0303,Archived\r
 '''
+        expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
     @patch('reports.api_contentads.query')
@@ -160,7 +194,11 @@ class ExportPlusTestCase(test.TestCase):
             }
         )
 
-        self.assertEqual(rows, [{
+        expectedRows = [{
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 1,
             'uploaded': datetime.date(2015, 2, 21),
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
@@ -175,12 +213,16 @@ class ExportPlusTestCase(test.TestCase):
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Taboola',
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
-            'image_url': u'/123456789/200x300.jpg',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg',
             'date': datetime.date(2014, 7, 1),
             'impressions': 100000,
             'clicks': 103,
             'status': 1,
         }, {
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 2,
             'uploaded': datetime.date(2015, 2, 21),
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
@@ -195,12 +237,37 @@ class ExportPlusTestCase(test.TestCase):
             'start_date': datetime.date(2014, 6, 30),
             'source': u'Outbrain',
             'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
-            'image_url': u'/123456789/200x300.jpg',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg',
             'date': datetime.date(2014, 7, 1),
             'impressions': 200000,
             'clicks': 203,
             'status': 2
-        }])
+        }, {
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 3,
+            'uploaded': datetime.date(2015, 2, 23),
+            'end_date': datetime.date(2014, 7, 2),
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'content_ad': 3,
+            'cost': 3000.12,
+            'data_cost': 33.1,
+            'ctr': 3.03,
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'title': u'Test Article with no content_ad_sources 2',
+            'url': u'http://testurl.com',
+            'cpc': 30.23,
+            'start_date': datetime.date(2014, 6, 30),
+            'source': u'Outbrain',
+            'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg',
+            'date': datetime.date(2014, 7, 1),
+            'impressions': 300000,
+            'clicks': 303,
+            'status': 3
+        }]
+        self.assertEqual(rows, expectedRows)
 
     @patch('reports.api_contentads.query')
     def test_generate_rows_flat_fees(self, mock_query):
@@ -269,7 +336,8 @@ class ExportPlusTestCase(test.TestCase):
         )
         self.maxDiff = None
         self.assertEqual(rows, [
-            {'account': u'test account 1 \u010c\u017e\u0161',
+            {'account_id': 1,
+             'account': u'test account 1 \u010c\u017e\u0161',
              'available_budget': Decimal(0),
              'budget': Decimal(0),
              'clicks': 103,
@@ -286,7 +354,8 @@ class ExportPlusTestCase(test.TestCase):
              'flat_fee': Decimal('100.0'),
              'status': 2,
              'unspent_budget': Decimal('-1000.120000000000004547473509')},
-            {'account': u'test account 2',
+            {'account_id': 2,
+             'account': u'test account 2',
              'available_budget': Decimal(0),
              'budget': Decimal(0),
              'clicks': 203,
@@ -359,7 +428,9 @@ class ExportPlusTestCase(test.TestCase):
             campaign=campaign,
         )
         self.assertEqual(rows, [
-            {'account': u'test account 1 \u010c\u017e\u0161',
+            {'account_id': 1,
+             'campaign_id': 1,
+             'account': u'test account 1 \u010c\u017e\u0161',
              'available_budget': Decimal('0'),
              'budget': Decimal('0'),
              'campaign': campaign,
@@ -413,8 +484,9 @@ class ExportPlusTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
-        self.assertEqual(rows[0].get('status'), constants.AdGroupSourceSettingsState.INACTIVE)
-        self.assertEqual(rows[1].get('status'), constants.AdGroupSourceSettingsState.ACTIVE)
+        self.assertEqual(rows[0].get('status'), constants.ExportPlusStatus.ARCHIVED)
+        self.assertEqual(rows[1].get('status'), constants.ExportPlusStatus.INACTIVE)
+        self.assertEqual(rows[2].get('status'), constants.ExportPlusStatus.ACTIVE)
 
     def test_get_report_filename(self):
         self.assertEqual(
@@ -487,6 +559,7 @@ class ExportPlusTestCase(test.TestCase):
             by_day=True,
             start_date=datetime.date(2014, 6, 3),
             by_source=False,
+            include_model_ids=False,
             user=User.objects.get(pk=1),
             order='name'
         )
@@ -513,6 +586,7 @@ class ExportPlusTestCase(test.TestCase):
             by_day=False, campaign_id=1,
             start_date=datetime.date(2014, 6, 3),
             by_source=True, user=User.objects.get(pk=1),
+            include_model_ids=False,
             order='cost'
         )
 
@@ -535,6 +609,7 @@ class ExportPlusTestCase(test.TestCase):
             by_day=False,
             filtered_sources=mock.ANY,
             by_source=False,
+            include_model_ids=False,
             ad_group=None,
             granularity=2,
             order=None)

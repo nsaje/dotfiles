@@ -12,7 +12,7 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.campaignGoal}">
+        <div class="form-group" ng-class="{'has-error': !!errors.campaignGoal}" ng-if="!hasPermission('zemauth.can_see_campaign_goals')">>
             <label for="goal-input-label" class="col-xs-3 control-label">
                 Campaign goal
                 <zem-help-popover content="The top level goal of this campaign." placement="top"></zem-help-popover>
@@ -33,11 +33,10 @@
             <div class="form-group section table-campaign-goals">
                 <div class="row">
                     <label class="col-xs-2 control-label">
-                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>
-                        Campaign goals:
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>Campaign goals:
                     </label>
                     <span class="col-xs-4">
-                        <span class="pull-right primary-goal-label">Primary goal</span>
+                        <span ng-show="campaignGoals.length > 1" class="pull-right primary-goal-label">Primary goal</span>
                     </span>
                 </div>
 
@@ -96,11 +95,12 @@
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
     </form>
-
+	
     <zem-conversion-goals
         zem-has-permission="hasPermission"
         zem-is-permission-internal="isPermissionInternal"
         zem-campaign="campaign"
-        zem-account="account">
+        zem-account="account"
+		ng-if="!hasPermission('zemauth.can_see_campaign_goals')">
     </zem-conversion-goals>
 </div>

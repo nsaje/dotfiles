@@ -10,10 +10,12 @@ from django.db.models import Sum, F, ExpressionWrapper
 
 import dash.constants
 import dash.models
+import dash.campaign_goals
 import zemauth.models
 import reports.api_contentads
 import reports.models
 import utils.dates_helper
+import utils.lc_helper
 
 from decimal import Decimal
 
@@ -29,6 +31,7 @@ class OverviewSetting(object):
                  tooltip=None,
                  setting_type='setting',
                  section_start=None,
+                 internal=False,
                  warning=None):
         self.name = name
         self.value = value
@@ -37,10 +40,12 @@ class OverviewSetting(object):
         self.details_hide_label = None
         self.details_content = None
         self.icon = None
+        self.internal = internal
         self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
         self.section_start = section_start
+        self.value_class = None
 
     def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
@@ -51,7 +56,7 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = 'happy' if ok else 'sad'
+        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -64,6 +69,7 @@ class OverviewSetting(object):
 
 
 class OverviewSeparator(OverviewSetting):
+
     def __init__(self):
         super(OverviewSeparator, self).__init__('', '', '', setting_type='hr')
 
@@ -382,7 +388,7 @@ def calculate_yesterday_account_spend(account):
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     filled_daily_ratio = None
     if daily_budget > 0:
-        filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
+        filled_daily_ratio = float(yesterday_cost or 0) / float(daily_budget)
 
     if filled_daily_ratio:
         daily_ratio_description = '{:.2f}% of daily budget'.format(abs(filled_daily_ratio) * 100)
@@ -394,8 +400,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
         tooltip='Yesterday media spend'
-    ).performance(
-        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
@@ -474,6 +478,12 @@ def calculate_all_accounts_total_budget(start_date, end_date):
             out_of_range_days += abs(start_diff)
         if end_diff < 0:
             out_of_range_days += abs(end_diff)
+
+        # one day budget line items or budget line items that are entirely
+        # contained here fit this condition
+        if out_of_range_days == 0:
+            total += bli.amount
+            continue
 
         total_budget_duration = (bli.end_date - bli.start_date).days
         rate_burned_in_range = Decimal(total_budget_duration - out_of_range_days)\
@@ -557,11 +567,11 @@ def get_adgroup_running_status(ad_group_settings):
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.STOPPED
 
+    if ad_group.campaign.is_in_landing():
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
     if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
-
-    if ad_group.campaign.landing_mode:
-        return dash.constants.InfoboxStatus.LANDING_MODE
 
     return dash.constants.InfoboxStatus.ACTIVE
 
@@ -571,7 +581,7 @@ def get_campaign_running_status(campaign):
         campaign=campaign
     ).filter_running().count()
     if count_active > 0:
-        if campaign.landing_mode:
+        if campaign.is_in_landing():
             return dash.constants.InfoboxStatus.LANDING_MODE
         return dash.constants.InfoboxStatus.ACTIVE
     return dash.constants.InfoboxStatus.INACTIVE
@@ -615,3 +625,37 @@ def _compute_daily_cap(ad_groups):
             continue
         ret += adgs_settings.get(adgsid) or 0
     return ret
+
+
+def get_campaign_goal_list(user, campaign, start_date, end_date):
+    performance = dash.campaign_goals.get_goals_performance(user, campaign,
+                                                            start_date=start_date, end_date=end_date)
+
+    settings = []
+    first = True
+    permissions = user.get_all_permissions_with_access_levels()
+    for status, metric_value, planned_value, campaign_goal in performance:
+        goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
+        if campaign_goal.conversion_goal:
+            goal_description += ' - ' + campaign_goal.conversion_goal.name
+
+        entry = OverviewSetting(
+            '' if not first else 'Campaign goals:',
+            goal_description,
+            planned_value and 'planned {}'.format(
+                dash.campaign_goals.format_value(campaign_goal.type, planned_value),
+            ) or None,
+            section_start=first,
+            internal=first and 'zemauth.campaign_goal_performance' in permissions,
+        )
+        if campaign_goal.primary:
+            entry.value_class = 'primary'
+
+        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
+            entry = entry.performance(True)
+        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
+            entry = entry.performance(False)
+
+        settings.append(entry.as_dict())
+        first = False
+    return settings

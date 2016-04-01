@@ -63,12 +63,15 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
 
 
 class ExportPlusStatus(ConstantBase):
+    # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
     INACTIVE = 2
+    ARCHIVED = 3
 
     _VALUES = {
         ACTIVE: 'Active',
-        INACTIVE: 'Inactive'
+        INACTIVE: 'Inactive',
+        ARCHIVED: 'Archived'
     }
 
 
@@ -1030,7 +1033,8 @@ class CampaignGoalKPI(ConstantBase):
     PAGES_PER_SESSION = 3
     CPA = 4
     CPC = 5
-    CPM = 6
+#    CPM = 6
+    NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
         TIME_ON_SITE: 'time on site in seconds',
@@ -1038,7 +1042,32 @@ class CampaignGoalKPI(ConstantBase):
         PAGES_PER_SESSION: 'pages per session',
         CPA: '$CPA',
         CPC: '$CPC',
-        CPM: '$CPM',
+        #        CPM: '$CPM',
+        NEW_UNIQUE_VISITORS: 'new visitors %',
+    }
+
+
+class CampaignGoalPerformance(ConstantBase):
+    UNDERPERFORMING = 1
+    AVERAGE = 2
+    SUPERPERFORMING = 3
+
+    _VALUES = {
+        UNDERPERFORMING: 'Underperforming',
+        AVERAGE: 'Average performance',
+        SUPERPERFORMING: 'Superperforming',
+    }
+
+
+class Emoticon(ConstantBase):
+    HAPPY = 1
+    NEUTRAL = 2
+    SAD = 3
+
+    _VALUES = {
+        HAPPY: 'Happy',
+        SAD: 'Sad',
+        NEUTRAL: 'Neutral',
     }
 
 
@@ -1195,6 +1224,11 @@ class UserActionType(ConstantBase):
     SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
     SET_GLOBAL_PUBLISHER_BLACKLIST = 28
 
+    CREATE_CAMPAIGN_GOAL = 29
+    DELETE_CAMPAIGN_GOAL = 30
+    CHANGE_CAMPAIGN_GOAL_VALUE = 31
+    CHANGE_PRIMARY_CAMPAIGN_GOAL = 32
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1223,7 +1257,11 @@ class UserActionType(ConstantBase):
         SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
         SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
         SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
-        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist',
+        CREATE_CAMPAIGN_GOAL: 'Create Campaign Goal',
+        DELETE_CAMPAIGN_GOAL: 'Delete Campaign Goal',
+        CHANGE_CAMPAIGN_GOAL_VALUE: 'Change Campaign Goal Value',
+        CHANGE_PRIMARY_CAMPAIGN_GOAL: 'Change Primary Campaign Goal'
     }
 
 
@@ -1336,4 +1374,12 @@ class GATrackingType(ConstantBase):
     _VALUES = {
         EMAIL: 'Email',
         API: 'API'
+    }
+
+
+class SystemUserType(ConstantBase):
+    CAMPAIGN_STOP = 1
+
+    _VALUES = {
+        CAMPAIGN_STOP: 'Campaign Stop'
     }

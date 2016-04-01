@@ -46,6 +46,11 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                 $scope.errors = {};
                 $scope.settings = data.settings;
 
+                if (data.goals) {
+                    $scope.campaignGoals.length = 0;
+                    Array.prototype.push.apply($scope.campaignGoals, data.goals);
+                }
+
                 zemNavigationService.updateCampaignCache(
                     $scope.campaign.id, {name: data.settings.name}
                 );

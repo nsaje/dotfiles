@@ -12,7 +12,9 @@ oneApp.directive('zemExportPlus', function () {
             columns: '=',
             order: '=',
             level: '=',
-            exportSources: '='
+            exportSources: '=',
+            hasPermission: '=zemHasPermission',
+            isPermissionInternal: '=zemIsPermissionInternal'
         },
         templateUrl: '/partials/zem_export_plus.html',
         controller: ['$scope', '$modal', function ($scope, $modal) {

@@ -1,0 +1,10 @@
+<div class="icon-list-container">
+    <zem-icon zem-lazy-popover-template="'iconlistPopover.html'" zem-lazy-popover-placement="top" img-class="zem-icon-happy" zem-lazy-popover-append-to-body="true" file="{{ iconFile }}" ng-if="iconFile" img-class="{{ iconClass }}"></zem-icon>
+</div>
+<script id="iconlistPopover.html" type="text/ng-template">
+    <ul class="icon-list">
+        <li ng-repeat="status in statusList">
+            <zem-icon file="{{ status.file }}" img-class="{{ status.cls }}"></zem-icon> {{ status.text }}
+        </li>
+    </ul>
+</script>

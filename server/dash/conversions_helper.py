@@ -34,8 +34,9 @@ def transform_to_conversion_goals(rows, conversion_goals):
             row[conversion_goal.get_view_key(conversion_goals)] = row.get('conversions', {}).get(key)
 
         for tp_conversion_goal in touchpoint_conversion_goals:
+            key = (tp_conversion_goal.pixel.slug, tp_conversion_goal.pixel.account_id)
             # set the default - if tp_conversion_goal result won't contain value, assume it's 0
-            goal_value = row.get('conversions', {}).get(tp_conversion_goal.name, 0)
+            goal_value = row.get('conversions', {}).get(key, 0)
             row[tp_conversion_goal.get_view_key(conversion_goals)] = goal_value
         if 'conversions' in row:
             # mapping done, this is not needed anymore
@@ -59,21 +60,27 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
     def create_key(breakdown_fields):
         return lambda x: tuple(x[field] for field in breakdown_fields)
     publishers_data_by_key = {create_key(publisher_breakdown_fields)(p): p for p in publishers_data}
-    touchpoint_data_by_key = {create_key(touchpoint_breakdown_fields)(t): t for t in touchpoint_data}
+    touchpoint_data_by_key = {}
+    for touchpoint in touchpoint_data:
+        key = create_key(touchpoint_breakdown_fields)(touchpoint)
+        touchpoint_data_by_key.setdefault(key, [])
+        touchpoint_data_by_key[key].append(touchpoint)
 
     reorder = False
-    for key, val in touchpoint_data_by_key.iteritems():
+    for key, touchpoints in touchpoint_data_by_key.iteritems():
         publisher = publishers_data_by_key.get(key)
 
-        if not publisher:
-            publisher = {publisher_breakdown_fields[i]: val[touchpoint_breakdown_fields[i]] for i in
-                         range(len(touchpoint_breakdown_fields))}
-            publishers_data.append(publisher)
-            publishers_data_by_key[create_key(publisher_breakdown_fields)(publisher)] = publisher
-            reorder = True
+        for touchpoint in touchpoints:
+            if not publisher:
+                publisher = {publisher_breakdown_fields[i]: touchpoint[touchpoint_breakdown_fields[i]] for i in
+                             range(len(touchpoint_breakdown_fields))}
+                publishers_data.append(publisher)
+                publishers_data_by_key[create_key(publisher_breakdown_fields)(publisher)] = publisher
+                reorder = True
 
-        publisher.setdefault('conversions', {})
-        publisher['conversions'][val['slug']] = val['conversion_count']
+            publisher.setdefault('conversions', {})
+            key = (touchpoint['slug'], touchpoint['account'])
+            publisher['conversions'][key] = touchpoint['conversion_count']
 
     return publishers_data, reorder
 
@@ -91,3 +98,16 @@ def convert_touchpoint_source_id_field_to_publisher_exchange(touchpoint_data):
             result.append(tp)
 
     return result
+
+
+def convert_constraint_exchanges_to_source_ids(constraints):
+    if 'exchange' not in constraints:
+        return constraints
+
+    constraints = copy.copy(constraints)
+
+    exchanges = constraints['exchange']
+    constraints['source'] = list(models.Source.objects.filter(bidder_slug__in=exchanges).values_list('id', flat=True))
+    del(constraints['exchange'])
+
+    return constraints

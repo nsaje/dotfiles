@@ -55,6 +55,18 @@ var constants = {
         CONVERSION_GOAL3: 'conversion_goal_3',
         CONVERSION_GOAL4: 'conversion_goal_4',
         CONVERSION_GOAL5: 'conversion_goal_5',
+        TOTAL_SECONDS: 'total_seconds',
+        TOTAL_PAGEVIEWS: 'total_pageviews',
+        UNBOUNCED_VISITS: 'unbounced_visits',
+        COST_PER_SECOND: 'avg_cost_per_second',
+        COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
+        COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
+        COST_PER_NEW_VISITOR: 'avg_cost_for_new_visitor',
+        COST_PER_CONVERSION_GOAL_1: 'avg_cost_per_conversion_goal_1',
+        COST_PER_CONVERSION_GOAL_2: 'avg_cost_per_conversion_goal_2',
+        COST_PER_CONVERSION_GOAL_3: 'avg_cost_per_conversion_goal_3',
+        COST_PER_CONVERSION_GOAL_4: 'avg_cost_per_conversion_goal_4',
+        COST_PER_CONVERSION_GOAL_5: 'avg_cost_per_conversion_goal_5',
     },
     creditLineItemStatus: {
         SIGNED: 1,
@@ -479,6 +491,8 @@ var constants = {
         PAGES_PER_SESSION: 3,
         CPA: 4,
         CPC: 5,
+        CPM: 6,
+        NEW_UNIQUE_VISITORS: 7,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -549,6 +563,11 @@ var constants = {
         ZEMANTA: 'Zemanta',
         B1: 'B1',
     },
+    emoticon: {
+        HAPPY: 1,
+        NEUTRAL: 2,
+        SAD: 3,
+    },
 };
 
 var options = {
@@ -611,6 +630,50 @@ var options = {
         {name: '', value: constants.chartMetric.CONVERSION_GOAL3, shown: false},
         {name: '', value: constants.chartMetric.CONVERSION_GOAL4, shown: false},
         {name: '', value: constants.chartMetric.CONVERSION_GOAL5, shown: false},
+    ],
+    campaignGoalChartMetrics: [
+        {
+            name: 'Total Seconds',
+            value: constants.chartMetric.TOTAL_SECONDS,
+            shown: false,
+        },
+        {
+            name: 'Total Pageviews',
+            value: constants.chartMetric.TOTAL_PAGEVIEWS,
+            shown: false,
+        },
+        {
+            name: 'Unbounced Visitors',
+            value: constants.chartMetric.UNBOUNCED_VISITS,
+            shown: false,
+        },
+        {
+            name: 'Avg. Cost Per Second',
+            value: constants.chartMetric.COST_PER_SECOND,
+            shown: false,
+        },
+        {
+            name: 'Avg. Cost For Pageview',
+            value: constants.chartMetric.COST_PER_PAGEVIEW,
+            shown: false,
+        },
+        {
+            name: 'Avg. Cost For Nonbounced Visitor',
+            value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR,
+            shown: false,
+        },
+        {
+            name: 'Avg. Cost For New Visitor',
+            value: constants.chartMetric.COST_PER_NEW_VISITOR,
+            shown: false,
+        },
+    ],
+    campaignGoalConversionGoalChartMetrics: [
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_1, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_2, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_3, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_4, shown: false},
+        {name: '', value: constants.chartMetric.COST_PER_CONVERSION_GOAL_5, shown: false},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -1048,7 +1111,8 @@ var options = {
         {name: 'max bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
-        {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA, unit: '$'},
+        {name: 'new unique visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
+        {name: 'CPA - Setup new conversion tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     conversionGoalTypes: [
         {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},
@@ -1084,5 +1148,6 @@ var defaults = {
         {id: constants.campaignGoalKPI.PAGES_PER_SESSION, value: 1.2},
         {id: constants.campaignGoalKPI.CPC, value: 0.35},
         {id: constants.campaignGoalKPI.CPA, value: 50},
+        {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
     ],
 };

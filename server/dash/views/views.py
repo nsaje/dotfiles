@@ -49,6 +49,8 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
+from automation import campaign_stop
+
 from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
@@ -261,6 +263,9 @@ class AdGroupOverview(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': ad_group_settings.ad_group_name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
@@ -270,7 +275,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
-            ad_group, request.user, ad_group_settings, daily_cap, async_perf_query
+            ad_group, request.user, ad_group_settings, start_date, end_date,
+            daily_cap, async_perf_query
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
@@ -301,7 +307,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         max_cpc_setting = infobox_helpers.OverviewSetting(
             'Maximum CPC:',
-            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
+            lc_helper.default_currency(
+                ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
         )
         settings.append(max_cpc_setting.as_dict())
 
@@ -395,7 +402,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         return settings, daily_cap
 
-    def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):
+    def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
+                              daily_cap, async_query):
         settings = []
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
@@ -409,6 +417,11 @@ class AdGroupOverview(api_common.BaseApiView):
             daily_cap
         ).as_dict())
         settings.extend(common_settings)
+
+        if user.has_perm('zemauth.campaign_goal_performance'):
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, ad_group.campaign,
+                                                                   start_date, end_date))
+
         return settings, is_delivering
 
 
@@ -512,9 +525,6 @@ class CampaignAdGroups(api_common.BaseApiView):
                 logger.exception('Exception occurred on campaign with id %s', ad_group.campaign.pk)
                 continue
 
-            if not self._can_automatically_add_media_source(source_default_settings):
-                continue
-
             ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)
             external_name = ad_group_source.get_external_name()
             action = actionlog.api.create_campaign(ad_group_source, external_name, request, send=False)
@@ -528,11 +538,6 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         return actions
 
-    def _can_automatically_add_media_source(self, source_default_settings):
-        return bool(source_default_settings.default_cpc_cc or
-                    source_default_settings.mobile_cpc_cc or
-                    source_default_settings.daily_budget_cc)
-
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         source = source_settings.source
         ad_group = ad_group_settings.ad_group
@@ -541,8 +546,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group_source.save(request)
         active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
             retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
-        helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
-                                             mobile_only=ad_group_settings.is_mobile_only(),
+        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
         return ad_group_source
 
@@ -560,6 +564,9 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': campaign.name,
             'active': infobox_helpers.get_campaign_running_status(campaign),
@@ -574,7 +581,9 @@ class CampaignOverview(api_common.BaseApiView):
             campaign,
             request.user,
             campaign_settings,
-            daily_cap
+            daily_cap,
+            start_date,
+            end_date,
         )
 
         for setting in performance_settings[1:]:
@@ -661,7 +670,8 @@ class CampaignOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
-    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
+    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc,
+                              start_date, end_date):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
@@ -675,6 +685,11 @@ class CampaignOverview(api_common.BaseApiView):
             user, campaign
         )
         settings.extend(common_settings)
+
+        if user.has_perm('zemauth.campaign_goal_performance'):
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
+                                                                   start_date, end_date))
+
         return settings, is_delivering
 
     def _calculate_flight_dates(self, campaign):
@@ -902,7 +917,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source.id,
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings),
+                    source, ad_group_settings),
                 'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
             })
 
@@ -950,8 +965,8 @@ class AdGroupSources(api_common.BaseApiView):
                                             ad_group=ad_group)
 
         if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_settings(request, ad_group_source, default_settings,
-                                                 mobile_only=ad_group.get_current_settings().is_mobile_only())
+            helpers.set_ad_group_source_settings(
+                request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
 
         return self.create_api_response(None)
 
@@ -1056,7 +1071,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'autopilot_state' in resource and not autopilot_form.is_valid():
             errors.update(autopilot_form.errors)
 
-        if ad_group.campaign.landing_mode:
+        if ad_group.campaign.is_in_landing():
             for key in resource.keys():
                 errors.update({key: 'Not allowed'})
 
@@ -1075,6 +1090,18 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'autopilot_state' in resource and\
                 resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:
+            max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
+            if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
+                errors.update({
+                    'daily_budget_cc': [
+                        'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
+                            max_daily_budget=max_daily_budget
+                        )
+                    ]
+                })
 
         if errors:
             raise exc.ValidationError(errors=errors)
@@ -1102,6 +1129,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'state' in resource:
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
+
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group,
@@ -1109,9 +1137,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
-                allowed_sources,
+                allowed_sources
             ),
-            'autopilot_changed_sources': autopilot_changed_sources_text
+            'autopilot_changed_sources': autopilot_changed_sources_text,
+            'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
         })
 
 
@@ -1295,11 +1324,12 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             if batch.error_report_key:
                 errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
-                errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
+                errors['description'] = 'Found {} error{}.'.format(
+                    batch.num_errors, 's' if batch.num_errors > 1 else '')
             else:
                 errors['description'] = 'An error occured while processing file.'
         elif batch.status == constants.UploadBatchStatus.CANCELLED:
-                errors['description'] = 'Content Ads upload was cancelled.'
+            errors['description'] = 'Content Ads upload was cancelled.'
 
         return errors
 

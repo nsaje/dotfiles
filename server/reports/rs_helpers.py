@@ -1,5 +1,8 @@
 import decimal
 
+# simple division sql for use with fields
+DIVIDE_FORMULA = 'CASE WHEN {divisor} <> 0 THEN (CAST({expr} AS FLOAT) / {divisor}) ELSE NULL END'
+
 
 def unchanged(val):
     return val
@@ -38,6 +41,10 @@ def decimal_to_int_exact(num):
 
 def additions(*cols):
     return '({})'.format('+'.join(cols))
+
+
+def subtractions(*cols):
+    return '({})'.format('-'.join(cols))
 
 
 def total_cost(nano_cols=[], cc_cols=[]):
@@ -83,6 +90,10 @@ def sum_expr(expr):
     return 'SUM({expr})'.format(expr=expr)
 
 
+def mul_expr(expr1, expr2):
+    return '({expr1} * {expr2})'.format(expr1=expr1, expr2=expr2)
+
+
 def is_all_null(field_names):
     return 'CASE WHEN ' + ' AND '.join('MAX("{}") IS NULL'.format(f) for f in field_names) + ' THEN 0 ELSE 1 END'
 
@@ -99,3 +110,7 @@ def ranked(field_name, order_field):
         order_field = order_field[1:] + ' DESC'
     return "RANK() OVER (PARTITION BY {} ORDER BY {})".format(field_name, order_field)
 
+
+# common formulas
+UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
+AVG_TOS_FORMULA = sum_agr('total_time_on_site')

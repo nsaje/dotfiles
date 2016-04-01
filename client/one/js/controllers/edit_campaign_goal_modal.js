@@ -15,11 +15,29 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             primary: false,
             conversionGoal: {},
         };
+    } else {
+        options.campaignGoalKPIs.forEach(function (kpiDefault) {
+            if (kpiDefault.value === $scope.campaignGoal.type) {
+                $scope.unit = kpiDefault.unit;
+            }
+        });
     }
 
     $scope.errors = {
         conversionGoal: {},
     };
+
+
+    function getTypeId (goal) {
+        if (goal.conversionGoal.type !== constants.conversionGoalType.PIXEL) {
+            return goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
+        }
+        return [
+            goal.conversionGoal.type,
+            goal.conversionGoal.goalId,
+            goal.conversionGoal.conversionWindow,
+        ].join('::');
+    }
 
     $scope.setDefaultValue = function () {
         var defaultValue = null;
@@ -31,6 +49,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 defaultValue = kpiDefault.value;
             }
         });
+
         $scope.campaignGoal.value = defaultValue;
     };
 
@@ -58,14 +77,16 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             goalNames = {},
             errors = {};
 
+        if (!$scope.newCampaignGoal) {
+            return true;
+        }
+
         if (newGoal.type !== constants.campaignGoalKPI.CPA) {
             return true;
         }
 
         goalNames[newGoal.conversionGoal.name] = 1;
-        goalTypeIds[
-            newGoal.conversionGoal.type + '::' + newGoal.conversionGoal.goalId
-        ] = 1;
+        goalTypeIds[getTypeId(newGoal)] = 1;
 
         $scope.campaignGoals.forEach(function (goal) {
             if (goal.type !== constants.campaignGoalKPI.CPA) {
@@ -75,7 +96,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 // skip same rows
                 return;
             }
-            var typeId = goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
+            var typeId = getTypeId(goal);
             if (!goalNames[goal.conversionGoal.name]) {
                 goalNames[goal.conversionGoal.name] = 0;
             }
@@ -107,6 +128,13 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.save = function () {
         $scope.clearErrors('type');
         $scope.clearErrors('value');
+
+        $scope.campaignGoal.value = Math.abs($scope.campaignGoal.value);
+
+        if (!$scope.newCampaignGoal) {
+            $modalInstance.close($scope.campaignGoal);
+            return; // Skip server validation call if this is not a new entry
+        }
 
         if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
             return;
@@ -156,9 +184,45 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.setDefaultValue();
         $scope.unit = unit || '';
     };
+
+    $scope.prepareName = function (option) {
+        if ($scope.newCampaignGoal) {
+            return option && option.name || undefined;
+        }
+        if ($scope.campaignGoal.type !== constants.campaignGoalKPI.CPA) {
+            return option.name;
+        }
+        return 'CPA - ' + $scope.campaignGoal.conversionGoal.name;
+    };
+
     $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
+
+
+    $scope.refreshConversionWindows = function (goalId) {
+        var counts = {};
+        $scope.conversionWindows = [];
+        $scope.campaignGoals.forEach(function (goal) {
+            if (goal.type !== constants.campaignGoalKPI.CPA) {
+                return;
+            }
+            if (goal.conversionGoal.goalId === goalId) {
+                if (!counts[goal.conversionGoal.conversionWindow]) {
+                    counts[goal.conversionGoal.conversionWindow] = 0;
+                }
+                counts[goal.conversionGoal.conversionWindow]++;
+            }
+        });
+        options.conversionWindows.forEach(function (opt) {
+            if (!counts[opt.value]) {
+                $scope.conversionWindows.push(opt);
+            }
+        });
+    };
+
+
     api.conversionPixel.list($scope.account.id).then(function (data) {
         $scope.availablePixels = data.rows;
         $scope.loadingPixels = false;
     });
 }]);
+

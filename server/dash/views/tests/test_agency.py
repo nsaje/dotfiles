@@ -50,7 +50,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 'enable_adobe_tracking': False,
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
-                'autopilot_min_budget': '100'
+                'autopilot_min_budget': '0'
             }
         }
 
@@ -132,7 +132,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_min_budget': '100'
+                    'autopilot_min_budget': '0',
+                    'autopilot_optimization_goal': 'maximum spend'
                 },
                 'warnings': {}
             },
@@ -171,6 +172,32 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'Gravity',
                         'Yahoo',
                     ],
+                }
+            }
+        )
+
+    def test_get_landing(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        new_settings = ad_group.get_current_settings().copy_settings()
+        new_settings.landing_mode = True
+        new_settings.save(req)
+
+        self.add_permissions(['settings_view'])
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings'], {
+                'end_date': {
+                    'text': 'Your campaign has been switched to landing mode. '
+                    'Please add the budget and continue to adjust settings by your needs. '
+                    '<a href="http://testserver/campaigns/1/budget-plus/">Add budget</a>'
                 }
             }
         )
@@ -237,7 +264,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100'
+                        'autopilot_min_budget': '0',
+                        'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
                 'success': True
@@ -355,6 +383,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
+            self.maxDiff = None
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
@@ -410,7 +439,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100'
+                        'autopilot_min_budget': '0',
+                        'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
                 'success': True
@@ -732,8 +762,9 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
-        ad_group.campaign.landing_mode = True
-        ad_group.campaign.save(None)
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
 
         self.add_permissions(['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -872,6 +903,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'Adobe tracking parameter', u'value': u''},
                         {u'name': u'Auto-Pilot', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
+                        {u'name': u'Landing Mode', u'value': False},
                     ],
                     u'show_old_settings': False
                 }, {
@@ -900,6 +932,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
                         {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
+                        {u'name': u'Landing Mode', u'old_value': False, u'value': False},
                     ],
                     u'show_old_settings': True
                 }]
@@ -1839,7 +1872,9 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
-                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'}
+                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
+                {'name': 'Automatic Campaign Stop', 'value': 'False'},
+                {'name': 'Landing Mode', 'value': 'False'},
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'
@@ -2454,7 +2489,7 @@ class AccountAgencyTest(TestCase):
     def test_get_changes_text_for_media_sources(self):
         view = agency.AccountAgency()
 
-        sources = list(models.Source.objects.all())
+        sources = list(models.Source.objects.all().order_by('id'))
         self.assertEqual(
             view.get_changes_text_for_media_sources(sources[0:1], sources[1:2]),
             'Added allowed media sources (Source 1), Removed allowed media sources (Source 2)'
