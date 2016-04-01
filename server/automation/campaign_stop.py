@@ -48,6 +48,7 @@ def switch_low_budget_campaigns_to_landing_mode():
 
 def update_campaigns_in_landing():
     for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+        logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
         try:
             with transaction.atomic():
@@ -141,7 +142,16 @@ def _stop_ad_group(ad_group):
     new_settings.end_date = user_end_date
     new_settings.save(None)
 
-    return actionlog.api.init_set_ad_group_state(ad_group, new_settings.state, request=None, send=False)
+    actions = dash.api.order_ad_group_settings_update(
+        ad_group,
+        current_settings,
+        new_settings,
+        request=None,
+        send=False,
+    )
+
+    actions.extend(actionlog.api.init_set_ad_group_state(ad_group, new_settings.state, request=None, send=False))
+    return actions
 
 
 def _set_end_date_to_today(campaign):
@@ -207,16 +217,18 @@ def _get_ad_group_ratios(ad_groups):
         date = date.date()
         active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=True)
         for ad_group in active_ad_groups:
-            spend_per_ad_group[ad_group.id].append(data[ad_group.id, date])
+            spend_per_ad_group[ad_group.id].append(data.get((ad_group.id, date), 0))
 
     avg_spends = {}
     for ad_group_id, spends in spend_per_ad_group.iteritems():
-        avg_spends[ad_group_id] = sum(spends) / len(spends)
+        if len(spends) > 0:
+            avg_spends[ad_group_id] = sum(spends) / len(spends)
 
     total = sum(avg_spends.itervalues())
     normalized = {}
     for ad_group_id, avg_spend in avg_spends.iteritems():
-        normalized[ad_group_id] = avg_spend / total
+        if total > 0:
+            normalized[ad_group_id] = avg_spend / total
 
     return normalized
 
