@@ -66,8 +66,8 @@ def _get_min_max_values_of_campaign_goal(data, campaign_goal):
         col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
         for row in data:
             current = row[col]
-            max_value = current if current > max_value else max_value
-            min_value = current if current < min_value else min_value
+            max_value = max(current, max_value)
+            min_value = min(current, min_value) if current else min_value
     return min_value, max_value
 
 
@@ -131,25 +131,34 @@ def predict_outcome_success(source, data, campaign_goal, min_value_of_campaign_g
                             max_value_of_campaign_goal, new_budget=None):
     spend_perc = data.get('spend_perc') if not new_budget else\
         data.get('yesterdays_spend_cc') / max(new_budget, autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET)
-    if not campaign_goal or campaign_goal.type == CampaignGoalKPI.CPA:
+
+    if not campaign_goal:
         return spend_perc > random()
 
     data_value = data.get(autopilot_helpers.get_campaign_goal_column(campaign_goal))
-    if campaign_goal.type == CampaignGoalKPI.MAX_BOUNCE_RATE:
-        goal_value = (100 - data_value) / 100
-    elif campaign_goal.type in [CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION]:
-        goal_value = data_value / max_value_of_campaign_goal
-    elif campaign_goal.type == CampaignGoalKPI.CPA:
-        raise exceptions.NotImplementedError('CPA budget automation goal is not implemented yet.')
-    elif campaign_goal.type == CampaignGoalKPI.CPC:
-        goal_value = float(min_value_of_campaign_goal / data_value) if data_value > 0 else 0.0
-    else:
-        raise exceptions.NotImplementedError('Budget Auto-Pilot campaign goal is not implemented: ', campaign_goal)
+    goal_value = 0.0
+    if data_value:
+        goal_value = _get_campaign_goal_value(campaign_goal.type, data_value,
+                                              max_value_of_campaign_goal, min_value_of_campaign_goal)
 
     spend_weight = min(float(spend_perc * autopilot_settings.GOALS_COLUMNS.get(campaign_goal.type).get('spend_perc')),
                        float(autopilot_settings.GOALS_COLUMNS.get(campaign_goal.type).get('spend_perc')))
     prob_success = spend_weight + goal_value * autopilot_helpers.get_campaign_goal_column_importance(campaign_goal)
+    if spend_perc <= autopilot_settings.SPEND_PERC_LOWERING_THRESHOLD:
+        prob_success = prob_success * autopilot_settings.LOW_SPEND_PROB_LOWERING_FACTOR
     return prob_success > random()
+
+
+def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campaign_goal, min_value_of_campaign_goal):
+    if campaign_goal_type == CampaignGoalKPI.MAX_BOUNCE_RATE:
+        return (100 - data_value) / 100
+    if campaign_goal_type == CampaignGoalKPI.NEW_UNIQUE_VISITORS:
+        return data_value / 100
+    if campaign_goal_type in [CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION]:
+        return data_value / max_value_of_campaign_goal
+    if campaign_goal_type == CampaignGoalKPI.CPC:
+        return float(min_value_of_campaign_goal / data_value)
+    raise exceptions.NotImplementedError('Budget Auto-Pilot campaign goal is not implemented: ', campaign_goal_type)
 
 
 def get_adgroup_minimum_daily_budget(adgroup=None):
