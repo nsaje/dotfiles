@@ -103,6 +103,9 @@ ZWEI_API_TASKS_URL = 'https://zwei.zemanta.com/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'https://zwei.zemanta.com/purcel/dash_url/'
 ZWEI_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxbBxaeRkVLiSadrR0CARCAO6QohWauEXIl/R/vAzN8VLeETU79qZGnzYxyAg3bt1dAf2dZgFwu3qUJAW1hJQXZM/n0oSUMUOFWGy5l').get()
 
+# K1 API
+K1_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxLDkaVndGHsfBkB1QCARCAO3AoqenoO5eaoEcUABYaSJoXcSGpI54EfbTgBTWcHp2UHNQuLmq9yS89oEzmBKivfQVektS2G+KQ7A1R').get()
+
 # Network credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyvY/0jfzrrgNtFqh0CARCAO34sLgm638MGubiIAdZUB1bKIufmrizVhP9dEWXqBftFvKyn0evtcHtEg7/eDG7cBg25nMhDgif7OXiV').get()  # has to be 32 bytes
 
