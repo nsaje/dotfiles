@@ -313,8 +313,8 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings):
     stat['status'] = statuses[ad_group.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
-    if settings and stat['ad_group'] in settings:
-        stat['is_archived'] = settings[stat['ad_group']].archived
+    if settings and ad_group.id in settings:
+        stat['is_archived'] = settings[ad_group.id].archived
     stat['ad_group'] = ad_group.name
     return stat
 
@@ -322,9 +322,10 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings):
 def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
-    if settings:
+    if settings and campaign.id in settings:
         stat['campaign_manager'] = \
             helpers.get_user_full_name_or_email(settings[campaign.id].campaign_manager, default_value=None)
+        stat['is_archived'] = settings[campaign.id].archived
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
@@ -628,9 +629,8 @@ class AccountExport(object):
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
-
-        include_settings = breakdown == 'campaign' and 'campaign_manager' in additional_fields
-        if not include_settings:
+        include_campaign_manager = breakdown == 'campaign' and 'campaign_manager' in additional_fields
+        if not include_campaign_manager:
             exclude_fields.append('campaign_manager')
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
@@ -646,7 +646,7 @@ class AccountExport(object):
             order,
             breakdown == 'content_ad',
             [],
-            include_settings=include_settings,
+            include_settings=True,
             include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
