@@ -232,7 +232,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                             yAxis: commonYAxis ? 0 : index,
                             data: seriesData,
                             tooltip: {
-                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(0) + '</b></br>'
+                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
                             },
                             marker: {
                                 radius: 3,
@@ -265,29 +265,50 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 if (!campaignGoals || !fieldGoalMap) {
                     return;
                 }
-                var goalName1 = fieldGoalMap[$scope.metric1];
+                var goalName1 = fieldGoalMap[$scope.metric1],
+                    goalName2 = fieldGoalMap[$scope.metric2],
+                    commonYAxis = true,
+                    metricIds = [];
+
                 if ($scope.metric1 && campaignGoals[goalName1]) {
-                    var series = transformDate(campaignGoals[goalName1]);
-                    if (goalName1) {
-                        var color = getColor($scope.metric1)[0];
-                        $scope.config.series.unshift({
-                            name: goalName1,
-                            color: color,
-                            yAxis: 1,
-                            data: series,
-                            step: true,
-                            dashStyle: 'ShortDash',
-                            connectNulls: true,
-                            tooltip: {
-                                pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName1 + ': <b>' + getPointFormat(0) + '</b></br>'
-                            },
-                            marker: {
-                                enabled: false,
-                            },
-                        });
-                    }
+                    metricIds.push($scope.metric1)
                 }
+                if ($scope.metric2 && campaignGoals[goalName2]) {
+                    metricIds.push($scope.metric2)
+                }
+
+                metricIds.forEach(function (metricId, index) {
+                    var goalName = fieldGoalMap[metricId],
+                        series = transformDate(campaignGoals[goalName]),
+                        color = getColor(goalName);
+                    if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                        commonYAxis = false;
+                    }
+                    addGoalSeries(metricId, goalName, series, color[index], commonYAxis ? 0 : index);
+                });
             };
+
+            var addGoalSeries = function (metricId, goalName, series, color, yAxisIndex) {
+                if (!goalName) {
+                    return;
+                };
+
+                $scope.config.series.push({
+                    name: goalName,
+                    color: color,
+                    yAxis: yAxisIndex,
+                    data: series,
+                    step: true,
+                    dashStyle: 'ShortDash',
+                    connectNulls: true,
+                    tooltip: {
+                        pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                    },
+                    marker: {
+                        enabled: false,
+                    },
+                });
+            }
 
 
             /////////////
@@ -364,7 +385,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 metricIds.forEach(function (metricId, index) {
                     format = metricFormats[metricId];
                     axisFormat = null;
-
                     if (format !== undefined) {
                         if (format.type === 'currency') {
                             axisFormat = '${value}';
@@ -449,7 +469,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
                 // check if group had been assigned a color before
                 color = colors[usedColors[group.id]];
-
+                    
                 // if not, select one of the available colors
                 if (!color) {
                     usedColorIndexes = Object.keys(usedColors).map(function (key) {
