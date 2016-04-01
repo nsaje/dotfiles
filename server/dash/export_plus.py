@@ -90,9 +90,8 @@ FORMAT_EMPTY_TO_0 = [
 ]
 
 
-def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
-                   conversion_goals, include_settings=False, include_budgets=False, include_flat_fees=False,
-                   include_projections=False, **constraints):
+def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals,
+                   include_budgets=False, include_flat_fees=False, include_projections=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -108,7 +107,6 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         stats,
         start_date,
         end_date,
-        include_settings=include_settings,
         include_budgets=include_budgets,
         include_flat_fees=include_flat_fees,
         include_projections=include_projections)
@@ -162,8 +160,8 @@ def _adjust_breakdown_by_day(start_date, stat):
             stat[field] = Decimal(0.0)
 
 
-def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, include_settings=False,
-                        include_budgets=False, include_flat_fees=False, include_projections=False):
+def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, include_budgets=False,
+                        include_flat_fees=False, include_projections=False):
     data = None
     budgets = None
     projections = None
@@ -177,37 +175,40 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
     elif 'ad_group' in dimensions:
         level = 'ad_group'
         distinct_ad_groups = set(stat['ad_group'] for stat in stats)
+
         ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
         data = {ad_group.id: ad_group for ad_group in ad_group_qs}
-        if include_settings:
-            settings_qs = models.AdGroupSettings.objects \
-                .filter(ad_group__in=distinct_ad_groups) \
-                .group_current_settings()
-            settings = {s.ad_group.id: s for s in settings_qs}
+
+        settings_qs = models.AdGroupSettings.objects \
+            .filter(ad_group__in=distinct_ad_groups) \
+            .group_current_settings()
+        settings = {s.ad_group.id: s for s in settings_qs}
 
     elif 'campaign' in dimensions:
         level = 'campaign'
         distinct_campaigns = set(stat['campaign'] for stat in stats)
+
         campaign_qs = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
         data = {c.id: c for c in campaign_qs}
-        if include_settings:
-            settings_qs = models.CampaignSettings.objects \
-                .filter(campaign__in=distinct_campaigns) \
-                .group_current_settings() \
-                .select_related('campaign_manager')
-            settings = {s.campaign.id: s for s in settings_qs}
+
+        settings_qs = models.CampaignSettings.objects \
+            .filter(campaign__in=distinct_campaigns) \
+            .group_current_settings() \
+            .select_related('campaign_manager')
+        settings = {s.campaign.id: s for s in settings_qs}
     elif 'account' in dimensions:
         level = 'account'
+        distinct_accounts = set(stat['account'] for stat in stats)
 
-        accounts = set(stat['account'] for stat in stats)
-        accounts_qs = models.Account.objects.filter(id__in=accounts)
+        accounts_qs = models.Account.objects.filter(id__in=distinct_accounts)
         data = {a.id: a for a in accounts_qs}
-        if include_settings:
-            settings_qs = models.AccountSettings.objects \
-                .filter(account__in=accounts) \
-                .group_current_settings() \
-                .select_related('default_account_manager', 'default_sales_representative')
-            settings = {s.account_id: s for s in settings_qs}
+
+        settings_qs = models.AccountSettings.objects \
+            .filter(account__in=distinct_accounts) \
+            .group_current_settings() \
+            .select_related('default_account_manager', 'default_sales_representative')
+        settings = {s.account_id: s for s in settings_qs}
+
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
         if include_projections:
             projections = bcm_helpers.get_projections(data.values(), start_date, end_date)
@@ -323,9 +324,9 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
     if settings and campaign.id in settings:
-        stat['campaign_manager'] = \
-            helpers.get_user_full_name_or_email(settings[campaign.id].campaign_manager, default_value=None)
-        stat['is_archived'] = settings[campaign.id].archived
+        setting = settings[campaign.id]
+        stat['campaign_manager'] = helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
+        stat['is_archived'] = setting.archived
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
@@ -338,12 +339,13 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
 
 def _populate_account_stat(stat, account, statuses, settings=None, projections=None,
                            budgets=None, flat_fees=None):
-    if settings and stat['account'] in settings:
-        setting = settings[stat['account']]
+    if settings and account.id in settings:
+        setting = settings[account.id]
         stat['default_account_manager'] = \
             helpers.get_user_full_name_or_email(setting.default_account_manager, default_value=None)
         stat['default_sales_representative'] = \
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
+        stat['is_archived'] = setting.archived
     if budgets:
         stat['budget'] = budgets[stat['account']].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
@@ -552,9 +554,10 @@ class AllAccountsExport(object):
             required_fields = model_id_fields + required_fields
 
         supported_settings_fields = ['default_account_manager', 'default_sales_representative']
-        include_settings = breakdown == 'account' and \
-                                        any(field in additional_fields for field in supported_settings_fields)
-        if not include_settings:
+        include_supported_settings_fields = breakdown == 'account' and any(
+            field in additional_fields for field in supported_settings_fields
+        )
+        if not include_supported_settings_fields:
             exclude_fields.extend(supported_settings_fields)
 
         include_budgets = (
@@ -585,7 +588,6 @@ class AllAccountsExport(object):
             order,
             False,
             [],
-            include_settings=include_settings,
             include_budgets=include_budgets,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
@@ -646,7 +648,6 @@ class AccountExport(object):
             order,
             breakdown == 'content_ad',
             [],
-            include_settings=True,
             include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
@@ -691,7 +692,6 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
-            include_settings=True,
             campaign=campaign,
             source=filtered_sources)
 
