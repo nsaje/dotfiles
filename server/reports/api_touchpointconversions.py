@@ -54,7 +54,7 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
 
     if conversion_goals:
         results = []
-        for conversion_goals_batch in _split_goals_by_pixels(conversion_goals):
+        for conversion_goals_batch in _split_conversion_goals_by_window(conversion_goals):
             batch_results = _query(cursor, conversion_goals_batch, constraints, constraints_list, breakdown, order)
             results.extend(batch_results)
         cursor.close()
@@ -98,7 +98,7 @@ def _query(cursor, conversion_goals, constraints, constraints_list, breakdown, o
     return results
 
 
-def _split_goals_by_pixels(conversion_goals):
+def _split_conversion_goals_by_window(conversion_goals):
     # split conversions goals into batches
     # new batches are created when goals with same pixels are used
     # and use different window length

@@ -1,6 +1,6 @@
 from collections import defaultdict
 import datetime
-from mock import patch
+from mock import patch, call
 import re
 
 from django.test import TestCase
@@ -145,6 +145,52 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
                                         'campaign_id=%s',
                                         '"date">=%s',
                                         '"date"<=%s'])
+
+    def test_query_multiple_conversion_windows(self, mock_cursor):
+        cp = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug2')
+        dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                  type=dash.constants.ConversionGoalType.PIXEL,
+                                                  name='goal name 2',
+                                                  pixel=cp,
+                                                  conversion_window=168)
+        dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                  type=dash.constants.ConversionGoalType.PIXEL,
+                                                  name='goal name 3',
+                                                  pixel=cp,
+                                                  conversion_window=7)
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        start_date = datetime.date(2015, 11, 1)
+        end_date = datetime.date(2015, 11, 18)
+        breakdown = ['ad_group', 'source']
+        conversion_goals = campaign.conversiongoal_set.all()
+        constraints = {'campaign': campaign, 'source': dash.models.Source.objects.all()}
+
+        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, conversion_goals=conversion_goals, constraints=constraints)
+        self.assertEquals(mock_cursor().execute.call_count, 2)
+
+    def test_split_conversion_goals_by_window(self, mock_cursor):
+        cp = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug2')
+        cg1 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                        type=dash.constants.ConversionGoalType.PIXEL,
+                                                        name='goal name 2',
+                                                        pixel=cp,
+                                                        conversion_window=168)
+        cg2 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                        type=dash.constants.ConversionGoalType.PIXEL,
+                                                        name='goal name 3',
+                                                        pixel=cp,
+                                                        conversion_window=7)
+        cp2 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug3')
+        cg3 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                        type=dash.constants.ConversionGoalType.PIXEL,
+                                                        name='goal name 4',
+                                                        pixel=cp2,
+                                                        conversion_window=7)
+
+        batches = api_touchpointconversions._split_conversion_goals_by_window([cg1, cg2, cg3])
+        self.assertItemsEqual(batches[0], [cg1, cg3])
+        self.assertItemsEqual(batches[1], [cg2])
 
 
 class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
