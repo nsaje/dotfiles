@@ -1017,6 +1017,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return ret;
         }
 
+        function convertWarningsFromApi (warnings) {
+            return {
+                retargeting: warnings.retargeting,
+                endDate: warnings.end_date,
+            };
+        }
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/settings/';
@@ -1026,7 +1033,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             $http.get(url, config).
                 success(function (data) {
-                    var settings, defaultSettings, retargetableAdGroups = [];
+                    var settings, defaultSettings, warnings, retargetableAdGroups = [];
                     if (data && data.data && data.data.settings) {
                         settings = convertFromApi(data.data.settings);
                     }
@@ -1038,12 +1045,16 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         retargetableAdGroups = convertRetargetingAdgroupsFromApi(data.data.retargetable_adgroups);
                     }
 
+                    if (data && data.data && data.data.warnings) {
+                        warnings = convertWarningsFromApi(data.data.warnings);
+                    }
+
                     deferred.resolve({
                         settings: settings,
                         defaultSettings: defaultSettings,
                         actionIsWaiting: data.data.action_is_waiting,
                         retargetableAdGroups: retargetableAdGroups,
-                        warnings: data.data.warnings,
+                        warnings: warnings,
                     });
                 }).
                 error(function (data) {
