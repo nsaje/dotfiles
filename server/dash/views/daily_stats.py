@@ -116,19 +116,25 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         can_see_campaign_goals = user.has_perm('zemauth.can_see_campaign_goals')
         if campaign is not None and can_see_campaign_goals:
-            result['goal_fields'] = campaign_goals.inverted_campaign_goal_map()
+            result['goal_fields'] = campaign_goals.inverted_campaign_goal_map(
+                conversion_goals
+            )
             result['campaign_goals'] = dict(
                 campaign_goals.get_campaign_goal_metrics(
                     campaign,
                     start_date,
                     end_date
-                ),
-                **campaign_goals.get_campaign_conversion_goal_metrics(
-                    campaign,
-                    start_date,
-                    end_date
                 )
             )
+            if conversion_goals:
+                result['campaign_goals'].update(
+                    campaign_goals.get_campaign_conversion_goal_metrics(
+                        campaign,
+                        start_date,
+                        end_date,
+                        conversion_goals
+                    )
+                )
         return result
 
     def merge(self, *arg):

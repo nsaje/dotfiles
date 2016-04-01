@@ -449,7 +449,7 @@ def get_goals_performance(user, campaign, start_date, end_date,
     return performance
 
 
-def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
+def get_campaign_goal_metrics(campaign, start_date, end_date):
     campaign_goal_values = models.CampaignGoalValue.objects.all().\
         filter(
             campaign_goal__campaign=campaign,
@@ -461,14 +461,53 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
             'created_dt',
         ).select_related('campaign_goal')
 
+    pre_cg_vals = get_pre_campaign_goal_values(
+        campaign,
+        start_date,
+        conversion_goals=False
+    )
+    return generate_series(
+        campaign_goal_values,
+        pre_cg_vals,
+        start_date,
+        end_date,
+        conversion_goals=None
+    )
 
-    pre_cg_vals = get_pre_campaign_goal_values(campaign, start_date)
+
+def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, conversion_goals):
+    campaign_goal_values = models.CampaignGoalValue.objects.all().\
+        filter(
+            campaign_goal__campaign=campaign,
+            campaign_goal__conversion_goal__isnull=False,
+            created_dt__gte=start_date,
+            created_dt__lte=end_date,
+        ).order_by(
+            'campaign_goal__campaign',
+            'created_dt',
+        ).select_related('campaign_goal')
+
+    pre_cg_vals = get_pre_campaign_goal_values(
+        campaign,
+        start_date,
+        conversion_goals=True
+    )
+
+    return generate_series(
+        campaign_goal_values,
+        pre_cg_vals,
+        start_date,
+        end_date,
+        conversion_goals=conversion_goals
+    )
+
+
+def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
     last_cg_vals = {}
-
     cg_series = {}
     for cg_value in campaign_goal_values:
         cg = cg_value.campaign_goal
-        name = constants.CampaignGoalKPI.get_text(cg.type)
+        name = goal_name(cg, conversion_goals)
         last_cg_vals[name] = cg_value
 
         if not cg_series.get(name):
@@ -485,7 +524,8 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
     # make sure to insert campaign goal value datapoints
     for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
         pre_cg = pre_cg_val.campaign_goal
-        pre_name = constants.CampaignGoalKPI.get_text(pre_cg.type)
+
+        pre_name = goal_name(pre_cg, conversion_goals)
 
         if pre_name not in cg_series:
             cg_series[pre_name] = [
@@ -522,7 +562,8 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
     # to add on
     for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
         pre_cg = pre_cg_val.campaign_goal
-        pre_name = constants.CampaignGoalKPI.get_text(pre_cg.type)
+
+        pre_name = goal_name(pre_cg, conversion_goals)
 
         last_cg = cg_series[pre_name][-1]
         if last_cg[0] < end_date:
@@ -541,9 +582,14 @@ def get_campaign_goal_metrics(campaign, start_date, end_date, convert=True):
             cg_series[pre_name].append(
                 (end_date, val,)
             )
-
-
     return cg_series
+
+
+def goal_name(goal, conversion_goals=None):
+    if goal.conversion_goal == None:
+        return constants.CampaignGoalKPI.get_text(goal.type)
+
+    return goal.conversion_goal.get_view_key(conversion_goals)
 
 
 def generate_missing(from_date, end_date):
@@ -557,28 +603,7 @@ def generate_missing(from_date, end_date):
     return ret
 
 
-def get_campaign_conversion_goal_metrics(campaign, start_date, end_date):
-    campaign_goal_values = models.CampaignGoalValue.objects.all().\
-        filter(
-            campaign_goal__campaign=campaign,
-            campaign_goal__conversion_goal__isnull=False,
-            created_dt__gte=start_date,
-            created_dt__lte=end_date,
-        ).order_by(
-            'campaign_goal__campaign',
-            'created_dt',
-        ).select_related('campaign_goal')
-    cg_series = {}
-    for cg_value in campaign_goal_values:
-        cg = cg_value.campaign_goal
-        conversion_name = cg.conversion_goal.name
-        if not cg_series.get(conversion_name):
-            cg_series[conversion_name] = []
-        cg_series[conversion_name].append(campaign_goal_dp(cg_value))
-    return cg_series
-
-
-def get_pre_campaign_goal_values(campaign, date):
+def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
     '''
     For each campaign goal get first value before given date.
     Returns a dict mapping from campaign goal id to campaign goal value.
@@ -587,6 +612,7 @@ def get_pre_campaign_goal_values(campaign, date):
         filter(
             campaign_goal__campaign=campaign,
             created_dt__lt=date,
+            campaign_goal__conversion_goal__isnull=not conversion_goals,
         ).order_by(
             'campaign_goal',
             '-created_dt',
@@ -609,9 +635,14 @@ def campaign_goal_dp(campaign_goal_value, override_date=None, override_value=Non
     return (date, value,)
 
 
-def inverted_campaign_goal_map():
+def inverted_campaign_goal_map(conversion_goals=None):
     # map from particular fields to goals
     ret = {}
     for goal, field in CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.iteritems():
         ret[field] = constants.CampaignGoalKPI.get_text(goal)
+
+    if conversion_goals:
+    for cg in conversion_goals:
+        ret['avg_cost_per_{}'.format(cg.get_view_key(conversion_goals))] =\
+            'conversion_goal_{}'.format(i)
     return ret

@@ -289,6 +289,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             };
 
             var addGoalSeries = function (metricId, goalName, series, color, yAxisIndex) {
+                // TODO: Add a nice goal id to goal name mapping
                 if (!goalName) {
                     return;
                 };
