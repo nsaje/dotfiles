@@ -17,25 +17,22 @@ oneApp.directive('zemIconList', [function () {
         },
         templateUrl: '/partials/zem_icon_list.html',
         controller: ['$scope', function ($scope) {
-            $scope.popover = '<ul class="icon-list">';
+            $scope.iconFile = '';
+            $scope.statusList = [];
             if (!$scope.statuses) {
                 return;
             }
-            $scope.iconFile = '';
-            $scope.statusList = [];
             if ($scope.statuses.overall !== undefined) {
                 $scope.iconFile = statusIcons[$scope.statuses.overall];
                 $scope.iconClass = statusClasses[$scope.statuses.overall];
             }
             ($scope.statuses.list || []).forEach(function (status) {
-                var file = statusIcons[status.emoticon],
-                    cls = statusIcons[status.emoticon];
-                $scope.popover += '<li>';
-                $scope.popover += '<zem-icon file="' + file + '" img-class="' + cls + '"></zem-icon> ';
-                $scope.popover += status.text;
-                $scope.popover += '</li>';
+                $scope.statusList.push({
+                    file: statusIcons[status.emoticon],
+                    cls: statusClasses[status.emoticon],
+                    text: status.text,
+                });
             });
-            $scope.popover += '</ul>';
         }],
     };
 
