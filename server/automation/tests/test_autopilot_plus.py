@@ -96,10 +96,10 @@ class AutopilotPlusTestCase(test.TestCase):
             {'ad_group': 2, 'source': 1, 'rand': 2}
         )
         yesterday_data = (
-            {'ad_group': 1, 'source': 1, 'billing_cost': 1, 'clicks': 1},
-            {'ad_group': 1, 'source': 2, 'billing_cost': 0, 'clicks': 0},
-            {'ad_group': 2, 'source': 2, 'billing_cost': 0, 'clicks': 0},
-            {'ad_group': 2, 'source': 1, 'billing_cost': 2, 'clicks': 2}
+            {'ad_group': 1, 'source': 1, 'cost': 1, 'clicks': 1},
+            {'ad_group': 1, 'source': 2, 'cost': 0, 'clicks': 0},
+            {'ad_group': 2, 'source': 2, 'cost': 0, 'clicks': 0},
+            {'ad_group': 2, 'source': 1, 'cost': 2, 'clicks': 2}
         )
         self.assertEqual(autopilot_plus._find_corresponding_source_data(source1, days_ago_data, yesterday_data),
                          (days_ago_data[0], 1, 1))
@@ -158,9 +158,9 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('utils.statsd_helper.statsd_gauge')
     def test_report_adgroups_data_to_statsd(self, mock_statsd, mock_query):
         mock_query.return_value = [
-            {'ad_group': 1, 'billing_cost': Decimal('15')},
-            {'ad_group': 3, 'billing_cost': Decimal('10')},
-            {'ad_group': 4, 'billing_cost': Decimal('20')}]
+            {'ad_group': 1, 'cost': Decimal('15')},
+            {'ad_group': 3, 'cost': Decimal('10')},
+            {'ad_group': 4, 'cost': Decimal('20')}]
 
         adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3, 4])
         autopilot_plus._report_adgroups_data_to_statsd([adg.get_current_settings() for adg in adgroups])
