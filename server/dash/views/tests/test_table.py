@@ -279,7 +279,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
-            'performance': None,
+            'performance': {
+                'list': [],
+                'overall': None,
+            },
             'styles': {},
         }
 
@@ -645,8 +648,14 @@ class AdGroupAdsPlusTableTest(TestCase):
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], None)
-        self.assertEqual(stats[1]['performance'], None)
+        self.assertEqual(stats[0]['performance'], {
+            'list': [],
+            'overall': None,
+        })
+        self.assertEqual(stats[1]['performance'], {
+            'list': [],
+            'overall': None,
+        })
 
         stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
         goal = models.CampaignGoal.objects.create(
@@ -665,8 +674,8 @@ class AdGroupAdsPlusTableTest(TestCase):
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
 
     def test_primary_goal_styles(self, mock_query, mock_touchpointconversions_query):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -687,8 +696,14 @@ class AdGroupAdsPlusTableTest(TestCase):
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['list'], [
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC'}
+        ])
+        self.assertEqual(stats[1]['performance']['list'], [
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC'}
+        ])
         self.assertEqual(stats[0]['styles'], {})
         self.assertEqual(stats[1]['styles'], {})
 
@@ -701,8 +716,14 @@ class AdGroupAdsPlusTableTest(TestCase):
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['list'], [
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC'},
+        ])
+        self.assertEqual(stats[1]['performance']['list'], [
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC'},
+        ])
         self.assertEqual(stats[0]['styles'], {'cpc': constants.Emoticon.HAPPY})
         self.assertEqual(stats[1]['styles'], {'cpc': constants.Emoticon.SAD})
 
@@ -744,7 +765,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             follow=True
         )
         data = json.loads(response.content)
-        self.assertEqual(data['data']['rows'][0]['performance'], None)
+        self.assertEqual(data['data']['rows'][0]['performance'], {
+            'list': [],
+            'overall': None,
+        })
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
