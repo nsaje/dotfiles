@@ -35,27 +35,26 @@ class K1ApiTest(TestCase):
         data = json.loads(response.content)
 
         returned_count = 0
-        for source_credentials in data['source_credentials']:
-            for account in source_credentials['accounts']:
-                self.assertEqual(account['outbrain_marketer_id'],
-                                 dash.models.Account.objects.get(pk=account['id']).outbrain_marketer_id)
-                for campaign in account['campaigns']:
-                    for ad_group in campaign['ad_groups']:
-                        for ad_group_source in ad_group['ad_group_sources']:
-                            returned_count += 1
-                            db_ags = dash.models.AdGroupSource.objects.get(
-                                id=ad_group_source['id'])
-                            self.assertEqual(source_credentials[
-                                             'credentials'], db_ags.source_credentials.credentials)
-                            self.assertEqual(source_credentials[
-                                             'source_type'], db_ags.source_credentials.source.source_type.type)
-                            self.assertEqual(account['id'], db_ags.ad_group.campaign.account_id)
-                            self.assertEqual(campaign['id'], db_ags.ad_group.campaign_id)
-                            self.assertEqual(ad_group['id'], db_ags.ad_group_id)
-                            self.assertEqual(ad_group_source['id'], db_ags.id)
-                            self.assertEqual(ad_group_source['source_name'], db_ags.source.name)
-                            self.assertEqual(json.loads(
-                                ad_group_source['source_campaign_key']), db_ags.source_campaign_key)
+        for account in data['accounts']:
+            self.assertEqual(account['outbrain_marketer_id'],
+                             dash.models.Account.objects.get(pk=account['id']).outbrain_marketer_id)
+            for campaign in account['campaigns']:
+                for ad_group in campaign['ad_groups']:
+                    for ad_group_source in ad_group['ad_group_sources']:
+                        returned_count += 1
+                        db_ags = dash.models.AdGroupSource.objects.get(
+                            id=ad_group_source['id'])
+                        source_credentials = data['source_credentials'][str(ad_group_source['source_credentials_id'])]
+                        self.assertEqual(source_credentials['credentials'], db_ags.source_credentials.credentials)
+                        self.assertEqual(source_credentials[
+                                         'source_type'], db_ags.source_credentials.source.source_type.type)
+                        self.assertEqual(account['id'], db_ags.ad_group.campaign.account_id)
+                        self.assertEqual(campaign['id'], db_ags.ad_group.campaign_id)
+                        self.assertEqual(ad_group['id'], db_ags.ad_group_id)
+                        self.assertEqual(ad_group_source['id'], db_ags.id)
+                        self.assertEqual(ad_group_source['source_name'], db_ags.source.name)
+                        self.assertEqual(json.loads(
+                            ad_group_source['source_campaign_key']), db_ags.source_campaign_key)
 
         ad_group_sources = dash.models.AdGroupSource.objects
         if source_types:
