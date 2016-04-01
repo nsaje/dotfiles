@@ -195,7 +195,7 @@ class ExportTestCase(test.TestCase):
             'content_ad': 1,
             'cpc': '0.0200',
             'date': datetime.date(2015, 2, 1),
-            'image_url': u'/123456789/200x300.jpg',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg',
             'source': 1,
             'title': u'Test Article unicode \u010c\u017e\u0161',
             'uploaded': datetime.date(2015, 2, 21),

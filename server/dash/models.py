@@ -508,6 +508,22 @@ class Campaign(models.Model, PermissionMixin):
 
             return self.exclude(pk__in=excluded)
 
+        def filter_landing(self):
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
+
+            filtered = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                automatic_campaign_stop=True,
+                landing_mode=True
+            ).values_list(
+                'campaign__id', flat=True
+            )
+
+            return self.filter(pk__in=filtered)
+
 
 class SettingsBase(models.Model, CopySettingsMixin):
     _settings_fields = None
@@ -814,7 +830,8 @@ class CampaignGoal(models.Model):
 
         if with_values:
             campaign_goal['values'] = [
-                {'datetime': str(value.created_dt), 'value': value.value}
+                {'datetime': str(value.created_dt),
+                 'value': Decimal(value.value).quantize(Decimal('1.00'))}
                 for value in self.values.all()
             ]
 
@@ -1392,9 +1409,9 @@ class AdGroup(models.Model):
 
         def filter_running(self):
             """
-            This function checks if adgroup is active on arbitrary number of adgroups
+            This function checks if adgroup is running on arbitrary number of adgroups
             with a fixed amount of queries.
-            An adgroup is active if:
+            An adgroup is running if:
                 - it was set as active(adgroupsettings)
                 - current date is between start and stop(flight time)
                 - has at least one running mediasource(adgroupsourcesettings)
@@ -1591,6 +1608,7 @@ class AdGroupSettings(SettingsBase):
         'adobe_tracking_param',
         'autopilot_state',
         'autopilot_daily_budget',
+        'landing_mode',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1651,6 +1669,7 @@ class AdGroupSettings(SettingsBase):
         verbose_name='Auto-Pilot\'s Daily Budget',
         default=0
     )
+    landing_mode = models.BooleanField(default=False)
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -1715,7 +1734,8 @@ class AdGroupSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US'],
             'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-            'autopilot_daily_budget': 0.00
+            'autopilot_daily_budget': 0.00,
+            'landing_mode': False,
         }
 
     @classmethod
@@ -1741,7 +1761,8 @@ class AdGroupSettings(SettingsBase):
             'autopilot_state': 'Auto-Pilot',
             'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
-            'adobe_tracking_param': 'Adobe tracking parameter'
+            'adobe_tracking_param': 'Adobe tracking parameter',
+            'landing_mode': 'Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -1933,6 +1954,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
+    landing_mode = models.BooleanField(default=False)
 
     objects = QuerySetManager()
 
@@ -2070,11 +2092,9 @@ class ContentAd(models.Model):
         if height is None:
             height = self.image_height
 
-        return '/'.join([
-            settings.Z3_API_THUMBNAIL_URL,
-            self.image_id,
-            '{}x{}.jpg'.format(width, height)
-        ])
+        path = '/{}.jpg?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(
+            self.image_id, width, height)
+        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
 
     def url_with_tracking_codes(self, tracking_codes):
         if not tracking_codes:
@@ -2838,6 +2858,7 @@ class ExportReport(models.Model):
 
     breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
     breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
+    include_model_ids = models.BooleanField(null=False, blank=False, default=False)
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)

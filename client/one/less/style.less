@@ -219,7 +219,6 @@ a:visited {
     display: table;
     clear: left;
     margin: 10px 0px 0px 14px;
-    padding-bottom: 0px;
 
     .form-alert-exclamation {
         display: table-cell;
@@ -448,24 +447,43 @@ a:visited {
     }
 }
 
-.warning-paused {
+.tabset-label {
     margin-left: 8px;
     margin-top: 12px;
     display: inline-block;
-    color: #bd0a00;
     font-size: 12px;
 }
 
-.little-red-square {
+.warning-paused {
+    .tabset-label;
+    color: #bd0a00;
+}
+
+.info-landing-mode {
+    .tabset-label;
+    color: @default-color;
+}
+
+.tabset-icon {
     margin-left: 24px;
-    width: 9px;
-    height: 9px;
-    background-color: #bd0a00;
     display: inline-block;
     margin-top: 12px;
     border-radius: 2px;
 }
 
+.tabset-landing-mode-icon {
+    .tabset-icon;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+    width: 17px;
+    height: 10px;
+}
+
+.tabset-little-red-square {
+    .tabset-icon;
+    width: 9px;
+    height: 9px;
+    background-color: #bd0a00;
+}
 
 .input-group {
     .input-group-addon {
@@ -909,6 +927,9 @@ img.zem-icon {
 
 .infobox-footer {
     height: 70px;
+    overflow-y: auto;
+    // due to scroller
+    margin-right: -5px;
 }
 
 .infobox-header-row {
@@ -1001,6 +1022,9 @@ img.zem-icon {
     display: table-cell;
     line-height: 16px;
     vertical-align: text-top;
+    &.primary .infobox-setting-value {
+        font-weight: bold;
+    }
 }
 
 .infobox-setting-label {
@@ -1437,6 +1461,41 @@ img.zem-icon {
     filter: alpha(opacity=20); /* For IE8 and earlier */
 }
 
+.table-icon div {
+    img.zem-icon {
+        width: 12px;
+        height: 12px;
+        margin-bottom: 4px;
+    }
+}
+
+.zem-table-row {
+    &.happy {
+        td:first-child {
+            border-left: 5px solid #73BF44;
+        }
+    }
+    &.sad {
+        td:first-child {
+            border-left: 5px solid #CB2027;
+        }
+    }
+    &.average {
+        td:first-child {
+            border-left: 5px solid #fff;
+        }
+    }
+
+    .superperforming .zem-table-column-value {
+        color: #73BF44;
+    }
+
+    .underperforming .zem-table-column-value {
+        color: #CB2027;
+    }
+}
+
+
 
 .help-popover,
 .help-popover:hover,
@@ -1479,6 +1538,7 @@ img.zem-icon {
 }
 
 .select2-drop,
+.infobox-setting,
 .table-container {
      zem-internal-feature .internal {
         margin-right: 0.5em;
@@ -2602,6 +2662,15 @@ img.zem-icon {
     display: inline-block;
     margin-bottom: -2px;
     background-image: url('img/data_status_icon.svg');
+}
+
+.performance-icon {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    background-size: 12px;
+    margin-bottom: -2px;
+    background-image: url('img/performance-column.svg');
 }
 
 .adgroup-status-icon-placeholder() {

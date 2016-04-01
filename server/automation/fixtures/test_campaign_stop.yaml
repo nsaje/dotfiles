@@ -70,6 +70,15 @@
   model: dash.campaign
   pk: 5
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 6'
+  model: dash.campaign
+  pk: 6
+
 # Campaign Settings
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -121,6 +130,28 @@
   model: dash.campaignsettings
   pk: 5
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 6'
+    campaign_manager: 1
+    campaign: 6
+    automatic_campaign_stop: True
+  model: dash.campaignsettings
+  pk: 6
+
+- fields:
+    created_dt: '2016-02-29T12:00:00'
+    created_by: null
+    system_user: 1
+    name: 'Campaign Settings 7'
+    campaign_manager: 1
+    campaign: 6
+    automatic_campaign_stop: True
+    landing_mode: True
+  model: dash.campaignsettings
+  pk: 7
+
 # Ad Groups
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -135,7 +166,7 @@
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    campaign: 2
+    campaign: 1
     name: 'Test AdGroup 2'
   model: dash.adgroup
   pk: 2
@@ -144,21 +175,46 @@
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    campaign: 3
+    campaign: 1
     name: 'Test AdGroup 3'
   model: dash.adgroup
   pk: 3
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 2
+    name: 'Test AdGroup 4'
+  model: dash.adgroup
+  pk: 4
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 3
+    name: 'Test AdGroup 5'
+  model: dash.adgroup
+  pk: 5
 
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 4
-    name: 'Test AdGroup 4'
+    name: 'Test AdGroup 6'
   model: dash.adgroup
-  pk: 4
+  pk: 6
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 6
+    name: 'Test AdGroup 7'
+  model: dash.adgroup
+  pk: 7
 
 # Ad Group Settings
 - fields:
@@ -184,19 +240,21 @@
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 1
+    cpc_cc: 100.00
   model: dash.adgroupsettings
   pk: 3
 
 - fields:
-    ad_group_id: 2
-    created_dt: '2016-02-29T21:58:21'
+    ad_group_id: 3
+    created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 2
+    cpc_cc: 100.00
   model: dash.adgroupsettings
   pk: 4
 
 - fields:
-    ad_group_id: 3
+    ad_group_id: 4
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 1
@@ -204,30 +262,66 @@
   pk: 5
 
 - fields:
-    ad_group_id: 3
-    created_dt: '2016-03-01T09:58:21'
+    ad_group_id: 4
+    created_dt: '2016-02-29T21:58:21'
     created_by: 1
     state: 2
   model: dash.adgroupsettings
   pk: 6
 
 - fields:
-    ad_group_id: 4
+    ad_group_id: 5
+    created_dt: '2016-02-29T09:58:21'
+    created_by: 1
+    state: 1
+  model: dash.adgroupsettings
+  pk: 7
+
+- fields:
+    ad_group_id: 5
+    created_dt: '2016-03-01T09:58:21'
+    created_by: 1
+    state: 2
+  model: dash.adgroupsettings
+  pk: 8
+
+- fields:
+    ad_group_id: 7
     created_dt: '2016-02-28T09:58:21'
     created_by: 1
     state: 1
     end_date: null
   model: dash.adgroupsettings
-  pk: 7
+  pk: 9
 
 - fields:
-    ad_group_id: 4
+    ad_group_id: 7
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 1
     end_date: '2016-02-29'
   model: dash.adgroupsettings
-  pk: 8
+  pk: 10
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2014-06-04T09:57:21'
+    created_by: 1
+    state: 1
+    end_date: '2016-12-31'
+  model: dash.adgroupsettings
+  pk: 10
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2016-02-29T12:00:00'
+    created_by: null
+    system_user: 1
+    state: 1
+    end_date: '2016-12-31'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 11
 
 # Source Types
 -   fields:
@@ -343,6 +437,20 @@
   model: dash.adgroupsource
   pk: 5
 
+- fields:
+    source: 1
+    ad_group: 2
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 6
+
+- fields:
+    source: 2
+    ad_group: 3
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 7
+
 # Ad Group Source Settings
 - fields:
     created_dt: '2016-02-29T09:00:00'
@@ -451,6 +559,24 @@
     state: 1
   model: dash.adgroupsourcesettings
   pk: 12
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 6
+    cpc_cc: '0.12'
+    daily_budget_cc: '80.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 13
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 7
+    cpc_cc: '0.06'
+    daily_budget_cc: '40.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 14
 
 # Credit line items
 - fields:
@@ -586,6 +712,19 @@
     comment: 'Test budget 8'
   model: dash.budgetlineitem
   pk: 8
+
+- fields:
+    created_dt: '2016-01-01T00:00:07'
+    modified_dt: '2016-01-01T00:00:07'
+    created_by: 1
+    credit: 2 # test credit 2
+    campaign: 1
+    start_date: '2016-04-16'
+    end_date: '2016-04-16'
+    amount: 370
+    comment: 'Test budget 8'
+  model: dash.budgetlineitem
+  pk: 9
 
 # Daily statements
 

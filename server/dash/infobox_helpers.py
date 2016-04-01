@@ -6,7 +6,7 @@ import utils.lc_helper
 
 import reports.api_helpers
 from django.db import models
-from django.db.models import Sum, F, ExpressionWrapper, Prefetch
+from django.db.models import Sum, F, ExpressionWrapper
 
 import dash.constants
 import dash.models
@@ -31,6 +31,7 @@ class OverviewSetting(object):
                  tooltip=None,
                  setting_type='setting',
                  section_start=None,
+                 internal=False,
                  warning=None):
         self.name = name
         self.value = value
@@ -39,10 +40,12 @@ class OverviewSetting(object):
         self.details_hide_label = None
         self.details_content = None
         self.icon = None
+        self.internal = internal
         self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
         self.section_start = section_start
+        self.value_class = None
 
     def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
@@ -53,7 +56,7 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = 'happy' if ok else 'sad'
+        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -385,7 +388,7 @@ def calculate_yesterday_account_spend(account):
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     filled_daily_ratio = None
     if daily_budget > 0:
-        filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
+        filled_daily_ratio = float(yesterday_cost or 0) / float(daily_budget)
 
     if filled_daily_ratio:
         daily_ratio_description = '{:.2f}% of daily budget'.format(abs(filled_daily_ratio) * 100)
@@ -397,8 +400,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
         tooltip='Yesterday media spend'
-    ).performance(
-        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
@@ -477,6 +478,12 @@ def calculate_all_accounts_total_budget(start_date, end_date):
             out_of_range_days += abs(start_diff)
         if end_diff < 0:
             out_of_range_days += abs(end_diff)
+
+        # one day budget line items or budget line items that are entirely
+        # contained here fit this condition
+        if out_of_range_days == 0:
+            total += bli.amount
+            continue
 
         total_budget_duration = (bli.end_date - bli.start_date).days
         rate_burned_in_range = Decimal(total_budget_duration - out_of_range_days)\
@@ -560,11 +567,11 @@ def get_adgroup_running_status(ad_group_settings):
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.STOPPED
 
-    if state == dash.constants.AdGroupSettingsState.INACTIVE:
-        return dash.constants.InfoboxStatus.INACTIVE
-
     if ad_group.campaign.is_in_landing():
         return dash.constants.InfoboxStatus.LANDING_MODE
+
+    if state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return dash.constants.InfoboxStatus.INACTIVE
 
     return dash.constants.InfoboxStatus.ACTIVE
 
@@ -620,39 +627,35 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, campaign):
-    prefetch_values = Prefetch(
-        'values',
-        queryset=dash.models.CampaignGoalValue.objects.order_by('-created_dt')
-    )
-    goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.pk).prefetch_related(
-        prefetch_values
-    ).select_related('conversion_goal')
+def get_campaign_goal_list(user, campaign, start_date, end_date):
+    performance = dash.campaign_goals.get_goals_performance(user, campaign,
+                                                            start_date=start_date, end_date=end_date)
 
     settings = []
-    for i, campaign_goal in enumerate(goals):
-        def format_value(val):
-            return val and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[campaign_goal.type](val) \
-                or 'N/A'
-
-        goal_values = campaign_goal.values.all()
-        planned_value = goal_values and goal_values[0].value
-
-        current_value = None
-
-        goal_description = dash.campaign_goals.CAMPAIGN_GOAL_NAME_FORMAT[campaign_goal.type].format(
-            format_value(current_value)
-        )
+    first = True
+    permissions = user.get_all_permissions_with_access_levels()
+    for status, metric_value, planned_value, campaign_goal in performance:
+        goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
         if campaign_goal.conversion_goal:
-            goal_description += ' on conversion ' + campaign_goal.conversion_goal.name
+            goal_description += ' - ' + campaign_goal.conversion_goal.name
 
-        settings.append(OverviewSetting(
-            '' if i else 'Campaign Goals:',
+        entry = OverviewSetting(
+            '' if not first else 'Campaign goals:',
             goal_description,
-            planned_value and '{}planned {}'.format(
-                campaign_goal.primary and 'primary, ' or '',
-                format_value(planned_value),
-            ) or '',
-            section_start=not i,
-        ).as_dict())
+            planned_value and 'planned {}'.format(
+                dash.campaign_goals.format_value(campaign_goal.type, planned_value),
+            ) or None,
+            section_start=first,
+            internal=first and 'zemauth.campaign_goal_performance' in permissions,
+        )
+        if campaign_goal.primary:
+            entry.value_class = 'primary'
+
+        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
+            entry = entry.performance(True)
+        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
+            entry = entry.performance(False)
+
+        settings.append(entry.as_dict())
+        first = False
     return settings

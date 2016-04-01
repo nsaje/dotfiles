@@ -4,6 +4,7 @@ import logging
 import time
 
 from django.conf import settings
+from django.db.models import Q
 
 from dash import conversions_helper
 from dash.models import Source
@@ -199,14 +200,22 @@ def prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, 
 
 
 def _convert_exchange_to_source_id(aggregated_blacklist):
-    exchanges = set(filter(lambda x: x is not None, (agg.get('exchange') for agg in aggregated_blacklist)))
+    exchanges = set(agg.get('exchange') for agg in aggregated_blacklist if agg.get('exchange') is not None)
 
-    sources = Source.objects.filter(bidder_slug__in=exchanges).values('id', 'bidder_slug')
-    sources_by_exchange = {s['bidder_slug']: s['id'] for s in sources}
+    # some matches are in bidder_slug and some in tracking_slug so query and map both
+    slugs = Source.objects.filter(Q(bidder_slug__in=exchanges) | Q(tracking_slug__in=exchanges)).values('id',
+                                                                                                        'bidder_slug',
+                                                                                                        'tracking_slug')
+    bidder_slugs_map = {s['bidder_slug']: s['id'] for s in slugs}
+    tracking_slugs_map = {s['tracking_slug']: s['id'] for s in slugs}
 
     for agg in aggregated_blacklist:
         if 'exchange' in agg:
-            agg['source'] = sources_by_exchange[agg['exchange']]
+            exchange = agg['exchange']
+            if exchange in bidder_slugs_map:
+                agg['source'] = bidder_slugs_map[exchange]
+            elif exchange in tracking_slugs_map:
+                agg['source'] = tracking_slugs_map[exchange]
 
 
 def _aggregate_domains(blacklist):

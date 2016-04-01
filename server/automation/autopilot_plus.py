@@ -6,6 +6,7 @@ import traceback
 
 import influx
 
+import actionlog.zwei_actions
 import dash
 import dash.campaign_goals
 from dash.constants import CampaignGoalKPI
@@ -40,19 +41,21 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
         return {}
     changes_data = {}
 
+    actions = []
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
         cpc_changes, budget_changes = _get_autopilot_predictions(
             adjust_budgets, adjust_cpcs, adg, adg_settings, data[adg], campaign_goals.get(adg.campaign))
         try:
             with transaction.atomic():
-                set_autopilot_changes(cpc_changes, budget_changes)
+                actions.extend(set_autopilot_changes(cpc_changes, budget_changes))
                 persist_autopilot_changes_to_log(cpc_changes, budget_changes, data[adg],
                                                  adg_settings.autopilot_state, campaign_goals.get(adg.campaign))
             changes_data = _get_autopilot_campaign_changes_data(
                 adg, changes_data, cpc_changes, budget_changes)
         except Exception as e:
             _report_autopilot_exception(adg, e)
+    actionlog.zwei_actions.send(actions)
     if send_mail:
         autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
     if report_to_statsd:
@@ -110,8 +113,9 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group):
         }
     try:
         with transaction.atomic():
-            set_autopilot_changes({}, new_budgets)
+            actions = set_autopilot_changes({}, new_budgets)
             persist_autopilot_changes_to_log({}, new_budgets, data, AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+        actionlog.zwei_actions.send(actions)
     except Exception as e:
         _report_autopilot_exception(ad_group_sources, e)
     return new_budgets
@@ -152,7 +156,8 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
         ).save()
 
 
-def set_autopilot_changes(cpc_changes={}, budget_changes={}):
+def set_autopilot_changes(cpc_changes={}, budget_changes={}, system_user=None, landing_mode=None):
+    actions = []
     for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
         changes = {}
         if cpc_changes and cpc_changes[ag_source]['old_cpc_cc'] != cpc_changes[ag_source]['new_cpc_cc']:
@@ -160,7 +165,9 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}):
         if budget_changes and budget_changes[ag_source]['old_budget'] != budget_changes[ag_source]['new_budget']:
             changes['daily_budget_cc'] = budget_changes[ag_source]['new_budget']
         if changes:
-            autopilot_helpers.update_ad_group_source_values(ag_source, changes)
+            actions.extend(
+                autopilot_helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode))
+    return actions
 
 
 def prefetch_autopilot_data(ad_groups):
@@ -188,14 +195,14 @@ def prefetch_autopilot_data(ad_groups):
 
 def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterdays_spend_cc, yesterdays_clicks):
     data = {}
-    spend_perc = yesterdays_spend_cc / max(ag_source_setting.daily_budget_cc, autopilot_settings.MIN_SOURCE_BUDGET)
-    data['spend_perc'] = spend_perc if spend_perc else Decimal('0')
+    budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
+        ag_source.source.source_type.min_daily_budget
     data['yesterdays_spend_cc'] = yesterdays_spend_cc
     data['yesterdays_clicks'] = yesterdays_clicks
-    data['old_budget'] = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
-        autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source)
+    data['old_budget'] = budget
     data['old_cpc_cc'] = ag_source_setting.cpc_cc if ag_source_setting.cpc_cc else\
-        autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source)
+        ag_source.source.default_cpc_cc
+    data['spend_perc'] = yesterdays_spend_cc / budget
     return data
 
 

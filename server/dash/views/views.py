@@ -263,6 +263,9 @@ class AdGroupOverview(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': ad_group_settings.ad_group_name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
@@ -272,7 +275,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
-            ad_group, request.user, ad_group_settings, daily_cap, async_perf_query
+            ad_group, request.user, ad_group_settings, start_date, end_date,
+            daily_cap, async_perf_query
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
@@ -398,7 +402,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         return settings, daily_cap
 
-    def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):
+    def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
+                              daily_cap, async_query):
         settings = []
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
@@ -412,6 +417,11 @@ class AdGroupOverview(api_common.BaseApiView):
             daily_cap
         ).as_dict())
         settings.extend(common_settings)
+
+        if user.has_perm('zemauth.campaign_goal_performance'):
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, ad_group.campaign,
+                                                                   start_date, end_date))
+
         return settings, is_delivering
 
 
@@ -554,6 +564,9 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': campaign.name,
             'active': infobox_helpers.get_campaign_running_status(campaign),
@@ -568,7 +581,9 @@ class CampaignOverview(api_common.BaseApiView):
             campaign,
             request.user,
             campaign_settings,
-            daily_cap
+            daily_cap,
+            start_date,
+            end_date,
         )
 
         for setting in performance_settings[1:]:
@@ -655,7 +670,8 @@ class CampaignOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
-    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
+    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc,
+                              start_date, end_date):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
@@ -670,8 +686,9 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.extend(common_settings)
 
-        if user.has_perm('zemauth.can_see_campaign_goals'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign))
+        if user.has_perm('zemauth.campaign_goal_performance'):
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
+                                                                   start_date, end_date))
 
         return settings, is_delivering
 
@@ -948,7 +965,8 @@ class AdGroupSources(api_common.BaseApiView):
                                             ad_group=ad_group)
 
         if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+            helpers.set_ad_group_source_settings(
+                request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
 
         return self.create_api_response(None)
 
@@ -1078,10 +1096,11 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
             if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
                 errors.update({
-                    'daily_budget_cc': 'Daily budget is too high. '
-                                       'Maximum daily budget can be up to {max_daily_budget}.'.format(
-                                           max_daily_budget=max_daily_budget
-                                       )
+                    'daily_budget_cc': [
+                        'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
+                            max_daily_budget=max_daily_budget
+                        )
+                    ]
                 })
 
         if errors:
