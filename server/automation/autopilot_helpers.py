@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 import dash
 from automation import autopilot_settings
 import automation.helpers
-from automation.constants import DailyBudgetChangeComment, CpcChangeComment
+from automation.constants import DailyBudgetChangeComment, CpcChangeComment, BudgetAutomationGoalText
 from dash.constants import CampaignGoalKPI
 from dash import constants
 import dash.models
@@ -86,7 +86,7 @@ def get_campaign_goal_column_importance(campaign_goal):
 def get_optimization_goal_text(camp):
     campaign_goal = dash.campaign_goals.get_primary_campaign_goal(camp)
     if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
-        return CampaignGoalKPI.get_text(campaign_goal.type)
+        return BudgetAutomationGoalText.get(campaign_goal.type)
     return 'maximum spend'
 
 
