@@ -612,7 +612,6 @@ def campaign_goal_dp(campaign_goal_value, override_date=None, override_value=Non
 def inverted_campaign_goal_map():
     # map from particular fields to goals
     ret = {}
-    for goal, fields in CAMPAIGN_GOAL_MAP.iteritems():
-        for field in fields:
-            ret[field] = constants.CampaignGoalKPI.get_text(goal)
+    for goal, field in CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.iteritems():
+        ret[field] = constants.CampaignGoalKPI.get_text(goal)
     return ret
