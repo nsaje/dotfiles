@@ -87,7 +87,7 @@ def get_optimization_goal_text(camp):
     campaign_goal = dash.campaign_goals.get_primary_campaign_goal(camp)
     if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
         return BudgetAutomationGoalText.get(campaign_goal.type)
-    return 'maximum spend'
+    return 'maximum volume'
 
 
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
