@@ -133,7 +133,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_min_budget': '0',
-                    'autopilot_optimization_goal': 'maximum spend'
+                    'autopilot_optimization_goal': 'maximum volume'
                 },
                 'warnings': {}
             },
@@ -265,7 +265,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
-                        'autopilot_optimization_goal': 'maximum spend'
+                        'autopilot_optimization_goal': 'maximum volume'
                     }
                 },
                 'success': True
@@ -440,7 +440,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
-                        'autopilot_optimization_goal': 'maximum spend'
+                        'autopilot_optimization_goal': 'maximum volume'
                     }
                 },
                 'success': True
