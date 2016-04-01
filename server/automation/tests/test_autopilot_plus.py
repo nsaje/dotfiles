@@ -9,7 +9,6 @@ import automation.constants
 import dash.models
 import dash.views.helpers
 import dash.api
-from dash.constants import AdGroupSettingsState
 from reports import refresh
 
 
@@ -70,21 +69,6 @@ class AutopilotPlusTestCase(test.TestCase):
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
         self.assertEqual(mock_update_values.called, False)
-
-    def test_get_autopilot_active_sources_settings(self):
-        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3])
-        active_enabled_sources = autopilot_plus._get_autopilot_active_sources_settings(adgroups)
-        for ag_source_setting in active_enabled_sources:
-            self.assertTrue(ag_source_setting.state == AdGroupSettingsState.ACTIVE)
-            self.assertTrue(ag_source_setting.ad_group_source.ad_group in adgroups)
-
-        source = dash.models.AdGroupSource.objects.get(id=1)
-        self.assertTrue(source in [setting.ad_group_source for setting in active_enabled_sources])
-        settings_writer = dash.api.AdGroupSourceSettingsWriter(source)
-        settings_writer.set({'state': AdGroupSettingsState.INACTIVE}, None)
-        self.assertEqual(source.get_current_settings().state, AdGroupSettingsState.INACTIVE)
-        self.assertFalse(source in [setting.ad_group_source for setting in
-                                    autopilot_plus._get_autopilot_active_sources_settings(adgroups)])
 
     def test_find_corresponding_source_data(self):
         source1 = dash.models.AdGroupSource.objects.get(id=1)

@@ -625,6 +625,9 @@ class SourcesTable(object):
                 )
             response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
+            response['enabling_autopilot_sources_allowed'] = helpers.enabling_autopilot_sources_allowed(
+                level_sources_table.ad_group_settings)
+
         if user.has_perm('zemauth.campaign_goal_optimization') and\
                 level_ in ('ad_groups', 'campaigns'):
             if level_ == 'ad_groups':
@@ -783,7 +786,7 @@ class SourcesTable(object):
                     ad_group_settings,
                     source_settings,
                     user,
-                    allowed_sources,
+                    allowed_sources
                 )
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
