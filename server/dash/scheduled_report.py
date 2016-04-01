@@ -75,6 +75,7 @@ def add_scheduled_report(
         granularity=constants.ScheduledReportGranularity.CONTENT_AD,
         by_day=False,
         by_source=False,
+        include_model_ids=False,
         ad_group=None,
         campaign=None,
         account=None,
@@ -83,6 +84,9 @@ def add_scheduled_report(
 
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
+
+    if not user.has_perm('zemauth.can_include_ids_in_reports'):
+        include_model_ids = False
 
     form = forms.ScheduleReportForm(
         {
@@ -105,6 +109,7 @@ def add_scheduled_report(
             order_by=order,
             breakdown_by_source=by_source,
             breakdown_by_day=by_day,
+            include_model_ids=include_model_ids,
             additional_fields=additional_fields)
         export_report.save()
         for s in filtered_sources:

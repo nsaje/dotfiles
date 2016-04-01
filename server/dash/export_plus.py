@@ -18,6 +18,10 @@ from utils import exc
 from utils.sort_helper import sort_results
 
 FIELDNAMES = {
+    'account_id': 'Account Id',
+    'campaign_id': 'Campaign Id',
+    'ad_group_id': 'Ad Group Id',
+    'content_ad_id': 'Content Ad Id',
     'account': 'Account',
     'ad_group': 'Ad Group',
     'available_budget': 'Available Budget',
@@ -116,15 +120,20 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         stat['start_date'] = start_date
         stat['end_date'] = end_date
 
+        model = None
         if 'content_ad' in dimensions:
-            stat = _populate_content_ad_stat(stat, prefetched_data[stat['content_ad']])
+            model = prefetched_data[stat['content_ad']]
+            stat = _populate_content_ad_stat(stat, model)
         elif 'ad_group' in dimensions:
-            stat = _populate_ad_group_stat(stat, prefetched_data[stat['ad_group']], statuses=statuses)
+            model = prefetched_data[stat['ad_group']]
+            stat = _populate_ad_group_stat(stat, model, statuses=statuses)
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, prefetched_data[stat['campaign']],
+            model = prefetched_data[stat['campaign']]
+            stat = _populate_campaign_stat(stat, model,
                                            settings=settings, statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
-            stat = _populate_account_stat(stat, prefetched_data, statuses,
+            model = prefetched_data[stat['account']]
+            stat = _populate_account_stat(stat, model, statuses,
                                           settings=settings, projections=projections,
                                           budgets=budgets, flat_fees=flat_fees)
         else:
@@ -132,6 +141,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
                 source=stat['source'])
             stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
+
+        _populate_model_ids(stat, model)
 
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
@@ -317,7 +328,7 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
     return stat
 
 
-def _populate_account_stat(stat, prefetched_data, statuses, settings=None, projections=None,
+def _populate_account_stat(stat, account, statuses, settings=None, projections=None,
                            budgets=None, flat_fees=None):
     if settings and stat['account'] in settings:
         setting = settings[stat['account']]
@@ -339,8 +350,23 @@ def _populate_account_stat(stat, prefetched_data, statuses, settings=None, proje
     stat['status'] = statuses[stat['account']]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
-    stat['account'] = prefetched_data[stat['account']].name
+    stat['account'] = account.name
     return stat
+
+
+def _populate_model_ids(stat, model):
+    # Add model and all it's parent ids to stat
+    if isinstance(model, models.ContentAd):
+        stat['content_ad_id'] = model.id
+        model = model.ad_group
+    if isinstance(model, models.AdGroup):
+        stat['ad_group_id'] = model.id
+        model = model.campaign
+    if isinstance(model, models.Campaign):
+        stat['campaign_id'] = model.id
+        model = model.account
+    if isinstance(model, models.Account):
+        stat['account_id'] = model.id
 
 
 def _get_sources_state(ad_group_sources):
@@ -490,11 +516,12 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 class AllAccountsExport(object):
 
     def get_data(self, user, filtered_sources, start_date, end_date, order,
-                 additional_fields, breakdown=None, by_source=False, by_day=False):
+                 additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
 
+        model_id_fields = []
         required_fields = ['start_date', 'end_date']
         dimensions = []
         exclude_fields = []
@@ -502,13 +529,19 @@ class AllAccountsExport(object):
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
+            model_id_fields.extend(['account_id'])
         elif breakdown == 'campaign':
             required_fields.extend(['account', 'campaign'])
             dimensions.extend(['account', 'campaign'])
+            model_id_fields.extend(['account_id', 'campaign_id'])
         elif breakdown == 'ad_group':
             required_fields.extend(['account', 'campaign', 'ad_group'])
             dimensions.extend(['account', 'campaign', 'ad_group'])
+            model_id_fields.extend(['account_id', 'campaign_id', 'ad_group_id'])
         required_fields.extend(['status'])
+
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
 
         supported_settings_fields = ['default_account_manager', 'default_sales_representative']
         include_settings = breakdown == 'account' and \
@@ -557,27 +590,34 @@ class AllAccountsExport(object):
 class AccountExport(object):
 
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         account = helpers.get_account(user, account_id)
 
         dimensions = ['account']
+        model_id_fields = ['account_id']
         required_fields = ['start_date', 'end_date', 'account']
         exclude_fields = []
         exclude_budgets = False
         if breakdown == 'campaign':
             required_fields.extend(['campaign'])
             dimensions.extend(['campaign'])
+            model_id_fields.extend(['campaign_id'])
         elif breakdown == 'ad_group':
             required_fields.extend(['campaign', 'ad_group'])
             dimensions.extend(['campaign', 'ad_group'])
+            model_id_fields.extend(['campaign_id', 'ad_group_id'])
             exclude_budgets = True
         elif breakdown == 'content_ad':
             required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
+            model_id_fields.extend(['campaign_id', 'ad_group_id', 'content_ad_id'])
             exclude_budgets = True
         if exclude_budgets or by_day:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
+
         required_fields.extend(['status'])
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
@@ -610,19 +650,24 @@ class AccountExport(object):
 class CampaignExport(object):
 
     def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
+        model_id_fields = ['account_id', 'campaign_id']
         required_fields = ['start_date', 'end_date', 'account', 'campaign']
 
         if breakdown == 'ad_group':
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
+            model_id_fields.extend(['ad_group_id'])
         elif breakdown == 'content_ad':
             required_fields.extend(['ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
+            model_id_fields.extend(['ad_group_id', 'content_ad_id'])
         required_fields.extend(['status'])
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
@@ -648,19 +693,24 @@ class CampaignExport(object):
 class AdGroupExport(object):
 
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
+        model_id_fields = ['account_id', 'campaign_id']
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
         dimensions = []
 
         if breakdown == 'ad_group':
             dimensions.extend(['ad_group'])
+            model_id_fields.extend(['ad_group_id'])
         elif breakdown == 'content_ad':
             required_fields.extend(['title', 'image_url', 'url'])
             dimensions.extend(['content_ad'])
+            model_id_fields.extend(['ad_group_id', 'content_ad_id'])
         required_fields.extend(['status'])
+        if include_model_ids:
+            required_fields = model_id_fields + required_fields
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
@@ -730,6 +780,7 @@ def get_report_from_export_report(export_report, start_date, end_date):
         by_source=export_report.breakdown_by_source,
         by_day=export_report.breakdown_by_day,
         ad_group=export_report.ad_group,
+        include_model_ids=export_report.include_model_ids,
         campaign=export_report.campaign,
         account=export_report.account
     )
@@ -753,7 +804,8 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         granularity=granularity,
         breakdown=get_breakdown_from_granularity(granularity),
         by_source=by_source,
-        by_day=helpers.get_by_day(request.GET.get('by_day')),
+        by_day=request.GET.get('by_day') == 'true',
+        include_model_ids=request.GET.get('include_model_ids') == 'true',
         ad_group=ad_group,
         campaign=campaign,
         account=account
@@ -771,12 +823,16 @@ def _get_report(
         breakdown=None,
         by_day=False,
         by_source=False,
+        include_model_ids=False,
         ad_group=None,
         campaign=None,
         account=None):
 
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
+
+    if not user.has_perm('zemauth.can_include_ids_in_reports'):
+        include_model_ids = False
 
     if not filtered_sources:
         filtered_sources = []
@@ -809,6 +865,7 @@ def _get_report(
         breakdown=breakdown,
         by_source=by_source,
         by_day=by_day,
+        include_model_ids=include_model_ids,
         account_id=account_id,
         campaign_id=campaign_id,
         ad_group_id=ad_group_id)
@@ -828,7 +885,8 @@ def _get_report(
 
 
 def _get_report_contents(user, filtered_sources, start_date, end_date, order, additional_fields,
-                         breakdown, by_source, by_day, account_id=None, campaign_id=None, ad_group_id=None):
+                         breakdown, by_source, by_day, include_model_ids=False,
+                         account_id=None, campaign_id=None, ad_group_id=None):
     arguments = {
         'user': user,
         'filtered_sources': filtered_sources,
@@ -838,7 +896,8 @@ def _get_report_contents(user, filtered_sources, start_date, end_date, order, ad
         'additional_fields': additional_fields,
         'breakdown': breakdown,
         'by_source': by_source,
-        'by_day': by_day
+        'by_day': by_day,
+        'include_model_ids': include_model_ids
     }
 
     if account_id:

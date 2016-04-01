@@ -195,7 +195,11 @@ class ExportPlusTestCase(test.TestCase):
             }
         )
 
-        self.assertEqual(rows, [{
+        expectedRows = [{
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 1,
             'uploaded': datetime.date(2015, 2, 21),
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
@@ -217,6 +221,10 @@ class ExportPlusTestCase(test.TestCase):
             'status': 1,
             'is_archived': False
         }, {
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 2,
             'uploaded': datetime.date(2015, 2, 21),
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
@@ -238,6 +246,10 @@ class ExportPlusTestCase(test.TestCase):
             'status': 2,
             'is_archived': False
         }, {
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 3,
             'uploaded': datetime.date(2015, 2, 23),
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
@@ -258,7 +270,8 @@ class ExportPlusTestCase(test.TestCase):
             'clicks': 303,
             'status': 2,
             'is_archived': True
-        }])
+        }]
+        self.assertEqual(rows, expectedRows)
 
     @patch('reports.api_contentads.query')
     def test_generate_rows_flat_fees(self, mock_query):
@@ -327,7 +340,8 @@ class ExportPlusTestCase(test.TestCase):
         )
         self.maxDiff = None
         self.assertEqual(rows, [
-            {'account': u'test account 1 \u010c\u017e\u0161',
+            {'account_id': 1,
+             'account': u'test account 1 \u010c\u017e\u0161',
              'available_budget': Decimal(0),
              'budget': Decimal(0),
              'clicks': 103,
@@ -344,7 +358,8 @@ class ExportPlusTestCase(test.TestCase):
              'flat_fee': Decimal('100.0'),
              'status': 2,
              'unspent_budget': Decimal('-1000.120000000000004547473509')},
-            {'account': u'test account 2',
+            {'account_id': 2,
+             'account': u'test account 2',
              'available_budget': Decimal(0),
              'budget': Decimal(0),
              'clicks': 203,
@@ -417,7 +432,9 @@ class ExportPlusTestCase(test.TestCase):
             campaign=campaign,
         )
         self.assertEqual(rows, [
-            {'account': u'test account 1 \u010c\u017e\u0161',
+            {'account_id': 1,
+             'campaign_id': 1,
+             'account': u'test account 1 \u010c\u017e\u0161',
              'available_budget': Decimal('0'),
              'budget': Decimal('0'),
              'campaign': campaign,
@@ -546,6 +563,7 @@ class ExportPlusTestCase(test.TestCase):
             by_day=True,
             start_date=datetime.date(2014, 6, 3),
             by_source=False,
+            include_model_ids=False,
             user=User.objects.get(pk=1),
             order='name'
         )
@@ -572,6 +590,7 @@ class ExportPlusTestCase(test.TestCase):
             by_day=False, campaign_id=1,
             start_date=datetime.date(2014, 6, 3),
             by_source=True, user=User.objects.get(pk=1),
+            include_model_ids=False,
             order='cost'
         )
 
@@ -594,6 +613,7 @@ class ExportPlusTestCase(test.TestCase):
             by_day=False,
             filtered_sources=mock.ANY,
             by_source=False,
+            include_model_ids=False,
             ad_group=None,
             granularity=2,
             order=None)

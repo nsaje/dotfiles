@@ -4,9 +4,11 @@ describe('zemExportPlus', function () {
     var $scope, isolate, controller;
 
     beforeEach(module('one'));
-    var template = '<zem-export-plus start-date="test" end-date="test" base-url="test" options="test" columns="test" order="test" level="test" export-sources="false"></zem-export-plus>';
+    var template = '<zem-export-plus start-date="test" end-date="test" base-url="test" options="test" columns="test" order="test" level="test" export-sources="false" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-export-plus>';
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();
+        $scope.isPermissionInternal = function () { return true; };
+        $scope.hasPermission = function () { return true; };
 
         var element = $compile(template)($scope);
 
