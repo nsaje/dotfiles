@@ -44,7 +44,8 @@ class K1ApiTest(TestCase):
                         returned_count += 1
                         db_ags = dash.models.AdGroupSource.objects.get(
                             id=ad_group_source['id'])
-                        source_credentials = data['source_credentials'][str(ad_group_source['source_credentials_id'])]
+                        source_credentials = data['source_credentials_map'][
+                            str(ad_group_source['source_credentials_id'])]
                         self.assertEqual(source_credentials['credentials'], db_ags.source_credentials.credentials)
                         self.assertEqual(source_credentials[
                                          'source_type'], db_ags.source_credentials.source.source_type.type)
