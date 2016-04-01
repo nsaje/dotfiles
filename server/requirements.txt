@@ -1,4 +1,4 @@
-Django==1.8.4
+Django==1.9
 # Depends on: libmemcached-dev
 pylibmc==1.5.0
 jsonfield==1.0.0
@@ -37,7 +37,7 @@ python-magic==0.4.6
 django-extensions==1.3.7
 
 # for admin lists exports
-django-import-export==0.2.8
+django-import-export==0.4.4
 
 # for accessing Google Analytics
 google-api-python-client==1.4.2

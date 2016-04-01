@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
-from django.conf.urls import handler404
+import django.views.defaults
 
 import utils.statsd_helper
 
@@ -14,6 +14,7 @@ import zweiapi.views
 import actionlog.views
 import convapi.views
 import reports.views
+import zemauth.views
 
 import dash.views.daily_stats
 import dash.views.bcm
@@ -40,32 +41,30 @@ class AdminRedirectView(RedirectView):
     permanent = True
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^signin$',
-        'zemauth.views.login',
+        zemauth.views.login,
         {'authentication_form': AuthenticationForm, 'template_name': 'zemauth/signin.html'},
         name='signin'),
-    url(r'^signout$', 'django.contrib.auth.views.logout_then_login'),
+    url(r'^signout$', auth_views.logout_then_login),
     url(r'^password_reset',
-        'zemauth.views.password_reset',
+        zemauth.views.password_reset,
         {'template_name': 'zemauth/password_reset.html'},
         name='password_reset'),
     url(r'^set_password/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-        'zemauth.views.set_password',
+        zemauth.views.set_password,
         {'template_name': 'zemauth/set_password.html'},
         name='set_password'),
     url(r'^admin$', AdminRedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^oauth2callback', 'zemauth.views.google_callback'),
-    url(r'^supply_dash/', 'dash.views.views.supply_dash_redirect'),
+    url(r'^oauth2callback', zemauth.views.google_callback),
+    url(r'^supply_dash/', dash.views.views.supply_dash_redirect),
 
-    url(r'^demo_mode$', 'dash.views.views.demo_mode')
-)
+    url(r'^demo_mode$', dash.views.views.demo_mode)
+]
 
 # Api
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/',
         login_required(dash.views.agency.AdGroupSettingsState.as_view()),
@@ -487,11 +486,10 @@ urlpatterns += patterns(
         r'^api/accounts/export_plus/',
         login_required(dash.views.export_plus.AllAccountsExport.as_view())
     )
-)
+]
 
 # Action Log
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^action_log/?$',
         login_required(actionlog.views.action_log),
@@ -507,42 +505,38 @@ urlpatterns += patterns(
         login_required(actionlog.views.ActionLogApiView.as_view()),
         name='action_log_api_put',
     ),
-)
+]
 
 # Zwei Api
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^api/zwei_callback/(?P<action_id>\d+)$',
         zweiapi.views.zwei_callback,
         name='api.zwei_callback',
     )
-)
+]
 
 # Crossvalidation Api
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^api/crossvalidation$',
         reports.views.crossvalidation,
         name='api.crossvalidation',
     )
-)
+]
 
 # Conversion Api
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^convapi/mailgun/gareps$',
         convapi.views.mailgun_gareps,
         name='convapi.mailgun',
     )
-)
+]
 
 
 # Source OAuth
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^source/oauth/authorize/(?P<source_name>yahoo)',
         dash.views.views.oauth_authorize,
@@ -553,36 +547,30 @@ urlpatterns += patterns(
         dash.views.views.oauth_redirect,
         name='source.oauth.redirect'
     )
-)
+]
 
 # Sharethrough callback
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^sharethrough_approval/',
         dash.views.views.sharethrough_approval,
         name='sharethrough_approval'
     )
-)
+]
 
 # Health Check
-urlpatterns += patterns(
-    '',
+urlpatterns += [
     url(
         r'^healthcheck$',
         dash.views.views.healthcheck,
         name='healthcheck',
     )
-)
+]
 
 # TOS
-urlpatterns += patterns(
-    '',
-    url(r'^tos/$', TemplateView.as_view(template_name='tos.html')),
-)
+urlpatterns += [url(r'^tos/$', TemplateView.as_view(template_name='tos.html'))]
 
-urlpatterns += patterns(
-    '',
-    url(r'^api/', handler404),
+urlpatterns += [
+    url(r'^api/', django.views.defaults.page_not_found),
     url(r'^', dash.views.views.index, name='index')
-)
+]
