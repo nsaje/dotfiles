@@ -66,8 +66,9 @@ def _get_min_max_values_of_campaign_goal(data, campaign_goal):
         col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
         for row in data:
             current = row[col]
-            max_value = max(current, max_value)
-            min_value = min(current, min_value) if current else min_value
+            if current:
+                max_value = max(current, max_value)
+                min_value = min(current, min_value)
     return min_value, max_value
 
 
