@@ -86,9 +86,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         }
 
         goalNames[newGoal.conversionGoal.name] = 1;
-        goalTypeIds[
-            getTypeId(newGoal)
-        ] = 1;
+        goalTypeIds[getTypeId(newGoal)] = 1;
 
         $scope.campaignGoals.forEach(function (goal) {
             if (goal.type !== constants.campaignGoalKPI.CPA) {
