@@ -104,7 +104,7 @@ def _split_conversion_goals_by_window(conversion_goals):
     # and use different window length
 
     goals_by_pixels = collections.defaultdict(list)
-    nr_batches = 1 # the number of batches is the max nr of different conversion goals with the same pixels
+    nr_batches = 1  # the number of batches is the max nr of different conversion goals with the same pixels
     for cg in conversion_goals:
         k = (cg.pixel.slug, cg.pixel.account_id)
         goals_by_pixels[k].append(cg)

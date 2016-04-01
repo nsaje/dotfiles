@@ -533,7 +533,6 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             }],
         ]
 
-
         self.use_separate_rows_for_tp_conversions = True
 
         # add another 2 conversion goals with the same pixel but different windows
