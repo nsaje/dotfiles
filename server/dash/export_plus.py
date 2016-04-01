@@ -126,7 +126,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             stat = _populate_content_ad_stat(stat, model)
         elif 'ad_group' in dimensions:
             model = prefetched_data[stat['ad_group']]
-            stat = _populate_ad_group_stat(stat, model, statuses=statuses)
+            stat = _populate_ad_group_stat(stat, model, statuses=statuses, settings=settings)
         elif 'campaign' in dimensions:
             model = prefetched_data[stat['campaign']]
             stat = _populate_campaign_stat(stat, model,
@@ -179,6 +179,12 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
         distinct_ad_groups = set(stat['ad_group'] for stat in stats)
         ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
         data = {ad_group.id: ad_group for ad_group in ad_group_qs}
+        if include_settings:
+            settings_qs = models.AdGroupSettings.objects \
+                .filter(ad_group__in=distinct_ad_groups) \
+                .group_current_settings()
+            settings = {s.ad_group.id: s for s in settings_qs}
+
     elif 'campaign' in dimensions:
         level = 'campaign'
         distinct_campaigns = set(stat['campaign'] for stat in stats)
@@ -301,14 +307,15 @@ def _populate_content_ad_stat(stat, content_ad):
     return stat
 
 
-def _populate_ad_group_stat(stat, ad_group, statuses):
+def _populate_ad_group_stat(stat, ad_group, statuses, settings):
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
     stat['status'] = statuses[ad_group.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
+    if settings and stat['ad_group'] in settings:
+        stat['is_archived'] = settings[stat['ad_group']].archived
     stat['ad_group'] = ad_group.name
-    stat['is_archived'] = ad_group.is_archived()
     return stat
 
 
@@ -684,6 +691,7 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            include_settings=True,
             campaign=campaign,
             source=filtered_sources)
 
