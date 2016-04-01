@@ -831,7 +831,7 @@ def _get_report(
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
 
-    if not user.has_perm('zemauth.can_include_ids_in_reports'):
+    if not user.has_perm('zemauth.can_include_model_ids_in_reports'):
         include_model_ids = False
 
     if not filtered_sources:
