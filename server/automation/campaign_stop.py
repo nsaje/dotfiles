@@ -217,7 +217,7 @@ def _get_ad_group_ratios(ad_groups):
         date = date.date()
         active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=True)
         for ad_group in active_ad_groups:
-            spend_per_ad_group[ad_group.id].append(data.get(ad_group.id, date, 0))
+            spend_per_ad_group[ad_group.id].append(data.get((ad_group.id, date), 0))
 
     avg_spends = {}
     for ad_group_id, spends in spend_per_ad_group.iteritems():

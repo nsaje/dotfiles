@@ -33,11 +33,10 @@
             <div class="form-group section table-campaign-goals">
                 <div class="row">
                     <label class="col-xs-2 control-label">
-                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>
-                        Campaign goals:
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>Campaign goals:
                     </label>
                     <span class="col-xs-4">
-                        <span class="pull-right primary-goal-label">Primary goal</span>
+                        <span ng-show="campaignGoals.length > 1" class="pull-right primary-goal-label">Primary goal</span>
                     </span>
                 </div>
 

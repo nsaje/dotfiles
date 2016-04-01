@@ -263,6 +263,9 @@ class AdGroupOverview(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': ad_group_settings.ad_group_name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
@@ -272,7 +275,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
-            ad_group, request.user, ad_group_settings, daily_cap, async_perf_query
+            ad_group, request.user, ad_group_settings, start_date, end_date,
+            daily_cap, async_perf_query
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
@@ -398,7 +402,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         return settings, daily_cap
 
-    def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):
+    def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
+                              daily_cap, async_query):
         settings = []
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
@@ -412,6 +417,11 @@ class AdGroupOverview(api_common.BaseApiView):
             daily_cap
         ).as_dict())
         settings.extend(common_settings)
+
+        if user.has_perm('zemauth.campaign_goal_performance'):
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, ad_group.campaign,
+                                                                   start_date, end_date))
+
         return settings, is_delivering
 
 
