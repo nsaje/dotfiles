@@ -1,4 +1,5 @@
 import datetime
+import calendar
 
 from decimal import Decimal
 from django.test import TestCase, mock
@@ -443,8 +444,12 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date = datetime.datetime.today().date() + datetime.timedelta(days=30)
+        today = datetime.datetime.today().date()
+
+        _, days_of_month = calendar.monthrange(today.year, today.month)
+
+        start_date = today - datetime.timedelta(days=days_of_month-1)
+        end_date = today + datetime.timedelta(days=days_of_month-1)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
@@ -549,8 +554,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date_1 = datetime.datetime.utcnow() + datetime.timedelta(days=15)
+        _, days_of_month = calendar.monthrange(today.year, today.month)
+        today = datetime.datetime.today().date()
+        start_date_1 = today - datetime.timedelta(days=days_of_month-1)
+        end_date_1 = today + datetime.timedelta(days=(days_of_month-1)/2)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -560,8 +567,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
+        total_duration = days_of_month-1 + (days_of_month-1)/2
+
         self.assertEqual(
-            (Decimal(50) + Decimal(30.0 / 45) * Decimal(100)).quantize(Decimal('.01')),
+            (Decimal(50) + Decimal((days_of_month-1) / float(total_duration) * 100)).quantize(Decimal('.01')),
             dash.infobox_helpers.calculate_all_accounts_total_budget(
                 today - datetime.timedelta(days=60),
                 today
