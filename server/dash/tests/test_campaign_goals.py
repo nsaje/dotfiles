@@ -577,7 +577,21 @@ class CampaignGoalsTestCase(TestCase):
             ]
         }, metrics_basic_cross_1)
 
+        metrics_basic_cross_2 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 3),
+            datetime.date(2016, 1, 7),
+        )
 
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 5), 5.0),
+                (datetime.date(2016, 1, 6), None),
+                (datetime.date(2016, 1, 7), 5.0),
+            ]
+        }, metrics_basic_cross_2)
 
     def test_get_pre_campaign_goal_values(self):
         # (campaign, date, conversion_goals=False):
