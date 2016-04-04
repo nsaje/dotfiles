@@ -1,4 +1,5 @@
 {% load breakdown_tags tt_tags %}
+
 SELECT {{ breakdowns|prefix:"t"|join:"," }},{{ aggregates|prefix:"t"|join:"," }}
 FROM {{ view }} t
 WHERE

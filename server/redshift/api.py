@@ -34,21 +34,3 @@ def query_breakdown(model, breakdown, constraints, order, page, exaggerate=True)
     # select subpage
 
     return result
-
-
-""" TEST
-
-import datetime
-from redshift import models, db, helpers
-from redshift.api import query_breakdown
-
-model = models.RSContentAdsModel
-breakdown = ['account_id', 'ad_group_id']
-constraints = {
-    'date_from': datetime.date(2016, 1, 1),
-    'date_to': datetime.date(2016, 4, 1),
-    'ad_group_id': [890, 1530, 1349, 1172, 885, 1411]
-}
-r = query_breakdown(model, breakdown, constraints, None, None)
-
-"""
