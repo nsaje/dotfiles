@@ -219,9 +219,37 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         });
     };
 
+    $scope.filterPixels = function (pixels) {
+        var availablePixels = [];
+        pixels.forEach(function (p) {
+            var counts = {},
+                invalid = 0;
+            $scope.campaignGoals.forEach(function (goal) {
+                if (goal.type !== constants.campaignGoalKPI.CPA) {
+                    return;
+                }
+                if (goal.conversionGoal.goalId === p.id) {
+                    if (!counts[goal.conversionGoal.conversionWindow]) {
+                        counts[goal.conversionGoal.conversionWindow] = 0;
+                    }
+                    counts[goal.conversionGoal.conversionWindow]++;
+                }
+            });
+            options.conversionWindows.forEach(function (opt) {
+                if (counts[opt.value]) {
+                    invalid += 1;
+                }
+            });
+            if (invalid < options.conversionWindows.length) {
+                availablePixels.push(p);
+            }
+        });
+        return availablePixels;
+    };
+
 
     api.conversionPixel.list($scope.account.id).then(function (data) {
-        $scope.availablePixels = data.rows;
+        $scope.availablePixels = $scope.filterPixels(data.rows);
         $scope.loadingPixels = false;
     });
 }]);

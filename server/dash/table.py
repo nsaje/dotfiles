@@ -89,18 +89,24 @@ def get_conversion_pixels_last_sync(conversion_pixels):
 
 def _set_goal_meta_on_row(stat, performance):
     for goal_status, goal_metric, goal_value, goal in performance:
-        stat['performance']['list'].append({
+        performance_item = {
             'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
             'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
-        })
+        }
+        if goal_value:
+            performance_item['text'] += ' (planned {})'.format(
+                campaign_goals.format_value(goal.type, goal_value)
+            )
+
+        stat['performance']['list'].append(performance_item)
 
         if not goal.primary:
             continue
 
-        goal_columns = list(set(
-            campaign_goals.CAMPAIGN_GOAL_MAP[goal.type] +
-            [campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[goal.type]]
-        ))
+        goal_columns = set(campaign_goals.CAMPAIGN_GOAL_MAP[goal.type])
+        if goal.type in campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP:
+            goal_columns.add(campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[goal.type])
+        goal_columns = list(goal_columns)
         for column in goal_columns:
             if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
                 stat['styles'][column] = constants.Emoticon.HAPPY

@@ -699,10 +699,10 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
         self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
         self.assertEqual(stats[0]['performance']['list'], [
-            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC'}
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC (planned $0.02)'}
         ])
         self.assertEqual(stats[1]['performance']['list'], [
-            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC'}
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC (planned $0.02)'}
         ])
         self.assertEqual(stats[0]['styles'], {})
         self.assertEqual(stats[1]['styles'], {})
@@ -719,10 +719,10 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
         self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
         self.assertEqual(stats[0]['performance']['list'], [
-            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC'},
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC (planned $0.02)'},
         ])
         self.assertEqual(stats[1]['performance']['list'], [
-            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC'},
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC (planned $0.02)'},
         ])
         self.assertEqual(stats[0]['styles'], {'cpc': constants.Emoticon.HAPPY})
         self.assertEqual(stats[1]['styles'], {'cpc': constants.Emoticon.SAD})

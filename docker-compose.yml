@@ -18,7 +18,7 @@ statsd:
     container_name: statsd
     image: verb/socat
     expose:
-      - "8125:8125/udp"
+      - "8125/udp"
     entrypoint: /usr/bin/socat
     command: udp-recv:8125 -
     tty: true
