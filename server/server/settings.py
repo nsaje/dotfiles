@@ -31,24 +31,26 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 PROJECT_NAME = 'z1'
 
-INSTALLED_APPS = ('django.contrib.admin',
-                  'django.contrib.auth',
-                  'django.contrib.contenttypes',
-                  'django.contrib.sessions',
-                  'django.contrib.messages',
-                  'django.contrib.staticfiles',
-                  'import_export',
-                  'dash',
-                  'zemauth',
-                  'actionlog',
-                  'reports',
-                  'zweiapi',
-                  'convapi',
-                  'templatesql',
-                  'redshift',
-                  'raven.contrib.django.raven_compat',
-                  'automation',
-                  'timezone_field', )
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'import_export',
+    'dash',
+    'zemauth',
+    'actionlog',
+    'reports',
+    'zweiapi',
+    'convapi',
+    'templatesql',
+    'redshift',
+    'raven.contrib.django.raven_compat',
+    'automation',
+    'timezone_field',
+]
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -122,6 +124,12 @@ try:
     QUERY_INSPECT_ABSOLUTE_LIMIT = 1000  # in milliseconds
     # Whether to include tracebacks in the logs (default: False)
     QUERY_INSPECT_LOG_TRACEBACKS = True
+except ImportError:
+    pass
+
+try:
+    import django_extensions
+    INSTALLED_APPS.append('django_extensions')
 except ImportError:
     pass
 
