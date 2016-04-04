@@ -845,7 +845,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.selectedTotals = true;
         api.dailyStats.listPublishersStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedPublisherIds,  $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
-                setChartOptions(data.goals);
                 setConversionGoalChartOptions(data.conversionGoals);
 
                 $scope.chartData = data.chartData;
