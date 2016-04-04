@@ -224,6 +224,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         pixels.forEach(function (p) {
             var counts = {},
                 invalid = 0;
+            if (p.archived) {
+                return;
+            }
             $scope.campaignGoals.forEach(function (goal) {
                 if (goal.type !== constants.campaignGoalKPI.CPA) {
                     return;

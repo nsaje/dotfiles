@@ -44,6 +44,11 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             };
 
             $scope.setPrimary = function (goal) {
+                if (goal.primary) { // TEMPORALLY ADDED FEATURE
+                    goal.primary = false;
+                    $scope.model.primary = null;
+                    return;
+                }
                 if (goal.removed) {
                     return;
                 }
@@ -115,7 +120,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
                 modalInstance.result.then(function (campaignGoal) {
                     if (!$scope.campaignGoals.length) {
-                        campaignGoal.primary = true;
+                        // campaignGoal.primary = true; // TEMPORALLY DISABLED FEATURE
                     }
                     $scope.campaignGoals.push(campaignGoal);
                     $scope.model.added.push(campaignGoal);

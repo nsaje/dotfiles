@@ -172,8 +172,23 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         return result;
     };
 
-    $scope.showAutoPilotDailyBudget = function () {
+    $scope.showAutoPilotOption = function (adGroupSettingsAutopilotState) {
+        return !(adGroupSettingsAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET &&
+                $scope.settings.autopilotOptimizationGoal === constants.campaignGoalKPI.CPA);
+    };
+
+    $scope.showAutoPilotDailyBudgetInput = function () {
         return $scope.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+    };
+
+    $scope.budgetAutopilotOptimizationGoalText = function () {
+        var goalName = 'maximum volume';
+        options.budgetAutomationGoals.forEach(function (goal) {
+            if (goal.value === $scope.settings.autopilotOptimizationGoal) {
+                goalName = goal.name;
+            }
+        });
+        return goalName;
     };
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {
