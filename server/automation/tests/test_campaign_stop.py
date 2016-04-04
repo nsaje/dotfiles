@@ -441,7 +441,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             2: 0.5
         }
 
-        def ret_get_budget_rec(ad_group, daily_budget_cap, data, goal):
+        def ret_get_budget_rec(ad_group, daily_budget_cap, data, campaign_goal):
             # mock old daily budgets, they're not taken from fixtures
             ret = {
                 ag1: {
@@ -486,8 +486,8 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         mock_prefetch_ap_data.assert_called_once_with(test_helper.QuerySetMatcher([ag1, ag2]))
 
         budget_rec_calls = [
-            call(ag1, Decimal(200), "Ad group 1 mock data", goal='test_campaign_goal'),
-            call(ag2, Decimal(200), "Ad group 2 mock data", goal='test_campaign_goal'),
+            call(ag1, Decimal(200), "Ad group 1 mock data", campaign_goal='test_campaign_goal'),
+            call(ag2, Decimal(200), "Ad group 2 mock data", campaign_goal='test_campaign_goal'),
         ]
         mock_get_budget_rec.assert_has_calls(budget_rec_calls, any_order=True)
 
