@@ -478,8 +478,68 @@ class CampaignGoalsTestCase(TestCase):
         )
 
     def test_generate_series(self):
-        # (campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
-        pass
+        campaign = models.Campaign.objects.get(pk=1)
+
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+            primary=False,
+            campaign_id=1,
+            created_dt=datetime.date(2016, 1, 5),
+        )
+        cgv1 = models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal(5),
+            created_by=self.user,
+        )
+        cgv1.created_dt = datetime.date(2016, 1, 5)
+        cgv1.save()
+
+
+        cgv2 = models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal(10),
+            created_by=self.user,
+        )
+        cgv2.created_dt = datetime.date(2016, 1, 10)
+        cgv2.save()
+
+        metrics_basic = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 5),
+            datetime.date(2016, 1, 10),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 5), 5.0),
+                (datetime.date(2016, 1, 6), None),
+                (datetime.date(2016, 1, 7), None),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), None),
+                (datetime.date(2016, 1, 10), 10.0),
+            ]
+        }, metrics_basic)
+
+        metrics_basic_inner_1 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 6),
+            datetime.date(2016, 1, 10),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), None),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), None),
+                (datetime.date(2016, 1, 10), 10.0),
+            ]
+        }, metrics_basic_inner_1)
+
 
 
     def test_get_pre_campaign_goal_values(self):
@@ -529,8 +589,6 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertTrue(goal.id in pre_values_3)
         self.assertEqual(Decimal(5), pre_values_3[goal.id].value)
-
-        # def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
 
     def test_campaign_goal_dp(self):
         # (campaign_goal_value, override_date=None, override_value=None):

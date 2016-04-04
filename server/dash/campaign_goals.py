@@ -542,12 +542,13 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
             ]
         else:
             first = cg_series[pre_name][0]
-            if first[0] > pre_cg.created_dt.date():
-                cg_series[pre_name].insert(
-                    0,
-                    campaign_goal_dp(pre_cg_val, override_date=start_date),
-                )
-
+            if first[0] > pre_cg_val.created_dt.date():
+                cg_series[pre_name] = [
+                    campaign_goal_dp(pre_cg_val, override_date=start_date)
+                ] + generate_missing(
+                    start_date,
+                    first[0],
+                ) + cg_series[pre_name]
 
     for name, last_cg_val in last_cg_vals.iteritems():
         if last_cg_val.created_dt.date() >= end_date:
