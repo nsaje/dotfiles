@@ -412,13 +412,13 @@ def fetch_goals(campaign_ids, start_date, end_date):
     ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
 
 
-def _prepare_performance_output(campaign_goal, stats, conversion_goals_tuple):
+def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     last_goal_value = campaign_goal.values.all().first()
     planned_value = last_goal_value and last_goal_value.value or None
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
-        index = conversion_goals_tuple.index(campaign_goal.conversion_goal) + 1
         cost = extract_cost(stats)
-        metric = stats.get('conversion_goal_' + str(index), 0)
+        conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
+        metric = stats.get(conversion_column, 0)
         metric_value = (cost / metric) if (metric and cost is not None) else None
     else:
         metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
@@ -448,8 +448,7 @@ def get_goals_performance(user, campaign, start_date, end_date,
         constraints=constraints
     )
 
-    conversion_goals_tuple = tuple(sorted(conversion_goals, key=lambda x: x.id))
     for campaign_goal in goals:
-        performance.append(_prepare_performance_output(campaign_goal, stats, conversion_goals_tuple))
+        performance.append(_prepare_performance_output(campaign_goal, stats, conversion_goals))
 
     return performance
