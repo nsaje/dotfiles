@@ -56,7 +56,10 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
+        if ok is None:
+            ret.icon = dash.constants.Emoticon.NEUTRAL
+        else:
+            ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -479,6 +482,12 @@ def calculate_all_accounts_total_budget(start_date, end_date):
         if end_diff < 0:
             out_of_range_days += abs(end_diff)
 
+        # one day budget line items or budget line items that are entirely
+        # contained here fit this condition
+        if out_of_range_days == 0:
+            total += bli.amount
+            continue
+
         total_budget_duration = (bli.end_date - bli.start_date).days
         rate_burned_in_range = Decimal(total_budget_duration - out_of_range_days)\
             / Decimal(total_budget_duration)
@@ -634,7 +643,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
             goal_description += ' - ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
-            '' if not first else 'Campaign Goals:',
+            '' if not first else 'Campaign goals:',
             goal_description,
             planned_value and 'planned {}'.format(
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
@@ -645,11 +654,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
         if campaign_goal.primary:
             entry.value_class = 'primary'
 
-        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
-            entry = entry.performance(True)
-        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
-            entry = entry.performance(False)
-
+        entry.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]
         settings.append(entry.as_dict())
         first = False
     return settings

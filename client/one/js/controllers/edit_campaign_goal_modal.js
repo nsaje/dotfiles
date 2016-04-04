@@ -27,6 +27,18 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         conversionGoal: {},
     };
 
+
+    function getTypeId (goal) {
+        if (goal.conversionGoal.type !== constants.conversionGoalType.PIXEL) {
+            return goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
+        }
+        return [
+            goal.conversionGoal.type,
+            goal.conversionGoal.goalId,
+            goal.conversionGoal.conversionWindow,
+        ].join('::');
+    }
+
     $scope.setDefaultValue = function () {
         var defaultValue = null;
         if (!$scope.newCampaignGoal) {
@@ -74,9 +86,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         }
 
         goalNames[newGoal.conversionGoal.name] = 1;
-        goalTypeIds[
-            newGoal.conversionGoal.type + '::' + newGoal.conversionGoal.goalId
-        ] = 1;
+        goalTypeIds[getTypeId(newGoal)] = 1;
 
         $scope.campaignGoals.forEach(function (goal) {
             if (goal.type !== constants.campaignGoalKPI.CPA) {
@@ -86,7 +96,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 // skip same rows
                 return;
             }
-            var typeId = goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
+            var typeId = getTypeId(goal);
             if (!goalNames[goal.conversionGoal.name]) {
                 goalNames[goal.conversionGoal.name] = 0;
             }
@@ -187,8 +197,60 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
 
     $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
 
+
+    $scope.refreshConversionWindows = function (goalId) {
+        var counts = {};
+        $scope.conversionWindows = [];
+        $scope.campaignGoals.forEach(function (goal) {
+            if (goal.type !== constants.campaignGoalKPI.CPA) {
+                return;
+            }
+            if (goal.conversionGoal.goalId === goalId) {
+                if (!counts[goal.conversionGoal.conversionWindow]) {
+                    counts[goal.conversionGoal.conversionWindow] = 0;
+                }
+                counts[goal.conversionGoal.conversionWindow]++;
+            }
+        });
+        options.conversionWindows.forEach(function (opt) {
+            if (!counts[opt.value]) {
+                $scope.conversionWindows.push(opt);
+            }
+        });
+    };
+
+    $scope.filterPixels = function (pixels) {
+        var availablePixels = [];
+        pixels.forEach(function (p) {
+            var counts = {},
+                invalid = 0;
+            $scope.campaignGoals.forEach(function (goal) {
+                if (goal.type !== constants.campaignGoalKPI.CPA) {
+                    return;
+                }
+                if (goal.conversionGoal.goalId === p.id) {
+                    if (!counts[goal.conversionGoal.conversionWindow]) {
+                        counts[goal.conversionGoal.conversionWindow] = 0;
+                    }
+                    counts[goal.conversionGoal.conversionWindow]++;
+                }
+            });
+            options.conversionWindows.forEach(function (opt) {
+                if (counts[opt.value]) {
+                    invalid += 1;
+                }
+            });
+            if (invalid < options.conversionWindows.length) {
+                availablePixels.push(p);
+            }
+        });
+        return availablePixels;
+    };
+
+
     api.conversionPixel.list($scope.account.id).then(function (data) {
-        $scope.availablePixels = data.rows;
+        $scope.availablePixels = $scope.filterPixels(data.rows);
         $scope.loadingPixels = false;
     });
 }]);
+

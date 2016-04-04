@@ -633,6 +633,32 @@ Segment: All Visits (No Segment),,,,,,,,,,
         with self.assertRaisesRegexp(exc.IncompleteReportException, r'Number of total sessions'):
             report._check_session_counts({'Visits': '101'})
 
+    def test_clean_goals(self):
+        omniture_row_dict = {'Bounces': '123', 'Unique Visits': '12', 'Carts': '22', 'Visits': '11', 'Revenue': '31', 'Random': '1'}
+
+        row = parse_v2.OmnitureReportRow(omniture_row_dict, datetime.date(2016, 1, 1), None, None, None, None)
+        self.assertTrue(row.needs_goals_validation)
+        self.assertDictEqual(row.goals, {
+            'Carts': 22,
+            'Revenue': 31,
+            'Random': 1,
+        })
+
+        row.clean_goals(['Carts', 'Revenue'])
+        self.assertDictEqual(row.goals, {
+            'Carts': 22,
+            'Revenue': 31,
+        })
+
+    def test_dont_clean_goals(self):
+        omniture_row_dict = {'Bounces': '123', 'Unique Visits': '12', 'Carts (Event 12)': '22', 'Visits': '11', 'Revenue': '31', 'Random': '1'}
+
+        row = parse_v2.OmnitureReportRow(omniture_row_dict, datetime.date(2016, 1, 1), None, None, None, None)
+        self.assertFalse(row.needs_goals_validation)
+        self.assertDictEqual(row.goals, {
+            'Carts': 22,
+        })
+
     def test_parse(self):
         csv_file = """
 ######################################################################
@@ -889,3 +915,59 @@ Segment: All Visits (No Segment),,,,,,,,,,
         self.assertEqual('2015-09-12', entry.report_date)
 
         self.assertEqual({'Test Event': 5}, entry.goals)
+
+    def test_validate_custom_coversion_goals(self):
+        csv_file = """
+######################################################################
+# Company:,Zemanta
+# URL:,.
+# Site:,Global
+# Range:,Sat. 12 Sep. 2015
+# Report:,Tracking Code Report
+# Description:,""
+######################################################################
+# Report Options:
+# Report Type: ,"Ranked"
+# Selected Metrics: ,"Visits, New Sessions, Unique Visitors, Bounce Rate, Pages/Session, Avg. Session Duration, Entries, Bounces, Page Views, Total Seconds Spent"
+# Broken Down by: ,"None"
+# Data Filter: ,"RANDOM"
+# Compare to Report Suite: ,"None"
+# Compare to Segment: ,"None"
+# Item Filter: ,"None"
+# Percent Shown as: ,"Number"
+# Segment: ,"All Visits (No Segment)"
+######################################################################
+#
+# Copyright 2015 Adobe Systems Incorporated. All rights reserved.
+# Use of this document signifies your agreement to the Terms of Use (http://marketing.adobe.com/resources/help/terms.html?type=prod&locale=en_US) and Online Privacy Policy (http://my.omniture.com/x/privacy).
+# Adobe Systems Incorporated products and services are licensed under the following Netratings patents: 5675510 5796952 6115680 6108637 6138155 6643696 and 6763386.
+#
+######################################################################
+
+,Some other thing,,Visits,,New Sessions,Unique Visitors,,Bounce Rate,Pages/Session,Avg. Session Duration,Entries,,Bounces,,Page Views,,Total Seconds Spent,,Carts,Some unknown header,
+1.,SOME_TOTALS,,20,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%,1,
+1.,,CSY-PB-ZM-AB-M-z11yahoo1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%,1
+""".strip().decode('utf-8')
+
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
+        with self.assertRaisesMessage(exc.IncompleteReportException, 'Number of total sessions (20) is not equal to sum of session counts (10)'):
+            # totals are too big (20) but entries are saved before this is checked so the test should pass
+            report.parse()
+        report.validate()
+
+        self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
+        valid_entries = report.get_content_ad_stats()
+        entry = valid_entries[0]
+        self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
+
+        self.assertEqual(10, entry.visits)
+        self.assertEqual(40, entry.pageviews)
+        self.assertEqual(1, entry.bounce_rate)
+        self.assertEqual(20, entry.new_visits)
+        self.assertEqual(10, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+        self.assertEqual(1, entry.content_ad_id)
+
+        # all other unknown keys should be stripped away
+        self.assertEqual({'Carts': 5}, entry.goals)

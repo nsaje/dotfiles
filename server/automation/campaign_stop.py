@@ -10,7 +10,7 @@ from django.db import transaction
 import actionlog.api
 from actionlog import zwei_actions
 
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_cpc, autopilot_plus
 
 import dash.constants
 import dash.models
@@ -56,6 +56,8 @@ def update_campaigns_in_landing():
                 actions.extend(_set_end_date_to_today(campaign))
         except:
             logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
+            continue
+
         zwei_actions.send(actions)
 
 
@@ -164,19 +166,21 @@ def _set_end_date_to_today(campaign):
 def _set_new_daily_budgets(campaign):
     ad_groups = campaign.adgroup_set.all().filter_active()
 
-    per_ad_group_autopilot_data, _ = autopilot_plus.prefetch_autopilot_data(ad_groups)
+    per_ad_group_autopilot_data, goals = autopilot_plus.prefetch_autopilot_data(ad_groups)
     remaining_today, _, _ = _get_minimum_remaining_budget(campaign)
     ad_group_daily_cap_ratios = _get_ad_group_ratios(ad_groups)
 
     actions = []
     for ad_group in ad_groups:
         ad_group_daily_cap = int(float(remaining_today) * ad_group_daily_cap_ratios.get(ad_group.id, 0))
+        ap_data = per_ad_group_autopilot_data[ad_group]
+        goal = goals[campaign]
 
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
             ad_group,
             ad_group_daily_cap,
-            per_ad_group_autopilot_data[ad_group],
-            goal=None  # use default goal to maximize spend
+            ap_data,
+            goal=goal  # use default goal to maximize spend
         )
 
         ap_budget_sum = sum(bc['new_budget'] for bc in budget_changes.values())
@@ -184,8 +188,11 @@ def _set_new_daily_budgets(campaign):
             actions.extend(_stop_ad_group(ad_group))
             continue
 
+        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(ad_group, ap_data, budget_changes)
+
         actions.extend(autopilot_plus.set_autopilot_changes(
             budget_changes=budget_changes,
+            cpc_changes=cpc_changes,
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
             landing_mode=True))
 
@@ -217,16 +224,18 @@ def _get_ad_group_ratios(ad_groups):
         date = date.date()
         active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=True)
         for ad_group in active_ad_groups:
-            spend_per_ad_group[ad_group.id].append(data[ad_group.id, date])
+            spend_per_ad_group[ad_group.id].append(data.get((ad_group.id, date), 0))
 
     avg_spends = {}
     for ad_group_id, spends in spend_per_ad_group.iteritems():
-        avg_spends[ad_group_id] = sum(spends) / len(spends)
+        if len(spends) > 0:
+            avg_spends[ad_group_id] = sum(spends) / len(spends)
 
     total = sum(avg_spends.itervalues())
     normalized = {}
     for ad_group_id, avg_spend in avg_spends.iteritems():
-        normalized[ad_group_id] = avg_spend / total
+        if total > 0:
+            normalized[ad_group_id] = avg_spend / total
 
     return normalized
 

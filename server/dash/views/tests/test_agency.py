@@ -50,7 +50,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 'enable_adobe_tracking': False,
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
-                'autopilot_min_budget': '100'
+                'autopilot_min_budget': '0'
             }
         }
 
@@ -132,7 +132,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_min_budget': '100',
+                    'autopilot_min_budget': '0',
                     'autopilot_optimization_goal': 'maximum spend'
                 },
                 'warnings': {}
@@ -172,6 +172,32 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'Gravity',
                         'Yahoo',
                     ],
+                }
+            }
+        )
+
+    def test_get_landing(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        new_settings = ad_group.get_current_settings().copy_settings()
+        new_settings.landing_mode = True
+        new_settings.save(req)
+
+        self.add_permissions(['settings_view'])
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings'], {
+                'end_date': {
+                    'text': 'Your campaign has been switched to landing mode. '
+                    'Please add the budget and continue to adjust settings by your needs. '
+                    '<a href="http://testserver/campaigns/1/budget-plus/">Add budget</a>'
                 }
             }
         )
@@ -238,7 +264,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100',
+                        'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': 'maximum spend'
                     }
                 },
@@ -357,6 +383,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
+            self.maxDiff = None
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
@@ -412,7 +439,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100',
+                        'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': 'maximum spend'
                     }
                 },

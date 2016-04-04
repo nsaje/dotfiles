@@ -436,7 +436,7 @@ def get_goals_performance(user, campaign, start_date, end_date,
             index = conversion_goals_tuple.index(campaign_goal.conversion_goal) + 1
             cost = extract_cost(stats)
             metric = stats.get('conversion_goal_' + str(index), 0)
-            metric_value = (cost / metric) if metric else None
+            metric_value = (cost / metric) if (metric and cost is not None) else None
         else:
             metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
         performance.append((
