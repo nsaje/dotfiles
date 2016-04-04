@@ -212,9 +212,19 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/publishers',
             templateUrl: '/partials/ad_group_publishers.html',
             controller: 'AdGroupPublishersCtrl'
-        })
+        });
 
-        ;
+    $stateProvider
+        .state('main.development', {
+            url: 'development',
+            template: '<div ui-view></div>',
+            controller: 'DevelopmentCtrl'
+        })
+        .state('main.development.grid', {
+            url: '/grid',
+            templateUrl: '/partials/development_grid.html',
+            controller: 'DevelopmentGridCtrl'
+        });
 }]);
 
 oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {

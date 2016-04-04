@@ -14,6 +14,7 @@ import zweiapi.views
 import actionlog.views
 import convapi.views
 import reports.views
+import stats.views
 
 import dash.views.daily_stats
 import dash.views.bcm
@@ -486,6 +487,11 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/export_plus/',
         login_required(dash.views.export_plus.AllAccountsExport.as_view())
+    ),
+    url(
+        r'^api/stats/testdata/',
+        stats.views.BreakdownsTestData.as_view(),
+        name='stats_breakdowns_test_data'
     )
 )
 

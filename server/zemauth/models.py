@@ -189,6 +189,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
+            ('can_access_table_breakdowns_development_features', 'Can access table breakdowns development features'),
             ('campaign_goal_performance', 'Can view goal performance information'),
             ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
         )
