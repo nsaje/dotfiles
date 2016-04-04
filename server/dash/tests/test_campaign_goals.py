@@ -481,9 +481,6 @@ class CampaignGoalsTestCase(TestCase):
         # (campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
         pass
 
-    def test_goal_name(self):
-        # (goal, conversion_goals=None):
-        pass
 
     def test_get_pre_campaign_goal_values(self):
         # (campaign, date, conversion_goals=False):
@@ -493,8 +490,10 @@ class CampaignGoalsTestCase(TestCase):
         # (campaign_goal_value, override_date=None, override_value=None):
         pass
 
+    def test_inverted_campaign_goal_map(self):
+        pass
+
     def test_generate_missing(self):
-        from pudb import set_trace; set_trace()
         today = datetime.datetime.utcnow().date()
         today_p15 = today + datetime.timedelta(days=15)
 
@@ -502,7 +501,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(14, len(missing))
         self.assertTrue([d[1] is None for d in missing])
 
-    def test_inverted_campaign_goal_map(self):
+
+    def test_goal_name(self):
         goal = models.CampaignGoal.objects.create(
             type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
             primary=False,
