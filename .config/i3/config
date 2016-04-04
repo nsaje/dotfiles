@@ -16,7 +16,7 @@ set $mod Mod1
 exec --no-startup-id /usr/libexec/gnome-settings-daemon
 
 # notification daemon
-exec --no-startup-id dunst
+exec --no-startup-id dunst -config ~/.config/i3/config_dunst
 
 # ssh agent
 exec --no-startup-id ssh-add
