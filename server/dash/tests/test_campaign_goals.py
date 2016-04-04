@@ -485,10 +485,6 @@ class CampaignGoalsTestCase(TestCase):
         # (goal, conversion_goals=None):
         pass
 
-    def test_generate_missing(self):
-        # (from_date, end_date):
-        pass
-
     def test_get_pre_campaign_goal_values(self):
         # (campaign, date, conversion_goals=False):
         pass
@@ -496,6 +492,15 @@ class CampaignGoalsTestCase(TestCase):
     def test_campaign_goal_dp(self):
         # (campaign_goal_value, override_date=None, override_value=None):
         pass
+
+    def test_generate_missing(self):
+        from pudb import set_trace; set_trace()
+        today = datetime.datetime.utcnow().date()
+        today_p15 = today + datetime.timedelta(days=15)
+
+        missing = campaign_goals.generate_missing(today, today_p15)
+        self.assertEqual(14, len(missing))
+        self.assertTrue([d[1] is None for d in missing])
 
     def test_inverted_campaign_goal_map(self):
         goal = models.CampaignGoal.objects.create(
