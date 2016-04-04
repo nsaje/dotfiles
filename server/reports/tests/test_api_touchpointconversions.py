@@ -192,6 +192,52 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         self.assertItemsEqual(batches[0], [cg1, cg3])
         self.assertItemsEqual(batches[1], [cg2])
 
+    def test_insert_conversion_window(self, mock_cursor):
+        rows = [{
+            "account": 1,
+            "ad_group": 9999,
+            "conversion_count": 5,
+            "slug": "slug3",
+            "touchpoint_count": 10,
+        }, {
+            "account": 1,
+            "ad_group": 9999,
+            "conversion_count": 4,
+            "slug": "slug2",
+            "touchpoint_count": 9,
+        }]
+
+        cp1 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug2')
+        cg1 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                        type=dash.constants.ConversionGoalType.PIXEL,
+                                                        name='goal name 2',
+                                                        pixel=cp1,
+                                                        conversion_window=168)
+        cp2 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug3')
+        cg2 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
+                                                        type=dash.constants.ConversionGoalType.PIXEL,
+                                                        name='goal name 3',
+                                                        pixel=cp2,
+                                                        conversion_window=7)
+        conversion_goals = [cg1, cg2]
+        api_touchpointconversions._insert_conversion_window(rows, conversion_goals)
+        self.assertItemsEqual([{
+            "account": 1,
+            "ad_group": 9999,
+            "conversion_count": 5,
+            "slug": "slug3",
+            "touchpoint_count": 10,
+            "conversion_window": 7,
+        }, {
+            "account": 1,
+            "ad_group": 9999,
+            "conversion_count": 4,
+            "slug": "slug2",
+            "touchpoint_count": 9,
+            "conversion_window": 168,
+        }], rows)
+
+
 
 class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
 

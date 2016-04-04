@@ -128,5 +128,5 @@ def _insert_conversion_window(result, conversion_goals):
     conversion_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id): cg for cg in
                                 conversion_goals if cg.pixel}
     for row in result:
-        cg = conversion_goals_by_slug.get((tp_conv_stat['slug'], tp_conv_stat['account'],))
+        cg = conversion_goals_by_slug.get((row['slug'], row['account'],))
         row['conversion_window'] = cg.conversion_window if cg else None
