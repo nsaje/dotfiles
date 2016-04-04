@@ -40,6 +40,9 @@ filetype plugin indent on    " required
 " use mouse
 set mouse=a
 
+" display numbers
+set nu
+
 " nerdtree binding
 map <C-\> :NERDTreeToggle<CR>
 
