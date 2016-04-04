@@ -299,14 +299,11 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
     stat['start_date'] = start_date
     stat['end_date'] = end_date
 
-    if 'source' in dimensions:
+    if dimensions == ['source']:
         _populate_source_stat(stat, user=user, source_names=source_names)
     else:
         _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data, budgets=budgets,
                              projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings)
-
-    if 'source' in stat:
-        stat['source'] = source_names[stat['source']]
 
     # Adjsut by day breakdown
     if 'date' in stat:
@@ -350,7 +347,8 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None, budgets=No
     elif not dimensions:
         stat = _populate_all_accounts_stat(stat, projections=projections, budgets=budgets, flat_fees=flat_fees)
 
-    _populate_model_ids(stat, model)
+    if model:
+        _populate_model_ids(stat, model)
 
 
 def _populate_content_ad_stat(stat, content_ad):
