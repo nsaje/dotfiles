@@ -176,7 +176,7 @@ def _set_new_daily_budgets(campaign):
             ad_group,
             ad_group_daily_cap,
             per_ad_group_autopilot_data[ad_group],
-            goal=None  # use default goal to maximize spend
+            campaign_goal=None  # use default goal to maximize spend
         )
 
         ap_budget_sum = sum(bc['new_budget'] for bc in budget_changes.values())
