@@ -29,13 +29,13 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
         new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)
-        min_value_of_campaign_goal, max_value_of_campaign_goal = _get_min_max_values_of_campaign_goal(
+        min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
             data.values(), campaign_goal)
         # Train bandit
         for s in active_sources_with_spend:
             for i in range(5):
                 bandit.add_result(s, predict_outcome_success(
-                    s, data[s], campaign_goal, min_value_of_campaign_goal, max_value_of_campaign_goal))
+                    s, data[s], campaign_goal, min_value_of_optimization_goal, max_value_of_optimization_goal))
 
         # Redistribute budgets
         while budget_left >= 1:
@@ -44,8 +44,8 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
             if not s:
                 break
             new_budgets[s] += Decimal(1)
-            bandit.add_result(s, predict_outcome_success(s, data[s], campaign_goal, min_value_of_campaign_goal,
-                                                         max_value_of_campaign_goal, new_budget=new_budgets[s]))
+            bandit.add_result(s, predict_outcome_success(s, data[s], campaign_goal, min_value_of_optimization_goal,
+                                                         max_value_of_optimization_goal, new_budget=new_budgets[s]))
             if new_budgets[s] >= s.source.source_type.max_daily_budget:
                 bandit.remove_source(s)
 
@@ -59,10 +59,10 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
             for s in active_sources}
 
 
-def _get_min_max_values_of_campaign_goal(data, campaign_goal):
+def _get_min_max_values_of_optimization_goal(data, campaign_goal):
     max_value = 0.0
     min_value = float("inf")
-    if campaign_goal:
+    if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
         col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
         for row in data:
             current = row[col]
