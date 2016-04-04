@@ -1,7 +1,7 @@
 from django.template import loader
 
 def generate_query(template_name, context):
-    template = loader.get_template(self.template_name)
+    template = loader.get_template(template_name)
     return template.render(context)
 
 
