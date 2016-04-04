@@ -419,9 +419,8 @@ class AdGroupOverview(api_common.BaseApiView):
         settings.extend(common_settings)
 
         if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, ad_group.campaign,
-                                                                   start_date, end_date,
-                                                                   ad_group=ad_group))
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, {'ad_group': ad_group},
+                                                                   start_date, end_date))
 
         return settings, is_delivering
 
@@ -688,7 +687,7 @@ class CampaignOverview(api_common.BaseApiView):
         settings.extend(common_settings)
 
         if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, {'campaign': campaign},
                                                                    start_date, end_date))
 
         return settings, is_delivering

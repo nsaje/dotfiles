@@ -259,7 +259,7 @@ class CampaignGoalsTestCase(TestCase):
             'avg_tos': 10,
             'percent_new_users': 1.2,
         }
-        performance = campaign_goals.get_goals_performance(self.user, self.campaign,
+        performance = campaign_goals.get_goals_performance(self.user, {'campaign': self.campaign},
                                                            start_date, end_date, stats=stats)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
@@ -288,7 +288,7 @@ class CampaignGoalsTestCase(TestCase):
             },
         }
 
-        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, self.campaign,
+        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, {'campaign': self.campaign},
                                                                start_date, end_date)
         self.assertEqual(goals_infobox, [
             {
@@ -364,9 +364,8 @@ class CampaignGoalsTestCase(TestCase):
             },
         }
 
-        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, self.campaign,
-                                                               start_date, end_date,
-                                                               ad_group=ad_group)
+        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, {'ad_group': ad_group},
+                                                               start_date, end_date)
         self.assertEqual(goals_infobox, [
             {
                 'section_start': True,

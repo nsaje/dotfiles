@@ -137,7 +137,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
             continue
 
         performance = campaign_goals.get_goals_performance(
-            user, campaign, start_date, end_date,
+            user, {'campaign': campaign}, start_date, end_date,
             goals=goals, stats=stat, conversion_goals=campaign.conversiongoal_set.all()
         )
 

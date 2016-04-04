@@ -430,15 +430,12 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     )
 
 
-def get_goals_performance(user, campaign, start_date, end_date,
-                          goals=None, conversion_goals=None, stats=None, ad_group=None):
+def get_goals_performance(user, constraints, start_date, end_date,
+                          goals=None, conversion_goals=None, stats=None):
     performance = []
+    campaign = constraints.get('campaign') or constraints['ad_group'].campaign
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
     goals = goals or fetch_goals([campaign.pk], start_date, end_date)
-
-    constraints = {'campaign': campaign}
-    if ad_group:
-        constraints = {'ad_group': ad_group}
 
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,

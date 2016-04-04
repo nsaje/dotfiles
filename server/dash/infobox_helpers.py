@@ -630,9 +630,8 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, campaign, start_date, end_date, ad_group=None):
-    performance = dash.campaign_goals.get_goals_performance(user, campaign, start_date, end_date,
-                                                            ad_group=ad_group)
+def get_campaign_goal_list(user, constraints, start_date, end_date):
+    performance = dash.campaign_goals.get_goals_performance(user, constraints, start_date, end_date)
 
     settings = []
     first = True
