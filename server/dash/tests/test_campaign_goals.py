@@ -313,6 +313,7 @@ class CampaignGoalsTestCase(TestCase):
                 'internal': False,
                 'type': 'setting',
                 'name': '',
+                'icon': constants.Emoticon.NEUTRAL,
                 'value': '$0.10 CPC'
             }, {
                 'section_start': False,
@@ -333,6 +334,7 @@ class CampaignGoalsTestCase(TestCase):
             }, {
                 'section_start': False,
                 'internal': False,
+                'icon': constants.Emoticon.NEUTRAL,
                 'type': 'setting',
                 'name': '',
                 'value': '1.20 % new unique visitors'
