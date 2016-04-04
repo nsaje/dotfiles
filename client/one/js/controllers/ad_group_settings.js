@@ -173,13 +173,14 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     };
 
     $scope.showAutoPilotOption = function (adGroupSettingsAutopilotState) {
+        return true;
         return !(adGroupSettingsAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET &&
                 $scope.settings.autopilotOptimizationGoal === constants.campaignGoalKPI.CPA);
     };
 
     $scope.showAutoPilotDailyBudgetInput = function () {
-        return ($scope.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET &&
-                $scope.settings.autopilotOptimizationGoal !== constants.campaignGoalKPI.CPA);
+      return true;
+        return $scope.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
     };
 
     $scope.budgetAutopilotOptimizationGoalText = function () {
