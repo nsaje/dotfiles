@@ -662,15 +662,15 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length,
-            $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
-            $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+            $scope.hasPermission('zemauth.view_pubs_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.view_pubs_postclick_acquisition')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
             $scope.columns.length,
-            $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
-            $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+            $scope.hasPermission('zemauth.view_pubs_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.view_pubs_postclick_engagement')
         );
 
         zemPostclickMetricsService.insertConversionGoalColumns(
@@ -791,14 +791,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
-        if ($scope.hasPermission('zemauth.view_pubs_postclick_stats')) {
+        if ($scope.hasPermission('zemauth.view_pubs_postclick_acquisition')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
                 $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+                $scope.isPermissionInternal('zemauth.view_pubs_postclick_acquisition')
             );
+        }
+        if ($scope.hasPermission('zemauth.view_pubs_postclick_engagement')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
                 $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+                $scope.isPermissionInternal('zemauth.view_pubs_postclick_engagement')
             );
         }
 
