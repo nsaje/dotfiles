@@ -476,3 +476,54 @@ class CampaignGoalsTestCase(TestCase):
             ),
             constants.CampaignGoalPerformance.AVERAGE,
         )
+
+    def test_generate_series(self):
+        # (campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
+        pass
+
+    def test_goal_name(self):
+        # (goal, conversion_goals=None):
+        pass
+
+    def test_generate_missing(self):
+        # (from_date, end_date):
+        pass
+
+    def test_get_pre_campaign_goal_values(self):
+        # (campaign, date, conversion_goals=False):
+        pass
+
+    def test_campaign_goal_dp(self):
+        # (campaign_goal_value, override_date=None, override_value=None):
+        pass
+
+    def test_inverted_campaign_goal_map(self):
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+            primary=False,
+            campaign_id=1,
+        )
+        self.assertEqual(
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ),
+            campaign_goals.goal_name(goal)
+        )
+
+        conv_goal = models.ConversionGoal.objects.create(
+            goal_id='123',
+            name='123',
+            type=3,
+            campaign_id=1,
+        )
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.CPA,
+            primary=False,
+            campaign_id=1,
+            conversion_goal=conv_goal
+        )
+
+        self.assertEqual(
+            'conversion_goal_1',
+            campaign_goals.goal_name(goal, conversion_goals=[conv_goal])
+        )
