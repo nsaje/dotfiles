@@ -9,8 +9,7 @@ import dash
 from dash.constants import AdGroupSettingsState
 from automation import autopilot_settings
 import automation.helpers
-from automation.constants import DailyBudgetChangeComment, CpcChangeComment, BudgetAutomationGoalText
-from dash.constants import CampaignGoalKPI
+from automation.constants import DailyBudgetChangeComment, CpcChangeComment
 from dash import constants
 import dash.models
 from utils import pagerduty_helper, url_helper
@@ -92,13 +91,6 @@ def get_campaign_goal_column(campaign_goal):
 
 def get_campaign_goal_column_importance(campaign_goal):
     return autopilot_settings.GOALS_COLUMNS.get(campaign_goal.type).get('col')[1] if campaign_goal else None
-
-
-def get_optimization_goal_text(camp):
-    campaign_goal = dash.campaign_goals.get_primary_campaign_goal(camp)
-    if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
-        return BudgetAutomationGoalText.get(campaign_goal.type)
-    return 'maximum volume'
 
 
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
