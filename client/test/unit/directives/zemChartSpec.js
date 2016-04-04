@@ -2,16 +2,19 @@
 
 describe('zemChart', function () {
     var scope, chart, isolate;
-    var data = [{
+    var data = {
         id: 'totals',
-        name: 'Totals',
-        seriesData: {
-            cost: [
-                ['2014-07-10', 205.1312],
-                ['2014-07-11', 128.5189]
-            ]
-        }
-    }];
+        groups: [{
+            id: 'totals',
+            name: 'Totals',
+            seriesData: {
+                cost: [
+                    ['2014-07-10', 205.1312],
+                    ['2014-07-11', 128.5189],
+                ],
+            },
+        }]
+    };
 
     beforeEach(module('one'));
 
@@ -62,19 +65,21 @@ describe('zemChart', function () {
     it('should add a null datapoint on the first date without data', function () {
         scope.startDate = moment('2014-07-01');
         scope.endDate = moment('2014-07-30');
-        isolate.data = [{
-            id: 'totals',
-            name: 'Totals',
-            seriesData: {
-                cost: [
-                    ['2014-07-10', 205.1312],
-                    ['2014-07-11', 128.5189],
-                    ['2014-07-15', 138.5189],
-                    ['2014-07-17', 148.5189],
-                    ['2014-07-18', 158.5189]
-                ]
-            }
-        }];
+        isolate.data = {
+            groups: [{
+                id: 'totals',
+                name: 'Totals',
+                seriesData: {
+                    cost: [
+                        ['2014-07-10', 205.1312],
+                        ['2014-07-11', 128.5189],
+                        ['2014-07-15', 138.5189],
+                        ['2014-07-17', 148.5189],
+                        ['2014-07-18', 158.5189]
+                    ]
+                }
+            }]
+        };
 
         scope.$digest();
         isolate.$digest();

@@ -166,14 +166,14 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             });
 
             $scope.$watch('data', function (newValue, oldValue) {
-                var i = 0;
-                var data = newValue && newValue.groups;
-                var color = null;
-                var seriesData = null;
-                var metrics = null;
-                var metricIds = null;
-                var seriesName = null;
-                var commonYAxis = null;
+                var i = 0,
+                    data = newValue && newValue.groups,
+                    color = null,
+                    seriesData = null,
+                    metrics = null,
+                    metricIds = null,
+                    seriesName = null,
+                    commonYAxis = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
