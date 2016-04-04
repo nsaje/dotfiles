@@ -15,6 +15,9 @@ set $mod Mod1
 # have some gnome goodness
 exec /usr/libexec/gnome-settings-daemon
 
+# ssh agent
+exec ssh-add
+
 #exec compton -bCG  # too much battery drain
 
 exec setxkbmap -option ctrl:swapcaps
