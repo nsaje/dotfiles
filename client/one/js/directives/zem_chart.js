@@ -265,26 +265,30 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 if (!campaignGoals || !fieldGoalMap) {
                     return;
                 }
-                var goalName1 = fieldGoalMap[$scope.metric1],
-                    goalName2 = fieldGoalMap[$scope.metric2],
+                var goal1 = fieldGoalMap[$scope.metric1],
+                    goal2 = fieldGoalMap[$scope.metric2],
                     commonYAxis = true,
-                    metricIds = [];
+                    metricIds = [],
+                    index = 0;
 
-                if ($scope.metric1 && campaignGoals[goalName1]) {
+                if (goal1 && $scope.metric1 && campaignGoals[goal1.id]) {
                     metricIds.push($scope.metric1)
+                } else {
+                    index += 1;  
                 }
-                if ($scope.metric2 && campaignGoals[goalName2]) {
+                if (goal2 && $scope.metric2 && campaignGoals[goal2.id]) {
                     metricIds.push($scope.metric2)
                 }
 
-                metricIds.forEach(function (metricId, index) {
-                    var goalName = fieldGoalMap[metricId],
-                        series = transformDate(campaignGoals[goalName]),
-                        color = getColor(goalName);
+                metricIds.forEach(function (metricId) {
+                    var goal = fieldGoalMap[metricId],
+                        series = transformDate(campaignGoals[goal.id]),
+                        color = getColor(goal.id);
                     if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                         commonYAxis = false;
                     }
-                    addGoalSeries(metricId, goalName, series, color[index], commonYAxis ? 0 : index);
+                    addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
+                    index += 1;
                 });
             };
 

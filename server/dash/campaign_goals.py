@@ -639,9 +639,20 @@ def inverted_campaign_goal_map(conversion_goals=None):
     # map from particular fields to goals
     ret = {}
     for goal, field in CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.iteritems():
-        ret[field] = constants.CampaignGoalKPI.get_text(goal)
+        ret[field] = {
+            'id': constants.CampaignGoalKPI.get_text(goal),
+            'name': constants.CampaignGoalKPI.get_text(goal),
+        }
 
+    cpa_text = constants.CampaignGoalKPI.get_text(constants.CampaignGoalKPI.CPA)
     for cg in conversion_goals:
-        ret['avg_cost_per_{}'.format(cg.get_view_key(conversion_goals))] =\
-            'conversion_goal_{}'.format(i)
+        vk = cg.get_view_key(conversion_goals)
+
+        ret['avg_cost_per_{}'.format(vk)] = {
+            'id': vk,
+            'name': '{prefix} ({conversion_goal_name})'.format(
+                prefix=cpa_text,
+                conversion_goal_name=cg.name
+            ),
+        }
     return ret
