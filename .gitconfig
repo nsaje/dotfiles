@@ -1,0 +1,12 @@
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+[user]
+	name = Nejc Saje
+	email = nejc@saje.info
+[push]
+	default = simple
+[diff]
+	tool = meld
