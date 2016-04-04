@@ -20,11 +20,10 @@ def validate_daily_budget_cc(daily_budget_cc, source_type):
                                     .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
 
 
-def validate_source_cpc_cc(cpc_cc, source):
+def validate_source_cpc_cc(cpc_cc, source, source_type):
     if cpc_cc < 0:
         raise forms.ValidationError('This value must be positive')
 
-    source_type = source.source_type
     decimal_places = source_type.cpc_decimal_places
     if decimal_places is not None and has_too_many_decimal_places(cpc_cc, decimal_places):
         raise forms.ValidationError(
@@ -43,7 +42,7 @@ def validate_source_cpc_cc(cpc_cc, source):
 
 
 def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
-    validate_source_cpc_cc(cpc_cc, ad_group_source.source)
+    validate_source_cpc_cc(cpc_cc, ad_group_source.source, ad_group_source.source.source_type)
 
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     max_cpc = ad_group_settings.cpc_cc
