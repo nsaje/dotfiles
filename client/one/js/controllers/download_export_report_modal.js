@@ -70,6 +70,11 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
 
     $scope.init = function () {
         $scope.export.type = $scope.options[0];
+        for (var i = 1; i < $scope.options.length; ++i) {
+            if ($scope.options[i].defaultOption) {
+                $scope.export.type = $scope.options[i];
+            }
+        }
         $scope.setDisabledExportOptions();
     };
     $scope.init();
