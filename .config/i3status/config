@@ -34,7 +34,16 @@ ethernet _first_ {
 }
 
 battery 0 {
-        format = "%status %percentage %remaining"
+        #format = "%status %percentage %remaining"
+	format = "%status %percentage"
+	format_down = "No battery"
+	status_chr = "⚇ CHR"
+	status_bat = "⚡ BAT"
+	status_full = "☻ FULL"
+	path = "/sys/class/power_supply/BAT%d/uevent"
+	low_threshold = 10
+	integer_battery_capacity = true
+	last_full_capacity = true
 }
 
 run_watch DHCP {
