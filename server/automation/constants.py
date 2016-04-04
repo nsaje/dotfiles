@@ -1,5 +1,4 @@
 from utils.constant_base import ConstantBase
-from dash.constants import CampaignGoalKPI
 
 
 class CpcChangeComment(ConstantBase):
@@ -47,12 +46,3 @@ class DailyBudgetChangeComment(ConstantBase):
         NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Auto-Pilot tried assigning wrong ammount of total daily budgets',
         INITIALIZE_PILOT_PAUSED_SOURCE: 'Budget Auto-Pilot initialization - set paused source to minimum budget.'
     }
-
-
-BudgetAutomationGoalText = {
-    CampaignGoalKPI.TIME_ON_SITE: 'time on site',
-    CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce rate',
-    CampaignGoalKPI.PAGES_PER_SESSION: 'pages per session',
-    CampaignGoalKPI.CPC: 'average CPC',
-    CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'new visitors',
-}

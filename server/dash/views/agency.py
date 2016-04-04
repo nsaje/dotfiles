@@ -141,6 +141,7 @@ class AdGroupSettings(api_common.BaseApiView):
         result = {}
 
         if settings:
+            primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
             result = {
                 'id': str(ad_group.pk),
                 'name': ad_group.name,
@@ -165,7 +166,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
-                'autopilot_optimization_goal': autopilot_helpers.get_optimization_goal_text(ad_group.campaign)
+                'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None
             }
 
         return result
