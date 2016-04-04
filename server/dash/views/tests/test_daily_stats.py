@@ -383,8 +383,51 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             source=matcher
         )
 
+        from pudb import set_trace; set_trace()
         self.assertJSONEqual(response.content, {
             'data': {
+                'goal_fields': {
+                    'avg_tos': {
+                        'id': 'time on site in seconds',
+                        'name': 'time on site in seconds'
+                    },
+                    'avg_cost_per_conversion_goal_1': {
+                        'id': 'conversion_goal_1',
+                        'name': '$CPA (test conversion goal)'
+                    },
+                    'avg_cost_per_conversion_goal_2': {
+                        'id': 'conversion_goal_2',
+                        'name': '$CPA (test conversion goal 2)'
+                    },
+                    'avg_cost_per_conversion_goal_3': {
+                        'id': 'conversion_goal_3',
+                        'name': '$CPA (test conversion goal 3)'
+                    },
+                    'avg_cost_per_conversion_goal_4': {
+                        'id': 'conversion_goal_4',
+                        'name': '$CPA (test conversion goal 4)'
+                    },
+                    'avg_cost_per_conversion_goal_5': {
+                        'id': 'conversion_goal_5',
+                        'name': '$CPA (test conversion goal 5)'
+                    },
+                    'cpc': {
+                        'id': '$CPC',
+                        'name': '$CPC'
+                    },
+                    'total_pageviews': {
+                        'id': 'pages per session',
+                        'name': 'pages per session'
+                    },
+                    'bounce_rate': {
+                        'id': 'max bounce rate %',
+                        'name': 'max bounce rate %'
+                    },
+                    'percent_new_users': {
+                        'id': 'new visitors %',
+                        'name': 'new visitors %'
+                    },
+                },
                 'chart_data': [{
                     'id': 'totals',
                     'name': 'Totals',
@@ -406,6 +449,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                     {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
                     {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'}
                 ]),
+                'campaign_goals': {}
             },
             'success': True
         })
