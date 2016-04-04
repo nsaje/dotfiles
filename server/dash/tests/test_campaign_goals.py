@@ -484,7 +484,53 @@ class CampaignGoalsTestCase(TestCase):
 
     def test_get_pre_campaign_goal_values(self):
         # (campaign, date, conversion_goals=False):
-        pass
+        date = datetime.date(2016, 1, 1)
+        campaign = models.Campaign.objects.get(pk=1)
+        pre_values = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            date,
+            conversion_goals=False
+        )
+        self.assertEqual({}, pre_values)
+
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+            primary=False,
+            campaign_id=1,
+            created_dt=datetime.date(2016, 1, 5),
+        )
+        cgv = models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal(5),
+            created_by=self.user,
+        )
+        cgv.created_dt = datetime.date(2016, 1, 5)
+        cgv.save()
+
+        pre_values_1 = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            datetime.datetime(2016, 1, 4),
+            conversion_goals=False
+        )
+        self.assertEqual({}, pre_values_1)
+
+
+        pre_values_2 = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            datetime.datetime(2016, 1, 5),
+            conversion_goals=False
+        )
+        self.assertEqual({}, pre_values_2)
+
+        pre_values_3 = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            datetime.datetime(2016, 1, 6),
+            conversion_goals=False
+        )
+        self.assertTrue(goal.id in pre_values_3)
+        self.assertEqual(Decimal(5), pre_values_3[goal.id].value)
+
+        # def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
 
     def test_campaign_goal_dp(self):
         # (campaign_goal_value, override_date=None, override_value=None):
