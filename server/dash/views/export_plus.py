@@ -115,6 +115,7 @@ class ExportAllowed(api_common.BaseApiView):
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).exclude_archived().count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).exclude_archived().count()
             return self.create_api_response({
+                'all_accounts': True,
                 'account': accounts_num <= self.MAX_ROWS,
                 'campaign': campaigns_num <= self.MAX_ROWS,
                 'ad_group': ad_groups_num <= self.MAX_ROWS,
