@@ -540,6 +540,43 @@ class CampaignGoalsTestCase(TestCase):
             ]
         }, metrics_basic_inner_1)
 
+        metrics_basic_inner_2 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 6),
+            datetime.date(2016, 1, 9),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), None),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), 5.0),
+            ]
+        }, metrics_basic_inner_2)
+
+
+        metrics_basic_cross_1 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 7),
+            datetime.date(2016, 1, 12),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 7), 5.0),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), None),
+                (datetime.date(2016, 1, 10), 10.0),
+                (datetime.date(2016, 1, 11), None),
+                (datetime.date(2016, 1, 12), 10.0),
+            ]
+        }, metrics_basic_cross_1)
+
 
 
     def test_get_pre_campaign_goal_values(self):
