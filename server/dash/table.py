@@ -103,15 +103,13 @@ def _set_goal_meta_on_row(stat, performance):
         if not goal.primary:
             continue
 
-        goal_columns = set(campaign_goals.CAMPAIGN_GOAL_MAP[goal.type])
-        if goal.type in campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP:
-            goal_columns.add(campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[goal.type])
-        goal_columns = list(goal_columns)
-        for column in goal_columns:
-            if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
-                stat['styles'][column] = constants.Emoticon.HAPPY
-            if goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
-                stat['styles'][column] = constants.Emoticon.SAD
+        colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
+        if not colored_column:
+            continue
+        if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
+            stat['styles'][colored_column] = constants.Emoticon.HAPPY
+        if goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+            stat['styles'][colored_column] = constants.Emoticon.SAD
 
 
 def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
@@ -1950,6 +1948,8 @@ class PublishersTable(object):
             conversion_goals
         )
 
+        set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
+
         if order:
             publishers_data = sort_results(publishers_data, [order])
 
@@ -2244,6 +2244,10 @@ class PublishersTable(object):
                 for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                     row[key] = publisher_data[key]
             campaign_goals.copy_fields(user, publisher_data, row)
+            if 'performance' in publisher_data:
+                row['performance'] = publisher_data['performance']
+                row['styles'] = publisher_data.get('styles')
+
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
                 row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']

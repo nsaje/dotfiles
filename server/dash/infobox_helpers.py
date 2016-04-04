@@ -630,9 +630,9 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, campaign, start_date, end_date):
-    performance = dash.campaign_goals.get_goals_performance(user, campaign,
-                                                            start_date=start_date, end_date=end_date)
+def get_campaign_goal_list(user, campaign, start_date, end_date, ad_group=None):
+    performance = dash.campaign_goals.get_goals_performance(user, campaign, start_date, end_date,
+                                                            ad_group=ad_group)
 
     settings = []
     first = True
@@ -643,7 +643,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
             goal_description += ' - ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
-            '' if not first else 'Campaign goals:',
+            '' if not first else 'Goals:',
             goal_description,
             planned_value and 'planned {}'.format(
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),

@@ -19,7 +19,7 @@ oneApp.directive('zemIconList', [function () {
         controller: ['$scope', function ($scope) {
             $scope.iconFile = statusIcons[constants.emoticon.NEUTRAL];
             $scope.iconClass = statusClasses[constants.emoticon.NEUTRAL];
-            
+
             $scope.statusList = [];
             if (!$scope.statuses) {
                 return;
@@ -37,5 +37,4 @@ oneApp.directive('zemIconList', [function () {
             });
         }],
     };
-
 }]);
