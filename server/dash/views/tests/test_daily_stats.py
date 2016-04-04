@@ -383,7 +383,6 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             source=matcher
         )
 
-        from pudb import set_trace; set_trace()
         self.assertJSONEqual(response.content, {
             'data': {
                 'goal_fields': {

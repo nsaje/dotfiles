@@ -457,9 +457,8 @@ class AccountsDailyStats(BaseDailyStatsView):
             stats,
             totals,
             group_names,
-            metrics,
-            request.user,
-            group_key
+            metrics=metrics,
+            group_key=group_key
         ))
 
 
