@@ -119,9 +119,10 @@ describe('api', function () {
                     errors: {
                         name: ['Name is wrong'],
                         campaign_goal: ['Campaign goal is wrong'],
+                        goals: ['CPA goal cannot be set as primary because ...'],
                         goal_quantity: ['Goal quantity is wrong'],
                         target_devices: ['Target devices are wrong'],
-                        target_regions: ['Target regions are wrong']
+                        target_regions: ['Target regions are wrong'],
                     }
                 };
 
@@ -136,7 +137,8 @@ describe('api', function () {
                     campaignGoal: ['Campaign goal is wrong'],
                     goalQuantity: ['Goal quantity is wrong'],
                     targetDevices: ['Target devices are wrong'],
-                    targetRegions: ['Target regions are wrong']
+                    targetRegions: ['Target regions are wrong'],
+                    goals: ['CPA goal cannot be set as primary because ...'],
                 });
             });
         });

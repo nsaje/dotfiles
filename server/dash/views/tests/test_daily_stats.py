@@ -645,22 +645,24 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         }]
         mock_query.return_value = mock_stats
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = \
+            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats2 = [{
             'date': start_date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }, {
             'date': start_date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpoint_query.return_value = mock_stats2
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = \
-            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'metrics': ['cpc', 'clicks'],

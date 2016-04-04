@@ -30,7 +30,7 @@
         </div>
 
         <div ng-if="hasPermission('zemauth.can_see_campaign_goals')">
-            <div class="form-group section table-campaign-goals">
+            <div class="form-group section table-campaign-goals" ng-class="{'has-error': !!errors.goals}">
                 <div class="row">
                     <label class="col-xs-2 control-label">
                         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>Campaign goals:
@@ -43,6 +43,9 @@
                 <div class="row">
                     <div class="col-xs-6">
                         <zem-campaign-goals account="account" campaign="campaign" goals="campaignGoals" model="campaignGoalsDiff"></zem-campaign-goals>
+                    </div>
+                    <div class="col-xs-6" ng-show="!!errors.goals">
+                        <label ng-repeat="error in errors.goals" class="control-label error">{{ error }}</label>
                     </div>
                 </div>
             </div>

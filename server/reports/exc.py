@@ -9,3 +9,7 @@ class ReportsUnknownAggregator(Exception):
 
 class S3FileNotFoundError(Exception):
     pass
+
+
+class S3FileEmpty(Exception):
+    pass

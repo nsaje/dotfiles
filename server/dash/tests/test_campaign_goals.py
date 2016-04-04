@@ -98,6 +98,40 @@ class CampaignGoalsTestCase(TestCase):
         settings = self.campaign.get_current_settings()
         self.assertEqual(settings.changes_text, 'Campaign goal "time on site in seconds" set as primary')
 
+    def test_cpa_goal_primary(self):
+        for ad_group in models.AdGroup.objects.filter(campaign=self.campaign):
+            settings = ad_group.get_current_settings().copy_settings()
+            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+            settings.save(self.request)
+
+        with self.assertRaises(exc.ValidationError) as e:
+            campaign_goals.set_campaign_goal_primary(
+                self.request, self.campaign, self._goal(constants.CampaignGoalKPI.CPA).pk)
+        self.assertEqual(
+            str(e.exception),
+            'CPA goal cannot be set as primary because you have autopilot '
+            'set to optimize bid CPCs and daily budgets.'
+        )
+        for ad_group in models.AdGroup.objects.filter(campaign=self.campaign):
+            settings = ad_group.get_current_settings().copy_settings()
+            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+            settings.save(self.request)
+        campaign_goals.set_campaign_goal_primary(
+            self.request, self.campaign, self._goal(constants.CampaignGoalKPI.CPA).pk)
+        self.assertTrue(self._goal(constants.CampaignGoalKPI.CPA).primary)
+
+        goal = self._goal(constants.CampaignGoalKPI.CPA)
+        goal.primary = False
+        goal.save()
+
+        for ad_group in models.AdGroup.objects.filter(campaign=self.campaign):
+            settings = ad_group.get_current_settings().copy_settings()
+            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+            settings.save(self.request)
+        campaign_goals.set_campaign_goal_primary(
+            self.request, self.campaign, self._goal(constants.CampaignGoalKPI.CPA).pk)
+        self.assertTrue(self._goal(constants.CampaignGoalKPI.CPA).primary)
+
     def test_create_campaign_goal(self):
         models.CampaignGoal.objects.all().delete()
 
