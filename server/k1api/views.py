@@ -3,7 +3,7 @@ import logging
 
 from django.views.decorators.csrf import csrf_exempt
 import dash.models
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.db.models import F
 from django.conf import settings
 
@@ -142,7 +142,7 @@ def get_ad_group_sources(request):
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
         logger.exception('Invalid K1 signature.')
-        return _error_response('Invalid K1 signature.', status=401)
+        raise Http404
 
     source_types = request.GET.getlist('source_type')
 
@@ -174,7 +174,7 @@ def get_content_ad_sources(request):
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
         logger.exception('Invalid K1 signature.')
-        return _error_response('Invalid K1 signature.', status=401)
+        raise Http404
 
     contentadsources = (
         dash.models.ContentAdSource.objects
@@ -203,10 +203,3 @@ def get_content_ad_sources(request):
     data = {'content_ad_sources': list(contentadsources)}
 
     return JsonResponse(data)
-
-
-def _error_response(error_msg, status=500):
-    return JsonResponse({
-        'status': 'ERROR',
-        'error': error_msg,
-    }, status=status)
