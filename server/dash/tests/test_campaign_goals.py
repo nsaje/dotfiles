@@ -10,6 +10,7 @@ from dash import models, constants, forms
 from dash import campaign_goals
 from dash import infobox_helpers
 from zemauth.models import User
+from dash.constants import CampaignGoalPerformance as cgp
 
 
 class CampaignGoalsTestCase(TestCase):
@@ -299,6 +300,20 @@ class CampaignGoalsTestCase(TestCase):
             [(p[1], p[2]) for p in performance],
             [(10, Decimal('60.00000')), (0, Decimal('10.00000')), (None, None),
              (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)],
+        )
+        self.assertEqual(
+            [p[0] for p in performance],
+            [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE,
+             cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE]
+        )
+
+        stats['conversion_goal_1'] = None
+        performance = campaign_goals.get_goals_performance(self.user, {'campaign': self.campaign},
+                                                           start_date, end_date, stats=stats)
+        self.assertEqual(
+            [p[0] for p in performance],
+            [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.AVERAGE,
+             cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE],
         )
 
     @patch('reports.api_contentads.query')
