@@ -363,6 +363,10 @@ def get_campaign_goals(campaign, conversion_goals):
             conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
             fields = dict(('{}'.format(k['id']), True)
                           for k in conversion_goals if k['name'] == conversion_goal_name)
+            fields.update(
+                dict(('avg_cost_per_{}'.format(k['id']), True)
+                     for k in conversion_goals if k['name'] == conversion_goal_name)
+            )
 
         ret.append({
             'name': goal_name,
@@ -370,6 +374,7 @@ def get_campaign_goals(campaign, conversion_goals):
             'value': float(cg_value.value),
             'fields': fields,
         })
+
     return ret
 
 
