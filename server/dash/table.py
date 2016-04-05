@@ -87,7 +87,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
     return datetime.datetime.utcnow()
 
 
-def _set_goal_meta_on_row(stat, performance):
+def _set_goal_meta_on_row(stat, performance, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in performance:
         performance_item = {
             'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
@@ -106,9 +106,12 @@ def _set_goal_meta_on_row(stat, performance):
         colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
         if not colored_column:
             continue
+        if goal.type == constants.CampaignGoalKPI.CPA:
+            colored_column = goal.conversion_goal.get_view_key(conversion_goals)
+        
         if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.HAPPY
-        if goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+        elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.SAD
 
 
@@ -135,10 +138,10 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         goals = campaign_goals_map.get(campaign.pk)
         if not goals:
             continue
-
+        conversion_goals = campaign.conversiongoal_set.all()
         performance = campaign_goals.get_goals_performance(
             user, {'campaign': campaign}, start_date, end_date,
-            goals=goals, stats=stat, conversion_goals=campaign.conversiongoal_set.all()
+            goals=goals, stats=stat, conversion_goals=conversion_goals
         )
 
         if not performance:
@@ -148,7 +151,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
             min((p[0] for p in performance))
         ]
 
-        _set_goal_meta_on_row(stat, performance)
+        _set_goal_meta_on_row(stat, performance, conversion_goals)
 
 
 class AllAccountsSourcesTable(object):
