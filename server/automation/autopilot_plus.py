@@ -243,7 +243,8 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
             break
     for r in yesterday_data:
         if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            yesterdays_spend_cc = Decimal(r.get('cost'))
+            cost = r.get('cost')
+            yesterdays_spend_cc = Decimal(cost) if cost else Decimal('0')
             yesterdays_clicks = r.get('clicks')
             break
     return row, yesterdays_spend_cc, yesterdays_clicks
