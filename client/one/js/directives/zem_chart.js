@@ -272,9 +272,9 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     index = 0;
 
                 if (goal1 && $scope.metric1 && campaignGoals[goal1.id]) {
-                    metricIds.push($scope.metric1)
+                    metricIds.push($scope.metric1);
                 } else {
-                    index += 1;  
+                    index += 1;
                 }
                 if (goal2 && $scope.metric2 && campaignGoals[goal2.id]) {
                     metricIds.push($scope.metric2)
@@ -295,7 +295,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             var addGoalSeries = function (metricId, goalName, series, color, yAxisIndex) {
                 if (!goalName) {
                     return;
-                };
+                }
 
                 $scope.config.series.push({
                     name: goalName,
@@ -312,7 +312,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                         enabled: false,
                     },
                 });
-            }
+            };
 
 
             /////////////
@@ -473,7 +473,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
                 // check if group had been assigned a color before
                 color = colors[usedColors[group.id]];
-                    
+
                 // if not, select one of the available colors
                 if (!color) {
                     usedColorIndexes = Object.keys(usedColors).map(function (key) {

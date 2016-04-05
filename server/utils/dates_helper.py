@@ -49,5 +49,5 @@ def get_overlap(start_date1, end_date1, start_date2, end_date2):
 
 
 def date_range(start_date, end_date):
-    for n in range(int ((end_date - start_date).days)):
+    for n in range(int((end_date - start_date).days)):
         yield start_date + datetime.timedelta(n)

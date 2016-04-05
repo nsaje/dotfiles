@@ -599,7 +599,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
 
 
 def goal_name(goal, conversion_goals=None):
-    if goal.conversion_goal == None:
+    if goal.conversion_goal is None:
         return constants.CampaignGoalKPI.get_text(goal.type)
 
     return goal.conversion_goal.get_view_key(conversion_goals)

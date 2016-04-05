@@ -916,7 +916,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                             }),
                             campaignGoals: response.data.campaign_goals,
                             goalFields: response.data.goal_fields,
-                        }
+                        };
                     }
                     if (response && response.data && response.data.conversion_goals) {
                         conversionGoals = response.data.conversion_goals;
