@@ -42,7 +42,8 @@ logger = logging.getLogger(__name__)
 # fixed - eg. content ad ids synced, content ads paused/reinserted etc.
 SUPRESS_INVALID_CONTENT_ID_CHECK = {
     # content that should not exist in Outbrain and made some impressions
-    927: {3: ['2015-12-08']}
+    927: {3: ['2015-12-08']},
+    701: {3: ['2016-04-02']},
 }
 
 

@@ -31,6 +31,7 @@ class OverviewSetting(object):
                  tooltip=None,
                  setting_type='setting',
                  section_start=None,
+                 internal=False,
                  warning=None):
         self.name = name
         self.value = value
@@ -39,6 +40,7 @@ class OverviewSetting(object):
         self.details_hide_label = None
         self.details_content = None
         self.icon = None
+        self.internal = internal
         self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
@@ -54,7 +56,10 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
+        if ok is None:
+            ret.icon = dash.constants.Emoticon.NEUTRAL
+        else:
+            ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -398,8 +403,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
         tooltip='Yesterday media spend'
-    ).performance(
-        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
@@ -478,6 +481,12 @@ def calculate_all_accounts_total_budget(start_date, end_date):
             out_of_range_days += abs(start_diff)
         if end_diff < 0:
             out_of_range_days += abs(end_diff)
+
+        # one day budget line items or budget line items that are entirely
+        # contained here fit this condition
+        if out_of_range_days == 0:
+            total += bli.amount
+            continue
 
         total_budget_duration = (bli.end_date - bli.start_date).days
         rate_burned_in_range = Decimal(total_budget_duration - out_of_range_days)\
@@ -561,11 +570,11 @@ def get_adgroup_running_status(ad_group_settings):
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.STOPPED
 
-    if state == dash.constants.AdGroupSettingsState.INACTIVE:
-        return dash.constants.InfoboxStatus.INACTIVE
-
     if ad_group.campaign.is_in_landing():
         return dash.constants.InfoboxStatus.LANDING_MODE
+
+    if state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return dash.constants.InfoboxStatus.INACTIVE
 
     return dash.constants.InfoboxStatus.ACTIVE
 
@@ -621,33 +630,30 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, campaign, start_date, end_date):
-    performance = dash.campaign_goals.get_goals_performance(user, campaign,
-                                                            start_date=start_date, end_date=end_date)
+def get_campaign_goal_list(user, constraints, start_date, end_date):
+    performance = dash.campaign_goals.get_goals_performance(user, constraints, start_date, end_date)
 
     settings = []
     first = True
+    permissions = user.get_all_permissions_with_access_levels()
     for status, metric_value, planned_value, campaign_goal in performance:
         goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
         if campaign_goal.conversion_goal:
             goal_description += ' - ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
-            '' if not first else 'Campaign Goals:',
+            '' if not first else 'Goals:',
             goal_description,
             planned_value and 'planned {}'.format(
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
+            internal=first and 'zemauth.campaign_goal_performance' in permissions,
         )
         if campaign_goal.primary:
             entry.value_class = 'primary'
 
-        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
-            entry = entry.performance(True)
-        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
-            entry = entry.performance(False)
-
+        entry.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]
         settings.append(entry.as_dict())
         first = False
     return settings

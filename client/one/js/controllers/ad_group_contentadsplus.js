@@ -222,13 +222,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         field: 'performance',
         unselectable: true,
         checked: true,
-        type: 'icon',
+        type: 'icon-list',
         totalRow: false,
         help: 'Goal performance indicator',
         order: true,
         initialOrder: 'asc',
-        internal: $scope.isPermissionInternal('zemauth.campaign_goal_optimization'),
-        shown: $scope.hasPermission('zemauth.campaign_goal_optimization')
+        internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+        shown: $scope.hasPermission('zemauth.campaign_goal_performance')
     }, {
         name: 'Status',
         field: 'submission_status',
@@ -982,7 +982,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             return;
         }
 
-        api.adGroupOverview.get($state.params.id).then(
+        api.adGroupOverview.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;

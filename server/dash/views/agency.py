@@ -7,6 +7,7 @@ from collections import OrderedDict
 from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -120,12 +121,27 @@ class AdGroupSettings(api_common.BaseApiView):
                 'sources': [s.name for s in unsupported_sources]
             }
             warnings['retargeting'] = retargeting_warning
+
+        if ad_group_settings.landing_mode:
+            warnings['end_date'] = {
+                'text': 'Your campaign has been switched to landing mode. '
+                'Please add the budget and continue to adjust settings by your needs. '
+                '<a href="{link}">Add budget</a>'.format(
+                    link=request.build_absolute_uri(
+                        '/campaigns/{campaign_id}/budget-plus/'.format(
+                            campaign_id=ad_group_settings.ad_group.campaign.id
+                        ),
+                    )
+                )
+            }
+
         return warnings
 
     def get_dict(self, settings, ad_group):
         result = {}
 
         if settings:
+            primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
             result = {
                 'id': str(ad_group.pk),
                 'name': ad_group.name,
@@ -150,7 +166,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
-                'autopilot_optimization_goal': autopilot_helpers.get_optimization_goal_text(ad_group.campaign)
+                'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None
             }
 
         return result
@@ -358,9 +374,16 @@ class CampaignAgency(api_common.BaseApiView):
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
 
+            if new_settings.created_by is None and new_settings.system_user is not None:
+                changed_by = constants.SystemUserType.get_text(new_settings.system_user)
+            elif new_settings.created_by is None and new_settings.system_user is None:
+                changed_by = automation.settings.AUTOMATION_AI_NAME
+            else:
+                changed_by = new_settings.created_by.email
+
             history.append({
                 'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
+                'changed_by': changed_by,
                 'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
@@ -653,7 +676,10 @@ class CampaignSettings(api_common.BaseApiView):
 
         new_primary_id = new_primary_id or changes['primary']
         if new_primary_id and new_primary_id not in removed_goals:
-            campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+            try:
+                campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+            except exc.ValidationError as error:
+                errors.append(str(error))
 
         return errors
 

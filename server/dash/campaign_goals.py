@@ -11,7 +11,7 @@ import dash.stats_helper
 import utils.lc_helper
 
 CAMPAIGN_GOAL_NAME_FORMAT = {
-    constants.CampaignGoalKPI.TIME_ON_SITE: '{} seconds on site',
+    constants.CampaignGoalKPI.TIME_ON_SITE: '{} time on site in seconds',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} bounce rate',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} new unique visitors',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
@@ -49,9 +49,9 @@ CAMPAIGN_GOAL_MAP = {
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'unbounced_visits',
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
     constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
-    constants.CampaignGoalKPI.TIME_ON_SITE: 'total_seconds',
+    constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
 }
@@ -156,8 +156,17 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
 
 
 def set_campaign_goal_primary(request, campaign, goal_id):
-    models.CampaignGoal.objects.filter(campaign=campaign).update(primary=False)
     goal = models.CampaignGoal.objects.get(pk=goal_id)
+    if goal.type == constants.CampaignGoalKPI.CPA:
+        for ad_group in models.AdGroup.objects.filter(campaign=campaign):
+            settings = ad_group.get_current_settings()
+            if settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                raise exc.ValidationError(
+                    'CPA goal cannot be set as primary because you have autopilot '
+                    'set to optimize bid CPCs and daily budgets.'
+                )
+
+    models.CampaignGoal.objects.filter(campaign=campaign).update(primary=False)
     goal.primary = True
     goal.save()
 
@@ -404,7 +413,8 @@ def fetch_goals(campaign_ids, start_date, end_date):
         'values',
         queryset=dash.models.CampaignGoalValue.objects.filter(
             created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
-            created_dt__lt=end_date + datetime.timedelta(1),
+            created_dt__lt=datetime.datetime.combine(end_date + datetime.timedelta(1),
+                                                     datetime.datetime.min.time()),
         ).order_by('-created_dt')
     )
     return dash.models.CampaignGoal.objects.filter(campaign_id__in=campaign_ids).prefetch_related(
@@ -412,37 +422,41 @@ def fetch_goals(campaign_ids, start_date, end_date):
     ).select_related('conversion_goal').order_by('campaign_id', '-primary', 'created_dt')
 
 
-def get_goals_performance(user, campaign, start_date, end_date,
+def _prepare_performance_output(campaign_goal, stats, conversion_goals):
+    goal_values = campaign_goal.values.all()
+    last_goal_value = goal_values and goal_values[0]
+    planned_value = last_goal_value and last_goal_value.value or None
+    if campaign_goal.type == constants.CampaignGoalKPI.CPA:
+        cost = extract_cost(stats)
+        conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
+        metric = stats.get(conversion_column, 0)
+        metric_value = (cost / metric) if (metric and cost is not None) else None
+    else:
+        metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
+    return (
+        get_goal_performance_status(campaign_goal.type, metric_value, planned_value),
+        metric_value,
+        planned_value,
+        campaign_goal,
+    )
+
+
+def get_goals_performance(user, constraints, start_date, end_date,
                           goals=None, conversion_goals=None, stats=None):
     performance = []
+    campaign = constraints.get('campaign') or constraints['ad_group'].campaign
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
     goals = goals or fetch_goals([campaign.pk], start_date, end_date)
+
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,
         start_date=start_date,
         end_date=end_date,
         conversion_goals=conversion_goals,
-        constraints={
-            'campaign': campaign,
-        }
+        constraints=constraints
     )
 
-    conversion_goals_tuple = tuple(sorted(conversion_goals, key=lambda x: x.id))
     for campaign_goal in goals:
-        last_goal_value = campaign_goal.values.all().first()
-        planned_value = last_goal_value and last_goal_value.value or None
-        if campaign_goal.type == constants.CampaignGoalKPI.CPA:
-            index = conversion_goals_tuple.index(campaign_goal.conversion_goal) + 1
-            cost = extract_cost(stats)
-            metric = stats.get('conversion_goal_' + str(index), 0)
-            metric_value = (cost / metric) if metric else None
-        else:
-            metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
-        performance.append((
-            get_goal_performance_status(campaign_goal.type, metric_value, planned_value),
-            metric_value,
-            planned_value,
-            campaign_goal,
-        ))
+        performance.append(_prepare_performance_output(campaign_goal, stats, conversion_goals))
 
     return performance

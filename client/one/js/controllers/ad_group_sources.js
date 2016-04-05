@@ -19,6 +19,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
     $scope.autopilotChanges = '';
+    $scope.enablingAutopilotSourcesAllowed = true;
     $scope.loadRequestInProgress = false;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -145,6 +146,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                             }
                         });
                         $scope.autopilotChanges = data.autopilot_changed_sources;
+                        $scope.enablingAutopilotSourcesAllowed = data.enabling_autopilot_sources_allowed;
                         $scope.pollSourcesTableUpdates();
 
                         // reload ad group to update its status
@@ -160,6 +162,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 }
 
                 return editableFields['status_setting'].message;
+            },
+            enablingAutopilotSourcesNotAllowed: function () {
+                return !$scope.enablingAutopilotSourcesAllowed;
             },
             disabled: false
         },
@@ -177,6 +182,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'A media source where your content is being promoted.',
             order: true,
             initialOrder: 'asc'
+        },
+        {
+            nameCssClass: 'performance-icon',
+            field: 'performance',
+            unselectable: true,
+            checked: true,
+            type: 'icon-list',
+            totalRow: false,
+            help: 'Goal performance indicator',
+            order: true,
+            initialOrder: 'asc',
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance')
         },
         {
             name: 'Status',
@@ -572,6 +590,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.lastChange = data.lastChange;
                 $scope.dataStatus = data.dataStatus;
                 $scope.adGroupAutopilotState = data.adGroupAutopilotState;
+                $scope.enablingAutopilotSourcesAllowed = data.enabling_autopilot_sources_allowed;
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
                 $scope.campaignGoals = data.campaign_goals;
                 $scope.selectRows();
@@ -707,7 +726,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             return;
         }
 
-        api.adGroupOverview.get($state.params.id).then(
+        api.adGroupOverview.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;

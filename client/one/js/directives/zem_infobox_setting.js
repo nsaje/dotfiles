@@ -8,6 +8,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
         scope: {
             label: '=',
             value: '=',
+            internal: '=',
             valueDescription: '=',
             valueClass: '=',
             detailsVisible: '=',

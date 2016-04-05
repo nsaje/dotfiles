@@ -422,8 +422,6 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
 
-
-
     def test_empty_display_url_and_not_in_csv(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
@@ -484,6 +482,22 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
                                       [self.url, self.title, self.image_url, self.tracker_urls], []])
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
+
+    def test_csv_example_content_without_data(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Impression Trackers'],
+                                      [forms.EXAMPLE_CSV_CONTENT.split(',')])
+        form = self._init_form(csv_file, {})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
+
+    def test_csv_example_content_with_data(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Impression Trackers'],
+                                      [forms.EXAMPLE_CSV_CONTENT.split(','),
+                                       [self.url, self.title, self.image_url, self.description, self.tracker_urls],
+                                       forms.EXAMPLE_CSV_CONTENT.split(',')])
+        form = self._init_form(csv_file, {})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(len(form.cleaned_data['content_ads']), 1)
 
     def test_csv_impression_trackers_column(self):
         csv_file = self._get_csv_file(
