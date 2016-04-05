@@ -552,3 +552,203 @@ class CampaignGoalsTestCase(TestCase):
             ),
             constants.CampaignGoalPerformance.AVERAGE,
         )
+
+    def test_generate_series(self):
+        campaign = models.Campaign.objects.get(pk=1)
+
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+            primary=False,
+            campaign_id=1,
+            created_dt=datetime.date(2016, 1, 5),
+        )
+        cgv1 = models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal(5),
+            created_by=self.user,
+        )
+        cgv1.created_dt = datetime.date(2016, 1, 5)
+        cgv1.save()
+
+        cgv2 = models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal(10),
+            created_by=self.user,
+        )
+        cgv2.created_dt = datetime.date(2016, 1, 10)
+        cgv2.save()
+
+        metrics_basic = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 5),
+            datetime.date(2016, 1, 10),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 5), 5.0),
+                (datetime.date(2016, 1, 6), None),
+                (datetime.date(2016, 1, 7), None),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), None),
+                (datetime.date(2016, 1, 10), 10.0),
+            ]
+        }, metrics_basic)
+
+        metrics_basic_inner_1 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 6),
+            datetime.date(2016, 1, 10),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), None),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), None),
+                (datetime.date(2016, 1, 10), 10.0),
+            ]
+        }, metrics_basic_inner_1)
+
+        metrics_basic_inner_2 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 6),
+            datetime.date(2016, 1, 9),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), None),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), 5.0),
+            ]
+        }, metrics_basic_inner_2)
+
+        metrics_basic_cross_1 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 7),
+            datetime.date(2016, 1, 12),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 7), 5.0),
+                (datetime.date(2016, 1, 8), None),
+                (datetime.date(2016, 1, 9), None),
+                (datetime.date(2016, 1, 10), 10.0),
+                (datetime.date(2016, 1, 11), None),
+                (datetime.date(2016, 1, 12), 10.0),
+            ]
+        }, metrics_basic_cross_1)
+
+        metrics_basic_cross_2 = campaign_goals.get_campaign_goal_metrics(
+            campaign,
+            datetime.date(2016, 1, 3),
+            datetime.date(2016, 1, 7),
+        )
+
+        self.assertEqual({
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ): [
+                (datetime.date(2016, 1, 5), 5.0),
+                (datetime.date(2016, 1, 6), None),
+                (datetime.date(2016, 1, 7), 5.0),
+            ]
+        }, metrics_basic_cross_2)
+
+    def test_get_pre_campaign_goal_values(self):
+        # (campaign, date, conversion_goals=False):
+        date = datetime.date(2016, 1, 1)
+        campaign = models.Campaign.objects.get(pk=1)
+        pre_values = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            date,
+            conversion_goals=False
+        )
+        self.assertEqual({}, pre_values)
+
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+            primary=False,
+            campaign_id=1,
+            created_dt=datetime.date(2016, 1, 5),
+        )
+        cgv = models.CampaignGoalValue.objects.create(
+            campaign_goal=goal,
+            value=Decimal(5),
+            created_by=self.user,
+        )
+        cgv.created_dt = datetime.date(2016, 1, 5)
+        cgv.save()
+
+        pre_values_1 = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            datetime.datetime(2016, 1, 4),
+            conversion_goals=False
+        )
+        self.assertEqual({}, pre_values_1)
+
+        pre_values_2 = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            datetime.datetime(2016, 1, 5),
+            conversion_goals=False
+        )
+        self.assertEqual({}, pre_values_2)
+
+        pre_values_3 = campaign_goals.get_pre_campaign_goal_values(
+            campaign,
+            datetime.datetime(2016, 1, 6),
+            conversion_goals=False
+        )
+        self.assertTrue(goal.id in pre_values_3)
+        self.assertEqual(Decimal(5), pre_values_3[goal.id].value)
+
+    def test_generate_missing(self):
+        today = datetime.datetime.utcnow().date()
+        today_p15 = today + datetime.timedelta(days=15)
+
+        missing = campaign_goals.generate_missing(today, today_p15)
+        self.assertEqual(14, len(missing))
+        self.assertTrue([d[1] is None for d in missing])
+
+    def test_goal_name(self):
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+            primary=False,
+            campaign_id=1,
+        )
+        self.assertEqual(
+            constants.CampaignGoalKPI.get_text(
+                constants.CampaignGoalKPI.MAX_BOUNCE_RATE
+            ),
+            campaign_goals.goal_name(goal)
+        )
+
+        conv_goal = models.ConversionGoal.objects.create(
+            goal_id='123',
+            name='123',
+            type=3,
+            campaign_id=1,
+        )
+        goal = models.CampaignGoal.objects.create(
+            type=constants.CampaignGoalKPI.CPA,
+            primary=False,
+            campaign_id=1,
+            conversion_goal=conv_goal
+        )
+
+        self.assertEqual(
+            'conversion_goal_1',
+            campaign_goals.goal_name(goal, conversion_goals=[conv_goal])
+        )

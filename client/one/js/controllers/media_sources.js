@@ -476,7 +476,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function (group) {
+        $scope.chartData.groups.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }

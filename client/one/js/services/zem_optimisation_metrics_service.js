@@ -131,6 +131,10 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 column.unselectable = true;
             }
 
+            if (goals === undefined) {
+                return;
+            }
+
             goals.forEach(function (goal) {
                 if (goal.fields[column.field] === undefined) {
                     return;
