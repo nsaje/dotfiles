@@ -114,23 +114,16 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            autopilotEnabledValue: constants.adGroupSourceSettingsAutopilotState.ACTIVE,
-            autopilotPausedValue: constants.adGroupSourceSettingsAutopilotState.INACTIVE,
-            autopilotInternal: $scope.isPermissionInternal('zemauth.can_set_media_source_to_auto_pilot'),
-            autopilotShown: $scope.hasPermission('zemauth.can_set_media_source_to_auto_pilot'),
             internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
             shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             checked: true,
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
-            onChange: function (sourceId, value, autopilotValue) {
+            onChange: function (sourceId, value) {
                 var newSettings = {};
                 if (value) {
                     newSettings.state = value;
-                }
-                if (autopilotValue) {
-                    newSettings.autopilot_state = autopilotValue;
                 }
                 $scope.loadRequestInProgress = true;
                 $scope.autopilotChanges = '';

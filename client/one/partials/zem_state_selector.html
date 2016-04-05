@@ -1,9 +1,8 @@
 <div class="dropdown dropdown-small zem-state-selector" dropdown is-open="isOpen">
     <span ng-if="archived">Archived</span>
     <button ng-if="!archived" class="btn btn-default dropdown-toggle" dropdown-toggle>
-        <div ng-if="active && !autopilotActive" class="active-circle-icon"></div>
-        <div ng-if="!active && !autopilotActive" class="pause-icon"></div>
-        <div ng-if="autopilotActive" class="auto-pilot-icon"></div>
+        <div ng-if="active" class="active-circle-icon"></div>
+        <div ng-if="!active" class="pause-icon"></div>
         <div class="drop-arrow"></div>
     </button>
     <ul ng-if="isEditable" class="dropdown-menu enabled" dropdown-menu role="menu">
@@ -12,24 +11,14 @@
                 zem-lazy-popover-placement="right"
                 zem-lazy-popover-animation-class="fade"
                 zem-lazy-popover-append-to-body="true">
-            <a ng-click="setState(enabledValue, autopilotPausedValue)">
+            <a ng-click="setState(enabledValue)">
                 <div class="active-circle-icon"></div><span>Enabled</span>
             </a>
         </li>
         <li class="divider"></li>
         <li>
-            <a ng-click="setState(pausedValue, autopilotPausedValue)">
+            <a ng-click="setState(pausedValue)">
                 <div class="pause-icon"></div><span>Paused</span>
-            </a>
-        </li>
-        <li ng-if="autopilotShown" class="divider"></li>
-        <li ng-if="autopilotShown" ng-class="{disabled: !active}"
-                zem-lazy-popover-text="{{ active ? '' : 'Media Source must be enabled before enabling Auto-Pilot.' }}"
-                zem-lazy-popover-placement="right"
-                zem-lazy-popover-animation-class="fade"
-                zem-lazy-popover-append-to-body="true">
-            <a ng-click="setState(enabledValue, autopilotEnabledValue)">
-                <div class="auto-pilot-icon"></div><zem-internal-feature ng-if="autopilotInternal"></zem-internal-feature><span>Auto-Pilot</span>
             </a>
         </li>
     </ul>
