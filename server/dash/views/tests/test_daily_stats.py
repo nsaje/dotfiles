@@ -445,23 +445,23 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                         'id': 'time on site in seconds',
                         'name': 'time on site in seconds'
                     },
-                    'avg_cost_per_conversion_goal_1': {
+                    'conversion_goal_1': {
                         'id': 'conversion_goal_1',
                         'name': '$CPA (test conversion goal)'
                     },
-                    'avg_cost_per_conversion_goal_2': {
+                    'conversion_goal_2': {
                         'id': 'conversion_goal_2',
                         'name': '$CPA (test conversion goal 2)'
                     },
-                    'avg_cost_per_conversion_goal_3': {
+                    'conversion_goal_3': {
                         'id': 'conversion_goal_3',
                         'name': '$CPA (test conversion goal 3)'
                     },
-                    'avg_cost_per_conversion_goal_4': {
+                    'conversion_goal_4': {
                         'id': 'conversion_goal_4',
                         'name': '$CPA (test conversion goal 4)'
                     },
-                    'avg_cost_per_conversion_goal_5': {
+                    'conversion_goal_5': {
                         'id': 'conversion_goal_5',
                         'name': '$CPA (test conversion goal 5)'
                     },
@@ -604,23 +604,23 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                         'id': 'time on site in seconds',
                         'name': 'time on site in seconds'
                     },
-                    'avg_cost_per_conversion_goal_1': {
+                    'conversion_goal_1': {
                         'id': 'conversion_goal_1',
                         'name': '$CPA (test conversion goal)'
                     },
-                    'avg_cost_per_conversion_goal_2': {
+                    'conversion_goal_2': {
                         'id': 'conversion_goal_2',
                         'name': '$CPA (test conversion goal 2)'
                     },
-                    'avg_cost_per_conversion_goal_3': {
+                    'conversion_goal_3': {
                         'id': 'conversion_goal_3',
                         'name': '$CPA (test conversion goal 3)'
                     },
-                    'avg_cost_per_conversion_goal_4': {
+                    'conversion_goal_4': {
                         'id': 'conversion_goal_4',
                         'name': '$CPA (test conversion goal 4)'
                     },
-                    'avg_cost_per_conversion_goal_5': {
+                    'conversion_goal_5': {
                         'id': 'conversion_goal_5',
                         'name': '$CPA (Test Cg)'
                     },
@@ -759,23 +759,23 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'id': 'time on site in seconds',
                         'name': 'time on site in seconds'
                     },
-                    'avg_cost_per_conversion_goal_1': {
+                    'conversion_goal_1': {
                         'id': 'conversion_goal_1',
                         'name': '$CPA (test conversion goal)'
                     },
-                    'avg_cost_per_conversion_goal_2': {
+                    'conversion_goal_2': {
                         'id': 'conversion_goal_2',
                         'name': '$CPA (test conversion goal 2)'
                     },
-                    'avg_cost_per_conversion_goal_3': {
+                    'conversion_goal_3': {
                         'id': 'conversion_goal_3',
                         'name': '$CPA (test conversion goal 3)'
                     },
-                    'avg_cost_per_conversion_goal_4': {
+                    'conversion_goal_4': {
                         'id': 'conversion_goal_4',
                         'name': '$CPA (test conversion goal 4)'
                     },
-                    'avg_cost_per_conversion_goal_5': {
+                    'conversion_goal_5': {
                         'id': 'conversion_goal_5',
                         'name': '$CPA (test conversion goal 5)'
                     },
