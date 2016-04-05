@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
+    ACTION_CONTENT_APPROVAL = 'content_approval'
+    ACTION_LOCATION_TARGETING = 'location_targeting'
 
     help = "Sends email with ad groups that had location targeting changed"
 
@@ -24,27 +26,24 @@ class Command(ExceptionCommand):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
                             default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
         parser.add_argument('--action', metavar='ACTION', nargs=1, default=None,
-                            help='Manual action to be sent. Possible values: location_targeting, content_approval.')
+                            help='Manual actions to be sent. Possible values: [location_targeting | content_approval]')
 
     def handle(self, *args, **options):
         set_logger_verbosity(logger, options)
-
-        content_type = options['action']
-        if content_type == 'location_targeting':
+        action = options['action'][0]
+        if action == self.ACTION_LOCATION_TARGETING:
             subject, body = get_location_targeting_content()
-            if not body:
-                logger.info("No new location targeting settings to configure.")
-                return
-        elif content_type == 'content_approval':
+        elif action == self.ACTION_CONTENT_APPROVAL:
             subject, body = get_content_submission_content()
-            if not body:
-                logger.info("No new content to approve.")
-                return
         else:
-            logger.exception('Unrecognized action type.', type)
+            logger.error('Unrecognized action type - {}'.format(action))
             return
 
-        send_emails(content_type, options['email'], subject, body)
+        if not body:
+            logger.info("No new manual actions for type {action}.".format(action=action))
+            return
+
+        send_emails(action, options['email'], subject, body)
 
 
 OUTBRAIN_SOURCE_ID = 3
@@ -168,7 +167,7 @@ def is_ad_group_source_active(ad_group, ad_group_source):
 
 
 def get_campaign_name(ad_group_source):
-    u"{name} / {marketer_name} / {one_dash_url} / {supply_dash_url}".format(
+    return u"{name} / {marketer_name} / {one_dash_url} / {supply_dash_url}".format(
         name=ad_group_source.get_external_name(),
         marketer_name=get_outbrain_marketer_name(ad_group_source),
         one_dash_url=get_full_z1_url(
@@ -186,7 +185,7 @@ def get_outbrain_marketer_name(ad_group_source):
     return outbrain_account.marketer_name if outbrain_account and outbrain_account.marketer_name else 'n/a'
 
 
-def send_emails(content_type, email_list, subject, body):
+def send_emails(action, email_list, subject, body):
     if email_list:
         try:
             send_mail(
@@ -198,7 +197,7 @@ def send_emails(content_type, email_list, subject, body):
             )
         except Exception:
             logger.exception('Outbrain pending %s auto-generated e-mail to %s was not sent '
-                             'because an exception was raised', content_type, email_list)
+                             'because an exception was raised', action, email_list)
     else:
         logger.info(body)
 
