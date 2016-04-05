@@ -67,23 +67,6 @@ def _get_active_campaigns_subset(campaigns):
     return campaigns
 
 
-def get_yesterdays_clicks(ad_group_source):
-    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-    today = datetime.datetime(today.year, today.month, today.day)
-    yesterday = today - datetime.timedelta(days=1)
-    data = reports.api.query(
-        yesterday,
-        yesterday,
-        ['source'],
-        ad_group=ad_group_source.ad_group,
-        source=ad_group_source.source,
-    )
-    if data != [] and data[0]['clicks'] is not None:
-        return data[0]['clicks']
-    return 0
-
-
 def get_active_ad_groups(campaign):
     active_ad_groups = []
     for adg in campaign.adgroup_set.all():

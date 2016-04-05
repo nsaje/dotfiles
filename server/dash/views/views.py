@@ -1067,10 +1067,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
-        autopilot_form = forms.AdGroupSourceSettingsAutopilotStateForm(resource)
-        if 'autopilot_state' in resource and not autopilot_form.is_valid():
-            errors.update(autopilot_form.errors)
-
         if ad_group.campaign.is_in_landing():
             for key in resource.keys():
                 errors.update({key: 'Not allowed'})
@@ -1085,11 +1081,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     'retargeting on adgroup with retargeting enabled.'
                 }
             )
-
-        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
-                'autopilot_state' in resource and\
-                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
-            errors.update(exc.ForbiddenError(message='Not allowed'))
 
         campaign_settings = ad_group.campaign.get_current_settings()
         if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:

@@ -256,14 +256,6 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AdGroupSourceSettingsAutopilotStateForm(forms.Form):
-    autopilot_state = forms.TypedChoiceField(
-        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices(),
-        coerce=int,
-        empty_value=None
-    )
-
-
 class AccountAgencySettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
