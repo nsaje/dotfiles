@@ -509,7 +509,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     removable: removable,
                 };
 
-                console.log(legendItem.id);
                 if (legendItem.id === 'totals') {
                     legendItem.removable = false;
                     $scope.legendItems.unshift(legendItem);
