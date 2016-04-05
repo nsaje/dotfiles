@@ -29,23 +29,16 @@ describe('zemStateSelector', function () {
         spyOn(isolate, 'onChange');
 
         var testValues = [
-            [2, 2, '.enabled a div.pause-icon'],
-            [1, 2, '.enabled a div.active-circle-icon'],
-            [2, 2, '.enabled a div.active-circle-icon', isolate.enabledValue],
-            [1, 2, '.enabled a div.pause-icon', isolate.pausedValue]
+            [1, '.enabled a div.pause-icon', isolate.pausedValue],
+            [2, '.enabled a div.active-circle-icon', isolate.enabledValue],
         ];
 
         testValues.forEach(function (testRow) {
             isolate.value = testRow[0];
-            element.find(testRow[2]).click();
-            if (3 < testRow.length) {
-                expect(isolate.onChange).toHaveBeenCalledWith(
-                    isolate.id, testRow[3]);
-            } else {
-                expect(isolate.onChange).not.toHaveBeenCalled();
-            }
+            element.find(testRow[1]).click();
+            expect(isolate.onChange).toHaveBeenCalledWith(isolate.id, testRow[2]);
         });
 
-        expect(isolate.onChange.calls.count()).toEqual(4);
+        expect(isolate.onChange.calls.count()).toEqual(2);
     });
 });
