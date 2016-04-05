@@ -1948,7 +1948,7 @@ class PublishersTable(object):
             conversion_goals
         )
 
-        set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
+        # set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
 
         if order:
             publishers_data = sort_results(publishers_data, [order])
