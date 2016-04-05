@@ -49,6 +49,8 @@ def _get_ad_group_source_entities(source_types):
     ad_group_sources = (
         dash.models.AdGroupSource.objects
             .filter(ad_group_id__in=ad_group_ids)
+            .exclude(source__maintenance=True,
+                     source__deprecated=True)
             .values(
                 'id',
                 'ad_group_id',
@@ -60,8 +62,6 @@ def _get_ad_group_source_entities(source_types):
     if source_types:
         ad_group_sources = ad_group_sources.filter(
             source__source_type__type__in=source_types)
-    ad_group_sources = ad_group_sources.exclude(source__maintenance=True)
-    ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
 
     return accounts, campaigns, ad_groups, ad_group_sources
 
