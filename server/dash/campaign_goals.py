@@ -340,9 +340,9 @@ def calculate_goal_values(row, goal_type, cost):
         goal_name = ""
         while goal_index == 1 or goal_name in row:
             goal_name = 'conversion_goal_{}'.format(goal_index)
-            if goal_name in row:
+            if goal_name in row and row[goal_name]:
                 ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
-                    float(cost) / row[goal_name] if row[goal_name] else 0
+                    float(cost) / row[goal_name]
             goal_index += 1
     return ret
 
