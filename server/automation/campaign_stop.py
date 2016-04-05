@@ -65,7 +65,10 @@ def get_max_settable_daily_budget(ad_group_source):
     remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(
         ad_group_source.ad_group.campaign)
 
-    ags_max_daily_budget = max_daily_budget_per_ags[ad_group_source.id]
+    ags_max_daily_budget = 0
+    if ad_group_source.id in max_daily_budget_per_ags:  # ad group was running today
+        ags_max_daily_budget = max_daily_budget_per_ags[ad_group_source.id]
+
     other_sources_max_sum = sum(max_daily_budget_per_ags.values()) - ags_max_daily_budget
 
     max_today = decimal.Decimal(remaining_today + ags_max_daily_budget)\

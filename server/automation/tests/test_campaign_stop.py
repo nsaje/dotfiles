@@ -306,6 +306,12 @@ class GetMaxSettableDailyBudgetTestCase(TestCase):
         self.assertEqual(Decimal('0'),
                          campaign_stop.get_max_settable_daily_budget(dash.models.AdGroupSource.objects.get(id=3)))
 
+    @patch('utils.dates_helper.local_today')
+    def test_ad_group_not_running(self, mock_local_today):
+        mock_local_today.return_value = datetime.date(2016, 3, 15)
+        self.assertEqual(Decimal('370'),
+                         campaign_stop.get_max_settable_daily_budget(dash.models.AdGroupSource.objects.get(id=7)))
+
 
 class GetMaximumDailyBudgetTestCase(TestCase):
 
