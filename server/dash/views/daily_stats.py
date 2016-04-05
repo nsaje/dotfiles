@@ -114,7 +114,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         if can_see_conversion_goals and conversion_goals is not None:
             result['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name} for cg in conversion_goals]
 
-        can_see_campaign_goals = user.has_perm('zemauth.can_see_campaign_goals')
+        can_see_campaign_goals = user.has_perm('zemauth.campaign_goal_performance')
         if campaign is not None and can_see_campaign_goals:
             result['goal_fields'] = campaign_goals.inverted_campaign_goal_map(
                 conversion_goals

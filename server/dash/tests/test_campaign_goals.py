@@ -570,7 +570,6 @@ class CampaignGoalsTestCase(TestCase):
         cgv1.created_dt = datetime.date(2016, 1, 5)
         cgv1.save()
 
-
         cgv2 = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=Decimal(10),
@@ -632,7 +631,6 @@ class CampaignGoalsTestCase(TestCase):
                 (datetime.date(2016, 1, 9), 5.0),
             ]
         }, metrics_basic_inner_2)
-
 
         metrics_basic_cross_1 = campaign_goals.get_campaign_goal_metrics(
             campaign,
@@ -701,7 +699,6 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertEqual({}, pre_values_1)
 
-
         pre_values_2 = campaign_goals.get_pre_campaign_goal_values(
             campaign,
             datetime.datetime(2016, 1, 5),
@@ -717,13 +714,6 @@ class CampaignGoalsTestCase(TestCase):
         self.assertTrue(goal.id in pre_values_3)
         self.assertEqual(Decimal(5), pre_values_3[goal.id].value)
 
-    def test_campaign_goal_dp(self):
-        # (campaign_goal_value, override_date=None, override_value=None):
-        pass
-
-    def test_inverted_campaign_goal_map(self):
-        pass
-
     def test_generate_missing(self):
         today = datetime.datetime.utcnow().date()
         today_p15 = today + datetime.timedelta(days=15)
@@ -731,7 +721,6 @@ class CampaignGoalsTestCase(TestCase):
         missing = campaign_goals.generate_missing(today, today_p15)
         self.assertEqual(14, len(missing))
         self.assertTrue([d[1] is None for d in missing])
-
 
     def test_goal_name(self):
         goal = models.CampaignGoal.objects.create(
