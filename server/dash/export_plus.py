@@ -143,7 +143,6 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
     by_source = ('source' in dimensions)
     level = None
     settings = None
-
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
     elif 'ad_group' in dimensions:
