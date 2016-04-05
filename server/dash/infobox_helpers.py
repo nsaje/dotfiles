@@ -576,6 +576,9 @@ def get_adgroup_running_status(ad_group_settings):
     if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
 
+    if ad_group_settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
+        return dash.constants.InfoboxStatus.AUTOPILOT
+
     return dash.constants.InfoboxStatus.ACTIVE
 
 
