@@ -61,7 +61,7 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
 
     $scope.init = function () {
         $scope.export.frequency = $scope.exportSchedulingFrequencies[0];
-        $scope.export.type = $scope.options[0];
+        $scope.export.type = $scope.defaultOption;
         $scope.checkBreakdownAvailable();
     };
     $scope.init();
