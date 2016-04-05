@@ -358,6 +358,33 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name)
 
+    def test_get_campaign_goals(self):
+        source_id = 3
+        self._prepare_mock('source', source_id)
+        response = self.client.get(
+            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id], sources=True),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertFalse('goal_fields' in response_blob['data'])
+        self.assertFalse('campaign_goals' in response_blob['data'])
+
+        perm = authmodels.Permission.objects.get(codename='campaign_goal_performance')
+        self.user.user_permissions.add(perm)
+
+        self._prepare_mock('source', source_id)
+        response = self.client.get(
+            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id], sources=True),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertTrue('goal_fields' in response_blob['data'])
+        self.assertTrue('campaign_goals' in response_blob['data'])
+
 
 @patch('dash.stats_helper.reports.api_contentads.query')
 @patch('dash.stats_helper.reports.api_touchpointconversions.query')
