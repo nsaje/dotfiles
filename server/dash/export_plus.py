@@ -305,7 +305,9 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
         _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data, budgets=budgets,
                              projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings)
 
-    # Adjsut by day breakdown
+    if 'source' in stat:
+        stat['source'] = source_names[stat['source']]
+
     if 'date' in stat:
         _adjust_breakdown_by_day(start_date, stat)
 
@@ -323,7 +325,6 @@ def _populate_source_stat(stat, user=None, source_names=None):
         ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
         source=stat['source'])
     stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
-    stat['source'] = source_names[stat['source']]
 
 
 def _populate_model_stat(stat, dimensions=None, prefetched_data=None, budgets=None,
@@ -621,11 +622,14 @@ class AllAccountsExport(object):
         elif breakdown == 'ad_group':
             required_fields.extend(['account', 'campaign', 'ad_group'])
             dimensions.extend(['account', 'campaign', 'ad_group'])
-        if breakdown:
-            required_fields.extend(['status'])
 
+        if breakdown or by_source:
+            required_fields.extend(['status'])
         if include_model_ids:
             required_fields = _include_model_ids(required_fields)
+
+        required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
+        order = _adjust_ordering(order, dimensions)
 
         supported_settings_fields = ['default_account_manager', 'default_sales_representative']
         include_settings = breakdown == 'account' and \
@@ -649,8 +653,6 @@ class AllAccountsExport(object):
         if not include_budgets:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
-        required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-        order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
         results = _generate_rows(

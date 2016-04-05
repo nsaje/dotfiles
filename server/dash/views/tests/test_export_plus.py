@@ -681,6 +681,12 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
 AssertionError: '\xef\xbb\xbf"Start Date","End Date","Account","Campaign","Ad Group","Title","Image URL","URL","Status (2016-04-04)","Source","Average CPC","Clicks","Impressions"\r\n"2014-06-30","2014-07-01","","1","1","","","","Inactive","Taboola","10.230","103","100000"\r\n'
              != '\xef\xbb\xbf"Start Date","End Date","Account","Campaign","Ad Group","Title","Image URL","URL","Status (2016-04-04)","Source","Average CPC","Clicks","Impressions"\r\n"2014-06-30","2014-07-01","test account 1 \xc4\x8c\xc5\xbe\xc5\xa1","test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1","test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg","http://testurl.com","Active","Taboola","10.230","103","100000"\r\n'
 
+AssertionError: '\xef\xbb\xbf"Start Date","End Date","Account","Campaign","Ad Group","Title","Image URL","URL","Status (2016-04-04)","Source","Average CPC","Clicks","Impressions"\r\n"2014-06-30","2014-07-01","test account 1 \xc4\x8c\xc5\xbe\xc5\xa1","test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1","test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg","http://testurl.com","Active","4","10.230","103","100000"\r\n'
+                '\xef\xbb\xbf"Start Date","End Date","Account","Campaign","Ad Group","Title","Image URL","URL","Status (2016-04-04)","Source","Average CPC","Clicks","Impressions"\r\n"2014-06-30","2014-07-01","test account 1 \xc4\x8c\xc5\xbe\xc5\xa1","test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1","test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg","http://testurl.com","Active","Taboola","10.230","103","100000"\r\n'
+
+
+AssertionError: '\xef\xbb\xbf"Start Date","End Date","Source","Average CPC","Clicks","Impressions"\r\n"2014-06-30","2014-07-01","Outbrain","20.230","203","200000"\r\n"2014-06-30","2014-07-01","Taboola","10.230","103","100000"\r\n'
+                '\xef\xbb\xbf"Start Date","End Date","Status (2016-04-05)","Source","Average CPC","Clicks","Impressions"\r\n"2014-06-30","2014-07-01","Inactive","Outbrain","20.230","203","200000"\r\n"2014-06-30","2014-07-01","Inactive","Taboola","10.230","103","100000"\r\n'
 '''
 
 class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
@@ -998,6 +1004,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
             p.objects.filter.return_value.count.return_value = 1
             response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
+            'ad_group': True,
             'content_ad': True,
             'by_day': {
                 'content_ad': True
@@ -1011,6 +1018,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
             p.objects.filter.return_value.count.return_value = 1000
             response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
+            'ad_group': True,
             'content_ad': False,
             'by_day': {
                 'content_ad': False
@@ -1025,6 +1033,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
             p.objects.filter.return_value.count.return_value = 1
             response = export_plus.ExportAllowed().get(self.request, 'all_accounts')
         expected = {
+            'all_accounts': True,
             'account': True,
             'campaign': True,
             'ad_group': True,
