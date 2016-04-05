@@ -2167,10 +2167,11 @@ class PublishersTable(object):
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
         }
-        if user.has_perm('zemauth.view_pubs_postclick_stats'):
+        if user.has_perm('zemauth.view_pubs_postclick_acquisition'):
             result['visits'] = totals_data.get('visits', None)
             result['click_discrepancy'] = totals_data.get('click_discrepancy', None)
             result['pageviews'] = totals_data.get('pageviews', None)
+        if user.has_perm('zemauth.view_pubs_postclick_engagement'):
             result['new_visits'] = totals_data.get('new_visits', None)
             result['percent_new_users'] = totals_data.get('percent_new_users', None)
             result['bounce_rate'] = totals_data.get('bounce_rate', None)
