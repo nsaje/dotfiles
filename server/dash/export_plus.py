@@ -497,7 +497,6 @@ def _adjust_ordering(order, dimensions):
 
 def get_csv_content(fieldnames, data):
     output = StringIO.StringIO()
-    output.write(codecs.BOM_UTF8)
     writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
     writer.writerow(fieldnames)
     for item in data:
