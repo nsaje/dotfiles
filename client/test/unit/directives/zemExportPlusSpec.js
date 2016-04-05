@@ -4,9 +4,10 @@ describe('zemExportPlus', function () {
     var $scope, isolate, controller;
 
     beforeEach(module('one'));
-    var template = '<zem-export-plus start-date="test" end-date="test" base-url="test" options="test" columns="test" order="test" level="test" export-sources="false" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-export-plus>';
+    var template = '<zem-export-plus start-date="test" end-date="test" base-url="test" options="options" columns="test" order="test" level="test" export-sources="false" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-export-plus>';
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();
+        $scope.options = [{value: 1}, {value: 2, defaultOption: true}];
         $scope.isPermissionInternal = function () { return true; };
         $scope.hasPermission = function () { return true; };
 
@@ -17,6 +18,10 @@ describe('zemExportPlus', function () {
     }));
 
     describe('zemExportPlus', function () {
+        it('tests options', function () {
+            expect(isolate.defaultOption).not.toBe(undefined);
+            expect(isolate.defaultOption.value).toEqual(2);
+        });
         it('tests getAdditionalColumns', function () {
             isolate.columns = [
                 {field: 'cost', shown: true, checked: true, unselectable: false},
