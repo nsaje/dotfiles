@@ -408,8 +408,7 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
-    is_dependant_on_cost = goal_type in COST_DEPENDANT_GOALS
-    if is_dependant_on_cost and cost and metric_value is None:
+    if goal_type in COST_DEPENDANT_GOALS and cost and not metric_value:
         return constants.CampaignGoalPerformance.UNDERPERFORMING
     if planned_value is None or metric_value is None:
         return constants.CampaignGoalPerformance.AVERAGE
