@@ -17,12 +17,12 @@ class K1ApiTest(TestCase):
         response = self.client.get(
             reverse('k1api.get_ad_group_sources'),
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
 
         response = self.client.get(
             reverse('k1api.get_content_ad_sources'),
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
 
     def _test_ad_group_source_filter(self, mock_verify_wsgi_request, source_types=None):
         response = self.client.get(
