@@ -278,10 +278,10 @@ class CampaignSourcesTable(object):
         self.user = user
         helpers.get_campaign(user, id_)
         self.campaign = models.Campaign.objects.filter(id=int(id_)).\
-                        select_related('account').\
-                        prefetch_related('adgroup_set').\
-                        prefetch_related('conversiongoal_set').get()
-        
+            select_related('account').\
+            prefetch_related('adgroup_set').\
+            prefetch_related('conversiongoal_set').get()
+
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
@@ -347,8 +347,8 @@ class AdGroupSourcesTable(object):
         self.user = user
         helpers.get_ad_group(user, id_)
         self.ad_group = models.AdGroup.objects.filter(id=int(id_)).\
-                        select_related('campaign').\
-                        prefetch_related('campaign__conversiongoal_set').get()
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
         self.ad_group_settings = self.ad_group.get_current_settings()
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
@@ -1118,8 +1118,8 @@ class AdGroupAdsTable(object):
 
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-                   select_related('campaign').\
-                   prefetch_related('campaign__conversiongoal_set').get()
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
 
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -1187,8 +1187,8 @@ class AdGroupAdsPlusTableUpdates(object):
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-                   select_related('campaign').\
-                   prefetch_related('campaign__conversiongoal_set').get()
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
 
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1243,8 +1243,8 @@ class AdGroupAdsPlusTable(object):
 
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-                   select_related('campaign').\
-                   prefetch_related('campaign__conversiongoal_set').get()
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
 
@@ -1491,9 +1491,9 @@ class CampaignAdGroupsTable(object):
     def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived):
         helpers.get_campaign(user, campaign_id)
         campaign = models.Campaign.objects.filter(id=int(campaign_id)).\
-                   select_related('account').\
-                   prefetch_related('adgroup_set').\
-                   prefetch_related('conversiongoal_set').get()
+            select_related('account').\
+            prefetch_related('adgroup_set').\
+            prefetch_related('conversiongoal_set').get()
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
@@ -1937,10 +1937,9 @@ class PublishersTable(object):
 
         helpers.get_ad_group(user, id_)
         adgroup = models.AdGroup.objects.filter(id=int(id_)).\
-                  select_related('campaign').\
-                  prefetch_related('campaign__conversiongoal_set').get()
-        
-        
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
+
         constraints = {'ad_group': adgroup.id}
 
         size = max(min(int(size or 5), 4294967295), 1)
