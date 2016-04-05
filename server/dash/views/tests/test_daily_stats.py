@@ -290,6 +290,34 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
         self._assert_response(response, ad_group_id, ad_group.name)
 
+    def test_get_campaign_goals(self):
+        ad_group_id = 1
+
+        self._prepare_mock('ad_group', ad_group_id)
+        response = self.client.get(
+            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            self._get_params(selected_ids=[ad_group_id]),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertFalse('goal_fields' in response_blob['data'])
+        self.assertFalse('campaign_goals' in response_blob['data'])
+
+        perm = authmodels.Permission.objects.get(codename='campaign_goal_performance')
+        self.user.user_permissions.add(perm)
+
+        self._prepare_mock('ad_group', ad_group_id)
+        response = self.client.get(
+            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            self._get_params(selected_ids=[ad_group_id]),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertTrue('goal_fields' in response_blob['data'])
+        self.assertTrue('campaign_goals' in response_blob['data'])
+
 
 class AdGroupDailyStatsTest(BaseDailyStatsTest):
     def test_get_by_source(self):
