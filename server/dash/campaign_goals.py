@@ -413,7 +413,8 @@ def fetch_goals(campaign_ids, start_date, end_date):
         'values',
         queryset=dash.models.CampaignGoalValue.objects.filter(
             created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
-            created_dt__lt=end_date + datetime.timedelta(1),
+            created_dt__lt=datetime.datetime.combine(end_date + datetime.timedelta(1),
+                                                     datetime.datetime.min.time()),
         ).order_by('-created_dt')
     )
     return dash.models.CampaignGoal.objects.filter(campaign_id__in=campaign_ids).prefetch_related(
@@ -422,7 +423,8 @@ def fetch_goals(campaign_ids, start_date, end_date):
 
 
 def _prepare_performance_output(campaign_goal, stats, conversion_goals):
-    last_goal_value = campaign_goal.values.all().first()
+    goal_values = campaign_goal.values.all()
+    last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         cost = extract_cost(stats)
