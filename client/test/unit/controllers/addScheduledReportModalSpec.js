@@ -26,7 +26,7 @@ describe('AddScheduledReportModalCtrl', function () {
         $scope.baseUrl = 'test/';
         $scope.exportSchedulingFrequencies = [{value: 'weekly'}];
         $scope.options = [{value: 'view-csv'}];
-        $scope.defaultOption = $scope.options[0]
+        $scope.defaultOption = $scope.options[0];
         $scope.columns = [
             {field: 'cost', shown: true, checked: true, unselectable: false},
             {field: 'impressions', shown: true, checked: true, unselectable: false}

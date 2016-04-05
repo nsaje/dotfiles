@@ -25,7 +25,7 @@ describe('DownloadExportReportModalCtrl', function () {
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.options = [{value: 'view-csv'}];
-        $scope.defaultOption = $scope.options[0]
+        $scope.defaultOption = $scope.options[0];
         var $state = {params: {id: 1}};
         $scope.level = 0;
         $scope.exportSources = undefined;
