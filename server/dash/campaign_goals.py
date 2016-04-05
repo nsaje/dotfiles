@@ -73,6 +73,10 @@ EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
 DEFAULT_COST_COLUMN = 'media_cost'
 
+COST_DEPENDANT_GOALS = (
+    constants.CampaignGoalKPI.CPA,
+    constants.CampaignGoalKPI.CPC,
+)
 
 def get_performance_value(goal_type, metric_value, target_value):
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
@@ -404,7 +408,8 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
-    if goal_type == constants.CampaignGoalKPI.CPA and cost and metric_value is None:
+    is_dependant_on_cost = goal_type in COST_DEPENDANT_GOALS
+    if is_dependant_on_cost and cost and metric_value is None:
         return constants.CampaignGoalPerformance.UNDERPERFORMING
     if planned_value is None or metric_value is None:
         return constants.CampaignGoalPerformance.AVERAGE
@@ -434,9 +439,8 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     goal_values = campaign_goal.values.all()
     last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
-    cost = None
+    cost = extract_cost(stats)
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
-        cost = extract_cost(stats)
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         metric = stats.get(conversion_column, 0)
         metric_value = (cost / metric) if (metric and cost is not None) else None

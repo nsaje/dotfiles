@@ -303,7 +303,7 @@ class CampaignGoalsTestCase(TestCase):
         )
         self.assertEqual(
             [p[0] for p in performance],
-            [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE,
+            [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.UNDERPERFORMING,
              cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE]
         )
 
@@ -312,7 +312,7 @@ class CampaignGoalsTestCase(TestCase):
                                                            start_date, end_date, stats=stats)
         self.assertEqual(
             [p[0] for p in performance],
-            [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.AVERAGE,
+            [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.UNDERPERFORMING,
              cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE],
         )
 
