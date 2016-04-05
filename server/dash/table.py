@@ -107,7 +107,7 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
         if not colored_column:
             continue
         if goal.type == constants.CampaignGoalKPI.CPA:
-            colored_column = goal.conversion_goal.get_view_key(conversion_goals)
+            colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
         
         if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.HAPPY
