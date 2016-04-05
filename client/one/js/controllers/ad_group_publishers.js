@@ -442,6 +442,19 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         initialOrder: 'asc'
     },
     {
+        nameCssClass: 'performance-icon',
+        field: 'performance',
+        unselectable: true,
+        checked: true,
+        type: 'icon-list',
+        totalRow: false,
+        help: 'Goal performance indicator',
+        order: true,
+        initialOrder: 'asc',
+        internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+        shown: $scope.hasPermission('zemauth.campaign_goal_performance')
+    },
+    {
         name: 'Domain',
         field: 'domain',
         unselectable: false,

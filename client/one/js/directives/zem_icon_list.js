@@ -17,7 +17,9 @@ oneApp.directive('zemIconList', [function () {
         },
         templateUrl: '/partials/zem_icon_list.html',
         controller: ['$scope', function ($scope) {
-            $scope.iconFile = '';
+            $scope.iconFile = statusIcons[constants.emoticon.NEUTRAL];
+            $scope.iconClass = statusClasses[constants.emoticon.NEUTRAL];
+
             $scope.statusList = [];
             if (!$scope.statuses) {
                 return;
@@ -35,5 +37,4 @@ oneApp.directive('zemIconList', [function () {
             });
         }],
     };
-
 }]);
