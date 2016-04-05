@@ -192,3 +192,5 @@ BUDGET_RESERVE_FACTOR=0.05
 # Google Analytics authentication
 GA_CLIENT_EMAIL = ''
 GA_PRIVATE_KEY = ''
+
+QUERY_INSPECT_ENABLED = False
