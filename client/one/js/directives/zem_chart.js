@@ -277,7 +277,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     index += 1;
                 }
                 if (goal2 && $scope.metric2 && campaignGoals[goal2.id]) {
-                    metricIds.push($scope.metric2)
+                    metricIds.push($scope.metric2);
                 }
 
                 metricIds.forEach(function (metricId) {
