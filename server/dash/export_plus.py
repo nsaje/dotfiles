@@ -122,8 +122,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if not dimensions:
         stats = [stats]
 
-    source_names = {source.id: source.name for source in models.Source.objects.all()} \
-        if 'source' in dimensions else None
+    source_names = None
+    if 'source' in dimensions:
+        source_names = {source.id: source.name for source in models.Source.objects.all()}
 
     for stat in stats:
         _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
