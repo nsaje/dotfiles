@@ -78,6 +78,7 @@ COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPC,
 )
 
+
 def get_performance_value(goal_type, metric_value, target_value):
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
         performance = (2 * target_value - metric_value) / target_value
@@ -442,7 +443,7 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         metric = stats.get(conversion_column, 0)
-        metric_value = (cost / metric) if (metric and cost is not None) else None
+        metric_value = (float(cost) / metric) if (metric and cost is not None) else None
     else:
         metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
     return (
@@ -481,10 +482,10 @@ def get_campaign_goal_metrics(campaign, start_date, end_date):
             campaign_goal__conversion_goal__isnull=True,
             created_dt__gte=start_date,
             created_dt__lte=end_date,
-        ).order_by(
+    ).order_by(
             'campaign_goal__campaign',
             'created_dt',
-        ).select_related('campaign_goal')
+    ).select_related('campaign_goal')
 
     pre_cg_vals = get_pre_campaign_goal_values(
         campaign,
@@ -507,10 +508,10 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
             campaign_goal__conversion_goal__isnull=False,
             created_dt__gte=start_date,
             created_dt__lte=end_date,
-        ).order_by(
+    ).order_by(
             'campaign_goal__campaign',
             'created_dt',
-        ).select_related('campaign_goal')
+    ).select_related('campaign_goal')
 
     pre_cg_vals = get_pre_campaign_goal_values(
         campaign,
@@ -639,13 +640,13 @@ def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
             campaign_goal__campaign=campaign,
             created_dt__lt=date,
             campaign_goal__conversion_goal__isnull=not conversion_goals,
-        ).order_by(
+    ).order_by(
             'campaign_goal',
             '-created_dt',
-        ).distinct(
+    ).distinct(
             'campaign_goal',
             'created_dt'
-        ).select_related('campaign_goal')
+    ).select_related('campaign_goal')
     return {
         cgv.campaign_goal.id: cgv for cgv in campaign_goal_values
     }
