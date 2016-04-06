@@ -168,12 +168,10 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             $scope.$watch('data', function (newValue, oldValue) {
                 var i = 0,
                     data = newValue && newValue.groups,
-                    color = null,
                     seriesData = null,
                     metrics = null,
                     metricIds = null,
-                    seriesName = null,
-                    commonYAxis = null;
+                    seriesName = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
@@ -206,46 +204,20 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 clearUsedColors(data);
 
                 data.forEach(function (group) {
-                    color = getColor(group);
-                    addLegendItem(color, group, true);
-
-                    commonYAxis = true;
-                    metricIds.forEach(function (metricId, index) {
-                        if (commonYAxisMetricIds.indexOf(metricId) === -1) {
-                            commonYAxis = false;
-                        }
-                    });
-
-                    metricIds.forEach(function (metricId, index) {
-                        seriesData = group.seriesData[metricId] || [];
-                        if (seriesData.length) {
-                            $scope.hasData = true;
-                        }
-
-                        seriesData = transformDate(seriesData);
-                        seriesData = fillGaps(seriesData);
-
-                        seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
-                        $scope.config.series.unshift({
-                            name: seriesName,
-                            color: color[index],
-                            yAxis: commonYAxis ? 0 : index,
-                            data: seriesData,
-                            tooltip: {
-                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
-                            },
-                            marker: {
-                                radius: 3,
-                                symbol: 'square',
-                                fillColor: color[index],
-                                lineWidth: 2,
-                                lineColor: null
-                            }
-                        });
-                    });
+                    if (group.id !== "totals") {
+                        return;
+                    }
+                    updateSeries(group, metricIds);
                 });
 
                 updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
+
+                data.forEach(function (group) {
+                    if (group.id === "totals") {
+                        return;
+                    }
+                    updateSeries(group, metricIds);
+                });
 
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
@@ -260,6 +232,47 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     }
                 }
             });
+
+            var updateSeries = function (group, metricIds) {
+                var color = getColor(group),
+                    commonYAxis = null;
+                addLegendItem(color, group, true);
+
+                commonYAxis = true;
+                metricIds.forEach(function (metricId, index) {
+                    if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                        commonYAxis = false;
+                    }
+                });
+
+                metricIds.forEach(function (metricId, index) {
+                    var seriesData = group.seriesData[metricId] || [],
+                        seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
+                    if (seriesData.length) {
+                        $scope.hasData = true;
+                    }
+
+                    seriesData = transformDate(seriesData);
+                    seriesData = fillGaps(seriesData);
+
+                    $scope.config.series.unshift({
+                        name: seriesName,
+                        color: color[index],
+                        yAxis: commonYAxis ? 0 : index,
+                        data: seriesData,
+                        tooltip: {
+                            pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                        },
+                        marker: {
+                            radius: 3,
+                            symbol: 'square',
+                            fillColor: color[index],
+                            lineWidth: 2,
+                            lineColor: null
+                        }
+                    });
+                });
+            };
 
             var updateCampaignGoals = function (campaignGoals, fieldGoalMap) {
                 if (!campaignGoals || !fieldGoalMap) {
@@ -286,12 +299,11 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     var goal = fieldGoalMap[metricId],
                         series = transformDate(campaignGoals[goal.id]),
                         color = getColor(goal.id);
-
                     if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                         commonYAxis = false;
                     }
 
-                    addLegendItem(color, goal, false);
+                    addLegendItem(color, goal, false, metricIds.indexOf(metricId) + 1);
 
                     addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
                     index += 1;
@@ -319,7 +331,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     },
                 });
             };
-
 
             /////////////
             // helpers //
@@ -500,7 +511,10 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 return color;
             };
 
-            var addLegendItem = function (color, group, removable) {
+            var addLegendItem = function (color, group, removable, index) {
+                if (index === undefined) {
+                    index = $scope.legendItems.length;
+                }
                 var legendItem = {
                     id: group.id,
                     name: group.name,
@@ -520,7 +534,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                         }
                     });
                     if (!exists) {
-                        $scope.legendItems.push(legendItem);
+                        $scope.legendItems.splice(index, 0, legendItem);
                     }
                 }
             };
