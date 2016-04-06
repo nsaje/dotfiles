@@ -382,7 +382,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             return 'adgroup-status-inactive-icon';
         }
 
-        if (adGroup.autopilot_state !== constants.adGroupSettingsAutopilotState.INACTIVE) {
+        if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
+              adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
             return 'adgroup-status-autopilot-icon';
         }
 
