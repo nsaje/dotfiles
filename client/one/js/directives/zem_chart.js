@@ -297,15 +297,16 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
                 metricIds.forEach(function (metricId) {
                     var goal = fieldGoalMap[metricId],
-                        series = transformDate(campaignGoals[goal.id]),
-                        color = getColor(goal.id);
-                    if (commonYAxisMetricIds.indexOf(metricId) === -1) {
-                        commonYAxis = false;
-                    }
-
+                        color = getColor(goal);
                     addLegendItem(color, goal, false, metricIds.indexOf(metricId) + 1);
+                    campaignGoals[goal.id].forEach(function (rawSeries) {
+                        var series = transformDate(rawSeries);
+                        if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                            commonYAxis = false;
+                        }
+                        addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
+                    });
 
-                    addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
                     index += 1;
                 });
             };

@@ -538,11 +538,6 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
 
         if not cg_series.get(name):
             cg_series[name] = []
-        else:
-            cg_series[name] = cg_series[name] + generate_missing(
-                cg_series[name][-1][0],
-                cg_value.created_dt.date()
-            )
         cg_series[name].append(campaign_goal_dp(cg_value))
 
     # if starting campaign goal was defined before current range
@@ -550,84 +545,50 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
     # make sure to insert campaign goal value datapoints
     for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
         pre_cg = pre_cg_val.campaign_goal
-
         pre_name = goal_name(pre_cg, conversion_goals)
-
+        dp_to_preinsert = campaign_goal_dp(pre_cg_val, override_date=start_date)
         if pre_name not in cg_series:
-            cg_series[pre_name] = [
-                campaign_goal_dp(pre_cg_val, override_date=start_date),
-            ]
+            # in the case that the goal was set in distant past and never
+            # updated create two points in current date range
+            dp_to_postinsert = campaign_goal_dp(pre_cg_val, override_date=end_date)
+            cg_series[pre_name] = [dp_to_preinsert, dp_to_postinsert]
         else:
             first = cg_series[pre_name][0]
             if first[0] > pre_cg_val.created_dt.date():
-                cg_series[pre_name] = [
-                    campaign_goal_dp(pre_cg_val, override_date=start_date)
-                ] + generate_missing(
-                    start_date,
-                    first[0],
-                ) + cg_series[pre_name]
+                cg_series[pre_name] = [dp_to_preinsert] +\
+                    cg_series[pre_name]
 
     for name, last_cg_val in last_cg_vals.iteritems():
         if last_cg_val.created_dt.date() >= end_date:
             continue
-
-        cg_series[name] = cg_series[name] + generate_missing(
-            last_cg_val.created_dt.date(),
-            end_date,
-        )
-
         # duplicate last data point with date set to end date
         cg_series[name].append(
-            campaign_goal_dp(
-                last_cg_val,
-                override_date=end_date
-            ),
+            campaign_goal_dp(last_cg_val, override_date=end_date),
         )
-
-    # if current date range features no campaign goals and
-    # one was valid before current date range make sure
-    # to add on
-    for pre_cg_id, pre_cg_val in pre_cg_vals.iteritems():
-        pre_cg = pre_cg_val.campaign_goal
-
-        pre_name = goal_name(pre_cg, conversion_goals)
-
-        last_cg = cg_series[pre_name][-1]
-        if last_cg[0] < end_date:
-            cg_series[pre_name] = cg_series[pre_name] + generate_missing(
-                last_cg[0],
-                end_date,
-            )
-
-            # find last entry with value to duplicate at the end
-            val = None
-            for dp in cg_series[pre_name]:
-                if dp[1]:
-                    val = dp[1]
-
-            # duplicate last data point with date set to end date
-            cg_series[pre_name].append(
-                (end_date, val,)
-            )
-    return cg_series
+    return create_line_series(cg_series)
 
 
 def goal_name(goal, conversion_goals=None):
     if goal.conversion_goal is None:
         return constants.CampaignGoalKPI.get_text(goal.type)
-
     return 'avg_cost_per_{}'.format(goal.conversion_goal.get_view_key(conversion_goals))
 
 
-def generate_missing(from_date, end_date):
-    start_date = from_date + datetime.timedelta(days=1)
-    if start_date >= end_date:
-        return []
-
-    ret = []
-    for date in dates_helper.date_range(start_date, end_date):
-        ret.append((date, None,))
-    return ret
+def create_line_series(cg_series):
+    '''
+    For a nice display we need a sequence of series where each serie are just
+    duplicate points. This results in a sequence of horizontal lines
+    '''
+    new_series = {}
+    for name, dps in cg_series.iteritems():
+        new_series[name] = []
+        previous_dp = None
+        for index, dp in enumerate(dps):
+            if index > 0:
+                current_dp = (dp[0], previous_dp[1])
+                new_series[name].append([previous_dp, current_dp])
+            previous_dp = dp
+    return new_series
 
 
 def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
