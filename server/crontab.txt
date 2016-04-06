@@ -15,7 +15,6 @@
 */50 * * * *        /home/ubuntu/docker-manage-py.sh notify_depleted_budget_campaigns
 0 11 * * *          /home/ubuntu/docker-manage-py.sh vacuum_stats_db
 45 * * * *          /home/ubuntu/docker-manage-py.sh update_touchpoint_conversions_full
-10 9 * * *          /home/ubuntu/docker-manage-py.sh autopilot_adjust_media_source_bid_cpcs
 30 5,9,11 * * *     /home/ubuntu/docker-manage-py.sh fetch_reports_by_publisher
 0 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_content_approval_email
 0 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email --action=location_targeting
