@@ -20,7 +20,7 @@ class Command(ExceptionCommand):
     ACTION_CONTENT_APPROVAL = 'content_approval'
     ACTION_LOCATION_TARGETING = 'location_targeting'
 
-    help = "Sends email with ad groups that had location targeting changed"
+    help = "Sends email listing Outbrain pending manual actions"
 
     def add_arguments(self, parser):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
