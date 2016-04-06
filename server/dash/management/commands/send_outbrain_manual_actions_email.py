@@ -94,14 +94,14 @@ def get_location_targeting_content():
         {campaign_name}
         """).format(
                 location_targeting=setting,
-                campaign_name=campaign_names.join('\n')
+                campaign_name='\n'.join(campaign_names)
             )
         )
     date_str = datetime.date.today().strftime('%Y-%m-%d')
     subject = SUBJECT_LOCATION_TARGETING.format(date_str)
     body = BODY_LOCATION_TARGETING.format(
         date=date_str,
-        content=u'\n\n'.join(content) if content else u'(No new content)'
+        content=u'\n\n'.join(content)
     )
     return subject, body
 
@@ -116,7 +116,7 @@ def get_content_submission_content():
     subject = SUBJECT_CONTENT_APPROVALS.format(date_str)
     body = BODY_CONTENT_APPROVALS.format(
         date=date_str,
-        content=u'\n'.join(content) if content else u'(No new content)'
+        content=u'\n'.join(content)
     )
     return subject, body
 
