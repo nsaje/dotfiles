@@ -15,25 +15,27 @@ from utils.url_helper import get_full_z1_url
 
 logger = logging.getLogger(__name__)
 
+ACTION_CONTENT_APPROVAL = 'content_approval'
+ACTION_LOCATION_TARGETING = 'location_targeting'
+
 
 class Command(ExceptionCommand):
-    ACTION_CONTENT_APPROVAL = 'content_approval'
-    ACTION_LOCATION_TARGETING = 'location_targeting'
 
     help = "Sends email listing Outbrain pending manual actions"
 
     def add_arguments(self, parser):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
                             default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
-        parser.add_argument('--action', metavar='ACTION', nargs=1, default=None,
-                            help='Manual actions to be sent. Possible values: [location_targeting | content_approval]')
+        choices = [ACTION_LOCATION_TARGETING, ACTION_CONTENT_APPROVAL]
+        parser.add_argument('--action', metavar='ACTION', default=None, choices=choices,
+                            help='Manual actions to be sent. Available choices: '+', '.join(choices))
 
     def handle(self, *args, **options):
         set_logger_verbosity(logger, options)
-        action = options['action'][0]
-        if action == self.ACTION_LOCATION_TARGETING:
+        action = options['action']
+        if action == ACTION_LOCATION_TARGETING:
             subject, body = get_location_targeting_content()
-        elif action == self.ACTION_CONTENT_APPROVAL:
+        elif action == ACTION_CONTENT_APPROVAL:
             subject, body = get_content_submission_content()
         else:
             logger.error('Unrecognized action type - {}'.format(action))
@@ -137,7 +139,7 @@ def get_pending_location_targeting_settings():
             if setting not in target_regions_settings:
                 target_regions_settings[setting] = []
             target_regions_settings[setting].append(ad_group_source)
-    return actions
+    return target_regions_settings
 
 
 def get_ad_group_sources_with_content_submission_pending():
@@ -200,5 +202,3 @@ def send_emails(action, email_list, subject, body):
                              'because an exception was raised', action, email_list)
     else:
         logger.info(body)
-
-
