@@ -149,7 +149,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'start_date': settings.start_date,
                 'end_date': settings.end_date,
                 'cpc_cc':
-                    '{:.2f}'.format(settings.cpc_cc)
+                    '{:.3f}'.format(settings.cpc_cc)
                     if settings.cpc_cc is not None else '',
                 'daily_budget_cc':
                     '{:.2f}'.format(settings.daily_budget_cc)

@@ -86,7 +86,7 @@
             <div class="col-xs-2">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="No limit">
+                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input fraction-size="3" empty-text="No limit">
                 </div>
             </div>
             <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
