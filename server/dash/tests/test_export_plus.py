@@ -65,7 +65,7 @@ class ExportPlusTestCase(test.TestCase):
                 'ctr': 3.03,
                 'some_random_metric': 14,
                 'source': 3,
-                'is_archived': True
+                'archived': True
             }
         ]
 
@@ -219,7 +219,7 @@ class ExportPlusTestCase(test.TestCase):
             'impressions': 100000,
             'clicks': 103,
             'status': 1,
-            'is_archived': False
+            'archived': False
         }, {
             'account_id': 1,
             'campaign_id': 1,
@@ -244,7 +244,7 @@ class ExportPlusTestCase(test.TestCase):
             'impressions': 200000,
             'clicks': 203,
             'status': 2,
-            'is_archived': False
+            'archived': False
         }, {
             'account_id': 1,
             'campaign_id': 1,
@@ -269,7 +269,7 @@ class ExportPlusTestCase(test.TestCase):
             'impressions': 300000,
             'clicks': 303,
             'status': 2,
-            'is_archived': True
+            'archived': True
         }]
         self.assertEqual(rows, expectedRows)
 

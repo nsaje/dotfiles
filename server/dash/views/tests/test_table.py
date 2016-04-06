@@ -663,15 +663,16 @@ class AdGroupAdsPlusTableTest(TestCase):
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
         )
-        models.CampaignGoalValue.objects.create(
+        cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=self.mock_date,
         )
+        cgv.created_dt = self.mock_date
+        cgv.save()
         table.set_rows_goals_performance(self.user,
                                          stats,
                                          self.mock_date,
-                                         self.mock_date,
+                                         self.mock_date + datetime.timedelta(1),
                                          [ad_group.campaign])
 
         self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
@@ -685,11 +686,12 @@ class AdGroupAdsPlusTableTest(TestCase):
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
         )
-        models.CampaignGoalValue.objects.create(
+        cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=self.mock_date,
         )
+        cgv.created_dt = self.mock_date
+        cgv.save()
         table.set_rows_goals_performance(self.user,
                                          stats,
                                          self.mock_date,
@@ -986,6 +988,9 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -993,17 +998,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 7,
             'publisher': 'example.com',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1107,6 +1110,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'percent_new_users': 0.5,
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'avg_tos': 20,
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
@@ -1197,6 +1202,10 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -1204,17 +1213,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 7,
             'publisher': 'example.com',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1307,6 +1314,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
@@ -1533,6 +1542,10 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -1540,17 +1553,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 3,
             'publisher': 'test_1',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1658,6 +1669,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'pv_per_visit': 10,
             u'avg_tos': 20,
             u'conversion_goal_1': 0,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
@@ -1751,6 +1764,10 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -1758,17 +1775,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 7,
             'publisher': 'example.com',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1859,6 +1874,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,

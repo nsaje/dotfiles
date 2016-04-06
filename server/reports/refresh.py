@@ -290,7 +290,12 @@ def _get_b1_pub_data_s3_key(date):
     pub_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(pub_data_url)
     if not pub_data:
         raise exc.S3FileNotFoundError()
-    pub_data = next(iter(pub_data))
+    try:
+        pub_data = next(iter(pub_data))
+    except StopIteration:
+        statsd_helper.statsd_incr('reports.refresh.b1_pub_data.empty')
+        raise exc.S3FileEmpty("B1 publishers S3 data file is empty")
+
     return pub_data.name
 
 

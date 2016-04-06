@@ -910,9 +910,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 success(function (response, status) {
                     var chartData, conversionGoals;
                     if (response && response.data && response.data.chart_data) {
-                        chartData = response.data.chart_data.map(function (group) {
-                            return convertFromApi(group);
-                        });
+                        chartData = {
+                            groups: response.data.chart_data.map(function (group) {
+                                return convertFromApi(group);
+                            }),
+                            campaignGoals: response.data.campaign_goals,
+                            goalFields: response.data.goal_fields,
+                        };
                     }
                     if (response && response.data && response.data.conversion_goals) {
                         conversionGoals = response.data.conversion_goals;
@@ -1748,6 +1752,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var result = {
                 name: errors.name,
                 campaignGoal: errors.campaign_goal,
+                goals: errors.goals,
                 goalQuantity: errors.goal_quantity,
                 targetDevices: errors.target_devices,
                 targetRegions: errors.target_regions

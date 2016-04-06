@@ -166,14 +166,14 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             });
 
             $scope.$watch('data', function (newValue, oldValue) {
-                var i = 0;
-                var data = newValue;
-                var color = null;
-                var seriesData = null;
-                var metrics = null;
-                var metricIds = null;
-                var seriesName = null;
-                var commonYAxis = null;
+                var i = 0,
+                    data = newValue && newValue.groups,
+                    color = null,
+                    seriesData = null,
+                    metrics = null,
+                    metricIds = null,
+                    seriesName = null,
+                    commonYAxis = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
@@ -245,6 +245,8 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     });
                 });
 
+                updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
+
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
                 // no data to be displayed (or is always 0).
@@ -258,6 +260,59 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     }
                 }
             });
+
+            var updateCampaignGoals = function (campaignGoals, fieldGoalMap) {
+                if (!campaignGoals || !fieldGoalMap) {
+                    return;
+                }
+                var goal1 = fieldGoalMap[$scope.metric1],
+                    goal2 = fieldGoalMap[$scope.metric2],
+                    commonYAxis = true,
+                    metricIds = [],
+                    index = 0;
+
+                if (goal1 && $scope.metric1 && campaignGoals[goal1.id]) {
+                    metricIds.push($scope.metric1);
+                } else {
+                    index += 1;
+                }
+                if (goal2 && $scope.metric2 && campaignGoals[goal2.id]) {
+                    metricIds.push($scope.metric2);
+                }
+
+                metricIds.forEach(function (metricId) {
+                    var goal = fieldGoalMap[metricId],
+                        series = transformDate(campaignGoals[goal.id]),
+                        color = getColor(goal.id);
+                    if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                        commonYAxis = false;
+                    }
+                    addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
+                    index += 1;
+                });
+            };
+
+            var addGoalSeries = function (metricId, goalName, series, color, yAxisIndex) {
+                if (!goalName) {
+                    return;
+                }
+
+                $scope.config.series.push({
+                    name: goalName,
+                    color: color,
+                    yAxis: yAxisIndex,
+                    data: series,
+                    step: true,
+                    dashStyle: 'ShortDash',
+                    connectNulls: true,
+                    tooltip: {
+                        pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                    },
+                    marker: {
+                        enabled: false,
+                    },
+                });
+            };
 
 
             /////////////
@@ -334,7 +389,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 metricIds.forEach(function (metricId, index) {
                     format = metricFormats[metricId];
                     axisFormat = null;
-
                     if (format !== undefined) {
                         if (format.type === 'currency') {
                             axisFormat = '${value}';
