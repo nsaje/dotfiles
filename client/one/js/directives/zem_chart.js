@@ -207,7 +207,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
                 data.forEach(function (group) {
                     color = getColor(group);
-                    addLegendItem(color, group);
+                    addLegendItem(color, group, true);
 
                     commonYAxis = true;
                     metricIds.forEach(function (metricId, index) {
@@ -277,16 +277,22 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     index += 1;
                 }
                 if (goal2 && $scope.metric2 && campaignGoals[goal2.id]) {
-                    metricIds.push($scope.metric2);
+                    if ($scope.metric2 !== $scope.metric1) {
+                        metricIds.push($scope.metric2);
+                    }
                 }
 
                 metricIds.forEach(function (metricId) {
                     var goal = fieldGoalMap[metricId],
                         series = transformDate(campaignGoals[goal.id]),
                         color = getColor(goal.id);
+
                     if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                         commonYAxis = false;
                     }
+
+                    addLegendItem(color, goal, false);
+
                     addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
                     index += 1;
                 });
@@ -494,18 +500,28 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 return color;
             };
 
-            var addLegendItem = function (color, group) {
+            var addLegendItem = function (color, group, removable) {
                 var legendItem = {
                     id: group.id,
                     name: group.name,
                     color1: color[0],
-                    color2: color[1]
+                    color2: color[1],
+                    removable: removable,
                 };
 
                 if (legendItem.id === 'totals') {
+                    legendItem.removable = false;
                     $scope.legendItems.unshift(legendItem);
                 } else {
-                    $scope.legendItems.push(legendItem);
+                    var exists = false;
+                    $scope.legendItems.forEach(function (legendItem) {
+                        if (legendItem.name === group.name) {
+                            exists = true;
+                        }
+                    });
+                    if (!exists) {
+                        $scope.legendItems.push(legendItem);
+                    }
                 }
             };
         }]
