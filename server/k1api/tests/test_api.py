@@ -123,7 +123,8 @@ class K1ApiTest(TestCase):
         for source_types, ad_groups in test_cases:
             self._test_content_ads_filters(mock_verify_wsgi_request, source_types, ad_groups)
 
-    def _test_content_ad_source_ids_filters(self, mock_verify_wsgi_request, source_types=None, source_content_ad_ids=None):
+    def _test_content_ad_source_ids_filters(self, mock_verify_wsgi_request, source_types=None,
+                                            source_content_ad_ids=None):
         query_params = urllib.urlencode({'source_type': source_types})
         response = self.client.generic(
             reverse('k1api.get_content_ad_sources') + '?' + query_params,
