@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config, zemDataSourceService) {
+oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$timeout', function (config, zemDataSourceService, $timeout) {
     function GridRow (type, level, data) {
         this.type = type;
         this.level = level;
@@ -30,8 +30,8 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
 
             $scope.rows = [];
             var columns = ['Name'];
-            for (var i = 0; i < 8; ++i) columns.push('Stat ' + (i + 1));
-            $scope.header = {columns: columns}
+            for (var i = 0; i < 19; ++i) columns.push('Stat ' + (i + 1));
+            $scope.header = {columns: columns};
             $scope.footer = {};
 
             $scope.load = function () {
@@ -40,6 +40,9 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
                         var totalDataRow = breakdown.rows[0];
                         $scope.footer = new GridRow($scope.GridRowType.STATS, 0, totalDataRow);
                         $scope.rows = $scope.parseBreakdown($scope.footer, totalDataRow.breakdown);
+                        $timeout(function () {
+                            $scope.$broadcast('dataLoaded');
+                        });
                     }
                 );
             };
@@ -51,6 +54,9 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
                         var idx = $scope.rows.indexOf(row);
                         rows.pop();
                         $scope.rows.splice.apply($scope.rows, [idx, 0].concat(rows));
+                        $timeout(function () {
+                            $scope.$broadcast('dataLoaded');
+                        });
                     }
                 );
             };
