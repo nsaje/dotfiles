@@ -70,7 +70,7 @@ BODY_LOCATION_TARGETING = textwrap.dedent(u"""\
 
         Hi!
 
-        I'd like to ask you to set following location targeting:
+        I'd like to ask you to set the following location targeting:
 
         {content}
 
