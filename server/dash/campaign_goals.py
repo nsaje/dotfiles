@@ -583,11 +583,18 @@ def create_line_series(cg_series):
     for name, dps in cg_series.iteritems():
         new_series[name] = []
         previous_dp = None
+        value_differs = False
         for index, dp in enumerate(dps):
             if index > 0:
                 current_dp = (dp[0], previous_dp[1])
                 new_series[name].append([previous_dp, current_dp])
+                value_differs = previous_dp[1] != dp[1]
             previous_dp = dp
+
+        if value_differs:
+            date = dps[-1][0]
+            new_series[name].append([(date, dps[-1][1]), dps[-1]])
+
     return new_series
 
 
