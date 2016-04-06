@@ -773,6 +773,44 @@ class InfoBoxAccountHelpersTest(TestCase):
         new_campaign_settings.landing_mode = False
         new_campaign_settings.save(None)
 
+        # adgroup is active, sources are active and adgroup is on CPC autopilot
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            created_dt=datetime.datetime.utcnow(),
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        )
+        adgs.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            created_dt=datetime.datetime.utcnow(),
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        )
+        adgs.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
