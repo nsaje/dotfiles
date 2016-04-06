@@ -288,7 +288,8 @@ def _report_adgroups_data_to_statsd(ad_groups_settings):
         yesterday_spend = Decimal('0')
         for row in yesterday_data:
             if row['ad_group'] == ad_group_setting.ad_group.id:
-                yesterday_spend = Decimal(row.get('cost'))
+                cost = row.get('cost')
+                yesterday_spend = Decimal(cost) if cost else Decimal('0')
                 break
         if ad_group_setting.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             num_on_budget_ap += 1
