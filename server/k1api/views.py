@@ -1,4 +1,5 @@
 import collections
+import json
 import logging
 
 from django.views.decorators.csrf import csrf_exempt
@@ -196,6 +197,44 @@ def get_content_ad_sources(request):
     ad_group_ids = request.GET.getlist('ad_group')
     if ad_group_ids:
         contentadsources = contentadsources.filter(content_ad__ad_group_id__in=ad_group_ids)
+    source_types = request.GET.getlist('source_type')
+    if source_types:
+        contentadsources = contentadsources.filter(source__source_type__type__in=source_types)
+
+    data = {'content_ad_sources': list(contentadsources)}
+
+    return JsonResponse(data)
+
+
+@csrf_exempt
+def get_content_ad_source_mapping(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        # raise Http404
+        return JsonResponse({'error': 'b'}, status=400)
+
+    source_content_ad_ids = json.loads(request.body)
+    if not source_content_ad_ids or not isinstance(source_content_ad_ids, list):
+        return JsonResponse({
+            "error": "Body must be a list of source content ad ids."
+        }, status=400)
+
+    contentadsources = (
+        dash.models.ContentAdSource.objects
+        .filter(source_content_ad_id__in=source_content_ad_ids)
+        .annotate(
+            ad_group_id=F('content_ad__ad_group_id'),
+            source_name=F('source__name'),
+        )
+        .values(
+            'source_content_ad_id',
+            'content_ad_id',
+            'ad_group_id',
+            'source_name',
+        )
+    )
     source_types = request.GET.getlist('source_type')
     if source_types:
         contentadsources = contentadsources.filter(source__source_type__type__in=source_types)

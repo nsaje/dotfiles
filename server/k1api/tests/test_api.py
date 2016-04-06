@@ -1,6 +1,7 @@
 import itertools
 import json
 from mock import patch
+import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
@@ -119,5 +120,54 @@ class K1ApiTest(TestCase):
             ['1', '2'],
         ]
         test_cases = itertools.product(test_source_filters, test_ad_group_filters)
+        for source_types, ad_groups in test_cases:
+            self._test_content_ads_filters(mock_verify_wsgi_request, source_types, ad_groups)
+
+    def _test_content_ad_source_ids_filters(self, mock_verify_wsgi_request, source_types=None, source_content_ad_ids=None):
+        query_params = urllib.urlencode({'source_type': source_types})
+        response = self.client.generic(
+            reverse('k1api.get_content_ad_sources') + '?' + query_params,
+            data=json.dumps(source_content_ad_ids),
+            method='GET',
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+
+        returned_count = 0
+        for content_ad_source in data['content_ad_sources']:
+            returned_count += 1
+            db_cas = dash.models.ContentAdSource.objects.get(
+                id=content_ad_source['id'])
+            self.assertEqual(content_ad_source['source_content_ad_id'], db_cas.source_content_ad_id)
+            self.assertEqual(content_ad_source['content_ad_id'], db_cas.content_ad_id)
+            self.assertEqual(content_ad_source['ad_group_id'], db_cas.content_ad.ad_group_id)
+            self.assertEqual(content_ad_source['source_id'], db_cas.source_id)
+            self.assertEqual(content_ad_source['source_name'], db_cas.source.name)
+
+        contentadsources = dash.models.ContentAdSource.objects
+        if source_content_ad_ids:
+            contentadsources = contentadsources.filter(
+                source_content_ad_id__in=source_content_ad_ids)
+        if source_types:
+            contentadsources = contentadsources.filter(
+                source__source_type__type__in=source_types)
+        self.assertEqual(returned_count, contentadsources.count(), data)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ad_source_mapping(self, mock_verify_wsgi_request):
+        test_source_filters = [
+            [],
+            ['b1'],
+            ['b1', 'outbrain', 'yahoo'],
+        ]
+        test_source_content_ads = [
+            [],
+            ['987654321'],
+            ['987654321', '123456789'],
+        ]
+        test_cases = itertools.product(test_source_filters, test_source_content_ads)
         for source_types, ad_groups in test_cases:
             self._test_content_ads_filters(mock_verify_wsgi_request, source_types, ad_groups)

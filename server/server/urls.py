@@ -533,6 +533,11 @@ urlpatterns += patterns(
         k1api.views.get_content_ad_sources,
         name='k1api.get_content_ad_sources',
     ),
+    url(
+        r'^k1api/get_content_ad_source_mapping$',
+        k1api.views.get_content_ad_source_mapping,
+        name='k1api.get_content_ad_source_mapping',
+    ),
 )
 
 # Crossvalidation Api
