@@ -244,7 +244,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'target_regions': ['NC', '501'],
                     },
                     'settings': {
-                        'cpc_cc': '0.30',
+                        'cpc_cc': '0.300',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '1',
@@ -419,7 +419,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'target_regions': ['NC', '501'],
                     },
                     'settings': {
-                        'cpc_cc': '0.30',
+                        'cpc_cc': '0.300',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '10',
