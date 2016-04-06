@@ -298,12 +298,12 @@ class CampaignGoalsTestCase(TestCase):
                                                            start_date, end_date, stats=stats)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
-            [(10, Decimal('60.00000')), (0, Decimal('10.00000')), (None, None),
-             (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)],
+            [(10, Decimal('60.00000')), (0.5, Decimal('10.00000')), (None, None),
+             (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None)]
         )
         self.assertEqual(
             [p[0] for p in performance],
-            [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE,
+            [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.UNDERPERFORMING,
              cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE]
         )
 
@@ -312,7 +312,7 @@ class CampaignGoalsTestCase(TestCase):
                                                            start_date, end_date, stats=stats)
         self.assertEqual(
             [p[0] for p in performance],
-            [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.AVERAGE,
+            [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.UNDERPERFORMING,
              cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE],
         )
 

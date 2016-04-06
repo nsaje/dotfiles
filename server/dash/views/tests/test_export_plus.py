@@ -994,6 +994,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
             p.objects.filter.return_value.count.return_value = 1
             response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
+            'ad_group': True,
             'content_ad': True,
             'by_day': {
                 'content_ad': True
@@ -1007,6 +1008,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
             p.objects.filter.return_value.count.return_value = 1000
             response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
+            'ad_group': True,
             'content_ad': False,
             'by_day': {
                 'content_ad': False
@@ -1021,6 +1023,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
             p.objects.filter.return_value.count.return_value = 1
             response = export_plus.ExportAllowed().get(self.request, 'all_accounts')
         expected = {
+            'all_accounts': True,
             'account': True,
             'campaign': True,
             'ad_group': True,

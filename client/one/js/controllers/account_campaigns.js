@@ -34,9 +34,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     ];
 
     $scope.exportPlusOptions = [
-      {name: 'Current View', value: 'campaign-csv'},
-      {name: 'By Ad Group', value: 'adgroup-csv'},
-      {name: 'By Content Ad', value: 'contentad-csv'}
+      {name: 'By Account (totals)', value: constants.exportType.ACCOUNT},
+      {name: 'Current View', value: constants.exportType.CAMPAIGN, defaultOption: true},
+      {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
+      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.updateSelectedCampaigns = function (campaignId) {
