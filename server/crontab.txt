@@ -18,6 +18,8 @@
 10 9 * * *          /home/ubuntu/docker-manage-py.sh autopilot_adjust_media_source_bid_cpcs
 30 5,9,11 * * *     /home/ubuntu/docker-manage-py.sh fetch_reports_by_publisher
 0 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_content_approval_email
+0 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email --action=location_targeting
+0 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email --action=content_approval
 40 * * * *          /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
 0 7 * * *           /home/ubuntu/docker-manage-py.sh send_scheduled_export_reports
 */5 * * * *         /home/ubuntu/docker-manage-py.sh refresh_changed_contentadstats
