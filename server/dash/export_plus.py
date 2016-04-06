@@ -149,28 +149,38 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
     elif 'ad_group' in dimensions:
         level = 'ad_group'
         distinct_ad_groups = set(stat['ad_group'] for stat in stats)
+
         ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
         data = {ad_group.id: ad_group for ad_group in ad_group_qs}
+
+        if include_settings:
+            settings_qs = models.AdGroupSettings.objects \
+                        .filter(ad_group__in=distinct_ad_groups) \
+                        .group_current_settings()
+            settings = {s.ad_group_id: s for s in settings_qs}
     elif 'campaign' in dimensions:
         level = 'campaign'
         distinct_campaigns = set(stat['campaign'] for stat in stats)
+
         campaign_qs = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
         data = {c.id: c for c in campaign_qs}
+
         if include_settings:
             settings_qs = models.CampaignSettings.objects \
                 .filter(campaign__in=distinct_campaigns) \
                 .group_current_settings() \
                 .select_related('campaign_manager')
-            settings = {s.campaign.id: s for s in settings_qs}
+            settings = {s.campaign_id: s for s in settings_qs}
     elif 'account' in dimensions:
         level = 'account'
+        distinct_accounts = set(stat['account'] for stat in stats)
 
-        accounts = set(stat['account'] for stat in stats)
-        accounts_qs = models.Account.objects.filter(id__in=accounts)
+        accounts_qs = models.Account.objects.filter(id__in=distinct_accounts)
         data = {a.id: a for a in accounts_qs}
+
         if include_settings:
             settings_qs = models.AccountSettings.objects \
-                .filter(account__in=accounts) \
+                .filter(account__in=distinct_accounts) \
                 .group_current_settings() \
                 .select_related('default_account_manager', 'default_sales_representative')
             settings = {s.account_id: s for s in settings_qs}
@@ -335,15 +345,13 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None, budgets=No
         stat = _populate_content_ad_stat(stat, model)
     elif 'ad_group' in dimensions:
         model = prefetched_data[stat['ad_group']]
-        stat = _populate_ad_group_stat(stat, model, statuses=statuses)
+        stat = _populate_ad_group_stat(stat, model, statuses, settings=settings)
     elif 'campaign' in dimensions:
         model = prefetched_data[stat['campaign']]
-        stat = _populate_campaign_stat(stat, model,
-                                       settings=settings, statuses=statuses, budgets=budgets)
+        stat = _populate_campaign_stat(stat, model, statuses, settings=settings, budgets=budgets)
     elif 'account' in dimensions:
         model = prefetched_data[stat['account']]
-        stat = _populate_account_stat(stat, model, statuses,
-                                      settings=settings, projections=projections,
+        stat = _populate_account_stat(stat, model, statuses, settings=settings, projections=projections,
                                       budgets=budgets, flat_fees=flat_fees)
     elif not dimensions:
         stat = _populate_all_accounts_stat(stat, projections=projections, budgets=budgets, flat_fees=flat_fees)
@@ -360,21 +368,19 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
     stat['uploaded'] = content_ad.created_dt.date()
-
-    if content_ad.archived:
-        stat['status'] = constants.ExportPlusStatus.ARCHIVED
-    else:
-        stat['status'] = content_ad.state
-
+    stat['status'] = content_ad.state
+    stat['archived'] = content_ad.archived
     return stat
 
 
-def _populate_ad_group_stat(stat, ad_group, statuses):
+def _populate_ad_group_stat(stat, ad_group, statuses, settings=None):
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
     stat['status'] = statuses[ad_group.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
+    if settings and ad_group.id in settings:
+        stat['archived'] = settings[ad_group.id].archived
     stat['ad_group'] = ad_group.name
     return stat
 
@@ -382,9 +388,10 @@ def _populate_ad_group_stat(stat, ad_group, statuses):
 def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
-    if settings:
-        stat['campaign_manager'] = \
-            helpers.get_user_full_name_or_email(settings[campaign.id].campaign_manager, default_value=None)
+    if settings and campaign.id in settings:
+        setting = settings[campaign.id]
+        stat['campaign_manager'] = helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
+        stat['archived'] = setting.archived
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
@@ -397,12 +404,13 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
 
 def _populate_account_stat(stat, account, statuses, settings=None, projections=None,
                            budgets=None, flat_fees=None):
-    if settings and stat['account'] in settings:
-        setting = settings[stat['account']]
+    if settings and account.id in settings:
+        setting = settings[account.id]
         stat['default_account_manager'] = \
             helpers.get_user_full_name_or_email(setting.default_account_manager, default_value=None)
         stat['default_sales_representative'] = \
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
+        stat['archived'] = setting.archived
     if budgets:
         stat['budget'] = budgets[stat['account']].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
@@ -501,12 +509,13 @@ def get_csv_content(fieldnames, data):
     writer.writerow(fieldnames)
     for item in data:
         row = {}
+        archived = item.get('archived', False)
         for field in fieldnames.keys():
             formatted_value = item.get(field)
             formatted_value = _format_empty_value(formatted_value, field)
             formatted_value = _format_percentages(formatted_value, field)
             formatted_value = _format_decimals(formatted_value, field)
-            formatted_value = _format_statuses_and_dates(formatted_value, field)
+            formatted_value = _format_statuses_and_dates(formatted_value, field, archived)
             row[field] = formatted_value
 
         writer.writerow(row)
@@ -528,10 +537,12 @@ def _format_percentages(value, field):
     return value
 
 
-def _format_statuses_and_dates(value, field):
+def _format_statuses_and_dates(value, field, archived):
     if field == 'date':
         return value.strftime('%Y-%m-%d')
     elif field == 'status':
+        if archived:
+            value = constants.ExportPlusStatus.ARCHIVED
         return constants.ExportPlusStatus.get_text(value)
     return value
 
@@ -636,6 +647,10 @@ class AllAccountsExport(object):
         if not include_settings:
             exclude_fields.extend(supported_settings_fields)
 
+        if 'status' in required_fields:
+            # Settings are needed to get archived status
+            include_settings = True
+
         include_budgets = (
             any([
                 field in additional_fields
@@ -703,8 +718,8 @@ class AccountExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
 
-        include_settings = breakdown == 'campaign' and 'campaign_manager' in additional_fields
-        if not include_settings:
+        include_campaign_manager = breakdown == 'campaign' and 'campaign_manager' in additional_fields
+        if not include_campaign_manager:
             exclude_fields.append('campaign_manager')
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
@@ -720,7 +735,7 @@ class AccountExport(object):
             order,
             breakdown == 'content_ad',
             [],
-            include_settings=include_settings,
+            include_settings=True,
             include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
@@ -762,6 +777,7 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            include_settings=True,
             campaign=campaign,
             source=filtered_sources)
 
