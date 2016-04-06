@@ -26,7 +26,7 @@ CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.PAGES_PER_SESSION: lambda x: '{:.2f}'.format(x),
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: lambda x: '{:.2f} %'.format(x),
     constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
-    constants.CampaignGoalKPI.CPC: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.CPC: lambda x: utils.lc_helper.default_currency(x, places=3),
 }
 
 CAMPAIGN_GOAL_MAP = {
