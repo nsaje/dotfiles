@@ -150,12 +150,14 @@ class InfoboxStatus(ConstantBase):
     INACTIVE = 'inactive'
     STOPPED = 'stopped'
     LANDING_MODE = 'landing-mode'
+    AUTOPILOT = 'autopilot'
 
     _VALUES = {
         ACTIVE: 'Active',
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
-        LANDING_MODE: 'Landing Mode'
+        LANDING_MODE: 'Landing Mode',
+        AUTOPILOT: 'Auto-Pilot'
     }
 
 

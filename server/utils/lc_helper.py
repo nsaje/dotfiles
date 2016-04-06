@@ -1,8 +1,8 @@
 from decimal import Decimal
 
 
-def default_currency(number):
-    return format_currency(Decimal(number), places=2, curr='$')
+def default_currency(number, places=2):
+    return format_currency(Decimal(number), places=places, curr='$')
 
 
 def format_currency(value,

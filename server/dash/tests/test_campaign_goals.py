@@ -337,6 +337,7 @@ class CampaignGoalsTestCase(TestCase):
             },
         }
 
+        self.maxDiff = None
         goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, {'campaign': self.campaign},
                                                                start_date, end_date)
         self.assertEqual(goals_infobox, [
@@ -363,7 +364,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.NEUTRAL,
-                'value': '$0.10 CPC'
+                'value': '$0.100 CPC'
             }, {
                 'section_start': False,
                 'internal': False,
@@ -439,7 +440,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.NEUTRAL,
-                'value': '$0.10 CPC'
+                'value': '$0.100 CPC'
             }, {
                 'section_start': False,
                 'internal': False,
