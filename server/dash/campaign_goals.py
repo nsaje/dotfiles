@@ -616,7 +616,7 @@ def goal_name(goal, conversion_goals=None):
     if goal.conversion_goal is None:
         return constants.CampaignGoalKPI.get_text(goal.type)
 
-    return goal.conversion_goal.get_view_key(conversion_goals)
+    return 'avg_cost_per_{}'.format(goal.conversion_goal.get_view_key(conversion_goals))
 
 
 def generate_missing(from_date, end_date):
@@ -675,8 +675,8 @@ def inverted_campaign_goal_map(conversion_goals=None):
     for cg in conversion_goals:
         vk = cg.get_view_key(conversion_goals)
 
-        ret['{}'.format(vk)] = {
-            'id': vk,
+        ret['avg_cost_per_{}'.format(vk)] = {
+            'id': 'avg_cost_per_{}'.format(vk),
             'name': '{prefix} ({conversion_goal_name})'.format(
                 prefix=cpa_text,
                 conversion_goal_name=cg.name
