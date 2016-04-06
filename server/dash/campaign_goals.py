@@ -73,6 +73,11 @@ EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
 DEFAULT_COST_COLUMN = 'media_cost'
 
+COST_DEPENDANT_GOALS = (
+    constants.CampaignGoalKPI.CPA,
+    constants.CampaignGoalKPI.CPC,
+)
+
 
 def get_performance_value(goal_type, metric_value, target_value):
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
@@ -404,7 +409,7 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
-    if goal_type == constants.CampaignGoalKPI.CPA and cost and metric_value is None:
+    if goal_type in COST_DEPENDANT_GOALS and cost and not metric_value:
         return constants.CampaignGoalPerformance.UNDERPERFORMING
     if planned_value is None or metric_value is None:
         return constants.CampaignGoalPerformance.AVERAGE
@@ -434,12 +439,11 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     goal_values = campaign_goal.values.all()
     last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
-    cost = None
+    cost = extract_cost(stats)
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
-        cost = extract_cost(stats)
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         metric = stats.get(conversion_column, 0)
-        metric_value = (cost / metric) if (metric and cost is not None) else None
+        metric_value = (float(cost) / metric) if (metric and cost is not None) else None
     else:
         metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
     return (
@@ -478,10 +482,10 @@ def get_campaign_goal_metrics(campaign, start_date, end_date):
             campaign_goal__conversion_goal__isnull=True,
             created_dt__gte=start_date,
             created_dt__lte=end_date,
-        ).order_by(
+    ).order_by(
             'campaign_goal__campaign',
             'created_dt',
-        ).select_related('campaign_goal')
+    ).select_related('campaign_goal')
 
     pre_cg_vals = get_pre_campaign_goal_values(
         campaign,
@@ -504,10 +508,10 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
             campaign_goal__conversion_goal__isnull=False,
             created_dt__gte=start_date,
             created_dt__lte=end_date,
-        ).order_by(
+    ).order_by(
             'campaign_goal__campaign',
             'created_dt',
-        ).select_related('campaign_goal')
+    ).select_related('campaign_goal')
 
     pre_cg_vals = get_pre_campaign_goal_values(
         campaign,
@@ -636,13 +640,13 @@ def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
             campaign_goal__campaign=campaign,
             created_dt__lt=date,
             campaign_goal__conversion_goal__isnull=not conversion_goals,
-        ).order_by(
+    ).order_by(
             'campaign_goal',
             '-created_dt',
-        ).distinct(
+    ).distinct(
             'campaign_goal',
             'created_dt'
-        ).select_related('campaign_goal')
+    ).select_related('campaign_goal')
     return {
         cgv.campaign_goal.id: cgv for cgv in campaign_goal_values
     }
