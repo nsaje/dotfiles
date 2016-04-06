@@ -290,7 +290,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                         commonYAxis = false;
                     }
-                    
+
                     addLegendItem(color, goal, false);
 
                     addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
@@ -515,7 +515,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 } else {
                     var exists = false;
                     $scope.legendItems.forEach(function (legendItem) {
-                        if (legendItem.name == group.name) {
+                        if (legendItem.name === group.name) {
                             exists = true;
                         }
                     });
