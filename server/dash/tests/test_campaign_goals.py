@@ -764,6 +764,6 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         self.assertEqual(
-            'conversion_goal_1',
+            'avg_cost_per_conversion_goal_1',
             campaign_goals.goal_name(goal, conversion_goals=[conv_goal])
         )
