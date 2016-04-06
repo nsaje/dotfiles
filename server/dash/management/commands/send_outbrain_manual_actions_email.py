@@ -42,7 +42,7 @@ class Command(ExceptionCommand):
             return
 
         if not body:
-            logger.info("No new manual actions for type {action}.".format(action=action))
+            logger.info("No new content for action {action}.".format(action=action))
             return
 
         send_emails(action, options['email'], subject, body)
