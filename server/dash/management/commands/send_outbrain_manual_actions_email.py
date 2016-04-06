@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 ACTION_CONTENT_APPROVAL = 'content_approval'
 ACTION_LOCATION_TARGETING = 'location_targeting'
+DEFAULT_EMAIL_RECIPIENTS = ['operations@zemanta.com', 'gregor.ratajc@zemanta.com', 'jure.polutnik@zemanta.com']
 
 
 class Command(ExceptionCommand):
@@ -24,8 +25,8 @@ class Command(ExceptionCommand):
     help = "Sends email listing Outbrain pending manual actions"
 
     def add_arguments(self, parser):
-        parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
-                            default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
+        parser.add_argument('--email', metavar='EMAIL', nargs='*', default=DEFAULT_EMAIL_RECIPIENTS,
+                            help='Reports receiver e-mail.')
         choices = [ACTION_LOCATION_TARGETING, ACTION_CONTENT_APPROVAL]
         parser.add_argument('--action', metavar='ACTION', default=None, choices=choices,
                             help='Manual actions to be sent. Available choices: '+', '.join(choices))
