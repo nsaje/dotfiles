@@ -605,6 +605,10 @@ class CampaignGoalsTestCase(TestCase):
                 constants.CampaignGoalKPI.MAX_BOUNCE_RATE
             ): [[
                     (datetime.date(2016, 1, 5), 5.0),
+                    (datetime.date(2016, 1, 6), 5.0),
+                    (datetime.date(2016, 1, 7), 5.0),
+                    (datetime.date(2016, 1, 8), 5.0),
+                    (datetime.date(2016, 1, 9), 5.0),
                     (datetime.date(2016, 1, 10), 5.0),
                 ], [
                     (datetime.date(2016, 1, 10), 10.0),
@@ -623,6 +627,9 @@ class CampaignGoalsTestCase(TestCase):
                 constants.CampaignGoalKPI.MAX_BOUNCE_RATE
             ): [[
                 (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), 5.0),
+                (datetime.date(2016, 1, 8), 5.0),
+                (datetime.date(2016, 1, 9), 5.0),
                 (datetime.date(2016, 1, 10), 5.0),
             ], [
                 (datetime.date(2016, 1, 10), 10.0),
@@ -641,6 +648,8 @@ class CampaignGoalsTestCase(TestCase):
                 constants.CampaignGoalKPI.MAX_BOUNCE_RATE
             ): [[
                 (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), 5.0),
+                (datetime.date(2016, 1, 8), 5.0),
                 (datetime.date(2016, 1, 9), 5.0),
             ]]
         }, metrics_basic_inner_2)
@@ -657,9 +666,12 @@ class CampaignGoalsTestCase(TestCase):
             ): [
                 [
                     (datetime.date(2016, 1, 7), 5.0),
+                    (datetime.date(2016, 1, 8), 5.0),
+                    (datetime.date(2016, 1, 9), 5.0),
                     (datetime.date(2016, 1, 10), 5.0),
                 ], [
                     (datetime.date(2016, 1, 10), 10.0),
+                    (datetime.date(2016, 1, 11), 10.0),
                     (datetime.date(2016, 1, 12), 10.0),
                 ]
             ]
@@ -676,6 +688,7 @@ class CampaignGoalsTestCase(TestCase):
                 constants.CampaignGoalKPI.MAX_BOUNCE_RATE
             ): [[
                 (datetime.date(2016, 1, 5), 5.0),
+                (datetime.date(2016, 1, 6), 5.0),
                 (datetime.date(2016, 1, 7), 5.0),
             ]]
         }, metrics_basic_cross_2)
