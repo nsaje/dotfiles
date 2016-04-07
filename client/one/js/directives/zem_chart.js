@@ -525,7 +525,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 };
 
                 if (legendItem.id === 'totals') {
-                    legendItem.removable = false;
                     $scope.legendItems.unshift(legendItem);
                 } else {
                     var exists = false;
