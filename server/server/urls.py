@@ -524,14 +524,14 @@ urlpatterns += patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^k1api/get_ad_group_sources$',
-        k1api.views.get_ad_group_sources,
-        name='k1api.get_ad_group_sources',
+        r'^k1api/get_accounts$',
+        k1api.views.get_accounts,
+        name='k1api.get_accounts',
     ),
     url(
-        r'^k1api/get_content_ad_sources$',
-        k1api.views.get_content_ad_sources,
-        name='k1api.get_content_ad_sources',
+        r'^k1api/get_source_credentials_for_reports_sync$',
+        k1api.views.get_source_credentials_for_reports_sync,
+        name='k1api.get_source_credentials_for_reports_sync',
     ),
     url(
         r'^k1api/get_content_ad_source_mapping$',

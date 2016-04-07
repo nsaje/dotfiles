@@ -139,6 +139,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         credentials: 'a'
+        sync_reports: True
         name: Credentials
         source: 1
     model: dash.sourcecredentials
@@ -148,6 +149,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         credentials: 'b'
+        sync_reports: True
         name: Credentials
         source: 2
     model: dash.sourcecredentials
@@ -157,6 +159,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         credentials: 'c'
+        sync_reports: True
         name: Credentials
         source: 3
     model: dash.sourcecredentials
@@ -166,6 +169,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         credentials: 'd'
+        sync_reports: False
         name: Credentials
         source: 4
     model: dash.sourcecredentials
@@ -175,6 +179,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         credentials: 'e'
+        sync_reports: False
         name: Credentials
         source: 5
     model: dash.sourcecredentials
@@ -184,6 +189,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         credentials: 'f'
+        sync_reports: False
         name: Credentials
         source: 6
     model: dash.sourcecredentials
