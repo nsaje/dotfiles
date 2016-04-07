@@ -1,6 +1,10 @@
 /*exported defaults, options*/
 
 var constants = {
+    /**
+     * Max. selected media sources in on sources tabs.
+     */
+    maxSelectedSources: 3,
     adGroupSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2,

@@ -43,7 +43,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.selectedSourceIds.push(sourceId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
@@ -80,6 +80,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     $scope.selectRows = function () {
+        console.log('test');
         $scope.rows.forEach(function (x) {
             x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
         });
