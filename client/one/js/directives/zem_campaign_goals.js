@@ -25,6 +25,9 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
             $scope.formatGoalValue = function (goal) {
                 var value = $filter('number')(goal.value, 2);
+                if (goal.type === constants.campaignGoalKPI.CPC) {
+                    value = $filter('number')(goal.value, 3);
+                }
                 switch (goal.type) {
                 case constants.campaignGoalKPI.TIME_ON_SITE:
                     return value + ' seconds';
