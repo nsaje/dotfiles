@@ -34,6 +34,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.selectedSourceIds.push(sourceId);
         }
 
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
