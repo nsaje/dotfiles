@@ -175,8 +175,13 @@ class OmnitureReportRow(ReportRow):
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
         self.bounce_rate_raw = omniture_row_dict.get('Bounce Rate')
+
         if omniture_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = (_report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) or 0) / 100
+            # only divide by 100 if bounce rate is indeed passed as percentage
+            if '%' in omniture_row_dict['Bounce Rate']:
+                self.bounce_rate = (_report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) or 0) / 100
+            else:
+                self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate']) or 0
         else:
             self.bounce_rate = 0
 
