@@ -32,7 +32,6 @@ telegraf:
     command: udp-recv:8135 -
     tty: true
 
-
 memcached:
     image: memcached
     expose:

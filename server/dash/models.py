@@ -1143,6 +1143,7 @@ class SourceCredentials(models.Model):
         null=False
     )
     credentials = models.TextField(blank=True, null=False)
+    sync_reports = models.BooleanField(default=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')

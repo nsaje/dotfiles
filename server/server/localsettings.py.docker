@@ -109,6 +109,9 @@ ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
 ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 
+# K1 API
+K1_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+
 # Source credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
 
