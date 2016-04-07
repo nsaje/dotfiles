@@ -971,3 +971,39 @@ Segment: All Visits (No Segment),,,,,,,,,,
 
         # all other unknown keys should be stripped away
         self.assertEqual({'Carts': 5}, entry.goals)
+
+    def test_parse_bounce_rate(self):
+        omniture_row_dict = {
+            'Bounces': '123',
+            'Unique Visits': '12',
+            'Carts': '22',
+            'Visits': '200',
+            'Revenue': '31'
+        }
+
+        row = parse_v2.OmnitureReportRow(omniture_row_dict, datetime.date(2016, 1, 1), None, None, None, None)
+        self.assertEquals(row.bounce_rate, 0.615)
+
+        omniture_row_dict = {
+            'Bounce Rate': '77%',
+            'Bounces': '123',
+            'Unique Visits': '12',
+            'Carts': '22',
+            'Visits': '200',
+            'Revenue': '31'
+        }
+
+        row = parse_v2.OmnitureReportRow(omniture_row_dict, datetime.date(2016, 1, 1), None, None, None, None)
+        self.assertEquals(row.bounce_rate, 0.77)
+
+        omniture_row_dict = {
+            'Bounce Rate': '0.78',
+            'Bounces': '123',
+            'Unique Visits': '12',
+            'Carts': '22',
+            'Visits': '200',
+            'Revenue': '31'
+        }
+
+        row = parse_v2.OmnitureReportRow(omniture_row_dict, datetime.date(2016, 1, 1), None, None, None, None)
+        self.assertEquals(row.bounce_rate, 0.78)
