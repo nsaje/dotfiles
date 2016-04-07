@@ -984,7 +984,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             account=account,
             start_date=start_date,
             end_date=end_date,
-            license_fee=0.1,
+            license_fee=Decimal('0.1'),
             amount=100,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             created_by=user,
