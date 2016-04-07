@@ -12,7 +12,9 @@ oneApp.directive('zemExportPlus', function () {
             columns: '=',
             order: '=',
             level: '=',
-            exportSources: '='
+            exportSources: '=',
+            hasPermission: '=zemHasPermission',
+            isPermissionInternal: '=zemIsPermissionInternal'
         },
         templateUrl: '/partials/zem_export_plus.html',
         controller: ['$scope', '$modal', function ($scope, $modal) {
@@ -23,6 +25,14 @@ oneApp.directive('zemExportPlus', function () {
                 name: 'Schedule',
                 value: 'schedule'
             }];
+
+            $scope.defaultOption = $scope.options[0];
+            for (var i = 1; i < $scope.options.length; ++i) {
+                if ($scope.options[i].defaultOption) {
+                    $scope.defaultOption = $scope.options[i];
+                    break;
+                }
+            }
 
             $scope.getAdditionalColumns = function () {
                 var exportColumns = [];

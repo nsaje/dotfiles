@@ -87,6 +87,73 @@ def get_conversion_pixels_last_sync(conversion_pixels):
     return datetime.datetime.utcnow()
 
 
+def _set_goal_meta_on_row(stat, performance, conversion_goals):
+    for goal_status, goal_metric, goal_value, goal in performance:
+        performance_item = {
+            'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
+            'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
+        }
+        if goal_value:
+            performance_item['text'] += ' (planned {})'.format(
+                campaign_goals.format_value(goal.type, goal_value)
+            )
+
+        stat['performance']['list'].append(performance_item)
+
+        if not goal.primary:
+            continue
+
+        colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
+        if goal.type == constants.CampaignGoalKPI.CPA:
+            colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
+        if not colored_column:
+            continue
+        
+        if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
+            stat['styles'][colored_column] = constants.Emoticon.HAPPY
+        elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+            stat['styles'][colored_column] = constants.Emoticon.SAD
+
+
+def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
+    if not user.has_perm('zemauth.campaign_goal_performance'):
+        return
+    campaign_goals_map = {}
+    campaign_id_map = {
+        c.pk: c for c in campaigns
+    }
+    all_campaign_goals = campaign_goals.fetch_goals(
+        [campaign.pk for campaign in campaigns], start_date, end_date
+    )
+    for goal in all_campaign_goals:
+        campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)
+
+    for stat in stats:
+        stat['performance'] = {'overall': None, 'list': []}
+        stat['styles'] = {}
+        if 'campaign' in stat:
+            campaign = campaign_id_map[stat['campaign']]
+        else:
+            campaign = campaigns[0]
+        goals = campaign_goals_map.get(campaign.pk)
+        if not goals:
+            continue
+        conversion_goals = campaign.conversiongoal_set.all()
+        performance = campaign_goals.get_goals_performance(
+            user, {'campaign': campaign}, start_date, end_date,
+            goals=goals, stats=stat, conversion_goals=conversion_goals
+        )
+
+        if not performance:
+            continue
+
+        stat['performance']['overall'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
+            min((p[0] for p in performance))
+        ]
+
+        _set_goal_meta_on_row(stat, performance, conversion_goals)
+
+
 class AllAccountsSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
@@ -212,7 +279,12 @@ class CampaignSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
         self.user = user
-        self.campaign = helpers.get_campaign(user, id_)
+        helpers.get_campaign(user, id_)
+        self.campaign = models.Campaign.objects.filter(id=int(id_)).\
+            select_related('account').\
+            prefetch_related('adgroup_set').\
+            prefetch_related('conversiongoal_set').get()
+
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
@@ -276,7 +348,10 @@ class AdGroupSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
         self.user = user
-        self.ad_group = helpers.get_ad_group(user, id_, select_related=True)
+        helpers.get_ad_group(user, id_)
+        self.ad_group = models.AdGroup.objects.filter(id=int(id_)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
         self.ad_group_settings = self.ad_group.get_current_settings()
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
@@ -481,8 +556,13 @@ class SourcesTable(object):
 
         ad_group_sources = level_sources_table.active_ad_group_sources
 
+        if level_ not in ('all_accounts', 'accounts', ):
+            campaign = kwargs.get('campaign') or kwargs['ad_group'].campaign
+            set_rows_goals_performance(user, sources_data, start_date, end_date, [campaign])
+
         rows = self.get_rows(
             id_,
+            level_,
             level_sources_table,
             user,
             sources,
@@ -500,6 +580,7 @@ class SourcesTable(object):
         totals = self.get_totals(
             ad_group_level,
             user,
+            level_,
             ad_group_sources,
             totals_data,
             sources_states,
@@ -509,7 +590,6 @@ class SourcesTable(object):
         )
 
         if user.has_perm('zemauth.campaign_goal_optimization') and\
-                user.has_perm('zemauth.can_view_actual_costs') and\
                 level_ in ('ad_groups', 'campaigns'):
             if level_ == 'ad_groups':
                 campaign = level_sources_table.ad_group.campaign
@@ -533,12 +613,14 @@ class SourcesTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
+        conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports') and hasattr(level_sources_table, 'conversion_goals'):
-            # only on ad group and campaign level
-            response['conversion_goals'] = [
+            conversion_goals_lst = [
                 {'id': cg.get_view_key(level_sources_table.conversion_goals), 'name': cg.name}
                 for cg in level_sources_table.conversion_goals
             ]
+            # only on ad group and campaign level
+            response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = level_sources_table.get_data_status(user)
@@ -558,13 +640,18 @@ class SourcesTable(object):
                 )
             response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
+            response['enabling_autopilot_sources_allowed'] = helpers.enabling_autopilot_sources_allowed(
+                level_sources_table.ad_group_settings)
+
         if user.has_perm('zemauth.campaign_goal_optimization') and\
                 level_ in ('ad_groups', 'campaigns'):
             if level_ == 'ad_groups':
                 campaign = level_sources_table.ad_group.campaign
             elif level_ == 'campaigns':
                 campaign = level_sources_table.campaign
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
@@ -581,6 +668,7 @@ class SourcesTable(object):
     def get_totals(self,
                    ad_group_level,
                    user,
+                   level_,
                    ad_group_sources,
                    totals_data,
                    sources_states,
@@ -589,6 +677,8 @@ class SourcesTable(object):
                    yesterday_cost):
         result = {}
         helpers.copy_stats_to_row(totals_data, result)
+        if level_ in ('ad_groups', 'campaigns'):
+            campaign_goals.copy_fields(user, totals_data, result)
         result['yesterday_cost'] = yesterday_cost
 
         if user.has_perm('zemauth.can_view_effective_costs'):
@@ -623,6 +713,7 @@ class SourcesTable(object):
     def get_rows(
             self,
             id_,
+            level_,
             level_sources_table,
             user,
             sources,
@@ -688,6 +779,8 @@ class SourcesTable(object):
                 del row['yesterday_cost']
 
             helpers.copy_stats_to_row(source_data, row)
+            if level_ in ('ad_groups', 'campaigns'):
+                campaign_goals.copy_fields(user, source_data, row)
 
             if ad_group_level:
                 bid_cpc_value = states[0].cpc_cc if len(states) == 1 else None
@@ -708,7 +801,7 @@ class SourcesTable(object):
                     ad_group_settings,
                     source_settings,
                     user,
-                    allowed_sources,
+                    allowed_sources
                 )
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
@@ -1026,7 +1119,10 @@ class AdGroupAdsTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
 
-        ad_group = helpers.get_ad_group(user, ad_group_id)
+        helpers.get_ad_group(user, ad_group_id)
+        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
 
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -1092,7 +1188,10 @@ class AdGroupAdsTable(object):
 class AdGroupAdsPlusTableUpdates(object):
 
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
-        ad_group = helpers.get_ad_group(user, ad_group_id)
+        helpers.get_ad_group(user, ad_group_id)
+        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
 
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1145,7 +1244,10 @@ class AdGroupAdsPlusTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
-        ad_group = helpers.get_ad_group(user, ad_group_id)
+        helpers.get_ad_group(user, ad_group_id)
+        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
 
@@ -1169,7 +1271,16 @@ class AdGroupAdsPlusTable(object):
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
 
-        rows = self._get_rows(content_ads, stats, ad_group, has_view_archived_permission, show_archived)
+        set_rows_goals_performance(user, stats, start_date, end_date, [ad_group.campaign])
+
+        rows = self._get_rows(
+            content_ads,
+            stats,
+            ad_group,
+            has_view_archived_permission,
+            show_archived,
+            user
+        )
 
         batches = []
         if user.has_perm('zemauth.content_ads_bulk_actions'):
@@ -1219,8 +1330,7 @@ class AdGroupAdsPlusTable(object):
 
         total_row = self._get_total_row(user, total_stats)
 
-        if user.has_perm('zemauth.campaign_goal_optimization') and\
-                user.has_perm('zemauth.can_view_actual_costs'):
+        if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = ad_group.campaign
             totals_cost = campaign_goals.extract_cost(total_stats)
             rows = campaign_goals.create_goals(
@@ -1251,9 +1361,12 @@ class AdGroupAdsPlusTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
+        conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports'):
-            response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                            for cg in conversion_goals]
+            conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                    for cg in conversion_goals]
+
+            response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
@@ -1264,13 +1377,16 @@ class AdGroupAdsPlusTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = ad_group.campaign
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
     def _get_total_row(self, user, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
+        campaign_goals.copy_fields(user, stats, totals)
         return totals
 
     def _get_url(self, ad_group, content_ad, is_demo):
@@ -1288,7 +1404,7 @@ class AdGroupAdsPlusTable(object):
             content_ad_id=content_ad.id
         )
 
-    def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
+    def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived, user):
         stats = {s['content_ad']: s for s in stats}
         rows = []
 
@@ -1326,6 +1442,7 @@ class AdGroupAdsPlusTable(object):
                 'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)
+            campaign_goals.copy_fields(user, stat, row)
 
             if has_view_archived_permission:
                 row['archived'] = archived
@@ -1375,7 +1492,11 @@ class AdGroupAdsPlusTable(object):
 class CampaignAdGroupsTable(object):
 
     def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived):
-        campaign = helpers.get_campaign(user, campaign_id)
+        helpers.get_campaign(user, campaign_id)
+        campaign = models.Campaign.objects.filter(id=int(campaign_id)).\
+            select_related('account').\
+            prefetch_related('adgroup_set').\
+            prefetch_related('conversiongoal_set').get()
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
@@ -1423,10 +1544,14 @@ class CampaignAdGroupsTable(object):
                 filtered_sources
             ) if has_aggregate_postclick_permission(user) else False
 
-        ad_groups_status_dict = self.get_per_ad_group_running_status_dict(ad_groups, ad_groups_settings, filtered_sources)
+        ad_groups_status_dict = self.get_per_ad_group_running_status_dict(
+            ad_groups, ad_groups_settings, filtered_sources)
 
         e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources)
-        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources, actual=True)
+        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(
+            reports_api, campaign, filtered_sources, actual=True)
+
+        set_rows_goals_performance(user, stats, start_date, end_date, [campaign])
 
         rows = self.get_rows(
             user,
@@ -1450,8 +1575,7 @@ class CampaignAdGroupsTable(object):
             yesterday_total_cost
         )
 
-        if user.has_perm('zemauth.campaign_goal_optimization') and\
-                user.has_perm('zemauth.can_view_actual_costs'):
+        if user.has_perm('zemauth.campaign_goal_optimization'):
             totals_cost = campaign_goals.extract_cost(totals)
             rows = campaign_goals.create_goals(
                 campaign, rows
@@ -1473,10 +1597,13 @@ class CampaignAdGroupsTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         }
 
+        conversion_goals_lst = []
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
-            response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                            for cg in conversion_goals]
+            conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                    for cg in conversion_goals]
+
+            response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
@@ -1487,7 +1614,9 @@ class CampaignAdGroupsTable(object):
             )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
@@ -1593,7 +1722,7 @@ class CampaignAdGroupsTable(object):
             'enabled': True,
             'message': None
         }
-        if campaign.landing_mode:
+        if campaign.is_in_landing():
             state['enabled'] = False
             state['message'] = 'Please add additional budget to your campaign to make changes.'
         elif row['state'] == constants.AdGroupSettingsState.INACTIVE \
@@ -1615,7 +1744,8 @@ class AccountCampaignsTable(object):
             user.has_perm('zemauth.view_archived_entities')
 
         campaigns = models.Campaign.objects.all().filter_by_user(user).\
-            filter(account=account_id).filter_by_sources(filtered_sources)
+            filter(account=account_id).filter_by_sources(filtered_sources).\
+            prefetch_related('conversiongoal_set')
 
         campaigns_settings = models.CampaignSettings.objects\
             .filter(campaign__in=campaigns)\
@@ -1667,6 +1797,8 @@ class AccountCampaignsTable(object):
             ) if has_aggregate_postclick_permission(user) else False
 
         campaign_status_dict = self.get_per_campaign_running_status_dict(campaigns, filtered_sources)
+
+        set_rows_goals_performance(user, stats, start_date, end_date, campaigns)
 
         response = {
             'rows': self.get_rows(
@@ -1806,7 +1938,11 @@ class PublishersTable(object):
         if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        adgroup = helpers.get_ad_group(user, id_)
+        helpers.get_ad_group(user, id_)
+        adgroup = models.AdGroup.objects.filter(id=int(id_)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
+
         constraints = {'ad_group': adgroup.id}
 
         size = max(min(int(size or 5), 4294967295), 1)
@@ -1840,6 +1976,8 @@ class PublishersTable(object):
             conversion_goals
         )
 
+        set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
+
         if order:
             publishers_data = sort_results(publishers_data, [order])
 
@@ -1866,8 +2004,7 @@ class PublishersTable(object):
             totals_data,
         )
 
-        if user.has_perm('zemauth.campaign_goal_optimization') and\
-                user.has_perm('zemauth.can_view_actual_costs'):
+        if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = adgroup.campaign
             cost = campaign_goals.extract_cost(totals)
             rows = campaign_goals.create_goals(campaign, rows)
@@ -1888,15 +2025,19 @@ class PublishersTable(object):
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
 
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            campaign = adgroup.campaign
-            response['campaign_goals'] = campaign_goals.get_campaign_goals(campaign)
-
+        conversion_goals_lst = []
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
-            response['conversion_goals'] = [
+            conversion_goals_lst = [
                 {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
                 for cg in conversion_goals
             ]
+            response['conversion_goals'] = conversion_goals_lst
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            campaign = adgroup.campaign
+            response['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, conversion_goals_lst
+            )
 
         return response
 
@@ -2054,10 +2195,11 @@ class PublishersTable(object):
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
         }
-        if user.has_perm('zemauth.view_pubs_postclick_stats'):
+        if user.has_perm('zemauth.view_pubs_postclick_acquisition'):
             result['visits'] = totals_data.get('visits', None)
             result['click_discrepancy'] = totals_data.get('click_discrepancy', None)
             result['pageviews'] = totals_data.get('pageviews', None)
+        if user.has_perm('zemauth.view_pubs_postclick_engagement'):
             result['new_visits'] = totals_data.get('new_visits', None)
             result['percent_new_users'] = totals_data.get('percent_new_users', None)
             result['bounce_rate'] = totals_data.get('bounce_rate', None)
@@ -2073,6 +2215,7 @@ class PublishersTable(object):
             result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
+        campaign_goals.copy_fields(user, totals_data, result)
         if user.has_perm('zemauth.view_pubs_conversion_goals'):
             for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
                 result[key] = totals_data[key]
@@ -2129,6 +2272,10 @@ class PublishersTable(object):
             if user.has_perm('zemauth.view_pubs_conversion_goals'):
                 for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                     row[key] = publisher_data[key]
+            campaign_goals.copy_fields(user, publisher_data, row)
+            if 'performance' in publisher_data:
+                row['performance'] = publisher_data['performance']
+                row['styles'] = publisher_data.get('styles')
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']

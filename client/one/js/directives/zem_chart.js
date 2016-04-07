@@ -16,13 +16,13 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
         },
         templateUrl: '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {
-            var totalsColor = ['#009db2', '#c9eaef'];
-            var colors = [
-                ['#d35400', '#eebe9e'],
-                ['#1abc9c', '#d6f3ed'],
-                ['#34495e', '#d6dbdf'],
-                ['#f39c12', '#fdebd0']
-            ];
+            var totalsColor = ['#009db2', '#c9eaef'],
+                goalsColor = ['#f39c12', '#fdebd0'],
+                colors = [
+                    ['#d35400', '#eebe9e'],
+                    ['#1abc9c', '#d6f3ed'],
+                    ['#34495e', '#d6dbdf'],
+                ];
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
 
             var usedColors = {};
@@ -166,14 +166,12 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             });
 
             $scope.$watch('data', function (newValue, oldValue) {
-                var i = 0;
-                var data = newValue;
-                var color = null;
-                var seriesData = null;
-                var metrics = null;
-                var metricIds = null;
-                var seriesName = null;
-                var commonYAxis = null;
+                var i = 0,
+                    data = newValue && newValue.groups,
+                    seriesData = null,
+                    metrics = null,
+                    metricIds = null,
+                    seriesName = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
@@ -206,43 +204,19 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 clearUsedColors(data);
 
                 data.forEach(function (group) {
-                    color = getColor(group);
-                    addLegendItem(color, group);
+                    if (group.id !== 'totals') {
+                        return;
+                    }
+                    updateSeries(group, metricIds);
+                });
 
-                    commonYAxis = true;
-                    metricIds.forEach(function (metricId, index) {
-                        if (commonYAxisMetricIds.indexOf(metricId) === -1) {
-                            commonYAxis = false;
-                        }
-                    });
+                updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
 
-                    metricIds.forEach(function (metricId, index) {
-                        seriesData = group.seriesData[metricId] || [];
-                        if (seriesData.length) {
-                            $scope.hasData = true;
-                        }
-
-                        seriesData = transformDate(seriesData);
-                        seriesData = fillGaps(seriesData);
-
-                        seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
-                        $scope.config.series.unshift({
-                            name: seriesName,
-                            color: color[index],
-                            yAxis: commonYAxis ? 0 : index,
-                            data: seriesData,
-                            tooltip: {
-                                pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
-                            },
-                            marker: {
-                                radius: 3,
-                                symbol: 'square',
-                                fillColor: color[index],
-                                lineWidth: 2,
-                                lineColor: null
-                            }
-                        });
-                    });
+                data.forEach(function (group) {
+                    if (group.id === 'totals') {
+                        return;
+                    }
+                    updateSeries(group, metricIds);
                 });
 
                 // HACK: we need this in order to force the chart to display
@@ -259,6 +233,109 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 }
             });
 
+            var updateSeries = function (group, metricIds) {
+                var color = getColor(group),
+                    commonYAxis = null;
+                addLegendItem(color, group, true);
+
+                commonYAxis = true;
+                metricIds.forEach(function (metricId, index) {
+                    if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                        commonYAxis = false;
+                    }
+                });
+
+                metricIds.forEach(function (metricId, index) {
+                    var seriesData = group.seriesData[metricId] || [],
+                        seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
+                    if (seriesData.length) {
+                        $scope.hasData = true;
+                    }
+
+                    seriesData = transformDate(seriesData);
+                    seriesData = fillGaps(seriesData);
+
+                    $scope.config.series.unshift({
+                        name: seriesName,
+                        color: color[index],
+                        yAxis: commonYAxis ? 0 : index,
+                        data: seriesData,
+                        tooltip: {
+                            pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                        },
+                        marker: {
+                            radius: 3,
+                            symbol: 'square',
+                            fillColor: color[index],
+                            lineWidth: 2,
+                            lineColor: null
+                        }
+                    });
+                });
+            };
+
+            var updateCampaignGoals = function (campaignGoals, fieldGoalMap) {
+                if (!campaignGoals || !fieldGoalMap) {
+                    return;
+                }
+                var goal1 = fieldGoalMap[$scope.metric1],
+                    goal2 = fieldGoalMap[$scope.metric2],
+                    commonYAxis = true,
+                    metricIds = [],
+                    index = 0;
+
+                if (goal1 && $scope.metric1 && campaignGoals[goal1.id]) {
+                    metricIds.push($scope.metric1);
+                } else {
+                    index += 1;
+                }
+                if (goal2 && $scope.metric2 && campaignGoals[goal2.id]) {
+                    if ($scope.metric2 !== $scope.metric1) {
+                        metricIds.push($scope.metric2);
+                    }
+                }
+
+                metricIds.forEach(function (metricId) {
+                    var goal = fieldGoalMap[metricId],
+                        legendGoal = {
+                            id: goal.id,
+                            name: 'Goals',
+                        },
+                        colors = goalsColor;
+                    addLegendItem(colors, legendGoal, false, metricIds.indexOf(metricId) + 1);
+                    campaignGoals[goal.id].forEach(function (rawSeries) {
+                        var series = transformDate(rawSeries);
+                        if (commonYAxisMetricIds.indexOf(metricId) === -1) {
+                            commonYAxis = false;
+                        }
+                        addGoalSeries(metricId, 'Goal (' + goal.name + ')', series, colors[index], commonYAxis ? 0 : index);
+                    });
+
+                    index += 1;
+                });
+            };
+
+            var addGoalSeries = function (metricId, goalName, series, color, yAxisIndex) {
+                if (!goalName) {
+                    return;
+                }
+
+                $scope.config.series.push({
+                    name: goalName,
+                    color: color,
+                    yAxis: yAxisIndex,
+                    data: series,
+                    step: true,
+                    dashStyle: 'ShortDash',
+                    connectNulls: true,
+                    tooltip: {
+                        pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                    },
+                    marker: {
+                        enabled: false,
+                    },
+                });
+            };
 
             /////////////
             // helpers //
@@ -280,6 +357,18 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
             metricFormats[constants.chartMetric.AVG_TOS] = {'type': 'time', 'fractionSize': 1};
             metricFormats[constants.chartMetric.CLICK_DISCREPANCY] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.TOTAL_SECONDS] = {};
+            metricFormats[constants.chartMetric.TOTAL_PAGEVIEWS] = {};
+            metricFormats[constants.chartMetric.UNBOUNCED_VISITS] = {};
+            metricFormats[constants.chartMetric.COST_PER_SECOND] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_PAGEVIEW] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_UNBOUNCED_VISITOR] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_NEW_VISITOR] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_1] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_2] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_3] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_4] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_5] = {'type': 'currency', 'fractionSize': 2};
 
             var getMetricName = function (metricId) {
                 var name = null;
@@ -322,7 +411,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 metricIds.forEach(function (metricId, index) {
                     format = metricFormats[metricId];
                     axisFormat = null;
-
                     if (format !== undefined) {
                         if (format.type === 'currency') {
                             axisFormat = '${value}';
@@ -428,18 +516,30 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 return color;
             };
 
-            var addLegendItem = function (color, group) {
+            var addLegendItem = function (color, group, removable, index) {
+                if (index === undefined) {
+                    index = $scope.legendItems.length;
+                }
                 var legendItem = {
                     id: group.id,
                     name: group.name,
                     color1: color[0],
-                    color2: color[1]
+                    color2: color[1],
+                    removable: removable,
                 };
 
                 if (legendItem.id === 'totals') {
                     $scope.legendItems.unshift(legendItem);
                 } else {
-                    $scope.legendItems.push(legendItem);
+                    var exists = false;
+                    $scope.legendItems.forEach(function (legendItem) {
+                        if (legendItem.name === group.name) {
+                            exists = true;
+                        }
+                    });
+                    if (!exists) {
+                        $scope.legendItems.splice(index, 0, legendItem);
+                    }
                 }
             };
         }]

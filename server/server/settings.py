@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'actionlog',
     'reports',
     'zweiapi',
+    'k1api',
     'convapi',
     'raven.contrib.django.raven_compat',
     'automation',
@@ -224,7 +225,7 @@ if TESTING:
 
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
     Z3_API_IMAGE_URL = ''
-    Z3_API_THUMBNAIL_URL = ''
+    IMAGE_THUMBNAIL_URL = ''
 
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE

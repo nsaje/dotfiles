@@ -68,4 +68,55 @@ describe('MainCtrl', function () {
             expect(zemFullStoryService.identify).toHaveBeenCalledWith(user);
         });
     });
+
+    it('should change selected chart metric to default if view doesn\'t support it', function () {
+        var chartMetrics = [
+            {
+                value: constants.chartMetric.CLICKS,
+                shown: false,
+            },
+            {
+                value: constants.chartMetric.IMPRESSIONS,
+                shown: false,
+            },
+            {
+                value: 'SUPPORTED_METRIC_1',
+                shown: false,
+            },
+            {
+                value: 'SUPPORTED_METRIC_2',
+                shown: false,
+            },
+            {
+                value: 'ACTIVE_METRIC_1',
+                shown: true,
+            },
+            {
+                value: 'ACTIVE_METRIC_2',
+                shown: true,
+            },
+        ];
+
+        expect($scope.defaultChartMetrics('UNSUPPORTED_METRIC_1', 'UNSUPPORTED_METRIC_2', chartMetrics)).toEqual(
+            {
+                metric1: undefined,
+                metric2: undefined,
+            }
+        );
+
+        expect($scope.defaultChartMetrics('SUPPORTED_METRIC_1', 'SUPPORTED_METRIC_2', chartMetrics)).toEqual(
+            {
+                metric1: constants.chartMetric.CLICKS,
+                metric2: constants.chartMetric.IMPRESSIONS,
+            }
+        );
+
+
+        expect($scope.defaultChartMetrics('ACTIVE_METRIC_1', 'ACTIVE_METRIC_2', chartMetrics)).toEqual(
+            {
+                metric1: undefined,
+                metric2: undefined,
+            }
+        );
+    });
 });

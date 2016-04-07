@@ -108,6 +108,9 @@ ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
 ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 
+# K1 API
+K1_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+
 # Source credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
 
@@ -149,12 +152,12 @@ USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 
 Z3_API_IMAGE_URL = ''
-Z3_API_THUMBNAIL_URL = ''
+IMAGE_THUMBNAIL_URL = ''
 
 # QUEUES
 BROKER_TRANSPORT = 'sqs'
 BROKER_USER = AWS_ACCESS_KEY_ID
-BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY.get()
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
 
 BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
 

@@ -25,7 +25,7 @@
     <ul class="chart-legend">
         <li ng-repeat="item in legendItems">
             <div class="legend-item" style="background-color: {{ item.color1 }}; border: 1px solid {{ item.color1 }}">
-                <div class="btn-remove" ng-class="{disabled: item.id === null && legendItems.length === 1}" ng-click="onRemove({id: item.id})">
+                <div class="btn-remove" ng-class="{disabled: (item.id === null && legendItems.length === 1) || !item.removable }" ng-click="item.removable && onRemove({id: item.id})">
                     <img ng-src="{{ appConfig.static_url }}/one/img/x.svg">
                 </div>
                 <div class="text" style="background-color: {{ item.color2 }}">{{ item.name }}</div>

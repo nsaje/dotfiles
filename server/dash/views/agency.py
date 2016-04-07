@@ -7,11 +7,12 @@ from collections import OrderedDict
 from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_plus, autopilot_helpers
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -120,12 +121,27 @@ class AdGroupSettings(api_common.BaseApiView):
                 'sources': [s.name for s in unsupported_sources]
             }
             warnings['retargeting'] = retargeting_warning
+
+        if ad_group_settings.landing_mode:
+            warnings['end_date'] = {
+                'text': 'Your campaign has been switched to landing mode. '
+                'Please add the budget and continue to adjust settings by your needs. '
+                '<a href="{link}">Add budget</a>'.format(
+                    link=request.build_absolute_uri(
+                        '/campaigns/{campaign_id}/budget-plus/'.format(
+                            campaign_id=ad_group_settings.ad_group.campaign.id
+                        ),
+                    )
+                )
+            }
+
         return warnings
 
     def get_dict(self, settings, ad_group):
         result = {}
 
         if settings:
+            primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
             result = {
                 'id': str(ad_group.pk),
                 'name': ad_group.name,
@@ -133,7 +149,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'start_date': settings.start_date,
                 'end_date': settings.end_date,
                 'cpc_cc':
-                    '{:.2f}'.format(settings.cpc_cc)
+                    '{:.3f}'.format(settings.cpc_cc)
                     if settings.cpc_cc is not None else '',
                 'daily_budget_cc':
                     '{:.2f}'.format(settings.daily_budget_cc)
@@ -149,7 +165,8 @@ class AdGroupSettings(api_common.BaseApiView):
                     '{:.2f}'.format(settings.autopilot_daily_budget)
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
-                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group)
+                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
+                'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None
             }
 
         return result
@@ -283,7 +300,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        if ad_group.campaign.landing_mode:
+        if ad_group.campaign.is_in_landing():
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSettingsState.ACTIVE and \
@@ -357,9 +374,16 @@ class CampaignAgency(api_common.BaseApiView):
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
 
+            if new_settings.created_by is None and new_settings.system_user is not None:
+                changed_by = constants.SystemUserType.get_text(new_settings.system_user)
+            elif new_settings.created_by is None and new_settings.system_user is None:
+                changed_by = automation.settings.AUTOMATION_AI_NAME
+            else:
+                changed_by = new_settings.created_by.email
+
             history.append({
                 'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
+                'changed_by': changed_by,
                 'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
@@ -577,9 +601,12 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(request, new_settings, campaign, settings_form.cleaned_data)
         self.set_campaign(campaign, settings_form.cleaned_data)
 
-        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
-        helpers.log_and_notify_campaign_settings_change(campaign, current_settings, new_settings, request,
-                                                        constants.UserActionType.SET_CAMPAIGN_SETTINGS)
+        if current_settings.get_setting_changes(new_settings):
+            helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+            helpers.log_and_notify_campaign_settings_change(
+                campaign, current_settings, new_settings, request,
+                constants.UserActionType.SET_CAMPAIGN_SETTINGS
+            )
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign)
@@ -621,29 +648,38 @@ class CampaignSettings(api_common.BaseApiView):
                 conversion_goal, goal_added = campaign_goals.create_conversion_goal(
                     request,
                     conversion_form,
-                    campaign
+                    campaign,
+                    value=goal['value']
                 )
 
             else:
                 goal_form = forms.CampaignGoalForm(goal, campaign_id=campaign.pk)
                 errors.append(dict(goal_form.errors))
-                goal_added = campaign_goals.create_campaign_goal(request, goal_form, campaign)
+                goal_added = campaign_goals.create_campaign_goal(
+                    request, goal_form, campaign, value=goal['value']
+                )
 
             if is_primary:
                 new_primary_id = goal_added.pk
 
-            campaign_goals.add_campaign_goal_value(request, goal_added.pk, goal['value'])
+            campaign_goals.add_campaign_goal_value(
+                request, goal_added, goal['value'], campaign, skip_history=True
+            )
 
         for goal_id, value in changes['modified'].iteritems():
-            campaign_goals.add_campaign_goal_value(request, goal_id, value)
+            goal = models.CampaignGoal.objects.get(pk=goal_id)
+            campaign_goals.add_campaign_goal_value(request, goal, value, campaign)
 
         removed_goals = {goal['id'] for goal in changes['removed']}
         for goal_id in removed_goals:
-            campaign_goals.delete_campaign_goal(request, goal_id)
+            campaign_goals.delete_campaign_goal(request, goal_id, campaign)
 
         new_primary_id = new_primary_id or changes['primary']
         if new_primary_id and new_primary_id not in removed_goals:
-            campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+            try:
+                campaign_goals.set_campaign_goal_primary(request, campaign, new_primary_id)
+            except exc.ValidationError as error:
+                errors.append(str(error))
 
         return errors
 
@@ -918,7 +954,7 @@ class AccountAgency(api_common.BaseApiView):
         return non_removable_source_ids_list
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
-        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
+        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed).order_by('id')]
         media_sources = ', '.join(source_names)
         if len(source_names) > 1:
             msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)

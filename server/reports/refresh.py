@@ -31,9 +31,9 @@ logger = logging.getLogger(__name__)
 OB_RAW_PUB_DATA_S3_PREFIX = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/'
 B1_RAW_PUB_DATA_S3_URI = 'b1_publishers_raw/{year}/{month:02d}/{day:02d}/part-00000'
 
+RAW_PUB_POSTCLICK_DATA_S3_URI = 'publishers_postclick_raw/{year}/{month:02d}/{day:02d}/data.json'
+
 LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
-LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
-LOAD_OB_PUB_STATS_KEY_FMT = 'ob_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 
 CC_TO_NANO = 100000
@@ -222,7 +222,7 @@ def put_contentadstats_to_s3(date, campaign, rows):
         month=date.month,
         day=date.day,
         campaign_id=campaign.id,
-        ts=int(time.time()*1000)
+        ts=int(time.time() * 1000)
     )
     s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
     return s3_key
@@ -234,9 +234,54 @@ def put_pub_stats_to_s3(date, rows, key_fmt):
         year=date.year,
         month=date.month,
         day=date.day,
-        ts=int(time.time()*1000)
+        ts=int(time.time() * 1000)
     )
     s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
+    return s3_key
+
+
+def put_pub_postclick_stats_to_s3(date, entries):
+    if not entries:
+        return
+
+    s3_key = RAW_PUB_POSTCLICK_DATA_S3_URI.format(
+        year=date.year,
+        month=date.month,
+        day=date.day
+    )
+
+    data = {}
+    s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+    s3_list = s3.list(s3_key)
+    if not s3_list:
+        return
+
+    if list(s3_list):
+        json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
+        if json_data:
+            data = json.loads(json_data)
+
+    for entry in entries:
+        source = entry.source_param.lower()
+        if source.startswith("b1_"):
+            source = source.replace("b1_", "", 1)
+
+        key = u"{date}|{ad_group_id}|{publisher}|{source}".format(
+            date=entry.report_date,
+            ad_group_id=entry.ad_group_id,
+            publisher=entry.publisher_param.lower(),
+            source=source
+        )
+        data[key] = {
+            "visits": entry.visits,
+            "pageviews": entry.pageviews,
+            "new_visits": entry.new_visits,
+            "bounced_visits": entry.bounced_visits,
+            "total_time_on_site": entry.total_time_on_site,
+            "conversions": entry.goals,
+        }
+
+    s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, json.dumps(data))
     return s3_key
 
 
@@ -245,7 +290,12 @@ def _get_b1_pub_data_s3_key(date):
     pub_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(pub_data_url)
     if not pub_data:
         raise exc.S3FileNotFoundError()
-    pub_data = next(iter(pub_data))
+    try:
+        pub_data = next(iter(pub_data))
+    except StopIteration:
+        statsd_helper.statsd_incr('reports.refresh.b1_pub_data.empty')
+        raise exc.S3FileEmpty("B1 publishers S3 data file is empty")
+
     return pub_data.name
 
 
@@ -279,6 +329,33 @@ def _augment_pub_data_with_budgets(rows):
             row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_nano'])
         row['license_fee_nano'] = int(
             pct_license_fee * (row['effective_cost_nano'] + row.get('effective_data_cost_nano', 0)))
+
+
+def _augment_pub_data_with_postclick_stats(date, rows):
+    s3_key = RAW_PUB_POSTCLICK_DATA_S3_URI.format(
+        year=date.year,
+        month=date.month,
+        day=date.day
+    )
+
+    s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+    s3_list = s3.list(s3_key)
+    if not s3_list or not list(s3_list):
+        return
+
+    json_data = s3.get(s3_key)
+    if not json_data:
+        return
+
+    postclick_data = json.loads(json_data)
+    for row in rows:
+        key = u"{date}|{ad_group_id}|{publisher}|{source}".format(
+            date=date.isoformat(),
+            ad_group_id=row["adgroup_id"],
+            publisher=row["domain"].lower(),
+            source=row["exchange"].lower()
+        )
+        row.update(postclick_data.get(key, {}))
 
 
 def _get_raw_b1_pub_data(s3_key):
@@ -357,6 +434,7 @@ def _get_latest_pub_data(date):
 def process_publishers_stats(date):
     data = _get_latest_pub_data(date)
     _augment_pub_data_with_budgets(data)
+    _augment_pub_data_with_postclick_stats(date, data)
     return put_pub_stats_to_s3(date, data, LOAD_PUB_STATS_KEY_FMT)
 
 

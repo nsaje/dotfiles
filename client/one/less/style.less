@@ -219,7 +219,6 @@ a:visited {
     display: table;
     clear: left;
     margin: 10px 0px 0px 14px;
-    padding-bottom: 0px;
 
     .form-alert-exclamation {
         display: table-cell;
@@ -448,24 +447,43 @@ a:visited {
     }
 }
 
-.warning-paused {
+.tabset-label {
     margin-left: 8px;
     margin-top: 12px;
     display: inline-block;
-    color: #bd0a00;
     font-size: 12px;
 }
 
-.little-red-square {
+.warning-paused {
+    .tabset-label;
+    color: #bd0a00;
+}
+
+.info-landing-mode {
+    .tabset-label;
+    color: @default-color;
+}
+
+.tabset-icon {
     margin-left: 24px;
-    width: 9px;
-    height: 9px;
-    background-color: #bd0a00;
     display: inline-block;
     margin-top: 12px;
     border-radius: 2px;
 }
 
+.tabset-landing-mode-icon {
+    .tabset-icon;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+    width: 17px;
+    height: 10px;
+}
+
+.tabset-little-red-square {
+    .tabset-icon;
+    width: 9px;
+    height: 9px;
+    background-color: #bd0a00;
+}
 
 .input-group {
     .input-group-addon {
@@ -784,6 +802,11 @@ div[datepicker] {
     box-shadow: none;
 }
 
+img.zem-icon {
+    width: 16px;
+    height: 16px;
+}
+
 .graph-button {
     width: 34px;
     height: 34px;
@@ -904,6 +927,9 @@ div[datepicker] {
 
 .infobox-footer {
     height: 70px;
+    overflow-y: auto;
+    // due to scroller
+    margin-right: -5px;
 }
 
 .infobox-header-row {
@@ -979,6 +1005,15 @@ div[datepicker] {
     background-size: 18px 18px;
 }
 
+.infobox-autopilot-icon {
+    color: @infobox-black;
+    text-align: center;
+    background-image: url('img/auto_pilot_icon.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+
 .infobox-icon {
     width: 13px;
     height: 13px;
@@ -996,6 +1031,9 @@ div[datepicker] {
     display: table-cell;
     line-height: 16px;
     vertical-align: text-top;
+    &.primary .infobox-setting-value {
+        font-weight: bold;
+    }
 }
 
 .infobox-setting-label {
@@ -1432,6 +1470,54 @@ div[datepicker] {
     filter: alpha(opacity=20); /* For IE8 and earlier */
 }
 
+.table-icon div {
+    img.zem-icon {
+        width: 12px;
+        height: 12px;
+        margin-bottom: 4px;
+    }
+}
+
+.zem-table-row {
+    td:first-child {
+        border-left: 5px solid transparent;
+    }
+    &.happy {
+        td:first-child {
+            border-left: 5px solid #73BF44;
+        }
+    }
+    &.sad {
+        td:first-child {
+            border-left: 5px solid #CB2027;
+        }
+    }
+
+    .superperforming .zem-table-column-value {
+        color: #73BF44;
+    }
+
+    .underperforming .zem-table-column-value {
+        color: #CB2027;
+    }
+}
+
+ul.icon-list {
+    padding: 0;
+    list-style-type: none;
+}
+
+ul.icon-list li {
+    color: #888;
+    font-size: 13px;
+    line-height: 16px;
+
+    img.zem-icon {
+        width: 13px;
+        height: 13px;
+        margin-bottom: 5px;
+    }
+}
 
 .help-popover,
 .help-popover:hover,
@@ -1474,6 +1560,7 @@ div[datepicker] {
 }
 
 .select2-drop,
+.infobox-setting,
 .table-container {
      zem-internal-feature .internal {
         margin-right: 0.5em;
@@ -2448,6 +2535,24 @@ div[datepicker] {
     background-image: none !important;
 }
 
+.agency-history-popover-large {
+    max-width: 450px;
+
+    &.bottom {
+        margin-top: 0;
+        padding-top: 10px;
+        background: transparent;
+
+        & > .arrow {
+            top: 0;
+
+            &:after {
+                border-bottom-color: #2fa8c7;
+            }
+        }
+    }
+}
+
 .history-popover-table {
     display: table;
     table-layout: fixed;
@@ -2581,6 +2686,15 @@ div[datepicker] {
     background-image: url('img/data_status_icon.svg');
 }
 
+.performance-icon {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    background-size: 12px;
+    margin-bottom: -2px;
+    background-image: url('img/performance-column.svg');
+}
+
 .adgroup-status-icon-placeholder() {
     background-size: 10px;
     background-position: 10px;
@@ -2603,6 +2717,11 @@ div[datepicker] {
 .adgroup-status-stopped-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_paused_gray.svg');
+}
+
+.adgroup-status-autopilot-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/auto_pilot_icon.svg');
 }
 
 .adgroup-status-landing-mode-icon {
@@ -3723,6 +3842,25 @@ select.media-source-select {
 }
 
 .zem-campaign-goals {
+    img.zem-icon {
+        display: block;
+        margin: auto;
+        width: 12px;
+        height: 12px;
+
+        &.zem-icon-remove {
+            width: 10px;
+            height: 10px;
+        }
+        &.zem-icon-buttons-plus {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+
+            margin-bottom: 3px;
+        }
+    }
+
     .btn {
         .plus-sign {
             padding-right: 10px;
@@ -3805,20 +3943,8 @@ select.media-source-select {
                 }
             }
 
-            &.campaign-goal-edit {
+            &.campaign-goal-edit, &.campaign-goal-delete {
                 text-align: center;
-
-                .centered {
-                    height: 16px
-                }
-            }
-
-            &.campaign-goal-delete {
-                text-align: center;
-                
-                .centered {
-                    height: 16px
-                }
             }
 
             .center-area {
@@ -3827,6 +3953,7 @@ select.media-source-select {
                 bottom: 0;
                 left: 0;
                 right: 0;
+
                 padding-right: 2px;
 
                 &:before {
@@ -3840,6 +3967,10 @@ select.media-source-select {
                     display: inline-block;
                     vertical-align: middle;
                 }
+            }
+
+            &.campaign-goal-index .center-area {
+                padding-right: 5px;
             }
         }
     }

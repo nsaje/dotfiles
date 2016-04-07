@@ -26,6 +26,7 @@ describe('AddScheduledReportModalCtrl', function () {
         $scope.baseUrl = 'test/';
         $scope.exportSchedulingFrequencies = [{value: 'weekly'}];
         $scope.options = [{value: 'view-csv'}];
+        $scope.defaultOption = $scope.options[0];
         $scope.columns = [
             {field: 'cost', shown: true, checked: true, unselectable: false},
             {field: 'impressions', shown: true, checked: true, unselectable: false}
@@ -38,6 +39,8 @@ describe('AddScheduledReportModalCtrl', function () {
             close: function () {},
             opened: openedDeferred.promise
         };
+        $scope.isPermissionInternal = function () { return true; };
+        $scope.hasPermission = function () { return true; };
         $scope.getAdditionalColumns = function () { return []; };
         var mockApiFunc = function () {
             return {
@@ -89,7 +92,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
-                    report_name: undefined
+                    report_name: undefined,
+                    include_model_ids: undefined
                 }
             );
             expect($scope.showInProgress).toBe(true);
@@ -131,7 +135,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
-                    report_name: undefined
+                    report_name: undefined,
+                    include_model_ids: undefined
                 }
             );
             expect($scope.showInProgress).toBe(true);
@@ -173,7 +178,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
-                    report_name: undefined
+                    report_name: undefined,
+                    include_model_ids: undefined
                 }
 
             );

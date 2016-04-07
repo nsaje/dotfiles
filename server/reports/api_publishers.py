@@ -4,12 +4,14 @@ import logging
 import time
 
 from django.conf import settings
+from django.db.models import Q
 
 from dash import conversions_helper
 from dash.models import Source
 from reports import redshift
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null
+    decimal_to_int_exact, sum_expr, extract_json_or_null, from_cc, subtractions, mul_expr, \
+    DIVIDE_FORMULA, UNBOUNCED_VISITS_FORMULA, AVG_TOS_FORMULA
 
 from utils import s3helpers
 
@@ -20,7 +22,7 @@ FORMULA_BILLING_COST = '({} + {} + {})'.format(
     sum_agr('effective_data_cost_nano'),
     sum_agr('license_fee_nano'),
 )
-FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
+FORMULA_TOTAL_COST = '({} + {} + {})'.format(
     sum_agr('cost_nano'),
     sum_agr('data_cost_nano'),
     sum_agr('license_fee_nano'),
@@ -37,7 +39,9 @@ class RSPublishersModel(redshift.RSModel):
         "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
         "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee",
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
-        "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos",
+        "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
+        "avg_cost_per_second", "unbounced_visits", "avg_cost_per_non_bounced_visitor",
+        "total_pageviews", "avg_cost_per_pageview", "avg_cost_for_new_visitor"
 
     ]
     # fields that are allowed for breakdowns (app-based naming)
@@ -78,12 +82,26 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='avg_tos',             app='avg_tos',              out=unchanged,      calc=sum_div('total_time_on_site', 'visits')),
     ]
 
+    _POSTCLICK_OPTIMIZATION_FIELDS = [
+        dict(sql='total_seconds_sum',             app='total_seconds',                    out=unchanged,       calc=AVG_TOS_FORMULA),
+        dict(sql='total_seconds_avg_cost_sum',    app='avg_cost_per_second',              out=from_nano,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=AVG_TOS_FORMULA)),
+        dict(sql='unbounced_visits_diff',         app='unbounced_visits',                 out=unchanged,       calc=UNBOUNCED_VISITS_FORMULA),
+        dict(sql='unbounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visitor', out=from_nano,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,       calc=sum_agr('pageviews')),
+        dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_nano,       calc=sum_div('cost_nano', 'pageviews')),
+        dict(sql='avg_cost_for_new_visitor_sum',  app='avg_cost_for_new_visitor',         out=from_nano,       calc=sum_div('cost_nano', 'new_visits')),
+    ]
+
     _CONVERSION_GOAL_FIELDS = [
         dict(sql='conversions', app='conversions', out=decimal_to_int_exact,
              calc=sum_expr(extract_json_or_null('conversions')), num_json_params=2)
     ]
 
-    FIELDS = _FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _CONVERSION_GOAL_FIELDS
+    FIELDS = _FIELDS +\
+        _POSTCLICK_ACQUISITION_FIELDS +\
+        _POSTCLICK_ENGAGEMENT_FIELDS +\
+        _POSTCLICK_OPTIMIZATION_FIELDS +\
+        _CONVERSION_GOAL_FIELDS
 
 
 rs_pub = RSPublishersModel()
@@ -182,14 +200,22 @@ def prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, 
 
 
 def _convert_exchange_to_source_id(aggregated_blacklist):
-    exchanges = set(filter(lambda x: x is not None, (agg.get('exchange') for agg in aggregated_blacklist)))
+    exchanges = set(agg.get('exchange') for agg in aggregated_blacklist if agg.get('exchange') is not None)
 
-    sources = Source.objects.filter(bidder_slug__in=exchanges).values('id', 'bidder_slug')
-    sources_by_exchange = {s['bidder_slug']: s['id'] for s in sources}
+    # some matches are in bidder_slug and some in tracking_slug so query and map both
+    slugs = Source.objects.filter(Q(bidder_slug__in=exchanges) | Q(tracking_slug__in=exchanges)).values('id',
+                                                                                                        'bidder_slug',
+                                                                                                        'tracking_slug')
+    bidder_slugs_map = {s['bidder_slug']: s['id'] for s in slugs}
+    tracking_slugs_map = {s['tracking_slug']: s['id'] for s in slugs}
 
     for agg in aggregated_blacklist:
         if 'exchange' in agg:
-            agg['source'] = sources_by_exchange[agg['exchange']]
+            exchange = agg['exchange']
+            if exchange in bidder_slugs_map:
+                agg['source'] = bidder_slugs_map[exchange]
+            elif exchange in tracking_slugs_map:
+                agg['source'] = tracking_slugs_map[exchange]
 
 
 def _aggregate_domains(blacklist):

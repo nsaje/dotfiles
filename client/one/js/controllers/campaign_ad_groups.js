@@ -72,8 +72,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     ];
 
     $scope.exportPlusOptions = [
-      {name: 'Current View', value: 'adgroup-csv'},
-      {name: 'By content Ad', value: 'contentad-csv'}
+      {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
+      {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
+      {name: 'By content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.columns = [
@@ -135,6 +136,19 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             help: 'Name of the ad group.',
             order: true,
             initialOrder: 'asc'
+        },
+        {
+            nameCssClass: 'performance-icon',
+            field: 'performance',
+            unselectable: true,
+            checked: true,
+            type: 'icon-list',
+            totalRow: false,
+            help: 'Goal performance indicator',
+            order: true,
+            initialOrder: 'asc',
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance')
         },
         {
             name: 'Status',
@@ -401,7 +415,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
-            $scope.columns.length - 1,
+            $scope.columns.length - 2,
             $scope.hasPermission('zemauth.campaign_goal_optimization'),
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
@@ -436,7 +450,11 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             return;
         }
 
-        api.campaignOverview.get($state.params.id).then(
+        api.campaignOverview.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate
+        ).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
@@ -537,6 +555,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
             );
         }
+        if ($scope.hasPermission('zemauth.campaign_goal_optimization')) {
+            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+                $scope.campaignGoals,
+                $scope.chartMetricOptions,
+                options.campaignGoalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
+                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+            );
+        }
     };
 
     var getDailyStats = function () {
@@ -568,6 +594,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
                 $scope.totalRow.checked = $scope.selectedTotals;
@@ -602,6 +629,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.selectRows();
 
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
+                // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
+                // make sure chart selection gets updated
+                defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+                $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
+                $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
             },
             function (data) {
                 // error

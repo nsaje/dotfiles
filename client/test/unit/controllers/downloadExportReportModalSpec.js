@@ -25,6 +25,7 @@ describe('DownloadExportReportModalCtrl', function () {
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.options = [{value: 'view-csv'}];
+        $scope.defaultOption = $scope.options[0];
         var $state = {params: {id: 1}};
         $scope.level = 0;
         $scope.exportSources = undefined;
@@ -36,6 +37,8 @@ describe('DownloadExportReportModalCtrl', function () {
         $window = {
             open: function () {}
         };
+        $scope.isPermissionInternal = function () { return true; };
+        $scope.hasPermission = function () { return true; };
         $scope.getAdditionalColumns = function () { return []; };
 
         var mockApiFunc = function () {
@@ -111,11 +114,13 @@ describe('DownloadExportReportModalCtrl', function () {
             var deferred = $q.defer();
             spyOn($window, 'open');
             $scope.init();
+            $scope.isPermissionInternal = function () { return true; };
+            $scope.hasPermission = function () { return true; };
             $scope.downloadReport();
             $scope.$digest();
 
             expect($window.open).toHaveBeenCalledWith(
-              'test/export_plus/?type=view-csv&start_date=2015-01-12T00:00:00+00:00&end_date=2015-01-19T00:00:00+00:00&order=-cost&by_day=undefined&additional_fields=',
+              'test/export_plus/?type=view-csv&start_date=2015-01-12T00:00:00+00:00&end_date=2015-01-19T00:00:00+00:00&order=-cost&by_day=undefined&include_model_ids=undefined&additional_fields=',
               '_blank');
         });
     });

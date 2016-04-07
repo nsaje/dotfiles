@@ -1,3 +1,4 @@
+import copy
 import csv
 import datetime
 import exc
@@ -88,9 +89,27 @@ class ReportRow(object):
     def __str__(self):
         return self.raw_row
 
+    def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None
+
+    def is_publisher_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None and\
+            self.publisher_param != '' and\
+            self.publisher_param is not None
+
 
 class GaReportRow(ReportRow):
-    def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
+    def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, publisher_param, goals):
         ReportRow.__init__(self)
         self.raw_row = json.dumps(ga_row_dict or {})
         self.ga_row_dicts = [ga_row_dict]
@@ -108,11 +127,13 @@ class GaReportRow(ReportRow):
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
+        self.ad_group_id = None
         self.source_param = source_param
+        self.publisher_param = publisher_param
         self.goals = goals
 
     def key(self):
-        return (self.report_date, self.content_ad_id, self.source_param)
+        return (self.report_date, self.content_ad_id, self.source_param, self.publisher_param)
 
     def merge_with(self, ga_report_row):
         self.ga_row_dicts.extend(ga_report_row.ga_row_dicts)
@@ -126,14 +147,6 @@ class GaReportRow(ReportRow):
         for goal in ga_report_row.goals:
             self.goals.setdefault(goal, 0)
             self.goals[goal] += ga_report_row.goals[goal]
-
-    def is_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None
 
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
@@ -155,15 +168,20 @@ class GaReportRow(ReportRow):
 
 class OmnitureReportRow(ReportRow):
 
-    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
+    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param, publisher_param, tracking_code_col):
         ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
         self.raw_row = json.dumps(omniture_row_dict or {})
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
         self.bounce_rate_raw = omniture_row_dict.get('Bounce Rate')
+
         if omniture_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = (_report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) or 0) / 100
+            # only divide by 100 if bounce rate is indeed passed as percentage
+            if '%' in omniture_row_dict['Bounce Rate']:
+                self.bounce_rate = (_report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) or 0) / 100
+            else:
+                self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate']) or 0
         else:
             self.bounce_rate = 0
 
@@ -190,10 +208,13 @@ class OmnitureReportRow(ReportRow):
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
+        self.ad_group_id = None
         self.source_param = source_param
-        self.goals = self._parse_goals(omniture_row_dict)
+        self.publisher_param = publisher_param
+        self.needs_goals_validation = False  # check if parsed goals exist in database
+        self.goals = self._parse_goals(omniture_row_dict, tracking_code_col)
 
-    def _parse_goals(self, row_dict):
+    def _parse_goals(self, row_dict, tracking_code_col):
         goals = {}
         for key, val in row_dict.items():
             if re.search(r' \(Event \d+\)$', key):
@@ -202,10 +223,26 @@ class OmnitureReportRow(ReportRow):
                 if goal_name in goals:
                     raise exc.CsvParseException('Two or more goals with same name in report.')
                 goals[goal_name] = goal_val
+
+        # if goals weren't found by this keys, just accept all unknown headers as they are
+        if not goals:
+            for key, val in row_dict.items():
+                if key.lower() not in OMNITURE_KNOWN_HEADERS and key != tracking_code_col:
+                    self.needs_goals_validation = True
+                    goal_name = key
+                    goal_val = _report_atoi(val)
+                    if goal_name in goals:
+                        raise exc.CsvParseException('Two or more goals with same name in report.')
+                    goals[goal_name] = goal_val
+
         return goals
 
+    def clean_goals(self, acceptable_goal_names):
+        if self.goals:
+            self.goals = {k: self.goals[k] for k in acceptable_goal_names if k in self.goals}
+
     def key(self):
-        return (self.report_date, self.content_ad_id, self.source_param)
+        return (self.report_date, self.content_ad_id, self.source_param, self.publisher_param)
 
     def merge_with(self, omniture_report_row):
         self.omniture_row_dict.extend(omniture_report_row.omniture_row_dict)
@@ -218,15 +255,10 @@ class OmnitureReportRow(ReportRow):
 
         for goal in omniture_report_row.goals:
             self.goals.setdefault(goal, 0)
-            self.goals[goal] += omniture_report_row.goals[goal]
-
-    def is_row_valid(self):
-        if not self.is_valid():
-            return False
-
-        return self.content_ad_id is not None and\
-            self.source_param != '' and\
-            self.source_param is not None
+            if self.goals[goal] is None:
+                self.goals[goal] = omniture_report_row.goals[goal]
+            elif omniture_report_row.goals[goal] is not None:
+                self.goals[goal] += omniture_report_row.goals[goal]
 
 
 class Report(object):
@@ -243,11 +275,56 @@ class Report(object):
     def get_date(self):
         return self.start_date
 
-    def valid_entries(self):
-        return [entry for entry in self.entries.values() if entry.is_row_valid()]
+    def get_content_ad_stats(self):
+        result = {}
+
+        for key, entry in self.entries.iteritems():
+            if not entry.is_row_valid():
+                continue
+
+            result_key = (entry.report_date, entry.content_ad_id, entry.source_param)
+            if result_key not in result:
+                result[result_key] = copy.deepcopy(entry)
+            else:
+                result[result_key].merge_with(entry)
+
+        return result.values()
+
+    def get_publisher_stats(self):
+        result = {}
+
+        content_ad_ids = set([entry.content_ad_id for entry in self.entries.values()])
+
+        content_ads_ad_groups = dash.models.ContentAd.objects.filter(
+                pk__in=content_ad_ids
+        ).values_list('ad_group', 'pk')
+
+        ad_group_mapping = dict((k, v) for v, k in content_ads_ad_groups)
+
+        for key, entry in self.entries.iteritems():
+            if not entry.is_publisher_row_valid():
+                continue
+
+            ad_group_id = ad_group_mapping[entry.content_ad_id]
+
+            result_key = (
+                entry.report_date,
+                ad_group_id,
+                entry.publisher_param,
+                entry.source_param
+            )
+            if result_key not in result:
+                entry_copy = copy.deepcopy(entry)
+                entry_copy.ad_group_id = ad_group_id
+                entry_copy.content_ad_id = None
+                result[result_key] = entry_copy
+            else:
+                result[result_key].merge_with(entry)
+
+        return result.values()
 
     def reported_visits(self):
-        return sum(entry.visits for entry in self.valid_entries())
+        return sum(entry.visits for entry in self.get_content_ad_stats())
 
     def imported_visits(self):
         return self._imported_visits
@@ -440,7 +517,7 @@ class GAReportFromCSV(GAReport):
 
                 content_ad_id, source_param, publisher_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
-                report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
+                report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, publisher_param, goals)
                 self.add_imported_visits(report_entry.visits or 0)
 
                 existing_entry = self.entries.get(report_entry.key())
@@ -561,6 +638,10 @@ class GAReportFromCSV(GAReport):
         return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(index_lines))
 
 
+OMNITURE_REQUIRED_HEADERS = {'visits', 'page views', 'total seconds spent'}
+OMNITURE_KNOWN_HEADERS = OMNITURE_REQUIRED_HEADERS | {'unique visits', 'unique visitors', 'bounce rate', 'bounces'}
+
+
 class OmnitureReport(Report):
 
     def __init__(self, xlsx_report_blob):
@@ -614,6 +695,26 @@ class OmnitureReport(Report):
                     sessions_total, sessions_sum)
             )
 
+    def _parse_row(self, sheet, row_idx):
+        line = []
+        for col_idx in range(0, sheet.ncols):
+            raw_val = sheet.cell_value(row_idx, col_idx)
+            value = (unicode(raw_val).encode('utf-8') or '').strip()
+            line.append(value)
+        return line
+
+    def _process_row(self, omniture_row_dict, tracking_code_col):
+        keyword = omniture_row_dict.get(tracking_code_col, '')
+        content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
+        report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param, publisher_param, tracking_code_col)
+        self.add_imported_visits(report_entry.visits or 0)
+
+        existing_entry = self.entries.get(report_entry.key())
+        if existing_entry is None:
+            self.entries[report_entry.key()] = report_entry
+        else:
+            existing_entry.merge_with(report_entry)
+
     @statsd_timer('convapi.parse_v2', 'omni_parse')
     @influx.timer('convapi.parse_v2', source='omni_parse')
     def parse(self):
@@ -625,48 +726,78 @@ class OmnitureReport(Report):
 
         body_found = False
 
-        all_columns = []
-        enum_columns = []
         sheet = workbook.sheet_by_index(0)
-        for row_idx in range(0, sheet.nrows):
-            line = []
-            for col_idx in range(0, sheet.ncols):
-                raw_val = sheet.cell_value(row_idx, col_idx)
-                value = (unicode(raw_val).encode('utf-8') or '').strip()
-                line.append(value)
 
+        total_row = None
+        header_row_idx = None
+
+        for row_idx in range(0, sheet.nrows):
+            line = self._parse_row(sheet, row_idx)
+            line_lower = [x.lower() for x in line]
+
+            # search for table header
             if not body_found:
                 if len(line) > 0 and ':' in line[0]:
-                    continue  # header
-                if 'tracking code' not in ' '.join(line[1:]).lower():
-                    continue
-                else:
-                    body_found = True
-                    all_columns = line
-                    enum_columns = [(idx, el) for (idx, el) in enumerate(all_columns)]
-                    continue
+                    continue  # header, key: val
 
-            # valid data is data with known column name(many columns are empty
-            # in sample reports)
-            keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
-            values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
-            omniture_row_dict = dict(zip(keys, values))
-            if 'Total' in line:  # footer with summary
-                self._check_session_counts(omniture_row_dict)
+                # does line include all table header column names
+                if set(line_lower) & OMNITURE_REQUIRED_HEADERS == OMNITURE_REQUIRED_HEADERS:
+                    body_found = True
+                    columns_dict = {el: idx for idx, el in enumerate(line) if el}
+                    header_row_idx = row_idx
+
+                    # find 'tracking code' header
+                    tracking_code_col = next((x for x in line_lower if 'tracking code' in x), None)
+                    if tracking_code_col:
+                        tracking_code_col = line[line_lower.index(tracking_code_col)]
+                    else:
+                        # try to find it - use the first non-empty header, tracking codes should be in 1 column to the right
+                        # of this header (but they don't have a header)
+                        tracking_code_col = next(x for x in line if x)
+                        columns_dict[tracking_code_col] += 1
+
+                continue
+
+            omniture_row_dict = {k: line[i] for k, i in columns_dict.items()}
+
+            # search for table totals, it can either be directly under table header or the last row in body
+            if body_found and 'total' in line_lower:
+
+                # if we find totals in the end we need to process the reserved second row after header as normal row
+                if total_row:
+                    self._process_row(total_row, tracking_code_col)
+
+                total_row = omniture_row_dict
                 break
 
-            tracking_code_col = 'Tracking Code'
-            for key in keys:
-                if 'tracking code' in key.lower():
-                    tracking_code_col = key
+            # totals row in case it is second in a table should have no data under in column with tracking codes
+            if body_found and row_idx == header_row_idx + 1 and not omniture_row_dict.get(tracking_code_col, ''):
+                total_row = omniture_row_dict
+                continue
 
-            keyword = omniture_row_dict.get(tracking_code_col, '')
-            content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
-            report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
-            self.add_imported_visits(report_entry.visits or 0)
+            self._process_row(omniture_row_dict, tracking_code_col)
 
-            existing_entry = self.entries.get(report_entry.key())
-            if existing_entry is None:
-                self.entries[report_entry.key()] = report_entry
-            else:
-                existing_entry.merge_with(report_entry)
+        if total_row:
+            self._check_session_counts(total_row)
+
+    def validate(self):
+        super(OmnitureReport, self).validate()
+
+        campaign_goal_map = {}
+
+        for entry in self.entries.values():
+            if entry.needs_goals_validation:
+                content_ad_id = entry.content_ad_id
+                try:
+                    content_ad = dash.models.ContentAd.objects.get(pk=content_ad_id)
+                except dash.models.ContentAd.DoesNotExist as e:
+                    continue
+                else:
+                    campaign_id = content_ad.ad_group.campaign_id
+                    if campaign_id not in campaign_goal_map:
+                        campaign = content_ad.ad_group.campaign
+                        campaign_goal_map[campaign_id] = campaign.conversiongoal_set.values_list('name', flat=True)
+
+                    acceptable_goal_names = campaign_goal_map[campaign_id]
+
+                    entry.clean_goals(acceptable_goal_names)

@@ -342,15 +342,28 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             $state.is('main.allAccounts.sources');
     };
 
-    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
-            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
-            return 'adgroup-status-inactive-icon';
-        }
+    $scope.defaultChartMetrics = function (chartMetric1, chartMetric2, chartMetricOptions) {
+        var values = chartMetricOptions.reduce(function (map, obj) {
+            map[obj.value] = obj.shown;
+            return map;
+        }, {});
 
-        if (adGroup.state === constants.adGroupSettingsState.INACTIVE) {
+        var metric1, metric2;
+        if (values[chartMetric1] === false) {
+            metric1 = constants.chartMetric.CLICKS;
+        }
+        if (values[chartMetric2] === false) {
+            metric2 = constants.chartMetric.IMPRESSIONS;
+        }
+        return {
+            metric1: metric1,
+            metric2: metric2,
+        };
+    };
+
+    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
+        if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
+            adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
             return 'adgroup-status-stopped-icon';
         }
 
@@ -360,6 +373,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             }
 
             return 'adgroup-status-landing-mode-icon';
+        }
+
+        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
+             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
+            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
+            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
+            return 'adgroup-status-inactive-icon';
+        }
+
+        if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
+              adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
+            return 'adgroup-status-autopilot-icon';
         }
 
         return 'adgroup-status-active-icon';

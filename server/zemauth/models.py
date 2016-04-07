@@ -137,7 +137,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('aggregate_postclick_acquisition', 'Can view aggregate postclick acq. metrics.'),
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
             ('view_pubs_conversion_goals', 'Can view publishers conversion goals.'),
-            ('view_pubs_postclick_stats', 'Can view publishers postclick stats.'),
+            ('view_pubs_postclick_acquisition', 'Can view publishers postclick acq. metrics.'),
+            ('view_pubs_postclick_engagement', 'Can view publishers postclick eng. metrics.'),
             ('data_status_column', 'Can see data status column in table.'),
             ('new_content_ads_tab', 'Can view new content ads tab.'),
             ('filter_sources', 'Can filter sources'),
@@ -189,6 +190,10 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
+            ('campaign_goal_performance', 'Can view goal performance information'),
+            ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
+            ('has_drift', 'Has Drift snippet'),
+            ('has_supporthero', 'Has Supporthero snippet'),
         )
 
     def get_full_name(self):

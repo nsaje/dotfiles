@@ -206,6 +206,7 @@ class HistoryModel(models.Model):
 
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
+    marketer_name = models.CharField(blank=True, null=True, max_length=255)
     used = models.BooleanField(default=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -361,7 +362,6 @@ class Campaign(models.Model, PermissionMixin):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
-    landing_mode = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
 
@@ -449,6 +449,10 @@ class Campaign(models.Model, PermissionMixin):
             new_settings.archived = False
             new_settings.save(request)
 
+    def is_in_landing(self):
+        current_settings = self.get_current_settings()
+        return current_settings.landing_mode
+
     def save(self, request, *args, **kwargs):
         self.modified_by = None
         if request is not None:
@@ -487,6 +491,38 @@ class Campaign(models.Model, PermissionMixin):
                 'campaign__id', flat=True
             )
             return self.exclude(pk__in=archived_campaigns)
+
+        def exclude_landing(self):
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
+
+            excluded = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                models.Q(automatic_campaign_stop=False) |
+                models.Q(landing_mode=True)
+            ).values_list(
+                'campaign__id', flat=True
+            )
+
+            return self.exclude(pk__in=excluded)
+
+        def filter_landing(self):
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
+
+            filtered = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                automatic_campaign_stop=True,
+                landing_mode=True
+            ).values_list(
+                'campaign__id', flat=True
+            )
+
+            return self.filter(pk__in=filtered)
 
 
 class SettingsBase(models.Model, CopySettingsMixin):
@@ -601,7 +637,9 @@ class CampaignSettings(SettingsBase):
         'promotion_goal',
         'archived',
         'target_devices',
-        'target_regions'
+        'target_regions',
+        'automatic_campaign_stop',
+        'landing_mode'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -612,7 +650,10 @@ class CampaignSettings(SettingsBase):
     )
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
+                                   null=True, blank=True)
+    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
+                                                   null=True, blank=True)
     campaign_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -648,6 +689,9 @@ class CampaignSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
 
+    automatic_campaign_stop = models.BooleanField(default=False)
+    landing_mode = models.BooleanField(default=False)
+
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
@@ -655,7 +699,10 @@ class CampaignSettings(SettingsBase):
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
-            self.created_by = request.user
+            if request is None:
+                self.created_by = None
+            else:
+                self.created_by = request.user
 
         super(CampaignSettings, self).save(*args, **kwargs)
 
@@ -709,6 +756,8 @@ class CampaignSettings(SettingsBase):
             'archived': 'Archived',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'automatic_campaign_stop': 'Automatic Campaign Stop',
+            'landing_mode': 'Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -732,6 +781,10 @@ class CampaignSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
+        elif prop_name == 'automatic_campaign_stop':
+            value = str(value)
+        elif prop_name == 'landing_mode':
+            value = str(value)
         elif prop_name == 'archived':
             value = str(value)
 
@@ -777,7 +830,8 @@ class CampaignGoal(models.Model):
 
         if with_values:
             campaign_goal['values'] = [
-                {'datetime': str(value.created_dt), 'value': value.value}
+                {'datetime': str(value.created_dt),
+                 'value': Decimal(value.value).quantize(Decimal('1.00'))}
                 for value in self.values.all()
             ]
 
@@ -1089,6 +1143,7 @@ class SourceCredentials(models.Model):
         null=False
     )
     credentials = models.TextField(blank=True, null=False)
+    sync_reports = models.BooleanField(default=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
@@ -1355,9 +1410,9 @@ class AdGroup(models.Model):
 
         def filter_running(self):
             """
-            This function checks if adgroup is active on arbitrary number of adgroups
+            This function checks if adgroup is running on arbitrary number of adgroups
             with a fixed amount of queries.
-            An adgroup is active if:
+            An adgroup is running if:
                 - it was set as active(adgroupsettings)
                 - current date is between start and stop(flight time)
                 - has at least one running mediasource(adgroupsourcesettings)
@@ -1394,6 +1449,19 @@ class AdGroup(models.Model):
 
             ids = set(ad_group_settings) & set(ad_group_source_settings)
             return self.filter(id__in=ids)
+
+        def filter_active(self):
+            """
+            Returns only ad groups that have settings set to active.
+            """
+            latest_ad_group_settings = AdGroupSettings.objects.\
+                filter(ad_group__in=self).\
+                group_current_settings()
+            active_ad_group_ids = AdGroupSettings.objects.\
+                filter(id__in=latest_ad_group_settings).\
+                filter(state=constants.AdGroupSettingsState.ACTIVE).\
+                values_list('ad_group_id', flat=True)
+            return self.filter(id__in=active_ad_group_ids)
 
     class Meta:
         ordering = ('name',)
@@ -1541,6 +1609,7 @@ class AdGroupSettings(SettingsBase):
         'adobe_tracking_param',
         'autopilot_state',
         'autopilot_daily_budget',
+        'landing_mode',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1548,6 +1617,8 @@ class AdGroupSettings(SettingsBase):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    on_delete=models.PROTECT, null=True, blank=True)
+    system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
+                                                   null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -1599,6 +1670,7 @@ class AdGroupSettings(SettingsBase):
         verbose_name='Auto-Pilot\'s Daily Budget',
         default=0
     )
+    landing_mode = models.BooleanField(default=False)
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -1663,7 +1735,8 @@ class AdGroupSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US'],
             'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-            'autopilot_daily_budget': 0.00
+            'autopilot_daily_budget': 0.00,
+            'landing_mode': False,
         }
 
     @classmethod
@@ -1689,7 +1762,8 @@ class AdGroupSettings(SettingsBase):
             'autopilot_state': 'Auto-Pilot',
             'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
-            'adobe_tracking_param': 'Adobe tracking parameter'
+            'adobe_tracking_param': 'Adobe tracking parameter',
+            'landing_mode': 'Landing Mode',
         }
 
         return NAMES[prop_name]
@@ -1881,6 +1955,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
+    landing_mode = models.BooleanField(default=False)
 
     objects = QuerySetManager()
 
@@ -2018,11 +2093,9 @@ class ContentAd(models.Model):
         if height is None:
             height = self.image_height
 
-        return '/'.join([
-            settings.Z3_API_THUMBNAIL_URL,
-            self.image_id,
-            '{}x{}.jpg'.format(width, height)
-        ])
+        path = '/{}.jpg?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(
+            self.image_id, width, height)
+        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
 
     def url_with_tracking_codes(self, tracking_codes):
         if not tracking_codes:
@@ -2786,6 +2859,7 @@ class ExportReport(models.Model):
 
     breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
     breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
+    include_model_ids = models.BooleanField(null=False, blank=False, default=False)
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)

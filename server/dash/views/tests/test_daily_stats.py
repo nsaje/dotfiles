@@ -1,6 +1,7 @@
 from mock import patch, MagicMock
 import datetime
 import json
+from decimal import Decimal
 
 from django.contrib.auth import models as authmodels
 from django.test import TestCase
@@ -8,7 +9,7 @@ from django.core.urlresolvers import reverse
 
 from utils.test_helper import QuerySetMatcher, ListMatcher
 from zemauth.models import User
-from dash import models, conversions_helper
+from dash import constants, models, conversions_helper
 
 
 class BaseDailyStatsTest(TestCase):
@@ -85,6 +86,19 @@ class BaseDailyStatsTest(TestCase):
             },
             'success': True
         })
+        """
+            'campaign_goals': {
+                'reports': [],
+                'conversions': ListMatcher([
+                    {'id': 'Test Cg', 'name': 'test conversion goal 5'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
+                ]),
+            },
+
+        """
 
 
 class AccountsDailyStatsTest(BaseDailyStatsTest):
@@ -276,6 +290,34 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
         self._assert_response(response, ad_group_id, ad_group.name)
 
+    def test_get_campaign_goals(self):
+        ad_group_id = 1
+
+        self._prepare_mock('ad_group', ad_group_id)
+        response = self.client.get(
+            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            self._get_params(selected_ids=[ad_group_id]),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertFalse('goal_fields' in response_blob['data'])
+        self.assertFalse('campaign_goals' in response_blob['data'])
+
+        perm = authmodels.Permission.objects.get(codename='campaign_goal_performance')
+        self.user.user_permissions.add(perm)
+
+        self._prepare_mock('ad_group', ad_group_id)
+        response = self.client.get(
+            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            self._get_params(selected_ids=[ad_group_id]),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertTrue('goal_fields' in response_blob['data'])
+        self.assertTrue('campaign_goals' in response_blob['data'])
+
 
 class AdGroupDailyStatsTest(BaseDailyStatsTest):
     def test_get_by_source(self):
@@ -316,9 +358,36 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name)
 
+    def test_get_campaign_goals(self):
+        source_id = 3
+        self._prepare_mock('source', source_id)
+        response = self.client.get(
+            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id], sources=True),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertFalse('goal_fields' in response_blob['data'])
+        self.assertFalse('campaign_goals' in response_blob['data'])
+
+        perm = authmodels.Permission.objects.get(codename='campaign_goal_performance')
+        self.user.user_permissions.add(perm)
+
+        self._prepare_mock('source', source_id)
+        response = self.client.get(
+            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id], sources=True),
+            follow=True
+        )
+
+        response_blob = json.loads(response.content)
+        self.assertTrue('goal_fields' in response_blob['data'])
+        self.assertTrue('campaign_goals' in response_blob['data'])
+
 
 @patch('dash.stats_helper.reports.api_contentads.query')
-@patch('dash.stats_helper.reports.api_touchpointconversions.query', MagicMock())
+@patch('dash.stats_helper.reports.api_touchpointconversions.query')
 class AdGroupAdsPlusDailyStatsTest(TestCase):
     fixtures = ['test_views']
 
@@ -328,7 +397,9 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
 
         self.client.login(username=self.user.email, password=password)
 
-    def test_get(self, mock_query):
+    def test_get(self, mock_touchpoint_query, mock_query):
+        mock_touchpoint_query.return_value = MagicMock()
+
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
 
@@ -369,6 +440,48 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
 
         self.assertJSONEqual(response.content, {
             'data': {
+                'goal_fields': {
+                    'avg_tos': {
+                        'id': 'time on site in seconds',
+                        'name': 'time on site in seconds'
+                    },
+                    'avg_cost_per_conversion_goal_1': {
+                        'id': 'avg_cost_per_conversion_goal_1',
+                        'name': '$CPA - test conversion goal'
+                    },
+                    'avg_cost_per_conversion_goal_2': {
+                        'id': 'avg_cost_per_conversion_goal_2',
+                        'name': '$CPA - test conversion goal 2'
+                    },
+                    'avg_cost_per_conversion_goal_3': {
+                        'id': 'avg_cost_per_conversion_goal_3',
+                        'name': '$CPA - test conversion goal 3'
+                    },
+                    'avg_cost_per_conversion_goal_4': {
+                        'id': 'avg_cost_per_conversion_goal_4',
+                        'name': '$CPA - test conversion goal 4'
+                    },
+                    'avg_cost_per_conversion_goal_5': {
+                        'id': 'avg_cost_per_conversion_goal_5',
+                        'name': '$CPA - test conversion goal 5'
+                    },
+                    'cpc': {
+                        'id': '$CPC',
+                        'name': '$CPC'
+                    },
+                    'total_pageviews': {
+                        'id': 'pages per session',
+                        'name': 'pages per session'
+                    },
+                    'bounce_rate': {
+                        'id': 'max bounce rate %',
+                        'name': 'max bounce rate %'
+                    },
+                    'percent_new_users': {
+                        'id': 'new visitors %',
+                        'name': 'new visitors %'
+                    },
+                },
                 'chart_data': [{
                     'id': 'totals',
                     'name': 'Totals',
@@ -390,6 +503,170 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                     {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
                     {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'}
                 ]),
+                'campaign_goals': {}
+            },
+            'success': True
+        })
+
+    def test_get_with_conversion_goals(self, mock_touchpoint_query, mock_query):
+        created_dt = datetime.datetime.utcnow()
+
+        models.ConversionGoal.objects.filter(name='test conversion goal 5').delete()
+
+        # set up a campaign and conversion goal
+        campaign = models.Campaign.objects.get(pk=1)
+
+        cg1 = models.CampaignGoal.objects.create(
+            campaign=campaign,
+            type=constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
+            created_dt=created_dt,
+        )
+
+        models.CampaignGoalValue.objects.create(
+            campaign_goal=cg1,
+            value=Decimal('10'),
+            created_dt=created_dt,
+        )
+
+        convg = models.ConversionGoal.objects.create(
+            campaign=campaign,
+            type=constants.ConversionGoalType.GA,
+            name='Test Cg',
+            conversion_window=30,
+            goal_id='6',
+        )
+
+        convg1 = models.CampaignGoal.objects.create(
+            campaign=campaign,
+            conversion_goal=convg,
+            type=constants.CampaignGoalKPI.CPA,
+            created_dt=created_dt,
+        )
+        models.CampaignGoalValue.objects.create(
+            campaign_goal=convg1,
+            value=Decimal('5'),
+            created_dt=created_dt,
+        )
+
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+
+        mock_stats = [{
+            'date': start_date.isoformat(),
+            'cpc': '0.0100',
+            'clicks': 1000,
+            'conversions': {
+                'ga__6': 5,
+            }
+        }, {
+            'date': end_date.isoformat(),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'conversions': {
+                'ga__6': 6,
+            }
+        }]
+        mock_query.return_value = mock_stats
+
+        mock_touchpoint_stats = []
+
+        mock_touchpoint_query.return_value = mock_touchpoint_stats
+
+        params = {
+            'metrics': ['cpc', 'clicks', 'conversion_goal_5'],
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat()
+        }
+
+        response = self.client.get(
+            reverse('ad_group_ads_plus_daily_stats', kwargs={'ad_group_id': 1}),
+            params,
+            follow=True
+        )
+
+        matcher = QuerySetMatcher(models.Source.objects.all())
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=['date'],
+            order=[],
+            ignore_diff_rows=True,
+            conversion_goals=ListMatcher(['ga__2', 'ga__3', 'omniture__4', 'ga__6']),
+            ad_group=1,
+            source=matcher
+        )
+
+        self.maxDiff = None
+        self.assertDictEqual(json.loads(response.content), {
+            'data': {
+                'goal_fields': {
+                    'avg_tos': {
+                        'id': 'time on site in seconds',
+                        'name': 'time on site in seconds'
+                    },
+                    'avg_cost_per_conversion_goal_1': {
+                        'id': 'avg_cost_per_conversion_goal_1',
+                        'name': '$CPA - test conversion goal'
+                    },
+                    'avg_cost_per_conversion_goal_2': {
+                        'id': 'avg_cost_per_conversion_goal_2',
+                        'name': '$CPA - test conversion goal 2'
+                    },
+                    'avg_cost_per_conversion_goal_3': {
+                        'id': 'avg_cost_per_conversion_goal_3',
+                        'name': '$CPA - test conversion goal 3'
+                    },
+                    'avg_cost_per_conversion_goal_4': {
+                        'id': 'avg_cost_per_conversion_goal_4',
+                        'name': '$CPA - test conversion goal 4'
+                    },
+                    'avg_cost_per_conversion_goal_5': {
+                        'id': 'avg_cost_per_conversion_goal_5',
+                        'name': '$CPA - Test Cg'
+                    },
+                    'cpc': {
+                        'id': '$CPC',
+                        'name': '$CPC'
+                    },
+                    'total_pageviews': {
+                        'id': 'pages per session',
+                        'name': 'pages per session'
+                    },
+                    'bounce_rate': {
+                        'id': 'max bounce rate %',
+                        'name': 'max bounce rate %'
+                    },
+                    'percent_new_users': {
+                        'id': 'new visitors %',
+                        'name': 'new visitors %'
+                    },
+                },
+                'chart_data': [{
+                    'id': 'totals',
+                    'name': 'Totals',
+                    'series_data': {
+                        'clicks': [
+                            [start_date.isoformat(), 1000],
+                            [end_date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [start_date.isoformat(), '0.0100'],
+                            [end_date.isoformat(), '0.0200']
+                        ],
+                        'conversion_goal_5': [
+                            [start_date.isoformat(), 5],
+                            [end_date.isoformat(), 6],
+                        ],
+                    }
+                }],
+                'conversion_goals': ListMatcher([
+                    {'id': 'conversion_goal_5', 'name': 'Test Cg'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
+                ]),
+                'campaign_goals': {},
             },
             'success': True
         })
@@ -406,7 +683,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
 
         self.client.login(username=self.user.email, password=password)
 
-    def test_get(self, mock_query, mock_touchpointconversins_query):
+    def test_get(self, mock_query, mock_touchpoint_query):
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
 
@@ -423,20 +700,24 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         }]
         mock_query.return_value = mock_stats
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = \
+            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats2 = [{
             'date': start_date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
+            'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }, {
             'date': start_date.isoformat(),
             'conversion_count': 64,
             'slug': 'test_goal',
+            'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
-        mock_touchpointconversins_query.return_value = mock_stats2
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = \
-            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        mock_touchpoint_query.return_value = mock_stats2
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -461,7 +742,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             constraints_list=[],
         )
 
-        mock_touchpointconversins_query.assert_any_call(
+        mock_touchpoint_query.assert_any_call(
             start_date,
             end_date,
             breakdown=['date'],
@@ -473,6 +754,48 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         self.maxDiff = None
         self.assertJSONEqual(response.content, {
             'data': {
+                'goal_fields': {
+                    'avg_tos': {
+                        'id': 'time on site in seconds',
+                        'name': 'time on site in seconds'
+                    },
+                    'avg_cost_per_conversion_goal_1': {
+                        'id': 'avg_cost_per_conversion_goal_1',
+                        'name': '$CPA - test conversion goal'
+                    },
+                    'avg_cost_per_conversion_goal_2': {
+                        'id': 'avg_cost_per_conversion_goal_2',
+                        'name': '$CPA - test conversion goal 2'
+                    },
+                    'avg_cost_per_conversion_goal_3': {
+                        'id': 'avg_cost_per_conversion_goal_3',
+                        'name': '$CPA - test conversion goal 3'
+                    },
+                    'avg_cost_per_conversion_goal_4': {
+                        'id': 'avg_cost_per_conversion_goal_4',
+                        'name': '$CPA - test conversion goal 4'
+                    },
+                    'avg_cost_per_conversion_goal_5': {
+                        'id': 'avg_cost_per_conversion_goal_5',
+                        'name': '$CPA - test conversion goal 5'
+                    },
+                    'cpc': {
+                        'id': '$CPC',
+                        'name': '$CPC'
+                    },
+                    'total_pageviews': {
+                        'id': 'pages per session',
+                        'name': 'pages per session'
+                    },
+                    'bounce_rate': {
+                        'id': 'max bounce rate %',
+                        'name': 'max bounce rate %'
+                    },
+                    'percent_new_users': {
+                        'id': 'new visitors %',
+                        'name': 'new visitors %'
+                    },
+                },
                 'chart_data': [{
                     'id': 'totals',
                     'name': 'Totals',
@@ -508,7 +831,8 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'id': 'conversion_goal_1',
                         'name': 'test conversion goal'
                     },
-                ])
+                ]),
+                'campaign_goals': {},
             },
             'success': True
         })

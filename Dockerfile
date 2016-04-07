@@ -5,15 +5,13 @@ RUN useradd -m -u 1000 ubuntu
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y libmemcached-dev nano dropbear openssh-server && \
+    apt-get install -y --no-install-recommends postgresql-client && \
     apt-get -y autoremove && \
     mkdir /var/run/sshd
 
 RUN rm -fr /app ; mkdir -p /app && \
     mkdir -p /app/logs && \
     cd /app/
-
-ADD docker/psql /usr/local/bin/psql
-RUN chmod +x /usr/local/bin/psql
 
 ADD docker/*.sh /
 RUN chmod +x /*.sh

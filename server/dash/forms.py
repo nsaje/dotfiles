@@ -143,6 +143,9 @@ class AdGroupSettingsForm(forms.Form):
             if end_date < datetime.date.today() and state == constants.AdGroupSettingsState.ACTIVE:
                 raise forms.ValidationError('End date cannot be set in the past.')
 
+        if self.ad_group.get_current_settings().landing_mode:
+            raise forms.ValidationError('End date cannot be set when campaign is in landing mode.')
+
         return end_date
 
     def clean_enable_ga_tracking(self):
@@ -188,6 +191,15 @@ class AdGroupSettingsForm(forms.Form):
         cpc_cc = self.cleaned_data.get('cpc_cc')
         validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
         return cpc_cc
+
+    def clean_autopilot_state(self):
+        autopilot_state = self.cleaned_data.get('autopilot_state')
+        from dash import campaign_goals
+        campaign_goal = campaign_goals.get_primary_campaign_goal(self.ad_group.campaign)
+        if autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+                campaign_goal and campaign_goal.type == constants.CampaignGoalKPI.CPA:
+            raise forms.ValidationError('Automatic budget allocation for CPA campaign goal is not supported.')
+        return autopilot_state
 
     def clean_autopilot_daily_budget(self):
         budget = self.cleaned_data.get('autopilot_daily_budget', 0)
@@ -533,6 +545,15 @@ class UserForm(forms.Form):
 DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
+IGNORED_CSV_FIELDS = ['errors']
+
+# Example CSV content - must be ignored if mistakenly uploaded
+# Example File is served by client (Zemanta_Content_Ads_Template.csv)
+EXAMPLE_CSV_CONTENT = 'http://www.zemanta.com/blog-posts/news/the-rise-of-content-ads,' \
+                      'The Rise of Content Ads,' \
+                      'http://www.topbestalternatives.com/wp-content/uploads/2016/01/zemanta-580x304.jpg,' \
+                      'Tech Talk with Zemanta: How Content Ads Will Come to Dominant Publishers Advertising Efforts,' \
+                      'http://www.example.com/tracker'
 
 
 class DisplayURLField(forms.URLField):
@@ -627,7 +648,11 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             # accept both variants
             if field == "tracker_url":
                 field = "tracker_urls"
-            if n >= 3 and field not in OPTIONAL_CSV_FIELDS:
+            # Tracker Urls column has been renamed to Impression Trackers
+            # For simplicity, consistency and backward compatibility this field name is reverted here
+            if field == "impression_trackers":
+                field = "tracker_urls"
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
@@ -651,6 +676,10 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                 del row[None]
 
             count_rows += 1
+
+            # Remove ignored fields from row dict
+            for ignored_field in IGNORED_CSV_FIELDS:
+                row.pop(ignored_field, None)
 
             data.append(row)
 
@@ -683,7 +712,8 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # slow, we can instead save the file to a temporary
         # location on upload and then open it with 'rU'
         # (universal-newline mode).
-        lines = file_content.splitlines()
+        # Additionally remove empty lines and Example CSV content if present.
+        lines = [line for line in file_content.splitlines() if line and line != EXAMPLE_CSV_CONTENT]
 
         encodings = ['utf-8', 'windows-1252']
         data = None

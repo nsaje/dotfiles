@@ -23,8 +23,10 @@
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
                 label="setting.name || '&nbsp;'"
-                value="setting.value" 
+                value="setting.value"
+                internal="setting.internal"
                 value-description="setting.description"
+                value-class="setting.valueClass"
                 details-label="setting.detailsLabel"
                 details-hide-label="setting.detailsHideLabel"
                 details-content="setting.detailsContent"
@@ -42,8 +44,10 @@
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
                 label="setting.name || '&nbsp;'"
-                value="setting.value" 
+                value="setting.value"
+                internal="setting.internal" 
                 value-description="setting.description"
+                value-class="setting.valueClass"
                 details-label="setting.detailsLabel"
                 details-hide-label="setting.detailsHideLabel"
                 details-content="setting.detailsContent"
