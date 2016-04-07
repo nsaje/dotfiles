@@ -204,7 +204,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 clearUsedColors(data);
 
                 data.forEach(function (group) {
-                    if (group.id !== "totals") {
+                    if (group.id !== 'totals') {
                         return;
                     }
                     updateSeries(group, metricIds);
@@ -213,7 +213,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
 
                 data.forEach(function (group) {
-                    if (group.id === "totals") {
+                    if (group.id === 'totals') {
                         return;
                     }
                     updateSeries(group, metricIds);
