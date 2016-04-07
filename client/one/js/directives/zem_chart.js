@@ -299,7 +299,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     var goal = fieldGoalMap[metricId],
                         legendGoal = {
                             id: goal.id,
-                            name: 'Goal',
+                            name: 'Goals',
                         },
                         colors = goalsColor;
                     addLegendItem(colors, legendGoal, false, metricIds.indexOf(metricId) + 1);
@@ -308,7 +308,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                         if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                             commonYAxis = false;
                         }
-                        addGoalSeries(metricId, goal.name, series, colors[index], commonYAxis ? 0 : index);
+                        addGoalSeries(metricId, 'Goal (' + goal.name + ')', series, colors[index], commonYAxis ? 0 : index);
                     });
 
                     index += 1;

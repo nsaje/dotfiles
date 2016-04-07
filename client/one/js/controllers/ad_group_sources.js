@@ -80,7 +80,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     $scope.selectRows = function () {
-        console.log('test');
         $scope.rows.forEach(function (x) {
             x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
         });
