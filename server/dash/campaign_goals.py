@@ -565,7 +565,7 @@ def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, con
         cg_series[name].append(
             campaign_goal_dp(last_cg_val, override_date=end_date),
         )
-    return create_line_series(cg_series)
+    return generate_missing(create_line_series(cg_series))
 
 
 def goal_name(goal, conversion_goals=None):
@@ -594,7 +594,24 @@ def create_line_series(cg_series):
         if value_differs:
             date = dps[-1][0]
             new_series[name].append([(date, dps[-1][1]), dps[-1]])
+    return new_series
 
+
+def generate_missing(cg_series):
+    day_delta = datetime.timedelta(days=1)
+
+    new_series = {}
+    for name, line_list in cg_series.iteritems():
+        new_series[name] = []
+        for point_pair in line_list:
+            horizontal_series = []
+            horizontal_series.append(point_pair[0])
+            date = point_pair[0][0] + day_delta
+            while date < point_pair[1][0]:
+                horizontal_series.append((date, point_pair[0][1]))
+                date += day_delta
+            horizontal_series.append(point_pair[1])
+            new_series[name].append(horizontal_series)
     return new_series
 
 
@@ -645,7 +662,7 @@ def inverted_campaign_goal_map(conversion_goals=None):
 
         ret['avg_cost_per_{}'.format(vk)] = {
             'id': 'avg_cost_per_{}'.format(vk),
-            'name': '{prefix} ({conversion_goal_name})'.format(
+            'name': '{prefix} - {conversion_goal_name}'.format(
                 prefix=cpa_text,
                 conversion_goal_name=cg.name
             ),

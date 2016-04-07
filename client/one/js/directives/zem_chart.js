@@ -16,13 +16,13 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
         },
         templateUrl: '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {
-            var totalsColor = ['#009db2', '#c9eaef'];
-            var colors = [
-                ['#d35400', '#eebe9e'],
-                ['#1abc9c', '#d6f3ed'],
-                ['#34495e', '#d6dbdf'],
-                ['#f39c12', '#fdebd0']
-            ];
+            var totalsColor = ['#009db2', '#c9eaef'],
+                goalsColor = ['#f39c12', '#fdebd0'],
+                colors = [
+                    ['#d35400', '#eebe9e'],
+                    ['#1abc9c', '#d6f3ed'],
+                    ['#34495e', '#d6dbdf'],
+                ];
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
 
             var usedColors = {};
@@ -297,14 +297,18 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
                 metricIds.forEach(function (metricId) {
                     var goal = fieldGoalMap[metricId],
-                        color = getColor(goal);
-                    addLegendItem(color, goal, false, metricIds.indexOf(metricId) + 1);
+                        legendGoal = {
+                            id: goal.id,
+                            name: 'Goals',
+                        },
+                        colors = goalsColor;
+                    addLegendItem(colors, legendGoal, false, metricIds.indexOf(metricId) + 1);
                     campaignGoals[goal.id].forEach(function (rawSeries) {
                         var series = transformDate(rawSeries);
                         if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                             commonYAxis = false;
                         }
-                        addGoalSeries(metricId, goal.name, series, color[index], commonYAxis ? 0 : index);
+                        addGoalSeries(metricId, 'Goal (' + goal.name + ')', series, colors[index], commonYAxis ? 0 : index);
                     });
 
                     index += 1;
