@@ -24,6 +24,9 @@ describe('EditCampaignGoalModalCtrl', function () {
             };
 
             api = {
+                conversionPixel: {
+                    post: mockApiFunc,
+                },
                 campaignGoalValidation: {
                     post: mockApiFunc,
                 },
