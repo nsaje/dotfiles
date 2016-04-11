@@ -1,3 +1,4 @@
+from collections import defaultdict
 import datetime
 from decimal import Decimal
 from mock import call, patch
@@ -175,7 +176,7 @@ class SwitchToLandingModeTestCase(TestCase):
         self.assertTrue(mock_send_email.called)
 
     @patch('actionlog.zwei_actions.send')
-    @patch('automation.campaign_stop._send_campaign_stop_notification_email')
+    @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode(self, mock_get_mrb, mock_send_email, mock_send_actions):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('110')}
@@ -421,90 +422,305 @@ class SetAdGroupEndDateTestCase(TestCase):
         self.assertFalse(mock_zwei_send.called)
 
 
+class StopNonSpendingSourcesTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    @patch('utils.dates_helper.local_today')
+    @patch('reports.api_contentads.query')
+    def test_stop_non_spending_sources(self, mock_get_yesterday_spends, mock_local_today):
+        mock_local_today.return_value = datetime.date(2016, 3, 15)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ad_groups = campaign.adgroup_set.all().filter_active()
+        non_spending_ags_ids = [1, 2]
+
+        mock_get_yesterday_spends.return_value = []
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
+            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
+            if ags.id in non_spending_ags_ids:
+                row['cost'] = Decimal(0)
+            mock_get_yesterday_spends.return_value.append(row)
+
+        current_ags_settings = {
+            ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
+                ad_group_source__ad_group__campaign=campaign,
+            ).group_current_settings()
+        }
+
+        for ags_id in non_spending_ags_ids:
+            self.assertTrue(current_ags_settings[ags_id].state == dash.constants.AdGroupSourceSettingsState.ACTIVE)
+
+        campaign_stop._stop_non_spending_sources(campaign)
+        new_ags_settings = {
+            ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
+                ad_group_source__ad_group__campaign=campaign,
+            ).group_current_settings()
+        }
+
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__campaign=campaign):
+            if ags.id in non_spending_ags_ids:
+                self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, new_ags_settings[ags.id].state)
+            else:
+                self.assertEqual(current_ags_settings[ags.id].state, new_ags_settings[ags.id].state)
+
+    @patch('utils.dates_helper.local_today')
+    @patch('reports.api_contentads.query')
+    @patch('automation.campaign_stop._restore_user_ad_group_settings')
+    def test_stop_whole_ad_group(self, mock_restore_ag_settings, mock_get_yesterday_spends, mock_local_today):
+        mock_local_today.return_value = datetime.date(2016, 3, 15)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ad_groups = campaign.adgroup_set.all().filter_active()
+        non_spending_ag_ids = [1]
+
+        mock_get_yesterday_spends.return_value = []
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
+            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
+            if ags.ad_group_id in non_spending_ag_ids:
+                row['cost'] = Decimal(0)
+            mock_get_yesterday_spends.return_value.append(row)
+
+        current_ag_settings = {
+            ags.ad_group_id: ags for ags in dash.models.AdGroupSettings.objects.filter(
+                ad_group__campaign=campaign,
+            ).group_current_settings()
+        }
+
+        campaign_stop._stop_non_spending_sources(campaign)
+        self.assertTrue(mock_restore_ag_settings.called)
+
+        new_ag_settings = {
+            ags.ad_group_id: ags for ags in dash.models.AdGroupSettings.objects.filter(
+                ad_group__campaign=campaign,
+            ).group_current_settings()
+        }
+        for ag in dash.models.AdGroup.objects.filter(campaign=campaign):
+            if ag.id in non_spending_ag_ids:
+                self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, new_ag_settings[ag.id].state)
+            else:
+                self.assertEqual(current_ag_settings[ag.id].state, new_ag_settings[ag.id].state)
+
+
+class CalculateDailySpendsTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    @patch('utils.dates_helper.local_today')
+    def test_calculate_daily_caps(self, mock_local_today):
+        today = datetime.date(2016, 4, 5)
+        mock_local_today.return_value = today
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        active_ad_groups = campaign.adgroup_set.all().filter_active()
+        for ad_group in active_ad_groups:
+            # ad groups are stopped at the time of running the calculations
+            new_settings = ad_group.get_current_settings().copy_settings()
+            new_settings.end_date = datetime.date(2016, 4, 4)
+            new_settings.save(None)
+
+        remaining_today, _, _ = campaign_stop._get_minimum_remaining_budget(campaign)
+        self.assertEqual(Decimal(900), remaining_today)
+
+        active_ad_groups = campaign.adgroup_set.all().filter_active()
+        self.assertEqual(2, active_ad_groups.count())
+
+        per_date_spend = {
+            (1, datetime.date(2016, 4, 4)): Decimal('100'),
+            (2, datetime.date(2016, 4, 4)): Decimal('100'),
+        }
+
+        daily_caps = campaign_stop._calculate_daily_caps(campaign, per_date_spend)
+
+        self.assertEqual(450, daily_caps[1])
+        self.assertEqual(450, daily_caps[2])
+
+
+class PrepareActiveSourceForAutopilotTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    def test_stop_ad_group_source(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertItemsEqual(
+            [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+
+        per_source_spend = {
+            (1, 1): Decimal('100'),
+            (1, 2): Decimal('80'),
+            (1, 4): Decimal('50'),
+            (1, 5): Decimal('30'),
+            (2, 1): Decimal('100'),
+        }
+
+        daily_caps = {
+            1: 12,
+            2: 12
+        }
+
+        campaign_stop._prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend)
+        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertItemsEqual([1, 2], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+
+    def test_stop_whole_ad_group(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertItemsEqual(
+            [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+
+        per_source_spend = {
+            (1, 1): Decimal('100'),
+            (1, 2): Decimal('80'),
+            (1, 4): Decimal('50'),
+            (1, 5): Decimal('30'),
+            (2, 1): Decimal('100'),
+        }
+
+        daily_caps = {
+            1: 4,
+            2: 12
+        }
+
+        campaign_stop._prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend)
+        self.assertItemsEqual([ag2], campaign.adgroup_set.all().filter_active())
+        self.assertItemsEqual(
+            [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+
+
+class RunAutopilotTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    @patch('automation.autopilot_plus.prefetch_autopilot_data')
+    @patch('automation.autopilot_budgets.get_autopilot_daily_budget_recommendations')
+    @patch('automation.autopilot_cpc.get_autopilot_cpc_recommendations')
+    @patch('automation.autopilot_plus.set_autopilot_changes')
+    def test_run_autopilot(self, mock_set_changes, mock_ap_cpc, mock_ap_budget, mock_ap_prefetch):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        daily_caps = {
+            1: 100,
+            2: 200,
+        }
+
+        mock_ap_prefetch.return_value = ({
+            ag1: 'Mock ad group 1 prefetch data',
+            ag2: 'Mock ad group 2 prefetch data',
+        }, {
+            campaign: 'Mock campaign goal'
+        })
+
+        ag1_budget_changes = {
+            dash.models.AdGroupSource.objects.get(id=1): {'new_budget': Decimal('1'), 'old_budget': Decimal('2')},
+            dash.models.AdGroupSource.objects.get(id=2): {'new_budget': Decimal('1'), 'old_budget': Decimal('2')},
+            dash.models.AdGroupSource.objects.get(id=4): {'new_budget': Decimal('1'), 'old_budget': Decimal('2')},
+            dash.models.AdGroupSource.objects.get(id=5): {'new_budget': Decimal('1'), 'old_budget': Decimal('2')},
+        }
+        ag2_budget_changes = {
+            dash.models.AdGroupSource.objects.get(id=5): {'new_budget': Decimal('5'), 'old_budget': Decimal('10')},
+        }
+
+        def _budget_ap_return(ad_group, daily_cap, data, campaign_goal):
+            ret = {
+                1: ag1_budget_changes,
+                2: ag2_budget_changes,
+            }
+            return ret[ad_group.id]
+        mock_ap_budget.side_effect = _budget_ap_return
+
+        ag1_cpc_changes = {
+            dash.models.AdGroupSource.objects.get(id=1): {'new_cpc_cc': Decimal('0.15'), 'old_cpc_cc': Decimal('0.1')},
+            dash.models.AdGroupSource.objects.get(id=2): {'new_cpc_cc': Decimal('0.15'), 'old_cpc_cc': Decimal('0.1')},
+            dash.models.AdGroupSource.objects.get(id=4): {'new_cpc_cc': Decimal('0.15'), 'old_cpc_cc': Decimal('0.1')},
+            dash.models.AdGroupSource.objects.get(id=5): {'new_cpc_cc': Decimal('0.15'), 'old_cpc_cc': Decimal('0.1')},
+        }
+        ag2_cpc_changes = {
+            dash.models.AdGroupSource.objects.get(id=6): {'new_cpc_cc': Decimal('0.20'), 'old_cpc_cc': Decimal('0.05')},
+        }
+
+        def _cpc_ap_return(ad_group, data, budget_changes):
+            ret = {
+                1: ag1_cpc_changes,
+                2: ag2_cpc_changes,
+            }
+            return ret[ad_group.id]
+        mock_ap_cpc.side_effect = _cpc_ap_return
+
+        campaign_stop._run_autopilot(campaign, daily_caps)
+
+        budget_ap_calls = [
+            call(ag1, 100, 'Mock ad group 1 prefetch data', campaign_goal='Mock campaign goal'),
+            call(ag2, 200, 'Mock ad group 2 prefetch data', campaign_goal='Mock campaign goal'),
+        ]
+        mock_ap_budget.assert_has_calls(budget_ap_calls, any_order=True)
+
+        cpc_ap_calls = [
+            call(ag1, 'Mock ad group 1 prefetch data', ag1_budget_changes),
+            call(ag2, 'Mock ad group 2 prefetch data', ag2_budget_changes),
+        ]
+        mock_ap_cpc.assert_has_calls(cpc_ap_calls, any_order=True)
+
+        set_changes_calls = [
+            call(budget_changes=ag1_budget_changes,
+                 cpc_changes=ag1_cpc_changes,
+                 system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+                 landing_mode=True),
+            call(budget_changes=ag2_budget_changes,
+                 cpc_changes=ag2_cpc_changes,
+                 system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+                 landing_mode=True),
+        ]
+        mock_set_changes.assert_has_calls(set_changes_calls, any_order=True)
+
+
 class UpdateCampaignsInLandingTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
+    @patch('utils.dates_helper.local_today')
+    @patch('automation.campaign_stop._run_autopilot')
+    @patch('automation.campaign_stop._get_yesterday_source_spends')
+    @patch('automation.campaign_stop._get_past_7_days_data')
+    @patch('dash.api.order_ad_group_settings_update')
     @patch('actionlog.zwei_actions.send')
-    @patch('automation.autopilot_plus.prefetch_autopilot_data')
-    @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    @patch('automation.autopilot_budgets.get_autopilot_daily_budget_recommendations')
-    @patch('automation.campaign_stop._get_ad_group_ratios')
-    @patch('automation.autopilot_cpc.get_autopilot_cpc_recommendations')
-    def test_set_new_daily_budgets(self, mock_get_cpc_rec, mock_ag_ratios, mock_get_budget_rec,
-                                   mock_get_mrb, mock_prefetch_ap_data, mock_zwei_send):
-        ag1 = dash.models.AdGroup.objects.get(id=1)
-        ag2 = dash.models.AdGroup.objects.get(id=2)
+    def test_update_campaigns_in_landing(self, mock_zwei_send, mock_order_ad_group_update, mock_get_past_data,
+                                         mock_get_yesterday_spends, mock_run_ap, mock_local_today):
+        today = datetime.date(2016, 4, 5)
 
-        mock_get_mrb.return_value = Decimal(401), None, None
-        mock_prefetch_ap_data.return_value = ({
-            ag1: "Ad group 1 mock data",
-            ag2: "Ad group 2 mock data",
-        }, {ag1.campaign: 'test_campaign_goal'})
-
-        mock_ag_ratios.return_value = {
-            1: 0.5,
-            2: 0.5
-        }
-
-        def ret_get_budget_rec(ad_group, daily_budget_cap, data, campaign_goal):
-            # mock old daily budgets, they're not taken from fixtures
-            ret = {
-                ag1: {
-                    dash.models.AdGroupSource.objects.get(id=1): {"old_budget": Decimal(10), "new_budget": Decimal(5)},
-                    dash.models.AdGroupSource.objects.get(id=2): {"old_budget": Decimal(10), "new_budget": Decimal(10)},
-                    dash.models.AdGroupSource.objects.get(id=4): {"old_budget": Decimal(8), "new_budget": Decimal(4)},
-                    dash.models.AdGroupSource.objects.get(id=5): {"old_budget": Decimal(10), "new_budget": Decimal(10)}
-                },
-                ag2: {
-                    dash.models.AdGroupSource.objects.get(id=6): {"old_budget": Decimal(15), "new_budget": Decimal(5)}
-                },
-            }
-
-            return ret[ad_group]
-        mock_get_budget_rec.side_effect = ret_get_budget_rec
-
-        def ret_get_cpc_rec(ad_group, data, budget_changes):
-            # mock old daily budgets, they're not taken from fixtures
-            ret = {
-                ag1: {
-                    dash.models.AdGroupSource.objects.get(id=1): {"old_cpc_cc": Decimal('0.15'),
-                                                                  "new_cpc_cc": Decimal('0.20')},
-                    dash.models.AdGroupSource.objects.get(id=2): {"old_cpc_cc": Decimal('0.15'),
-                                                                  "new_cpc_cc": Decimal('0.20')},
-                    dash.models.AdGroupSource.objects.get(id=4): {"old_cpc_cc": Decimal('0.15'),
-                                                                  "new_cpc_cc": Decimal('0.20')},
-                    dash.models.AdGroupSource.objects.get(id=5): {"old_cpc_cc": Decimal('0.15'),
-                                                                  "new_cpc_cc": Decimal('0.20')}
-                },
-                ag2: {
-                    dash.models.AdGroupSource.objects.get(id=6): {"old_cpc_cc": Decimal('0.15'),
-                                                                  "new_cpc_cc": Decimal('0.20')}
-                },
-            }
-
-            return ret[ad_group]
-        mock_get_cpc_rec.side_effect = ret_get_cpc_rec
+        yesterday = today - datetime.timedelta(days=1)
+        mock_local_today.return_value = today
 
         campaign = dash.models.Campaign.objects.get(id=1)
-        new_actions = campaign_stop._set_new_daily_budgets(campaign)
+        campaign_stop._switch_campaign_to_landing_mode(campaign)
 
-        mock_prefetch_ap_data.assert_called_once_with(test_helper.QuerySetMatcher([ag1, ag2]))
+        mock_order_ad_group_update.reset_mock()
+        mock_order_ad_group_update.return_value = []
 
-        budget_rec_calls = [
-            call(ag1, Decimal(200), "Ad group 1 mock data", campaign_goal='test_campaign_goal'),
-            call(ag2, Decimal(200), "Ad group 2 mock data", campaign_goal='test_campaign_goal'),
-        ]
-        mock_get_budget_rec.assert_has_calls(budget_rec_calls, any_order=True)
+        mock_run_ap.return_value = []
 
-        self.assertFalse(mock_zwei_send.called)
-        self.assertEqual(5, len(new_actions))
+        ret = {}
+        for ad_group in campaign.adgroup_set.all():
+            for ags in ad_group.adgroupsource_set.all():
+                ret[(ags.ad_group_id, ags.source_id)] = Decimal('100')
+        mock_get_yesterday_spends.return_value = ret
 
-        for action in new_actions:
-            self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, action.action)
-            self.assertTrue('cpc_cc' in action.payload['args']['conf'])
-            if action.ad_group_source_id in [1, 4, 6]:  # where new budget differs from old budget
-                self.assertTrue('daily_budget_cc' in action.payload['args']['conf'])
+        date_spend, source_spend = {}, {}
+        for ad_group in campaign.adgroup_set.all():
+            for ags in ad_group.adgroupsource_set.all():
+                date_spend[(ags.ad_group_id, yesterday)] = Decimal('100')
+                source_spend[(ags.ad_group_id, ags.source_id)] = Decimal('100')
+        mock_get_past_data.return_value = (date_spend, source_spend)
 
-            current_settings = action.ad_group_source.get_current_settings()
-            self.assertTrue(current_settings.landing_mode)
+        self.assertEqual(1, len(dash.models.Campaign.objects.all().filter_landing()))
+        campaign_stop.update_campaigns_in_landing()

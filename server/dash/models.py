@@ -1499,6 +1499,19 @@ class AdGroupSource(models.Model):
 
             return self.filter(source__in=sources)
 
+        def filter_active(self):
+            """
+            Returns only ad groups sources that have settings set to active.
+            """
+            latest_ags_settings = AdGroupSourceSettings.objects.\
+                filter(ad_group_source__in=self).\
+                group_current_settings()
+            active_ags_ids = AdGroupSourceSettings.objects.\
+                filter(id__in=latest_ags_settings).\
+                filter(state=constants.AdGroupSourceSettingsState.ACTIVE).\
+                values_list('ad_group_source_id', flat=True)
+            return self.filter(id__in=active_ags_ids)
+
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
         if self.source.source_type and\
