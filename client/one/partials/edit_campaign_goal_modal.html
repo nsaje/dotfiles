@@ -83,6 +83,10 @@
                     </p>
                 </div>
 
+                <div class="col-xs-4" ng-if="campaignGoal.conversionGoal.goalId === 'new'">
+                    <input type="text" id="goal-new-pixel-input" class="form-control" ng-model="newPixel" placeholder="Pixel name" />
+                </div>
+
                 <!-- This div is here to move error messages below the value field (it serves as a blank label) -->
                 <div class="col-xs-4" ng-if="!availablePixels.length"></div>
 

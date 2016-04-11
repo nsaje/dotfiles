@@ -8,6 +8,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.unit = '';
     $scope.availablePixels = [];
     $scope.loadingPixels = true;
+    $scope.newPixel = undefined;
 
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
@@ -246,6 +247,10 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             if (invalid < options.conversionWindows.length) {
                 availablePixels.push(p);
             }
+        });
+        availablePixels.push({
+            id: 'new',
+            slug: 'Create new pixel',
         });
         return availablePixels;
     };
