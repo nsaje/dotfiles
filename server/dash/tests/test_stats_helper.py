@@ -74,13 +74,14 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         defaults = {
             'slug': [cg.pixel.slug for cg in conversion_goals],
             'account': [cg.pixel.account_id for cg in conversion_goals],
-            'conversion_window': [cg.conversion_window for cg in conversion_goals]
+            'conversion_window': [cg.conversion_window for cg in conversion_goals],
+            'campaign': [cg.campaign.id for cg in conversion_goals],
         }
         if self.use_separate_rows_for_tp_conversions:
-            for b in set(breakdown) - set(['slug']):
+            for b in set(breakdown) - set(['slug', 'campaign']):
                 defaults[b] = [9999 for cg in conversion_goals]
-
-        _update_with_defaults(touchpoint_conversion_stats, breakdown + ['slug', 'account', 'conversion_window'],
+        bd = breakdown + ['slug', 'account', 'conversion_window']
+        _update_with_defaults(touchpoint_conversion_stats, bd + ['campaign'] if 'campaign' not in bd else bd,
                               defaults=defaults)
         return touchpoint_conversion_stats
 
@@ -406,6 +407,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'touchpoint_count': 10,
             'conversion_count': 5,
             'account': conversion_goals[0].pixel.account_id,
+            'campaign': conversion_goals[0].campaign.id,
             'slug': conversion_goals[0].pixel.slug,
             'conversion_window': conversion_goals[0].conversion_window
         }]
@@ -511,6 +513,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         mock_tp_query.side_effect = [
             [{
                 "account": 1,
+                "campaign": 1,
                 "ad_group": 9999,
                 "conversion_count": 5,
                 "slug": "test",
@@ -518,6 +521,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
                 "conversion_window": 168,
             }, {
                 "account": 1,
+                "campaign": 1,
                 "ad_group": 9999,
                 "conversion_count": 4,
                 "slug": "test",
@@ -525,6 +529,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
                 "conversion_window": 1,
             }, {
                 "account": 1,
+                "campaign": 1,
                 "ad_group": 9999,
                 "conversion_count": 11,
                 "slug": "test",

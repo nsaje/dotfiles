@@ -8,6 +8,7 @@ import utils.sort_helper
 from dash import conversions_helper, constants
 from reports import api_touchpointconversions, api_publishers
 from utils import sort_helper
+from utils import exc
 
 
 def get_reports_api_module(can_see_redshift_stats):
