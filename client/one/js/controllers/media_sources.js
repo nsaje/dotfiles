@@ -563,7 +563,14 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
+        if ($scope.dailyStatsPromise !== undefined) {
+            $scope.dailyStatsPromise.abort();
+        }
+
+        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate,
+            $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true);
+
+        $scope.dailyStatsPromise.then(
             function (data) {
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
@@ -572,7 +579,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.dailyStatsPromise = undefined;
+        });
     };
 
     var updateInfoboxData = function (data) { 
