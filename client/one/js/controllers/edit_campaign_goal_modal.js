@@ -147,11 +147,14 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         if ($scope.campaignGoal.conversionGoal.goalId === '___new___') {
             api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
                 function (data) {
+                    $scope.campaignGoal.conversionGoal.goalId = data.id;
                     $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
                 },
                 function (data) {
                     if (data && data.message) {
-                        $scope.errors = [data.message];
+                        $scope.errors.conversionGoal = {
+                            goalId: data.message,
+                        };
                     }
                     $scope.savingInProgress = false;
                 }
