@@ -8,7 +8,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.unit = '';
     $scope.availablePixels = [];
     $scope.loadingPixels = true;
-    $scope.newPixel = undefined;
+    $scope.pixel = {};
 
 
     if ($scope.campaignGoal === undefined) {
@@ -143,9 +143,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         }
 
         if ($scope.campaignGoal.conversionGoal.goalId === '___new___') {
-            $scope.campaignGoal.conversionGoal.goalId = null;
-
-            api.conversionPixel.post($scope.account.id, $scope.newPixel).then(
+            // $scope.campaignGoal.conversionGoal.goalId = null;
+            console.log($scope.account.id, $scope.pixel.name);
+            api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
                 function (data) {
                     $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
                 },
