@@ -10,7 +10,7 @@ oneApp.directive('zemNumericValidator', function () {
                 if (transformedInput !== inputValue) {
                     modelCtrl.$setViewValue(transformedInput);
                     modelCtrl.$render();
-                }         
+                }
                 return transformedInput;
             });
         },
