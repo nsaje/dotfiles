@@ -829,9 +829,16 @@ class CampaignGoal(models.Model):
                 campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
 
         if with_values:
+            default_rounding_format = '1.00'
+            rounding_format = {
+                constants.CampaignGoalKPI.CPC: '1.000'
+            }
+
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt),
-                 'value': Decimal(value.value).quantize(Decimal('1.00'))}
+                 'value': Decimal(value.value).quantize(Decimal(
+                    rounding_format.get(self.type, default_rounding_format)
+                 ))}
                 for value in self.values.all()
             ]
 
