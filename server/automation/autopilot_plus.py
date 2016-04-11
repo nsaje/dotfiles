@@ -10,6 +10,7 @@ import actionlog.zwei_actions
 import dash
 import dash.campaign_goals
 from dash.constants import CampaignGoalKPI
+from dash import stats_helper
 from automation import models
 from automation import autopilot_budgets
 from automation import autopilot_cpc
@@ -139,6 +140,8 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
 def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilot_state, campaign_goal=None):
     for ag_source in data.keys():
         old_budget = data[ag_source]['old_budget']
+        goal_col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
+        goal_value = data[ag_source][goal_col] if goal_col in data[ag_source] else 0.0
         models.AutopilotLog(
             ad_group=ag_source.ad_group,
             autopilot_type=autopilot_state,
@@ -149,6 +152,7 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
             new_daily_budget=budget_changes[ag_source]['new_budget'] if budget_changes else old_budget,
             yesterdays_spend_cc=data[ag_source]['yesterdays_spend_cc'],
             yesterdays_clicks=data[ag_source]['yesterdays_clicks'],
+            goal_value=goal_value,
             cpc_comments=', '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in
                                    cpc_changes[ag_source]['cpc_comments']) if cpc_changes else '',
             budget_comments=', '.join(automation.constants.DailyBudgetChangeComment.get_text(c) for c in
@@ -174,7 +178,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}, system_user=None, l
 def prefetch_autopilot_data(ad_groups):
     enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups)
     sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
-    yesterday_data, days_ago_data, campaign_goals = _fetch_data(ad_groups, sources)
+    yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals = _fetch_data(ad_groups, sources)
     data = {}
     for source_setting in enabled_ag_sources_settings:
         ag_source = source_setting.ad_group_source
@@ -186,12 +190,25 @@ def prefetch_autopilot_data(ad_groups):
         data[adg][ag_source] = _populate_prefetch_adgroup_source_data(ag_source, source_setting,
                                                                       yesterdays_spend_cc, yesterdays_clicks)
         campaign_goal = campaign_goals.get(adg.campaign)
-        if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
+        if campaign_goal:
             col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
-            data[adg][ag_source][col] = autopilot_settings.GOALS_WORST_VALUE.get(col)
-            if col in row and row[col]:
-                data[adg][ag_source][col] = row[col]
+            goal_value = autopilot_settings.GOALS_WORST_VALUE.get(col)
+            if campaign_goal.type == CampaignGoalKPI.CPA:
+                    goal_value = _get_conversion_value(ag_source, conv_days_ago_data,
+                                                       campaign_goal.conversion_goal, conv_goals)
+            else:
+                if col in row and row[col]:
+                    goal_value = row[col]
+            data[adg][ag_source][col] = goal_value
     return data, campaign_goals
+
+
+def _get_conversion_value(ag_source, data, conversion_goal, conversion_goals):
+    view_key = conversion_goal.get_view_key(conversion_goals)
+    for r in data:
+        if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
+            return r.get(view_key)
+    return 0
 
 
 def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterdays_spend_cc, yesterdays_clicks):
@@ -210,7 +227,7 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
-    days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
+    campaign_goals, conversion_goals = _get_autopilot_goals(ad_groups)
 
     yesterday_data = reports.api_contentads.query(
         yesterday,
@@ -221,16 +238,26 @@ def _fetch_data(ad_groups, sources):
     )
 
     days_ago_data = reports.api_contentads.query(
-        days_ago,
+        yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS),
         yesterday,
         breakdown=['ad_group', 'source'],
         ad_group=ad_groups,
         source=sources
     )
 
-    campaign_goals = _get_autopilot_campaigns_goals(ad_groups)
+    conversions_days_ago_data = stats_helper.get_stats_with_conversions(
+        None,
+        yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS),
+        yesterday,
+        breakdown=['ad_group', 'source'],
+        conversion_goals=conversion_goals,
+        constraints={
+            'ad_group': ad_groups,
+            'source': sources,
+        },
+        filter_by_permissions=False)
 
-    return yesterday_data, days_ago_data, campaign_goals
+    return yesterday_data, days_ago_data, conversions_days_ago_data, campaign_goals, conversion_goals
 
 
 def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
@@ -250,13 +277,17 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
     return row, yesterdays_spend_cc, yesterdays_clicks
 
 
-def _get_autopilot_campaigns_goals(ad_groups):
+def _get_autopilot_goals(ad_groups):
     campaign_goals = {}
+    conversion_goals = []
     for adg in ad_groups:
         camp = adg.campaign
         if camp not in campaign_goals:
-            campaign_goals[camp] = dash.campaign_goals.get_primary_campaign_goal(camp)
-    return campaign_goals
+            primary_goal = dash.campaign_goals.get_primary_campaign_goal(camp)
+            campaign_goals[camp] = primary_goal
+            if primary_goal and primary_goal.type == dash.constants.CampaignGoalKPI.CPA:
+                conversion_goals.append(primary_goal.conversion_goal)
+    return campaign_goals, conversion_goals
 
 
 def _report_autopilot_exception(element, e):
