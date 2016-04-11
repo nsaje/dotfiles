@@ -10,7 +10,7 @@
                 </label>
                 <div class="col-xs-3" ng-class="{'has-error': errors.type}">
                     <div class="input-group goal-type">
-                        <input id="goal-value" type="text" zem-focus-select class="form-control" ng-model="campaignGoal.value" placeholder="0.00" />
+                        <input id="goal-value" type="text" zem-focus-select zem-numeric-validator class="form-control" ng-model="campaignGoal.value" placeholder="0.00" maxlength="5" />
                         <div class="input-group-addon" ng-show="!!unit">{{ unit }}</div>
                     </div>
                     <label ng-repeat="error in errors.value" class="error" for="goal-value">{{ error }}</label>
