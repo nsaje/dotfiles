@@ -62,14 +62,6 @@ describe('EditCampaignGoalModalCtrl', function () {
             $scope.campaignGoal = 'goal';
             $scope.errors = {};
 
-            spyOn(api.conversionPixel, 'post').and.callFake(
-                function () {
-                    return {
-                        id: 1,
-                    };
-                }
-            );
-
             spyOn(api.campaignGoalValidation, 'post').and.callFake(
                 function () {
                     return deferred.promise;
