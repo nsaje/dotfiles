@@ -151,7 +151,7 @@
                 </button>
             </div>
             <div class="col-xs-6" ng-if="showAddConversionGoalForm()">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId">
+                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">
                     <span ng-if="newCampaignGoal">Add goal and conversion tracking</span>
                     <span ng-if="!newCampaignGoal">Save goal and conversion tracking</span>
                 </button>

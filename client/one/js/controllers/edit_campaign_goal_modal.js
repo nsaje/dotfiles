@@ -9,6 +9,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.availablePixels = [];
     $scope.loadingPixels = true;
     $scope.pixel = {};
+    $scope.savingInProgress = false;
 
 
     if ($scope.campaignGoal === undefined) {
@@ -128,6 +129,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     };
 
     $scope.save = function () {
+        $scope.savingInProgress = true;
         $scope.clearErrors('type');
         $scope.clearErrors('value');
 
@@ -143,8 +145,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         }
 
         if ($scope.campaignGoal.conversionGoal.goalId === '___new___') {
-            // $scope.campaignGoal.conversionGoal.goalId = null;
-            console.log($scope.account.id, $scope.pixel.name);
             api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
                 function (data) {
                     $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
@@ -153,6 +153,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                     if (data && data.message) {
                         $scope.errors = [data.message];
                     }
+                    $scope.savingInProgress = false;
                 }
             );
         } else {
@@ -166,8 +167,10 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             campaignGoal
         ).then(function () {
             $modalInstance.close(campaignGoal);
+            $scope.savingInProgress = false;
         }, function (response) {
             $scope.errors = api.campaignGoalValidation.convert.errorsFromApi(response);
+            $scope.savingInProgress = false;
         });
     };
 
