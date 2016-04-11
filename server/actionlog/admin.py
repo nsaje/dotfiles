@@ -56,7 +56,6 @@ class CountFilterQuerySet(db_models.QuerySet):
                 and query.low_mark == 0
                 and not query.select
                 and not query.group_by
-                and not query.having
                 and not query.distinct):
             return 'unknown'
 
