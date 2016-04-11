@@ -10,6 +10,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.loadingPixels = true;
     $scope.newPixel = undefined;
 
+
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
         $scope.campaignGoal = {
@@ -141,15 +142,33 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             return;
         }
 
+        if ($scope.campaignGoal.conversionGoal.goalId === '___new___') {
+            $scope.campaignGoal.conversionGoal.goalId = null;
+
+            api.conversionPixel.post($scope.account.id, $scope.newPixel).then(
+                function (data) {
+                    $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
+                },
+                function (data) {
+                    if (data && data.message) {
+                        $scope.errors = [data.message];
+                    }
+                }
+            );
+        } else {
+            $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
+        }
+    };
+
+    $scope.saveApi = function (campaignId, campaignGoal) {
         api.campaignGoalValidation.post(
-            $scope.campaign.id,
-            $scope.campaignGoal
+            campaignId,
+            campaignGoal
         ).then(function () {
-            $modalInstance.close($scope.campaignGoal);
+            $modalInstance.close(campaignGoal);
         }, function (response) {
             $scope.errors = api.campaignGoalValidation.convert.errorsFromApi(response);
         });
-
     };
 
     $scope.clearErrors = function (name) {
@@ -249,7 +268,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             }
         });
         availablePixels.push({
-            id: 'new',
+            id: '___new___',
             slug: 'Create new pixel',
         });
         return availablePixels;
