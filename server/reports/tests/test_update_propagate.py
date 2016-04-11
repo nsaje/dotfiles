@@ -451,6 +451,46 @@ class ContentAdStatsUpdateTest(test.TestCase):
         self.assertEqual(stats[0].data_cost_cc, 200)
         mock_notify_contentadstats_change.assert_called_once_with(date, ad_group.campaign_id)
 
+class GAContentAdReportTransactionTest(test.TransactionTestCase):
+    fixtures = ['test_api_contentads']
+
+    date = datetime.date(2015, 4, 16)
+
+    sample_invalid_data_1 = [
+        parse_v2.GaReportRow(
+                {
+                    "% New Sessions": "96.02%",
+                    "Avg. Session Duration": "00:00:12",
+                    "Bounce Rate": "92.41%",
+                    "Device Category": "mobile",
+                    "Landing Page": "/lasko?_z1_caid=12345&_z1_msid=gravity",
+                    "New Users": "531",
+                    "Pages / Session": "1.12",
+                    "Sessions": "553",
+                    "Yell Free Listings (Goal 1 Completions)": "0",
+                    "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                    "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+                },
+                datetime.date(2015, 4, 16),
+                12345,
+                "gravity",
+                None,
+                {
+                    "Goal 1": 0,
+                }
+        )
+    ]
+
+    def test_invalid_caid(self):
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        with self.assertRaises(Exception):
+            update.process_report(self.date, self.sample_invalid_data_1, constants.ReportType.GOOGLE_ANALYTICS)
+
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
 
 class GaContentAdReportTest(test.TestCase):
     fixtures = ['test_api_contentads']
@@ -504,31 +544,6 @@ class GaContentAdReportTest(test.TestCase):
         )
     ]
 
-    sample_invalid_data_1 = [
-        parse_v2.GaReportRow(
-                {
-                    "% New Sessions": "96.02%",
-                    "Avg. Session Duration": "00:00:12",
-                    "Bounce Rate": "92.41%",
-                    "Device Category": "mobile",
-                    "Landing Page": "/lasko?_z1_caid=12345&_z1_msid=gravity",
-                    "New Users": "531",
-                    "Pages / Session": "1.12",
-                    "Sessions": "553",
-                    "Yell Free Listings (Goal 1 Completions)": "0",
-                    "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
-                    "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
-                },
-                datetime.date(2015, 4, 16),
-                12345,
-                "gravity",
-                None,
-                {
-                    "Goal 1": 0,
-                }
-        )
-    ]
-
     @patch('reports.refresh.notify_contentadstats_change')
     def test_correct_row(self, mock_notify_contentadstats_change):
         self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
@@ -551,16 +566,6 @@ class GaContentAdReportTest(test.TestCase):
         self.assertEqual(8, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
         self.assertTrue(mock_notify_contentadstats_change.called)
-
-    def test_invalid_caid(self):
-        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
-        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
-
-        with self.assertRaises(Exception):
-            update.process_report(self.date, self.sample_invalid_data_1, constants.ReportType.GOOGLE_ANALYTICS)
-
-        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
-        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
 
     @patch('reports.refresh.notify_contentadstats_change')
     def test_invalid_source(self, mock_notify_contentadstats_change):
