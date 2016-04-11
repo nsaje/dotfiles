@@ -3,6 +3,23 @@
 'use strict';
 
 oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, zemFilterService) {
+
+    function createAbortableDefer () {
+        var deferred = $q.defer();
+        var deferredAbort = $q.defer();
+        deferred.promise.abort = function () {
+            deferredAbort.resolve();
+        };
+        deferred.promise.finally(
+            function () {
+                deferred.promise.abort = angular.noop;
+            }
+        );
+
+        deferred.abortPromise = deferredAbort.promise;
+        return deferred;
+    }
+
     function processResponse (resp) {
         return resp.data.success ? resp.data.data : null;
     }
@@ -875,9 +892,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         function getData (url, startDate, endDate, metrics, selectedIds, totals, groupSources) {
-            var deferred = $q.defer();
+
+            var deferred = createAbortableDefer();
             var config = {
-                params: {}
+                params: {},
+                timeout: deferred.abortPromise,
             };
 
             if (startDate) {
