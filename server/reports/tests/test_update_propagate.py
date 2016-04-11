@@ -452,7 +452,7 @@ class ContentAdStatsUpdateTest(test.TestCase):
         mock_notify_contentadstats_change.assert_called_once_with(date, ad_group.campaign_id)
 
 
-class GaContentAdReportTest(test.TransactionTestCase):
+class GaContentAdReportTest(test.TestCase):
     fixtures = ['test_api_contentads']
 
     date = datetime.date(2015, 4, 16)
