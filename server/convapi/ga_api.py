@@ -165,7 +165,7 @@ class GAApiReport(GAReport):
                 logger.debug('No postclick data was found.')
                 break
 
-            if ga_stats.get("containsSampledData", False) or False:
+            if ga_stats.get("containsSampledData"):
                 logger.warning(
                     "Google API returned sampled data. Date: %s, profile id: %s",
                     start_date.isoformat(),
