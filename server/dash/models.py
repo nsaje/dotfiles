@@ -1531,7 +1531,7 @@ class AdGroupSource(models.Model):
             return None
 
         return '{}?ad_group_id={}&source_id={}'.format(
-            reverse('dash.views.views.supply_dash_redirect'),
+            reverse(views.views.supply_dash_redirect),
             self.ad_group.id,
             self.source.id
         )

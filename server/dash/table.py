@@ -1622,7 +1622,7 @@ class CampaignAdGroupsTable(object):
 
     def get_per_ad_group_running_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
         ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
-                                           .filter(ad_group_source__ad_group=ad_groups)\
+                                           .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
