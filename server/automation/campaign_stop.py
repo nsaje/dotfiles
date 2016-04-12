@@ -388,7 +388,7 @@ def _prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend
         if len(active_sources) == 0:
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Lowering mininmum autopilot budget not possible - stopping ad group {}. '
+                notes='Lowering minimum autopilot budget not possible - stopping ad group {}. '
                       'Minimum autopilot budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           _get_min_autopilot_budget(active_sources),
@@ -486,12 +486,12 @@ def _get_ad_group_ratios(ad_groups, per_date_data):
     return normalized
 
 
-def _get_past_7_days_data(ad_groups):
+def _get_past_7_days_data(campaign):
     data = reports.api_contentads.query(
         start_date=dates_helper.local_today() - datetime.timedelta(days=7),
         end_date=dates_helper.local_today() - datetime.timedelta(days=1),
         breakdown=['date', 'ad_group', 'source'],
-        ad_group=ad_groups
+        campaign=campaign,
     )
 
     date_spend = defaultdict(int)
