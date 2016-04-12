@@ -145,7 +145,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         }
 
         if ($scope.campaignGoal.conversionGoal &&
-            ($scope.campaignGoal.conversionGoal.type == constants.conversionGoalType.PIXEL) &&
+            ($scope.campaignGoal.conversionGoal.type ==+ constants.conversionGoalType.PIXEL) &&
             ($scope.campaignGoal.conversionGoal.goalId === '___new___')) {
             api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
                 function (data) {
