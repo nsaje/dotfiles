@@ -305,7 +305,7 @@ def _stop_non_spending_sources(campaign):
                     ad_group.id,
                     '\n'.join(['{}: ${}'.format(
                         ags.source.name,
-                        yesterday_spends.get(ags.ad_group_id, ags.source_id)
+                        yesterday_spends.get((ags.ad_group_id, ags.source_id))
                     ) for ags in ad_group_sources])
                 )
             )
@@ -319,7 +319,7 @@ def _stop_non_spending_sources(campaign):
                           ad_group.id,
                           '\n'.join(['{}: Yesterday spend was ${}'.format(
                               ags.source.name,
-                              yesterday_spends.get(ags.ad_group_id, ags.source_id)
+                              yesterday_spends.get((ags.ad_group_id, ags.source_id))
                           ) for ags in to_stop])
                       )
             )
@@ -444,8 +444,10 @@ def _run_autopilot(campaign, daily_caps):
             campaign=campaign,
             notes='Applying autopilot recommendations for ad group {}:\n{}'.format(
                 ad_group.id,
-                '\n'.join(['{}: Daily budget ${}, CPC ${}'.format(
+                '\n'.join(['{}: Daily budget from ${} to ${}, CPC from ${} to ${}'.format(
                     ags.source.name,
+                    budget_changes.get(ags, {}).get('old_budget', -1),
+                    cpc_changes.get(ags, {}).get('old_cpc_cc', -1),
                     budget_changes.get(ags, {}).get('new_budget', -1),
                     cpc_changes.get(ags, {}).get('new_cpc_cc', -1),
                 ) for ags in sorted(set(budget_changes.keys() + cpc_changes.keys()))])
