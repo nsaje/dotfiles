@@ -829,9 +829,16 @@ class CampaignGoal(models.Model):
                 campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
 
         if with_values:
+            default_rounding_format = '1.00'
+            rounding_format = {
+                constants.CampaignGoalKPI.CPC: '1.000'
+            }
+
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt),
-                 'value': Decimal(value.value).quantize(Decimal('1.00'))}
+                 'value': Decimal(value.value).quantize(Decimal(
+                    rounding_format.get(self.type, default_rounding_format)
+                 ))}
                 for value in self.values.all()
             ]
 
@@ -1498,6 +1505,19 @@ class AdGroupSource(models.Model):
                 return self
 
             return self.filter(source__in=sources)
+
+        def filter_active(self):
+            """
+            Returns only ad groups sources that have settings set to active.
+            """
+            latest_ags_settings = AdGroupSourceSettings.objects.\
+                filter(ad_group_source__in=self).\
+                group_current_settings()
+            active_ags_ids = AdGroupSourceSettings.objects.\
+                filter(id__in=latest_ags_settings).\
+                filter(state=constants.AdGroupSourceSettingsState.ACTIVE).\
+                values_list('ad_group_source_id', flat=True)
+            return self.filter(id__in=active_ags_ids)
 
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''

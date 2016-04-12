@@ -507,7 +507,15 @@ class GAReportFromCSV(GAReport):
         try:
             self.fieldnames = reader.fieldnames
             self.entries = {}
+            count = 0
             for entry in reader:
+                count += 1
+                if count >= 5000:
+                    logger.warning(
+                        "Google report has at least 5000 rows. Date: %s",
+                        report_date.isoformat()
+                    )
+
                 keyword_or_url = entry[self.first_column]
                 if keyword_or_url is None or keyword_or_url.strip() == '':
                     continue
