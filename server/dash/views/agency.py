@@ -612,7 +612,7 @@ class CampaignSettings(api_common.BaseApiView):
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            response['goals'] = self.get_campaign_goals(campaign_id)
+            response['goals'] = self.get_campaign_goals(campaign.account.id, campaign_id)
 
         return self.create_api_response(response)
 
