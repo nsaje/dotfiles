@@ -155,7 +155,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 function (data) {
                     if (data && data.message) {
                         $scope.errors.conversionGoal = {
-                            goalId: data.message,
+                            pixel: [data.message],
                         };
                     }
                     $scope.savingInProgress = false;
