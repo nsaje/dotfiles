@@ -12,26 +12,31 @@ class ColumnTestCase(TestCase):
     def test_g(self):
         column = backtosql.Column('cat')
         self.assertEquals(column.g(), 'cat')
+        self.assertEquals(column.g(prefix='t'), 't.cat')
 
-        column = backtosql.Column('cat', alias='cat')
+        column = backtosql.Column('cat', alias='py_cat')
         self.assertEquals(column.g(), 'cat')
+        self.assertEquals(column.g(prefix='t'), 't.cat')
 
     def test_g_w_alias(self):
         column = backtosql.Column('cat')
         self.assertEquals(column.g_w_alias(), 'cat')
+        self.assertEquals(column.g_w_alias(prefix='t'), 't.cat')
 
-        column = backtosql.Column('cat', alias='cat')
-        self.assertEquals(column.g_w_alias(), 'cat')
+        column = backtosql.Column('cat', alias='py_cat')
+        self.assertEquals(column.g_w_alias(), 'cat AS py_cat')
+        self.assertEquals(column.g_w_alias(prefix='t'), 't.cat AS py_cat')
 
-    def test_gen_prefix(self):
-        column = backtosql.Column('bla')
-        self.assertEquals(column.g('t'), 't.bla')
+    def test_g_alias(self):
+        column = backtosql.Column('cat')
+        with self.assertRaises(backtosql.BackToSQLException):
+            column.g_alias('t')
 
-        column = backtosql.Column('bla', alias='asd')
-        self.assertEquals(column.g('t'), 't.bla asd')
+        column = backtosql.Column('cat', alias='py_cat')
+        self.assertEquals(column.g_alias('t'), 't.py_cat')
 
     def test_set_group(self):
-        column = backtosql.Column('bla', group=1)
+        column = backtosql.Column('cat', group=1)
         self.assertEquals(column.group, 1)
 
 
@@ -40,33 +45,33 @@ class TemplateColumnTestCase(TestCase):
     def setUp(self):
         self.tpl_name = 'test_col.sql'
         self.column = backtosql.TemplateColumn('test_col.sql', {
-            'column_name': 'bla',
+            'column_name': 'cat',
             'multiplier': 100,
-        }, alias='asd')
+        }, alias='py_cat')
 
     def test_g(self):
         column = backtosql.TemplateColumn('test_col.sql', {
-            'column_name': 'bla',
+            'column_name': 'cat',
             'multiplier': 100,
         })
-        self.assertEquals(column.g(), "SUM(bla)*100")
-        self.assertEquals(column.g('t'), "SUM(t.bla)*100")
+        self.assertEquals(column.g(), "SUM(cat)*100")
+        self.assertEquals(column.g('t'), "SUM(t.cat)*100")
 
-    def test_gen_alias(self):
+    def test_g_w_alias(self):
         column = backtosql.TemplateColumn('test_col.sql', {
-            'column_name': 'bla',
+            'column_name': 'cat',
             'multiplier': 100,
-        }, alias='asd')
-        self.assertEquals(column.g(), "SUM(bla)*100 asd")
-        self.assertEquals(column.g('t'), "SUM(t.bla)*100 asd")
+        }, alias='py_cat')
+        self.assertEquals(column.g(), "SUM(cat)*100 AS py_cat")
+        self.assertEquals(column.g('t'), "SUM(t.cat)*100 AS py_cat")
 
     def test_strip_comments(self):
         column = backtosql.TemplateColumn('test_col_comment.sql', {
-            'column_name': 'bla',
+            'column_name': 'cat',
             'multiplier': 100,
-        }, alias='asd')
-        self.assertEquals(column.g(), "SUM(bla)*100 asd")
-        self.assertEquals(column.g('t'), "SUM(t.bla)*100 asd")
+        }, alias='py_cat')
+        self.assertEquals(column.g(), "SUM(cat)*100 AS py_cat")
+        self.assertEquals(column.g('t'), "SUM(t.cat)*100 AS py_cat")
 
 
 class ModelTestCase(TestCase):
@@ -100,26 +105,29 @@ class ModelTestCase(TestCase):
                               [self.ModelA.py_foo])
 
 
-def template_test(self, template, context, output):
+class FiltersTestCase(TestCase):
+
+    def setUp(self):
+        c1 = backtosql.Column('cat', alias='py_cat')
+        c2 = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog', 'multiplier': 131}, alias='py_dog')
+
+    def assertTemplateRenderEquals(self, template, context, output):
         t = Template('{% load backtosql_tags %}'+template)
         c = Context(context)
         self.assertEqual(t.render(c), output)
 
-
-class FiltersTestCase(TestCase):
-
-    def test_g(self):
-        c1 = backtosql.Column('aha', alias='py_aha')
-        c2 = backtosql.TemplateColumn('test_col.sql', {'column_name': 'aa', 'multiplier': 131}, alias='py_aa')
+    def test_g_w_alias(self):
+        c1 = backtosql.Column('cat', alias='py_cat')
+        c2 = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog', 'multiplier': 131}, alias='py_dog')
 
         context = {"cols": [c1, c2]}
-        output = u"aha py_aha/SUM(aa)*131 py_aa"
-        template = "{{ cols|g|join:'/' }}"
-        template_test(self, template, context, output)
+        output = u"cat AS py_aha, SUM(dog)*131 py_dog"
+        template = "{{ cols|g_w_alias|join:',' }}"
+        self.assertTemplateRenderEquals(template, context, output)
 
-        output = u"t.aha py_aha/SUM(t.aa)*131 py_aa"
-        template = "{{ cols|g:'t'|join:'/' }}"
-        template_test(self, template, context, output)
+        output = u"t.cat AS py_cat, SUM(t.dog)*131 AS py_dog"
+        template = "{{ cols|g_w_alias:'t'|join:',' }}"
+        self.assertTemplateRenderEquals(template, context, output)
 
     def test_lspace(self):
         context = {"a": "asd"}

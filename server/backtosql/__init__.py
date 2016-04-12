@@ -2,6 +2,10 @@ from django.template import loader
 from backtosql import helpers
 
 
+class BackToSQLException(Exception):
+    pass
+
+
 def generate_sql(template_name, context):
     template = loader.get_template(template_name)
     return helpers.clean_sql(template.render(context))
@@ -30,7 +34,10 @@ class TemplateColumn(object):
         return generate_sql(self.template_name, context)
 
     def g_alias(self, prefix=None):
-        return "{}{}".format(helpers.clean_prefix(prefix), self.alias)
+        alias = helpers.clean_alias(self.alias)
+        if not alias:
+            raise BackToSQLException("Alias is not defined")
+        return "{}{}".format(helpers.clean_prefix(prefix), alias)
 
     def g_w_alias(self, prefix=None):
         context = self._get_default_context(prefix)
