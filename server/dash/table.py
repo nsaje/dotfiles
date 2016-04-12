@@ -1202,14 +1202,14 @@ class AdGroupAdsPlusTableUpdates(object):
         ad_group_sources_states = models.AdGroupSourceState.objects\
             .filter(
                 ad_group_source__ad_group=ad_group,
-                ad_group_source__source=filtered_sources,
+                ad_group_source__source__in=filtered_sources,
             )\
             .group_current_states()\
             .select_related('ad_group_source')
 
         rows = {}
         for content_ad in changed_content_ads:
-            content_ad_sources = content_ad.contentadsource_set.filter(source=filtered_sources)
+            content_ad_sources = content_ad.contentadsource_set.filter(source__in=filtered_sources)
 
             submission_status = helpers.get_content_ad_submission_status(
                 user,
@@ -1453,14 +1453,14 @@ class AdGroupAdsPlusTable(object):
 
     def _add_submission_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
-            source=filtered_sources,
+            source__in=filtered_sources,
             content_ad_id__in=[row['id'] for row in rows]
         ).select_related('content_ad__ad_group').select_related('source')
 
         ad_group_sources_states = models.AdGroupSourceState.objects\
             .filter(
                 ad_group_source__ad_group=ad_group,
-                ad_group_source__source=filtered_sources,
+                ad_group_source__source__in=filtered_sources,
             )\
             .group_current_states()\
             .select_related('ad_group_source')
@@ -1622,7 +1622,7 @@ class CampaignAdGroupsTable(object):
 
     def get_per_ad_group_running_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
         ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
-                                           .filter(ad_group_source__ad_group=ad_groups)\
+                                           .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
                                            .select_related('ad_group_source')

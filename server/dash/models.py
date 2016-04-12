@@ -1551,7 +1551,7 @@ class AdGroupSource(models.Model):
             return None
 
         return '{}?ad_group_id={}&source_id={}'.format(
-            reverse('dash.views.views.supply_dash_redirect'),
+            reverse(views.views.supply_dash_redirect),
             self.ad_group.id,
             self.source.id
         )
@@ -2153,7 +2153,7 @@ class ContentAd(models.Model):
             if not should_filter_by_sources(sources):
                 return self
 
-            content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
+            content_ad_ids = ContentAdSource.objects.filter(source__in=sources).select_related(
                 'content_ad').distinct('content_ad_id').values_list('content_ad_id', flat=True)
 
             return self.filter(id__in=content_ad_ids)
