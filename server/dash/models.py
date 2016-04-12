@@ -824,6 +824,7 @@ class CampaignGoal(models.Model):
                 'name': self.conversion_goal.name,
                 'conversion_window': self.conversion_goal.conversion_window,
                 'goal_id': self.conversion_goal.goal_id,
+                'pixel_url': None,
             }
             if self.conversion_goal.pixel:
                 campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
