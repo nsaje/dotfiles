@@ -1,7 +1,7 @@
 import logging
 
 from redshift import models, db, helpers
-from templatesql import generate_query
+from backtosql import generate_query
 
 
 logger = logging.getLogger(__name__)

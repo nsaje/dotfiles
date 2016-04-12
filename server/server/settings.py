@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'reports',
     'zweiapi',
     'convapi',
-    'templatesql',
+    'backtosql',
     'redshift',
     'raven.contrib.django.raven_compat',
     'automation',

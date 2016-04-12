@@ -1,6 +1,6 @@
-{% load breakdown_tags tt_tags %}
+{% load breakdown_tags backtosql_tags %}
 
-SELECT {{ breakdowns|prefix:"t"|join:"," }},{{ aggregates|prefix:"t"|join:"," }}
+SELECT {{ breakdowns|gen|join:"," }},{{ aggregates|gen:"t"|join:"," }}
 FROM {{ view }} t
 WHERE
   t.adgroup_id=ANY(%(ad_group_id)s) AND

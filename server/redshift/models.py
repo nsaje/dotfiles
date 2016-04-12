@@ -1,5 +1,5 @@
 from functools import partial
-from templatesql import Model, Column, TemplateColumn
+from backtosql import Model, Column, TemplateColumn
 
 
 class ColumnGroup(object):
