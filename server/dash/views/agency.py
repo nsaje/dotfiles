@@ -559,8 +559,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
-                campaign.account.id,
-                campaign_id
+                campaign
             )
 
         return self.create_api_response(response)
@@ -612,7 +611,7 @@ class CampaignSettings(api_common.BaseApiView):
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            response['goals'] = self.get_campaign_goals(campaign.account.id, campaign_id)
+            response['goals'] = self.get_campaign_goals(campaign)
 
         return self.create_api_response(response)
 
@@ -682,11 +681,10 @@ class CampaignSettings(api_common.BaseApiView):
 
         return errors
 
-    def get_campaign_goals(self, account_id, campaign_id):
+    def get_campaign_goals(self, campaign):
         ret = []
-
         goals = models.CampaignGoal.objects.filter(
-            campaign_id=campaign_id
+            campaign=campaign
         ).prefetch_related(
             Prefetch(
                 'values',
@@ -703,7 +701,7 @@ class CampaignSettings(api_common.BaseApiView):
                     conversion_goal.type == constants.ConversionGoalType.PIXEL:
                 goal_blob['conversion_goal']['pixel_url'] =\
                     conversions_helper.get_conversion_pixel_url(
-                        account_id,
+                        campaign.account.id,
                         conversion_goal.pixel.slug
                     )
             ret.append(goal_blob)
