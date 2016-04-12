@@ -294,7 +294,7 @@ def _stop_non_spending_sources(campaign):
         to_stop = set()
 
         for ags in ad_group_sources:
-            if yesterday_spends.get((ags.ad_group_id.id, ags.source_id), 0) == 0:
+            if yesterday_spends.get((ags.ad_group_id, ags.source_id), 0) == 0:
                 to_stop.add(ags)
 
         if len(to_stop) == len(ad_group_sources):
