@@ -22,9 +22,10 @@
 
   .zem-grid {
     width: 100%;
-    overflow-x: auto;
+    overflow: hidden;
 
     .zem-grid-cell {
+      display: table-cell;
       vertical-align: middle;
       text-align: left;
       padding: 8px;
@@ -32,23 +33,16 @@
     }
 
     .zem-grid-header, .zem-grid-footer {
-      float: left;
-      white-space: nowrap;
+      display: table;
 
       background-color: #f6f6f6;
       font-weight: 600;
-
-      .zem-grid-cell {
-        display: inline-block;
-        // width: 200px;
-      }
     }
 
     .zem-grid-body {
       width: 100%;
-      height: 500px;
-      overflow-x: hidden;
-      overflow-y: auto;
+      max-height: 500px;
+      overflow: auto;
     }
     .zem-grid-table {
       display: table;
@@ -56,10 +50,6 @@
     }
     .zem-grid-row {
       display: table-row;
-
-      .zem-grid-cell {
-        display: table-cell;
-      }
 
       &.level-0 {
         background-color: #f6f6f6;

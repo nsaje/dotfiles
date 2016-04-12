@@ -1,5 +1,9 @@
 <div class="zem-grid-footer">
-    <div class="zem-grid-cell" ng-repeat="col in footer.data.stats">
-        <span class="col-title">{{ col }}</span>
+    <div class="zem-grid-row">
+        <div class="zem-grid-cell"
+             ng-repeat="col in footer.data.stats track by $index"
+             ng-style="getCellStyle($index)">
+            <span class="col-title">{{ col }}</span>
+        </div>
     </div>
 </div>
