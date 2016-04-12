@@ -1795,6 +1795,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         name: goal.conversion_goal.name,
                         goalId: goal.conversion_goal.goal_id,
                         conversionWindow: goal.conversion_goal.conversion_window,
+                        pixelUrl: goal.conversion_goal.pixel_url,
                     };
                 }
                 return converted;

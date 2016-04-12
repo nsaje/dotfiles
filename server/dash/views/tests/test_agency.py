@@ -2273,6 +2273,44 @@ class CampaignSettingsTest(AgencyViewTestCase):
         # there should be no errors
         self.assertNotIn('target_devices', content['data']['errors'])
 
+    def test_get_with_conversion_goals(self):
+        self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        convpix = models.ConversionPixel.objects.create(
+            account=ad_group.campaign.account,
+            slug='janez_slug',
+        )
+        convg = models.ConversionGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.ConversionGoalType.PIXEL,
+            name='janezjanez',
+            pixel=convpix,
+            conversion_window=7,
+            goal_id='9',
+        )
+
+        models.CampaignGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.CampaignGoalKPI.CPA,
+            conversion_goal=convg,
+        )
+
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(1, content['data']['goals'][0]['campaign_id'])
+        self.assertDictContainsSubset(
+            {
+                'name': 'janezjanez',
+                'pixel_url': 'https://p1.zemanta.com/p/1/janez_slug/',
+            },
+            content['data']['goals'][0]['conversion_goal'],
+        )
+
 
 class AccountAgencyTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml']
