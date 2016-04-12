@@ -1007,7 +1007,7 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False, send_action=False):
+def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False, create_action=False):
     cpc_cc = ad_group_source.source.default_cpc_cc
     if mobile_only:
         cpc_cc = ad_group_source.source.default_mobile_cpc_cc
@@ -1019,7 +1019,7 @@ def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, ac
     }
 
     settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(resource, request, send_action=send_action)
+    settings_writer.set(resource, request, create_action=create_action)
 
 
 def format_decimal_to_percent(num):

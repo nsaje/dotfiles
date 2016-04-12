@@ -493,7 +493,7 @@ def get_campaign_goal_metrics(campaign, start_date, end_date):
         conversion_goals=False
     )
     return generate_series(
-        campaign_goal_values,
+        eliminate_duplicates(campaign_goal_values),
         pre_cg_vals,
         start_date,
         end_date,
@@ -520,12 +520,19 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
     )
 
     return generate_series(
-        campaign_goal_values,
+        eliminate_duplicates(campaign_goal_values),
         pre_cg_vals,
         start_date,
         end_date,
         conversion_goals=conversion_goals
     )
+
+
+def eliminate_duplicates(campaign_goal_values):
+    date_hash = {}
+    for campaign_goal_value in campaign_goal_values:
+        date_hash[campaign_goal_value.created_dt.date()] = campaign_goal_value
+    return sorted(date_hash.values(), key=lambda x: x.created_dt)
 
 
 def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
