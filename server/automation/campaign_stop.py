@@ -390,7 +390,7 @@ def _prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend
         if len(active_sources) == 0:
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Stopping ad group {} - lowering minimum autopilot budget not possible.'
+                notes='Stopping ad group {} - lowering minimum autopilot budget not possible. '
                       'Minimum autopilot budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           _get_min_autopilot_budget(active_sources + to_stop),
@@ -403,11 +403,11 @@ def _prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend
         if to_stop:
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Stopping sources {} on ad group {} - lowering minimum autopilot budget not possible.'
+                notes='Stopping sources {} on ad group {} - lowering minimum autopilot budget not possible. '
                       'Minimum autopilot budget: {}, Daily cap: {}.'.format(
                           ', '.join([ags.source.name for ags in to_stop]),
                           ad_group.id,
-                          _get_min_autopilot_budget(to_stop),
+                          _get_min_autopilot_budget(active_sources + to_stop),
                           ag_daily_cap,
                       )
             )
