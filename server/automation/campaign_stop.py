@@ -294,7 +294,7 @@ def _stop_non_spending_sources(campaign):
         to_stop = set()
 
         for ags in ad_group_sources:
-            if yesterday_spends.get((ad_group.id, ags.source_id), 0) == 0:
+            if yesterday_spends.get((ags.ad_group_id.id, ags.source_id), 0) == 0:
                 to_stop.add(ags)
 
         if len(to_stop) == len(ad_group_sources):
@@ -343,7 +343,7 @@ def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_to
     notes = 'Calculated ad group daily caps to:\n'
     for ad_group in ad_groups:
         notes += 'Ad group: {}, Daily cap: ${}\n'.format(ad_group.id, daily_caps[ad_group.id])
-    notes = 'Remaining budget today: {}\n\n'.format(remaining_today)
+    notes += 'Remaining budget today: {}\n\n'.format(remaining_today)
     notes += '\nPast spends:\n'
     for ad_group in ad_groups:
         notes += 'Ad group: {}, Per date spends: '.format(ad_group.id)
