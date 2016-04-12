@@ -1,4 +1,6 @@
+from django.core.urlresolvers import reverse
 from django.contrib import admin
+from django.utils.html import format_html
 
 from . import models
 
@@ -57,3 +59,28 @@ class AutopilotLogAdmin(admin.ModelAdmin):
     readonly_fields = ['created_dt']
 
 admin.site.register(models.AutopilotLog, AutopilotLogAdmin)
+
+
+class CampaignStopLogAdmin(admin.ModelAdmin):
+    search_fields = ['campaign__name']
+    list_display = (
+        'id',
+        'campaign_link',
+        'formatted_notes',
+        'created_dt',
+    )
+    readonly_fields = ['created_dt']
+
+    def formatted_notes(self, obj):
+        return format_html('<div style="white-space: pre-wrap">{}</div>', obj.notes)
+    formatted_notes.short_description = 'Notes'
+
+    def campaign_link(self, obj):
+        return format_html(
+            '<a href="{}">{}</a>',
+            reverse('admin:dash_campaign_change', args=(obj.campaign_id,)),
+            obj.campaign.name
+        )
+    campaign_link.short_description = 'Campaign'
+
+admin.site.register(models.CampaignStopLog, CampaignStopLogAdmin)

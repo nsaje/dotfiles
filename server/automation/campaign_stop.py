@@ -9,7 +9,7 @@ from django.db import transaction
 import actionlog.api
 from actionlog import zwei_actions
 
-from automation import autopilot_budgets, autopilot_cpc, autopilot_plus, autopilot_settings
+from automation import autopilot_budgets, autopilot_cpc, autopilot_plus, autopilot_settings, models
 
 import dash.constants
 import dash.models
@@ -117,6 +117,10 @@ def _set_new_daily_budgets(campaign):
 
 
 def _switch_campaign_to_landing_mode(campaign):
+    models.CampaignStopLog.objects.create(
+        campaign=campaign,
+        notes='Switched to landing mode.'
+    )
     new_campaign_settings = campaign.get_current_settings().copy_settings()
     new_campaign_settings.landing_mode = True
     new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
@@ -229,8 +233,13 @@ def _stop_ad_group(ad_group):
 
 def _set_end_date_to_today(campaign):
     actions = []
+    today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
-        actions.extend(_set_ad_group_end_date(ad_group, dates_helper.local_today()))
+        actions.extend(_set_ad_group_end_date(ad_group, today))
+    models.CampaignStopLog.objects.create(
+        campaign=campaign,
+        notes='End date set to {}'.format(today)
+    )
     return actions
 
 
@@ -290,10 +299,30 @@ def _stop_non_spending_sources(campaign):
 
         if len(to_stop) == len(ad_group_sources):
             actions.extend(_stop_ad_group(ad_group))
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Stopping non spending ad group {}. Yesterday spend per source was:\n{}'.format(
+                    ad_group.id,
+                    '\n'.join(['{}: ${}'.format(
+                        ags.source.name,
+                        yesterday_spends.get(ags.ad_group_id, ags.source_id)
+                    ) for ags in ad_group_sources])
+                )
+            )
             continue
 
-        for ags in to_stop:
-            actions.extend(_stop_ad_group_source(ags))
+        if to_stop:
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Stopping non spending ad group sources:\n{}'.format(
+                    '\n'.join(['{}: Yesterday spend was ${}'.format(
+                        ags.source.name,
+                        yesterday_spends.get(ags.ad_group_id, ags.source_id)
+                    ) for ags in to_stop])
+                )
+            )
+            for ags in to_stop:
+                actions.extend(_stop_ad_group_source(ags))
 
     return actions
 
@@ -308,6 +337,24 @@ def _get_min_autopilot_budget(ad_group_sources):
     return sum(min_daily_budgets)
 
 
+def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_today, per_date_spend):
+    notes = 'Remaining budget today: {}\n\n'.format(remaining_today)
+    notes += 'Calculated ad group daily caps to:\n'
+    for ad_group in ad_groups:
+        notes += 'Ad group: {}, Daily cap: ${}\n'.format(ad_group.id, daily_caps[ad_group.id])
+    notes += '\nPast spends:\n'
+    for ad_group in ad_groups:
+        notes += 'Ad group: {}, Per date spends: '.format(ad_group.id)
+        notes += ', '.join(['{}: ${}'.format(key[1], per_date_spend[key])
+                            for key in sorted(per_date_spend.keys(), key=lambda x: x[1]) if key[0] == ad_group.id])
+        notes += '\n'
+
+    models.CampaignStopLog.objects.create(
+        campaign=campaign,
+        notes=notes
+    )
+
+
 def _calculate_daily_caps(campaign, per_date_spend):
     ad_groups = campaign.adgroup_set.all().filter_active()
     daily_cap_ratios = _get_ad_group_ratios(ad_groups, per_date_spend)
@@ -317,6 +364,7 @@ def _calculate_daily_caps(campaign, per_date_spend):
     for ad_group in ad_groups:
         daily_caps[ad_group.id] = int(float(remaining_today) * float(daily_cap_ratios.get(ad_group.id, 0)))
 
+    _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_today, per_date_spend)
     return daily_caps
 
 
@@ -334,14 +382,35 @@ def _prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend
 
         to_stop = []
         while len(active_sources) > 0 and ag_daily_cap < _get_min_autopilot_budget(active_sources):
-            to_stop.append(active_sources.pop(0))
+            to_stop.append(active_sources[0])
+            active_sources = active_sources[1:]
 
         if len(active_sources) == 0:
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Lowering minimum autopilot budget not possible - stopping ad group {}. '
+                      'Minimum autopilot budget: {}, Daily cap: {}.'.format(
+                          ad_group.id,
+                          _get_min_autopilot_budget(active_sources),
+                          ag_daily_cap,
+                      )
+            )
             actions.extend(_stop_ad_group(ad_group))
             continue
 
-        for ags in to_stop:
-            actions.extend(_stop_ad_group_source(ags))
+        if to_stop:
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Lowering minimum autopilot budget, stopping sources {} on ad group {}. '
+                      'Minimum autopilot budget: {}, Daily cap: {}.'.format(
+                          ', '.join([ags.source.name for ags in to_stop]),
+                          ad_group.id,
+                          _get_min_autopilot_budget(to_stop),
+                          ag_daily_cap,
+                      )
+            )
+            for ags in to_stop:
+                actions.extend(_stop_ad_group_source(ags))
 
     return actions
 
@@ -369,6 +438,17 @@ def _run_autopilot(campaign, daily_caps):
         if ap_budget_sum > daily_cap:
             logger.error('Campaign stop - budget allocation error, ad group: %s could overspend', ad_group.id)
 
+        models.CampaignStopLog.objects.create(
+            campaign=campaign,
+            notes='Applying autopilot recommendations for ad group {}:\n{}'.format(
+                ad_group.id,
+                '\n'.join(['{}: Daily budget ${}, CPC ${}'.format(
+                    ags.source.name,
+                    budget_changes.get(ags, {}).get('new_budget', -1),
+                    cpc_changes.get(ags, {}).get('new_cpc_cc', -1),
+                ) for ags in sorted(set(budget_changes.keys() + cpc_changes.keys()))])
+            )
+        )
         actions.extend(
             autopilot_plus.set_autopilot_changes(
                 budget_changes=budget_changes,
@@ -406,12 +486,12 @@ def _get_ad_group_ratios(ad_groups, per_date_data):
     return normalized
 
 
-def _get_past_7_days_data(ad_groups):
+def _get_past_7_days_data(campaign):
     data = reports.api_contentads.query(
         start_date=dates_helper.local_today() - datetime.timedelta(days=7),
         end_date=dates_helper.local_today() - datetime.timedelta(days=1),
         breakdown=['date', 'ad_group', 'source'],
-        ad_group=ad_groups
+        campaign=campaign,
     )
 
     date_spend = defaultdict(int)
@@ -577,9 +657,9 @@ def _send_depleting_budget_notification_email(campaign, remaining_today, max_dai
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
 
-The available media budget remaining today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The remaining media budget today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
-Please add the budget and continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
+Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
 If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes.
 
