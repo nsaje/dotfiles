@@ -151,7 +151,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
             ad_group = helpers.get_ad_group(user, id_)
             active_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
             num_sources = len(set([a.source for a in active_sources]).intersection(filtered_sources))
-            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_group).count() * num_sources
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_group).count() * num_sources
             return self.create_api_response({
                 'ad_group': num_sources <= self.MAX_ROWS,
                 'content_ad': content_ad_rows <= self.MAX_ROWS,
