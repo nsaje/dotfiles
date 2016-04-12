@@ -30,9 +30,6 @@ describe('EditCampaignGoalModalCtrl', function () {
                 campaignGoalValidation: {
                     post: mockApiFunc,
                 },
-                conversionPixel: {
-                    list: mockApiFunc,
-                },
             };
 
             $state = _$state_;

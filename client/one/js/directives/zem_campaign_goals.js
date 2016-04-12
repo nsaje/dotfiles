@@ -155,7 +155,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
                     windowClass: 'modal',
-                    scope: scope
+                    scope: scope,
                 });
                 modalInstance.result.then(function () {});
 
