@@ -314,12 +314,14 @@ def _stop_non_spending_sources(campaign):
         if to_stop:
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Stopping non spending ad group sources:\n{}'.format(
-                    '\n'.join(['{}: Yesterday spend was ${}'.format(
-                        ags.source.name,
-                        yesterday_spends.get(ags.ad_group_id, ags.source_id)
-                    ) for ags in to_stop])
-                )
+                notes='Stopping non spending ad group sources on ad group {}. '
+                      'Yesterday spend per source was:\n{}'.format(
+                          ad_group.id,
+                          '\n'.join(['{}: Yesterday spend was ${}'.format(
+                              ags.source.name,
+                              yesterday_spends.get(ags.ad_group_id, ags.source_id)
+                          ) for ags in to_stop])
+                      )
             )
             for ags in to_stop:
                 actions.extend(_stop_ad_group_source(ags))
@@ -338,10 +340,10 @@ def _get_min_autopilot_budget(ad_group_sources):
 
 
 def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_today, per_date_spend):
-    notes = 'Remaining budget today: {}\n\n'.format(remaining_today)
-    notes += 'Calculated ad group daily caps to:\n'
+    notes = 'Calculated ad group daily caps to:\n'
     for ad_group in ad_groups:
         notes += 'Ad group: {}, Daily cap: ${}\n'.format(ad_group.id, daily_caps[ad_group.id])
+    notes = 'Remaining budget today: {}\n\n'.format(remaining_today)
     notes += '\nPast spends:\n'
     for ad_group in ad_groups:
         notes += 'Ad group: {}, Per date spends: '.format(ad_group.id)
@@ -388,10 +390,10 @@ def _prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend
         if len(active_sources) == 0:
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Lowering minimum autopilot budget not possible - stopping ad group {}. '
+                notes='Stopping ad group {} - lowering minimum autopilot budget not possible.'
                       'Minimum autopilot budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
-                          _get_min_autopilot_budget(active_sources),
+                          _get_min_autopilot_budget(active_sources + to_stop),
                           ag_daily_cap,
                       )
             )
@@ -401,7 +403,7 @@ def _prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend
         if to_stop:
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Lowering minimum autopilot budget, stopping sources {} on ad group {}. '
+                notes='Stopping sources {} on ad group {} - lowering minimum autopilot budget not possible.'
                       'Minimum autopilot budget: {}, Daily cap: {}.'.format(
                           ', '.join([ags.source.name for ags in to_stop]),
                           ad_group.id,
