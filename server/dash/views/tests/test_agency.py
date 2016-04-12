@@ -2273,7 +2273,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         # there should be no errors
         self.assertNotIn('target_devices', content['data']['errors'])
 
-
     def test_get_with_conversion_goals(self):
         self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
 

@@ -1,4 +1,4 @@
-/* global describe,beforeEach,module,it,inject,expect,spyOn */
+/* global describe,beforeEach,module,it,inject,expect,spyOn,constants */
 'use strict';
 
 describe('EditCampaignGoalModalCtrl', function () {
