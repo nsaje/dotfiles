@@ -82,6 +82,50 @@ describe('EditCampaignGoalModalCtrl', function () {
             }, 1500);
 
         });
+
+        it('calls validation, api and adds conversion pixel', function () {
+            var deferred = $q.defer();
+            $scope.campaignGoal = {
+                name: 'conversion goal',
+                conversionGoal: {
+                    goalId: '___new___',
+                    type: constants.conversionGoalType.PIXEL,
+                },
+            };
+            $scope.errors = {};
+            $scope.pixel = {
+                name: 'awesome pixel',
+            };
+
+            spyOn(api.conversionPixel, 'post').and.callFake(
+                function () {
+                    return deferred.promise;
+                }
+            );
+
+            spyOn(api.campaignGoalValidation, 'post').and.callFake(
+                function () {
+                    return deferred.promise;
+                }
+            );
+            spyOn($scope, 'validate').and.callFake(
+                function () {
+                    return true;
+                }
+            );
+            spyOn($modalInstance, 'close');
+
+            $scope.save();
+
+            expect($scope.validate).toHaveBeenCalled();
+            expect(api.conversionPixel.post).toHaveBeenCalledWith(1, 'awesome pixel');
+
+            $timeout(function () {
+                expect($modalInstance.close).toHaveBeenCalled();
+            }, 1500);
+
+        });
+
         it('doesn\'t call api if validation fails', function () {
             var deferred = $q.defer();
 
