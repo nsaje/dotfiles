@@ -219,7 +219,6 @@ a:visited {
     display: table;
     clear: left;
     margin: 10px 0px 0px 14px;
-    padding-bottom: 0px;
 
     .form-alert-exclamation {
         display: table-cell;
@@ -448,24 +447,43 @@ a:visited {
     }
 }
 
-.warning-paused {
+.tabset-label {
     margin-left: 8px;
     margin-top: 12px;
     display: inline-block;
-    color: #bd0a00;
     font-size: 12px;
 }
 
-.little-red-square {
+.warning-paused {
+    .tabset-label;
+    color: #bd0a00;
+}
+
+.info-landing-mode {
+    .tabset-label;
+    color: @default-color;
+}
+
+.tabset-icon {
     margin-left: 24px;
-    width: 9px;
-    height: 9px;
-    background-color: #bd0a00;
     display: inline-block;
     margin-top: 12px;
     border-radius: 2px;
 }
 
+.tabset-landing-mode-icon {
+    .tabset-icon;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+    width: 17px;
+    height: 10px;
+}
+
+.tabset-little-red-square {
+    .tabset-icon;
+    width: 9px;
+    height: 9px;
+    background-color: #bd0a00;
+}
 
 .input-group {
     .input-group-addon {
@@ -987,6 +1005,15 @@ img.zem-icon {
     background-size: 18px 18px;
 }
 
+.infobox-autopilot-icon {
+    color: @infobox-black;
+    text-align: center;
+    background-image: url('img/auto_pilot_icon.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+
 .infobox-icon {
     width: 13px;
     height: 13px;
@@ -1452,6 +1479,9 @@ img.zem-icon {
 }
 
 .zem-table-row {
+    td:first-child {
+        border-left: 5px solid transparent;
+    }
     &.happy {
         td:first-child {
             border-left: 5px solid #73BF44;
@@ -1462,22 +1492,32 @@ img.zem-icon {
             border-left: 5px solid #CB2027;
         }
     }
-    &.average {
-        td:first-child {
-            border-left: 5px solid #fff;
-        }
-    }
 
-    &.superperforming .zem-table-column-value {
+    .superperforming .zem-table-column-value {
         color: #73BF44;
     }
 
-    &.underperforming .zem-table-column-value {
+    .underperforming .zem-table-column-value {
         color: #CB2027;
     }
 }
 
+ul.icon-list {
+    padding: 0;
+    list-style-type: none;
+}
 
+ul.icon-list li {
+    color: #888;
+    font-size: 13px;
+    line-height: 16px;
+
+    img.zem-icon {
+        width: 13px;
+        height: 13px;
+        margin-bottom: 5px;
+    }
+}
 
 .help-popover,
 .help-popover:hover,
@@ -1520,6 +1560,7 @@ img.zem-icon {
 }
 
 .select2-drop,
+.infobox-setting,
 .table-container {
      zem-internal-feature .internal {
         margin-right: 0.5em;
@@ -2651,7 +2692,7 @@ img.zem-icon {
     display: inline-block;
     background-size: 12px;
     margin-bottom: -2px;
-    background-image: url('img/neutral_face.svg');
+    background-image: url('img/performance-column.svg');
 }
 
 .adgroup-status-icon-placeholder() {
@@ -2676,6 +2717,11 @@ img.zem-icon {
 .adgroup-status-stopped-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_paused_gray.svg');
+}
+
+.adgroup-status-autopilot-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/auto_pilot_icon.svg');
 }
 
 .adgroup-status-landing-mode-icon {

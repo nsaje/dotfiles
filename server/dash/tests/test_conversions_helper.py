@@ -51,11 +51,13 @@ class ConversionHelperTestCase(test.TestCase):
             'conversion_count': 100,
             'dummy_info': -1000,
             'account': 1,
+            'conversion_window': 10
         }, {
             'source': -1,
             'publisher': 'wont_be_used',
             'slug': 'goal_none',
             'account': 1,
+            'conversion_window': 12,
         }]
         return rows
 
@@ -141,7 +143,7 @@ class ConversionHelperTestCase(test.TestCase):
             'exchange': 'adiant',
             'dummy_info': -100,
             'conversions': {
-                ('goal_1', 1): 100,
+                ('goal_1', 1, 10): 100,
             }
         })
         self.assertDictEqual(merged_data[1], {
@@ -163,6 +165,7 @@ class ConversionHelperTestCase(test.TestCase):
             'slug': 'goal_1',
             'conversion_count': 100,
             'dummy_info': -1000,
+            'conversion_window': 10,
             'account': 1,
         })
 

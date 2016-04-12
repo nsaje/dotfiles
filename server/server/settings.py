@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'actionlog',
     'reports',
     'zweiapi',
+    'k1api',
     'convapi',
     'backtosql',
     'redshift',

@@ -1,6 +1,6 @@
 postgres:
     container_name: postgres
-    image: postgres:9.3
+    image: postgres:9.4
     environment:
       - POSTGRES_PASSWORD=devpwd
       - POSTGRES_DB=one
@@ -18,11 +18,19 @@ statsd:
     container_name: statsd
     image: verb/socat
     expose:
-      - "8125:8125/udp"
+      - "8125/udp"
     entrypoint: /usr/bin/socat
     command: udp-recv:8125 -
     tty: true
 
+telegraf:
+    container_name: telegraf
+    image: verb/socat
+    expose:
+      - "8135/udp"
+    entrypoint: /usr/bin/socat
+    command: udp-recv:8135 -
+    tty: true
 
 memcached:
     image: memcached
@@ -54,10 +62,12 @@ eins:
       - "statsd:statsd"
       - "memcached:memcached"
       - "einsstatic"
+      - "telegraf"
     volumes:
       - "$HOME/docker-vols/eins/logs/:/app/logs/" # this one will create new folder in your home if it doesn't exist
       - "./server/:/app/zemanta-eins/"
       - "./server/server/localsettings.py.docker:/app/zemanta-eins/server/localsettings.py"
+      - ".:/src:ro"
     working_dir: /app/zemanta-eins/
     entrypoint: /bin/bash
     command: run-docker-dev.sh

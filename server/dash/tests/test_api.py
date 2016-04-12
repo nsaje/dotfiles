@@ -1586,7 +1586,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_action=False)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, create_action=False)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -1665,8 +1665,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None,
-                        system_user=constants.SystemUserType.CAMPAIGN_STOP)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None, landing_mode=True)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -1677,7 +1676,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
-        self.assertEqual(1, new_latest_settings.system_user)
+        self.assertTrue(True, new_latest_settings.landing_mode)
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1698,7 +1697,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
-        self.assertEqual(None, new_latest_settings.system_user)
+        self.assertEqual(new_latest_settings.landing_mode, latest_settings.landing_mode)
 
 
 class AdGroupSettingsOrderTest(TestCase):

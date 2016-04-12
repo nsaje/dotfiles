@@ -53,7 +53,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }];
 
     $scope.exportPlusOptions = [
-      {name: 'Current View', value: 'contentad-csv'}
+      {name: 'By Ad Group (totals)', value: constants.exportType.AD_GROUP},
+      {name: 'Current View', value: constants.exportType.CONTENT_AD, defaultOption: true},
     ];
 
     $scope.bulkActions = [{
@@ -222,13 +223,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         field: 'performance',
         unselectable: true,
         checked: true,
-        type: 'icon',
+        type: 'icon-list',
         totalRow: false,
         help: 'Goal performance indicator',
         order: true,
         initialOrder: 'asc',
-        internal: $scope.isPermissionInternal('zemauth.campaign_goal_optimization'),
-        shown: $scope.hasPermission('zemauth.campaign_goal_optimization')
+        internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+        shown: $scope.hasPermission('zemauth.campaign_goal_performance')
     }, {
         name: 'Status',
         field: 'submission_status',
@@ -667,7 +668,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
     var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function (group) {
+        $scope.chartData.groups.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }
@@ -757,13 +758,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.pollTableUpdates();
                 $scope.updateContentAdSelection();
 
+                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
+                zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
+
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
-                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
-                zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
                 // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
                 // make sure chart selection gets updated
                 defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
@@ -967,6 +969,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     var getDailyStats = function () {
         api.dailyStats.listContentAdStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, getDailyStatsMetrics()).then(
             function (data) {
+                setChartOptions(data.goals);
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
             },
@@ -982,7 +985,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             return;
         }
 
-        api.adGroupOverview.get($state.params.id).then(
+        api.adGroupOverview.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;

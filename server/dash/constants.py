@@ -63,12 +63,15 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
 
 
 class ExportPlusStatus(ConstantBase):
+    # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
     INACTIVE = 2
+    ARCHIVED = 3
 
     _VALUES = {
         ACTIVE: 'Active',
-        INACTIVE: 'Inactive'
+        INACTIVE: 'Inactive',
+        ARCHIVED: 'Archived'
     }
 
 
@@ -147,12 +150,14 @@ class InfoboxStatus(ConstantBase):
     INACTIVE = 'inactive'
     STOPPED = 'stopped'
     LANDING_MODE = 'landing-mode'
+    AUTOPILOT = 'autopilot'
 
     _VALUES = {
         ACTIVE: 'Active',
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
-        LANDING_MODE: 'Landing Mode'
+        LANDING_MODE: 'Landing Mode',
+        AUTOPILOT: 'Auto-Pilot'
     }
 
 

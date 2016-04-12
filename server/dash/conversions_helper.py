@@ -34,7 +34,9 @@ def transform_to_conversion_goals(rows, conversion_goals):
             row[conversion_goal.get_view_key(conversion_goals)] = row.get('conversions', {}).get(key)
 
         for tp_conversion_goal in touchpoint_conversion_goals:
-            key = (tp_conversion_goal.pixel.slug, tp_conversion_goal.pixel.account_id)
+            key = (tp_conversion_goal.pixel.slug,
+                   tp_conversion_goal.pixel.account_id,
+                   tp_conversion_goal.conversion_window)
             # set the default - if tp_conversion_goal result won't contain value, assume it's 0
             goal_value = row.get('conversions', {}).get(key, 0)
             row[tp_conversion_goal.get_view_key(conversion_goals)] = goal_value
@@ -79,7 +81,7 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
                 reorder = True
 
             publisher.setdefault('conversions', {})
-            key = (touchpoint['slug'], touchpoint['account'])
+            key = (touchpoint['slug'], touchpoint['account'], touchpoint['conversion_window'])
             publisher['conversions'][key] = touchpoint['conversion_count']
 
     return publishers_data, reorder

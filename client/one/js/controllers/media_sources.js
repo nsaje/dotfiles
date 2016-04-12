@@ -22,7 +22,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
     $scope.hasInfoboxPermission = false;
-    var userSettings = null;
+    var userSettings = null,
+        hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
 
     $scope.updateSelectedSources = function (sourceId) {
         var i = $scope.selectedSourceIds.indexOf(sourceId);
@@ -33,6 +34,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.selectedSourceIds.push(sourceId);
         }
 
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
@@ -117,6 +119,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             help: 'A media source where your content is being promoted.',
             order: true,
             initialOrder: 'asc'
+        },
+        {
+            nameCssClass: 'performance-icon',
+            field: 'performance',
+            unselectable: true,
+            checked: true,
+            type: 'icon-list',
+            totalRow: false,
+            help: 'Goal performance indicator',
+            order: true,
+            initialOrder: 'asc',
+            internal: $scope.isPermissionInternal('zemauth.campaign_goal_performance'),
+            shown: $scope.hasPermission('zemauth.campaign_goal_performance') && hasCampaignGoals
         },
         {
             name: 'Status',
@@ -462,7 +477,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function (group) {
+        $scope.chartData.groups.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }
@@ -549,7 +564,14 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
+        if ($scope.dailyStatsPromise !== undefined) {
+            $scope.dailyStatsPromise.abort();
+        }
+
+        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate,
+            $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true);
+
+        $scope.dailyStatsPromise.then(
             function (data) {
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
@@ -558,7 +580,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.dailyStatsPromise = undefined;
+        });
     };
 
     var updateInfoboxData = function (data) { 
@@ -674,10 +698,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
             $scope.exportBaseUrl = 'api/' + constants.level.ALL_ACCOUNTS + '/sources/';
             $scope.exportPlusOptions = [
-              {name: 'Current View', value: 'allaccounts-csv'},
-              {name: 'By Account', value: 'account-csv'},
-              {name: 'By Campaign', value: 'campaign-csv'},
-              {name: 'By Ad Group', value: 'adgroup-csv'}
+              {name: 'Current View', value: constants.exportType.ALL_ACCOUNTS},
+              {name: 'By Account', value: constants.exportType.ACCOUNT},
+              {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
+              {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
             ];            
 
         } else if ($scope.level === constants.level.ACCOUNTS) {
@@ -686,10 +710,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [
-              {name: 'Current View', value: 'account-csv'},
-              {name: 'By Campaign', value: 'campaign-csv'},
-              {name: 'By Ad Group', value: 'adgroup-csv'},
-              {name: 'By Content Ad', value: 'contentad-csv'}
+              {name: 'Current View', value: constants.exportType.ACCOUNT},
+              {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
+              {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
+              {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
             ];
             $scope.infoboxLinkTo = 'main.accounts.settings';
         } else if ($scope.level === constants.level.CAMPAIGNS) {
@@ -698,9 +722,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [
-              {name: 'Current View', value: 'campaign-csv'},
-              {name: 'By Ad Group', value: 'adgroup-csv'},
-              {name: 'By Content Ad', value: 'contentad-csv'}
+              {name: 'Current View', value: constants.exportType.CAMPAIGN},
+              {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
+              {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
             ];
 
             $scope.infoboxLinkTo = 'main.campaigns.settings';

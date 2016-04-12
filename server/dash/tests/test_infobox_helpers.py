@@ -1,4 +1,5 @@
 import datetime
+import calendar
 
 from decimal import Decimal
 from django.test import TestCase, mock
@@ -423,19 +424,16 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual("$50.00", setting.value)
         self.assertEqual("50.00% of daily budget", setting.description)
-        self.assertEqual(dash.constants.Emoticon.SAD, setting.icon)
 
         setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
 
         self.assertEqual("$110.00", setting_1.value)
         self.assertEqual("110.00% of daily budget", setting_1.description)
-        self.assertEqual(dash.constants.Emoticon.HAPPY, setting_1.icon)
 
         setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
 
         self.assertEqual("$50.00", setting_0.value)
         self.assertEqual("N/A", setting_0.description)
-        self.assertEqual(dash.constants.Emoticon.SAD, setting_0.icon)
 
 
 class InfoBoxAccountHelpersTest(TestCase):
@@ -446,8 +444,12 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date = datetime.datetime.today().date() + datetime.timedelta(days=30)
+        today = datetime.datetime.today().date()
+
+        _, days_of_month = calendar.monthrange(today.year, today.month)
+
+        start_date = today - datetime.timedelta(days=days_of_month-1)
+        end_date = today + datetime.timedelta(days=days_of_month-1)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
@@ -552,8 +554,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date_1 = datetime.datetime.utcnow() + datetime.timedelta(days=15)
+        _, days_of_month = calendar.monthrange(today.year, today.month)
+        today = datetime.datetime.today().date()
+        start_date_1 = today - datetime.timedelta(days=days_of_month-1)
+        end_date_1 = today + datetime.timedelta(days=(days_of_month-1)/2)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -563,8 +567,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
+        total_duration = days_of_month-1 + (days_of_month-1)/2
+
         self.assertEqual(
-            (Decimal(50) + Decimal(30.0 / 45) * Decimal(100)).quantize(Decimal('.01')),
+            (Decimal(50) + Decimal((days_of_month-1) / float(total_duration) * 100)).quantize(Decimal('.01')),
             dash.infobox_helpers.calculate_all_accounts_total_budget(
                 today - datetime.timedelta(days=60),
                 today
@@ -766,6 +772,44 @@ class InfoBoxAccountHelpersTest(TestCase):
         new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
         new_campaign_settings.landing_mode = False
         new_campaign_settings.save(None)
+
+        # adgroup is active, sources are active and adgroup is on CPC autopilot
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            created_dt=datetime.datetime.utcnow(),
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        )
+        adgs.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            created_dt=datetime.datetime.utcnow(),
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        )
+        adgs.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.AUTOPILOT,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
 
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(

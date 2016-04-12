@@ -362,14 +362,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
-            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
-            return 'adgroup-status-inactive-icon';
-        }
-
-        if (adGroup.state === constants.adGroupSettingsState.INACTIVE) {
+        if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
+            adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
             return 'adgroup-status-stopped-icon';
         }
 
@@ -379,6 +373,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             }
 
             return 'adgroup-status-landing-mode-icon';
+        }
+
+        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
+             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
+            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
+            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
+            return 'adgroup-status-inactive-icon';
+        }
+
+        if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
+              adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
+            return 'adgroup-status-autopilot-icon';
         }
 
         return 'adgroup-status-active-icon';

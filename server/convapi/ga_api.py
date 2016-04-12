@@ -164,6 +164,14 @@ class GAApiReport(GAReport):
             if ga_stats is None:
                 logger.debug('No postclick data was found.')
                 break
+
+            if ga_stats.get("containsSampledData"):
+                logger.warning(
+                    "Google API returned sampled data. Date: %s, profile id: %s",
+                    start_date.isoformat(),
+                    profile_id
+                )
+
             rows = ga_stats.get('rows')
             for row in rows:
                 yield row

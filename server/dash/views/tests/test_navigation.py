@@ -222,6 +222,7 @@ class NavigationDataViewTest(TestCase):
                 'contentAdsTabWithCMS': True,
                 'state': 1,
                 'status': 1,
+                'autopilot_state': 2
             }
         })
 
@@ -251,6 +252,7 @@ class NavigationDataViewTest(TestCase):
                 'contentAdsTabWithCMS': True,
                 'state': 2,
                 'status': 2,
+                'autopilot_state': 2
             }
         })
 
@@ -274,6 +276,7 @@ class NavigationDataViewTest(TestCase):
                 'contentAdsTabWithCMS': True,
                 'state': 2,
                 'status': 2,
+                'autopilot_state': 2
             }
         })
 
@@ -320,6 +323,7 @@ class NavigationTreeViewTest(TestCase):
                     "name": "test adgroup 1",
                     "state": 1,
                     "status": 1,
+                    "autopilot_state": 2,
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
@@ -327,6 +331,7 @@ class NavigationTreeViewTest(TestCase):
                     "name": "test adgroup 2",
                     "state": 1,
                     "status": 2,  # past dates
+                    "autopilot_state": 2,
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
@@ -334,6 +339,7 @@ class NavigationTreeViewTest(TestCase):
                     "name": "test adgroup 3",
                     "state": 2,
                     "status": 2,
+                    "autopilot_state": 2,
                 }],
                 "archived": False,
                 "id": 1,
@@ -358,14 +364,16 @@ class NavigationTreeViewTest(TestCase):
                     "id": 1,
                     "name": "test adgroup 1",
                     "state": 1,
-                    "status": 2  # source paused
+                    "status": 2,  # source paused
+                    "autopilot_state": 2,
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
                     "state": 1,
-                    "status": 2
+                    "status": 2,
+                    "autopilot_state": 2,
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
@@ -373,6 +381,7 @@ class NavigationTreeViewTest(TestCase):
                     "name": "test adgroup 3",
                     "state": 2,
                     "status": 2,  # source paused
+                    "autopilot_state": 2,
                 }],
                 "landingMode": False,
                 "archived": False,
@@ -399,6 +408,7 @@ class NavigationTreeViewTest(TestCase):
                         "name": "test adgroup 4",
                         "state": 2,
                         "status": 2,
+                        "autopilot_state": 2,
                     }
                 ],
                 "id": 2,
@@ -428,6 +438,7 @@ class NavigationTreeViewTest(TestCase):
                         "name": "test adgroup 4",
                         "state": 2,
                         "status": 2,
+                        "autopilot_state": 2,
                     }
                 ],
                 "id": 2,

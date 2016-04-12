@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 def init_set_ad_group_state(ad_group, state, request, send=True):
     order = models.ActionLogOrder.objects.create(
-            order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+        order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
     if state == dash.constants.AdGroupSettingsState.ACTIVE:
