@@ -362,6 +362,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getAdGroupStatusClass = function (adGroup, campaign) {
+        if (adGroup.reloading) {
+            return 'adgroup-status-reloading-icon';
+        }
+
         if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
             adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
             return 'adgroup-status-stopped-icon';

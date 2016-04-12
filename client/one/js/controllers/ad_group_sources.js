@@ -134,6 +134,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 }
                 $scope.loadRequestInProgress = true;
                 $scope.autopilotChanges = '';
+
+                zemNavigationService.notifyAdGroupReloading($state.params.id, true);
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,

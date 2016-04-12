@@ -132,6 +132,13 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
         $rootScope.$emit('navigation-updated');
     }
 
+    function notifyAdGroupReloading(id, reloading) {
+        var adGroupCached = findAdGroupInNavTree(id);
+        updateModel(adGroupCached.adGroup, {
+            reloading: reloading,
+        });
+    }
+
     function updateAllAccountsCache (data) {
         Object.keys(data).forEach(function (key) {
             accounts[key] = data[key];
@@ -206,12 +213,15 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
     }
 
     function reloadAdGroup (id) {
-        return api.navigation.getAdGroup(id).then(function (adGroupData) {
+        notifyAdGroupReloading(id, true);
 
+        return api.navigation.getAdGroup(id).then(function (adGroupData) {
             var adGroupCached = findAdGroupInNavTree(id);
             updateModel(adGroupCached.account, adGroupData.account);
             updateModel(adGroupCached.campaign, adGroupData.campaign);
             updateModel(adGroupCached.adGroup, adGroupData.adGroup);
+            notifyAdGroupReloading(id, false);
+
             notifyCacheUpdate();
             return adGroupCached;
         });
@@ -228,6 +238,8 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
         reloadAccount: reloadAccount,
         reloadCampaign: reloadCampaign,
         reloadAdGroup: reloadAdGroup,
+
+        notifyAdGroupReloading: notifyAdGroupReloading,
 
         updateAllAccountsCache: updateAllAccountsCache,
         updateAdGroupCache: updateAdGroupCache,

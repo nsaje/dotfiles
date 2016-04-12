@@ -31,6 +31,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     };
 
     $scope.archiveAdGroup = function () {
+        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
         if ($scope.canArchive) {
             api.adGroupArchive.archive($scope.adGroup.id).then(function () {
                 $scope.refreshPage();
@@ -39,6 +40,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     };
 
     $scope.restoreAdGroup = function () {
+        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
         if ($scope.canRestore) {
             api.adGroupArchive.restore($scope.adGroup.id).then(function () {
                 $scope.refreshPage();
