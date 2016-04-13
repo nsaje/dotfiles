@@ -164,9 +164,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'retargeting': {
-                    'text': "You have some active media sources that"
-                            " don't support retargeting. To start using it please disable/pause"
-                            " these media sources:",
                     'sources': [
                         'AdsNative',
                         'Gravity',
@@ -195,9 +192,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'end_date': {
-                    'text': 'Your campaign has been switched to landing mode. '
-                    'Please add the budget and continue to adjust settings by your needs. '
-                    '<a href="http://testserver/campaigns/1/budget-plus/">Add budget</a>'
+                    'campaign_id': 1,
                 }
             }
         )
