@@ -451,6 +451,7 @@ class ContentAdStatsUpdateTest(test.TestCase):
         self.assertEqual(stats[0].data_cost_cc, 200)
         mock_notify_contentadstats_change.assert_called_once_with(date, ad_group.campaign_id)
 
+
 class GAContentAdReportTransactionTest(test.TransactionTestCase):
     fixtures = ['test_api_contentads']
 
