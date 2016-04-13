@@ -209,7 +209,7 @@
                     <zem-help-popover content="State of the Auto-Pilot on this Ad Group" placement="top"></zem-help-popover>
                 </label>
                 <div class="col">
-                    <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates' ng-if="showAutoPilotOption(autopilotState.value)">
+                    <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
                         <label>
                             <input type="radio" ng-model="settings.autopilotState" ng-value="autopilotState.value"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover>
                         </label>

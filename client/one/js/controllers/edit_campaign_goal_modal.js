@@ -150,6 +150,8 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
                 function (data) {
                     $scope.campaignGoal.conversionGoal.goalId = data.id;
+                    $scope.campaignGoal.conversionGoal.pixelUrl = data.url;
+
                     $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
                 },
                 function (data) {
@@ -209,7 +211,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.clearErrors('type');
         $scope.clearErrors('conversionGoal');
 
-        $scope.setDefaultValue();
+        if (unit !== undefined) {
+            $scope.setDefaultValue();
+        }
         $scope.unit = unit || '';
     };
 

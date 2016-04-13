@@ -100,3 +100,15 @@ def get_content_ad_source_mapping(request):
     data = {'content_ad_sources': list(contentadsources)}
 
     return JsonResponse(data)
+
+
+@csrf_exempt
+def get_ga_accounts(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    ga_accounts = dash.models.GAAnalyticsAccount.objects.all().values('ga_account_id', 'ga_web_property_id')
+    return JsonResponse({'ga_accounts': list(ga_accounts)})
