@@ -192,6 +192,15 @@ class AdGroupSettingsForm(forms.Form):
         validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
         return cpc_cc
 
+    def clean_autopilot_state(self):
+        autopilot_state = self.cleaned_data.get('autopilot_state')
+        from dash import campaign_goals
+        campaign_goal = campaign_goals.get_primary_campaign_goal(self.ad_group.campaign)
+        if autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+                campaign_goal and campaign_goal.type == constants.CampaignGoalKPI.CPA:
+            raise forms.ValidationError('Automatic budget allocation for CPA campaign goal is not supported.')
+        return autopilot_state
+
     def clean_autopilot_daily_budget(self):
         budget = self.cleaned_data.get('autopilot_daily_budget', 0)
         ap_state = self.cleaned_data.get('autopilot_state')

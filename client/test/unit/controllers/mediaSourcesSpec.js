@@ -51,6 +51,7 @@ describe('MediaSourcesCtrl', function () {
                             finally: function () {},
                         };
                     },
+                    abort: function () {},
                 };
             };
 

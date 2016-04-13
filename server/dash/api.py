@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 BLOCKED_AD_GROUP_SETTINGS = [
     'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
-    'autopilot_state', 'autopilot_daily_budget',
+    'autopilot_state', 'autopilot_daily_budget', 'landing_mode',
 ]
 
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
@@ -1252,7 +1252,7 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj, request, send_action=True, send_to_zwei=True, system_user=None, landing_mode=None):
+    def set(self, settings_obj, request, create_action=True, send_to_zwei=True, system_user=None, landing_mode=None):
         latest_settings = self.ad_group_source.get_current_settings()
 
         state = settings_obj.get('state')
@@ -1293,7 +1293,7 @@ class AdGroupSourceSettingsWriter(object):
 
             self.add_to_history_and_notify(settings_obj, old_settings_obj, request, system_user)
 
-            if send_action:
+            if create_action:
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
@@ -1305,7 +1305,7 @@ class AdGroupSourceSettingsWriter(object):
                         settings_obj,
                         self.ad_group_source
                     )
-        elif send_action:
+        elif create_action:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
             if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
                 new_settings = latest_settings

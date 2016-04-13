@@ -199,7 +199,7 @@ class GlobalLastSuccessfulSourceSyncTestCase(TestCase):
         r.user = zemauth.models.User.objects.create_user('test@example.com')
 
         ad_groups = dash.models.AdGroup.objects.filter(id__in=[3, 4, 5, 7])
-        for ags in dash.models.AdGroupSource.objects.filter(ad_group=ad_groups):
+        for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
             ags.last_successful_sync_dt = None
             ags.save()
 

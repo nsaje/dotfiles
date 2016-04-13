@@ -175,7 +175,7 @@ class AccountSync(BaseSync, ISyncComposite):
                                        .filter(campaign__in=campaigns)\
                                        .exclude_archived()
         ad_group_sources = dash.models.AdGroupSource.objects\
-                                                    .filter(ad_group=ad_groups)\
+                                                    .filter(ad_group__in=ad_groups)\
                                                     .filter(source__in=self.sources)\
                                                     .select_related('ad_group', 'source')
 
@@ -216,7 +216,7 @@ class CampaignSync(BaseSync, ISyncComposite):
     def get_ad_group_sources(self, include_maintenance=False, include_deprecated=False):
         ad_groups = dash.models.AdGroup.objects.filter(campaign=self.obj).exclude_archived()
         ad_group_sources = dash.models.AdGroupSource.objects\
-                                                    .filter(ad_group=ad_groups)\
+                                                    .filter(ad_group__in=ad_groups)\
                                                     .filter(source__in=self.sources)\
                                                     .select_related('ad_group', 'source')
 

@@ -19,6 +19,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
     $scope.autopilotChanges = '';
+    $scope.enablingAutopilotSourcesAllowed = true;
     $scope.loadRequestInProgress = false;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -29,8 +30,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     ];
 
     $scope.exportPlusOptions = [
-      {name: 'Current View', value: 'adgroup-csv'},
-      {name: 'By Content Ad', value: 'contentad-csv'}
+      {name: 'Current View', value: constants.exportType.AD_GROUP},
+      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.updateSelectedSources = function (sourceId) {
@@ -42,7 +43,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.selectedSourceIds.push(sourceId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
@@ -145,6 +146,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                             }
                         });
                         $scope.autopilotChanges = data.autopilot_changed_sources;
+                        $scope.enablingAutopilotSourcesAllowed = data.enabling_autopilot_sources_allowed;
                         $scope.pollSourcesTableUpdates();
 
                         // reload ad group to update its status
@@ -160,6 +162,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 }
 
                 return editableFields['status_setting'].message;
+            },
+            enablingAutopilotSourcesNotAllowed: function () {
+                return !$scope.enablingAutopilotSourcesAllowed;
             },
             disabled: false
         },
@@ -183,7 +188,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             field: 'performance',
             unselectable: true,
             checked: true,
-            type: 'icon',
+            type: 'icon-list',
             totalRow: false,
             help: 'Goal performance indicator',
             order: true,
@@ -585,6 +590,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.lastChange = data.lastChange;
                 $scope.dataStatus = data.dataStatus;
                 $scope.adGroupAutopilotState = data.adGroupAutopilotState;
+                $scope.enablingAutopilotSourcesAllowed = data.enabling_autopilot_sources_allowed;
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
                 $scope.campaignGoals = data.campaign_goals;
                 $scope.selectRows();
@@ -756,7 +762,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function (group) {
+        $scope.chartData && $scope.chartData.groups.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }

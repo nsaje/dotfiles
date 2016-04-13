@@ -8,6 +8,9 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.unit = '';
     $scope.availablePixels = [];
     $scope.loadingPixels = true;
+    $scope.pixel = {};
+    $scope.savingInProgress = false;
+
 
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
@@ -126,6 +129,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     };
 
     $scope.save = function () {
+        $scope.savingInProgress = true;
         $scope.clearErrors('type');
         $scope.clearErrors('value');
 
@@ -140,15 +144,39 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             return;
         }
 
+        if ($scope.campaignGoal.conversionGoal &&
+            ($scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL) &&
+            ($scope.campaignGoal.conversionGoal.goalId === '___new___')) {
+            api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
+                function (data) {
+                    $scope.campaignGoal.conversionGoal.goalId = data.id;
+                    $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
+                },
+                function (data) {
+                    if (data && data.message) {
+                        $scope.errors.conversionGoal = {
+                            pixel: [data.message],
+                        };
+                    }
+                    $scope.savingInProgress = false;
+                }
+            );
+        } else {
+            $scope.saveApi($scope.campaign.id, $scope.campaignGoal);
+        }
+    };
+
+    $scope.saveApi = function (campaignId, campaignGoal) {
         api.campaignGoalValidation.post(
-            $scope.campaign.id,
-            $scope.campaignGoal
+            campaignId,
+            campaignGoal
         ).then(function () {
-            $modalInstance.close($scope.campaignGoal);
+            $modalInstance.close(campaignGoal);
+            $scope.savingInProgress = false;
         }, function (response) {
             $scope.errors = api.campaignGoalValidation.convert.errorsFromApi(response);
+            $scope.savingInProgress = false;
         });
-
     };
 
     $scope.clearErrors = function (name) {
@@ -219,9 +247,44 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         });
     };
 
+    $scope.filterPixels = function (pixels) {
+        var availablePixels = [];
+        pixels.forEach(function (p) {
+            var counts = {},
+                invalid = 0;
+            if (p.archived) {
+                return;
+            }
+            $scope.campaignGoals.forEach(function (goal) {
+                if (goal.type !== constants.campaignGoalKPI.CPA) {
+                    return;
+                }
+                if (goal.conversionGoal.goalId === p.id) {
+                    if (!counts[goal.conversionGoal.conversionWindow]) {
+                        counts[goal.conversionGoal.conversionWindow] = 0;
+                    }
+                    counts[goal.conversionGoal.conversionWindow]++;
+                }
+            });
+            options.conversionWindows.forEach(function (opt) {
+                if (counts[opt.value]) {
+                    invalid += 1;
+                }
+            });
+            if (invalid < options.conversionWindows.length) {
+                availablePixels.push(p);
+            }
+        });
+        availablePixels.push({
+            id: '___new___',
+            slug: 'Create new pixel',
+        });
+        return availablePixels;
+    };
+
 
     api.conversionPixel.list($scope.account.id).then(function (data) {
-        $scope.availablePixels = data.rows;
+        $scope.availablePixels = $scope.filterPixels(data.rows);
         $scope.loadingPixels = false;
     });
 }]);

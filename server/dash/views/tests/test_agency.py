@@ -50,7 +50,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 'enable_adobe_tracking': False,
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
-                'autopilot_min_budget': '100'
+                'autopilot_min_budget': '0'
             }
         }
 
@@ -132,8 +132,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_min_budget': '100',
-                    'autopilot_optimization_goal': 'maximum spend'
+                    'autopilot_min_budget': '0',
+                    'autopilot_optimization_goal': None
                 },
                 'warnings': {}
             },
@@ -244,7 +244,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'target_regions': ['NC', '501'],
                     },
                     'settings': {
-                        'cpc_cc': '0.30',
+                        'cpc_cc': '0.300',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '1',
@@ -264,8 +264,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100',
-                        'autopilot_optimization_goal': 'maximum spend'
+                        'autopilot_min_budget': '0',
+                        'autopilot_optimization_goal': None
                     }
                 },
                 'success': True
@@ -419,7 +419,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'target_regions': ['NC', '501'],
                     },
                     'settings': {
-                        'cpc_cc': '0.30',
+                        'cpc_cc': '0.300',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '10',
@@ -439,8 +439,8 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
-                        'autopilot_min_budget': '100',
-                        'autopilot_optimization_goal': 'maximum spend'
+                        'autopilot_min_budget': '0',
+                        'autopilot_optimization_goal': None
                     }
                 },
                 'success': True
@@ -2272,6 +2272,44 @@ class CampaignSettingsTest(AgencyViewTestCase):
         # because target devices were copied from the latest settings,
         # there should be no errors
         self.assertNotIn('target_devices', content['data']['errors'])
+
+    def test_get_with_conversion_goals(self):
+        self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        convpix = models.ConversionPixel.objects.create(
+            account=ad_group.campaign.account,
+            slug='janez_slug',
+        )
+        convg = models.ConversionGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.ConversionGoalType.PIXEL,
+            name='janezjanez',
+            pixel=convpix,
+            conversion_window=7,
+            goal_id='9',
+        )
+
+        models.CampaignGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.CampaignGoalKPI.CPA,
+            conversion_goal=convg,
+        )
+
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(1, content['data']['goals'][0]['campaign_id'])
+        self.assertDictContainsSubset(
+            {
+                'name': 'janezjanez',
+                'pixel_url': 'https://p1.zemanta.com/p/1/janez_slug/',
+            },
+            content['data']['goals'][0]['conversion_goal'],
+        )
 
 
 class AccountAgencyTest(TestCase):

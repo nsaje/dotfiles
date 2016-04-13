@@ -13,13 +13,15 @@ import actionlog.api
 import actionlog.constants
 import actionlog.models
 import actionlog.zwei_actions
+import automation.autopilot
+import automation.autopilot_budgets
+import automation.autopilot_settings
 from dash import models
 from dash import constants
 from dash import api
 from utils import exc
 from utils import statsd_helper
 from utils import email_helper
-import automation.autopilot
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -61,6 +63,7 @@ def get_stats_end_date(end_time):
 
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
+
     if not user.has_perm('zemauth.filter_sources') or not sources_filter:
         return filtered_sources
 
@@ -388,7 +391,7 @@ def get_content_ad_notifications(ad_group):
 def _get_changed_content_ad_sources(ad_group, sources, last_change_dt):
     content_ad_sources = models.ContentAdSource.objects.filter(
         content_ad__ad_group=ad_group,
-        source=sources
+        source__in=sources
     )
 
     if last_change_dt is not None:
@@ -857,11 +860,10 @@ def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_s
         ad_group_source,
         ad_group_settings,
         ad_group_source_settings,
-        allowed_sources,
+        allowed_sources
     )
     editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings)
     editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings)
-
     return editable_fields
 
 
@@ -985,6 +987,13 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
     return 'This media source doesn\'t support setting this value through the dashboard.'
 
 
+def enabling_autopilot_sources_allowed(ad_group_settings):
+    if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        return True
+    return ad_group_settings.autopilot_daily_budget - automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC >=\
+        automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group)
+
+
 def add_source_to_ad_group(default_source_settings, ad_group):
     ad_group_source = models.AdGroupSource(
         source=default_source_settings.source,
@@ -999,7 +1008,7 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False, send_action=False):
+def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False, create_action=False):
     cpc_cc = ad_group_source.source.default_cpc_cc
     if mobile_only:
         cpc_cc = ad_group_source.source.default_mobile_cpc_cc
@@ -1011,7 +1020,7 @@ def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, ac
     }
 
     settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(resource, request, send_action=send_action)
+    settings_writer.set(resource, request, create_action=create_action)
 
 
 def format_decimal_to_percent(num):

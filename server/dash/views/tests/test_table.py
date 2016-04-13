@@ -279,7 +279,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
-            'performance': None,
+            'performance': {
+                'list': [],
+                'overall': None,
+            },
             'styles': {},
         }
 
@@ -645,8 +648,14 @@ class AdGroupAdsPlusTableTest(TestCase):
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], None)
-        self.assertEqual(stats[1]['performance'], None)
+        self.assertEqual(stats[0]['performance'], {
+            'list': [],
+            'overall': None,
+        })
+        self.assertEqual(stats[1]['performance'], {
+            'list': [],
+            'overall': None,
+        })
 
         stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
         goal = models.CampaignGoal.objects.create(
@@ -654,19 +663,20 @@ class AdGroupAdsPlusTableTest(TestCase):
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
         )
-        models.CampaignGoalValue.objects.create(
+        cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=self.mock_date,
         )
+        cgv.created_dt = self.mock_date
+        cgv.save()
         table.set_rows_goals_performance(self.user,
                                          stats,
                                          self.mock_date,
-                                         self.mock_date,
+                                         self.mock_date + datetime.timedelta(1),
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
 
     def test_primary_goal_styles(self, mock_query, mock_touchpointconversions_query):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -676,19 +686,26 @@ class AdGroupAdsPlusTableTest(TestCase):
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
         )
-        models.CampaignGoalValue.objects.create(
+        cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=self.mock_date,
         )
+        cgv.created_dt = self.mock_date
+        cgv.save()
         table.set_rows_goals_performance(self.user,
                                          stats,
                                          self.mock_date,
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['list'], [
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.010 CPC (planned $0.015)'}
+        ])
+        self.assertEqual(stats[1]['performance']['list'], [
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.020 CPC (planned $0.015)'}
+        ])
         self.assertEqual(stats[0]['styles'], {})
         self.assertEqual(stats[1]['styles'], {})
 
@@ -701,8 +718,14 @@ class AdGroupAdsPlusTableTest(TestCase):
                                          self.mock_date,
                                          [ad_group.campaign])
 
-        self.assertEqual(stats[0]['performance'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
+        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
+        self.assertEqual(stats[0]['performance']['list'], [
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.010 CPC (planned $0.015)'},
+        ])
+        self.assertEqual(stats[1]['performance']['list'], [
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.020 CPC (planned $0.015)'},
+        ])
         self.assertEqual(stats[0]['styles'], {'cpc': constants.Emoticon.HAPPY})
         self.assertEqual(stats[1]['styles'], {'cpc': constants.Emoticon.SAD})
 
@@ -744,7 +767,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             follow=True
         )
         data = json.loads(response.content)
-        self.assertEqual(data['data']['rows'][0]['performance'], None)
+        self.assertEqual(data['data']['rows'][0]['performance'], {
+            'list': [],
+            'overall': None,
+        })
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
@@ -962,6 +988,9 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -969,17 +998,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 7,
             'publisher': 'example.com',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1083,6 +1110,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'percent_new_users': 0.5,
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'avg_tos': 20,
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
@@ -1173,6 +1202,10 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -1180,17 +1213,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 7,
             'publisher': 'example.com',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1283,6 +1314,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
@@ -1509,6 +1542,10 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -1516,17 +1553,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 3,
             'publisher': 'test_1',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1634,6 +1669,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'pv_per_visit': 10,
             u'avg_tos': 20,
             u'conversion_goal_1': 0,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
@@ -1727,6 +1764,10 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
+            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+
         mock_stats3 = [{
             'date': date.isoformat(),
             'conversion_count': 64,
@@ -1734,17 +1775,15 @@ class AdGroupPublishersTableTest(TestCase):
             'source': 7,
             'publisher': 'example.com',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_stats4 = [{
             'conversion_count': 64,
             'slug': 'test_goal',
             'account': 1,
+            'conversion_window': touchpoint_conversion_goal.conversion_window,
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(
-            type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1835,6 +1874,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,

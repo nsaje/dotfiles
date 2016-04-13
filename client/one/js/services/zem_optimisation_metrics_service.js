@@ -3,6 +3,7 @@
 
 oneApp.factory('zemOptimisationMetricsService', function () {
     function insertAudienceOptimizationColumns (columns, position, isShown, isInternal) {
+        isShown = false;
         columns.splice(position, 0, {
             name: 'Total Seconds',
             field: 'total_seconds',
@@ -126,9 +127,17 @@ oneApp.factory('zemOptimisationMetricsService', function () {
     function updateVisibility (columns, goals) {
         var columnCats = columnCategories();
         columns.forEach(function (column) {
+            if (!columnCats[column.field]) {
+                return;
+            }
+
             if (columnCats[column.field]) {
                 column.shown = false;
                 column.unselectable = true;
+            }
+
+            if (goals === undefined) {
+                return;
             }
 
             goals.forEach(function (goal) {
@@ -156,12 +165,12 @@ oneApp.factory('zemOptimisationMetricsService', function () {
     function updateChartOptionsVisibility (chartOptions, goals) {
         var columnCats = columnCategories();
         chartOptions.forEach(function (option) {
-            if (columnCats[option.value]) {
-                option.shown = false;
-            }
-
             if (!columnCats[option.value]) {
                 return;
+            }
+
+            if (columnCats[option.value]) {
+                option.shown = false;
             }
 
             (goals || []).forEach(function (goal) {

@@ -32,7 +32,6 @@ describe('zemStateSelector', function () {
         spyOn(isolate, 'onChange');
 
         var testValues = [
-            [1, 1, '.enabled a div.auto-pilot-icon'],
             [2, 2, '.enabled a div.pause-icon'],
             [1, 2, '.enabled a div.active-circle-icon'],
             [1, 1, '.enabled a div.active-circle-icon', undefined, isolate.autopilotPausedValue],
@@ -53,13 +52,6 @@ describe('zemStateSelector', function () {
             }
         });
 
-        isolate.value = 1;
-        isolate.active = true;
-        isolate.autopilotValue = 2;
-        element.find('.enabled a div.auto-pilot-icon').click();
-        expect(isolate.onChange).toHaveBeenCalledWith(
-            isolate.id, undefined, isolate.autopilotEnabledValue);
-
-        expect(isolate.onChange.calls.count()).toEqual(5);
+        expect(isolate.onChange.calls.count()).toEqual(4);
     });
 });
