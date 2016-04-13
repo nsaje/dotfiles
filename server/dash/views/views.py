@@ -308,7 +308,9 @@ class AdGroupOverview(api_common.BaseApiView):
         max_cpc_setting = infobox_helpers.OverviewSetting(
             'Maximum CPC:',
             lc_helper.default_currency(
-                ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
+                ad_group_settings.cpc_cc,
+                3,
+            ) if ad_group_settings.cpc_cc is not None else 'No limit',
         )
         settings.append(max_cpc_setting.as_dict())
 
@@ -419,7 +421,7 @@ class AdGroupOverview(api_common.BaseApiView):
         settings.extend(common_settings)
 
         if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, ad_group.campaign,
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, {'ad_group': ad_group},
                                                                    start_date, end_date))
 
         return settings, is_delivering
@@ -687,7 +689,7 @@ class CampaignOverview(api_common.BaseApiView):
         settings.extend(common_settings)
 
         if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, campaign,
+            settings.extend(infobox_helpers.get_campaign_goal_list(user, {'campaign': campaign},
                                                                    start_date, end_date))
 
         return settings, is_delivering
@@ -1129,6 +1131,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 'state' in resource:
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
+
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group,
@@ -1136,9 +1139,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
-                allowed_sources,
+                allowed_sources
             ),
-            'autopilot_changed_sources': autopilot_changed_sources_text
+            'autopilot_changed_sources': autopilot_changed_sources_text,
+            'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
         })
 
 

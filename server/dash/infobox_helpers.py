@@ -56,7 +56,10 @@ class OverviewSetting(object):
 
     def performance(self, ok):
         ret = copy.deepcopy(self)
-        ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
+        if ok is None:
+            ret.icon = dash.constants.Emoticon.NEUTRAL
+        else:
+            ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -573,6 +576,10 @@ def get_adgroup_running_status(ad_group_settings):
     if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
 
+    if ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
+            ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+        return dash.constants.InfoboxStatus.AUTOPILOT
+
     return dash.constants.InfoboxStatus.ACTIVE
 
 
@@ -627,9 +634,8 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, campaign, start_date, end_date):
-    performance = dash.campaign_goals.get_goals_performance(user, campaign,
-                                                            start_date=start_date, end_date=end_date)
+def get_campaign_goal_list(user, constraints, start_date, end_date):
+    performance = dash.campaign_goals.get_goals_performance(user, constraints, start_date, end_date)
 
     settings = []
     first = True
@@ -640,7 +646,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
             goal_description += ' - ' + campaign_goal.conversion_goal.name
 
         entry = OverviewSetting(
-            '' if not first else 'Campaign goals:',
+            '' if not first else 'Goals:',
             goal_description,
             planned_value and 'planned {}'.format(
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
@@ -651,11 +657,7 @@ def get_campaign_goal_list(user, campaign, start_date, end_date):
         if campaign_goal.primary:
             entry.value_class = 'primary'
 
-        if status == dash.constants.CampaignGoalPerformance.SUPERPERFORMING:
-            entry = entry.performance(True)
-        elif status == dash.constants.CampaignGoalPerformance.UNDERPERFORMING:
-            entry = entry.performance(False)
-
+        entry.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]
         settings.append(entry.as_dict())
         first = False
     return settings

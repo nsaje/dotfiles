@@ -1,0 +1,386 @@
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: superuser@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+# test campaign
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+# source types
+
+-   fields:
+        type: 'adblade'
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'gravity'
+    model: dash.sourcetype
+    pk: 2
+
+-   fields:
+        type: 'outbrain'
+        delete_traffic_metrics_threshold: 10
+        available_actions: []
+    model: dash.sourcetype
+    pk: 3
+
+-   fields:
+        type: 'taboola'
+    model: dash.sourcetype
+    pk: 4
+
+-   fields:
+        type: 'yahoo'
+    model: dash.sourcetype
+    pk: 5
+
+-   fields:
+        type: 'b1'
+    model: dash.sourcetype
+    pk: 6
+
+# sources
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBlade
+        tracking_slug: 'adblade'
+        source_type: 1
+        maintenance: False
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Gravity
+        tracking_slug: 'gravity'
+        source_type: 2
+        maintenance: False
+    model: dash.source
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Outbrain
+        tracking_slug: 'outbrain'
+        source_type: 3
+        maintenance: False
+    model: dash.source
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Taboola
+        tracking_slug: 'taboola'
+        source_type: 4
+        maintenance: False
+    model: dash.source
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Yahoo
+        tracking_slug: 'yahoo'
+        source_type: 5
+        maintenance: False
+    model: dash.source
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Adiant
+        tracking_slug: 'adiant'
+        source_type: 6
+        content_ad_submission_type: 2
+        maintenance: False
+    model: dash.source
+    pk: 6
+
+# test source credentials
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'a'
+        sync_reports: True
+        name: Credentials
+        source: 1
+    model: dash.sourcecredentials
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'b'
+        sync_reports: True
+        name: Credentials
+        source: 2
+    model: dash.sourcecredentials
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'c'
+        sync_reports: True
+        name: Credentials
+        source: 3
+    model: dash.sourcecredentials
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'd'
+        sync_reports: False
+        name: Credentials
+        source: 4
+    model: dash.sourcecredentials
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'e'
+        sync_reports: False
+        name: Credentials
+        source: 5
+    model: dash.sourcecredentials
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'f'
+        sync_reports: False
+        name: Credentials
+        source: 6
+    model: dash.sourcecredentials
+    pk: 6
+
+# test adgroup
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 1'
+    model: dash.adgroup
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
+
+# test adgroupsource
+
+-   fields:
+        source: 1
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-07-03T06:00:00'
+    model: dash.adgroupsource
+    pk: 1
+
+-   fields:
+        source: 2
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 2
+    model: dash.adgroupsource
+    pk: 2
+
+-   fields:
+        source: 3
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 3
+    model: dash.adgroupsource
+    pk: 3
+
+-   fields:
+        source: 4
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 4
+    model: dash.adgroupsource
+    pk: 4
+
+-   fields:
+        source: 5
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 5
+    model: dash.adgroupsource
+    pk: 5
+
+-   fields:
+        source: 6
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 6
+
+-   fields:
+        source: 5
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 7
+
+-   fields:
+        source: 4
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 8
+
+# test adgroupsourcestate
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcestate
+    pk: 1
+
+# test adgroupsourcesettings
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 2
+
+
+# test uploadbatch
+
+-   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 1
+
+# test contentad
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 1
+
+# test contentadsource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: 1
+        source_content_ad_id: '987654321'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1
+
+-   fields:
+        source: 2
+        content_ad: 1
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 2
+
+-   fields:
+        source: 6
+        content_ad: 1
+        submission_status: -1
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456790'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 3
+
+-   fields:
+        source: 6
+        content_ad: 1
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456791'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 4

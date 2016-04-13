@@ -10,7 +10,6 @@ export E2E_REDDB="stats_e2e_${current_time}_${rand}"
 
 STATUS=1
 echo 'Loading fixtures' &&
-$SCRIPTPATH/server/manage.py syncdb --noinput &&
 $SCRIPTPATH/server/manage.py migrate --noinput &&
 $SCRIPTPATH/server/manage.py redshift_createdb stats stats_e2e &&
 $SCRIPTPATH/server/manage.py redshift_migrate &&

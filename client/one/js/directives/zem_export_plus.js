@@ -26,6 +26,14 @@ oneApp.directive('zemExportPlus', function () {
                 value: 'schedule'
             }];
 
+            $scope.defaultOption = $scope.options[0];
+            for (var i = 1; i < $scope.options.length; ++i) {
+                if ($scope.options[i].defaultOption) {
+                    $scope.defaultOption = $scope.options[i];
+                    break;
+                }
+            }
+
             $scope.getAdditionalColumns = function () {
                 var exportColumns = [];
                 for (var i = 0; i < $scope.columns.length; i++) {

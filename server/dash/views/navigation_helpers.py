@@ -24,7 +24,9 @@ def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings, inc
         'name': ad_group.name,
         'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
         'status': running_status,
-        'state': state
+        'state': state,
+        'autopilot_state': ad_group_settings.autopilot_state if ad_group_settings
+        else constants.AdGroupSettingsAutopilotState.INACTIVE,
     }
     if include_archived_flag:
         ad_group_dict['archived'] = ad_group_settings.archived if ad_group_settings else False

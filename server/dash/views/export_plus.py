@@ -72,6 +72,7 @@ class ExportAllowed(api_common.BaseApiView):
             ad_group = helpers.get_ad_group(user, id_)
             content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_group).count()
             return self.create_api_response({
+                'ad_group': True,
                 'content_ad': content_ad_rows <= self.MAX_ROWS,
                 'by_day': {
                     'content_ad': content_ad_rows * num_days <= self.MAX_ROWS
@@ -81,8 +82,9 @@ class ExportAllowed(api_common.BaseApiView):
             campaign = helpers.get_campaign(user, id_)
             ad_groups = models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
             ad_group_rows = ad_groups.count()
-            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_groups).count()
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count()
             return self.create_api_response({
+                'campaign': True,
                 'ad_group': ad_group_rows <= self.MAX_ROWS,
                 'content_ad': content_ad_rows <= self.MAX_ROWS,
                 'by_day': {
@@ -93,11 +95,12 @@ class ExportAllowed(api_common.BaseApiView):
         elif level_ == 'accounts':
             account = helpers.get_account(user, id_)
             campaigns = models.Campaign.objects.filter(account=account).exclude_archived()
-            ad_groups = models.AdGroup.objects.filter(campaign=campaigns).exclude_archived()
+            ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns).exclude_archived()
             campaign_rows = campaigns.count()
             ad_group_rows = ad_groups.count()
-            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_groups).count()
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count()
             return self.create_api_response({
+                'account': True,
                 'campaign': campaign_rows <= self.MAX_ROWS,
                 'ad_group': ad_group_rows <= self.MAX_ROWS,
                 'content_ad': content_ad_rows <= self.MAX_ROWS,
@@ -112,6 +115,7 @@ class ExportAllowed(api_common.BaseApiView):
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).exclude_archived().count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).exclude_archived().count()
             return self.create_api_response({
+                'all_accounts': True,
                 'account': accounts_num <= self.MAX_ROWS,
                 'campaign': campaigns_num <= self.MAX_ROWS,
                 'ad_group': ad_groups_num <= self.MAX_ROWS,
@@ -178,7 +182,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
             active_sources = helpers.get_active_ad_group_sources(models.Account, [account])
             num_sources = len(set([a.source for a in active_sources]).intersection(filtered_sources))
             campaigns = models.Campaign.objects.filter(account=account)
-            ad_groups = models.AdGroup.objects.filter(campaign=campaigns)
+            ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)
             ad_group_rows = ad_groups.count() * num_sources
             campaign_rows = campaigns.count() * num_sources
             content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * num_sources

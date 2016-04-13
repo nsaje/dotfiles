@@ -285,3 +285,12 @@
         ga_web_property_id: UA-1234567-12
     model: dash.gaanalyticsaccount
     pk: 1
+
+# ConversionGoal
+-   fields:
+        campaign: 1
+        name: 'Carts'
+        type: 3
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.conversiongoal
+    pk: 1
