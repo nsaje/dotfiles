@@ -75,36 +75,43 @@ def get_ad_group_list(request):
 
 
 @csrf_exempt
-def get_ad_group(request):
+def get_ad_group_source_settings(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
         logger.exception('Invalid K1 signature.')
         raise Http404
 
-    ad_group_id = request.GET.get('ad_group')
+    ad_group_id = request.GET.get('ad_group_id')
     if not ad_group_id:
-        return JsonResponse({
-            "error": "Must provide ad group id."
-        }, status=400)
-    source_types = request.GET.getlist('source_type')
+        _response_error("Must provide ad group id.")
+    source_type = request.GET.get('source_type')
+    if not source_type:
+        _response_error("Must provide source type.")
 
-    ad_group_sources = (
+    ad_group_source = (
         dash.models.AdGroupSource.objects
-            .filter(ad_group_id=ad_group_id)
-            .values(
-                'id',
-                'ad_group_id',
-                'source_credentials_id',
-                'source__name',
-                'source_campaign_key',
-            )
+        .get(
+            ad_group_id=ad_group_id,
+            source__source_type__type=source_type,
+        )
     )
-    if source_types:
-        ad_group_sources = ad_group_sources.filter(
-            source__source_type__type__in=source_types)
 
-    return _response_ok({'ad_group_sources': list(ad_group_sources)})
+    ad_group_source_settings = ad_group_source.get_current_settings()
+    ad_group_settings = ad_group_source.ad_group.get_current_settings()
+
+    data = {
+        'ad_group_id': ad_group_source.ad_group_id,
+        'credentials': ad_group_source.source_credentials.credentials,
+        'source_campaign_key': ad_group_source.source_campaign_key,
+        'state': ad_group_source_settings.state,
+        'cpc_cc': ad_group_source_settings.cpc_cc,
+        'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
+        'name': ad_group_source.get_external_name(),
+        'start_date': ad_group_settings.start_date,
+        'end_date': ad_group_settings.start_date,
+    }
+    return _response_ok(data)
 
 
 @csrf_exempt
