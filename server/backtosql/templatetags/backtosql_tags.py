@@ -6,7 +6,7 @@ register = Library()
 def _generate(func_name, columns, prefix):
     if getattr(columns, func_name, None) and callable(getattr(columns, func_name, None)):
         return getattr(columns, func_name)(prefix=prefix)
-    return ",".join([getattr(x, func_name)(prefix=prefix) for x in columns])
+    return ", ".join([getattr(x, func_name)(prefix=prefix) for x in columns])
 
 
 @register.filter
@@ -30,9 +30,9 @@ def lspace(value):
 
 
 @register.filter
-def _as_(value):
+def as_kw(value):
     return " AS " + str(value).strip() if value else value
 
 @register.filter
 def indices(value):
-    return ",".join([str(x) for x in range(1, len(value) + 1)])
+    return ", ".join([str(x) for x in range(1, len(value) + 1)])

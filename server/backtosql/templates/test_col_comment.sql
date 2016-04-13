@@ -3,5 +3,5 @@
 /*
 Block comment
 */
-SUM({{ p }}{{ column_name }})*{{ multiplier }}{{ alias|_as_ }} -- ending comment
+SUM({{ p }}{{ column_name }})*{{ multiplier }}{{ alias|as_kw }} -- ending comment
 -- another comment following

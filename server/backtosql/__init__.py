@@ -12,62 +12,95 @@ def generate_sql(template_name, context):
 
 
 class TemplateColumn(object):
-    def __init__(self, template_name, context=None, alias=None, group=None):
+
+    def __init__(self, template_name, context=None, group=None, alias=None):
         self.template_name = template_name
         self.context = context
 
         self.group = group
-        self.alias = alias  # can be set later through model, TODO rename output_name
+        self.alias = alias  # is set automatically through model if defined on a model
 
     def _get_default_context(self, prefix):
         return {
             'p': helpers.clean_prefix(prefix),
-            'alias': helpers.clean_alias(self.alias),
+            'alias': '',
         }
+
+    def _get_alias(self):
+        alias = helpers.clean_alias(self.alias)
+        if not alias:
+            raise BackToSQLException("Alias is not defined")
+        return alias
 
     def g(self, prefix=None):
         context = self._get_default_context(prefix)
-        context['alias'] = helpers.clean_alias(None)
+
         if self.context:
             context.update(self.context)
 
         return generate_sql(self.template_name, context)
 
     def g_alias(self, prefix=None):
-        alias = helpers.clean_alias(self.alias)
-        if not alias:
-            raise BackToSQLException("Alias is not defined")
-        return "{}{}".format(helpers.clean_prefix(prefix), alias)
+        return "{}{}".format(helpers.clean_prefix(prefix), self._get_alias())
 
     def g_w_alias(self, prefix=None):
         context = self._get_default_context(prefix)
+        context['alias'] = self._get_alias()
         if self.context:
             context.update(self.context)
 
         return generate_sql(self.template_name, context)
 
+    def as_order(self, direction_hint):
+        return OrderColumn(self, direction_hint)
+
 
 class Column(TemplateColumn):
+
     def __init__(self, column_name, alias=None, group=None):
         super(Column, self).__init__('column.sql', {'column_name': column_name}, alias=alias, group=group)
 
 
-class OutputColumnWrapper(TemplateColumn):
-    def __init__(self, column, template_name, context):
+class OrderColumn(TemplateColumn):
+    def __init__(self, column, direction_hint):
         self.column = column
-        super(OutputColumnWrapper, self).__init__(template_name, context, alias=None, group=None)
 
-    def _get_default_context(self, prefix):
+        super(OrderColumn, self).__init__(
+            'order.sql',
+            self.order_context(direction_hint),
+            group=self.column.group,
+            alias=self.column.alias)
+
+    def order_context(self, direction_hint):
         return {
-            'p': helpers.clean_prefix(prefix),
-            'alias': helpers.clean_alias(self.column.alias),
-            'column': self.column,
+            'direction': helpers.get_order(direction_hint)
         }
 
+    def g(self, prefix=None):
+        context = {
+            'column_render': self.column.g(prefix),
+        }
 
-class OrderWrapper(OutputColumnWrapper):
-    def __init__(self, column, direction_hint):
-        super(OrderWrapper, self).__init__(column, 'order.sql', {'direction': helpers.get_order(direction_hint)})
+        if self.context:
+            context.update(self.context)
+
+        return generate_sql(self.template_name, context)
+
+    def g_alias(self, prefix=None):
+        context = {
+            'column_render': self.column.g_alias(prefix),
+        }
+
+        if self.context:
+            context.update(self.context)
+
+        return generate_sql(self.template_name, context)
+
+    def g_w_alias(self, prefix=None):
+        raise BackToSQLException('SQL syntax error')
+
+    def as_order(self, *args, **kwargs):
+        raise BackToSQLException('Already OrderColumn')
 
 
 class ModelMeta(type):
@@ -101,11 +134,10 @@ class Model(object):
 
         cls.__COLUMNS__ = [x[1] for x in columns]
         cls.__COLUMNS_DICT__ = dict(columns)
-        print cls.__COLUMNS_DICT__
 
     @classmethod
     def get_columns(cls):
-        return cls.__COLUMNS__
+        return cls.__COLUMNS__[:]
 
     @classmethod
     def get_column(cls, alias):
@@ -113,10 +145,6 @@ class Model(object):
 
     @classmethod
     def select_columns(cls, subset=None, group=None):
-        columns = cls.get_columns()
-        if group:
-            columns = [x for x in columns if x.group == group]
-
         if subset:
             columns = []
 
@@ -124,5 +152,10 @@ class Model(object):
                 alias = helpers.clean_alias(alias)
                 if alias in cls.__COLUMNS_DICT__:
                     columns.append(cls.__COLUMNS_DICT__[alias])
+        else:
+            columns = cls.get_columns()
+
+        if group:
+            columns = [x for x in columns if x.group == group]
 
         return columns
