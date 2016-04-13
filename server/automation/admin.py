@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from . import models
+import dash.models
 
 
 class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
@@ -67,6 +68,29 @@ class AutopilotLogAdmin(admin.ModelAdmin):
 admin.site.register(models.AutopilotLog, AutopilotLogAdmin)
 
 
+class CampaignListFilter(admin.SimpleListFilter):
+    title = 'Campaign'
+    parameter_name = 'campaign_id'
+
+    def lookups(self, request, model_admin):
+        campaign_ids = models.CampaignStopLog.objects.all().values_list('campaign_id', flat=True)
+
+        lst = []
+        campaigns = dash.models.Campaign.objects.filter(
+            id__in=campaign_ids
+        ).select_related('account').order_by('-id')
+        for campaign in campaigns:
+            label = campaign.account.name + ' - ' + campaign.name + ' (id={})'.format(campaign.id)
+            lst.append((campaign.id, label))
+        return lst
+
+    def queryset(self, request, queryset):
+        if self.value():
+            queryset = queryset.filter(campaign_id=self.value())
+
+        return queryset
+
+
 class CampaignStopLogAdmin(admin.ModelAdmin):
     search_fields = ['campaign__name']
     list_display = (
@@ -76,6 +100,7 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
         'created_dt',
     )
     readonly_fields = ['created_dt']
+    list_filter = [CampaignListFilter]
 
     def formatted_notes(self, obj):
         return format_html('<div style="white-space: pre-wrap">{}</div>', obj.notes)
