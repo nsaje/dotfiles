@@ -93,10 +93,6 @@ class Model(object):
 
     @classmethod
     def _init_columns(cls):
-        if cls.__COLUMNS__:
-            # already initialized
-            return
-
         columns = [(name, getattr(cls, name)) for name in dir(cls)
                    if isinstance(getattr(cls, name), TemplateColumn)]
         for name, col in columns:
@@ -105,6 +101,7 @@ class Model(object):
 
         cls.__COLUMNS__ = [x[1] for x in columns]
         cls.__COLUMNS_DICT__ = dict(columns)
+        print cls.__COLUMNS_DICT__
 
     @classmethod
     def get_columns(cls):
@@ -121,12 +118,11 @@ class Model(object):
             columns = [x for x in columns if x.group == group]
 
         if subset:
-            columns_dict = {x.alias: x for x in columns}
             columns = []
 
             for alias in subset:
                 alias = helpers.clean_alias(alias)
-                if alias in columns_dict:
-                    columns.append(columns_dict[alias])
+                if alias in cls.__COLUMNS_DICT__:
+                    columns.append(cls.__COLUMNS_DICT__[alias])
 
         return columns

@@ -32,3 +32,7 @@ def lspace(value):
 @register.filter
 def _as_(value):
     return " AS " + str(value).strip() if value else value
+
+@register.filter
+def indices(value):
+    return ",".join([str(x) for x in range(1, len(value) + 1)])
