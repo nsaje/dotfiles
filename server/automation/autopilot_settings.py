@@ -48,7 +48,7 @@ GOALS_WORST_VALUE = {
     'spend': Decimal(0.00),
     'avg_tos': 0.0,
     'pv_per_visit': 0.0,
-    'cpc': float("inf"),
+    'cpc': None,
     'percent_new_users': 0.0,
     'conversions': 0
 }
