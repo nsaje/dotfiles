@@ -450,8 +450,8 @@ def _run_autopilot(campaign, daily_caps):
                 '\n'.join(['{}: Daily budget from ${} to ${}, CPC from ${} to ${}'.format(
                     ags.source.name,
                     budget_changes.get(ags, {}).get('old_budget', -1),
-                    cpc_changes.get(ags, {}).get('old_cpc_cc', -1),
                     budget_changes.get(ags, {}).get('new_budget', -1),
+                    cpc_changes.get(ags, {}).get('old_cpc_cc', -1),
                     cpc_changes.get(ags, {}).get('new_cpc_cc', -1),
                 ) for ags in sorted(set(budget_changes.keys() + cpc_changes.keys()))])
             )
