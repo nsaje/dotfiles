@@ -350,8 +350,8 @@ def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_to
         notes += 'Ad group: {}, Past 7 day spend: {}, Avg: {} (was running for {} days)\n'.format(
             ad_group.id,
             sum(per_date_ag_spend),
-            len(per_date_ag_spend),
             sum(per_date_ag_spend) / len(per_date_ag_spend) if len(per_date_ag_spend) > 0 else 0,
+            len(per_date_ag_spend),
         )
 
     models.CampaignStopLog.objects.create(
