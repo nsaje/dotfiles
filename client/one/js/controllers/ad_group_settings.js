@@ -172,11 +172,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         return result;
     };
 
-    $scope.showAutoPilotOption = function (adGroupSettingsAutopilotState) {
-        return !(adGroupSettingsAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET &&
-                $scope.settings.autopilotOptimizationGoal === constants.campaignGoalKPI.CPA);
-    };
-
     $scope.showAutoPilotDailyBudgetInput = function () {
         return $scope.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
     };
