@@ -367,7 +367,7 @@ def _calculate_daily_caps(campaign, per_date_spend):
 
     daily_caps = {}
     for ad_group in ad_groups:
-        daily_caps[ad_group.id] = int(float(remaining_today) * float(daily_cap_ratios.get(ad_group.id, 0)))
+        daily_caps[ad_group.id] = int(round(float(remaining_today) * float(daily_cap_ratios.get(ad_group.id, 0))))
 
     _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_today, per_date_spend)
     return daily_caps
