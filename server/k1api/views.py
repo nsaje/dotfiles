@@ -12,6 +12,101 @@ from utils import request_signer
 logger = logging.getLogger(__name__)
 
 
+def _response_ok(content):
+    return JsonResponse({
+        "error": None,
+        "response": content,
+    })
+
+
+def _response_error(msg, status=400):
+    return JsonResponse({
+        "error": msg,
+        "response": None,
+    }, status=status)
+
+
+@csrf_exempt
+def get_content_ad_list(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    source_types = request.GET.getlist('source_type')
+
+    ad_groups = (
+        dash.models.AdGroup.objects
+            .exclude_archived()
+            .values(
+                'id',
+            )
+    )
+    if source_types:
+        ad_groups = ad_groups.filter(
+            source__source_type__type__in=source_types)
+
+    return _response_ok(list(ad_groups))
+
+
+@csrf_exempt
+def get_ad_group_list(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    source_types = request.GET.getlist('source_type')
+
+    ad_groups = (
+        dash.models.AdGroup.objects
+            .exclude_archived()
+            .values(
+                'id',
+            )
+    )
+    if source_types:
+        ad_groups = ad_groups.filter(
+            source__source_type__type__in=source_types)
+
+    return _response_ok(list(ad_groups))
+
+
+@csrf_exempt
+def get_ad_group(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    ad_group_id = request.GET.get('ad_group')
+    if not ad_group_id:
+        return JsonResponse({
+            "error": "Must provide ad group id."
+        }, status=400)
+    source_types = request.GET.getlist('source_type')
+
+    ad_group_sources = (
+        dash.models.AdGroupSource.objects
+            .filter(ad_group_id=ad_group_id)
+            .values(
+                'id',
+                'ad_group_id',
+                'source_credentials_id',
+                'source__name',
+                'source_campaign_key',
+            )
+    )
+    if source_types:
+        ad_group_sources = ad_group_sources.filter(
+            source__source_type__type__in=source_types)
+
+    return _response_ok({'ad_group_sources': list(ad_group_sources)})
+
+
 @csrf_exempt
 def get_accounts(request):
     try:
@@ -32,7 +127,7 @@ def get_accounts(request):
 
     # construct response dict
     data = {'accounts': list(accounts_list)}
-    return JsonResponse(data)
+    return _response_ok(data)
 
 
 @csrf_exempt
@@ -62,7 +157,7 @@ def get_source_credentials_for_reports_sync(request):
     # construct response dict
     data = {}
     data['source_credentials_list'] = list(source_credentials_list)
-    return JsonResponse(data)
+    return _response_ok(data)
 
 
 @csrf_exempt
@@ -99,7 +194,7 @@ def get_content_ad_source_mapping(request):
 
     data = {'content_ad_sources': list(contentadsources)}
 
-    return JsonResponse(data)
+    return _response_ok(data)
 
 
 @csrf_exempt
