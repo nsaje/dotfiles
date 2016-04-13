@@ -58,6 +58,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         _('username'),
         max_length=30,
         blank=True,
+        null=True,
         help_text=_('30 characters or fewer. Letters, digits and '
                     '@/./+/-/_ only.'),
         validators=[
