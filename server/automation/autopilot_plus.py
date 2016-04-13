@@ -196,9 +196,8 @@ def prefetch_autopilot_data(ad_groups):
             if campaign_goal.type == CampaignGoalKPI.CPA:
                     goal_value = _get_conversion_value(ag_source, conv_days_ago_data,
                                                        campaign_goal.conversion_goal, conv_goals)
-            else:
-                if col in row and row[col]:
-                    goal_value = row[col]
+            elif col in row and row[col]:
+                goal_value = row[col]
             data[adg][ag_source][col] = goal_value
     return data, campaign_goals
 

@@ -261,7 +261,7 @@ def _get_stats_with_conversions(
         constraints=constraints
     )
 
-    tp_conv_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id, cg.conversion_window, cg.campaign.id): cg for
+    tp_conv_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id, cg.conversion_window, cg.campaign_id): cg for
                              cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
