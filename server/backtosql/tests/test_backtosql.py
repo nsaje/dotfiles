@@ -5,15 +5,15 @@ from django.test import TestCase
 from django.template import Context, Template
 
 import backtosql
-import backtosql.helpers
+from backtosql import helpers
 from backtosql.templatetags import backtosql_tags
 
 
 class TestSQLMixin(object):
 
     def assertSQLEquals(self, first, second):
-        first = sqlparse.format(first, reindent=True, keyword_case='upper').strip()
-        second = sqlparse.format(second, reindent=True, keyword_case='upper').strip()
+        first = helpers.clean_sql(first)
+        second = helpers.clean_sql(second)
         self.assertEqual(first, second)
 
 
@@ -103,9 +103,9 @@ class OrderColumnTestCase(TestCase, TestSQLMixin):
         self.assertIsInstance(order, backtosql.OrderColumn)
 
     def test_get_direction(self):
-        self.assertEquals(backtosql.helpers.get_order('-cat'), 'DESC')
-        self.assertEquals(backtosql.helpers.get_order('cat'), 'ASC')
-        self.assertEquals(backtosql.helpers.get_order('+cat'), 'ASC')
+        self.assertEquals(helpers.get_order('-cat'), 'DESC')
+        self.assertEquals(helpers.get_order('cat'), 'ASC')
+        self.assertEquals(helpers.get_order('+cat'), 'ASC')
 
     def test_column_g(self):
         column = backtosql.Column('cat', alias='py_cat')
@@ -267,3 +267,14 @@ class QueryConstructionTestCase(TestCase, TestSQLMixin):
         """
         self.assertSQLEquals(sql, expected_sql)
 
+
+class HelpersTestCase(TestCase):
+
+    def test_clean_alias(self):
+        self.assertEquals(helpers.clean_alias('+cat'), 'cat')
+        self.assertEquals(helpers.clean_alias('-cat'), 'cat')
+        self.assertEquals(helpers.clean_alias('cat'), 'cat')
+
+    def test_clean_prefix(self):
+        self.assertEquals(helpers.clean_prefix('t'), 't.')
+        self.assertEquals(helpers.clean_prefix('t.'), 't.')

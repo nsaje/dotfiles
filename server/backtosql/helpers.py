@@ -2,7 +2,7 @@ import sqlparse
 
 def clean_alias(alias):
     # remove order
-    return alias.lstrip('+-') if alias else ''
+    return alias.lstrip('+-').strip() if alias else ''
 
 
 def get_order(alias):
@@ -14,7 +14,7 @@ def get_order(alias):
 
 def clean_sql(dirty_sql):
     # removes comments and whitespaces
-    return sqlparse.format(dirty_sql, strip_comments=True).strip()
+    return sqlparse.format(dirty_sql, reindent=True, keword_case='upper', strip_comments=True).strip()
 
 
 def clean_prefix(prefix=None):
@@ -24,4 +24,4 @@ def clean_prefix(prefix=None):
 
 
 def printsql(sql):
-    print sqlparse.format(sql, reindent=True, keyword_case='upper')
+    print(clean_sql(sql))
