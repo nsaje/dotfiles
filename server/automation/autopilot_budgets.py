@@ -158,7 +158,8 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
     if campaign_goal_type in [CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION, CampaignGoalKPI.CPA]:
         return data_value / max_value_of_campaign_goal if max_value_of_campaign_goal > 0 else 0
     if campaign_goal_type == CampaignGoalKPI.CPC:
-        return float(min_value_of_campaign_goal / data_value) if data_value > 0.0 else 0.0
+        return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
+                                                                  min_value_of_campaign_goal < float("inf")) else 0.0
     raise exceptions.NotImplementedError('Budget Auto-Pilot campaign goal is not implemented: ', campaign_goal_type)
 
 
