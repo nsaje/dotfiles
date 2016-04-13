@@ -26,6 +26,22 @@
     model: dash.account
     pk: 1
 
+# test ga accounts
+
+-   fields:
+        account: 1
+        ga_account_id: 'acc1'
+        ga_web_property_id: 'prop1'
+    model: dash.gaanalyticsaccount
+    pk: 1
+
+-   fields:
+        account: 1
+        ga_account_id: 'acc2'
+        ga_web_property_id: 'prop2'
+    model: dash.gaanalyticsaccount
+    pk: 2
+
 # test campaign
 
 -   fields:

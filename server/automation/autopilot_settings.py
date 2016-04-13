@@ -39,7 +39,7 @@ GOALS_COLUMNS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.TIME_ON_SITE: {'col': ['avg_tos', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.PAGES_PER_SESSION: {'col': ['pv_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.CPA: {'col': ['', 0.7], 'spend_perc': Decimal(0.3)},
+    CampaignGoalKPI.CPA: {'col': ['conversions', 0.4], 'spend_perc': Decimal(0.6)},
     CampaignGoalKPI.CPC: {'col': ['cpc', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS: {'col': ['percent_new_users', 0.7], 'spend_perc': Decimal(0.3)},
 }
@@ -48,11 +48,13 @@ GOALS_WORST_VALUE = {
     'spend': Decimal(0.00),
     'avg_tos': 0.0,
     'pv_per_visit': 0.0,
-    'cpc': float("inf"),
+    'cpc': None,
     'percent_new_users': 0.0,
+    'conversions': 0
 }
-SPEND_PERC_LOWERING_THRESHOLD = 0.5
+SPEND_PERC_LOWERING_THRESHOLD = 0.8
 LOW_SPEND_PROB_LOWERING_FACTOR = 0.3
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
+AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS = 14
 AUTOPILOT_MIN_SPEND_PERC = Decimal(0.50)
 BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC = Decimal(10)

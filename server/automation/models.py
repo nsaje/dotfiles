@@ -129,6 +129,13 @@ class AutopilotLog(models.Model):
         null=True,
         choices=dash.constants.CampaignGoalKPI.get_choices()
     )
+    goal_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Goal\'s value'
+    )
     created_dt = models.DateTimeField(
         auto_now_add=True,
         blank=True,
@@ -180,3 +187,15 @@ class AutopilotLog(models.Model):
         return '{0} {1}'.format(
             self.ad_group,
             self.ad_group_source)
+
+
+class CampaignStopLog(models.Model):
+    campaign = models.ForeignKey(dash.models.Campaign, on_delete=models.PROTECT)
+    notes = models.TextField()
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        blank=True,
+        null=True,
+        verbose_name='Created at',
+        db_index=True
+    )
