@@ -1,5 +1,5 @@
 /*globals oneApp*/
-oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api', function ($scope, $state, $modal, api) {
+oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$modal',  'api', function ($scope, $state, $modal, api) {
     var availableCredit = [];
     function updateView (data) {
         $scope.activeBudget = data.active;
@@ -42,7 +42,7 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     $scope.init = function () {
         if (!$scope.campaign) { return; }
         $scope.loadingInProgress = true;
-        api.campaignBudgetPlus.list($scope.campaign.id).then(function (data) {
+        api.campaignBudget.list($scope.campaign.id).then(function (data) {
             $scope.loadingInProgress = false;
             updateView(data);
         }, function () {

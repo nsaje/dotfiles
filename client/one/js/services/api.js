@@ -3031,7 +3031,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignBudgetPlus () {
+    function CampaignBudget () {
         var self = this;
         this.convert = {
             dataFromApi: function (obj) {
@@ -3075,7 +3075,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         this.list = function (campaignId) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
+            var url = '/api/campaigns/' + campaignId + '/budget/';
             return $http.get(url).then(processResponse).then(function (data) {
                 if (data === null) {
                     return null;
@@ -3108,22 +3108,22 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         this.create = function (campaignId, budget) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
+            var url = '/api/campaigns/' + campaignId + '/budget/';
             return $http.put(url, self.convert.dataToApi(budget)).then(processResponse);
         };
 
         this.save = function (campaignId, budget) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budget.id + '/';
+            var url = '/api/campaigns/' + campaignId + '/budget/' + budget.id + '/';
             return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
         };
 
         this.get = function (campaignId, budgetId) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
+            var url = '/api/campaigns/' + campaignId + '/budget/' + budgetId + '/';
             return $http.get(url).then(processResponse).then(self.convert.dataFromApi);
         };
 
         this.delete = function (campaignId, budgetId) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
+            var url = '/api/campaigns/' + campaignId + '/budget/' + budgetId + '/';
             return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
         };
     }
@@ -3218,7 +3218,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive(),
         accountCredit: new AccountCredit(),
-        campaignBudgetPlus: new CampaignBudgetPlus(),
+        campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
         // Also, don't forget to add me to DEMO!
     };
