@@ -1500,35 +1500,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
-
-    function AllAccountsBudget () {
-        this.get = function () {
-            var deferred = $q.defer();
-            var url = '/api/accounts/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-
     function AllAccountsOverview () {
 
         this.get = function (startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/accounts/overview/';
             var config = {
-                params: {}
+                params: {},
             };
 
             if (startDate) {
@@ -1540,7 +1518,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
 
             $http.get(url, config).
-                success(function (data, status) {
+                success(function (data) {
                     if (data && data.data) {
                         data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
@@ -2254,7 +2232,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var result = {
                 cpc: errors.cpc_cc,
                 dailyBudget: errors.daily_budget_cc,
-                state: errors.state
+                state: errors.state,
             };
 
             return result;
@@ -3099,7 +3077,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         this.list = function (campaignId) {
             var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.get(url).then(processResponse).then(function (data) {
-                if (data === null) { return null; }
+                if (data === null) {
+                    return null;
+                }
                 return {
                     active: data.active.map(self.convert.dataFromApi),
                     past: data.past.map(self.convert.dataFromApi),
@@ -3109,7 +3089,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         lifetimeCampaignSpend: data.totals.lifetime.campaign_spend,
                         lifetimeMediaSpend: data.totals.lifetime.media_spend,
                         lifetimeDataSpend: data.totals.lifetime.data_spend,
-                        lifetimeLicenseFee: data.totals.lifetime.license_fee
+                        lifetimeLicenseFee: data.totals.lifetime.license_fee,
                     },
                     credits: data.credits.map(function (obj) {
                         return {
@@ -3120,9 +3100,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                             endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             id: obj.id,
                             comment: obj.comment,
-                            isAvailable: obj.is_available
+                            isAvailable: obj.is_available,
                         };
-                    })
+                    }),
                 };
             });
         };
@@ -3223,7 +3203,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
         userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
-        allAccountsBudget: new AllAccountsBudget(),
         allAccountsOverview: new AllAccountsOverview(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
@@ -3240,7 +3219,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupContentAdArchive: new AdGroupContentAdArchive(),
         accountCredit: new AccountCredit(),
         campaignBudgetPlus: new CampaignBudgetPlus(),
-        campaignGoalValidation: new CampaignGoalValidation()
+        campaignGoalValidation: new CampaignGoalValidation(),
         // Also, don't forget to add me to DEMO!
     };
 }]);
