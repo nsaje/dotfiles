@@ -52,7 +52,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 defaultValue = kpiDefault.value;
             }
         });
-        
+
         $scope.campaignGoal.value = defaultValue;
     };
 
