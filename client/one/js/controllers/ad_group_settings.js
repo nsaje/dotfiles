@@ -76,7 +76,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         if ($scope.warnings.endDate !== undefined) {
             $scope.warnings.endDate.text = 'Your campaign has been switched to landing mode. ' +
                 'Please add the budget and continue to adjust settings by your needs. ';
-                // '<a zem-in-link="{{\'main.campaigns.budget_plus\'}}({id: ' + $scope.warnings.endDate.campaignId + '})">Add budget</a>';
         }
     };
 
