@@ -115,11 +115,6 @@ class ModelMeta(type):
 
 class Model(object):
     __metaclass__ = ModelMeta
-    """
-    # Use builtin https://docs.djangoproject.com/en/1.9/topics/db/sql/#executing-custom-sql-directly
-    translation to map python-sql fields
-    # TODO: we need to register outer fields that they need to be converted
-    """
 
     __COLUMNS__ = None  # columns list
     __COLUMNS_DICT__ = None  # columns dict (alias - column object)
