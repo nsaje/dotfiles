@@ -27,11 +27,12 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
+
 # Application definition
 
 PROJECT_NAME = 'z1'
 
-INSTALLED_APPS = [
+INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,14 +45,11 @@ INSTALLED_APPS = [
     'actionlog',
     'reports',
     'zweiapi',
-    'k1api',
     'convapi',
-    'backtosql',
-    'redshift',
     'raven.contrib.django.raven_compat',
     'automation',
     'timezone_field',
-]
+)
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -83,14 +81,14 @@ USE_L10N = True
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
-    'django.contrib.messages.context_processors.messages')
-TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),
-                 os.path.join(BASE_DIR, 'redshift/queries/'))
+    'django.contrib.messages.context_processors.messages'
+)
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'common_static'), )
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'common_static'),)
 STATIC_ROOT = 'static'
 
 LOGIN_URL = '/signin'
@@ -98,7 +96,9 @@ LOGIN_REDIRECT_URL = '/'
 
 AUTH_USER_MODEL = 'zemauth.User'
 
-AUTHENTICATION_BACKENDS = ('zemauth.backends.EmailOrUsernameModelBackend', )
+AUTHENTICATION_BACKENDS = (
+    'zemauth.backends.EmailOrUsernameModelBackend',
+)
 
 TEST_RUNNER = 'utils.test_runner.CustomRunner'
 
@@ -128,11 +128,6 @@ try:
 except ImportError:
     pass
 
-try:
-    import django_extensions
-    INSTALLED_APPS.append('django_extensions')
-except ImportError:
-    pass
 
 from celeryconfig import *
 from localsettings import *
@@ -144,8 +139,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format':
-            '%(asctime)s [%(levelname)s] %(name)s PID=%(process)d: %(message)s'
+            'format': '%(asctime)s [%(levelname)s] %(name)s PID=%(process)d: %(message)s'
         },
     },
     'handlers': {
@@ -167,8 +161,7 @@ LOGGING = {
         },
         'sentry': {
             'level': 'WARNING',
-            'class':
-            'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
             'formatter': 'standard',
         },
     },
@@ -227,20 +220,17 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
     TESTING_DB_PREFIX = 'testing_'
-    testing_databases = {db: DATABASES[db]
-                         for db in DATABASES.keys()
-                         if db.startswith(TESTING_DB_PREFIX)}
+    testing_databases = {db: DATABASES[db] for db in DATABASES.keys() if db.startswith(TESTING_DB_PREFIX)}
     for database_name in DATABASES.keys():
         if database_name.startswith(TESTING_DB_PREFIX):
             continue
         testing_db_replacement = 'testing_{}'.format(database_name)
         if testing_db_replacement in testing_databases:
-            DATABASES[database_name] = testing_databases[
-                testing_db_replacement]
-            print(
-                'Using {testdbname} instead of {dbname} for testing...'.format(
-                    testdbname=testing_db_replacement,
-                    dbname=database_name))
+            DATABASES[database_name] = testing_databases[testing_db_replacement]
+            print('Using {testdbname} instead of {dbname} for testing...'.format(
+                testdbname=testing_db_replacement,
+                dbname=database_name
+            ))
 
     if len(sys.argv) > 1 and '--redshift' not in sys.argv:
         # if not redshift testing
@@ -289,6 +279,7 @@ if os.environ.get('E2E_REDDB'):
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
+
 
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
