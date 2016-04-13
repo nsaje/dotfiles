@@ -62,6 +62,16 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
     }
 
 
+class AdGroupSettingsWarning(ConstantBase):
+    RETARGETING_SOURCES = 1  # cannot set retargeting when we have unsupported media sources
+    LANDING_MODE_END_DATE = 2  # cannot change end date in landing mode
+
+    _VALUES = {
+        RETARGETING_SOURCES: 'Unsupported Retargeting',
+        LANDING_MODE_END_DATE: 'Unchangeable End Date',
+    }
+
+
 class ExportPlusStatus(ConstantBase):
     # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
