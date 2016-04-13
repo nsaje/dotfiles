@@ -1,7 +1,5 @@
 import os
-import time
 import logging
-import operator
 
 import unittest
 
@@ -10,67 +8,6 @@ from xmlrunner.extra.djangotestrunner import XMLTestRunner
 from django.test import runner
 from django.conf import settings
 from django.core.management import call_command
-
-TIMINGS = {}
-NUM_SLOW_TESTS = getattr(settings, 'NUM_SLOW_TESTS', 50)
-
-def _isnotsuite(test):
-    "A crude way to tell apart testcases and suites with duck-typing"
-    try:
-        iter(test)
-    except TypeError:
-        return True
-    return False
-
-class TimerTestSuite(unittest.TestSuite):
-    """A test suite is a composite test consisting of a number of TestCases.
-
-    For use, create an instance of TestSuite, then add test case instances.
-    When all tests have been added, the suite can be passed to a test
-    runner, such as TextTestRunner. It will run the individual test cases
-    in the order in which they were added, aggregating the results. When
-    subclassing, do not forget to call the base class constructor.
-    """
-
-    def run(self, result, debug=False):
-        topLevel = False
-        if getattr(result, '_testRunEntered', False) is False:
-            result._testRunEntered = topLevel = True
-
-        for test in self:
-            if result.shouldStop:
-                break
-
-            if _isnotsuite(test):
-                self._tearDownPreviousClass(test, result)
-                self._handleModuleFixture(test, result)
-                self._handleClassSetUp(test, result)
-                result._previousTestClass = test.__class__
-
-                if (getattr(test.__class__, '_classSetupFailed', False) or
-                    getattr(result, '_moduleSetUpFailed', False)):
-                    continue
-
-            if _isnotsuite(test):
-                start_time = time.time()
-                if not debug:
-                    test(result)
-                else:
-                    test.debug()
-
-                end_time = time.time()
-                TIMINGS[str(test)] = end_time - start_time
-            else:
-                if not debug:
-                    test(result)
-                else:
-                    test.debug()
-
-        if topLevel:
-            self._tearDownPreviousClass(None, result)
-            self._handleModuleTearDown(result)
-            result._testRunEntered = False
-        return result
 
 
 class SplitTestsRunner(runner.DiscoverRunner):
@@ -161,23 +98,23 @@ class SplitTestsRunner(runner.DiscoverRunner):
 
     def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
         ret = super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)
-        new_suite = TimerTestSuite()
 
+        if self.test_name is None:
+            return ret
+
+        new_suite = unittest.TestSuite()
+
+        prefix = self.test_name
         for test in ret._tests:
+            # the next string is <test_name> (<module path>)
+            test_str = str(test).split()
+            name = test_str[0]
+            if name != prefix:
+                continue
+
             new_suite.addTest(test)
 
         return new_suite
-
-    def teardown_test_environment(self, **kwargs):
-        super(SplitTestsRunner, self).teardown_test_environment(**kwargs)
-        by_time = sorted(
-            iter(TIMINGS.items()),
-            key=operator.itemgetter(1),
-            reverse=True
-        )[:NUM_SLOW_TESTS]
-        print("\n%s slowest tests:" % NUM_SLOW_TESTS)
-        for func_name, timing in by_time:
-            print(("{t:.4f}s {f}".format(f=func_name, t=timing)))
 
 
 class CustomRunner(XMLTestRunner, SplitTestsRunner):
