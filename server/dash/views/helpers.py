@@ -1091,3 +1091,16 @@ def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
         log_useraction_if_necessary(request, user_action_type, campaign=campaign)
+
+
+def deprecate_source_and_stop_ad_group_sources(source):
+    source.deprecated = True
+    source.save()
+    # Deactivate all AdGroup Sources - there is no need to propagate settings updates
+    settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__source=source).group_current_settings()
+    states = models.AdGroupSourceState.objects.filter(ad_group_source__source=source).group_current_states()
+    for s in list(settings) + list(states):
+        if s and s.state == constants.AdGroupSourceSettingsState.ACTIVE:
+            s = s.copy_settings()
+            s.state = constants.AdGroupSourceSettingsState.INACTIVE
+            s.save(None)
