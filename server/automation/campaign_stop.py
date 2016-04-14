@@ -30,10 +30,15 @@ TEMP_EMAILS = [
 ]
 
 
-def switch_low_budget_campaigns_to_landing_mode():
-    for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
         remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
         max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+def run_campaign_stop():
+    switch_low_budget_campaigns_to_landing_mode(dash.models.Campaign.objects.all().exclude_landing())
+    update_landing_campaigns(dash.models.Campaign.objects.all().filter_landing())
+
+
+def switch_low_budget_campaigns_to_landing_mode(campaigns):
+    for campaign in campaigns.iterator():
         yesterday_spend = _get_yesterday_budget_spend(campaign)
         if available_tomorrow < max_daily_budget_sum:
             with transaction.atomic():
@@ -44,8 +49,8 @@ def switch_low_budget_campaigns_to_landing_mode():
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
 
 
-def update_campaigns_in_landing():
-    for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+def update_landing_campaigns(campaigns):
+    for campaign in campaigns.iterator():
         logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
         try:
