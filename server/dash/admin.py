@@ -373,13 +373,43 @@ class SourceAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_dt', 'modified_dt', 'deprecated')
 
+    @transaction.atomic
     def deprecate_selected(self, request, queryset):
+        deprecated_sources = []
+        all_stopped_ad_group_sources = set()
         for source in queryset:
-            helpers.deprecate_source_and_stop_ad_group_sources(source)
-        self.message_user(request, "Sources successfully deprecated. All depended AdGroup Sources has been stopped.")
+            if source.deprecated:
+                continue
+            source.deprecated = True
+            source.save()
+            deprecated_sources.append(source.pk)
+            stopped_ad_group_sources = self._stop_ad_group_sources(source)
+            all_stopped_ad_group_sources = all_stopped_ad_group_sources.union(stopped_ad_group_sources)
+
+        if not deprecated_sources:
+            self.message_user(request, "All selected sources are already deprecated.")
+            return
+
+        logger.info('SOURCE DEPRECATION: Bulk deprecation of Sources: {}'.format(deprecated_sources))
+        logger.info('SOURCE DEPRECATION: Bulk deactivation of AdGroup Sources: {}'.format(all_stopped_ad_group_sources))
+        self.message_user(request, "Successfully deprecated {} source(s) and deactivated {} AdGroup Source(s)."
+                          .format(len(deprecated_sources), len(all_stopped_ad_group_sources)))
 
     deprecate_selected.short_description = "Deprecate selected sources"
     actions = [deprecate_selected]
+
+    def _stop_ad_group_sources(self, source):
+        # Deactivate all AdGroup Sources - there is no need to propagate settings updates
+        stopped_ad_group_sources = set()
+        settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__source=source).group_current_settings()
+        states = models.AdGroupSourceState.objects.filter(ad_group_source__source=source).group_current_states()
+        for s in list(settings) + list(states):
+            if s and s.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                stopped_ad_group_sources.add(s.ad_group_source_id)
+                s = s.copy_settings()
+                s.state = constants.AdGroupSourceSettingsState.INACTIVE
+                s.save(None)
+        return stopped_ad_group_sources
 
 
 class SourceTypeAdmin(admin.ModelAdmin):
