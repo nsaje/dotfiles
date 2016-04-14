@@ -8,6 +8,7 @@ import newrelic.agent
 from decimal import Decimal
 import pytz
 from django.db.models import Sum, Func
+from django.db.models import Prefetch
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
@@ -389,11 +390,14 @@ class Campaign(models.Model, PermissionMixin):
     def get_sales_representative(self):
         return self.account.get_current_settings().default_sales_representative
 
-    def get_current_settings(self):
+    def get_current_settings(self, prefetched=True):
         if not self.pk:
             raise exc.BaseError(
                 'Campaign settings can\'t be fetched because campaign hasn\'t been saved yet.'
             )
+
+        if prefetched and hasattr(self, '_current_settings'):
+            return self._current_settings[0]
 
         settings = CampaignSettings.objects.\
             filter(campaign_id=self.pk).\
@@ -491,6 +495,12 @@ class Campaign(models.Model, PermissionMixin):
                 'campaign__id', flat=True
             )
             return self.exclude(pk__in=archived_campaigns)
+
+        def prefetch_current_settings(self):
+            queryset = CampaignSettings.objects.all().distinct('campaign_id').order_by('-created_dt')
+            return self.prefetch_related(
+                Prefetch('settings', queryset=queryset, to_attr='_current_settings')
+            )
 
         def exclude_landing(self):
             related_settings = CampaignSettings.objects.all().filter(
@@ -838,7 +848,7 @@ class CampaignGoal(models.Model):
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt),
                  'value': Decimal(value.value).quantize(Decimal(
-                    rounding_format.get(self.type, default_rounding_format)
+                     rounding_format.get(self.type, default_rounding_format)
                  ))}
                 for value in self.values.all()
             ]

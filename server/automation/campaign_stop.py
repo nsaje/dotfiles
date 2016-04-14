@@ -31,17 +31,35 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
-        remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
-        max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
-        yesterday_spend = _get_yesterday_budget_spend(campaign)
-        if available_tomorrow < max_daily_budget_sum:
+    candidate_campaigns = dash.models.Campaign.objects.all().prefetch_current_settings()
+    for campaign in candidate_campaigns.iterator():
+        check_and_switch_campaign_to_landing_mode(campaign)
+
+
+def check_and_switch_campaign_to_landing_mode(campaign):
+    settings = campaign.get_current_settings(prefetched=True)
+    if not settings.automatic_campaign_stop:
+        return
+
+    remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
+    max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+    yesterday_spend = _get_yesterday_budget_spend(campaign)
+
+    is_almost_depleted = available_tomorrow < max_daily_budget_sum
+    is_near_depleted = available_tomorrow < max_daily_budget_sum * 2
+
+
+    if not settings.landing_mode:
+        if is_almost_depleted:
             with transaction.atomic():
                 actions = _switch_campaign_to_landing_mode(campaign)
             zwei_actions.send(actions)
             _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
-        elif available_tomorrow < max_daily_budget_sum * 2:
+        if is_near_depleted:
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
+    elif not is_near_depleted:
+        # TODO: turn landing mode off
+        pass
 
 
 def update_campaigns_in_landing():
@@ -534,7 +552,7 @@ def _get_budgets_active_on_date(date, campaign):
 def _get_ags_settings_dict(date, ad_group_sources):
     settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources,
-        created_dt__lt=date+datetime.timedelta(days=1),
+        created_dt__lt=date + datetime.timedelta(days=1),
     ).order_by('-created_dt')
 
     ret = defaultdict(list)
@@ -596,7 +614,7 @@ def _get_ag_ids_active_on_date(date, ad_groups):
     ag_ids_active_on_date = set(
         dash.models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups,
-            created_dt__lt=date+datetime.timedelta(days=1),
+            created_dt__lt=date + datetime.timedelta(days=1),
             created_dt__gte=date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
         ).order_by('-created_dt').values_list('ad_group_id', flat=True).iterator()
