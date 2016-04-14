@@ -1,8 +1,8 @@
-/* globals describe, it, inject, module, beforeeach, expect, spyon */
+/* globals describe, it, inject, module, expect, beforeEach */
 'use strict';
 
 describe('zemNumericValidator', function () {
-    var $scope, httpBackend, element, isolate, compile;
+    var $scope, httpBackend, element;
     var template = '<input id="input" type="text" zem-numeric-validator ng-model="value" placeholder="0.00" maxlength="5" />';
 
     beforeEach(module('one'));
@@ -26,13 +26,13 @@ describe('zemNumericValidator', function () {
 
     it('validates a number', function () {
         element.val(0.001);
-        element.trigger("input");
+        element.trigger('input');
         $scope.$digest();
         $scope.$apply();
         expect($scope.value).toEqual('0.001');
 
         element.val(15000);
-        element.trigger("input");
+        element.trigger('input');
         $scope.$digest();
         $scope.$apply();
         expect($scope.value).toEqual('15000');
@@ -40,13 +40,13 @@ describe('zemNumericValidator', function () {
 
     it('doesn\'t validate non-numbers', function () {
         element.val(10);
-        element.trigger("input");
+        element.trigger('input');
         $scope.$digest();
         $scope.$apply();
         expect(element.val()).toBe('10');
         
         element.val("abc");
-        element.trigger("input");
+        element.trigger('input');
         $scope.$digest();
         $scope.$apply();
         expect(element.val()).toBe('');
