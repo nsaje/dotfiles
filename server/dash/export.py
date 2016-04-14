@@ -14,7 +14,7 @@ from utils.sort_helper import sort_results
 MAIN_COLUMNS = [
     'data_cost', 'cost', 'cpc', 'clicks', 'impressions',
     'ctr', 'visits', 'pageviews', 'e_media_cost', 'media_cost',
-    'e_data_cost', 'total_cost', 'billing_cost', 'license_fee'
+    'e_data_cost', 'billing_cost', 'license_fee'
 ]
 
 

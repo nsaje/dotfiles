@@ -108,7 +108,7 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
             colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
         if not colored_column:
             continue
-        
+
         if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.HAPPY
         elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
@@ -2208,7 +2208,6 @@ class PublishersTable(object):
             result['billing_cost'] = totals_data.get('billing_cost', 0)
             result['license_fee'] = totals_data.get('license_fee', 0)
         if user.has_perm('zemauth.can_view_actual_costs'):
-            result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
         campaign_goals.copy_fields(user, totals_data, result)
@@ -2262,7 +2261,6 @@ class PublishersTable(object):
                 row['e_media_cost'] = publisher_data.get('e_media_cost', 0)
                 row['billing_cost'] = publisher_data.get('billing_cost', 0)
             if user.has_perm('zemauth.can_view_actual_costs'):
-                row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
             if user.has_perm('zemauth.view_pubs_conversion_goals'):

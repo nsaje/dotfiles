@@ -37,7 +37,6 @@ FIELDNAMES = {
     'e_data_cost': 'Data Cost',
     'e_media_cost': 'Media Spend',
     'billing_cost': 'Total Spend',
-    'total_cost': 'Actual Total Spend',
     'cpc': 'Average CPC',
     'ctr': 'CTR',
     'url': 'URL',
@@ -80,7 +79,7 @@ FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
-                     'total_cost', 'billing_cost', 'budget', 'available_budget',
+                     'billing_cost', 'budget', 'available_budget',
                      'unspent_budget', 'license_fee', 'total_fee', 'flat_fee', ]
 
 FORMAT_3_DECIMALS = ['cpc']
@@ -90,7 +89,7 @@ FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepan
 FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
-    'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
+    'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
 
@@ -840,7 +839,7 @@ def filter_allowed_fields(request, fields):
                  'license_fee', 'billing_cost') and not can_view_effective_costs:
             continue
         if f in ('data_cost', 'media_cost',
-                 'license_fee', 'total_cost') and not can_view_actual_costs:
+                 'license_fee') and not can_view_actual_costs:
             continue
         if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
             continue

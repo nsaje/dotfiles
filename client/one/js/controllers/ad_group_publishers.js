@@ -551,18 +551,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         shown: $scope.hasPermission('zemauth.can_view_effective_costs')
     },
     {
-        name: 'Actual Total Spend',
-        field: 'total_cost',
-        checked: false,
-        type: 'currency',
-        totalRow: true,
-        help: 'Sum of media spend, data cost and license fee, including overspend.',
-        order: true,
-        initialOrder: 'desc',
-        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-    },
-    {
         name: 'Total Spend',
         field: 'billing_cost',
         checked: false,
@@ -652,7 +640,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 'data_cost',
                 'e_media_cost',
                 'e_data_cost',
-                'total_cost',
                 'billing_cost',
                 'license_fee'
             ]
