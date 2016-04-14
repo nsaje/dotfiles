@@ -23,7 +23,6 @@ from dash import models
 from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
-from dash.views import helpers
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
