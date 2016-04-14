@@ -194,6 +194,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
             ('has_drift', 'Has Drift snippet'),
             ('has_supporthero', 'Has Supporthero snippet'),
+            ('can_filter_sources_through_table', 'Can filter sources through sources table'),
         )
 
     def get_full_name(self):
