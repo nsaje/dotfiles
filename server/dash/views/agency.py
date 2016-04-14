@@ -112,23 +112,13 @@ class AdGroupSettings(api_common.BaseApiView):
             )
         if not supports_retargeting:
             retargeting_warning = {
-                'text': "You have some active media sources that don't support retargeting. "
-                        "To start using it please disable/pause these media sources:",
                 'sources': [s.name for s in unsupported_sources]
             }
             warnings['retargeting'] = retargeting_warning
 
         if ad_group_settings.landing_mode:
             warnings['end_date'] = {
-                'text': 'Your campaign has been switched to landing mode. '
-                'Please add the budget and continue to adjust settings by your needs. '
-                '<a href="{link}">Add budget</a>'.format(
-                    link=request.build_absolute_uri(
-                        '/campaigns/{campaign_id}/budget-plus/'.format(
-                            campaign_id=ad_group_settings.ad_group.campaign.id
-                        ),
-                    )
-                )
+                'campaign_id': ad_group_settings.ad_group.campaign.id,
             }
 
         return warnings

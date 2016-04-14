@@ -1050,10 +1050,14 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
 
         function convertWarningsFromApi (warnings) {
-            return {
-                retargeting: warnings.retargeting,
-                endDate: warnings.end_date,
-            };
+            var ret = {};
+            ret.retargeting = warnings.retargeting;
+            if (warnings.end_date !== undefined) {
+                ret.endDate = {
+                    campaignId: warnings.end_date.campaign_id,
+                };
+            }
+            return ret;
         }
 
         this.get = function (id) {
