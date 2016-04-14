@@ -209,57 +209,6 @@ def get_mtd_all_accounts_spend():
     ).get('media', Decimal(0))
 
 
-def get_goal_value(user, campaign, campaign_settings, goal_type):
-    # we are interested in reaching the goal by today
-    end_date = datetime.datetime.today().date()
-    totals_stats = reports.api_helpers.filter_by_permissions(
-        reports.api_contentads.query(
-            campaign.created_dt,
-            end_date,
-            campaign=campaign,
-        ), user)
-    if goal_type == dash.constants.CampaignGoal.CPA:
-        # CPA is still being implemented via Conversion&Goals epic
-        return 0  # TODO implement this properly
-    elif goal_type == dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE:
-        return totals_stats.get('bounce_rate', 0) or 0
-    elif goal_type == dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS:
-        return totals_stats.get('new_visits', 0) or 0
-    elif goal_type == dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE:
-        return totals_stats.get('avg_tos', 0) or 0
-    elif goal_type == dash.constants.CampaignGoal.PAGES_PER_SESSION:
-        return totals_stats.get('pv_per_visit', 0) or 0
-
-    # assuming we will add moar campaign goals in the future
-    raise exceptions.NotImplementedError()
-
-
-def get_goal_difference(goal_type, target, actual):
-    """
-    Returns difference as (value, description, success) tuple
-    """
-    if actual is None:
-        return 0, "N/A", False
-
-    if goal_type in (dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
-        diff = target - actual
-        rate = diff / target if target > 0 else 0
-        description = '{rate:.2f}% {word} planned'.format(
-            rate=rate,
-            word='above' if rate > 0 else 'below'
-        )
-        success = diff <= 0
-        return diff, description, success
-    else:
-        diff = target - actual
-        description = '{diff} {word} planned'.format(
-            diff=abs(diff),
-            word='above' if diff < 0 else 'below',
-        )
-        success = diff <= 0
-        return diff, description, success
-
-
 def goals_and_spend_settings(user, campaign):
     settings = []
 
