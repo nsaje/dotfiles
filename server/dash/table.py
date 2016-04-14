@@ -490,7 +490,6 @@ class AdGroupSourcesTableUpdates(object):
                     'current_bid_cpc': current_bid_cpc,
                     'daily_budget': daily_budget,
                     'current_daily_budget': current_daily_budget,
-                    'autopilot_state': setting.autopilot_state
                 }
 
             response['rows'] = rows
@@ -830,9 +829,6 @@ class SourcesTable(object):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_value
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
-
-                if source_settings is not None:
-                    row['autopilot_state'] = source_settings.autopilot_state
             else:
                 bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
                                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]
