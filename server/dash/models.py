@@ -1933,7 +1933,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         'state',
         'cpc_cc',
         'daily_budget_cc',
-        'autopilot_state',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1972,10 +1971,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         null=True,
         verbose_name='Daily budget'
     )
-    autopilot_state = models.IntegerField(
-        default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
-        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
-    )
+
     landing_mode = models.BooleanField(default=False)
 
     objects = QuerySetManager()

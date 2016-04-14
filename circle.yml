@@ -36,7 +36,7 @@ test:
             pwd: server
             parallel: true
     override:
-        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test ;; 1) cd client && grunt test --build-number ${CIRCLE_BUILD_NUM} && cat coverage/lcov/*/lcov.info | node_modules/codeclimate-test-reporter/bin/codeclimate.js && cd .. && ./run_e2e.sh ;; esac':
+        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test --timing ;; 1) cd client && grunt test --build-number ${CIRCLE_BUILD_NUM} && cat coverage/lcov/*/lcov.info | node_modules/codeclimate-test-reporter/bin/codeclimate.js && cd .. && ./run_e2e.sh ;; esac':
             parallel: true
     post:
         - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'

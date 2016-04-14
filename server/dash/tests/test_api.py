@@ -1205,7 +1205,7 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
 
 
-class PublisherCallbackTest(TransactionTestCase):
+class PublisherCallbackTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def test_update_publisher_blacklist(self):

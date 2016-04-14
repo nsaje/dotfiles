@@ -303,6 +303,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc'
         },
         {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent',
+            shown: true,
+            defaultValue: '0.0%',
+            totalRow: true,
+            help: 'The number of clicks divided by the number of impressions.',
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
             name: '',
             nameCssClass: 'data-status-icon',
             type: 'dataStatus',

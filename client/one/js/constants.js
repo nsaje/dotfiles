@@ -22,10 +22,6 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
-    adGroupSourceSettingsAutopilotState: {
-        ACTIVE: 1,
-        INACTIVE: 2,
-    },
     publisherStatus: {
         ENABLED: 1,
         BLACKLISTED: 2,
