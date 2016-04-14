@@ -3,15 +3,20 @@
 
 describe('zemNumericValidator', function () {
     var $scope, httpBackend, element;
-    var template = '<input id="input" type="text" zem-numeric-validator ng-model="value" placeholder="0.00" maxlength="5" />';
+    var template = '<input id="input" type="text" zem-numeric-validator ' +
+        'ng-model="value" placeholder="0.00" maxlength="5" />';
 
     beforeEach(module('one'));
     beforeEach(inject(function ($compile, $rootScope, $httpBackend) {
         compile = $compile;
         $scope = $rootScope.$new();
         httpBackend = $httpBackend;
-        $scope.isPermissionInternal = function () { return true; };
-        $scope.hasPermission = function () { return true; };
+        $scope.isPermissionInternal = function () {
+            return true; 
+        };
+        $scope.hasPermission = function () { 
+            return true; 
+        };
 
         httpBackend.when('GET', '/api/users/current/').respond({});
         httpBackend.when('GET', '/api/all_accounts/nav/').respond({});
