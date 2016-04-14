@@ -299,23 +299,6 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(1, len(settings))
 
-    def test_format_goal_value(self):
-        self.assertEqual(
-            10,
-            dash.infobox_helpers.format_goal_value(
-                10.00,
-                dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE,
-            )
-        )
-
-        self.assertEqual(
-            0.15,
-            dash.infobox_helpers.format_goal_value(
-                0.15,
-                dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,
-            )
-        )
-
     @mock.patch('reports.redshift.get_cursor')
     def test_get_yesterday_adgroup_spend(self, cursor):
         user = zemauth.models.User.objects.get(pk=1)

@@ -228,15 +228,6 @@ def goals_and_spend_settings(user, campaign):
     return settings, is_delivering
 
 
-def format_goal_value(goal_value, goal_type):
-    if not goal_value:
-        return 0
-    if goal_type in (dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
-        return float(goal_value)
-    else:
-        return int(goal_value)
-
-
 def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
