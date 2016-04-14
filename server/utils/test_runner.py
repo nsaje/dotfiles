@@ -142,9 +142,7 @@ class CustomRunner(XMLTestRunner, SplitTestsRunner):
 
 
 def monkey_patch_test_case_for_timing(test_timings):
-    # borrowed from:
-    # https://github.com/ninuxorg/nodeshot/blob/6790e2c7a200ccb7ee55356f053732a4bc47b80f/nodeshot/core/base/tests_speedup.py
-
+    
     def measure_n_run(self, *args, **kwargs):
         start = time.time()
         self.run(*args, **kwargs)
