@@ -1616,3 +1616,21 @@ class PublisherHelpersTest(TestCase):
         self.assertFalse(publisher_helpers.is_publisher_domain('贝客悦读 • 天涯之家HD'))
         self.assertFalse(publisher_helpers.is_publisher_domain('BS Local (CBS Local)'))
         self.assertFalse(publisher_helpers.is_publisher_domain('CNN Money (Turner U.S.)'))
+
+class SourceDeprecationTestCase(TestCase):
+
+    fixtures = ['test_models']
+
+    def test_deprecate_source_and_stop_ad_group_sources(self):
+        source = models.Source.objects.get(pk=1)
+        helpers.deprecate_source_and_stop_ad_group_sources(source)
+
+        source = models.Source.objects.get(pk=1)
+        ad_group_sources = models.AdGroupSource.objects.filter(source=source)
+        for ad_group_source in ad_group_sources:
+            settings = ad_group_source.get_current_settings()
+            self.assertEqual(settings.state, constants.AdGroupSourceSettingsState.INACTIVE)
+
+
+
+
