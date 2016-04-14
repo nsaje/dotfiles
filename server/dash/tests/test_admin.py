@@ -20,7 +20,7 @@ class SourceAdminTestCase(TestCase):
 
     def test_deprecate_selected(self):
         change_url = urlresolvers.reverse('admin:dash_source_changelist')
-        response = self.client.post(change_url, {'action': 'deprecate_selected', '_selected_action': 1})
+        response = self.client.post(change_url, {'action': 'deprecate_selected', '_selected_action': 1}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         source = models.Source.objects.get(pk=1)
