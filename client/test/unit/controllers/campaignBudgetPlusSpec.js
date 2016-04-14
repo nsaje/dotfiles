@@ -1,47 +1,51 @@
+/* global it, describe, module, expect, inject, beforeEach */
 'use strict';
 
-describe('CampaignBudgetPlusCtrl', function () {
-    var $modalStack, $scope, $state, $q, api;
+describe('CampaignBudgetCtrl', function () {
+    var $scope, $state, api;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, _$state_, _$q_, _$modalStack_) {
-            $q = _$q_;
+        inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function () { return true; };
-            $scope.hasPermission = function () { return true; };
+            $scope.isPermissionInternal = function () {
+                return true;
+            };
+            $scope.hasPermission = function () {
+                return true;
+            };
             $scope.campaign = {id: 1};
 
             var mockApiFunc = function () {
                 return {
                     then: function () {
                         return {
-                            finally: function () {}
+                            finally: function () {},
                         };
-                    }
+                    },
                 };
             };
 
             api = {
-                campaignBudgetPlus: {
+                campaignBudget: {
                     list: mockApiFunc,
                     save: mockApiFunc,
                     create: mockApiFunc,
                     get: mockApiFunc,
                     delete: mockApiFunc,
-                    convert: {errors: function (obj) { return obj; }}
-                }
+                    convert: {errors: function (obj) {
+                        return obj;
+                    }},
+                },
             };
 
             $state = _$state_;
             $state.params = {id: 1};
 
-            $modalStack = _$modalStack_;
-
-            $controller('CampaignBudgetPlusCtrl', {$scope: $scope, api: api});
+            $controller('CampaignBudgetCtrl', {$scope: $scope, api: api});
         });
     });
 

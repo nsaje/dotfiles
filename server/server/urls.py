@@ -398,12 +398,12 @@ urlpatterns += [
         name='account_overview'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/(?P<budget_id>\d+)/',
         login_required(dash.views.bcm.CampaignBudgetItemView.as_view()),
         name='campaigns_budget_item'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/',
         login_required(dash.views.bcm.CampaignBudgetView.as_view()),
         name='campaigns_budget'
     ),

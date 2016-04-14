@@ -489,31 +489,6 @@ class CampaignSettingsForm(forms.Form):
     )
 
 
-class CampaignBudgetForm(forms.Form):
-    amount = forms.DecimalField(decimal_places=4)
-    action = forms.CharField(max_length=8)
-
-    def clean_amount(self):
-        x = self.cleaned_data.get('amount')
-        return float(x)
-
-    def get_allocate_amount(self):
-        x = self.cleaned_data['amount']
-        a = self.cleaned_data.get('action')
-        if a == 'allocate':
-            return float(x)
-        else:
-            return 0
-
-    def get_revoke_amount(self):
-        x = self.cleaned_data['amount']
-        a = self.cleaned_data.get('action')
-        if a == 'revoke':
-            return float(x)
-        else:
-            return 0
-
-
 class UserForm(forms.Form):
     email = forms.EmailField(
         max_length=127,
