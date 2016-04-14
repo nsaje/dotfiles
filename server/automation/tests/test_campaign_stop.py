@@ -17,6 +17,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
 
     def _configure_datetime_utcnow_mock(self, mock_datetime, utcnow_value):
         class DatetimeMock(datetime.datetime):
+
             @classmethod
             def utcnow(cls):
                 return utcnow_value

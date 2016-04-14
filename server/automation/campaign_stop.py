@@ -48,7 +48,6 @@ def check_and_switch_campaign_to_landing_mode(campaign):
     is_almost_depleted = available_tomorrow < max_daily_budget_sum
     is_near_depleted = available_tomorrow < max_daily_budget_sum * 2
 
-
     if not settings.landing_mode:
         if is_almost_depleted:
             with transaction.atomic():

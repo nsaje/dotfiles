@@ -6,6 +6,7 @@ from utils import statsd_helper, api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
 
+
 class AccountCreditView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_get')
@@ -357,7 +358,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
         item.save()
         campaign_stop.check_and_switch_campaign_to_landing_mode(campaign)
-        
+
         return self.create_api_response(item.instance.pk)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
