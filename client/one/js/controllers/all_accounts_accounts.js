@@ -90,18 +90,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
-            name: 'Total Budget',
-            field: 'budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of allocated budget.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
             name: 'Available Budget',
             field: 'available_budget',
             checked: true,

@@ -903,7 +903,6 @@ class AccountsAccountsTable(object):
 
         show_budgets = user.has_perm('zemauth.all_accounts_budget_view')
         if show_budgets:
-            totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
             totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
             totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
@@ -1768,7 +1767,6 @@ class AccountCampaignsTable(object):
         campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
             c.pk for c in campaigns
         )
-        totals_stats['budget'] = sum(campaign_budget.itervalues())
         total_spend = sum(campaign_spend.itervalues())
 
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend

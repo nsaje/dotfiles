@@ -27,7 +27,6 @@ FIELDNAMES = {
     'available_budget': 'Available Budget',
     'avg_tos': 'Avg. ToS',
     'bounce_rate': 'Bounce Rate',
-    'budget': 'Total Budget',
     'campaign': 'Campaign',
     'click_discrepancy': 'Click Discrepancy',
     'clicks': 'Clicks',
