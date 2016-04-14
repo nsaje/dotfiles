@@ -13,7 +13,7 @@ describe('zemNumericValidator', function () {
         $scope.isPermissionInternal = function () {
             return true;
         };
-        $scope.hasPermission = function () { 
+        $scope.hasPermission = function () {
             return true;
         };
 
@@ -48,7 +48,7 @@ describe('zemNumericValidator', function () {
         $scope.$apply();
         expect(element.val()).toBe('10');
 
-        element.val("abc");
+        element.val('abc');
         element.trigger('input');
         $scope.$digest();
         $scope.$apply();

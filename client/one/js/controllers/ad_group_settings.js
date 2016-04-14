@@ -66,7 +66,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.updateWarningText = function () {
         if (!$scope.warnings) {
             return;
-        };
+        }
 
         if ($scope.warnings.retargeting !== undefined) {
             $scope.warnings.retargeting.text = 'You have some active media sources that don\'t support retargeting. ' +
