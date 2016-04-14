@@ -8,4 +8,5 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
     def handle(self, *args, **options):
-        campaign_stop.run_campaign_stop()
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        campaign_stop.update_campaigns_in_landing()
