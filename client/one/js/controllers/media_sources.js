@@ -111,7 +111,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             unselectable: true,
             checked: true,
             type: 'clickPermissionOrText',
-            hasPermission: $scope.hasPermission('zemauth.filter_sources'),
+            hasPermission: $scope.hasPermission('zemauth.can_filter_sources_through_table'),
             clickCallback: zemFilterService.exclusivelyFilterSource,
             shown: true,
             hasTotalsLabel: true,
