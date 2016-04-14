@@ -23,6 +23,7 @@ from dash import models
 from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
+from dash.views import helpers
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
@@ -357,6 +358,8 @@ class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         return '/campaigns/{}/agency'.format(obj.id)
 
 
+
+
 class SourceAdmin(admin.ModelAdmin):
     form = SourceForm
     search_fields = ['name']
@@ -370,7 +373,15 @@ class SourceAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt',
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'deprecated')
+
+    def deprecate_selected(self, request, queryset):
+        for source in queryset:
+            helpers.deprecate_source_and_stop_ad_group_sources(source)
+        self.message_user(request, "Sources successfully deprecated. All depended AdGroup Sources has been stopped.")
+
+    deprecate_selected.short_description = "Deprecate selected sources"
+    actions = [deprecate_selected]
 
 
 class SourceTypeAdmin(admin.ModelAdmin):
