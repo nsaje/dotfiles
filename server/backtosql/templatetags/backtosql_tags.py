@@ -3,6 +3,7 @@ from django.template import Library
 
 register = Library()
 
+
 def _generate(func_name, columns, prefix):
     if getattr(columns, func_name, None) and callable(getattr(columns, func_name, None)):
         return getattr(columns, func_name)(prefix=prefix)
@@ -32,6 +33,7 @@ def lspace(value):
 @register.filter
 def as_kw(value):
     return " AS " + str(value).strip() if value else value
+
 
 @register.filter
 def indices(value):

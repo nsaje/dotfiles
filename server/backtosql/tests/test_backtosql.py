@@ -238,8 +238,8 @@ class QueryConstructionTestCase(TestCase, TestSQLMixin):
     class ModelA(backtosql.Model):
         py_foo = backtosql.Column('foo', group=1)
         py_bar = backtosql.Column('bar', group=1)
-        py_cat = backtosql.TemplateColumn('test_col.sql', {'column_name': 'cat', 'multiplier':'100'}, group=2)
-        py_dog = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog', 'multiplier':'10'}, group=2)
+        py_cat = backtosql.TemplateColumn('test_col.sql', {'column_name': 'cat', 'multiplier': '100'}, group=2)
+        py_dog = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog', 'multiplier': '10'}, group=2)
 
     def test_query(self):
         model = self.ModelA

@@ -1,5 +1,6 @@
 import sqlparse
 
+
 def clean_alias(alias):
     # remove order
     return alias.lstrip('+-').strip() if alias else ''
