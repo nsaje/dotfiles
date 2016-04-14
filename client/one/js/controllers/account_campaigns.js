@@ -145,18 +145,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             shown: $scope.hasPermission('zemauth.can_see_managers_in_campaigns_table'),
         },
         {
-            name: 'Available Budget',
-            field: 'available_budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of budget still available.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
             name: 'Unspent Budget',
             field: 'unspent_budget',
             checked: false,

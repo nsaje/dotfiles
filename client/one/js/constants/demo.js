@@ -52,7 +52,6 @@ oneApp.constant('demoDefaults', {
             name: name,
             avg_tos: 0,
             bounce_rate: 0,
-            available_budget: 0,
             clicks: 0,
             click_discrepancy: 100,
             cost: 0,

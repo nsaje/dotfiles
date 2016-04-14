@@ -1091,8 +1091,6 @@ class AccountsAccountsTable(object):
                 row['spend_projection'] = projections['spend_projection'][aid]
 
             if show_budgets:
-                row['budget'] = account_budget.get(aid, Decimal('0.0'))
-                row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
                 row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             if flat_fees:
@@ -1769,7 +1767,6 @@ class AccountCampaignsTable(object):
         )
         total_spend = sum(campaign_spend.itervalues())
 
-        totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
@@ -1910,9 +1907,6 @@ class AccountCampaignsTable(object):
             row['last_sync'] = last_sync
 
             row.update(campaign_stat)
-
-            row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
-            row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
             row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
 
             rows.append(row)

@@ -90,18 +90,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
-            name: 'Available Budget',
-            field: 'available_budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of budget still available.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
             name: 'Unspent Budget',
             field: 'unspent_budget',
             checked: false,
@@ -319,7 +307,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             'name': 'Traffic Acquisition',
             'fields': [
                 'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget',
-                'available_budget', 'unspent_budget', 'credit_projection', 'spend_projection',
+                'unspent_budget', 'credit_projection', 'spend_projection',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'total_fee', 'flat_fee'
             ]
