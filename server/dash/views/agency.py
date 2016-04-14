@@ -692,7 +692,7 @@ class CampaignSettings(api_common.BaseApiView):
                     'created_dt'
                 )
             )
-        ).select_related('conversion_goal')
+        ).select_related('conversion_goal').order_by('id')
 
         for campaign_goal in goals:
             goal_blob = campaign_goal.to_dict(with_values=True)
