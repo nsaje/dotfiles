@@ -358,8 +358,6 @@ class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         return '/campaigns/{}/agency'.format(obj.id)
 
 
-
-
 class SourceAdmin(admin.ModelAdmin):
     form = SourceForm
     search_fields = ['name']

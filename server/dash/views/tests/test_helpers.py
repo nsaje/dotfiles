@@ -1617,6 +1617,7 @@ class PublisherHelpersTest(TestCase):
         self.assertFalse(publisher_helpers.is_publisher_domain('BS Local (CBS Local)'))
         self.assertFalse(publisher_helpers.is_publisher_domain('CNN Money (Turner U.S.)'))
 
+
 class SourceDeprecationTestCase(TestCase):
 
     fixtures = ['test_models']
@@ -1630,7 +1631,3 @@ class SourceDeprecationTestCase(TestCase):
         for ad_group_source in ad_group_sources:
             settings = ad_group_source.get_current_settings()
             self.assertEqual(settings.state, constants.AdGroupSourceSettingsState.INACTIVE)
-
-
-
-
