@@ -1,5 +1,7 @@
 import os
 import logging
+import time
+import operator
 
 import unittest
 
@@ -38,7 +40,15 @@ class SplitTestsRunner(runner.DiscoverRunner):
             help='Filter out any tests not matching name.'
         )
 
-    def __init__(self, integration_tests=None, redshift_tests=None, test_name=None, *args, **kwargs):
+        parser.add_argument(
+            '--timing',
+            action='store_true',
+            dest='timing',
+            default=False,
+            help='Measure tests execution time',
+        )
+
+    def __init__(self, integration_tests=None, redshift_tests=None, test_name=None, timing=False, *args, **kwargs):
         logging.disable(logging.CRITICAL)
 
         if integration_tests:
@@ -47,6 +57,10 @@ class SplitTestsRunner(runner.DiscoverRunner):
         self.redshift_tests = redshift_tests
         self.test_name = test_name
         settings.RUN_REDSHIFT_UNITTESTS = redshift_tests
+
+        self.test_timings = {}
+        if timing:
+            monkey_patch_test_case_for_timing(self.test_timings)
 
         super(SplitTestsRunner, self).__init__(*args, **kwargs)
 
@@ -96,6 +110,12 @@ class SplitTestsRunner(runner.DiscoverRunner):
                          settings.STATS_E2E_DB_NAME,
                          verbosity=0)
 
+    def teardown_test_environment(self, **kwargs):
+        super(SplitTestsRunner, self).teardown_test_environment(**kwargs)
+
+        if self.test_timings:
+            print_times(self.test_timings)
+
     def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
         ret = super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)
 
@@ -119,3 +139,33 @@ class SplitTestsRunner(runner.DiscoverRunner):
 
 class CustomRunner(XMLTestRunner, SplitTestsRunner):
     pass
+
+
+def monkey_patch_test_case_for_timing(test_timings):
+    # borrowed from:
+    # https://github.com/ninuxorg/nodeshot/blob/6790e2c7a200ccb7ee55356f053732a4bc47b80f/nodeshot/core/base/tests_speedup.py
+
+    def measure_n_run(self, *args, **kwargs):
+        start = time.time()
+        self.run(*args, **kwargs)
+        test_timings[str(self)] = time.time() - start
+
+    __call__ = unittest.TestCase.__call__
+    unittest.TestCase.__call__ = measure_n_run
+
+
+def print_times(test_timings, nr_top_slow=10):
+    by_time = sorted(
+        iter(test_timings.items()),
+        key=operator.itemgetter(1),
+        reverse=True
+    )[:nr_top_slow]
+    print "\n{} slowest tests:".format(nr_top_slow)
+    for func_name, timing in by_time:
+        if timing < 1.0:
+            color = "\033[92m"
+        elif timing < 2.0:
+            color = "\033[93m"
+        else:
+            color = "\033[91m"
+        print "{color}{t:.4f}s {f}".format(color=color, f=func_name, t=timing)
