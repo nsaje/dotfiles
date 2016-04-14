@@ -471,15 +471,10 @@ def _run_autopilot(campaign, daily_caps):
 
 
 def _get_ad_group_ratios(ad_groups, per_date_data):
-    today = dates_helper.local_today()
-    before_7_days = today - datetime.timedelta(days=7)
-
     spend_per_ad_group = defaultdict(list)
-    for date in dates_helper.date_range(before_7_days, today):
-        active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=True)
-        for ad_group in active_ad_groups:
-            ad_group_spend = per_date_data.get((ad_group.id, date), 0)
-            spend_per_ad_group[ad_group.id].append(ad_group_spend)
+    for key, val in per_date_data.iteritems():
+        ad_group_id, _ = key
+        spend_per_ad_group[ad_group_id].append(val)
 
     avg_spends = {}
     for ad_group_id, spends in spend_per_ad_group.iteritems():
