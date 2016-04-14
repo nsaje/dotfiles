@@ -305,7 +305,7 @@ def _stop_non_spending_sources(campaign):
                     ad_group.id,
                     '\n'.join(['{}: ${}'.format(
                         ags.source.name,
-                        yesterday_spends.get((ags.ad_group_id, ags.source_id))
+                        yesterday_spends.get((ags.ad_group_id, ags.source_id), 0)
                     ) for ags in ad_group_sources])
                 )
             )
@@ -319,7 +319,7 @@ def _stop_non_spending_sources(campaign):
                           ad_group.id,
                           '\n'.join(['{}: Yesterday spend was ${}'.format(
                               ags.source.name,
-                              yesterday_spends.get((ags.ad_group_id, ags.source_id))
+                              yesterday_spends.get((ags.ad_group_id, ags.source_id), 0)
                           ) for ags in to_stop])
                       )
             )
