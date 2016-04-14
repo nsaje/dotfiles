@@ -116,8 +116,8 @@ class ModelMeta(type):
 class Model(object):
     __metaclass__ = ModelMeta
 
-    __COLUMNS__ = None  # columns list
-    __COLUMNS_DICT__ = None  # columns dict (alias - column object)
+    __COLUMNS__ = None
+    __COLUMNS_DICT__ = None
 
     @classmethod
     def _init_columns(cls):
