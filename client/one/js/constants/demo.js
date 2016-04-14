@@ -64,7 +64,6 @@ oneApp.constant('demoDefaults', {
             percent_new_users: 0,
             pv_per_visit: 0,
             state: constants.adGroupSettingsState.ACTIVE,
-            unspent_budget: 0,
             visits: 0,
             campaign: id
         };

@@ -47,7 +47,6 @@ FIELDNAMES = {
     'source': 'Source',
     'start_date': 'Start Date',
     'title': 'Title',
-    'unspent_budget': 'Unspent Budget',
     'visits': 'Visits',
     'date': 'Date',
     'license_fee': 'License Fee',
@@ -77,8 +76,8 @@ FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
-                     'billing_cost', 'budget',
-                     'unspent_budget', 'license_fee', 'total_fee', 'flat_fee', ]
+                     'billing_cost',
+                     'license_fee', 'total_fee', 'flat_fee', ]
 
 FORMAT_3_DECIMALS = ['cpc']
 

@@ -145,18 +145,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             shown: $scope.hasPermission('zemauth.can_see_managers_in_campaigns_table'),
         },
         {
-            name: 'Unspent Budget',
-            field: 'unspent_budget',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total budget minus the spend within the date range.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
-            shown: $scope.hasPermission('zemauth.unspent_budget_view')
-        },
-        {
             name: 'Spend',
             field: 'cost',
             checked: true,
@@ -315,7 +303,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             'name': 'Traffic Acquisition',
             'fields': [
                 'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
-                'budget', 'available_budget', 'unspent_budget',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee'
             ]
