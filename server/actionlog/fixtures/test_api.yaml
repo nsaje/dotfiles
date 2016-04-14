@@ -361,18 +361,6 @@
     model: dash.adgroupsettings
     pk: 6
 
-# test campaignbudgetsettings
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by_id: 1
-        campaign: 1
-        allocate: 100
-        revoke: 0
-        total: 100
-    model: dash.campaignbudgetsettings
-    pk: 1
-
 # test adgroup
 
 -   fields:

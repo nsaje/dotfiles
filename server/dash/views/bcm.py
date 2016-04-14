@@ -197,14 +197,14 @@ class AccountCreditItemView(api_common.BaseApiView):
 
 class CampaignBudgetView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_get')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
         return self._get_response(campaign)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()

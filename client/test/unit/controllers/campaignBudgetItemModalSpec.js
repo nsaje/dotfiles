@@ -36,7 +36,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
         };
 
         api = {
-            campaignBudgetPlus: {
+            campaignBudget: {
                 list: mockApiFunc,
                 save: mockApiFunc,
                 create: mockApiFunc,
@@ -61,7 +61,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             $scope.isNew = true;
 
             spyOn($modalInstance, 'close');
-            spyOn(api.campaignBudgetPlus, 'create').and.callFake(
+            spyOn(api.campaignBudget, 'create').and.callFake(
                 function () { return deferred.promise; }
             );
 
@@ -70,7 +70,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             deferred.resolve(1);
             $scope.$digest();
 
-            expect(api.campaignBudgetPlus.create).toHaveBeenCalled();
+            expect(api.campaignBudget.create).toHaveBeenCalled();
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
@@ -84,7 +84,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             $scope.isNew = false;
 
             spyOn($modalInstance, 'close');
-            spyOn(api.campaignBudgetPlus, 'save').and.callFake(
+            spyOn(api.campaignBudget, 'save').and.callFake(
                 function () { return deferred.promise; }
             );
 
@@ -93,7 +93,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             deferred.resolve(1);
             $scope.$digest();
 
-            expect(api.campaignBudgetPlus.save).toHaveBeenCalled();
+            expect(api.campaignBudget.save).toHaveBeenCalled();
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
@@ -118,7 +118,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             $window.confirm = function () { return true; };
 
             spyOn($modalInstance, 'close');
-            spyOn(api.campaignBudgetPlus, 'delete').and.callFake(function () {
+            spyOn(api.campaignBudget, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -126,7 +126,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             deferred.resolve();
             $scope.$digest();
 
-            expect(api.campaignBudgetPlus.delete).toHaveBeenCalled();
+            expect(api.campaignBudget.delete).toHaveBeenCalled();
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
@@ -137,14 +137,14 @@ describe('CampaignBudgetItemModalCtrl', function () {
             $window.confirm = function () { return false; };
 
             spyOn($modalInstance, 'close');
-            spyOn(api.campaignBudgetPlus, 'delete').and.callFake(function () {
+            spyOn(api.campaignBudget, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
 
             $scope.deleteBudgetItem(10);
             $scope.$digest();
 
-            expect(api.campaignBudgetPlus.delete).not.toHaveBeenCalled();
+            expect(api.campaignBudget.delete).not.toHaveBeenCalled();
             $timeout(function () {
                 expect($modalInstance.close).not.toHaveBeenCalled();
             }, 1500);
@@ -170,7 +170,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             $scope.selectedBudgetId = 1;
             $scope.availableCredit = [];
 
-            spyOn(api.campaignBudgetPlus, 'get').and.callFake(function () {
+            spyOn(api.campaignBudget, 'get').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -190,7 +190,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             expect($scope.minDate).toBe('12/1/2015');
             expect($scope.maxDate).toBe('12/31/2015');
             expect($scope.availableCredit).toBeTruthy();
-            expect(api.campaignBudgetPlus.get).toHaveBeenCalled();
+            expect(api.campaignBudget.get).toHaveBeenCalled();
         });
     });
 });
