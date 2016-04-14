@@ -1586,7 +1586,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_action=False)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, create_action=False)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \

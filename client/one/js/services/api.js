@@ -3,6 +3,23 @@
 'use strict';
 
 oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, zemFilterService) {
+
+    function createAbortableDefer () {
+        var deferred = $q.defer();
+        var deferredAbort = $q.defer();
+        deferred.promise.abort = function () {
+            deferredAbort.resolve();
+        };
+        deferred.promise.finally(
+            function () {
+                deferred.promise.abort = angular.noop;
+            }
+        );
+
+        deferred.abortPromise = deferredAbort.promise;
+        return deferred;
+    }
+
     function processResponse (resp) {
         return resp.data.success ? resp.data.data : null;
     }
@@ -655,6 +672,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             setting.detailsLabel = setting.details_label;
             setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
+            setting.valueClass = setting.value_class;
             return setting;
         }
     }
@@ -874,9 +892,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         function getData (url, startDate, endDate, metrics, selectedIds, totals, groupSources) {
-            var deferred = $q.defer();
+
+            var deferred = createAbortableDefer();
             var config = {
-                params: {}
+                params: {},
+                timeout: deferred.abortPromise,
             };
 
             if (startDate) {
@@ -910,9 +930,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 success(function (response, status) {
                     var chartData, conversionGoals;
                     if (response && response.data && response.data.chart_data) {
-                        chartData = response.data.chart_data.map(function (group) {
-                            return convertFromApi(group);
-                        });
+                        chartData = {
+                            groups: response.data.chart_data.map(function (group) {
+                                return convertFromApi(group);
+                            }),
+                            campaignGoals: response.data.campaign_goals,
+                            goalFields: response.data.goal_fields,
+                        };
                     }
                     if (response && response.data && response.data.conversion_goals) {
                         conversionGoals = response.data.conversion_goals;
@@ -1771,6 +1795,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         name: goal.conversion_goal.name,
                         goalId: goal.conversion_goal.goal_id,
                         conversionWindow: goal.conversion_goal.conversion_window,
+                        pixelUrl: goal.conversion_goal.pixel_url,
                     };
                 }
                 return converted;

@@ -30,8 +30,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     ];
 
     $scope.exportPlusOptions = [
-      {name: 'Current View', value: 'adgroup-csv'},
-      {name: 'By Content Ad', value: 'contentad-csv'}
+      {name: 'Current View', value: constants.exportType.AD_GROUP},
+      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.updateSelectedSources = function (sourceId) {
@@ -43,7 +43,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.selectedSourceIds.push(sourceId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
+        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
@@ -755,7 +755,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function (group) {
+        $scope.chartData && $scope.chartData.groups.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }

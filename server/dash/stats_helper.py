@@ -8,6 +8,7 @@ import utils.sort_helper
 from dash import conversions_helper, constants
 from reports import api_touchpointconversions, api_publishers
 from utils import sort_helper
+from utils import exc
 
 
 def get_reports_api_module(can_see_redshift_stats):
@@ -25,9 +26,11 @@ def get_stats_with_conversions(
         order=None,
         ignore_diff_rows=False,
         conversion_goals=None,
-        constraints=None):
-    can_see_redshift_stats = user.has_perm('zemauth.can_see_redshift_postclick_statistics')
-    can_see_conversions = can_see_redshift_stats and user.has_perm('zemauth.conversion_reports')
+        constraints=None,
+        filter_by_permissions=True):
+    can_see_redshift_stats = not filter_by_permissions or user.has_perm('zemauth.can_see_redshift_postclick_statistics')
+    can_see_conversions = not filter_by_permissions or\
+        (can_see_redshift_stats and user.has_perm('zemauth.conversion_reports'))
 
     return _get_stats_with_conversions(
         user,
@@ -39,7 +42,8 @@ def get_stats_with_conversions(
         order=order,
         ignore_diff_rows=ignore_diff_rows,
         conversion_goals=conversion_goals,
-        constraints=constraints
+        constraints=constraints,
+        filter_by_permissions=filter_by_permissions,
     )
 
 
@@ -199,7 +203,8 @@ def _get_stats_with_conversions(
         order=None,
         ignore_diff_rows=False,
         conversion_goals=None,
-        constraints=None):
+        constraints=None,
+        filter_by_permissions=True):
 
     if conversion_goals is None:
         conversion_goals = []
@@ -220,14 +225,16 @@ def _get_stats_with_conversions(
         touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
     reports_api = get_reports_api_module(can_see_redshift_stats)
-    content_ad_stats = reports.api_helpers.filter_by_permissions(reports_api.query(
+    content_ad_stats = reports_api.query(
         start_date,
         end_date,
         order=order,
         breakdown=breakdown,
         ignore_diff_rows=ignore_diff_rows,
         conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
-        **constraints), user)
+        **constraints)
+    if filter_by_permissions:
+        content_ad_stats = reports.api_helpers.filter_by_permissions(content_ad_stats, user)
 
     if not breakdown:
         content_ad_stats = [content_ad_stats]
@@ -243,20 +250,23 @@ def _get_stats_with_conversions(
 
         return result[0]
 
+    if 'account' in breakdown:
+        raise exc.MissingDataError(message='Touchpoint conversions can not be broken down by account')
+
     touchpoint_conversion_stats = reports.api_touchpointconversions.query(
         start_date,
         end_date,
-        breakdown=breakdown,
+        breakdown=breakdown + ['campaign'] if 'campaign' not in breakdown else breakdown,
         conversion_goals=touchpoint_conversion_goals,
         constraints=constraints
     )
 
-    tp_conv_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id, cg.conversion_window): cg for
+    tp_conv_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id, cg.conversion_window, cg.campaign_id): cg for
                              cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
-        conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'], tp_conv_stat['conversion_window'])]
-
+        conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
+                                                tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
         if key in ca_stats_by_breakdown:
             ca_stats_by_breakdown[key][conversion_goal.get_view_key(conversion_goals)] = tp_conv_stat['conversion_count']
             continue

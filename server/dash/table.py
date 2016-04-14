@@ -87,7 +87,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
     return datetime.datetime.utcnow()
 
 
-def _set_goal_meta_on_row(stat, performance):
+def _set_goal_meta_on_row(stat, performance, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in performance:
         performance_item = {
             'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
@@ -104,11 +104,14 @@ def _set_goal_meta_on_row(stat, performance):
             continue
 
         colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
+        if goal.type == constants.CampaignGoalKPI.CPA:
+            colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
         if not colored_column:
             continue
+        
         if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.HAPPY
-        if goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
+        elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.SAD
 
 
@@ -135,10 +138,10 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         goals = campaign_goals_map.get(campaign.pk)
         if not goals:
             continue
-
+        conversion_goals = campaign.conversiongoal_set.all()
         performance = campaign_goals.get_goals_performance(
             user, {'campaign': campaign}, start_date, end_date,
-            goals=goals, stats=stat, conversion_goals=campaign.conversiongoal_set.all()
+            goals=goals, stats=stat, conversion_goals=conversion_goals
         )
 
         if not performance:
@@ -148,7 +151,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
             min((p[0] for p in performance))
         ]
 
-        _set_goal_meta_on_row(stat, performance)
+        _set_goal_meta_on_row(stat, performance, conversion_goals)
 
 
 class AllAccountsSourcesTable(object):
@@ -276,7 +279,12 @@ class CampaignSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
         self.user = user
-        self.campaign = helpers.get_campaign(user, id_)
+        helpers.get_campaign(user, id_)
+        self.campaign = models.Campaign.objects.filter(id=int(id_)).\
+            select_related('account').\
+            prefetch_related('adgroup_set').\
+            prefetch_related('conversiongoal_set').get()
+
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
@@ -340,7 +348,10 @@ class AdGroupSourcesTable(object):
 
     def __init__(self, user, id_, filtered_sources):
         self.user = user
-        self.ad_group = helpers.get_ad_group(user, id_, select_related=True)
+        helpers.get_ad_group(user, id_)
+        self.ad_group = models.AdGroup.objects.filter(id=int(id_)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
         self.ad_group_settings = self.ad_group.get_current_settings()
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
@@ -1104,7 +1115,10 @@ class AdGroupAdsTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
 
-        ad_group = helpers.get_ad_group(user, ad_group_id)
+        helpers.get_ad_group(user, ad_group_id)
+        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
 
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -1170,7 +1184,10 @@ class AdGroupAdsTable(object):
 class AdGroupAdsPlusTableUpdates(object):
 
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
-        ad_group = helpers.get_ad_group(user, ad_group_id)
+        helpers.get_ad_group(user, ad_group_id)
+        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
 
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
@@ -1181,14 +1198,14 @@ class AdGroupAdsPlusTableUpdates(object):
         ad_group_sources_states = models.AdGroupSourceState.objects\
             .filter(
                 ad_group_source__ad_group=ad_group,
-                ad_group_source__source=filtered_sources,
+                ad_group_source__source__in=filtered_sources,
             )\
             .group_current_states()\
             .select_related('ad_group_source')
 
         rows = {}
         for content_ad in changed_content_ads:
-            content_ad_sources = content_ad.contentadsource_set.filter(source=filtered_sources)
+            content_ad_sources = content_ad.contentadsource_set.filter(source__in=filtered_sources)
 
             submission_status = helpers.get_content_ad_submission_status(
                 user,
@@ -1223,7 +1240,10 @@ class AdGroupAdsPlusTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
-        ad_group = helpers.get_ad_group(user, ad_group_id)
+        helpers.get_ad_group(user, ad_group_id)
+        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
 
@@ -1429,14 +1449,14 @@ class AdGroupAdsPlusTable(object):
 
     def _add_submission_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
-            source=filtered_sources,
+            source__in=filtered_sources,
             content_ad_id__in=[row['id'] for row in rows]
         ).select_related('content_ad__ad_group').select_related('source')
 
         ad_group_sources_states = models.AdGroupSourceState.objects\
             .filter(
                 ad_group_source__ad_group=ad_group,
-                ad_group_source__source=filtered_sources,
+                ad_group_source__source__in=filtered_sources,
             )\
             .group_current_states()\
             .select_related('ad_group_source')
@@ -1468,7 +1488,11 @@ class AdGroupAdsPlusTable(object):
 class CampaignAdGroupsTable(object):
 
     def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived):
-        campaign = helpers.get_campaign(user, campaign_id)
+        helpers.get_campaign(user, campaign_id)
+        campaign = models.Campaign.objects.filter(id=int(campaign_id)).\
+            select_related('account').\
+            prefetch_related('adgroup_set').\
+            prefetch_related('conversiongoal_set').get()
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
@@ -1594,7 +1618,7 @@ class CampaignAdGroupsTable(object):
 
     def get_per_ad_group_running_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
         ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
-                                           .filter(ad_group_source__ad_group=ad_groups)\
+                                           .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
@@ -1910,7 +1934,11 @@ class PublishersTable(object):
         if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        adgroup = helpers.get_ad_group(user, id_)
+        helpers.get_ad_group(user, id_)
+        adgroup = models.AdGroup.objects.filter(id=int(id_)).\
+            select_related('campaign').\
+            prefetch_related('campaign__conversiongoal_set').get()
+
         constraints = {'ad_group': adgroup.id}
 
         size = max(min(int(size or 5), 4294967295), 1)
@@ -1944,7 +1972,7 @@ class PublishersTable(object):
             conversion_goals
         )
 
-        # set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
+        set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
 
         if order:
             publishers_data = sort_results(publishers_data, [order])

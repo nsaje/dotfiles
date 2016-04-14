@@ -6,7 +6,6 @@ from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = Secret('plain::=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l').get()
@@ -108,6 +107,9 @@ ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
 ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 
+# K1 API
+K1_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+
 # Source credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
 
@@ -185,11 +187,9 @@ R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_
 R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
 
-BIDDER_API_SIGN_KEY = ''
+BIDDER_API_SIGN_KEY = Secret('').get()
 
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
-
-BIDDER_API_SIGN_KEY = Secret('').get()
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05

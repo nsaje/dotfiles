@@ -8,7 +8,6 @@ from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK7AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAN3zo4qfYMJ/NkP2AIBEIBNdJszHvK9nhndxS9hIpiLnMWN1vWYUrQbEEudStHg0Q3vl+mKdIvR3rPNcbXj1YLddebdzXlPBxQdVEX1G7ltCC2O333j2N4gU52naF8=').get()
@@ -102,6 +101,9 @@ ZWEI_API_URL = 'https://zwei.zemanta.com/purcel/task/'
 ZWEI_API_TASKS_URL = 'https://zwei.zemanta.com/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'https://zwei.zemanta.com/purcel/dash_url/'
 ZWEI_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxbBxaeRkVLiSadrR0CARCAO6QohWauEXIl/R/vAzN8VLeETU79qZGnzYxyAg3bt1dAf2dZgFwu3qUJAW1hJQXZM/n0oSUMUOFWGy5l').get()
+
+# K1 API
+K1_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxLDkaVndGHsfBkB1QCARCAO3AoqenoO5eaoEcUABYaSJoXcSGpI54EfbTgBTWcHp2UHNQuLmq9yS89oEzmBKivfQVektS2G+KQ7A1R').get()
 
 # Network credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyvY/0jfzrrgNtFqh0CARCAO34sLgm638MGubiIAdZUB1bKIufmrizVhP9dEWXqBftFvKyn0evtcHtEg7/eDG7cBg25nMhDgif7OXiV').get()  # has to be 32 bytes

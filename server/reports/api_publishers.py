@@ -22,7 +22,7 @@ FORMULA_BILLING_COST = '({} + {} + {})'.format(
     sum_agr('effective_data_cost_nano'),
     sum_agr('license_fee_nano'),
 )
-FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
+FORMULA_TOTAL_COST = '({} + {} + {})'.format(
     sum_agr('cost_nano'),
     sum_agr('data_cost_nano'),
     sum_agr('license_fee_nano'),

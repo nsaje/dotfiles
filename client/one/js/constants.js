@@ -1,6 +1,10 @@
 /*exported defaults, options*/
 
 var constants = {
+    /**
+     * Max. selected media sources in on sources tabs.
+     */
+    maxSelectedSources: 3,
     adGroupSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2,
@@ -1116,7 +1120,7 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
         {name: 'new visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
-        {name: 'CPA (Not Supported Yet)', value: constants.campaignGoalKPI.CPA},
+        {name: 'CPA', value: constants.campaignGoalKPI.CPA},
     ],
     conversionGoalTypes: [
         {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},

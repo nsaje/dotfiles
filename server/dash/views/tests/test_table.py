@@ -663,15 +663,16 @@ class AdGroupAdsPlusTableTest(TestCase):
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
         )
-        models.CampaignGoalValue.objects.create(
+        cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=self.mock_date,
         )
+        cgv.created_dt = self.mock_date
+        cgv.save()
         table.set_rows_goals_performance(self.user,
                                          stats,
                                          self.mock_date,
-                                         self.mock_date,
+                                         self.mock_date + datetime.timedelta(1),
                                          [ad_group.campaign])
 
         self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
@@ -685,11 +686,12 @@ class AdGroupAdsPlusTableTest(TestCase):
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
         )
-        models.CampaignGoalValue.objects.create(
+        cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
             value=0.015,
-            created_dt=self.mock_date,
         )
+        cgv.created_dt = self.mock_date
+        cgv.save()
         table.set_rows_goals_performance(self.user,
                                          stats,
                                          self.mock_date,
@@ -699,10 +701,10 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
         self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
         self.assertEqual(stats[0]['performance']['list'], [
-            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC (planned $0.02)'}
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.010 CPC (planned $0.015)'}
         ])
         self.assertEqual(stats[1]['performance']['list'], [
-            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC (planned $0.02)'}
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.020 CPC (planned $0.015)'}
         ])
         self.assertEqual(stats[0]['styles'], {})
         self.assertEqual(stats[1]['styles'], {})
@@ -719,10 +721,10 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
         self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
         self.assertEqual(stats[0]['performance']['list'], [
-            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.01 CPC (planned $0.02)'},
+            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.010 CPC (planned $0.015)'},
         ])
         self.assertEqual(stats[1]['performance']['list'], [
-            {'emoticon': constants.Emoticon.SAD, 'text': '$0.02 CPC (planned $0.02)'},
+            {'emoticon': constants.Emoticon.SAD, 'text': '$0.020 CPC (planned $0.015)'},
         ])
         self.assertEqual(stats[0]['styles'], {'cpc': constants.Emoticon.HAPPY})
         self.assertEqual(stats[1]['styles'], {'cpc': constants.Emoticon.SAD})
@@ -1108,8 +1110,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'percent_new_users': 0.5,
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
-            # u'performance': {u'list': [], u'overall': None},
-            # u'styles': {},
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'avg_tos': 20,
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
@@ -1312,8 +1314,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            # u'performance': {u'list': [], u'overall': None},
-            # u'styles': {},
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
@@ -1667,8 +1669,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'pv_per_visit': 10,
             u'avg_tos': 20,
             u'conversion_goal_1': 0,
-            # u'performance': {u'list': [], u'overall': None},
-            # u'styles': {},
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
@@ -1872,8 +1874,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            # u'performance': {u'list': [], u'overall': None},
-            # u'styles': {},
+            u'performance': {u'list': [], u'overall': None},
+            u'styles': {},
             u'conversion_goal_1': 0,
             u'conversion_goal_2': None,
             u'conversion_goal_3': None,
