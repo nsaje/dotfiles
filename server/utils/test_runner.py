@@ -144,9 +144,10 @@ class CustomRunner(XMLTestRunner, SplitTestsRunner):
 def monkey_patch_test_case_for_timing(test_timings):
 
     __call__ = unittest.TestCase.__call__
+
     def measure_n_run(self, *args, **kwargs):
         start = time.time()
-        __call__(self,*args, **kwargs)
+        __call__(self, *args, **kwargs)
         test_timings[str(self)] = time.time() - start
 
     unittest.TestCase.__call__ = measure_n_run
