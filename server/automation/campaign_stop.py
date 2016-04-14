@@ -30,8 +30,6 @@ TEMP_EMAILS = [
 ]
 
 
-        remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
-        max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
 def run_campaign_stop():
     switch_low_budget_campaigns_to_landing_mode(dash.models.Campaign.objects.all().exclude_landing())
     update_landing_campaigns(dash.models.Campaign.objects.all().filter_landing())
@@ -40,6 +38,8 @@ def run_campaign_stop():
 def switch_low_budget_campaigns_to_landing_mode(campaigns):
     for campaign in campaigns.iterator():
         yesterday_spend = _get_yesterday_budget_spend(campaign)
+        remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
+        max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
         if available_tomorrow < max_daily_budget_sum:
             with transaction.atomic():
                 actions = _switch_campaign_to_landing_mode(campaign)
