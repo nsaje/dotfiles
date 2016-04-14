@@ -8,25 +8,23 @@ describe('zemNumericValidator', function () {
 
     beforeEach(module('one'));
     beforeEach(inject(function ($compile, $rootScope, $httpBackend) {
-        compile = $compile;
         $scope = $rootScope.$new();
         httpBackend = $httpBackend;
         $scope.isPermissionInternal = function () {
-            return true; 
+            return true;
         };
         $scope.hasPermission = function () { 
-            return true; 
+            return true;
         };
 
         httpBackend.when('GET', '/api/users/current/').respond({});
         httpBackend.when('GET', '/api/all_accounts/nav/').respond({});
 
-        $scope.value = '0.001'
+        $scope.value = '0.001';
 
         element = $compile(template)($scope);
 
         $scope.$digest();
-        isolate = element.isolateScope();
     }));
 
     it('validates a number', function () {
@@ -49,7 +47,7 @@ describe('zemNumericValidator', function () {
         $scope.$digest();
         $scope.$apply();
         expect(element.val()).toBe('10');
-        
+
         element.val("abc");
         element.trigger('input');
         $scope.$digest();

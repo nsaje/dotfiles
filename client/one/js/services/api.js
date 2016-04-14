@@ -1057,7 +1057,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     campaignId: warnings.end_date.campaign_id,
                 };
             }
-            return ret
+            return ret;
         }
 
         this.get = function (id) {
