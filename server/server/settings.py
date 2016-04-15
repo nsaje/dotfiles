@@ -139,11 +139,12 @@ try:
 except ImportError:
     pass
 
-try:
-    import django_extensions
-    INSTALLED_APPS.append('django_extensions')
-except ImportError:
-    pass
+if DEBUG:
+    try:
+        import django_extensions
+        INSTALLED_APPS.append('django_extensions')
+    except ImportError:
+        pass
 
 from celeryconfig import *
 from localsettings import *
