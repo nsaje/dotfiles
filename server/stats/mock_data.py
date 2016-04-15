@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from random import random
+import random
 
-TEST_COLUMNS = 9
+TEST_COLUMNS = 20
 TEST_COLUMNS_TYPES = ['int', 'string', 'string', 'string']
 TEST_BREAKDOWNS = ['date', 'age', 'ad_group']
 TEST_BREAKDOWNS_DATES = [(datetime(2016, 4, 1) + timedelta(days=i)).strftime('%b %d %Y') for i in range(30)]
@@ -67,7 +67,9 @@ def _generate_random_breakdown(breakdowns, level=1, position=(0,), key='Total'):
 
 
 def _generate_random_stats(key):
-    return [key] + [('%.2f' % (random() * 10000)) for _ in range(TEST_COLUMNS-1)]
+    if key == 'Total':
+        return [key] + [('%.2f' % (random.uniform(10000, 1000000))) for _ in range(TEST_COLUMNS-1)]
+    return [key] + [('%.2f' % (random.uniform(100, 1000))) for _ in range(TEST_COLUMNS-1)]
 
 
 def _get_breakdown_keys(breakdown):

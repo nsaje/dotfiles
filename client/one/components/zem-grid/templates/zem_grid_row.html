@@ -3,6 +3,7 @@
                    ng-if="row.type!=GridRowType.BREAKDOWN"
                    cell="col"
                    options="options"
+                   columns-widths="ctrl.columnsWidths"
     ></zem-grid-cell>
     <div class="zem-grid-cell" ng-if="row.type==GridRowType.BREAKDOWN">
         <a ng-click="loadMore(row)">

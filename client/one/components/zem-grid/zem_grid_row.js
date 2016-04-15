@@ -11,6 +11,7 @@ oneApp.directive('zemGridRow', ['config', function (config) {
         bindToController: {
             options: '=',
             row: '=',
+            columnsWidths: '@',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row.html',
         controller: ['$scope', function ($scope) {
