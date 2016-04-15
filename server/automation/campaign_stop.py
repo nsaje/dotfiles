@@ -5,6 +5,7 @@ import logging
 import decimal
 
 from django.db import transaction
+from django.db.models import Prefetch
 
 import actionlog.api
 from actionlog import zwei_actions
@@ -31,14 +32,20 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    candidate_campaigns = dash.models.Campaign.objects.all().prefetch_current_settings()
-    for campaign in candidate_campaigns.iterator():
-        check_and_switch_campaign_to_landing_mode(campaign)
+    settings_qs= dash.models.CampaignSettings.objects.all().distinct('campaign_id').order_by('campaign_id', '-created_dt')
+    candidate_campaigns = dash.models.Campaign.objects.all().prefetch_related(
+        Prefetch(
+            'settings',
+            queryset=settings_qs,
+            to_attr='_current_settings'
+        )
+    )
+    for campaign in candidate_campaigns:
+        check_and_switch_campaign_to_landing_mode(campaign, campaign._current_settings[0])
 
 
-def check_and_switch_campaign_to_landing_mode(campaign):
-    settings = campaign.get_current_settings(prefetched=True)
-    if not settings.automatic_campaign_stop:
+def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
         return
 
     remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
@@ -48,7 +55,7 @@ def check_and_switch_campaign_to_landing_mode(campaign):
     is_almost_depleted = available_tomorrow < max_daily_budget_sum
     is_near_depleted = available_tomorrow < max_daily_budget_sum * 2
 
-    if not settings.landing_mode:
+    if not campaign_settings.landing_mode:
         if is_almost_depleted:
             with transaction.atomic():
                 actions = _switch_campaign_to_landing_mode(campaign)

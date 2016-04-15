@@ -225,7 +225,10 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.automatic_campaign_stop = False
         new_campaign_settings.save(None)
 
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign)
+        campaign_stop.check_and_switch_campaign_to_landing_mode(
+            campaign,
+            campaign.get_current_settings()
+        )
         self.assertFalse(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
@@ -242,7 +245,8 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign)
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
         self.assertTrue(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
