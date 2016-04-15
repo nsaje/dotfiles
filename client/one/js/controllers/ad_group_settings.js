@@ -50,6 +50,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
+                $scope.updateWarningText();
                 freshSettings.resolve(data.settings.name === 'New ad group');
                 goToContentAds = data.settings.name === 'New ad group';
             },
@@ -60,6 +61,22 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         ).finally(function () {
             $scope.loadRequestInProgress = false;
         });
+    };
+
+    $scope.updateWarningText = function () {
+        if (!$scope.warnings) {
+            return;
+        }
+
+        if ($scope.warnings.retargeting !== undefined) {
+            $scope.warnings.retargeting.text = 'You have some active media sources that don\'t support retargeting. ' +
+               'To start using it please disable/pause these media sources:';
+        }
+
+        if ($scope.warnings.endDate !== undefined) {
+            $scope.warnings.endDate.text = 'Your campaign has been switched to landing mode. ' +
+                'Please add the budget and continue to adjust settings by your needs. ';
+        }
     };
 
     $scope.discardSettings = function () {
@@ -170,11 +187,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         });
 
         return result;
-    };
-
-    $scope.showAutoPilotOption = function (adGroupSettingsAutopilotState) {
-        return !(adGroupSettingsAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET &&
-                $scope.settings.autopilotOptimizationGoal === constants.campaignGoalKPI.CPA);
     };
 
     $scope.showAutoPilotDailyBudgetInput = function () {

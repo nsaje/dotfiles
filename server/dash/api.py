@@ -1258,14 +1258,12 @@ class AdGroupSourceSettingsWriter(object):
         state = settings_obj.get('state')
         cpc_cc = settings_obj.get('cpc_cc')
         daily_budget_cc = settings_obj.get('daily_budget_cc')
-        autopilot_state = settings_obj.get('autopilot_state')
 
         assert cpc_cc is None or isinstance(cpc_cc, decimal.Decimal)
         assert daily_budget_cc is None or isinstance(daily_budget_cc, decimal.Decimal)
 
         if any([
                 state is not None and state != latest_settings.state,
-                autopilot_state is not None and autopilot_state != latest_settings.autopilot_state,
                 cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
                 daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc]):
             new_settings = latest_settings
@@ -1275,12 +1273,6 @@ class AdGroupSourceSettingsWriter(object):
 
             if state is not None:
                 new_settings.state = state
-            if autopilot_state is not None:
-                if new_settings.state == constants.AdGroupSettingsState.INACTIVE and\
-                        autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
-                    raise utils.exc.ValidationError('Auto-pilot can not be enabled when source is disabled.')
-                old_settings_obj['autopilot_state'] = latest_settings.autopilot_state
-                new_settings.autopilot_state = autopilot_state
             if cpc_cc is not None:
                 old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
                 new_settings.cpc_cc = cpc_cc
@@ -1294,7 +1286,7 @@ class AdGroupSourceSettingsWriter(object):
             self.add_to_history_and_notify(settings_obj, old_settings_obj, request, system_user)
 
             if create_action:
-                filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
+                filtered_settings_obj = {k: v for k, v in settings_obj.iteritems()}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
                         return actionlog.api.set_ad_group_source_settings(
