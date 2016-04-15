@@ -114,7 +114,9 @@ def get_ga_accounts(request):
     adgroup_ga_api_enabled = dash.models.AdGroupSettings.objects.filter(
         enable_ga_tracking=True,
         ga_tracking_type=dash.constants.GATrackingType.API).group_current_settings().values('ad_group__id')
+    content_ad_ids_ga_api_enabled = dash.models.ContentAd.objects.filter(
+        ad_group__id__in=adgroup_ga_api_enabled).values_list('id', flat=True)
     ga_accounts = dash.models.GAAnalyticsAccount.objects.filter(
         account__campaign__adgroup__id__in=adgroup_ga_api_enabled).values('ga_account_id',
                                                                           'ga_web_property_id').distinct()
-    return JsonResponse({'ga_accounts': list(ga_accounts)})
+    return JsonResponse({'ga_accounts': list(ga_accounts), 'content_ads_enabled': list(content_ad_ids_ga_api_enabled)})
