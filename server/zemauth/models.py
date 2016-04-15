@@ -192,7 +192,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
             ('campaign_goal_performance', 'Can view goal performance information'),
             ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
-            ('has_drift', 'Has Drift snippet'),
             ('has_supporthero', 'Has Supporthero snippet'),
         )
 
