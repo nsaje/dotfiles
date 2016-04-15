@@ -320,7 +320,7 @@ class AdGroupInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class CampaignAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -331,6 +331,14 @@ class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+    form = dash_forms.CampaignAdminForm
+
+    def save_model(self, request, obj, form, change):
+        campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+        new_settings = obj.get_current_settings().copy_settings()
+        new_settings.automatic_campaign_stop = campaign_stop
+        obj.save(request)
+        new_settings.save(request)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:

@@ -91,7 +91,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     };
 
     $scope.manageBudget = function () {
-        $state.go('main.campaigns.budget', { id: $scope.campaign.id });
+        $state.go('main.campaigns.budget', {id: $scope.campaign.id});
     };
 
     $scope.$on('$stateChangeStart', function () {
