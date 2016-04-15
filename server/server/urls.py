@@ -141,31 +141,31 @@ urlpatterns += [
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/updates/',
         login_required(dash.views.table.AdGroupAdsPlusTableUpdates.as_view()),
-        name='ad_group_ads_plus_table_updates'
+        name='ad_group_ads_table_updates'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/',
         login_required(dash.views.table.AdGroupAdsPlusTable.as_view()),
-        name='ad_group_ads_plus_table'
+        name='ad_group_ads_table'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/status/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
         login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()),
-        name='ad_group_ads_plus_upload_status'
+        name='ad_group_ads_upload_status'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/cancel/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/cancel/',
         login_required(dash.views.views.AdGroupAdsPlusUploadCancel.as_view()),
-        name='ad_group_ads_plus_upload_cancel'
+        name='ad_group_ads_upload_cancel'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/report/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/report/',
         login_required(dash.views.views.AdGroupAdsPlusUploadReport.as_view()),
-        name='ad_group_ads_plus_upload_report'
+        name='ad_group_ads_upload_report'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/',
-        login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/',
+        login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_upload'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
@@ -223,9 +223,9 @@ urlpatterns += [
         name='ad_group_daily_stats'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/daily_stats/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
         login_required(dash.views.daily_stats.AdGroupAdsPlusDailyStats.as_view()),
-        name='ad_group_ads_plus_daily_stats'
+        name='ad_group_ads_daily_stats'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
