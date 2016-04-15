@@ -7,6 +7,7 @@ from django.http import JsonResponse, Http404
 from django.db.models import F
 from django.conf import settings
 
+from utils import url_helper
 from utils import request_signer
 
 logger = logging.getLogger(__name__)
@@ -75,6 +76,72 @@ def get_ad_group_list(request):
 
 
 @csrf_exempt
+def get_content_ad_source_settings(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    content_ad_id = request.GET.get('content_ad_id')
+    if not content_ad_id:
+        _response_error("Must provide content ad id.")
+    source_type = request.GET.get('source_type')
+    if not source_type:
+        _response_error("Must provide source type.")
+
+    content_ad_source = (
+        dash.models.ContentAdSource.objects
+        .get(
+            content_ad_id=content_ad_id,
+            source__source_type__type=source_type,
+        )
+        .select_related('content_ad')
+    )
+
+    ad_group_source = dash.models.AdGroupSource.objects.filter(
+        ad_group=content_ad_source.content_ad.ad_group,
+        source=content_ad_source.source
+    ).select_related('ad_group', 'source__source_type').get()
+
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and\
+            ad_group_source.can_manage_content_ads:
+        ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
+
+        url = content_ad_source.content_ad.url_with_tracking_codes(
+            url_helper.combine_tracking_codes(
+                ad_group_tracking_codes,
+                ad_group_source.get_tracking_ids(),
+            )
+        )
+    else:
+        url = content_ad_source.content_ad.url
+
+    data = {
+        'credentials': ad_group_source.source_credentials.credentials,
+        'ad_group_id': content_ad_source.content_ad.ad_group_id,
+        'content_ad_id': content_ad_source.content_ad_id,
+        'source_content_ad_id': content_ad_source.source_content_ad_id,
+        'state': content_ad_source.state,
+        'title': content_ad_source.content_ad.title,
+        'url': url,
+        'submission_status': content_ad_source.submission_status,
+        'image_id': content_ad_source.content_ad.image_id,
+        'image_width': content_ad_source.content_ad.image_width,
+        'image_height': content_ad_source.content_ad.image_height,
+        'image_hash': content_ad_source.content_ad.image_hash,
+        'redirect_id': content_ad_source.content_ad.redirect_id,
+        'display_url': content_ad_source.content_ad.display_url,
+        'brand_name': content_ad_source.content_ad.brand_name,
+        'description': content_ad_source.content_ad.description,
+        'call_to_action': content_ad_source.content_ad.call_to_action,
+        'tracking_slug': ad_group_source.source.tracking_slug,
+        'tracker_urls': content_ad_source.content_ad.tracker_urls
+    }
+    return _response_ok(data)
+
+
+@csrf_exempt
 def get_ad_group_source_settings(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
@@ -101,6 +168,7 @@ def get_ad_group_source_settings(request):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
     data = {
+        'ad_group_source_id': ad_group_source.id,
         'ad_group_id': ad_group_source.ad_group_id,
         'credentials': ad_group_source.source_credentials.credentials,
         'source_campaign_key': ad_group_source.source_campaign_key,
@@ -110,6 +178,8 @@ def get_ad_group_source_settings(request):
         'name': ad_group_source.get_external_name(),
         'start_date': ad_group_settings.start_date,
         'end_date': ad_group_settings.start_date,
+        'target_devices': ad_group_settings.target_devices,
+        'target_regions': ad_group_settings.target_regions,
     }
     return _response_ok(data)
 
