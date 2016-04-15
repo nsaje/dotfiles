@@ -327,7 +327,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
     def test_get(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
@@ -438,7 +437,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
@@ -487,7 +485,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
             response = self.client.get(url)
@@ -520,7 +517,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.post(url, json.dumps(data),
@@ -558,13 +554,11 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2016, 1, 1)
             response = self.client.delete(url)
         self.assertEqual(response.status_code, 400)
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.delete(url)
@@ -602,7 +596,6 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = today
             response = self.client.get(url)

@@ -199,15 +199,11 @@ class CampaignBudgetView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
         return self._get_response(campaign)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         request_data = json.loads(request.body)
@@ -326,8 +322,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_get')
     def get(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         item = models.BudgetLineItem.objects.get(
             campaign_id=campaign_id,
             pk=budget_id,
@@ -336,8 +330,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_post')
     def post(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         request_data = json.loads(request.body)
@@ -360,9 +352,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
     def delete(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
         try:
