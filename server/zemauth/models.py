@@ -102,7 +102,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         permissions = (
             ('campaign_settings_view', "Can view campaign's settings tab."),
             ('campaign_agency_view', "Can view campaign's agency tab."),
-            ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_budget_view', "Can view campaign's budget tab."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),

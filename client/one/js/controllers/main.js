@@ -135,24 +135,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         // otherwise get default state
-        if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
-            return 'main.campaigns.ad_groups';
-        }
-        if ($scope.hasPermission('zemauth.campaign_sources_view')) {
-            return 'main.campaigns.sources';
-        }
-        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
-            return 'main.campaigns.agency';
-        }
-        if ($scope.hasPermission('zemauth.campaign_budget_view')) {
-            return 'main.campaigns.budget';
-        }
-        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
-            return 'main.campaigns.settings';
-        }
-
-        // no permissions
-        return null;
+        return 'main.campaigns.ad_groups';
     };
 
     $scope.canAccessCampaigns = function () {

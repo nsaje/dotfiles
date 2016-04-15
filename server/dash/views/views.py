@@ -471,9 +471,6 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
-            raise exc.MissingDataError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
         ad_group_settings.save(request)
