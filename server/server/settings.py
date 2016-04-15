@@ -32,7 +32,7 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 PROJECT_NAME = 'z1'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +50,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'automation',
     'timezone_field',
-)
+]
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -139,6 +139,11 @@ try:
 except ImportError:
     pass
 
+try:
+    import django_extensions
+    INSTALLED_APPS.append('django_extensions')
+except ImportError:
+    pass
 
 from celeryconfig import *
 from localsettings import *
