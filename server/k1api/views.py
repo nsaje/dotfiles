@@ -111,9 +111,12 @@ def get_ga_accounts(request):
         logger.exception('Invalid K1 signature.')
         raise Http404
 
-    adgroup_ga_api_enabled = dash.models.AdGroupSettings.objects.filter(
-        enable_ga_tracking=True,
-        ga_tracking_type=dash.constants.GATrackingType.API).group_current_settings().values('ad_group__id')
+    adgroup_ga_api_enabled = [current_settings.ad_group.id for current_settings in
+                              dash.models.AdGroupSettings.objects.all().group_current_settings().prefetch_related(
+                                  'ad_group') if
+                              current_settings.enable_ga_tracking and
+                              current_settings.ga_tracking_type == dash.constants.GATrackingType.API]
+
     content_ad_ids_ga_api_enabled = dash.models.ContentAd.objects.filter(
         ad_group__id__in=adgroup_ga_api_enabled).values_list('id', flat=True)
     ga_accounts = dash.models.GAAnalyticsAccount.objects.filter(

@@ -143,7 +143,10 @@ class K1ApiTest(TestCase):
 
         data = json.loads(response.content)
 
+        self.assertEqual(len(data['ga_accounts']), 2)
+        self.assertEqual(len(data['content_ads_enabled']), 4)
         self.assertEqual(data['ga_accounts'][0]['ga_account_id'], 'acc1')
         self.assertEqual(data['ga_accounts'][1]['ga_account_id'], 'acc2')
         self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'prop1')
         self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'prop2')
+        self.assertListEqual(data['content_ads_enabled'], [1, 2, 3, 4])
