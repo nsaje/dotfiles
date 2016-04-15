@@ -35,7 +35,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
             $scope.footer = {};
 
             $scope.load = function () {
-                $scope.dataSource.fetch().then(
+                $scope.dataSource.getData().then(
                     function (breakdown) {
                         var totalDataRow = breakdown.rows[0];
                         $scope.footer = new GridRow($scope.GridRowType.STATS, 0, totalDataRow);
@@ -45,7 +45,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
             };
 
             $scope.loadMore = function (row, size) {
-                $scope.dataSource.fetch(row.data, size).then(
+                $scope.dataSource.getData(row.data, size).then(
                     function (breakdown) {
                         var rows = $scope.parseBreakdown(row, breakdown);
                         var idx = $scope.rows.indexOf(row);

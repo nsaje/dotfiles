@@ -1,23 +1,30 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
+oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($rootScope, $http, $q) {
 
     function DataSource () {
+        var ds = this;
+
         this.breakdowns = ['ad_group', 'age', 'date'];
         this.endpoint = '/api/stats/testdata/';
         this.defaultPagination = [2, 3, 5];
-
         this.data = null;
 
-        this.prepareBreakdownConfig = function (breakdown, size) {
+        this.getData = getData;
+        this.getMetaData = getMetaData;
+        this.updateData = updateData;
+        this.registerListener = registerListener;
+
+
+        function prepareBreakdownConfig (breakdown, size) {
             var level = 0;
             if (breakdown) level = breakdown.level;
 
             var ranges = [];
-            for (var i = 1; i <= this.breakdowns.length; ++i) {
+            for (var i = 1; i <= ds.breakdowns.length; ++i) {
                 var from = 0;
-                var to = this.defaultPagination[i - 1];
+                var to = ds.defaultPagination[i - 1];
                 if (breakdown) {
                     if (i < breakdown.level) {
                         from = breakdown.position[i];
@@ -28,32 +35,30 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
                             if (size > 0) to = from + size;
                             else to = -1;
                         } else {
-                            to = from + this.defaultPagination[i - 1];
+                            to = from + ds.defaultPagination[i - 1];
                         }
                     }
                 }
                 ranges.push([from, to].join('|'));
             }
 
-            var config = {
+            return {
                 params: {
-                    breakdowns: this.breakdowns.join(','),
+                    breakdowns: ds.breakdowns.join(','),
                     ranges: ranges.join(','),
                     level: level,
                 },
             };
+        }
 
-            return config;
-        };
-
-        this.applyBreakdown = function (breakdown) {
+        function applyBreakdown (breakdown) {
             if (breakdown.level === 0) {
-                this.data = breakdown.rows[0];
+                ds.data = breakdown.rows[0];
                 return;
             }
 
             var position = breakdown.position;
-            var current = this.data.breakdown;
+            var current = ds.data.breakdown;
             for (var i = 1; i < breakdown.level; ++i) {
                 current = current.rows[position[i]].breakdown;
             }
@@ -61,24 +66,45 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.to = breakdown.pagination.to;
             current.pagination.size += breakdown.pagination.size;
-        };
+        }
 
-        // TODO: move to API
-        this.fetch = function (breakdown, size) {
-            var config = this.prepareBreakdownConfig(breakdown, size);
+        function getMetaData () { /* TODO */ }
+
+        function getData (breakdown, size) {
+            var config = prepareBreakdownConfig(breakdown, size);
             var deferred = $q.defer();
-            var that = this;
-            $http.get(this.endpoint, config).success(function (data) {
+            $http.get(ds.endpoint, config).success(function (data) {
                 var breakdown = data.data[0];
-                that.applyBreakdown(breakdown);
+                applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
+                notifyListeners(DataSource.EVENTS.POST_GET_DATA, breakdown);
             }).error(function (data) {
                 deferred.reject(data);
             });
 
             return deferred.promise;
-        };
+        }
+
+        function updateData () { /* TODO */ }
+
+        function registerListener (event, scope, callback) {
+            var handler = $rootScope.$on(event, callback);
+            scope.$on('$destroy', handler);
+        }
+
+        function notifyListeners (event, data) {
+            $rootScope.$emit(event, data);
+        }
     }
+
+    DataSource.EVENTS = {
+        PRE_GET_DATA: 'pre-get-data',
+        POST_GET_DATA: 'post-get-data',
+        PRE_GET_META_DATA: 'pre-get-meta-data',
+        POST_GET_META_DATA: 'post-get-meta-data',
+        PRE_UPDATE: 'pre-update',
+        POST_UPDATE: 'post-update',
+    };
 
     return DataSource;
 }]);
