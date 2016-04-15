@@ -1461,7 +1461,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     deferred.resolve({
                         name: data.data.name,
                         id: data.data.id,
-                        contentAdsTabWithCMS: data.data.content_ads_tab_with_cms
                     });
                 }).
                 error(function (data, status) {

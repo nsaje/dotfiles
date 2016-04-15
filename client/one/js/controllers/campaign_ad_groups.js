@@ -418,7 +418,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 zemNavigationService.addAdGroupToCache(campaignId, {
                     id: data.id,
                     name: data.name,
-                    contentAdsTabWithCMS: data.contentAdsTabWithCMS,
                     status: constants.adGroupSettingsState.INACTIVE,
                     state: constants.adGroupRunningStatus.INACTIVE,
                 });

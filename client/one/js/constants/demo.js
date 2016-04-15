@@ -29,7 +29,6 @@ oneApp.constant('demoDefaults', {
             name: 'New demo ad group',
             endDate: null,
             startDate: null,
-            contentAdsTabWithCMS: true
         };
     },
     emptyChart: {

@@ -53,12 +53,6 @@ describe('AdGroupCtrl', function () {
         expect($scope.account.id, 4);
     });
 
-    it('shows Content Ads+ tab when ad group has cms turned on', function () {
-        $scope.adGroup.contentAdsTabWithCMS = true;
-        var tabs = $scope.getTabs();
-        expect(tabs[0].route, 'main.adGroups.adsPlus');
-    });
-
     it('hides Content Ads+ tab when no permission', function () {
         var tabs = $scope.getTabs();
         expect(tabs.length).toEqual(5);

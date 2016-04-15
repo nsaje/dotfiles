@@ -836,7 +836,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var init = function () {
-        if (!$scope.adGroup.contentAdsTabWithCMS && !$scope.hasPermission('zemauth.new_content_ads_tab')) {
+        if (!$scope.hasPermission('zemauth.new_content_ads_tab')) {
             $state.go('main.adGroups.ads', {
                 id: $scope.adGroup.id
             });

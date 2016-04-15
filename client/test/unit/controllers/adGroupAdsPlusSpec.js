@@ -37,7 +37,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             }
         };
 
-        $scope.adGroup = {contentAdsTabWithCMS: false};
+        $scope.adGroup = {};
 
         var mockApiFunc = function () {
             return {
