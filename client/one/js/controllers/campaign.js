@@ -17,10 +17,9 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 heading: 'Media sources',
                 route: 'main.campaigns.sources',
                 active: false,
-                hidden: !$scope.hasPermission('zemauth.campaign_sources_view') ||
-                    ($scope.hasPermission('zemauth.view_archived_entities') &&
-                     $scope.campaign && $scope.campaign.archived),
-                internal: $scope.isPermissionInternal('zemauth.campaign_sources_view'),
+                hidden: $scope.hasPermission('zemauth.view_archived_entities') &&
+                     $scope.campaign && $scope.campaign.archived,
+                internal: false,
             },
             {
                 heading: 'Agency',
