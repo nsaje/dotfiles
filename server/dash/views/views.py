@@ -487,7 +487,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         response = {
             'name': ad_group.name,
             'id': ad_group.id,
-            'content_ads_tab_with_cms': ad_group.content_ads_tab_with_cms
         }
 
         return self.create_api_response(response)
