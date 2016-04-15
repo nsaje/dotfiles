@@ -2309,48 +2309,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAdsExportAllowed () {
-        function convertFromApi (data) {
-            return {
-                allowed: data.allowed,
-                maxDays: data.max_days
-            };
-        }
-
-        this.get = function (adGroupId, startDate, endDate) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/export/allowed/';
-
-            var config = {
-                params: {}
-            };
-
-            if (startDate) {
-                config.params.start_date = startDate.format();
-            }
-
-            if (endDate) {
-                config.params.end_date = endDate.format();
-            }
-
-            $http.get(url, config).
-                success(function (data, status) {
-                    var resource;
-
-                    if (data && data.data) {
-                        resource = convertFromApi(data.data);
-                    }
-
-                    deferred.resolve(resource);
-                }).
-                error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AdGroupAdsPlusExportAllowed () {
         function convertFromApi (data) {
             return {
@@ -3148,7 +3106,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         exportPlusAllowed: new ExportPlusAllowed(),
-        adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         adGroupAdsPlusExportAllowed: new AdGroupAdsPlusExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),

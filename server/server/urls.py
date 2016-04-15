@@ -119,14 +119,6 @@ urlpatterns += [
         name='ad_group_publishers_blacklist_sync_progress'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
-        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/allowed/',
-        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
-    ),
-    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
         login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
     ),
@@ -137,10 +129,6 @@ urlpatterns += [
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/export/',
         login_required(dash.views.export.AccountCampaignsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
-        login_required(dash.views.export.AdGroupAdsExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/',

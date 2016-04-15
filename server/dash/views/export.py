@@ -279,40 +279,6 @@ class CampaignAdGroupsExport(ExportApiView):
             result['ad_group'] = ad_groups[result['ad_group']].name
 
 
-class AdGroupAdsExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134
-
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_allowed_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        num_days = (end_date - start_date).days + 1
-
-        num_articles = models.Article.objects.filter(ad_group=ad_group).count()
-
-        active_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
-        num_sources = models.Source.objects.filter(
-            adgroupsource__in=active_sources
-        ).count()
-
-        # estimate number of rows (worst case)
-        row_count = num_days * num_sources * num_articles
-
-        try:
-            max_days = self.MAX_ROWS / (num_articles * num_sources)
-        except ZeroDivisionError:
-            max_days = None
-
-        return self.create_api_response({
-            'allowed': row_count <= self.MAX_ROWS,
-            'max_days': max_days
-        })
-
-
 class AdGroupAdsPlusExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
@@ -369,87 +335,6 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
             'allowed': row_count <= self.MAX_ROWS,
             'max_days': max_days
         })
-
-
-class AdGroupAdsExport(ExportApiView):
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
-            slugify.slugify(ad_group.campaign.account.name),
-            slugify.slugify(ad_group.name),
-            start_date,
-            end_date
-        )
-
-        ads_results = export.generate_rows(
-            ['date', 'article'],
-            start_date,
-            end_date,
-            request.user,
-            ad_group=ad_group,
-            source=filtered_sources,
-        )
-
-        if request.GET.get('type') == 'excel':
-            sources_results = export.generate_rows(
-                ['date', 'source', 'article'],
-                start_date,
-                end_date,
-                request.user,
-                ad_group=ad_group,
-                source=filtered_sources,
-            )
-
-            self.add_source_data(sources_results)
-
-            ads_columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'title', 'name': 'Title', 'width': 30},
-                {'key': 'url', 'name': 'URL', 'width': 40},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
-
-            sources_columns = list(ads_columns)  # make a shallow copy
-            sources_columns.insert(3, {'key': 'source', 'name': 'Source', 'width': 20})
-
-            content = export.get_excel_content([
-                ('Detailed Report', ads_columns, ads_results),
-                ('Per Source Report', sources_columns, sources_results)
-            ])
-
-            return self.create_excel_response(filename, content=content)
-        else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('title', 'Title'),
-                ('url', 'URL'),
-                ('cost', 'Cost'),
-                ('cpc', 'CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
-
-            content = export.get_csv_content(fieldnames, ads_results)
-            return self.create_csv_response(filename, content=content)
-
-    def add_source_data(self, results):
-        sources = {source.id: source for source in models.Source.objects.all()}
-
-        for result in results:
-            result['source'] = sources[result['source']].name
 
 
 class AdGroupAdsPlusExport(ExportApiView):
