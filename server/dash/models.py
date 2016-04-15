@@ -1828,8 +1828,7 @@ class AdGroupSettings(SettingsBase):
         change_strings = []
 
         for key, value in changes.iteritems():
-            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
-                    not user.has_perm('zemauth.new_content_ads_tab'):
+            if key in ['display_url', 'brand_name', 'description', 'call_to_action']:
                 continue
             if key == 'retargeting_ad_groups' and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):

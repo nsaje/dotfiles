@@ -1107,9 +1107,6 @@ class AdGroupAdsPlusTableUpdates(object):
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
 
-        if not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
 
@@ -1162,8 +1159,6 @@ class AdGroupAdsPlusTable(object):
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-        if not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         size = max(min(int(size or 5), 4294967295), 1)
 

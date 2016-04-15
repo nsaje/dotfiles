@@ -58,15 +58,6 @@ describe('AdGroupCtrl', function () {
         expect(tabs.length).toEqual(5);
     });
 
-    it('sets hidden and internal for Content Ads+ tab', function () {
-        $scope.user.permissions['zemauth.new_content_ads_tab'] = false;
-
-        var tabs = $scope.getTabs();
-
-        expect(tabs[5].hidden).toEqual(false);
-        expect(tabs[5].internal).toEqual(true);
-    });
-
     describe('setAdGroupData', function () {
         it('should add key-value pair for the current ad group', function () {
             $scope.adGroupData = {1: {key1: 'value1'}};

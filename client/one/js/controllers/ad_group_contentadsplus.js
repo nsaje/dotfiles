@@ -836,13 +836,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var init = function () {
-        if (!$scope.hasPermission('zemauth.new_content_ads_tab')) {
-            $state.go('main.adGroups.ads', {
-                id: $scope.adGroup.id
-            });
-            return;
-        }
-
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0');

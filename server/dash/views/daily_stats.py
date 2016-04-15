@@ -467,9 +467,6 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        if not request.user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         metrics = request.GET.getlist('metrics')
