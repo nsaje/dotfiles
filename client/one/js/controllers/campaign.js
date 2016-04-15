@@ -34,8 +34,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 heading: 'Settings',
                 route: 'main.campaigns.archived',
                 active: false,
-                hidden: $scope.hasPermission('zemauth.campaign_settings_view') ||
-                    !$scope.hasPermission('zemauth.view_archived_entities') ||
+                hidden: !$scope.hasPermission('zemauth.view_archived_entities') ||
                     !$scope.campaign || !$scope.campaign.archived,
                 internal: false,
             },
@@ -43,10 +42,9 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
-                hidden: !$scope.hasPermission('zemauth.campaign_settings_view') ||
-                    ($scope.hasPermission('zemauth.view_archived_entities') &&
-                     $scope.campaign && $scope.campaign.archived),
-                internal: $scope.isPermissionInternal('zemauth.campaign_settings_view'),
+                hidden: $scope.hasPermission('zemauth.view_archived_entities') &&
+                     $scope.campaign && $scope.campaign.archived,
+                internal: false,
             },
             {
                 heading: 'Budget',
@@ -103,11 +101,9 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     if ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived) {
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             $state.go('main.campaigns.agency', {id: $scope.campaign.id});
-        } else if ($scope.hasPermission('zemauth.campaign_settings_view')) {
-            $state.go('main.campaigns.settings', {id: $scope.campaign.id});
-        } else {
-            $state.go('main.campaigns.archived', {id: $scope.campaign.id});
         }
+
+        $state.go('main.campaigns.settings', {id: $scope.campaign.id});
     }
 
     zemNavigationService.onUpdate($scope, function () {

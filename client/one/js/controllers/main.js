@@ -130,7 +130,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
-        if ($state.includes('**.settings') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($state.includes('**.settings')) {
             return 'main.campaigns.settings';
         }
 
