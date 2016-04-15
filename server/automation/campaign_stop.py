@@ -32,7 +32,9 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    settings_qs= dash.models.CampaignSettings.objects.all().distinct('campaign_id').order_by('campaign_id', '-created_dt')
+    settings_qs = dash.models.CampaignSettings.objects.all()\
+                                                      .distinct('campaign_id')\
+                                                      .order_by('campaign_id', '-created_dt')
     candidate_campaigns = dash.models.Campaign.objects.all().prefetch_related(
         Prefetch(
             'settings',
@@ -52,16 +54,16 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
     yesterday_spend = _get_yesterday_budget_spend(campaign)
 
-    is_almost_depleted = available_tomorrow < max_daily_budget_sum
+    should_switch_to_landing = available_tomorrow < max_daily_budget_sum
     is_near_depleted = available_tomorrow < max_daily_budget_sum * 2
 
     if not campaign_settings.landing_mode:
-        if is_almost_depleted:
+        if should_switch_to_landing:
             with transaction.atomic():
                 actions = _switch_campaign_to_landing_mode(campaign)
             zwei_actions.send(actions)
             _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
-        if is_near_depleted:
+        elif is_near_depleted:
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
     elif not is_near_depleted:
         # TODO: turn landing mode off
