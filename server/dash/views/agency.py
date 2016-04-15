@@ -308,7 +308,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'campaign_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'campaign_managers': self.get_user_list(campaign_settings),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -413,8 +413,8 @@ class CampaignAgency(api_common.BaseApiView):
         settings.campaign_manager = resource['campaign_manager']
         settings.iab_category = resource['iab_category']
 
-    def get_user_list(self, settings, perm_name):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+    def get_user_list(self, settings):
+        users = ZemUser.objects.all()
 
         manager = settings.campaign_manager
         if manager is not None and manager not in users:
@@ -871,7 +871,7 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
+            'account_managers': self.get_user_list(account_settings),
             'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
@@ -1172,8 +1172,8 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+    def get_user_list(self, settings, perm_name=None):
+        users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:

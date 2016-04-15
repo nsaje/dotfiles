@@ -275,9 +275,7 @@ class AccountAgencySettingsForm(forms.Form):
         err_msg = 'Invalid account manager.'
 
         try:
-            account_manager = ZemUser.objects.\
-                get_users_with_perm('campaign_settings_account_manager', True).\
-                get(pk=account_manager_id)
+            account_manager = ZemUser.objects.get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)
 
@@ -456,9 +454,7 @@ class CampaignAgencyForm(forms.Form):
         err_msg = 'Invalid campaign manager.'
 
         try:
-            campaign_manager = ZemUser.objects.\
-                get_users_with_perm('campaign_settings_account_manager', True).\
-                get(pk=campaign_manager_id)
+            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)
 

@@ -9,7 +9,6 @@ from django.contrib.auth.models import Permission
 
 from dash import forms
 from dash import models
-from dash import constants
 from zemauth.models import User
 
 
@@ -18,12 +17,7 @@ class AccountAgencySettingsFormTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(AccountAgencySettingsFormTest, cls).setUpClass() # loads fixtures
-
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
+        super(AccountAgencySettingsFormTest, cls).setUpClass()  # loads fixtures
 
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=2)

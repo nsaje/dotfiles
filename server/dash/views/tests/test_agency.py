@@ -1879,7 +1879,6 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
-        self.add_permissions(['campaign_agency_view', 'campaign_settings_account_manager'])
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -2313,11 +2312,6 @@ class AccountAgencyTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super(AccountAgencyTest, cls).setUpClass()
-
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
 
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=1)

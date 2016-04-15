@@ -54,7 +54,6 @@
     - [archive_restore_entity, zemauth, user]
     - [campaign_ad_groups_detailed_report, zemauth, user]
     - [campaign_budget_management_view, zemauth, user]
-    - [campaign_settings_account_manager, zemauth, user]
     - [campaign_settings_sales_rep, zemauth, user]
     - [campaign_settings_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
