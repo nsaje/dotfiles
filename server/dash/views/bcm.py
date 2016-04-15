@@ -303,7 +303,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 continue
             data['current'][item.is_past() and 'past' or 'available'] += Decimal(allocated)
             if not item.is_past():
-                data['current']['unallocated'] += Decimal(item.amount - allocated)
+                data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - allocated)
 
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
             spend_data = item.get_spend_data(use_decimal=True)
