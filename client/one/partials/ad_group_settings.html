@@ -72,7 +72,7 @@
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                 </div>
-                <div class="form-alert-body" ng-bind-html="warnings.endDate.text"></div>
+                <div class="form-alert-body">{{ warnings.endDate.text }}<a ng-click="tabClick($event)" zem-in-link="main.campaigns.budget({id: {{ warnings.endDate.campaignId }} })">Add budget</a></div>
             </div>
 
         </div>

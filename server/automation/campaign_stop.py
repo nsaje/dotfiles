@@ -322,7 +322,7 @@ def _stop_non_spending_sources(campaign):
                     ad_group.id,
                     '\n'.join(['{}: ${}'.format(
                         ags.source.name,
-                        yesterday_spends.get((ags.ad_group_id, ags.source_id))
+                        yesterday_spends.get((ags.ad_group_id, ags.source_id), 0)
                     ) for ags in ad_group_sources])
                 )
             )
@@ -336,7 +336,7 @@ def _stop_non_spending_sources(campaign):
                           ad_group.id,
                           '\n'.join(['{}: Yesterday spend was ${}'.format(
                               ags.source.name,
-                              yesterday_spends.get((ags.ad_group_id, ags.source_id))
+                              yesterday_spends.get((ags.ad_group_id, ags.source_id), 0)
                           ) for ags in to_stop])
                       )
             )
@@ -365,7 +365,7 @@ def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_to
     for ad_group in ad_groups:
         per_date_ag_spend = [amount for key, amount in per_date_spend.iteritems() if key[0] == ad_group.id]
         notes += 'Ad group: {}, Past 7 day spend: {}, Avg: {} (was running for {} days), '\
-                 'Calculated ratio: {} ()\n'.format(
+                 'Calculated ratio: {}\n'.format(
                      ad_group.id,
                      sum(per_date_ag_spend),
                      sum(per_date_ag_spend) / len(per_date_ag_spend) if len(per_date_ag_spend) > 0 else 0,
@@ -488,15 +488,10 @@ def _run_autopilot(campaign, daily_caps):
 
 
 def _get_ad_group_ratios(ad_groups, per_date_data):
-    today = dates_helper.local_today()
-    before_7_days = today - datetime.timedelta(days=7)
-
     spend_per_ad_group = defaultdict(list)
-    for date in dates_helper.date_range(before_7_days, today):
-        active_ad_groups = _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=True)
-        for ad_group in active_ad_groups:
-            ad_group_spend = per_date_data.get((ad_group.id, date), 0)
-            spend_per_ad_group[ad_group.id].append(ad_group_spend)
+    for key, val in per_date_data.iteritems():
+        ad_group_id, _ = key
+        spend_per_ad_group[ad_group_id].append(val)
 
     avg_spends = {}
     for ad_group_id, spends in spend_per_ad_group.iteritems():
