@@ -4,6 +4,7 @@ import json
 from dash import models, constants, forms
 from utils import statsd_helper, api_common, exc
 from dash.views import helpers
+from automation import campaign_stop
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -222,6 +223,8 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save()
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
 
@@ -355,6 +358,8 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.save()
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
 
@@ -369,6 +374,8 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             item.delete()
         except AssertionError:
             raise exc.ValidationError('Budget item is not pending')
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
         return self.create_api_response(True)
 
     def _get_response(self, item):
