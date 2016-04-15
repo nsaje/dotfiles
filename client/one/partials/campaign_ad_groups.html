@@ -13,8 +13,7 @@
     </div>
     <div class="section table-ad-group-ads">
         <div class="button-bar">
-            <div ng-if="hasPermission('zemauth.campaign_ad_groups_add_ad_group')" class="button-bar-item add-source-container">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.campaign_ad_groups_add_ad_group')" popover-placement="bottom"></zem-internal-feature>
+            <div class="button-bar-item add-source-container">
                 <button type="button" class="btn btn-add" ng-click="addAdGroup()">+ Ad group</button>
                 <div class="loader" ng-show="addGroupRequestInProgress"></div>
             </div>

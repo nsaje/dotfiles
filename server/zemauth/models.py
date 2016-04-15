@@ -116,7 +116,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_sources_view', 'Can view campaign sources view.'),
             ('account_sources_view', 'Can view account sources view.'),
             ('all_accounts_sources_view', 'Can view all accounts sources view.'),
-            ('campaign_ad_groups_add_ad_group', 'Can add ad groups.'),
             ('account_campaigns_add_campaign', 'Can add campaigns.'),
             ('all_accounts_accounts_add_account', 'Can add accounts.'),
             ('all_new_sidebar', 'Can see new sidebar.'),
