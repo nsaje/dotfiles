@@ -601,9 +601,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
-            if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
-                return;
-            }
             api.campaignOverview.get(
                 $state.params.id,
                 $scope.dateRange.startDate,
@@ -703,7 +700,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.accounts.settings';
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             $scope.localStoragePrefix = 'campaignSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_campaign_infobox');
+            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission;
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [

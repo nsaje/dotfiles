@@ -2859,10 +2859,7 @@ class CampaignOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = [
-            'can_see_infobox',
-            'can_access_campaign_infobox'
-        ]
+        permissions = ['can_see_infobox']
         for p in permissions:
             self.user.user_permissions.add(Permission.objects.get(codename=p))
         self.user.save()
@@ -2900,10 +2897,6 @@ class CampaignOverviewTest(TestCase):
         response = self._get_campaign_overview(1)
         self.assertFalse(response['success'])
         self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission_2 = Permission.objects.get(codename='can_access_campaign_infobox')
-        self.user.user_permissions.add(permission_2)
-        self.user.save()
 
         response = self._get_campaign_overview(1)
         self.assertFalse(response['success'])

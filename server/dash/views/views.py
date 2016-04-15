@@ -555,8 +555,6 @@ class CampaignOverview(api_common.BaseApiView):
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_campaign_infobox'):
-            raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
