@@ -288,7 +288,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         // is entirely housed within main atm
         if ($state.is('main.campaigns.ad_groups') ||
             $state.is('main.campaigns.sources') ||
-            $state.is('main.adGroups.adsPlus') ||
+            $state.is('main.adGroups.ads') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers') ||
             $state.is('main.accounts.campaigns') ||
@@ -306,7 +306,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             return false;
         }
 
-        if ($state.is('main.adGroups.adsPlus') ||
+        if ($state.is('main.adGroups.ads') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {
             return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
@@ -331,7 +331,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.isChartVisible = function () {
-        return $state.is('main.adGroups.adsPlus') ||
+        return $state.is('main.adGroups.ads') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers') ||
             $state.is('main.campaigns.ad_groups') ||

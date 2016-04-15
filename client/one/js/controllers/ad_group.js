@@ -10,7 +10,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             route: 'main.adGroups.ads',
             active: true,
             hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
-                     $scope.adGroup && $scope.adGroup.archived),
+                        $scope.adGroup && $scope.adGroup.archived),
         }, {
             heading: 'Media Sources',
             route: 'main.adGroups.sources',
@@ -40,24 +40,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'),
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view'),
         }];
-
-        tabs.splice(0, 1, {
-            heading: 'Content Ads',
-            route: 'main.adGroups.ads',
-            active: true,
-            hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
-                        $scope.adGroup && $scope.adGroup.archived),
-        });
-        } else if ($scope.hasPermission('zemauth.new_content_ads_tab')) {
-            tabs.push({
-                heading: 'Content Ads+',
-                route: 'main.adGroups.adsPlus',
-                active: false,
-                hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
-                         $scope.adGroup && $scope.adGroup.archived),
-                internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab'),
-            });
-        }
 
         return tabs;
     };
