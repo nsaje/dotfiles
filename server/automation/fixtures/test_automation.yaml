@@ -268,7 +268,6 @@
     cpc_cc: '0.12'
     daily_budget_cc: '50.'
     state: 1
-    autopilot_state: 1
   model: dash.adgroupsourcesettings
   pk: 3
 
@@ -278,7 +277,6 @@
     cpc_cc: '0.12'
     daily_budget_cc: '50.'
     state: 1
-    autopilot_state: 1
   model: dash.adgroupsourcesettings
   pk: 4
 
@@ -288,7 +286,6 @@
     cpc_cc: '0.12'
     daily_budget_cc: '50.'
     state: 1
-    autopilot_state: 1
   model: dash.adgroupsourcesettings
   pk: 5
 
@@ -298,7 +295,6 @@
     cpc_cc: '0.12'
     daily_budget_cc: '50.'
     state: 1
-    autopilot_state: 1
   model: dash.adgroupsourcesettings
   pk: 6
 
@@ -308,7 +304,6 @@
     cpc_cc: '0.12'
     daily_budget_cc: '50.'
     state: 1
-    autopilot_state: 1
   model: dash.adgroupsourcesettings
   pk: 7
 

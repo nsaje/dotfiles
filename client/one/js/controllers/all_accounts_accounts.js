@@ -90,42 +90,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
-            name: 'Total Budget',
-            field: 'budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of allocated budget.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
-            name: 'Available Budget',
-            field: 'available_budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of budget still available.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
-            name: 'Unspent Budget',
-            field: 'unspent_budget',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total budget minus the spend within the date range.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
-            shown: $scope.hasPermission('zemauth.unspent_budget_view')
-        },
-        {
             name: 'Total Credit',
             field: 'credit_projection',
             checked: false,
@@ -207,18 +171,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
         {
             name: 'Total Spend',
@@ -303,6 +255,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc'
         },
         {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent',
+            shown: true,
+            defaultValue: '0.0%',
+            totalRow: true,
+            help: 'The number of clicks divided by the number of impressions.',
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
             name: '',
             nameCssClass: 'data-status-icon',
             type: 'dataStatus',
@@ -330,9 +294,9 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget',
-                'available_budget', 'unspent_budget', 'credit_projection', 'spend_projection',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'clicks', 'impressions', 'cost', 'data_cost', 'cpc',
+                'credit_projection', 'spend_projection',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'total_fee', 'flat_fee'
             ]
         },

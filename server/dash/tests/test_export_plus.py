@@ -342,8 +342,6 @@ class ExportPlusTestCase(test.TestCase):
         self.assertEqual(rows, [
             {'account_id': 1,
              'account': u'test account 1 \u010c\u017e\u0161',
-             'available_budget': Decimal(0),
-             'budget': Decimal(0),
              'clicks': 103,
              'cost': 1000.12,
              'cpc': 10.23,
@@ -357,11 +355,9 @@ class ExportPlusTestCase(test.TestCase):
              'total_fee': Decimal('101.0'),
              'flat_fee': Decimal('100.0'),
              'status': 2,
-             'unspent_budget': Decimal('-1000.120000000000004547473509')},
+             },
             {'account_id': 2,
              'account': u'test account 2',
-             'available_budget': Decimal(0),
-             'budget': Decimal(0),
              'clicks': 203,
              'cost': 2000.12,
              'cpc': 20.23,
@@ -375,7 +371,7 @@ class ExportPlusTestCase(test.TestCase):
              'total_fee': Decimal('1.0'),
              'flat_fee': Decimal('0.0'),
              'status': 2,
-             'unspent_budget': Decimal('-2000.119999999999890860635787')}
+             }
         ])
 
     @patch('reports.api_contentads.query')
@@ -435,8 +431,6 @@ class ExportPlusTestCase(test.TestCase):
             {'account_id': 1,
              'campaign_id': 1,
              'account': u'test account 1 \u010c\u017e\u0161',
-             'available_budget': Decimal('0'),
-             'budget': Decimal('0'),
              'campaign': campaign,
              'clicks': 203,
              'cost': 2000.12,
@@ -448,7 +442,7 @@ class ExportPlusTestCase(test.TestCase):
              'impressions': 200000,
              'start_date': datetime.date(2014, 6, 30),
              'status': 2,
-             'unspent_budget': Decimal('-2000.119999999999890860635787')}
+             }
         ])
 
     @patch('reports.api_contentads.query')

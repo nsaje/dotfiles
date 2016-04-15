@@ -62,7 +62,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
 def _get_min_max_values_of_optimization_goal(data, campaign_goal):
     max_value = 0.0
     min_value = float("inf")
-    if campaign_goal and campaign_goal.type != CampaignGoalKPI.CPA:
+    if campaign_goal:
         col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
         for row in data:
             current = row[col]
@@ -155,10 +155,11 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
         return (100 - data_value) / 100
     if campaign_goal_type == CampaignGoalKPI.NEW_UNIQUE_VISITORS:
         return data_value / 100
-    if campaign_goal_type in [CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION]:
-        return data_value / max_value_of_campaign_goal
+    if campaign_goal_type in [CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION, CampaignGoalKPI.CPA]:
+        return data_value / max_value_of_campaign_goal if max_value_of_campaign_goal > 0 else 0
     if campaign_goal_type == CampaignGoalKPI.CPC:
-        return float(min_value_of_campaign_goal / data_value)
+        return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
+                                                                  min_value_of_campaign_goal < float("inf")) else 0.0
     raise exceptions.NotImplementedError('Budget Auto-Pilot campaign goal is not implemented: ', campaign_goal_type)
 
 
