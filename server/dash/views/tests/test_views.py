@@ -1865,7 +1865,7 @@ class SharethroughApprovalTest(TestCase):
         mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
 
 
-class PublishersBlacklistStatusTest(TransactionTestCase):
+class PublishersBlacklistStatusTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):

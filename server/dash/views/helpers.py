@@ -13,7 +13,6 @@ import actionlog.api
 import actionlog.constants
 import actionlog.models
 import actionlog.zwei_actions
-import automation.autopilot
 import automation.autopilot_budgets
 import automation.autopilot_settings
 from dash import models
@@ -827,7 +826,7 @@ def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', ]:
         row[key] = stat.get(key)
 
@@ -873,7 +872,6 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings):
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
             ad_group.campaign.is_in_landing() or\
-            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source) or\
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings)
 
@@ -976,9 +974,6 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
 
     if _is_end_date_past(ad_group_settings):
         return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
-
-    if automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
-        return 'This value cannot be edited because the media source is on Auto-Pilot.'
 
     if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
                                              constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:

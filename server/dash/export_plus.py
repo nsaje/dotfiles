@@ -24,10 +24,8 @@ FIELDNAMES = {
     'content_ad_id': 'Content Ad Id',
     'account': 'Account',
     'ad_group': 'Ad Group',
-    'available_budget': 'Available Budget',
     'avg_tos': 'Avg. ToS',
     'bounce_rate': 'Bounce Rate',
-    'budget': 'Total Budget',
     'campaign': 'Campaign',
     'click_discrepancy': 'Click Discrepancy',
     'clicks': 'Clicks',
@@ -37,7 +35,6 @@ FIELDNAMES = {
     'e_data_cost': 'Data Cost',
     'e_media_cost': 'Media Spend',
     'billing_cost': 'Total Spend',
-    'total_cost': 'Actual Total Spend',
     'cpc': 'Average CPC',
     'ctr': 'CTR',
     'url': 'URL',
@@ -50,7 +47,6 @@ FIELDNAMES = {
     'source': 'Source',
     'start_date': 'Start Date',
     'title': 'Title',
-    'unspent_budget': 'Unspent Budget',
     'visits': 'Visits',
     'date': 'Date',
     'license_fee': 'License Fee',
@@ -80,8 +76,8 @@ FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
-                     'total_cost', 'billing_cost', 'budget', 'available_budget',
-                     'unspent_budget', 'license_fee', 'total_fee', 'flat_fee', ]
+                     'billing_cost',
+                     'license_fee', 'total_fee', 'flat_fee', ]
 
 FORMAT_3_DECIMALS = ['cpc']
 
@@ -90,7 +86,7 @@ FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepan
 FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
-    'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
+    'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
 
@@ -312,7 +308,7 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
     if dimensions == ['source']:
         _populate_source_stat(stat, user=user, source_names=source_names)
     else:
-        _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data, budgets=budgets,
+        _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data,
                              projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings)
 
     if 'source' in stat:
@@ -337,7 +333,7 @@ def _populate_source_stat(stat, user=None, source_names=None):
     stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
 
 
-def _populate_model_stat(stat, dimensions=None, prefetched_data=None, budgets=None,
+def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
                          projections=None, flat_fees=None, statuses=None, settings=None):
     model = None
     if 'content_ad' in dimensions:
@@ -348,13 +344,13 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None, budgets=No
         stat = _populate_ad_group_stat(stat, model, statuses, settings=settings)
     elif 'campaign' in dimensions:
         model = prefetched_data[stat['campaign']]
-        stat = _populate_campaign_stat(stat, model, statuses, settings=settings, budgets=budgets)
+        stat = _populate_campaign_stat(stat, model, statuses, settings=settings)
     elif 'account' in dimensions:
         model = prefetched_data[stat['account']]
         stat = _populate_account_stat(stat, model, statuses, settings=settings, projections=projections,
-                                      budgets=budgets, flat_fees=flat_fees)
+                                      flat_fees=flat_fees)
     elif not dimensions:
-        stat = _populate_all_accounts_stat(stat, projections=projections, budgets=budgets, flat_fees=flat_fees)
+        stat = _populate_all_accounts_stat(stat, projections=projections, flat_fees=flat_fees)
 
     if model:
         _populate_model_ids(stat, model)
@@ -385,17 +381,13 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None):
     return stat
 
 
-def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=None):
+def _populate_campaign_stat(stat, campaign, statuses, settings=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
     if settings and campaign.id in settings:
         setting = settings[campaign.id]
         stat['campaign_manager'] = helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
         stat['archived'] = setting.archived
-    if budgets:
-        stat['budget'] = budgets[campaign.id].get('budget')
-        stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
-        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
     stat['status'] = statuses[campaign.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
@@ -403,7 +395,7 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
 
 
 def _populate_account_stat(stat, account, statuses, settings=None, projections=None,
-                           budgets=None, flat_fees=None):
+                           flat_fees=None):
     if settings and account.id in settings:
         setting = settings[account.id]
         stat['default_account_manager'] = \
@@ -411,10 +403,6 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
         stat['default_sales_representative'] = \
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
         stat['archived'] = setting.archived
-    if budgets:
-        stat['budget'] = budgets[stat['account']].get('budget')
-        stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
-        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
     if flat_fees is not None:
         stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
         stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee') or 0)
@@ -429,11 +417,7 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
     return stat
 
 
-def _populate_all_accounts_stat(stat, projections=None, budgets=None, flat_fees=None):
-    if budgets:
-        stat['budget'] = budgets['budget']
-        stat['available_budget'] = stat['budget'] - budgets['spent_budget']
-        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
+def _populate_all_accounts_stat(stat, projections=None, flat_fees=None):
     if projections:
         stat['credit_projection'] = projections.get('credit_projection', Decimal('0.0'))
         stat['credit_projection'] = projections.get('spend_projection', Decimal('0.0'))
@@ -651,21 +635,12 @@ class AllAccountsExport(object):
             # Settings are needed to get archived status
             include_settings = True
 
-        include_budgets = (
-            any([
-                field in additional_fields
-                for field in ['budget', 'available_budget', 'unspent_budget']
-            ]) and not by_day and breakdown != 'ad_group'
-        )
         include_flat_fees = (
             'total_fee' in additional_fields or 'flat_fee' in additional_fields
         )
         include_projections = (
             'spend_projection' in additional_fields or 'credit_projection' in additional_fields
         )
-
-        if not include_budgets:
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
@@ -678,7 +653,6 @@ class AllAccountsExport(object):
             False,
             [],
             include_settings=include_settings,
-            include_budgets=include_budgets,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
             account=accounts,
@@ -696,20 +670,15 @@ class AccountExport(object):
         dimensions = ['account']
         required_fields = ['start_date', 'end_date', 'account']
         exclude_fields = []
-        exclude_budgets = False
         if breakdown == 'campaign':
             required_fields.extend(['campaign'])
             dimensions.extend(['campaign'])
         elif breakdown == 'ad_group':
             required_fields.extend(['campaign', 'ad_group'])
             dimensions.extend(['campaign', 'ad_group'])
-            exclude_budgets = True
         elif breakdown == 'content_ad':
             required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
-            exclude_budgets = True
-        if exclude_budgets or by_day:
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields.extend(['status'])
         if include_model_ids:
@@ -724,9 +693,6 @@ class AccountExport(object):
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
-        include_budgets = any(
-            [field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
-
         results = _generate_rows(
             dimensions,
             start_date,
@@ -736,7 +702,6 @@ class AccountExport(object):
             breakdown == 'content_ad',
             [],
             include_settings=True,
-            include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
 
@@ -840,7 +805,7 @@ def filter_allowed_fields(request, fields):
                  'license_fee', 'billing_cost') and not can_view_effective_costs:
             continue
         if f in ('data_cost', 'media_cost',
-                 'license_fee', 'total_cost') and not can_view_actual_costs:
+                 'license_fee') and not can_view_actual_costs:
             continue
         if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
             continue
@@ -851,8 +816,6 @@ def filter_allowed_fields(request, fields):
         if f in ('default_account_manager', 'default_sales_representative') and not can_see_managers_in_accounts_table:
             continue
         if f in ('campaign_manager',) and not can_see_managers_in_campaigns_table:
-            continue
-        if f in ('budget', 'available_budget', 'unspent_budget') and not can_view_budgets:
             continue
         allowed_fields.append(f)
     return allowed_fields

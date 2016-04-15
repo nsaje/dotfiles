@@ -47,7 +47,6 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='e_data_cost_nano_sum',  app='e_data_cost',        out=rsh.from_nano,            calc=rsh.sum_agr('effective_data_cost_nano')),
         dict(sql='license_fee_nano_sum',  app='license_fee',        out=rsh.from_nano,            calc=rsh.sum_agr('license_fee_nano')),
         dict(sql='billing_nano_cost',     app='billing_cost',       out=rsh.from_nano,            calc=rsh.total_cost(nano_cols=['effective_cost_nano', 'effective_data_cost_nano', 'license_fee_nano'])),
-        dict(sql='total_nano_cost',       app='total_cost',         out=rsh.from_nano,            calc=rsh.total_cost(nano_cols=['license_fee_nano'], cc_cols=['cost_cc', 'data_cost_cc'])),
 
         # Derivatives
         dict(sql='ctr',                   app='ctr',                out=rsh.to_percent,           calc=rsh.sum_div('clicks', 'impressions')),

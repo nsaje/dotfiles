@@ -52,16 +52,6 @@ class AdGroupSourceSettingsState(ConstantBase):
     }
 
 
-class AdGroupSourceSettingsAutopilotState(ConstantBase):
-    ACTIVE = 1
-    INACTIVE = 2
-
-    _VALUES = {
-        ACTIVE: 'Enabled',
-        INACTIVE: 'Paused'
-    }
-
-
 class ExportPlusStatus(ConstantBase):
     # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
