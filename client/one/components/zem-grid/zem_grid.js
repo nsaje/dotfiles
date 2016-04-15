@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config, zemDataSourceService) {
+oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemDataSourceService', function (config, zemGridConstants, zemDataSourceService) {
     function GridRow (type, level, data) {
         this.type = type;
         this.level = level;
@@ -22,23 +22,34 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', function (config,
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
         controller: ['$scope', function ($scope) {
+            this.broadcastEvent = function (event, data) {
+                $scope.$broadcast(event, data);
+            };
+
+            if (!$scope.options) {
+                $scope.options = {};
+            }
 
             if (!$scope.dataSource) {
                 $scope.dataSource = new zemDataSourceService();
             }
+
             $scope.GridRowType = {STATS: 1, BREAKDOWN: 2};
 
-            $scope.rows = [];
-            var columns = ['Name'];
-            for (var i = 0; i < 8; ++i) columns.push('Stat ' + (i + 1));
-            $scope.header = {columns: columns}
-            $scope.footer = {};
+            var columns = ['Name', 'Short stat', 'Looooogner stat', 'Realy looooooooooong stat', 'A', 'B', 'C', 'AA', 'BB', 'CC', 'AAA', 'BBB', 'CCC', 'AAAA', 'BBBB', 'CCCC', 'AAAAA', 'BBBBB', 'CCCCC', 'ZZZZZ'];
+
+            var columnsWidths = [];
+            for (var i = 0; i < columns.length; ++i) columnsWidths.push(0);
+            $scope.columnsWidths = columnsWidths;
 
             $scope.load = function () {
                 $scope.dataSource.fetch().then(
                     function (breakdown) {
+                        $scope.header = {columns: columns};
+
                         var totalDataRow = breakdown.rows[0];
                         $scope.footer = new GridRow($scope.GridRowType.STATS, 0, totalDataRow);
+
                         $scope.rows = $scope.parseBreakdown($scope.footer, totalDataRow.breakdown);
                     }
                 );

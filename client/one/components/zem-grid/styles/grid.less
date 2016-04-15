@@ -16,31 +16,37 @@
 .zem-grid-container {
   border: solid lightgray 1px;
   width: 100%;
-  height: 500px;
-  overflow: auto;
 
   font-size: 13px;
   color: #454545;
 
   .zem-grid {
-    display: table;
     width: 100%;
+    overflow: hidden;
 
     .zem-grid-cell {
       display: table-cell;
       vertical-align: middle;
       text-align: left;
       padding: 8px;
+      white-space: nowrap;
     }
 
-    .zem-grid-footer, .zem-grid-header {
+    .zem-grid-header, .zem-grid-footer {
+      display: table;
+
       background-color: #f6f6f6;
       font-weight: 600;
-      display: table-row;
     }
 
     .zem-grid-body {
-      display: table-row-group;
+      width: 100%;
+      max-height: 500px;
+      overflow: auto;
+    }
+    .zem-grid-table {
+      display: table;
+      width: 100%;
     }
     .zem-grid-row {
       display: table-row;
@@ -69,6 +75,13 @@
         background-color: #e8e8e8;
         div:first-child {
           padding-left: 60px !important;
+        }
+      }
+
+      &.level-4 {
+        background-color: #e2e2e2;
+        div:first-child {
+          padding-left: 80px !important;
         }
       }
 
