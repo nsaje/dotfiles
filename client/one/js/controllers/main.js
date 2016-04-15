@@ -292,7 +292,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {
-            return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
+            return true;
         }
 
         if ($state.is('main.campaigns.ad_groups') ||

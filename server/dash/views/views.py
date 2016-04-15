@@ -253,8 +253,6 @@ class AdGroupOverview(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_ad_group_infobox'):
-            raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
