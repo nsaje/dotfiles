@@ -108,7 +108,7 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
             colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
         if not colored_column:
             continue
-        
+
         if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.HAPPY
         elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
@@ -901,12 +901,6 @@ class AccountsAccountsTable(object):
             totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
             totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
 
-        show_budgets = user.has_perm('zemauth.all_accounts_budget_view')
-        if show_budgets:
-            totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
-            totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
-            totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
-
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
             flat_fees = self.get_flat_fees(start_date, end_date, accounts)
@@ -938,7 +932,6 @@ class AccountsAccountsTable(object):
             account_total_spend,
             has_view_archived_permission,
             show_archived,
-            show_budgets,
             has_view_managers_permission,
             flat_fees,
             order=order,
@@ -1036,7 +1029,7 @@ class AccountsAccountsTable(object):
 
     def get_rows(self, user, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
-                 show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
+                 show_archived, has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -1090,11 +1083,6 @@ class AccountsAccountsTable(object):
             if projections:
                 row['credit_projection'] = projections['credit_projection'][aid]
                 row['spend_projection'] = projections['spend_projection'][aid]
-
-            if show_budgets:
-                row['budget'] = account_budget.get(aid, Decimal('0.0'))
-                row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
-                row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
@@ -1768,11 +1756,7 @@ class AccountCampaignsTable(object):
         campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
             c.pk for c in campaigns
         )
-        totals_stats['budget'] = sum(campaign_budget.itervalues())
         total_spend = sum(campaign_spend.itervalues())
-
-        totals_stats['available_budget'] = totals_stats['budget'] - total_spend
-        totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
@@ -1912,10 +1896,6 @@ class AccountCampaignsTable(object):
             row['last_sync'] = last_sync
 
             row.update(campaign_stat)
-
-            row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
-            row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
-            row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
 
             rows.append(row)
 
@@ -2208,7 +2188,6 @@ class PublishersTable(object):
             result['billing_cost'] = totals_data.get('billing_cost', 0)
             result['license_fee'] = totals_data.get('license_fee', 0)
         if user.has_perm('zemauth.can_view_actual_costs'):
-            result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
         campaign_goals.copy_fields(user, totals_data, result)
@@ -2262,7 +2241,6 @@ class PublishersTable(object):
                 row['e_media_cost'] = publisher_data.get('e_media_cost', 0)
                 row['billing_cost'] = publisher_data.get('billing_cost', 0)
             if user.has_perm('zemauth.can_view_actual_costs'):
-                row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
             if user.has_perm('zemauth.view_pubs_conversion_goals'):
