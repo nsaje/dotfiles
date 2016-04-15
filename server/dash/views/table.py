@@ -83,31 +83,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class AdGroupAdsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
-    def get(self, request, ad_group_id):
-        user = request.user
-        page = request.GET.get('page')
-        size = request.GET.get('size')
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        order = request.GET.get('order') or '-clicks'
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-
-        response = dt.AdGroupAdsTable().get(
-            user,
-            ad_group_id,
-            filtered_sources,
-            start_date,
-            end_date,
-            order,
-            page,
-            size
-        )
-
-        return self.create_api_response(response)
-
-
 class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
     def get(self, request, ad_group_id):

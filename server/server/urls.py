@@ -151,10 +151,6 @@ urlpatterns += [
         login_required(dash.views.export.AdGroupSourcesExport.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
-        login_required(dash.views.table.AdGroupAdsTable.as_view()),
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/updates/',
         login_required(dash.views.table.AdGroupAdsPlusTableUpdates.as_view()),
         name='ad_group_ads_plus_table_updates'

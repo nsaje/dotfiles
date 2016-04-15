@@ -468,68 +468,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAdsTable () {
-        function convertFromApi (row) {
-            row.titleLink = {
-                text: row.title,
-                url: row.url !== '' ? row.url : null
-            };
-
-            row.urlLink = {
-                text: row.url !== '' ? row.url : 'N/A',
-                url: row.url !== '' ? row.url : null
-            };
-
-            convertGoals(row, row);
-
-            return row;
-        }
-
-        this.get = function (id, page, size, startDate, endDate, order) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/contentads/table/';
-            var config = {
-                params: {}
-            };
-
-            if (page) {
-                config.params.page = page;
-            }
-
-            if (size) {
-                config.params.size = size;
-            }
-
-            if (startDate) {
-                config.params.start_date = startDate.format();
-            }
-
-            if (endDate) {
-                config.params.end_date = endDate.format();
-            }
-
-            if (order) {
-                config.params.order = order;
-            }
-
-            addFilteredSources(config.params);
-
-            $http.get(url, config).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data) {
-                        data.data.rows = data.data.rows.map(convertFromApi);
-                        deferred.resolve(data.data);
-                    }
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AdGroupAdsPlusTable () {
         function convertFromApi (row) {
             row.titleLink = {
@@ -3179,7 +3117,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupPublishersTable: new AdGroupPublishersTable(),
         adGroupPublishersState: new AdGroupPublishersState(),
-        adGroupAdsTable: new AdGroupAdsTable(),
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),
         adGroupArchive: new AdGroupArchive(),
