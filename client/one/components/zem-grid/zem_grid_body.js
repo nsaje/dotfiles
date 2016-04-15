@@ -31,7 +31,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'config', 'zemGridConstants', funct
                     lastScrollTop = this.scrollTop;
                     zemGridController.broadcastEvent(
                         zemGridConstants.events.BODY_VERTICAL_SCROLL,
-                        event.target.scrollLeft
+                        event.target.scrollTop
                     );
                 }
             }
