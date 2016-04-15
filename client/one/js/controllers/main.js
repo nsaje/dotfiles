@@ -302,7 +302,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
         if ($state.is('main.accounts.campaigns') ||
             $state.is('main.accounts.sources')) {
-            return $scope.hasPermission('zemauth.can_access_account_infobox');
+            return true;
         }
 
         if ($state.is('main.allAccounts.accounts') ||

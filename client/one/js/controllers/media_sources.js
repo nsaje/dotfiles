@@ -573,7 +573,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         });
     };
 
-    var updateInfoboxData = function (data) { 
+    var updateInfoboxData = function (data) {
         $scope.infoboxHeader = data.header;
         $scope.infoboxBasicSettings = data.basicSettings;
         $scope.infoboxPerformanceSettings = data.performanceSettings;
@@ -595,9 +595,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
-            if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
-                return;
-            }
             api.accountOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
@@ -694,7 +691,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_account_infobox');
+            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission;
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [

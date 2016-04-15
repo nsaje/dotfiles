@@ -181,7 +181,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_hide_chart', 'Can show or hide chart'),
             ('can_access_ad_group_infobox', 'Can access info box on adgroup level'),
             ('can_access_campaign_infobox', 'Can access info box on campaign level'),
-            ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
             ('campaign_goal_performance', 'Can view goal performance information'),

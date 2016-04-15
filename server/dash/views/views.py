@@ -726,8 +726,6 @@ class AccountOverview(api_common.BaseApiView):
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_account_infobox'):
-            raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
 
