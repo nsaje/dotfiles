@@ -3154,11 +3154,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             },
             errorsFromApi: function (resp) {
                 var errors = resp.data.data.errors;
-                errors.conversionGoal = {
-                    goalId: errors.conversion_goal.goal_id,
-                    name: errors.conversion_goal.name,
-                    type: errors.conversion_goal.type,
-                };
+                if (errors.conversion_goal) {
+                    errors.conversionGoal = {
+                        goalId: errors.conversion_goal.goal_id,
+                        name: errors.conversion_goal.name,
+                        type: errors.conversion_goal.type,
+                    };
+                }
                 return errors;
             }
         };
