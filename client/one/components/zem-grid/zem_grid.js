@@ -1,16 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemDataSourceService', function (config, zemGridConstants, zemDataSourceService) {
-    function GridRow (type, level, data) {
-        this.type = type;
-        this.level = level;
-        this.data = data;
-
-        this.parent = null;
-        this.collapsed = false;
-        this.visible = true;
-    }
+oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridUtil', 'zemDataSourceService', function (config, zemGridConstants, zemGridUtil, zemDataSourceService) {
     return {
         restrict: 'E',
         replace: true,
@@ -34,63 +25,34 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemDataSourceService
                 $scope.dataSource = new zemDataSourceService();
             }
 
-            $scope.GridRowType = {STATS: 1, BREAKDOWN: 2};
-
-            var columns = ['Name', 'Short stat', 'Looooogner stat', 'Realy looooooooooong stat', 'A', 'B', 'C', 'AA', 'BB', 'CC', 'AAA', 'BBB', 'CCC', 'AAAA', 'BBBB', 'CCCC', 'AAAAA', 'BBBBB', 'CCCCC', 'ZZZZZ'];
-
-            var columnsWidths = [];
-            for (var i = 0; i < columns.length; ++i) columnsWidths.push(0);
-            $scope.columnsWidths = columnsWidths;
+            $scope.GridRowType = zemGridConstants.gridRowType;
 
             $scope.load = function () {
                 $scope.dataSource.getData().then(
-                    function (breakdown) {
-                        $scope.header = {columns: columns};
+                    function (data) {
+                        $scope.grid = zemGridUtil.parseMetaData();
+                        zemGridUtil.parseData($scope.grid, data);
 
-                        var totalDataRow = breakdown.rows[0];
-                        $scope.footer = new GridRow($scope.GridRowType.STATS, 0, totalDataRow);
-
-                        $scope.rows = $scope.parseBreakdown($scope.footer, totalDataRow.breakdown);
+                        var columnsWidths = [];
+                        for (var i = 0; i < columns.length; ++i) columnsWidths.push(0);
+                        $scope.columnsWidths = columnsWidths;
                     }
                 );
             };
 
             $scope.loadMore = function (row, size) {
                 $scope.dataSource.getData(row.data, size).then(
-                    function (breakdown) {
-                        var rows = $scope.parseBreakdown(row, breakdown);
-                        var idx = $scope.rows.indexOf(row);
-                        rows.pop();
-                        $scope.rows.splice.apply($scope.rows, [idx, 0].concat(rows));
+                    function (data) {
+                        zemGridUtil.parseDataInplace($scope.grid, row, data);
                     }
                 );
             };
 
-            $scope.parseBreakdown = function (parentGridRow, breakdown) {
-                var rows = [];
-                var level = breakdown.level;
-
-                breakdown.rows.forEach(function (dataRow) {
-                    var gridRow = new GridRow($scope.GridRowType.STATS, level, dataRow);
-                    gridRow.parent = parentGridRow;
-                    rows.push(gridRow);
-                    if (dataRow.breakdown) {
-                        rows = rows.concat($scope.parseBreakdown(gridRow, dataRow.breakdown));
-                    }
-                });
-
-                var gridRow = new GridRow($scope.GridRowType.BREAKDOWN, level, breakdown);
-                gridRow.parent = parentGridRow;
-                rows.push(gridRow);
-
-                return rows;
-            };
-
             $scope.setRowCollapsed = function (gridRow, collapsed) {
                 gridRow.collapsed = collapsed;
-                var idx = this.rows.indexOf(gridRow);
-                while (++idx < this.rows.length) {
-                    var child = this.rows[idx];
+                var idx = $scope.grid.body.rows.indexOf(gridRow);
+                while (++idx < $scope.grid.body.rows.length) {
+                    var child = $scope.grid.body.rows[idx];
                     if (child.level <= gridRow.level) break;
                     child.visible = !gridRow.collapsed && !child.parent.collapsed;
                 }
@@ -102,8 +64,8 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemDataSourceService
 
             $scope.toggleCollapseLevel = function (level) {
                 var collapsed = null;
-                for (var i = 0; i < this.rows.length; ++i) {
-                    var row = this.rows[i];
+                for (var i = 0; i < $scope.grid.body.rows.length; ++i) {
+                    var row = $scope.grid.body.rows[i];
                     if (row.level === level) {
                         if (collapsed === null)
                             collapsed = !row.collapsed;

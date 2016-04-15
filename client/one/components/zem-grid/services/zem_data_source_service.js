@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($rootScope, $http, $q) {
+oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridUtil', function ($rootScope, $http, $q) {
 
     function DataSource () {
         var ds = this;
@@ -70,7 +70,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getMetaData () { /* TODO */ }
 
-        function getData (breakdown, size) {
+        function getData (breakdown, size) { // level, page
             var config = prepareBreakdownConfig(breakdown, size);
             var deferred = $q.defer();
             $http.get(ds.endpoint, config).success(function (data) {
