@@ -534,7 +534,7 @@ class ExportTestCase(test.TestCase):
                 datetime.date(2014, 6, 10),
                 account_name='acc'))
 
-    @mock.patch('dash.export_plus.AdGroupExport.get_data')
+    @mock.patch('dash.export_plus.AdGroupAdsExport.get_data')
     def test_get_report_contents_ad_group(self, get_data_mock):
         report_contents = export_plus._get_report_contents(
             User.objects.get(pk=1),

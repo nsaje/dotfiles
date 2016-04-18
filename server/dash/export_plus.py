@@ -749,7 +749,7 @@ class CampaignExport(object):
         return get_csv_content(fieldnames, results)
 
 
-class AdGroupExport(object):
+class AdGroupAdsExport(object):
 
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
@@ -962,7 +962,7 @@ def _get_report_contents(user, filtered_sources, start_date, end_date, order, ad
         return CampaignExport().get_data(**arguments)
     elif ad_group_id:
         arguments['ad_group_id'] = ad_group_id
-        return AdGroupExport().get_data(**arguments)
+        return AdGroupAdsExport().get_data(**arguments)
     return AllAccountsExport().get_data(**arguments)
 
 

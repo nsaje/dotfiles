@@ -265,7 +265,7 @@ class CampaignAdGroupsExport(ExportApiView):
         return self.create_api_response(response)
 
 
-class AdGroupAdsPlusExport(ExportApiView):
+class AdGroupAdsExport(ExportApiView):
     @influx.timer('dash.export_plus.ad_group', type='ads')
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
