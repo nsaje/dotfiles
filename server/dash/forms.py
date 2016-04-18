@@ -533,7 +533,7 @@ class DisplayURLField(forms.URLField):
         return display_url
 
 
-class AdGroupAdsPlusUploadForm(forms.Form):
+class AdGroupAdsUploadForm(forms.Form):
     content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
@@ -703,7 +703,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
-        super(AdGroupAdsPlusUploadForm, self).clean()
+        super(AdGroupAdsUploadForm, self).clean()
 
         if self.errors:
             return

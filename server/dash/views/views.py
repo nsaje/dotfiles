@@ -1136,7 +1136,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusUpload(api_common.BaseApiView):
+class AdGroupAdsUpload(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
@@ -1165,7 +1165,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -1215,7 +1215,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         return self.create_api_response({'batch_id': batch.pk})
 
 
-class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+class AdGroupAdsUploadReport(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
@@ -1239,7 +1239,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
-class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+class AdGroupAdsUploadCancel(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
@@ -1266,7 +1266,7 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+class AdGroupAdsUploadStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')

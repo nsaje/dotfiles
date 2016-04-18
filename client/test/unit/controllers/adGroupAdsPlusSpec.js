@@ -1,6 +1,6 @@
 'use strict';
 
-describe('AdGroupAdsPlusCtrl', function () {
+describe('AdGroupAdsCtrl', function () {
     var $scope, api, $q, $state, $window, $httpBackend;
     var zemFilterServiceMock;
 
@@ -53,23 +53,23 @@ describe('AdGroupAdsPlusCtrl', function () {
                 archive: mockApiFunc,
                 restore: mockApiFunc
             },
-            adGroupAdsPlusTable: {
+            adGroupAdsTable: {
                 get: mockApiFunc,
                 getUpdates: mockApiFunc
             },
             dailyStats: {
                 listContentAdStats: mockApiFunc
             },
-            adGroupAdsPlusUploadBatches: {
+            adGroupAdsUploadBatches: {
                 list: mockApiFunc
             },
-            adGroupAdsPlusExportAllowed: {
+            adGroupAdsExportAllowed: {
                 get: mockApiFunc
             },
             adGroupContentAdState: {
                 save: mockApiFunc
             },
-            exportPlusAllowed: {
+            exportAllowed: {
                 get: mockApiFunc
             },
             adGroupOverview: {
@@ -85,7 +85,7 @@ describe('AdGroupAdsPlusCtrl', function () {
 
         $window = _$window_;
 
-        $controller('AdGroupAdsPlusCtrl', {$scope: $scope, api: api});
+        $controller('AdGroupAdsCtrl', {$scope: $scope, api: api});
     }));
 
     describe('addContentAds', function (done) {

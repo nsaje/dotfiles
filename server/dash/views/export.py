@@ -279,7 +279,7 @@ class CampaignAdGroupsExport(ExportApiView):
             result['ad_group'] = ad_groups[result['ad_group']].name
 
 
-class AdGroupAdsPlusExportAllowed(api_common.BaseApiView):
+class AdGroupAdsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
     @influx.timer('dash.export')
@@ -337,7 +337,7 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusExport(ExportApiView):
+class AdGroupAdsExport(ExportApiView):
 
     common_csv_columns = [
         ('image_url', 'Image URL'),

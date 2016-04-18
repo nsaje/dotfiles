@@ -468,7 +468,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAdsPlusTable () {
+    function AdGroupAdsTable () {
         function convertFromApi (row) {
             row.titleLink = {
                 text: row.title,
@@ -2309,7 +2309,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAdsPlusExportAllowed () {
+    function AdGroupAdsExportAllowed () {
         function convertFromApi (data) {
             return {
                 allowed: data.allowed,
@@ -2405,7 +2405,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAdsPlusUpload () {
+    function AdGroupAdsUpload () {
         this.getDefaults = function (adGroupId) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
@@ -3077,7 +3077,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupPublishersTable: new AdGroupPublishersTable(),
         adGroupPublishersState: new AdGroupPublishersState(),
-        adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
+        adGroupAdsTable: new AdGroupAdsTable(),
         adGroupSync: new AdGroupSync(),
         adGroupArchive: new AdGroupArchive(),
         adGroupOverview: new AdGroupOverview(),
@@ -3108,9 +3108,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         exportPlusAllowed: new ExportPlusAllowed(),
-        adGroupAdsPlusExportAllowed: new AdGroupAdsPlusExportAllowed(),
+        adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
-        adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
+        adGroupAdsUpload: new AdGroupAdsUpload(),
         availableSources: new AvailableSources(),
         conversionPixel: new ConversionPixel(),
         conversionGoal: new ConversionGoal(),

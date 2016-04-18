@@ -1264,7 +1264,7 @@ class AdGroupContentAdRestore(TestCase):
         )
 
 
-class AdGroupAdsPlusUploadTest(TestCase):
+class AdGroupAdsUploadTest(TestCase):
     fixtures = ['test_views.yaml']
 
     def _get_client(self, superuser=True):
@@ -1403,7 +1403,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         self.assertNotIn('Description is too long', response.content)
 
 
-class AdGroupAdsPlusUploadStatusTest(TestCase):
+class AdGroupAdsUploadStatusTest(TestCase):
 
     fixtures = ['test_views.yaml']
 
@@ -1539,7 +1539,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-class AdGroupAdsPlusUploadCancelTest(TestCase):
+class AdGroupAdsUploadCancelTest(TestCase):
 
     fixtures = ['test_views.yaml']
 

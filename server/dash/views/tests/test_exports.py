@@ -7,14 +7,12 @@ import slugify
 
 from django import test
 from django import http
-from django.conf import settings
 import xlrd
 
 from dash.views import export
 import dash.models
 
 from zemauth import models
-from utils import exc
 
 
 class AssertRowMixin(object):
@@ -183,7 +181,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         }])
 
 
-class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
+class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
@@ -233,7 +231,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         self.ad_group_name = 'test adgroup 1 Čžš'
 
     def tearDown(self):
-        super(AdGroupAdsPlusExportTestCase, self).tearDown()
+        super(AdGroupAdsExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
     def test_get_day(self):
@@ -244,7 +242,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         request.user = Mock()
         request.user.id = 1
 
-        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
         expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n2014-07-01,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
 
@@ -271,7 +269,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         request.user = Mock()
         request.user.id = 1
 
-        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
@@ -324,7 +322,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         request.user = Mock()
         request.user.id = 1
 
-        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
         expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
 
@@ -351,7 +349,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         request.user = Mock()
         request.user.id = 1
 
-        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
         filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),

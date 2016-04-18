@@ -388,7 +388,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
 
 @patch('dash.stats_helper.reports.api_contentads.query')
 @patch('dash.stats_helper.reports.api_touchpointconversions.query')
-class AdGroupAdsPlusDailyStatsTest(TestCase):
+class AdGroupAdsDailyStatsTest(TestCase):
     fixtures = ['test_views']
 
     def setUp(self):

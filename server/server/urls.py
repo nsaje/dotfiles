@@ -131,41 +131,41 @@ urlpatterns += [
         login_required(dash.views.export.AccountCampaignsExport.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/',
-        login_required(dash.views.export.AdGroupAdsPlusExport.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
+        login_required(dash.views.export.AdGroupAdsExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',
         login_required(dash.views.export.AdGroupSourcesExport.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/updates/',
-        login_required(dash.views.table.AdGroupAdsPlusTableUpdates.as_view()),
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/updates/',
+        login_required(dash.views.table.AdGroupAdsTableUpdates.as_view()),
         name='ad_group_ads_table_updates'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/',
-        login_required(dash.views.table.AdGroupAdsPlusTable.as_view()),
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
+        login_required(dash.views.table.AdGroupAdsTable.as_view()),
         name='ad_group_ads_table'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()),
+        login_required(dash.views.views.AdGroupAdsUploadStatus.as_view()),
         name='ad_group_ads_upload_status'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/cancel/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadCancel.as_view()),
+        login_required(dash.views.views.AdGroupAdsUploadCancel.as_view()),
         name='ad_group_ads_upload_cancel'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/report/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadReport.as_view()),
+        login_required(dash.views.views.AdGroupAdsUploadReport.as_view()),
         name='ad_group_ads_upload_report'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/',
-        login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_upload'
+        login_required(dash.views.views.AdGroupAdsUpload.as_view()), name='ad_group_ads_upload'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
@@ -224,7 +224,7 @@ urlpatterns += [
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupAdsPlusDailyStats.as_view()),
+        login_required(dash.views.daily_stats.AdGroupAdsDailyStats.as_view()),
         name='ad_group_ads_daily_stats'
     ),
     url(
@@ -449,7 +449,7 @@ urlpatterns += [
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',
-        login_required(dash.views.export_plus.AdGroupAdsPlusExport.as_view())
+        login_required(dash.views.export_plus.AdGroupAdsExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export_plus/',

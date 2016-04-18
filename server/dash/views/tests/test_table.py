@@ -32,7 +32,7 @@ def copy(d):
 )
 @patch('dash.table.reports.api_touchpointconversions.query')
 @patch('dash.table.reports.api_contentads.query')
-class AdGroupAdsPlusTableTest(TestCase):
+class AdGroupAdsTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -763,7 +763,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
 
-class AdGroupAdsPlusTableUpdatesTest(TestCase):
+class AdGroupAdsTableUpdatesTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):

@@ -1099,7 +1099,7 @@ class AccountsAccountsTable(object):
         return rows
 
 
-class AdGroupAdsPlusTableUpdates(object):
+class AdGroupAdsTableUpdates(object):
 
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         helpers.get_ad_group(user, ad_group_id)
@@ -1151,7 +1151,7 @@ class AdGroupAdsPlusTableUpdates(object):
         return response_dict
 
 
-class AdGroupAdsPlusTable(object):
+class AdGroupAdsTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
