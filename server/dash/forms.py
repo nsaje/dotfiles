@@ -269,6 +269,14 @@ class AccountAgencySettingsForm(forms.Form):
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
 
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+
+        if models.Account.objects.filter(name=name).exists():
+            raise forms.ValidationError("The account with the same name already exists.")
+
+        return name
+
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
 
