@@ -349,10 +349,13 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
         data['campaign'] = campaign.id
 
+        instance = models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
         item = forms.BudgetLineItemForm(
             data,
-            instance=models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
+            instance=instance
         )
+
+        self._validate_amount(data, item)
 
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
@@ -377,6 +380,33 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
                                                                 campaign.get_current_settings())
         return self.create_api_response(True)
+
+    def _validate_amount(self, data, item):
+        """
+        Even if we run the campaign stop script every time the budget amount is lowered
+        and stop the campaign 'immediately', overspend is still possible because the campaign
+        will actually stop on external sources at the end of their local day.
+
+        Because of this we define a 'budget minimum':
+        budget_minimum = budget_spend + sum(daily_budgets) - overall_available_campaign_budget
+        """
+        amount = data.get('amount', 0)
+        if amount >= item.instance.amount:
+            return
+        min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
+        if min_amount is None:
+            return
+
+        if min_amount > amount:
+            item.errors.setdefault('amount', []).append(
+                'Budget exceeds the minimum budget amount by ${}.'.format(
+                    Decimal(min_amount - amount).quantize(Decimal('1.00'))
+                )
+            )
+        if not campaign_stop.is_current_time_valid_for_amount_editing(item.instance.campaign):
+            item.errors.setdefault('amount', []).append(
+                'You cannot lower the amount on an active budget line item at this time.'
+            )
 
     def _get_response(self, item):
         return self.create_api_response({

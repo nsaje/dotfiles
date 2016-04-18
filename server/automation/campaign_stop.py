@@ -70,6 +70,55 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
         pass
 
 
+def get_minimum_budget_amount(budget_item):
+    if budget_item.state() != dash.constants.BudgetLineItemState.ACTIVE:
+        return None
+    today = dates_helper.local_today()
+
+    other_active_budgets = dash.models.BudgetLineItem.objects.filter(
+        campaign=budget_item.campaign
+    ).filter_active().exclude(pk=budget_item.pk)
+    covered_amount = decimal.Decimal('0')
+    for b in other_active_budgets:
+        covered_amount += b.get_available_amount()
+
+    spend = budget_item.get_spend_data(use_decimal=True)['total']
+    max_daily_budget_per_ags = _get_max_daily_budget_per_ags(today,
+                                                             budget_item.campaign)
+
+    daily_budgets = sum(max_daily_budget_per_ags.values()) / (1 - budget_item.credit.license_fee)
+    return max(
+        spend + daily_budgets - covered_amount,
+        0
+    )
+
+
+def is_current_time_valid_for_amount_editing(campaign):
+    """
+    Check if current time is not between first midnight
+    on all enabled sources' time zones and UTC noon.
+    """
+    utc_now = dates_helper.utc_now()
+    utc_today = utc_now.date()
+
+    today = dates_helper.local_today()
+
+    ad_groups = _get_ad_groups_running_on_date(today, campaign.adgroup_set.all())
+    ad_group_sources = dash.models.AdGroupSource.objects.filter(
+        ad_group__in=ad_groups,
+    ).select_related('source__source_type')
+
+    timezones = [
+        ags.source.source_type.budgets_tz for ags in ad_group_sources
+    ]
+    current_times = [
+        dates_helper.utc_to_tz_datetime(utc_now, tz) for tz in timezones
+    ]
+
+    any_source_after_midnight = any(dt.date() >= utc_today for dt in current_times)
+    return not (utc_now.hour < 12 and any_source_after_midnight)
+
+
 def update_campaigns_in_landing():
     for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
         logger.info('updating in landing campaign with id %s', campaign.id)
