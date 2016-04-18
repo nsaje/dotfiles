@@ -25,7 +25,7 @@
                     + Content Ads
                 </button>
             </div>
-            <div ng-if="!hasPermission('zemauth.exports_plus')" class="button-bar-item export-container">
+            <div class="button-bar-item export-container">
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
@@ -44,8 +44,7 @@
                    zem-css-class="show-rows"></zem-dropdown>
             </div>
 
-            <div ng-if="hasPermission('zemauth.exports_plus')" class="button-bar-item pull-right">
-              <zem-internal-feature ng-if="isPermissionInternal('zemauth.exports_plus')" popover-placement="bottom"></zem-internal-feature>
+            <div class="button-bar-item pull-right">
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"

@@ -61,8 +61,6 @@ class ExportAllowed(api_common.BaseApiView):
     @influx.timer('dash.export_plus.allowed_get', type='default')
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, level_, id_=None):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -139,8 +137,6 @@ class SourcesExportAllowed(api_common.BaseApiView):
     @influx.timer('dash.export_plus.allowed_get', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -415,8 +411,6 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
 class ScheduledReports(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_get')
     def get(self, request, account_id=None):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
         if account_id:
             account = helpers.get_account(request.user, account_id)
             reports = self.get_account_scheduled_reports(request.user, account)
@@ -431,7 +425,7 @@ class ScheduledReports(api_common.BaseApiView):
     def delete(self, request, scheduled_report_id):
         scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
 
-        if not request.user.has_perm('zemauth.exports_plus') or scheduled_report.created_by != request.user:
+        if scheduled_report.created_by != request.user:
             raise exc.ForbiddenError(message='Not allowed')
 
         scheduled_report.state = constants.ScheduledReportState.REMOVED

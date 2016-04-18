@@ -102,8 +102,6 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,visits'
         request.GET['order'] = '-visits'
         request.user = models.User.objects.get(pk=1)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AdGroupAdsExport().get(request, self.ad_group_id)
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Visits\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,30\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 2,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Archived,30.230,303,20\r\n'''
@@ -173,8 +171,6 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.GET['order'] = 'impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
 
@@ -204,8 +200,6 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.GET['order'] = 'impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
 
@@ -275,8 +269,6 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.GET['order'] = 'impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AccountCampaignsExport().get(request, self.account_id)
 
@@ -308,8 +300,6 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
         request.GET['order'] = 'impressions'
 
         response = export.AccountCampaignsExport().get(request, self.account_id)
@@ -340,8 +330,6 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
         request.GET['order'] = 'impressions'
 
         response = export.AccountCampaignsExport().get(request, self.account_id)
@@ -407,8 +395,6 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AllAccountsExport().get(request)
 
@@ -434,8 +420,6 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
         request.GET['order'] = '-impressions'
 
         response = export.AllAccountsExport().get(request)
@@ -462,8 +446,6 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
         request.GET['order'] = 'impressions'
 
         response = export.AllAccountsExport().get(request)
@@ -533,8 +515,6 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.GET['order'] = '-impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
@@ -595,8 +575,6 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
@@ -625,8 +603,6 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
@@ -655,8 +631,6 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
@@ -716,8 +690,6 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AccountSourcesExport().get(request, self.account_id)
 
@@ -745,8 +717,6 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AccountSourcesExport().get(request, self.account_id)
 
@@ -774,8 +744,6 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AccountSourcesExport().get(request, self.account_id)
 
@@ -803,8 +771,6 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AccountSourcesExport().get(request, self.account_id)
 
@@ -872,8 +838,6 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.GET['order'] = '-impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AllAccountsSourcesExport().get(request)
 
@@ -899,8 +863,6 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
         request.GET['order'] = '-impressions'
 
         response = export.AllAccountsSourcesExport().get(request)
@@ -927,8 +889,6 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
         request.GET['order'] = '-impressions'
 
         response = export.AllAccountsSourcesExport().get(request)
@@ -956,8 +916,6 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.GET['order'] = '-impressions'
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.AllAccountsSourcesExport().get(request)
 
@@ -985,8 +943,6 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.request.GET['start_date'] = '2014-06-30'
         self.request.GET['end_date'] = '2014-07-01'
         self.request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        self.request.user.user_permissions.add(permission)
 
     @patch('dash.views.export.ExportAllowed.MAX_ROWS', 10000)
     def test_get_all_ok(self):
@@ -1044,8 +1000,6 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.request.GET['start_date'] = '2014-06-30'
         self.request.GET['end_date'] = '2014-07-01'
         self.request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        self.request.user.user_permissions.add(permission)
 
     @patch('dash.views.export.SourcesExportAllowed.MAX_ROWS', 10000)
     def test_get_all_ok(self):
@@ -1104,8 +1058,6 @@ class ScheduledReportsTest(test.TestCase):
     def test_get(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.ScheduledReports().get(request, 1)
 
@@ -1122,8 +1074,6 @@ class ScheduledReportsTest(test.TestCase):
 
     def test_get_no_permission(self):
         request = http.HttpRequest()
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user = models.User.objects.get(pk=2)
         request.user.user_permissions.add(permission)
         request.user.user_permissions.remove(permission)
 
@@ -1133,8 +1083,6 @@ class ScheduledReportsTest(test.TestCase):
     def test_get_scheduled_reports(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         response = export.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
@@ -1150,8 +1098,6 @@ class ScheduledReportsTest(test.TestCase):
     def test_delete(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
@@ -1175,8 +1121,6 @@ class ScheduledReportsTest(test.TestCase):
     def test_delete_user_not_creator(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='exports_plus')
-        request.user.user_permissions.add(permission)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
