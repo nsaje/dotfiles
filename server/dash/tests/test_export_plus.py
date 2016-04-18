@@ -17,7 +17,7 @@ from utils import test_helper
 from zemauth.models import User
 
 
-class ExportPlusTestCase(test.TestCase):
+class ExportTestCase(test.TestCase):
     fixtures = ['test_api']
 
     def _assert_row(self, worksheet, row_num, row_cell_list):
@@ -482,9 +482,9 @@ class ExportPlusTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
-        self.assertEqual(rows[0].get('status'), constants.ExportPlusStatus.INACTIVE)
-        self.assertEqual(rows[1].get('status'), constants.ExportPlusStatus.INACTIVE)
-        self.assertEqual(rows[2].get('status'), constants.ExportPlusStatus.ACTIVE)
+        self.assertEqual(rows[0].get('status'), constants.ExportStatus.INACTIVE)
+        self.assertEqual(rows[1].get('status'), constants.ExportStatus.INACTIVE)
+        self.assertEqual(rows[2].get('status'), constants.ExportStatus.ACTIVE)
 
     def test_get_report_filename(self):
         self.assertEqual(

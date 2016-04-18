@@ -332,7 +332,7 @@ oneApp.constant('demoDefaults', {
         'notifications': {}, 'in_progress': false, 'rows': {}, 'last_change': null
     },
     tableColumns: {
-        adGroupAdsPlus: ['ad_selected', 'image_urls', 'status_setting', 'submission_status', undefined, 'titleLink', 'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'],
+        adGroupAds: ['ad_selected', 'image_urls', 'status_setting', 'submission_status', undefined, 'titleLink', 'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'],
         adGroupSources: ['checked', 'status_setting', 'name', 'status', 'bid_cpc', 'daily_budget', 'cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews', undefined]
     }
 });

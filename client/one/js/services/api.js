@@ -488,7 +488,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.get = function (id, page, size, startDate, endDate, order) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/contentadsplus/table/';
+            var url = '/api/ad_groups/' + id + '/contentads/table/';
             var config = {
                 params: {}
             };
@@ -537,7 +537,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.getUpdates = function (adGroupId, lastChange) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentadsplus/table/updates/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/table/updates/';
 
             var config = {
                 params: {}
@@ -815,7 +815,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
 
         this.listContentAdStats = function (id, startDate, endDate, metrics) {
-            var url = '/api/ad_groups/' + id + '/contentads_plus/daily_stats/';
+            var url = '/api/ad_groups/' + id + '/contentads/daily_stats/';
             return getData(url, startDate, endDate, metrics);
         };
 
@@ -2319,7 +2319,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.get = function (adGroupId, startDate, endDate) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentadsplus/export/allowed/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/export/allowed/';
 
             var config = {
                 params: {}
@@ -2351,7 +2351,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function ExportPlusAllowed () {
+    function ExportAllowed () {
         function convertFromApi (data) {
             return {
                 content_ad: data.content_ad,
@@ -2408,7 +2408,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     function AdGroupAdsUpload () {
         this.getDefaults = function (adGroupId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/';
 
             $http.get(url).
                 success(function (data) {
@@ -2437,7 +2437,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.upload = function (adGroupId, data) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/';
 
             var formData = new FormData();
             formData.append('content_ads', data.file);
@@ -2477,7 +2477,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.checkStatus = function (adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/status/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/status/';
 
             $http.get(url).
                 success(function (data) {
@@ -2503,7 +2503,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.cancel = function (adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/cancel/';
 
             $http.get(url).success(deferred.resolve).error(deferred.reject);
 
@@ -3107,7 +3107,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
-        exportPlusAllowed: new ExportPlusAllowed(),
+        exportAllowed: new ExportAllowed(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
         adGroupAdsUpload: new AdGroupAdsUpload(),

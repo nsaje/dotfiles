@@ -445,8 +445,8 @@ def _populate_model_ids(stat, model):
 def _get_sources_state(ad_group_sources):
     if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE
             for s in helpers.get_ad_group_sources_states(ad_group_sources)):
-        return constants.ExportPlusStatus.ACTIVE
-    return constants.ExportPlusStatus.INACTIVE
+        return constants.ExportStatus.ACTIVE
+    return constants.ExportStatus.INACTIVE
 
 
 def _prefetch_content_ad_data(constraints):
@@ -526,8 +526,8 @@ def _format_statuses_and_dates(value, field, archived):
         return value.strftime('%Y-%m-%d')
     elif field == 'status':
         if archived:
-            value = constants.ExportPlusStatus.ARCHIVED
-        return constants.ExportPlusStatus.get_text(value)
+            value = constants.ExportStatus.ARCHIVED
+        return constants.ExportStatus.get_text(value)
     return value
 
 

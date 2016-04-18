@@ -19,7 +19,6 @@ import zemauth.views
 
 import dash.views.daily_stats
 import dash.views.bcm
-import dash.views.export
 import dash.views.export_plus
 import dash.views.sync
 import dash.views.table
@@ -117,26 +116,6 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/check_sync_progress/',
         login_required(dash.views.sync.AdGroupPublisherBlacklistCheckSyncProgress.as_view()),
         name='ad_group_publishers_blacklist_sync_progress'
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
-        login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/',
-        login_required(dash.views.export.CampaignAdGroupsExport.as_view())
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/campaigns/export/',
-        login_required(dash.views.export.AccountCampaignsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
-        login_required(dash.views.export.AdGroupAdsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',
-        login_required(dash.views.export.AdGroupSourcesExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/updates/',
@@ -357,10 +336,6 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
         login_required(dash.views.views.AdGroupRestore.as_view()),
         name='ad_group_restore',
-    ),
-    url(
-        r'^api/accounts/export/',
-        login_required(dash.views.export.AllAccountsExport.as_view())
     ),
     url(
         r'^api/accounts/$',

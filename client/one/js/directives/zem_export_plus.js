@@ -1,7 +1,7 @@
 /*globals oneApp,constants*/
 'use strict';
 
-oneApp.directive('zemExportPlus', function () {
+oneApp.directive('zemExport', function () {
     return {
         restrict: 'E',
         scope: {

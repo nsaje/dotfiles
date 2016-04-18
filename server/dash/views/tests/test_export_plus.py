@@ -26,7 +26,7 @@ class AssertRowMixin(object):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
 
 
-class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
+class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
@@ -91,7 +91,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         self.ad_group_name = 'test adgroup 1 Čžš'
 
     def tearDown(self):
-        super(AdGroupAdsPlusExportTestCase, self).tearDown()
+        super(AdGroupAdsExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
     def test_get_content_ad(self):
@@ -105,7 +105,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AdGroupAdsPlusExport().get(request, self.ad_group_id)
+        response = export_plus.AdGroupAdsExport().get(request, self.ad_group_id)
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Visits\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,30\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 2,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Archived,30.230,303,20\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
         filename = '{0}_{1}_{2}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(

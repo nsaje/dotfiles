@@ -1,6 +1,6 @@
 'use strict';
 
-describe('zemExportPlus', function () {
+describe('zemExport', function () {
     var $scope, isolate, controller;
 
     beforeEach(module('one'));
@@ -17,7 +17,7 @@ describe('zemExportPlus', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('zemExportPlus', function () {
+    describe('zemExport', function () {
         it('tests options', function () {
             expect(isolate.defaultOption).not.toBe(undefined);
             expect(isolate.defaultOption.value).toEqual(2);
