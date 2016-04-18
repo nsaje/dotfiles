@@ -189,7 +189,7 @@ LOGGING = {
             'level': 'ERROR',
         },
         'celery.worker': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file', 'console', 'sentry'],
             'level': 'WARNING',
             'propagate': True
         },
