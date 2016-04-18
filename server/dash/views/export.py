@@ -491,3 +491,32 @@ class ScheduledReports(api_common.BaseApiView):
             Q(created_by=user)
         )
         return reports
+
+
+class AdGroupAdsExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 16134
+
+    @influx.timer('dash.export')
+    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        num_days = (end_date - start_date).days + 1
+
+        num_contnent_ad_sources = models.ContentAdSource.objects.filter(ad_group=ad_group).count()
+
+        # estimate number of rows (worst case)
+        row_count = num_days * num_contnent_ad_sources
+
+        try:
+            max_days = self.MAX_ROWS / (num_contnent_ad_sources)
+        except ZeroDivisionError:
+            max_days = None
+
+        return self.create_api_response({
+            'allowed': row_count <= self.MAX_ROWS,
+            'max_days': max_days
+        })
