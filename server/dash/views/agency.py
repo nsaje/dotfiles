@@ -1235,9 +1235,6 @@ class AdGroupAgency(api_common.BaseApiView):
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
-            if field in ['display_url', 'brand_name', 'description', 'call_to_action']:
-                continue
-
             if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
                     not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
                 continue

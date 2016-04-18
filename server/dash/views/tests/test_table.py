@@ -607,7 +607,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.status = constants.UploadBatchStatus.DONE
             batch.save()
 
-        from pudb import set_trace; set_trace()
         response = self.client.get(
             reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,

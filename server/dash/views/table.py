@@ -104,7 +104,6 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
 class AdGroupAdsPlusTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
-        from pudb import set_trace; set_trace()
         user = request.user
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
