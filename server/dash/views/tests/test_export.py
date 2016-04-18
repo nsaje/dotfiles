@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import codecs
 from mock import patch
 import datetime
 import slugify
@@ -9,7 +8,6 @@ import time
 
 from django import test
 from django import http
-from django.contrib.auth.models import Permission
 
 from dash.views import export
 import dash.models
@@ -350,9 +348,15 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AccountCampaignsExport().get(request, self.account_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,Inactive,20.230,203,200000\r\n'''
+        expected_content = (
+            'Start Date,End Date,Account,Campaign,Ad Group,Status ('
+            '' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,Impressions\r\n'
+            '2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
+            'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
+            'Inactive,10.230,103,100000\r\n2014-06-30,2014-07-01,'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,'
+            'test adgroup 2,Inactive,20.230,203,200000\r\n'
+        )
         expected_content = test_helper.format_csv_content(expected_content)
 
         filename = '{0}_-_by_ad_group_report_2014-06-30_2014-07-01.csv'.format(
@@ -601,7 +605,8 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
-        expected_content = ("Start Date,End Date,Account,Campaign,Ad Group,"
+        expected_content = (
+            "Start Date,End Date,Account,Campaign,Ad Group,"
             "Status (" + time.strftime('%Y-%m-%d') + "),Source,Average CPC"
             ",Clicks,Impressions\r\n2014-06-30,2014-07-01,"
             "test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
@@ -611,7 +616,8 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
             "test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
             "test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
             "test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,"
-            "10.230,103,100000\r\n")
+            "10.230,103,100000\r\n"
+        )
         expected_content = test_helper.format_csv_content(expected_content)
 
         filename = '{0}_{1}_{2}_media_source_report_2014-06-30_2014-07-01.csv'.format(
@@ -1262,24 +1268,36 @@ class ScheduledReportsTest(test.TestCase):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
 
-        self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
+        self.assertEqual(
+            dash.models.ScheduledExportReport.objects.get(id=1).state,
+            constants.ScheduledReportState.ACTIVE
+        )
 
         response = export.ScheduledReports().delete(request, 1)
         content = json.loads(response.content)
         self.assertTrue(content['success'])
 
-        self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.REMOVED)
+        self.assertEqual(
+            dash.models.ScheduledExportReport.objects.get(id=1).state,
+            constants.ScheduledReportState.REMOVED
+        )
 
     def test_delete_no_permission(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=2)
 
-        self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
+        self.assertEqual(
+            dash.models.ScheduledExportReport.objects.get(id=1).state,
+            constants.ScheduledReportState.ACTIVE
+        )
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export.ScheduledReports().delete(request, 1)
+            export.ScheduledReports().delete(request, 1)
 
-        self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
+        self.assertEqual(
+            dash.models.ScheduledExportReport.objects.get(id=1).state,
+            constants.ScheduledReportState.ACTIVE
+        )
 
     def test_delete_user_not_creator(self):
         request = http.HttpRequest()
@@ -1288,6 +1306,6 @@ class ScheduledReportsTest(test.TestCase):
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export.ScheduledReports().delete(request, 1)
+            export.ScheduledReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
