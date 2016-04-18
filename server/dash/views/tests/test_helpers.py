@@ -769,7 +769,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_STATE
         ]
 
-
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
                                                              allowed_sources)
@@ -865,7 +864,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.source.maintenance = True
-
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,

@@ -137,7 +137,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                 row.ad_selected = $scope.selectedContentAdsStatus[row.id];
             } else if ($scope.selectedAll) {
                 row.ad_selected = true;
-            } else if ($scope.selectedBatchId && row.batch_id == $scope.selectedBatchId) {
+            } else if ($scope.selectedBatchId && row.batch_id === $scope.selectedBatchId) {
                 row.ad_selected = true;
             } else {
                 row.ad_selected = false;
@@ -534,8 +534,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                 archived_count: data.data.archived_count,
                 active_count: data.data.active_count
             };
-        }
-        else {
+        } else {
             $scope.archivingResults = null;
         }
 
