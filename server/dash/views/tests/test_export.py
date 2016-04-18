@@ -318,9 +318,14 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AccountCampaignsExport().get(request, self.account_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,Inactive,20.230,203,200000\r\n'''
+        expected_content = (
+            'Start Date,End Date,Account,Campaign,Status (' + time.strftime('%Y-%m-%d') + ')'
+            ',Average CPC,Clicks,Impressions\r\n'
+            '2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
+            'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r\n'
+            '2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
+            'test campaign 2,Inactive,20.230,203,200000\r\n'
+        )
         expected_content = test_helper.format_csv_content(expected_content)
 
         filename = '{0}_-_by_campaign_report_2014-06-30_2014-07-01.csv'.format(
@@ -1303,9 +1308,15 @@ class ScheduledReportsTest(test.TestCase):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=2)
 
-        self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
+        self.assertEqual(
+            dash.models.ScheduledExportReport.objects.get(id=1).state,
+            constants.ScheduledReportState.ACTIVE
+        )
 
         with self.assertRaises(exc.ForbiddenError):
             export.ScheduledReports().delete(request, 1)
 
-        self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
+        self.assertEqual(
+            dash.models.ScheduledExportReport.objects.get(id=1).state,
+            constants.ScheduledReportState.ACTIVE
+        )
