@@ -5,6 +5,7 @@ import logging
 import decimal
 
 from django.db import transaction
+from django.db.models import Prefetch
 
 import actionlog.api
 from actionlog import zwei_actions
@@ -31,17 +32,42 @@ TEMP_EMAILS = [
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    for campaign in dash.models.Campaign.objects.all().exclude_landing().iterator():
-        remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
-        max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
-        yesterday_spend = _get_yesterday_budget_spend(campaign)
-        if available_tomorrow < max_daily_budget_sum:
+    settings_qs = dash.models.CampaignSettings.objects.all()\
+                                                      .distinct('campaign_id')\
+                                                      .order_by('campaign_id', '-created_dt')
+    candidate_campaigns = dash.models.Campaign.objects.all().prefetch_related(
+        Prefetch(
+            'settings',
+            queryset=settings_qs,
+            to_attr='_current_settings'
+        )
+    )
+    for campaign in candidate_campaigns:
+        check_and_switch_campaign_to_landing_mode(campaign, campaign._current_settings[0])
+
+
+def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return
+
+    remaining_today, available_tomorrow, max_daily_budget_per_ags = _get_minimum_remaining_budget(campaign)
+    max_daily_budget_sum = sum(max_daily_budget_per_ags.itervalues())
+    yesterday_spend = _get_yesterday_budget_spend(campaign)
+
+    should_switch_to_landing = available_tomorrow < max_daily_budget_sum
+    is_near_depleted = available_tomorrow < max_daily_budget_sum * 2
+
+    if not campaign_settings.landing_mode:
+        if should_switch_to_landing:
             with transaction.atomic():
                 actions = _switch_campaign_to_landing_mode(campaign)
             zwei_actions.send(actions)
             _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
-        elif available_tomorrow < max_daily_budget_sum * 2:
+        elif is_near_depleted:
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget_sum, yesterday_spend)
+    elif not is_near_depleted:
+        # TODO: turn landing mode off
+        pass
 
 
 def update_campaigns_in_landing():
@@ -529,7 +555,7 @@ def _get_budgets_active_on_date(date, campaign):
 def _get_ags_settings_dict(date, ad_group_sources):
     settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources,
-        created_dt__lt=date+datetime.timedelta(days=1),
+        created_dt__lt=date + datetime.timedelta(days=1),
     ).order_by('-created_dt')
 
     ret = defaultdict(list)
@@ -591,7 +617,7 @@ def _get_ag_ids_active_on_date(date, ad_groups):
     ag_ids_active_on_date = set(
         dash.models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups,
-            created_dt__lt=date+datetime.timedelta(days=1),
+            created_dt__lt=date + datetime.timedelta(days=1),
             created_dt__gte=date,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
         ).order_by('-created_dt').values_list('ad_group_id', flat=True).iterator()

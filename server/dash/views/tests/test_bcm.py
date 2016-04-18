@@ -427,7 +427,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             }
         })
 
-    def test_put(self):
+    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    def test_put(self, mock_lmode):
         data = {
             'credit': 2,
             'amount': '1000',
@@ -459,6 +460,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 10, 11)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_lmode.called)
 
         insert_id = int(json.loads(response.content)['data'])
         self.assertEqual(models.BudgetLineItem.objects.get(pk=insert_id).comment, 'Comment')
@@ -512,7 +514,8 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             }
         )
 
-    def test_post(self):
+    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    def test_post(self, mock_lmode):
         data = {}
 
         url = reverse('campaigns_budget_item', kwargs={
@@ -550,9 +553,11 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             response = self.client.post(url, json.dumps(data),
                                         content_type='application/json')
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_lmode.called)
         self.assertEqual(models.BudgetLineItem.objects.get(pk=1).comment, 'Test case test_post')
 
-    def test_delete(self):
+    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    def test_delete(self, mock_lmode):
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -569,6 +574,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.delete(url)
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_lmode.called)
 
 
 class BudgetSpendInViewsTestCase(BCMViewTestCase):
