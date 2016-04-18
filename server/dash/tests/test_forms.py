@@ -110,6 +110,7 @@ class AccountAgencySettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('name'))
 
+
 class AdGroupSettingsFormTest(TestCase):
     fixtures = ['test_models.yaml']
 
