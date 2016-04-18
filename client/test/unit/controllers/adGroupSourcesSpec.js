@@ -18,7 +18,6 @@ describe('AdGroupSourcesCtrlSpec', function () {
         $scope = $rootScope.$new();
         $scope.isPermissionInternal = function () { return true; };
         $scope.hasPermission = function () { return true; };
-        $scope.hasInfoboxPermission = function () { return true; };
         $scope.setAdGroupData = function () {};
         $scope.adGroupData = {};
         $scope.dateRange = {

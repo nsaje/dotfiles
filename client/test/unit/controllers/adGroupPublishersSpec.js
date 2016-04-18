@@ -27,9 +27,6 @@ describe('AdGroupPublishersCtrl', function () {
             $scope.hasPermission = function () {
                 return true;
             };
-            $scope.hasInfoboxPermission = function () {
-                return false;
-            };
             $scope.getTableData = function () {
                 return;
             };
@@ -111,9 +108,6 @@ describe('AdGroupPublishersCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.hasInfoboxPermission = function () {
-                return true;
-            };
             $scope.getInfoboxData();
             $scope.$digest();
             expect($scope.infoboxHeader).toEqual(
