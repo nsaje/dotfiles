@@ -1314,7 +1314,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         errors = {}
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
-                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                errors['report_url'] = reverse('ad_group_ads_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(
                     batch.num_errors, 's' if batch.num_errors > 1 else '')
