@@ -122,6 +122,8 @@ MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
 
+ENABLE_DJANGO_EXTENSIONS = False
+
 try:
     import qinspect
     MIDDLEWARE_CLASSES.append('qinspect.middleware.QueryInspectMiddleware'),
@@ -141,6 +143,9 @@ except ImportError:
 
 from celeryconfig import *
 from localsettings import *
+
+if ENABLE_DJANGO_EXTENSIONS:
+    INSTALLED_APPS.append('django_extensions')
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 
