@@ -273,7 +273,7 @@ class AccountAgencySettingsForm(forms.Form):
         name = self.cleaned_data.get('name')
 
         if models.Account.objects.filter(name=name).exists():
-            raise forms.ValidationError("The account with the same name already exists.")
+            raise forms.ValidationError("Invalid account name.")
 
         return name
 
