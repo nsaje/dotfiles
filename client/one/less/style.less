@@ -1763,11 +1763,7 @@ ul.icon-list li {
             z-index: 1;
         }
 
-        &.sidebar-new {
-            padding-left: 0;
-        }
-
-        #nav-new {
+        #nav {
             height: 100%;
             padding: 0;
 
@@ -1829,103 +1825,6 @@ ul.icon-list li {
                     }
                 }
             }
-        }
-
-        #nav {
-            height: 100%;
-            padding: 0;
-            overflow: auto;
-
-            .account-group {
-                padding-bottom: 10px;
-            }
-
-            .list-group {
-                margin-bottom: 0;
-
-                &.list-campaigns {
-                    border-top: 1px solid #f4f4f4;
-                }
-
-                &.ad-groups {
-                    padding-left: 0px;
-                }
-            }
-
-            .list-group-item {
-                border: 0; padding: 0;
-
-                &:last-child,
-                &:first-child {
-                    border: 0;
-                    border-radius: 0;
-                }
-
-                &.active {
-                    .nav-item-active();
-                    .ad-group-name {
-                        color: white;
-                    }
-                }
-            }
-
-            .account-name, .campaign-name, .ad-group-item {
-                padding: 0 0 0 5px;
-                display: block;
-                margin: 0;
-            }
-
-            .account-name {
-                text-transform: uppercase;
-                color: #2ea9c9;
-                font-size: 16px;
-
-                &.archived {
-                    color: #d9d9d9;
-                }
-
-                &:hover,
-                &.active {
-                    text-decoration: none;
-                }
-            }
-
-            .campaign-name {
-                font-size: 14px;
-                font-weight: 600;
-                color: #414141;
-
-                &.archived {
-                    color: #d9d9d9;
-                }
-
-                &.active {
-                    .nav-item-active();
-                    color: white;
-                }
-
-                &:hover,
-                &.active {
-                    text-decoration: none;
-                }
-            }
-
-            .ad-group-name {
-                font-size: 13px;
-                font-weight: 300;
-                color: #414141;
-
-                &.archived {
-                    color: #d9d9d9;
-                }
-            }
-
-            .ad-group-item img {
-                position: relative;
-                bottom: 3px;
-                width: 25px;
-                margin: -7px;
-             }
         }
     }
 
@@ -2738,7 +2637,7 @@ ul.icon-list li {
     background-image: url('img/adgroup_status_landing_mode_white.svg');
 }
 
-#nav-new .nav-name.active, #nav .ad-group-item.active {
+#nav .nav-name.active, #nav .ad-group-item.active {
     .adgroup-status-enabled-running-icon {
         background-image: url('img/adgroup_status_enabled_green_selected.svg');
     }
