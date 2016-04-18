@@ -8,7 +8,6 @@ from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK7AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAN3zo4qfYMJ/NkP2AIBEIBNdJszHvK9nhndxS9hIpiLnMWN1vWYUrQbEEudStHg0Q3vl+mKdIvR3rPNcbXj1YLddebdzXlPBxQdVEX1G7ltCC2O333j2N4gU52naF8=').get()

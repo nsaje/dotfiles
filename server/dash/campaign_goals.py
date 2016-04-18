@@ -71,7 +71,7 @@ STATUS_TO_EMOTICON_MAP = {
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
-DEFAULT_COST_COLUMN = 'media_cost'
+DEFAULT_COST_COLUMN = 'cost'
 
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
@@ -163,14 +163,6 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
 
 def set_campaign_goal_primary(request, campaign, goal_id):
     goal = models.CampaignGoal.objects.get(pk=goal_id)
-    if goal.type == constants.CampaignGoalKPI.CPA:
-        for ad_group in models.AdGroup.objects.filter(campaign=campaign):
-            settings = ad_group.get_current_settings()
-            if settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-                raise exc.ValidationError(
-                    'CPA goal cannot be set as primary because you have autopilot '
-                    'set to optimize bid CPCs and daily budgets.'
-                )
 
     models.CampaignGoal.objects.filter(campaign=campaign).update(primary=False)
     goal.primary = True

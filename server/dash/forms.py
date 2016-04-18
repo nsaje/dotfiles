@@ -194,11 +194,6 @@ class AdGroupSettingsForm(forms.Form):
 
     def clean_autopilot_state(self):
         autopilot_state = self.cleaned_data.get('autopilot_state')
-        from dash import campaign_goals
-        campaign_goal = campaign_goals.get_primary_campaign_goal(self.ad_group.campaign)
-        if autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-                campaign_goal and campaign_goal.type == constants.CampaignGoalKPI.CPA:
-            raise forms.ValidationError('Automatic budget allocation for CPA campaign goal is not supported.')
         return autopilot_state
 
     def clean_autopilot_daily_budget(self):
@@ -251,14 +246,6 @@ class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
 class AdGroupSourceSettingsStateForm(forms.Form):
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
-        coerce=int,
-        empty_value=None
-    )
-
-
-class AdGroupSourceSettingsAutopilotStateForm(forms.Form):
-    autopilot_state = forms.TypedChoiceField(
-        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices(),
         coerce=int,
         empty_value=None
     )
@@ -500,31 +487,6 @@ class CampaignSettingsForm(forms.Form):
         required=False,
         choices=constants.AdTargetLocation.get_choices()
     )
-
-
-class CampaignBudgetForm(forms.Form):
-    amount = forms.DecimalField(decimal_places=4)
-    action = forms.CharField(max_length=8)
-
-    def clean_amount(self):
-        x = self.cleaned_data.get('amount')
-        return float(x)
-
-    def get_allocate_amount(self):
-        x = self.cleaned_data['amount']
-        a = self.cleaned_data.get('action')
-        if a == 'allocate':
-            return float(x)
-        else:
-            return 0
-
-    def get_revoke_amount(self):
-        x = self.cleaned_data['amount']
-        a = self.cleaned_data.get('action')
-        if a == 'revoke':
-            return float(x)
-        else:
-            return 0
 
 
 class UserForm(forms.Form):

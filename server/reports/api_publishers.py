@@ -22,11 +22,6 @@ FORMULA_BILLING_COST = '({} + {} + {})'.format(
     sum_agr('effective_data_cost_nano'),
     sum_agr('license_fee_nano'),
 )
-FORMULA_TOTAL_COST = '({} + {} + {})'.format(
-    sum_agr('cost_nano'),
-    sum_agr('data_cost_nano'),
-    sum_agr('license_fee_nano'),
-)
 
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
@@ -37,7 +32,7 @@ class RSPublishersModel(redshift.RSModel):
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = [
         "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
-        "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee",
+        "e_media_cost", "e_data_cost", "billing_cost", "license_fee",
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
         "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
         "avg_cost_per_second", "unbounced_visits", "avg_cost_per_non_bounced_visitor",
@@ -65,7 +60,6 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='e_media_cost_nano_sum',  app='e_media_cost', out=from_nano,          calc=sum_agr('effective_cost_nano'),       order="effective_cost_nano_sum = 0, cost_nano_sum {direction}"),
         dict(sql='e_data_cost_nano_sum',   app='e_data_cost',  out=from_nano,          calc=sum_agr('effective_data_cost_nano'),  order="data_cost_nano_sum = 0, data_cost_nano_sum {direction}"),
         dict(sql='billing_cost_nano_sum',  app='billing_cost', out=from_nano,          calc=FORMULA_BILLING_COST,                 order="billing_cost_nano_sum = 0, billing_cost_nano_sum {direction}"),
-        dict(sql='total_cost_nano_sum',    app='total_cost',   out=from_nano,          calc=FORMULA_TOTAL_COST,                   order="total_cost_nano_sum = 0, total_cost_nano_sum {direction}"),
     ]
 
     _POSTCLICK_ACQUISITION_FIELDS = [

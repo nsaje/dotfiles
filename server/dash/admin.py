@@ -995,7 +995,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
-        self.list_display_links = (None, )
+        self.list_display_links = None
 
 
 class CreditLineItemResource(resources.ModelResource):
@@ -1035,6 +1035,14 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.CreditLineItemAdminForm
 
     resource_class = CreditLineItemResource
+
+    def get_actions(self, request):
+        actions = super(CreditLineItemAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):

@@ -10,6 +10,23 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.campaignGoals = [],
     $scope.campaignGoalsDiff = {};
 
+    function validateGoals () {
+        var primary = false,
+            goals = $scope.campaignGoals;
+        if (!goals || !goals.length) {
+            return true;
+        }
+        goals.forEach(function (goal) {
+            if (goal.primary) {
+                primary = true;
+            }
+        });
+        if (!primary) {
+            $scope.errors.goals = ['One goal has to be set as primary.'];
+        }
+        return primary;
+    }
+
     $scope.campaignHasFreshSettings = function () {
         return campaignFreshSettings.promise;
     };
@@ -39,6 +56,11 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.saveSettings = function () {
         $scope.saved = null;
         $scope.discarded = null;
+
+        if (!validateGoals()) {
+            return;
+        }
+
         $scope.requestInProgress = true;
 
         api.campaignSettings.save($scope.settings, $scope.campaignGoalsDiff).then(

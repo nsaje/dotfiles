@@ -824,6 +824,7 @@ class CampaignGoal(models.Model):
                 'name': self.conversion_goal.name,
                 'conversion_window': self.conversion_goal.conversion_window,
                 'goal_id': self.conversion_goal.goal_id,
+                'pixel_url': None,
             }
             if self.conversion_goal.pixel:
                 campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
@@ -837,7 +838,7 @@ class CampaignGoal(models.Model):
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt),
                  'value': Decimal(value.value).quantize(Decimal(
-                    rounding_format.get(self.type, default_rounding_format)
+                     rounding_format.get(self.type, default_rounding_format)
                  ))}
                 for value in self.values.all()
             ]
@@ -1551,7 +1552,7 @@ class AdGroupSource(models.Model):
             return None
 
         return '{}?ad_group_id={}&source_id={}'.format(
-            reverse('dash.views.views.supply_dash_redirect'),
+            reverse(views.views.supply_dash_redirect),
             self.ad_group.id,
             self.source.id
         )
@@ -1932,7 +1933,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         'state',
         'cpc_cc',
         'daily_budget_cc',
-        'autopilot_state',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1971,10 +1971,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         null=True,
         verbose_name='Daily budget'
     )
-    autopilot_state = models.IntegerField(
-        default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
-        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
-    )
+
     landing_mode = models.BooleanField(default=False)
 
     objects = QuerySetManager()
@@ -2153,7 +2150,7 @@ class ContentAd(models.Model):
             if not should_filter_by_sources(sources):
                 return self
 
-            content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
+            content_ad_ids = ContentAdSource.objects.filter(source__in=sources).select_related(
                 'content_ad').distinct('content_ad_id').values_list('content_ad_id', flat=True)
 
             return self.filter(id__in=content_ad_ids)
@@ -2227,49 +2224,6 @@ class Article(models.Model):
     class Meta:
         get_latest_by = 'created_dt'
         unique_together = ('ad_group', 'url', 'title')
-
-
-class CampaignBudgetSettings(models.Model):
-
-    campaign = models.ForeignKey('Campaign', on_delete=models.PROTECT)
-    allocate = models.DecimalField(
-        max_digits=20,
-        decimal_places=4,
-        blank=False,
-        null=False,
-        default=0,
-        verbose_name='Allocate amount'
-    )
-    revoke = models.DecimalField(
-        max_digits=20,
-        decimal_places=4,
-        blank=False,
-        null=False,
-        default=0,
-        verbose_name='Revoke amount'
-    )
-    total = models.DecimalField(
-        max_digits=20,
-        decimal_places=4,
-        blank=False,
-        null=False,
-        default=0,
-        verbose_name='Total budget'
-    )
-    comment = models.CharField(max_length=256)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
-
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-
-    def save(self, request, *args, **kwargs):
-        if self.pk is None:
-            self.created_by = request.user
-
-        super(CampaignBudgetSettings, self).save(*args, **kwargs)
-
-    class Meta:
-        get_latest_by = 'created_dt'
-        ordering = ('-created_dt',)
 
 
 class ConversionPixel(models.Model):

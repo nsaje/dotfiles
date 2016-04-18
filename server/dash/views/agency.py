@@ -7,12 +7,11 @@ from collections import OrderedDict
 from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus, autopilot_helpers
+from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -21,6 +20,7 @@ from dash import constants
 from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
+from dash import conversions_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -34,10 +34,6 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
-
-
-def _get_conversion_pixel_url(account_id, slug):
-    return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(account_id, slug)
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -116,23 +112,13 @@ class AdGroupSettings(api_common.BaseApiView):
             )
         if not supports_retargeting:
             retargeting_warning = {
-                'text': "You have some active media sources that don't support retargeting. "
-                        "To start using it please disable/pause these media sources:",
                 'sources': [s.name for s in unsupported_sources]
             }
             warnings['retargeting'] = retargeting_warning
 
         if ad_group_settings.landing_mode:
             warnings['end_date'] = {
-                'text': 'Your campaign has been switched to landing mode. '
-                'Please add the budget and continue to adjust settings by your needs. '
-                '<a href="{link}">Add budget</a>'.format(
-                    link=request.build_absolute_uri(
-                        '/campaigns/{campaign_id}/budget-plus/'.format(
-                            campaign_id=ad_group_settings.ad_group.campaign.id
-                        ),
-                    )
-                )
+                'campaign_id': ad_group_settings.ad_group.campaign.id,
             }
 
         return warnings
@@ -461,7 +447,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
                 row['pixel'] = {
                     'id': conversion_goal.pixel.id,
                     'slug': conversion_goal.pixel.slug,
-                    'url': _get_conversion_pixel_url(campaign.account_id, conversion_goal.pixel.slug),
+                    'url': conversions_helper.get_conversion_pixel_url(campaign.account_id, conversion_goal.pixel.slug),
                     'archived': conversion_goal.pixel.archived,
                 }
 
@@ -562,7 +548,9 @@ class CampaignSettings(api_common.BaseApiView):
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            response['goals'] = self.get_campaign_goals(campaign_id)
+            response['goals'] = self.get_campaign_goals(
+                campaign
+            )
 
         return self.create_api_response(response)
 
@@ -613,7 +601,7 @@ class CampaignSettings(api_common.BaseApiView):
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
-            response['goals'] = self.get_campaign_goals(campaign_id)
+            response['goals'] = self.get_campaign_goals(campaign)
 
         return self.create_api_response(response)
 
@@ -683,14 +671,31 @@ class CampaignSettings(api_common.BaseApiView):
 
         return errors
 
-    def get_campaign_goals(self, campaign_id):
-        return [
-            campaign_goal.to_dict(with_values=True)
-            for campaign_goal in
-            models.CampaignGoal.objects.filter(campaign_id=campaign_id).prefetch_related(
-                Prefetch('values', queryset=models.CampaignGoalValue.objects.order_by('created_dt'))
-            ).select_related('conversion_goal')
-        ]
+    def get_campaign_goals(self, campaign):
+        ret = []
+        goals = models.CampaignGoal.objects.filter(
+            campaign=campaign
+        ).prefetch_related(
+            Prefetch(
+                'values',
+                queryset=models.CampaignGoalValue.objects.order_by(
+                    'created_dt'
+                )
+            )
+        ).select_related('conversion_goal').order_by('id')
+
+        for campaign_goal in goals:
+            goal_blob = campaign_goal.to_dict(with_values=True)
+            conversion_goal = campaign_goal.conversion_goal
+            if conversion_goal is not None and\
+                    conversion_goal.type == constants.ConversionGoalType.PIXEL:
+                goal_blob['conversion_goal']['pixel_url'] =\
+                    conversions_helper.get_conversion_pixel_url(
+                        campaign.account.id,
+                        conversion_goal.pixel.slug
+                    )
+            ret.append(goal_blob)
+        return ret
 
     def get_dict(self, request, settings, campaign):
         if not settings:
@@ -746,7 +751,7 @@ class AccountConversionPixels(api_common.BaseApiView):
             {
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
-                'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
+                'url': conversions_helper.get_conversion_pixel_url(account.id, conversion_pixel.slug),
                 'status': constants.ConversionPixelStatus.get_text(
                     self._get_pixel_status(last_verified_dts.get((account_id, conversion_pixel.slug)))),
                 'last_verified_dt': last_verified_dts.get((account_id, conversion_pixel.slug)),
@@ -797,7 +802,7 @@ class AccountConversionPixels(api_common.BaseApiView):
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
-            'url': _get_conversion_pixel_url(account.id, slug),
+            'url': conversions_helper.get_conversion_pixel_url(account.id, slug),
             'status': constants.ConversionPixelStatus.get_text(
                 constants.ConversionPixelStatus.NOT_USED),
             'last_verified_dt': None,

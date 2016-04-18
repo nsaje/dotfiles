@@ -164,9 +164,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'retargeting': {
-                    'text': "You have some active media sources that"
-                            " don't support retargeting. To start using it please disable/pause"
-                            " these media sources:",
                     'sources': [
                         'AdsNative',
                         'Gravity',
@@ -195,9 +192,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'end_date': {
-                    'text': 'Your campaign has been switched to landing mode. '
-                    'Please add the budget and continue to adjust settings by your needs. '
-                    '<a href="http://testserver/campaigns/1/budget-plus/">Add budget</a>'
+                    'campaign_id': 1,
                 }
             }
         )
@@ -2272,6 +2267,44 @@ class CampaignSettingsTest(AgencyViewTestCase):
         # because target devices were copied from the latest settings,
         # there should be no errors
         self.assertNotIn('target_devices', content['data']['errors'])
+
+    def test_get_with_conversion_goals(self):
+        self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        convpix = models.ConversionPixel.objects.create(
+            account=ad_group.campaign.account,
+            slug='janez_slug',
+        )
+        convg = models.ConversionGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.ConversionGoalType.PIXEL,
+            name='janezjanez',
+            pixel=convpix,
+            conversion_window=7,
+            goal_id='9',
+        )
+
+        models.CampaignGoal.objects.create(
+            campaign=ad_group.campaign,
+            type=constants.CampaignGoalKPI.CPA,
+            conversion_goal=convg,
+        )
+
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertEqual(1, content['data']['goals'][0]['campaign_id'])
+        self.assertDictContainsSubset(
+            {
+                'name': 'janezjanez',
+                'pixel_url': 'https://p1.zemanta.com/p/1/janez_slug/',
+            },
+            content['data']['goals'][0]['conversion_goal'],
+        )
 
 
 class AccountAgencyTest(TestCase):

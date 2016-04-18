@@ -165,10 +165,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/campaign_settings.html',
             controller: 'CampaignSettingsCtrl',
         })
-        .state('main.campaigns.budget_plus', {
-            url: '/budget-plus',
-            templateUrl: '/partials/campaign_budget_plus.html',
-            controller: 'CampaignBudgetPlusCtrl',
+        .state('main.campaigns.budget', {
+            url: '/budget',
+            templateUrl: '/partials/campaign_budget.html',
+            controller: 'CampaignBudgetCtrl',
         });
 
 

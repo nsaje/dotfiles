@@ -45,8 +45,10 @@ class EmailHelperTestCase(TestCase):
         PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
     )
     @patch('utils.email_helper.pagerduty_helper.trigger')
-    def test_send_email_to_user_failed(self, mock_trigger_event):
+    @patch('utils.email_helper.send_mail')
+    def test_send_email_to_user_failed(self, mock_send_mail, mock_trigger_event):
         self.user.email = None
+        mock_send_mail.side_effect = Exception
         email_helper._send_email_to_user(self.user, self.request, None, None)
 
         self.assertTrue(mock_trigger_event.called)

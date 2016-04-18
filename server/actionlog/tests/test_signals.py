@@ -23,7 +23,7 @@ class ActionLogSignalsTestCase(TestCase):
         signals.trigger_alert_pre_save_signal_handler(None, mock_instance)
 
         mock_trigger_event.assert_called_with(
-            details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/'},
+            details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/change/'},
             incident_key='adgroup_stop_failed',
             description='Adgroup stop action failed',
             event_type='adops',
@@ -37,7 +37,7 @@ class ActionLogSignalsTestCase(TestCase):
         signals.trigger_alert_pre_save_signal_handler(None, mock_instance)
 
         mock_trigger_event.assert_called_with(
-            details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/'},
+            details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/change/'},
             incident_key='adgroup_stop_failed',
             description='Adgroup stop action failed',
             event_type='engineers',

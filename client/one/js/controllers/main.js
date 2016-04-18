@@ -139,13 +139,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             return 'main.campaigns.ad_groups';
         }
         if ($scope.hasPermission('zemauth.campaign_sources_view')) {
-            return 'main.campaings.sources';
+            return 'main.campaigns.sources';
         }
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
         if ($scope.hasPermission('zemauth.campaign_budget_view')) {
-            return 'main.campaings.budget_plus';
+            return 'main.campaigns.budget';
         }
         if ($scope.hasPermission('zemauth.campaign_settings_view')) {
             return 'main.campaigns.settings';

@@ -175,17 +175,11 @@
                                 <span ng-switch-when="state">
                                     <zem-state-selector
                                         id="row.id"
-                                        on-change="col.onChange",
-                                        on-autopilot-change="col.onAutopilotChange",
+                                        on-change="col.onChange"
                                         is-editable="isFieldEditable(row, col.field)"
                                         value="row[col.field]"
                                         enabled-value="col.enabledValue"
                                         paused-value="col.pausedValue"
-                                        autopilot-enabled-value="col.autopilotEnabledValue"
-                                        autopilot-paused-value="col.autopilotPausedValue"
-                                        autopilot-value="row.autopilot_state"
-                                        autopilot-internal="col.autopilotInternal"
-                                        autopilot-shown="col.autopilotShown"
                                         enabling-autopilot-sources-not-allowed="col.enablingAutopilotSourcesNotAllowed()"
                                         disabled-message="col.getDisabledMessage(row)"
                                         archived="row[col.archivedField]">

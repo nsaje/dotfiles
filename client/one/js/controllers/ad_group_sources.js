@@ -114,23 +114,16 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            autopilotEnabledValue: constants.adGroupSourceSettingsAutopilotState.ACTIVE,
-            autopilotPausedValue: constants.adGroupSourceSettingsAutopilotState.INACTIVE,
-            autopilotInternal: $scope.isPermissionInternal('zemauth.can_set_media_source_to_auto_pilot'),
-            autopilotShown: $scope.hasPermission('zemauth.can_set_media_source_to_auto_pilot'),
             internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
             shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             checked: true,
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
-            onChange: function (sourceId, value, autopilotValue) {
+            onChange: function (sourceId, value) {
                 var newSettings = {};
                 if (value) {
                     newSettings.state = value;
-                }
-                if (autopilotValue) {
-                    newSettings.autopilot_state = autopilotValue;
                 }
                 $scope.loadRequestInProgress = true;
                 $scope.autopilotChanges = '';
@@ -176,7 +169,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             unselectable: true,
             checked: true,
             type: 'clickPermissionOrText',
-            hasPermission: $scope.hasPermission('zemauth.filter_sources'),
+            hasPermission: $scope.hasPermission('zemauth.can_filter_sources_through_table'),
             clickCallback: zemFilterService.exclusivelyFilterSource,
             shown: true,
             hasTotalsLabel: true,
@@ -404,18 +397,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
             name: 'Total Spend',
             field: 'billing_cost',
             checked: false,
@@ -518,7 +499,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 'cpc', 'clicks', 'impressions', 'ctr',
                 'yesterday_cost', 'supply_dash_url',
                 'current_bid_cpc', 'current_daily_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'e_yesterday_cost'
             ]
         },

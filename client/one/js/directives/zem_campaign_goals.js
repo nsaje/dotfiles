@@ -47,11 +47,6 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             };
 
             $scope.setPrimary = function (goal) {
-                if (goal.primary) { // TEMPORALLY ADDED FEATURE
-                    goal.primary = false;
-                    $scope.model.primary = null;
-                    return;
-                }
                 if (goal.removed) {
                     return;
                 }
@@ -123,7 +118,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
                 modalInstance.result.then(function (campaignGoal) {
                     if (!$scope.campaignGoals.length) {
-                        // campaignGoal.primary = true; // TEMPORALLY DISABLED FEATURE
+                        campaignGoal.primary = true;
                     }
                     $scope.campaignGoals.push(campaignGoal);
                     $scope.model.added.push(campaignGoal);
@@ -142,6 +137,27 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
                 return modalInstance;
             };
+
+            $scope.getConversionPixelTag = function (url) {
+                return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
+            };
+
+            $scope.copyConversionPixelTag = function (conversionGoal, $event) {
+                // when clicking on Copy pixel prevent select primary goal
+                var scope = $scope.$new(true);
+                scope.conversionPixelTag = $scope.getConversionPixelTag(conversionGoal.pixelUrl);
+
+                var modalInstance = $modal.open({
+                    templateUrl: '/partials/copy_conversion_pixel_modal.html',
+                    windowClass: 'modal',
+                    scope: scope,
+                });
+                modalInstance.result.then(function () {});
+
+                $event.stopPropagation();
+                return false;
+            };
+
         }],
     };
 }]);

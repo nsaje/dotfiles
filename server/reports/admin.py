@@ -4,7 +4,7 @@ import models
 
 
 class SupplyReportRecipientAdmin(admin.ModelAdmin):
-    search_fields = ['first_name', 'last_name', 'email', 'source']
+    search_fields = ['first_name', 'last_name', 'email', 'source__name']
     list_display = (
         'email',
         'first_name',

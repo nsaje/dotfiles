@@ -32,7 +32,7 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 PROJECT_NAME = 'z1'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +50,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'automation',
     'timezone_field',
-)
+]
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -79,12 +79,22 @@ USE_I18N = True
 
 USE_L10N = True
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.request',
-    'django.contrib.messages.context_processors.messages'
-)
-TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates')
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.request',
+                'django.contrib.messages.context_processors.messages'
+            ],
+        },
+    },
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -128,7 +138,6 @@ try:
     QUERY_INSPECT_LOG_TRACEBACKS = True
 except ImportError:
     pass
-
 
 from celeryconfig import *
 from localsettings import *
@@ -180,7 +189,7 @@ LOGGING = {
             'level': 'ERROR',
         },
         'celery.worker': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file', 'console', 'sentry'],
             'level': 'WARNING',
             'propagate': True
         },

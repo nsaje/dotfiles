@@ -111,7 +111,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             unselectable: true,
             checked: true,
             type: 'clickPermissionOrText',
-            hasPermission: $scope.hasPermission('zemauth.filter_sources'),
+            hasPermission: $scope.hasPermission('zemauth.can_filter_sources_through_table'),
             clickCallback: zemFilterService.exclusivelyFilterSource,
             shown: true,
             hasTotalsLabel: true,
@@ -276,18 +276,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
             name: 'Total Spend',
             field: 'billing_cost',
             checked: false,
@@ -387,7 +375,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             'name': 'Traffic Acquisition',
             'fields': [
                 'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'cpc', 'clicks', 'impressions', 'ctr', 'license_fee',
                 'yesterday_cost', 'e_yesterday_cost'
             ]

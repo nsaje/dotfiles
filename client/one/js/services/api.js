@@ -1050,10 +1050,14 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
 
         function convertWarningsFromApi (warnings) {
-            return {
-                retargeting: warnings.retargeting,
-                endDate: warnings.end_date,
-            };
+            var ret = {};
+            ret.retargeting = warnings.retargeting;
+            if (warnings.end_date !== undefined) {
+                ret.endDate = {
+                    campaignId: warnings.end_date.campaign_id,
+                };
+            }
+            return ret;
         }
 
         this.get = function (id) {
@@ -1500,35 +1504,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
-
-    function AllAccountsBudget () {
-        this.get = function () {
-            var deferred = $q.defer();
-            var url = '/api/accounts/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-
     function AllAccountsOverview () {
 
         this.get = function (startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/accounts/overview/';
             var config = {
-                params: {}
+                params: {},
             };
 
             if (startDate) {
@@ -1540,7 +1522,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
 
             $http.get(url, config).
-                success(function (data, status) {
+                success(function (data) {
                     if (data && data.data) {
                         data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
@@ -1795,6 +1777,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         name: goal.conversion_goal.name,
                         goalId: goal.conversion_goal.goal_id,
                         conversionWindow: goal.conversion_goal.conversion_window,
+                        pixelUrl: goal.conversion_goal.pixel_url,
                     };
                 }
                 return converted;
@@ -2253,7 +2236,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var result = {
                 cpc: errors.cpc_cc,
                 dailyBudget: errors.daily_budget_cc,
-                state: errors.state
+                state: errors.state,
             };
 
             return result;
@@ -3052,7 +3035,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignBudgetPlus () {
+    function CampaignBudget () {
         var self = this;
         this.convert = {
             dataFromApi: function (obj) {
@@ -3096,9 +3079,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         this.list = function (campaignId) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
+            var url = '/api/campaigns/' + campaignId + '/budget/';
             return $http.get(url).then(processResponse).then(function (data) {
-                if (data === null) { return null; }
+                if (data === null) {
+                    return null;
+                }
                 return {
                     active: data.active.map(self.convert.dataFromApi),
                     past: data.past.map(self.convert.dataFromApi),
@@ -3108,7 +3093,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         lifetimeCampaignSpend: data.totals.lifetime.campaign_spend,
                         lifetimeMediaSpend: data.totals.lifetime.media_spend,
                         lifetimeDataSpend: data.totals.lifetime.data_spend,
-                        lifetimeLicenseFee: data.totals.lifetime.license_fee
+                        lifetimeLicenseFee: data.totals.lifetime.license_fee,
                     },
                     credits: data.credits.map(function (obj) {
                         return {
@@ -3119,30 +3104,30 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                             endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             id: obj.id,
                             comment: obj.comment,
-                            isAvailable: obj.is_available
+                            isAvailable: obj.is_available,
                         };
-                    })
+                    }),
                 };
             });
         };
 
         this.create = function (campaignId, budget) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
+            var url = '/api/campaigns/' + campaignId + '/budget/';
             return $http.put(url, self.convert.dataToApi(budget)).then(processResponse);
         };
 
         this.save = function (campaignId, budget) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budget.id + '/';
+            var url = '/api/campaigns/' + campaignId + '/budget/' + budget.id + '/';
             return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
         };
 
         this.get = function (campaignId, budgetId) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
+            var url = '/api/campaigns/' + campaignId + '/budget/' + budgetId + '/';
             return $http.get(url).then(processResponse).then(self.convert.dataFromApi);
         };
 
         this.delete = function (campaignId, budgetId) {
-            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
+            var url = '/api/campaigns/' + campaignId + '/budget/' + budgetId + '/';
             return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
         };
     }
@@ -3169,11 +3154,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             },
             errorsFromApi: function (resp) {
                 var errors = resp.data.data.errors;
-                errors.conversionGoal = {
-                    goalId: errors.conversion_goal.goal_id,
-                    name: errors.conversion_goal.name,
-                    type: errors.conversion_goal.type,
-                };
+                if (errors.conversion_goal) {
+                    errors.conversionGoal = {
+                        goalId: errors.conversion_goal.goal_id,
+                        name: errors.conversion_goal.name,
+                        type: errors.conversion_goal.type,
+                    };
+                }
                 return errors;
             }
         };
@@ -3222,7 +3209,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
         userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
-        allAccountsBudget: new AllAccountsBudget(),
         allAccountsOverview: new AllAccountsOverview(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
@@ -3238,8 +3224,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive(),
         accountCredit: new AccountCredit(),
-        campaignBudgetPlus: new CampaignBudgetPlus(),
-        campaignGoalValidation: new CampaignGoalValidation()
+        campaignBudget: new CampaignBudget(),
+        campaignGoalValidation: new CampaignGoalValidation(),
         // Also, don't forget to add me to DEMO!
     };
 }]);

@@ -8,6 +8,7 @@ import pytz
 
 from django.conf import settings
 from django.db.models import Min, Max
+from django.db.models.query import QuerySet
 
 from . import exc
 from . import models
@@ -30,7 +31,7 @@ def _preprocess_constraints(constraints):
     result = {}
     for k, v in constraints.iteritems():
         k = constraint_field_translate.get(k, k)
-        if isinstance(v, collections.Sequence):
+        if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
             result['{0}__in'.format(k)] = v
         else:
             result[k] = v
@@ -79,7 +80,9 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
     if constraints:
         result = result.filter(**constraints)
 
-    agg_fields = {k:v for k, v in list(aggregate_fields.AGGREGATE_FIELDS.items()) + list(aggregate_fields.POSTCLICK_AGGREGATE_FIELDS.items())}
+    agg_fields = {k: v for k, v in
+                  list(aggregate_fields.AGGREGATE_FIELDS.items()) +
+                  list(aggregate_fields.POSTCLICK_AGGREGATE_FIELDS.items())}
 
     if breakdown:
         result = result.values(*breakdown)
