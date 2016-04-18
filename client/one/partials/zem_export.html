@@ -1,8 +1,0 @@
-<select ui-select2="config"
-        ng-model="exportType"
-        ng-change="downloadReport()"
-        data-placeholder="Download Report"
-        class="export">
-    <option value=""></option>
-    <option ng-repeat="option in options | filter:{hidden: '!true'}" value="{{option.value}}">{{option.name}}</option>
-</select>
