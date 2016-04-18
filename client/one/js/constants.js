@@ -22,6 +22,14 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
+    adGroupExtendedStatus: {
+        ACTIVE: 1,
+        STOPPED: 2,
+        INACTIVE: 3,
+        LANDING: 4,
+        AUTOPILOT: 5,
+        RELOADING: 6,
+    },
     publisherStatus: {
         ENABLED: 1,
         BLACKLISTED: 2,

@@ -361,33 +361,47 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         };
     };
 
-    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
+    $scope.getAdGroupExtendedStatus = function(adGroup, campaign) {
         if (adGroup.reloading) {
-            return 'adgroup-status-reloading-icon';
+            return constants.adGroupExtendedStatus.RELOADING;
         }
 
         if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
             adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
-            return 'adgroup-status-stopped-icon';
+            return constants.adGroupExtendedStatus.STOPPED;
         }
 
         if (campaign.landingMode) {
-            if ($state.includes('main.adGroups', {id: adGroup.id.toString()})) {
-                return 'adgroup-status-landing-mode-selected-icon';
-            }
-
-            return 'adgroup-status-landing-mode-icon';
+            return constants.adGroupExtendedStatus.LANDING;
         }
 
         if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
              adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
             (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
             adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
-            return 'adgroup-status-inactive-icon';
+            return constants.adGroupExtendedStatus.INACTIVE;
         }
 
         if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
               adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
+            return constants.adGroupExtendedStatus.AUTOPILOT;
+        }
+
+        return constants.adGroupExtendedStatus.ACTIVE;
+    };
+
+    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
+        switch($scope.getAdGroupExtendedStatus(adGroup, campaign)) {
+        case constants.adGroupExtendedStatus.RELOADING:
+            return 'adgroup-status-reloading-icon';
+        case constants.adGroupExtendedStatus.STOPPED:
+            return 'adgroup-status-stopped-icon';
+        case constants.adGroupExtendedStatus.LANDING:
+            return ($state.includes('main.adGroups', {id: adGroup.id.toString()})) ?
+                'adgroup-status-landing-mode-selected-icon' : 'adgroup-status-landing-mode-icon';
+        case constants.adGroupExtendedStatus.INACTIVE:
+            return 'adgroup-status-inactive-icon';
+        case constants.adGroupExtendedStatus.AUTOPILOT:
             return 'adgroup-status-autopilot-icon';
         }
 
