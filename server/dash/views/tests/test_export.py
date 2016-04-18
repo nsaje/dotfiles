@@ -1072,14 +1072,6 @@ class ScheduledReportsTest(test.TestCase):
             'granularity': 'Account'}])
         self.assertTrue(content['success'])
 
-    def test_get_no_permission(self):
-        request = http.HttpRequest()
-        request.user.user_permissions.add(permission)
-        request.user.user_permissions.remove(permission)
-
-        with self.assertRaises(exc.ForbiddenError):
-            response = export.ScheduledReports().get(request, 1)
-
     def test_get_scheduled_reports(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
@@ -1089,7 +1081,6 @@ class ScheduledReportsTest(test.TestCase):
         self.assertEqual(len(content['data']['reports']), 1)
 
         request.user = models.User.objects.get(pk=2)
-        request.user.user_permissions.add(permission)
 
         response = export.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
