@@ -25,14 +25,6 @@
                 </button>
                 <div class="loader" ng-show="addCampaignRequestInProgress"></div>
             </div>
-            <div class="button-bar-item export-container">
-                <zem-export
-                    start-date="dateRange.startDate"
-                    end-date="dateRange.endDate"
-                    base-url="'api/accounts/' + $state.params.id + '/campaigns/'"
-                    options="exportOptions">
-                </zem-export>
-            </div>
 
             <div class="button-bar-item pull-right">
                 <zem-export
