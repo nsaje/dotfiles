@@ -33,7 +33,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         {name: 'By Day (Excel)', value: 'excel'}
     ];
 
-    $scope.exportPlusOptions = [
+    $scope.exportOptions = [
       {name: 'By Account (totals)', value: constants.exportType.ACCOUNT},
       {name: 'Current View', value: constants.exportType.CAMPAIGN, defaultOption: true},
       {name: 'By Ad Group', value: constants.exportType.AD_GROUP},

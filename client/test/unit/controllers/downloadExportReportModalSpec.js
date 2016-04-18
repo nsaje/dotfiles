@@ -52,7 +52,7 @@ describe('DownloadExportReportModalCtrl', function () {
         };
 
         api = {
-            exportPlusAllowed: {
+            exportAllowed: {
                 get: mockApiFunc
             }
         };

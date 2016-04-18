@@ -29,7 +29,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
       {name: 'By Day (Excel)', value: 'excel'}
     ];
 
-    $scope.exportPlusOptions = [
+    $scope.exportOptions = [
       {name: 'Current View', value: constants.exportType.AD_GROUP},
       {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];

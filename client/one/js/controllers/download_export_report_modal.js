@@ -5,7 +5,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
 
     $scope.setDisabledExportOptions = function () {
         $scope.showInProgress = true;
-        api.exportPlusAllowed.get($state.params.id, $scope.level,
+        api.exportAllowed.get($state.params.id, $scope.level,
             $scope.exportSources, $scope.startDate, $scope.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {

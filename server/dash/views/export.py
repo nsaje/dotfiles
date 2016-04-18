@@ -497,7 +497,7 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
     @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
+    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_allowed_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -506,13 +506,47 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
 
         num_days = (end_date - start_date).days + 1
 
-        num_contnent_ad_sources = models.ContentAdSource.objects.filter(ad_group=ad_group).count()
+        num_articles = models.Article.objects.filter(ad_group=ad_group).count()
+
+        active_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
+        num_sources = models.Source.objects.filter(
+            adgroupsource__in=active_sources
+        ).count()
 
         # estimate number of rows (worst case)
-        row_count = num_days * num_contnent_ad_sources
+        row_count = num_days * num_sources * num_articles
 
         try:
-            max_days = self.MAX_ROWS / (num_contnent_ad_sources)
+            max_days = self.MAX_ROWS / (num_articles * num_sources)
+        except ZeroDivisionError:
+            max_days = None
+
+        return self.create_api_response({
+            'allowed': row_count <= self.MAX_ROWS,
+            'max_days': max_days
+        })
+
+
+class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 8072
+
+    @influx.timer('dash.export')
+    @statsd_helper.statsd_timer('dash.export', 'campiagn_ad_group_export_allowed_get')
+    def get(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        num_days = (end_date - start_date).days + 1
+
+        num_articles = models.Article.objects.filter(ad_group__campaign=campaign).count()
+
+        # estimate number of rows (worst case)
+        row_count = num_days * num_articles
+
+        try:
+            max_days = self.MAX_ROWS / num_articles
         except ZeroDivisionError:
             max_days = None
 

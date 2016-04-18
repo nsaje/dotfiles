@@ -71,7 +71,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
     ];
 
-    $scope.exportPlusOptions = [
+    $scope.exportOptions = [
       {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
       {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
       {name: 'By content Ad', value: constants.exportType.CONTENT_AD},

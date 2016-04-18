@@ -123,6 +123,10 @@ urlpatterns += [
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
+        login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/updates/',
         login_required(dash.views.table.AdGroupAdsTableUpdates.as_view()),
         name='ad_group_ads_table_updates'

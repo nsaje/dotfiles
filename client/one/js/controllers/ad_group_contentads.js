@@ -52,7 +52,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         value: 'day-excel'
     }];
 
-    $scope.exportPlusOptions = [
+    $scope.exportOptions = [
       {name: 'By Ad Group (totals)', value: constants.exportType.AD_GROUP},
       {name: 'Current View', value: constants.exportType.CONTENT_AD, defaultOption: true},
     ];
