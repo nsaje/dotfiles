@@ -26,11 +26,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
-           {name: 'By Day (CSV)', value: 'csv'},
-           {name: 'By Day (Excel)', value: 'excel'}
-    ];
-
-    $scope.exportOptions = [
       {name: 'By All Accounts (totals)', value: constants.exportType.ALL_ACCOUNTS},
       {name: 'Current View', value: constants.exportType.ACCOUNT, defaultOption: true},
       {name: 'By Campaign', value: constants.exportType.CAMPAIGN},

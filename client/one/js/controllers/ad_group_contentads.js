@@ -38,20 +38,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         currentPage: 1
     };
 
-    $scope.exportOptions = [{
-        name: 'By Content Ad (CSV)',
-        value: 'content-ad-csv'
-    }, {
-        name: 'By Content Ad (Excel)',
-        value: 'content-ad-excel'
-    }, {
-        name: 'By Day (CSV)',
-        value: 'day-csv'
-    }, {
-        name: 'By Day (Excel)',
-        value: 'day-excel'
-    }];
-
     $scope.exportOptions = [
       {name: 'By Ad Group (totals)', value: constants.exportType.AD_GROUP},
       {name: 'Current View', value: constants.exportType.CONTENT_AD, defaultOption: true},
@@ -865,7 +851,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         initColumns();
 
         pollSyncStatus();
-        setDisabledExportOptions();
     };
 
     $scope.pollTableUpdates = function () {
@@ -1043,25 +1028,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             $scope.chartMetricOptions,
             conversionGoals,
             $scope.hasPermission('zemauth.conversion_reports')
-        );
-    };
-
-    var setDisabledExportOptions = function () {
-        api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
-            function (data) {
-                var option = null;
-                $scope.exportOptions.forEach(function (opt) {
-                    if (opt.value === 'day-excel') {
-                        option = opt;
-                    }
-                });
-
-                option.disabled = false;
-                if (!data.allowed) {
-                    option.disabled = true;
-                    option.maxDays = data.maxDays;
-                }
-            }
         );
     };
 
