@@ -25,14 +25,6 @@
                     + Content Ads
                 </button>
             </div>
-            <div class="button-bar-item export-container">
-                <zem-export
-                    start-date="dateRange.startDate"
-                    end-date="dateRange.endDate"
-                    base-url="'api/ad_groups/' + $state.params.id + '/contentads/'"
-                    options="exportOptions">
-                </zem-export>
-            </div>
 
             <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
               <zem-dropdown
