@@ -592,7 +592,7 @@ def get_campaign_goal_list(user, constraints, start_date, end_date):
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
-            internal=first and 'zemauth.campaign_goal_performance' in permissions,
+            internal=first and not permissions.get('zemauth.campaign_goal_performance'),
         )
         if campaign_goal.primary:
             entry.value_class = 'primary'
