@@ -422,7 +422,7 @@ def process_report_v2(report_task, report_type):
                 if start_of_content == magic_string:
                     content = content[len(magic_string):]
 
-                content = convert_to_xls(content)
+                content = convert_to_xls(content.decode('utf-8'))
 
             report = parse_v2.OmnitureReport(content)
         else:
