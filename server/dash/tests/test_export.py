@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 from django import test
 
-from dash import export_plus
+from dash import export
 from dash import models
 from dash import constants
 import reports.redshift as redshift
@@ -124,7 +124,7 @@ class ExportTestCase(test.TestCase):
             ('ctr', 'CTR')
         ])
 
-        content = export_plus.get_csv_content(fieldnames, self.data)
+        content = export.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR\r
 2014-07-01,1000.12,10.10,103,0.0103\r
@@ -147,7 +147,7 @@ class ExportTestCase(test.TestCase):
         data[0]['status'] = 1
         data[1]['status'] = 2
         data[2]['status'] = 2
-        content = export_plus.get_csv_content(fieldnames, self.data)
+        content = export.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
 2014-07-01,1000.12,10.10,103,0.0103,Active\r
@@ -170,7 +170,7 @@ class ExportTestCase(test.TestCase):
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        rows = export_plus._generate_rows(
+        rows = export._generate_rows(
             dimensions,
             start_date,
             end_date,
@@ -317,7 +317,7 @@ class ExportTestCase(test.TestCase):
             flat_fee_end_date=datetime.date(2014, 7, 31),
         )
 
-        rows = export_plus._generate_rows(
+        rows = export._generate_rows(
             dimensions,
             start_date,
             end_date,
@@ -407,7 +407,7 @@ class ExportTestCase(test.TestCase):
 
         campaign = models.Campaign.objects.get(pk=1)
 
-        rows = export_plus._generate_rows(
+        rows = export._generate_rows(
             dimensions,
             start_date,
             end_date,
@@ -458,7 +458,7 @@ class ExportTestCase(test.TestCase):
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        rows = export_plus._generate_rows(
+        rows = export._generate_rows(
             dimensions,
             start_date,
             end_date,
@@ -489,7 +489,7 @@ class ExportTestCase(test.TestCase):
     def test_get_report_filename(self):
         self.assertEqual(
             'acc_camp_adg_-_by_content_ad_media_source_report_2014-06-03_2014-06-10',
-            export_plus._get_report_filename(
+            export._get_report_filename(
                 constants.ScheduledReportGranularity.CONTENT_AD,
                 datetime.date(2014, 6, 3),
                 datetime.date(2014, 6, 10),
@@ -500,7 +500,7 @@ class ExportTestCase(test.TestCase):
 
         self.assertEqual(
             'acc_camp_adg_-_by_content_ad_by_day_report_2014-06-03_2014-06-10',
-            export_plus._get_report_filename(
+            export._get_report_filename(
                 constants.ScheduledReportGranularity.CONTENT_AD,
                 datetime.date(2014, 6, 3),
                 datetime.date(2014, 6, 10),
@@ -511,7 +511,7 @@ class ExportTestCase(test.TestCase):
 
         self.assertEqual(
             'acc_camp_-_by_ad_group_report_2014-06-03_2014-06-10',
-            export_plus._get_report_filename(
+            export._get_report_filename(
                 constants.ScheduledReportGranularity.AD_GROUP,
                 datetime.date(2014, 6, 3),
                 datetime.date(2014, 6, 10),
@@ -520,7 +520,7 @@ class ExportTestCase(test.TestCase):
 
         self.assertEqual(
             'ZemantaOne_media_source_report_2014-06-03_2014-06-10',
-            export_plus._get_report_filename(
+            export._get_report_filename(
                 constants.ScheduledReportGranularity.ALL_ACCOUNTS,
                 datetime.date(2014, 6, 3),
                 datetime.date(2014, 6, 10),
@@ -528,15 +528,15 @@ class ExportTestCase(test.TestCase):
 
         self.assertEqual(
             'acc_-_by_campaign_report_2014-06-03_2014-06-10',
-            export_plus._get_report_filename(
+            export._get_report_filename(
                 constants.ScheduledReportGranularity.CAMPAIGN,
                 datetime.date(2014, 6, 3),
                 datetime.date(2014, 6, 10),
                 account_name='acc'))
 
-    @mock.patch('dash.export_plus.AdGroupAdsExport.get_data')
+    @mock.patch('dash.export.AdGroupAdsExport.get_data')
     def test_get_report_contents_ad_group(self, get_data_mock):
-        report_contents = export_plus._get_report_contents(
+        report_contents = export._get_report_contents(
             User.objects.get(pk=1),
             [],
             datetime.date(2014, 6, 3),
@@ -562,9 +562,9 @@ class ExportTestCase(test.TestCase):
             order='name'
         )
 
-    @mock.patch('dash.export_plus.CampaignExport.get_data')
+    @mock.patch('dash.export.CampaignExport.get_data')
     def test_get_report_contents_campaign(self, get_data_mock):
-        report_contents = export_plus._get_report_contents(
+        report_contents = export._get_report_contents(
             User.objects.get(pk=1),
             [],
             datetime.date(2014, 6, 3),
@@ -588,10 +588,10 @@ class ExportTestCase(test.TestCase):
             order='cost'
         )
 
-    @mock.patch('dash.export_plus._get_report')
+    @mock.patch('dash.export._get_report')
     def test_get_report_from_export_report(self, mock_get_report):
         export_report = models.ExportReport.objects.get(id=1)
-        contents = export_plus.get_report_from_export_report(
+        contents = export.get_report_from_export_report(
             export_report,
             datetime.date(2014, 6, 3),
             datetime.date(2014, 6, 10))

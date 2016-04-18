@@ -11,7 +11,7 @@ from django import test
 from django import http
 from django.contrib.auth.models import Permission
 
-from dash.views import export_plus
+from dash.views import export
 import dash.models
 from dash import constants
 
@@ -105,7 +105,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AdGroupAdsExport().get(request, self.ad_group_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Visits\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,30\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 2,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Archived,30.230,303,20\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
         filename = '{0}_{1}_{2}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
@@ -176,7 +176,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.CampaignAdGroupsExport().get(request, self.campaign_id)
+        response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,Inactive,20.230,203,200000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -207,7 +207,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.CampaignAdGroupsExport().get(request, self.campaign_id)
+        response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,200000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -278,7 +278,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountCampaignsExport().get(request, self.account_id)
+        response = export.AccountCampaignsExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r
@@ -312,7 +312,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         request.user.user_permissions.add(permission)
         request.GET['order'] = 'impressions'
 
-        response = export_plus.AccountCampaignsExport().get(request, self.account_id)
+        response = export.AccountCampaignsExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r
@@ -344,7 +344,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         request.user.user_permissions.add(permission)
         request.GET['order'] = 'impressions'
 
-        response = export_plus.AccountCampaignsExport().get(request, self.account_id)
+        response = export.AccountCampaignsExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Inactive,20.230,203,200000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -410,7 +410,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AllAccountsExport().get(request)
+        response = export.AllAccountsExport().get(request)
 
         expected_content = '''Start Date,End Date,Account,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.230,203,200000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -438,7 +438,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.user.user_permissions.add(permission)
         request.GET['order'] = '-impressions'
 
-        response = export_plus.AllAccountsExport().get(request)
+        response = export.AllAccountsExport().get(request)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,Inactive,20.230,203,200000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -466,7 +466,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.user.user_permissions.add(permission)
         request.GET['order'] = 'impressions'
 
-        response = export_plus.AllAccountsExport().get(request)
+        response = export.AllAccountsExport().get(request)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,Inactive,20.230,203,200000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -536,7 +536,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AdGroupSourcesExport().get(request, self.ad_group_id)
+        response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Active,AdsNative,20.230,203,200000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -598,7 +598,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.CampaignSourcesExport().get(request, self.campaign_id)
+        response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -628,7 +628,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.CampaignSourcesExport().get(request, self.campaign_id)
+        response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -658,7 +658,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.CampaignSourcesExport().get(request, self.campaign_id)
+        response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -719,7 +719,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountSourcesExport().get(request, self.account_id)
+        response = export.AccountSourcesExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -748,7 +748,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountSourcesExport().get(request, self.account_id)
+        response = export.AccountSourcesExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -777,7 +777,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountSourcesExport().get(request, self.account_id)
+        response = export.AccountSourcesExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -806,7 +806,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountSourcesExport().get(request, self.account_id)
+        response = export.AccountSourcesExport().get(request, self.account_id)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,http://testurl.com,Active,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -875,7 +875,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AllAccountsSourcesExport().get(request)
+        response = export.AllAccountsSourcesExport().get(request)
 
         expected_content = '''Start Date,End Date,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,Inactive,Outbrain,20.230,203,200000\r\n2014-06-30,2014-07-01,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -903,7 +903,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.user.user_permissions.add(permission)
         request.GET['order'] = '-impressions'
 
-        response = export_plus.AllAccountsSourcesExport().get(request)
+        response = export.AllAccountsSourcesExport().get(request)
 
         expected_content = '''Start Date,End Date,Account,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Outbrain,20.230,203,200000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -931,7 +931,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.user.user_permissions.add(permission)
         request.GET['order'] = '-impressions'
 
-        response = export_plus.AllAccountsSourcesExport().get(request)
+        response = export.AllAccountsSourcesExport().get(request)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,,Outbrain,20.230,203,200000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -959,7 +959,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AllAccountsSourcesExport().get(request)
+        response = export.AllAccountsSourcesExport().get(request)
 
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Status (''' + time.strftime('%Y-%m-%d') + '''),Source,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,,Outbrain,20.230,203,200000\r\n2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Taboola,10.230,103,100000\r\n'''
         expected_content = test_helper.format_csv_content(expected_content)
@@ -988,11 +988,11 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         self.request.user.user_permissions.add(permission)
 
-    @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 10000)
+    @patch('dash.views.export.ExportAllowed.MAX_ROWS', 10000)
     def test_get_all_ok(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
+            response = export.ExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
             'ad_group': True,
             'content_ad': True,
@@ -1002,11 +1002,11 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         }
         self.assertEqual(json.loads(response.content)['data'], expected)
 
-    @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 1)
+    @patch('dash.views.export.ExportAllowed.MAX_ROWS', 1)
     def test_get_too_many_rows(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1000
-            response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
+            response = export.ExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
             'ad_group': True,
             'content_ad': False,
@@ -1016,12 +1016,12 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         }
         self.assertEqual(json.loads(response.content)['data'], expected)
 
-    @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.ALL_ACC_BD_ADG_MAX_DAYS', 1)
+    @patch('dash.views.export.ExportAllowed.MAX_ROWS', 10000)
+    @patch('dash.views.export.ExportAllowed.ALL_ACC_BD_ADG_MAX_DAYS', 1)
     def test_get_too_many_days_breakdown(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.ExportAllowed().get(self.request, 'all_accounts')
+            response = export.ExportAllowed().get(self.request, 'all_accounts')
         expected = {
             'all_accounts': True,
             'account': True,
@@ -1047,11 +1047,11 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         self.request.user.user_permissions.add(permission)
 
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 10000)
+    @patch('dash.views.export.SourcesExportAllowed.MAX_ROWS', 10000)
     def test_get_all_ok(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.SourcesExportAllowed().get(self.request, 'ad_groups', id_=1)
+            response = export.SourcesExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
             'ad_group': True,
             'content_ad': True,
@@ -1062,11 +1062,11 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         }
         self.assertEqual(json.loads(response.content)['data'], expected)
 
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 1)
+    @patch('dash.views.export.SourcesExportAllowed.MAX_ROWS', 1)
     def test_get_too_many_rows(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1000
-            response = export_plus.SourcesExportAllowed().get(self.request, 'ad_groups', id_=1)
+            response = export.SourcesExportAllowed().get(self.request, 'ad_groups', id_=1)
         expected = {
             'ad_group': False,
             'content_ad': False,
@@ -1077,12 +1077,12 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         }
         self.assertEqual(json.loads(response.content)['data'], expected)
 
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.ALL_ACC_BD_ADG_MAX_DAYS', 1)
+    @patch('dash.views.export.SourcesExportAllowed.MAX_ROWS', 10000)
+    @patch('dash.views.export.SourcesExportAllowed.ALL_ACC_BD_ADG_MAX_DAYS', 1)
     def test_get_too_many_days_breakdown(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.SourcesExportAllowed().get(self.request, 'all_accounts')
+            response = export.SourcesExportAllowed().get(self.request, 'all_accounts')
         expected = {
             'all_accounts': True,
             'account': True,
@@ -1107,7 +1107,7 @@ class ScheduledReportsTest(test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.ScheduledReports().get(request, 1)
+        response = export.ScheduledReports().get(request, 1)
 
         content = json.loads(response.content)
 
@@ -1128,7 +1128,7 @@ class ScheduledReportsTest(test.TestCase):
         request.user.user_permissions.remove(permission)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.ScheduledReports().get(request, 1)
+            response = export.ScheduledReports().get(request, 1)
 
     def test_get_scheduled_reports(self):
         request = http.HttpRequest()
@@ -1136,14 +1136,14 @@ class ScheduledReportsTest(test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.ScheduledReports().get(request, 1)
+        response = export.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['reports']), 1)
 
         request.user = models.User.objects.get(pk=2)
         request.user.user_permissions.add(permission)
 
-        response = export_plus.ScheduledReports().get(request, 1)
+        response = export.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['reports']), 0)
 
@@ -1155,7 +1155,7 @@ class ScheduledReportsTest(test.TestCase):
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
-        response = export_plus.ScheduledReports().delete(request, 1)
+        response = export.ScheduledReports().delete(request, 1)
         content = json.loads(response.content)
         self.assertTrue(content['success'])
 
@@ -1168,7 +1168,7 @@ class ScheduledReportsTest(test.TestCase):
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.ScheduledReports().delete(request, 1)
+            response = export.ScheduledReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
@@ -1181,6 +1181,6 @@ class ScheduledReportsTest(test.TestCase):
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.ScheduledReports().delete(request, 1)
+            response = export.ScheduledReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
