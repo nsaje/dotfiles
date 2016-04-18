@@ -456,9 +456,9 @@ class ScheduledReports(api_common.BaseApiView):
                 constants.ScheduledReportLevel.get_text(r.report.level),
                 (r.report.account.name if r.report.account else ''),
                 (r.report.campaign.account.name + ': ' + r.report.campaign.name if r.report.campaign else ''),
-                (r.report.ad_group.campaign.account.name + ': '
-                    + r.report.ad_group.campaign.name + ': '
-                    + r.report.ad_group.name if r.report.ad_group else '')]))
+                (r.report.ad_group.campaign.account.name + ': ' +
+                    r.report.ad_group.campaign.name + ': ' +
+                    r.report.ad_group.name if r.report.ad_group else '')]))
 
             item['granularity'] = ', '.join(filter(None, [
                 constants.ScheduledReportGranularity.get_text(r.report.granularity),
