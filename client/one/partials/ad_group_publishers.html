@@ -1,11 +1,11 @@
 <div class="page page-ad-group-publishers">
     <div class="section">
-        <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible, 'graph-hidden': !graphVisible && hasInfoboxPermission()}">
+        <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
             <div class="graph-infobox-row">
-                <div class="graph-container" ng-class="{'graph-collapsed': !graphVisible, 'graph-hidden': !graphVisible && hasInfoboxPermission(), 'graph-container-short': graphVisible && hasInfoboxPermission()}">
+                <div class="graph-container" ng-class="{'graph-collapsed': !graphVisible, 'graph-container-short': graphVisible}">
                     <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
                 </div>
-                <div ng-if="hasInfoboxPermission()" class="infobox-container">
+                <div class="infobox-container">
                     <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
                 </div>
             </div>

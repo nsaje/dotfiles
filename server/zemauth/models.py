@@ -163,7 +163,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_campaign_account_publisher_blacklist_status',
              'Can view or modify account and campaign publishers blacklist status'),
             ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
-            ('can_see_infobox', 'Can see info box'),
             ('account_account_view', "Can view account's Account tab."),
             ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),

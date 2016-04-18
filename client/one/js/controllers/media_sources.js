@@ -21,7 +21,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
-    $scope.hasInfoboxPermission = false;
+
     var userSettings = null,
         hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
 
@@ -37,7 +37,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
-    $scope.selectedSourcesChanged = function (row, checked) {
+    $scope.selectedSourcesChanged = function (row) {
         if (row.id) {
             $scope.updateSelectedSources(row.id);
         } else {
@@ -581,12 +581,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+            if (!$scope.hasInfoboxPermission()) {
                 return;
             }
             api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
@@ -671,10 +667,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var init = function () {
-        $scope.hasInfoboxPermission = $scope.hasPermission('zemauth.can_see_infobox');
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
             $scope.chartMetrics = options.allAccountsChartMetrics;
             $scope.chartMetric1 = constants.chartMetric.COST;
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
@@ -684,11 +678,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Account', value: constants.exportType.ACCOUNT},
               {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
               {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
-            ];            
+            ];
 
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission;
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [
@@ -700,7 +693,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.accounts.settings';
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             $scope.localStoragePrefix = 'campaignSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission;
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [
@@ -710,10 +702,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             ];
 
             $scope.infoboxLinkTo = 'main.campaigns.settings';
-        }
-
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            $scope.hasInfoboxPermission = false;
         }
 
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);

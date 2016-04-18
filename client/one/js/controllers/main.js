@@ -19,7 +19,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.campaign = null;
     $scope.adGroup = null;
 
-    $scope.infoboxEnabled = false;
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = true;
 
@@ -266,53 +265,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $scope.enablePublisherFilter = visible;
     };
 
-    $scope.isInfoboxEnabled = function () {
-        // infobox will be visible only on certain views and
-        // is entirely housed within main atm
-        if ($state.is('main.campaigns.ad_groups') ||
-            $state.is('main.campaigns.sources') ||
-            $state.is('main.adGroups.adsPlus') ||
-            $state.is('main.adGroups.sources') ||
-            $state.is('main.adGroups.publishers') ||
-            $state.is('main.accounts.campaigns') ||
-            $state.is('main.accounts.sources') ||
-            $state.is('main.allAccounts.accounts') ||
-            $state.is('main.allAccounts.sources')) {
-            return true;
-        }
-
-        return false;
-    };
-
-    $scope.hasInfoboxPermission = function () { // eslint-disable-line max-len
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return false;
-        }
-
-        if ($state.is('main.adGroups.adsPlus') ||
-            $state.is('main.adGroups.sources') ||
-            $state.is('main.adGroups.publishers')) {
-            return true;
-        }
-
-        if ($state.is('main.campaigns.ad_groups') ||
-            $state.is('main.campaigns.sources')) {
-            return true;
-        }
-
-        if ($state.is('main.accounts.campaigns') ||
-            $state.is('main.accounts.sources')) {
-            return true;
-        }
-
-        if ($state.is('main.allAccounts.accounts') ||
-            $state.is('main.allAccounts.sources')) {
-            return $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
-        }
-
-        return false;
-    };
-
     $scope.isChartVisible = function () {
         return $state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
@@ -376,10 +328,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
-
-        // infobox will be visible only on certain views and
-        // is entirely housed within main atm
-        $scope.infoboxEnabled = $scope.isInfoboxEnabled() && $scope.hasInfoboxPermission();
 
         // Redirect from default state
         var state = null;

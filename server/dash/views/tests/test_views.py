@@ -2636,10 +2636,6 @@ class AdGroupOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = ['can_see_infobox']
-        for p in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=p))
-        self.user.save()
         campaign = models.Campaign.objects.get(pk=1)
         campaign.users.add(self.user)
 
@@ -2666,10 +2662,6 @@ class AdGroupOverviewTest(TestCase):
         response = self._get_ad_group_overview(1)
         self.assertFalse(response['success'])
         self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission = Permission.objects.get(codename='can_see_infobox')
-        self.user.user_permissions.add(permission)
-        self.user.save()
 
         response = self._get_ad_group_overview(1)
         self.assertFalse(response['success'])
@@ -2859,10 +2851,6 @@ class CampaignOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = ['can_see_infobox']
-        for p in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=p))
-        self.user.save()
         campaign = models.Campaign.objects.get(pk=1)
         campaign.users.add(self.user)
 
@@ -2884,10 +2872,6 @@ class CampaignOverviewTest(TestCase):
         response = self._get_campaign_overview(1)
         self.assertFalse(response['success'])
         self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission = Permission.objects.get(codename='can_see_infobox')
-        self.user.user_permissions.add(permission)
-        self.user.save()
 
         response = self._get_campaign_overview(1)
         self.assertFalse(response['success'])
@@ -3004,10 +2988,8 @@ class AccountOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
         permission_3 = Permission.objects.get(codename='view_archived_entities')
         user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
         user.user_permissions.add(permission_3)
         user.save()
         self.user = user
@@ -3126,10 +3108,8 @@ class AllAccountsOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
         permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
         user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
         user.user_permissions.add(permission_2)
         user.save()
 

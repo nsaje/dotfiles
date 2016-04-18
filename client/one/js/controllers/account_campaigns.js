@@ -456,10 +456,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.accountOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
