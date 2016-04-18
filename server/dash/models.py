@@ -838,7 +838,7 @@ class CampaignGoal(models.Model):
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt),
                  'value': Decimal(value.value).quantize(Decimal(
-                    rounding_format.get(self.type, default_rounding_format)
+                     rounding_format.get(self.type, default_rounding_format)
                  ))}
                 for value in self.values.all()
             ]

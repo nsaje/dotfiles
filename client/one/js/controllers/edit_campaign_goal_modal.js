@@ -211,7 +211,8 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.clearErrors('type');
         $scope.clearErrors('conversionGoal');
 
-        if (unit !== undefined) {
+        if ((unit !== undefined) || 
+            ($scope.campaignGoal && $scope.campaignGoal.type === constants.campaignGoalKPI.PAGES_PER_SESSION)) {
             $scope.setDefaultValue();
         }
         $scope.unit = unit || '';
@@ -228,7 +229,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     };
 
     $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.isGoalAvailable);
-
 
     $scope.refreshConversionWindows = function (goalId) {
         var counts = {};

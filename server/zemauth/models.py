@@ -58,6 +58,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         _('username'),
         max_length=30,
         blank=True,
+        null=True,
         help_text=_('30 characters or fewer. Letters, digits and '
                     '@/./+/-/_ only.'),
         validators=[
@@ -192,7 +193,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
             ('campaign_goal_performance', 'Can view goal performance information'),
             ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
-            ('has_drift', 'Has Drift snippet'),
             ('has_supporthero', 'Has Supporthero snippet'),
             ('can_filter_sources_through_table', 'Can filter sources through sources table'),
         )

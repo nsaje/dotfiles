@@ -71,7 +71,7 @@ STATUS_TO_EMOTICON_MAP = {
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
-DEFAULT_COST_COLUMN = 'media_cost'
+DEFAULT_COST_COLUMN = 'cost'
 
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
