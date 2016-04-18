@@ -120,6 +120,7 @@ def get_ga_accounts(request):
     content_ad_ids_ga_api_enabled = dash.models.ContentAd.objects.filter(
         ad_group__id__in=adgroup_ga_api_enabled).values_list('id', flat=True)
     ga_accounts = dash.models.GAAnalyticsAccount.objects.filter(
-        account__campaign__adgroup__id__in=adgroup_ga_api_enabled).values('ga_account_id',
-                                                                          'ga_web_property_id').distinct()
+        account__campaign__adgroup__id__in=adgroup_ga_api_enabled).values('account_id', 'ga_account_id',
+                                                                          'ga_web_property_id').distinct().order_by(
+        'account_id', 'ga_account_id')
     return JsonResponse({'ga_accounts': list(ga_accounts), 'content_ads_enabled': list(content_ad_ids_ga_api_enabled)})
