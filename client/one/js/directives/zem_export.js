@@ -39,8 +39,8 @@ oneApp.directive('zemExport', function () {
                 for (var i = 0; i < $scope.columns.length; i++) {
                     var col = $scope.columns[i];
                     if (col.shown && col.checked && !col.unselectable) {
-                      exportColumns.push(col.field);
-                  }
+                        exportColumns.push(col.field);
+                    }
                 }
                 return exportColumns;
             };
