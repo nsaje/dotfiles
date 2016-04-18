@@ -6,24 +6,22 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
     return {
         restrict: 'E',
         replace: true,
-        scope: true,
+        scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            options: '=',
-            header: '=',
-            columnsWidths: '=',
+            grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function postLink (scope, element) {
-            scope.$watch('header', function (header) {
+            scope.$watch('ctrl.grid.header', function (header) {
                 if (header) {
                     $timeout(function () {
                         // Calculate columns widths after header is rendered
                         var columns = element.querySelectorAll('.zem-grid-cell');
                         columns.each(function (index, column) {
                             var columnWidth = column.offsetWidth;
-                            if (scope.columnsWidths[index] < columnWidth) {
-                                scope.columnsWidths[index] = columnWidth;
+                            if (scope.ctrl.grid.ui.columnWidths[index] < columnWidth) {
+                                scope.ctrl.grid.ui.columnWidths[index] = columnWidth;
                             }
                         });
                     }, 0, false);
@@ -41,11 +39,11 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
                 });
             });
         },
-        controller: ['$scope', function ($scope) {
-            $scope.getCellStyle = function (index) {
+        controller: [function () {
+            this.getCellStyle = function (index) {
                 var width = 'auto';
-                if ($scope.columnsWidths[index]) {
-                    width = $scope.columnsWidths[index] + 'px';
+                if (this.grid.ui.columnWidths[index]) {
+                    width = this.grid.ui.columnWidths[index] + 'px';
                 }
                 return {'min-width': width};
             };

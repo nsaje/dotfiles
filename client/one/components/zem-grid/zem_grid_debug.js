@@ -5,22 +5,29 @@ oneApp.directive('zemGridDebug', ['config', function (config) {
 
     return {
         restrict: 'E',
-        replace: true,
-        scope: true,
+        require: ['zemGridDebug', '^zemGrid'], replace: true,
+        scope: {},
         controllerAs: 'ctrl',
-        bindToController: {
+        bindToController: {},
+        link: function (scope, element, attributes, ctrls) {
+            ctrls[0].gridCtrl = ctrls[1];
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
-        controller: ['$scope', function ($scope) {
-            $scope.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
-            $scope.DEBUG_APPLY_BREAKDOWN = function () {
+        controller: ['zemGridUtil', function (zemGridUtil) {
+            this.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
+
+            this.applyBreakdown = function () {
                 var breakdowns = [];
-                angular.forEach($scope.DEBUG_BREAKDOWNS, function (value, key) {
+                angular.forEach(this.DEBUG_BREAKDOWNS, function (value, key) {
                     if (value) breakdowns.push(key);
                 });
-                $scope.dataSource.breakdowns = breakdowns;
-                $scope.dataSource.defaultPagination = [2, 3, 5, 7];
-                $scope.load();
+                this.gridCtrl.dataSource.breakdowns = breakdowns;
+                this.gridCtrl.dataSource.defaultPagination = [2, 3, 5, 7];
+                this.gridCtrl.load();
+            };
+
+            this.toggleCollapseLevel = function (level) {
+                zemGridUtil.toggleCollapseLevel(this.gridCtrl.grid, level);
             };
         }],
     };

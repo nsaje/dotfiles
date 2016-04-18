@@ -1,8 +1,8 @@
 <div class="zem-grid-header">
     <div class="zem-grid-row">
         <div class="zem-grid-cell"
-             ng-repeat="col in header.columns track by $index"
-             ng-style="getCellStyle($index)">
+             ng-repeat="col in ctrl.grid.header.columns track by $index"
+             ng-style="ctrl.getCellStyle($index)">
             <span class="col-title">{{ col }}</span>
         </div>
     </div>

@@ -7,15 +7,13 @@ oneApp.directive('zemGridBody', ['$timeout', 'config', 'zemGridConstants', funct
         restrict: 'E',
         replace: true,
         require: '^zemGrid',
-        scope: true,
+        scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            options: '=',
-            rows: '=',
-            columnsWidths: '=',
+            grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
-        link: function postLink (scope, element, attributes, zemGridController) {
+        link: function (scope, element, attributes, zemGridController) {
             var lastScrollLeft = 0;
             var lastScrollTop = 0;
             function handleScroll (event) {
@@ -36,15 +34,15 @@ oneApp.directive('zemGridBody', ['$timeout', 'config', 'zemGridConstants', funct
                 }
             }
 
-            scope.$watch('rows', function (rows) {
+            scope.$watch('ctrl.grid.body.rows', function (rows) {
                 if (rows) {
                     $timeout(function () {
                         // Calculate columns widths after body rows are rendered
                         var columns = element.querySelectorAll('.zem-grid-cell');
                         columns.each(function (index, column) {
                             var columnWidth = column.offsetWidth;
-                            if (scope.columnsWidths[index] < columnWidth) {
-                                scope.columnsWidths[index] = columnWidth;
+                            if (scope.ctrl.grid.ui.columnWidths[index] < columnWidth) {
+                                scope.ctrl.grid.ui.columnWidths[index] = columnWidth;
                             }
                         });
                     }, 0, false);
@@ -53,7 +51,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'config', 'zemGridConstants', funct
 
             element.on('scroll', handleScroll);
         },
-        controller: ['$scope', function ($scope) {
+        controller: [function () {
         }],
     };
 }]);

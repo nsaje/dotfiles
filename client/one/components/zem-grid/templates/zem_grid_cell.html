@@ -1,7 +1,7 @@
-<div class="zem-grid-cell" ng-style="getCellStyle($index)">
-   <span ng-if="$index===0 && row.data.breakdown && row.level>0">
-        <a ng-click="toggleCollapse(row)" class="action">
-            {{row.collapsed ? "[ + ]" : "[ - ]"}}
+<div class="zem-grid-cell" ng-style="ctrl.getCellStyle($index)">
+   <span ng-if="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.levels">
+        <a ng-click="ctrl.toggleCollapse()" class="action">
+            {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}
         </a>
     </span>
     <span>{{ctrl.cell}}</span>

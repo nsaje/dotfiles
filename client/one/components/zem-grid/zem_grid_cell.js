@@ -6,19 +6,24 @@ oneApp.directive('zemGridCell', ['config', function (config) {
     return {
         restrict: 'E',
         replace: true,
-        scope: true,
+        scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            options: '=',
+            position: '=',
             cell: '=',
-            columnsWidths: '@',
+            row: '=',
+            grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: ['$scope', function ($scope) {
-            $scope.getCellStyle = function (index) {
+        controller: ['zemGridUtil', function (zemGridUtil) {
+            this.toggleCollapse = function () {
+                zemGridUtil.toggleCollapse(this.grid, this.row);
+            };
+
+            this.getCellStyle = function () {
                 var width = 'auto';
-                if ($scope.columnsWidths[index]) {
-                    width = $scope.columnsWidths[index] + 'px';
+                if (this.grid.ui.columnWidths[this.position]) {
+                    width = this.grid.ui.columnWidths[this.position] + 'px';
                 }
                 return {'min-width': width};
             };

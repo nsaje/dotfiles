@@ -1,16 +1,17 @@
-<div class="zem-grid-row" ng-class="getRowClass()">
-    <zem-grid-cell ng-repeat="col in row.data.stats track by $index"
-                   ng-if="row.type!=GridRowType.BREAKDOWN"
+<div class="zem-grid-row" ng-class="ctrl.getRowClass()">
+    <zem-grid-cell ng-repeat="col in ctrl.row.data.stats track by $index"
+                   ng-if="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
+                   position="$index"
                    cell="col"
-                   options="options"
-                   columns-widths="ctrl.columnsWidths"
+                   row="ctrl.row"
+                   grid="ctrl.grid"
     ></zem-grid-cell>
-    <div class="zem-grid-cell" ng-if="row.type==GridRowType.BREAKDOWN">
-        <a ng-click="loadMore(row)">
-            - {{row.data.pagination.size}} of {{row.data.pagination.count}} -
+    <div class="zem-grid-cell" ng-if="ctrl.row.type==constants.gridRowType.BREAKDOWN">
+        <a ng-click="ctrl.loadMore()">
+            - {{ctrl.row.data.pagination.size}} of {{ctrl.row.data.pagination.count}} -
         </a>
     </div>
-    <div class="zem-grid-cell" ng-if="row.type==GridRowType.BREAKDOWN">
-        <a ng-click="loadMore(row, 5)"> (show 5 more) </a>
+    <div class="zem-grid-cell" ng-if="ctrl.row.type==constants.gridRowType.BREAKDOWN">
+        <a ng-click="ctrl.loadMore()"> (show 5 more) </a>
     </div>
 </div>
