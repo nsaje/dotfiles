@@ -236,7 +236,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
 
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,',
+            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
             'Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
