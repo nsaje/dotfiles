@@ -16,7 +16,7 @@ oneApp.directive('zemExport', function () {
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal'
         },
-        templateUrl: '/partials/zem_export_plus.html',
+        templateUrl: '/partials/zem_export.html',
         controller: ['$scope', '$modal', function ($scope, $modal) {
             $scope.exportModalTypes = [{
                 name: 'Download',

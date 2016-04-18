@@ -2375,7 +2375,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var urlId = ((level_ == constants.level.ALL_ACCOUNTS) ? '':id_ + '/');
             var urlSources = ((exportSources.valueOf()) ? 'sources/':'');
             var urlFilteredSources = ((exportSources.valueOf()) ? '?filtered_sources=' + zemFilterService.getFilteredSources().join(','):'');
-            var url = '/api/' + level_ + '/' + urlId + urlSources + 'export_plus/allowed/' + urlFilteredSources;
+            var url = '/api/' + level_ + '/' + urlId + urlSources + 'export/allowed/' + urlFilteredSources;
 
             var config = {
                 params: {}

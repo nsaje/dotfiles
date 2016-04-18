@@ -12,7 +12,7 @@ from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
-from dash import export_plus
+from dash import export
 from dash import constants
 from dash import scheduled_report
 from utils import api_common
@@ -49,7 +49,7 @@ class ExportApiView(api_common.BaseApiView):
             ('ctr', 'CTR')
         ])
 
-        content = export_plus.get_csv_content(fieldnames, data)
+        content = export.get_csv_content(fieldnames, data)
         return self.create_csv_response(filename, content=content)
 
 
@@ -228,7 +228,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
-        content, filename = export_plus.get_report_from_request(request, account=account)
+        content, filename = export.get_report_from_request(request, account=account)
 
         log_direct_download_user_action(request, account=account)
 
@@ -249,7 +249,7 @@ class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        content, filename = export_plus.get_report_from_request(request, campaign=campaign)
+        content, filename = export.get_report_from_request(request, campaign=campaign)
 
         log_direct_download_user_action(request, campaign=campaign)
 
@@ -270,7 +270,7 @@ class AdGroupAdsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        content, filename = export_plus.get_report_from_request(request, ad_group=ad_group)
+        content, filename = export.get_report_from_request(request, ad_group=ad_group)
 
         log_direct_download_user_action(request, ad_group=ad_group)
 
@@ -290,7 +290,7 @@ class AllAccountsSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.all_accounts', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
-        content, filename = export_plus.get_report_from_request(request, by_source=True)
+        content, filename = export.get_report_from_request(request, by_source=True)
 
         log_direct_download_user_action(request)
 
@@ -310,7 +310,7 @@ class AccountSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
-        content, filename = export_plus.get_report_from_request(request, account=account, by_source=True)
+        content, filename = export.get_report_from_request(request, account=account, by_source=True)
 
         log_direct_download_user_action(request, account=account)
 
@@ -331,7 +331,7 @@ class CampaignSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        content, filename = export_plus.get_report_from_request(request, campaign=campaign, by_source=True)
+        content, filename = export.get_report_from_request(request, campaign=campaign, by_source=True)
 
         log_direct_download_user_action(request, campaign=campaign)
 
@@ -352,7 +352,7 @@ class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        content, filename = export_plus.get_report_from_request(request, ad_group=ad_group, by_source=True)
+        content, filename = export.get_report_from_request(request, ad_group=ad_group, by_source=True)
 
         log_direct_download_user_action(request, ad_group=ad_group)
 
@@ -372,7 +372,7 @@ class AllAccountsExport(ExportApiView):
     @influx.timer('dash.export_plus.all_accounts', type='default')
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
-        content, filename = export_plus.get_report_from_request(request)
+        content, filename = export.get_report_from_request(request)
 
         log_direct_download_user_action(request)
 
@@ -401,7 +401,7 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
         filtered_sources=filtered_sources,
         order=r.get('order'),
         additional_fields=r.get('additional_fields'),
-        granularity=export_plus.get_granularity_from_type(r.get('type')),
+        granularity=export.get_granularity_from_type(r.get('type')),
         by_day=r.get('by_day') or False,
         by_source=by_source,
         include_model_ids=r.get('include_model_ids'),

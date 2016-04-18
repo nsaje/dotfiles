@@ -120,7 +120,7 @@ describe('DownloadExportReportModalCtrl', function () {
             $scope.$digest();
 
             expect($window.open).toHaveBeenCalledWith(
-              'test/export_plus/?type=view-csv&start_date=2015-01-12T00:00:00+00:00&end_date=2015-01-19T00:00:00+00:00&order=-cost&by_day=undefined&include_model_ids=undefined&additional_fields=',
+              'test/export/?type=view-csv&start_date=2015-01-12T00:00:00+00:00&end_date=2015-01-19T00:00:00+00:00&order=-cost&by_day=undefined&include_model_ids=undefined&additional_fields=',
               '_blank');
         });
     });

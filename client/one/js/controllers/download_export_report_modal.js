@@ -51,7 +51,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
     };
 
     $scope.downloadReport = function () {
-        var url = $scope.baseUrl + 'export_plus/?type=' + $scope.export.type.value +
+        var url = $scope.baseUrl + 'export/?type=' + $scope.export.type.value +
             '&start_date=' + $scope.startDate.format() +
             '&end_date=' + $scope.endDate.format() +
             '&order=' + $scope.order +
