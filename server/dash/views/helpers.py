@@ -905,8 +905,8 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
         message = 'Please contact support to enable this source.'
     elif ad_group.campaign.is_in_landing():
         message = 'Please add additional budget to your campaign to make changes.'
-    elif not ad_group_source.source.can_update_state() or (
-            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
+    elif not ad_group_source.source.can_update_state() or\
+            not ad_group_source.can_manage_content_ads:
         message = _get_status_setting_disabled_message(ad_group_source)
     elif ad_group_source_settings is not None and\
             ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
@@ -930,7 +930,7 @@ def _get_status_setting_disabled_message(ad_group_source):
     if ad_group_source.source.maintenance:
         return 'This source is currently in maintenance mode.'
 
-    if ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads:
+    if not ad_group_source.can_manage_content_ads:
         return 'Please contact support to enable this source.'
 
     return 'This source must be managed manually.'

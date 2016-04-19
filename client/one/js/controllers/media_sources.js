@@ -685,7 +685,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetric1 = constants.chartMetric.COST;
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
             $scope.exportBaseUrl = 'api/' + constants.level.ALL_ACCOUNTS + '/sources/';
-            $scope.exportPlusOptions = [
+            $scope.exportOptions = [
               {name: 'Current View', value: constants.exportType.ALL_ACCOUNTS},
               {name: 'By Account', value: constants.exportType.ACCOUNT},
               {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
@@ -697,7 +697,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_account_infobox');
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
-            $scope.exportPlusOptions = [
+            $scope.exportOptions = [
               {name: 'Current View', value: constants.exportType.ACCOUNT},
               {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
               {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
@@ -709,7 +709,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_campaign_infobox');
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
-            $scope.exportPlusOptions = [
+            $scope.exportOptions = [
               {name: 'Current View', value: constants.exportType.CAMPAIGN},
               {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
               {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},

@@ -388,7 +388,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
 
 @patch('dash.stats_helper.reports.api_contentads.query')
 @patch('dash.stats_helper.reports.api_touchpointconversions.query')
-class AdGroupAdsPlusDailyStatsTest(TestCase):
+class AdGroupAdsDailyStatsTest(TestCase):
     fixtures = ['test_views']
 
     def setUp(self):
@@ -421,7 +421,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_daily_stats', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_daily_stats', kwargs={'ad_group_id': 1}),
             params,
             follow=True
         )
@@ -579,7 +579,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_daily_stats', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_daily_stats', kwargs={'ad_group_id': 1}),
             params,
             follow=True
         )

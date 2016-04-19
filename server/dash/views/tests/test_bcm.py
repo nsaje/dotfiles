@@ -365,7 +365,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ],
             "totals": {
                 "current": {
-                    "available": "0.0000",
+                    "available": "100000.0000",
                     "past": "0.0000",
                     "unallocated": "0.0000"
                 },
@@ -414,7 +414,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ],
             "totals": {
                 "current": {
-                    "available": "0.0000",
+                    "available": "100000.0000",
                     "past": "0.0000",
                     "unallocated": "0.0000"
                 },

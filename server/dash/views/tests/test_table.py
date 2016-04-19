@@ -32,7 +32,7 @@ def copy(d):
 )
 @patch('dash.table.reports.api_touchpointconversions.query')
 @patch('dash.table.reports.api_contentads.query')
-class AdGroupAdsPlusTableTest(TestCase):
+class AdGroupAdsTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -157,7 +157,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -392,7 +392,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -468,7 +468,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -552,7 +552,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.save()
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -608,7 +608,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.save()
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -729,9 +729,6 @@ class AdGroupAdsPlusTableTest(TestCase):
         user = User.objects.create_user('some@email.si', 'secret2')
         ad_group.campaign.users.add(user)
         self.client.login(username=user.email, password='secret2')
-        user.user_permissions.add(
-            authmodels.Permission.objects.get(codename="new_content_ads_tab")
-        )
 
         params = {
             'page': 1,
@@ -741,7 +738,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'end_date': self.mock_date.isoformat(),
         }
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -755,7 +752,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         )
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -766,7 +763,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
 
-class AdGroupAdsPlusTableUpdatesTest(TestCase):
+class AdGroupAdsTableUpdatesTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -793,7 +790,7 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
 
         params = {}
         response = self.client.get(
-            reverse('ad_group_ads_plus_table_updates', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table_updates', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )

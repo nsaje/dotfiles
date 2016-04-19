@@ -253,7 +253,6 @@
   pk: 34
 - fields:
     campaign: 52
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:27:42.857957
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -263,7 +262,6 @@
   pk: 88
 - fields:
     campaign: 50
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:17:51.792860
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -273,7 +271,6 @@
   pk: 83
 - fields:
     campaign: 52
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:30:28.128320
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -283,7 +280,6 @@
   pk: 89
 - fields:
     campaign: 50
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:17:51.790618
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -293,7 +289,6 @@
   pk: 82
 - fields:
     campaign: 51
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:22:56.465060
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -303,7 +298,6 @@
   pk: 85
 - fields:
     campaign: 50
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:17:09.730979
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -313,7 +307,6 @@
   pk: 81
 - fields:
     campaign: 51
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:22:56.467611
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -323,7 +316,6 @@
   pk: 86
 - fields:
     campaign: 51
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:19:29.986239
     is_demo: true
     modified_by: [test.account@zemanta.si]
@@ -333,7 +325,6 @@
   pk: 84
 - fields:
     campaign: 52
-    content_ads_tab_with_cms: true
     created_dt: 2014-10-16 10:26:12.537955
     is_demo: true
     modified_by: [test.account@zemanta.si]
