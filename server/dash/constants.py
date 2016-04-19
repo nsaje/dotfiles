@@ -1029,13 +1029,13 @@ class CampaignGoalKPI(ConstantBase):
     NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
-        TIME_ON_SITE: 'time on site in seconds',
-        MAX_BOUNCE_RATE: 'max bounce rate %',
-        PAGES_PER_SESSION: 'pages per session',
+        TIME_ON_SITE: 'Time on Site - Seconds',
+        MAX_BOUNCE_RATE: 'Max Bounce Rate',
+        PAGES_PER_SESSION: 'Pages per Session',
         CPA: '$CPA',
-        CPC: '$CPC',
+        CPC: 'CPC',
         #        CPM: '$CPM',
-        NEW_UNIQUE_VISITORS: 'new visitors %',
+        NEW_UNIQUE_VISITORS: 'New Unique Visitors',
     }
 
 

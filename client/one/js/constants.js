@@ -1105,12 +1105,12 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION},
     ],
     campaignGoalKPIs: [
-        {name: 'time on site in seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
-        {name: 'max bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
-        {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
+        {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
+        {name: 'Pages per Session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
-        {name: 'new unique visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
-        {name: 'CPA - Setup new conversion tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
+        {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
+        {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     budgetAutomationGoals: [
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},

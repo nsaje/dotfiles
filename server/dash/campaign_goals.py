@@ -51,7 +51,7 @@ CAMPAIGN_GOAL_MAP = {
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
@@ -523,8 +523,17 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
 def eliminate_duplicates(campaign_goal_values):
     date_hash = {}
     for campaign_goal_value in campaign_goal_values:
-        date_hash[campaign_goal_value.created_dt.date()] = campaign_goal_value
-    return sorted(date_hash.values(), key=lambda x: x.created_dt)
+        cgv_type = campaign_goal_value.campaign_goal.type
+        date_hash[cgv_type] = date_hash.get(cgv_type, {})
+        date_hash[cgv_type][campaign_goal_value.created_dt.date()] = campaign_goal_value
+
+    ret = []
+    for campaign_goal_type, date_values in date_hash.iteritems():
+        if len(date_values) == 0:
+            continue
+        sorted_values = sorted(date_values.values(), key=lambda x: x.created_dt)
+        ret.extend(sorted_values)
+    return sorted(ret, key=lambda x: x.created_dt)
 
 
 def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
