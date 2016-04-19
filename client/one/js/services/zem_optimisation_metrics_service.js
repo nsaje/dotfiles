@@ -85,13 +85,13 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
         for (var i = 0; i < 5; i++) {
             columns.splice(position + i + 6, 0, {
-                name: 'Avg. Cost per Conversion',
+                name: 'Avg. CPA',
                 field: 'avg_cost_per_conversion_goal_' + i,
                 checked: true,
                 type: 'currency',
                 shown: isShown,
                 internal: isInternal,
-                help: 'Cost per acquisition.',
+                help: 'Average cost per acquisition.',
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc',

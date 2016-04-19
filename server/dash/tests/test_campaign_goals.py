@@ -253,7 +253,7 @@ class CampaignGoalsTestCase(TestCase):
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
             },
             {
-                'name': 'Avg. Cost per Conversion',
+                'name': 'Avg. CPA',
                 'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},

@@ -101,7 +101,6 @@ def format_campaign_goal(goal_type, value, conversion_goal):
     return description
 
 
-
 def create_campaign_goal(request, form, campaign, value=None, conversion_goal=None):
     if not form.is_valid():
         raise exc.ValidationError(errors=form.errors)
@@ -360,7 +359,7 @@ def get_campaign_goals(campaign, conversion_goals):
 
         conversion_goal_name = None
         if goal_type == constants.CampaignGoalKPI.CPA:
-            goal_name = 'Avg. Cost per Conversion'
+            goal_name = 'Avg. CPA'
             conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
             fields = dict(('{}'.format(k['id']), True)
                           for k in conversion_goals if k['name'] == conversion_goal_name)
