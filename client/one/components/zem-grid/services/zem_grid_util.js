@@ -121,7 +121,7 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
             if (row.level === level) {
                 if (collapsed === null)
                     collapsed = !row.collapsed;
-                setRowCollapsed(row, collapsed);
+                setRowCollapsed(grid, row, collapsed);
             }
         }
     }
