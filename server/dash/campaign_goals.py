@@ -51,7 +51,7 @@ CAMPAIGN_GOAL_MAP = {
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
@@ -154,9 +154,9 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
             request,
             campaign,
             constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
-            u'Changed campaign goal value: "{} {}"'.format(
-                value,
-                constants.CampaignGoalKPI.get_text(goal.type)
+
+            u'Changed campaign goal value: "{}"'.format(
+                CAMPAIGN_GOAL_NAME_FORMAT[goal.type].format(value)
             )
         )
 

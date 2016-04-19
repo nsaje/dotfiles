@@ -97,7 +97,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Campaign goal "time on site in seconds" set as primary')
+        self.assertEqual(settings.changes_text, 'Campaign goal "Time on Site - Seconds" set as primary')
 
     def test_cpa_goal_primary(self):
         campaign_goals.set_campaign_goal_primary(
@@ -132,7 +132,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(goal.campaign_id, 1)
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Added campaign goal "time on site in seconds"')
+        self.assertEqual(settings.changes_text, 'Added campaign goal "Time on Site - Seconds"')
 
         with self.assertRaises(exc.ValidationError):
             goal_form = forms.CampaignGoalForm({}, campaign_id=self.campaign.pk)
@@ -161,7 +161,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoal.objects.all().count())
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Deleted campaign goal "time on site in seconds"')
+        self.assertEqual(settings.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
 
         conv_goal = models.ConversionGoal.objects.create(
             goal_id='123',
@@ -235,19 +235,19 @@ class CampaignGoalsTestCase(TestCase):
 
         result = [
             {
-                'name': 'time on site in seconds',
+                'name': 'Time on Site - Seconds',
                 'conversion': None,
                 'value': 60,
                 'fields': {'total_seconds': True, 'avg_cost_per_second': True},
             },
             {
-                'name': 'pages per session',
+                'name': 'Pages per Session',
                 'conversion': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
             },
             {
-                'name': 'max bounce rate %',
+                'name': 'Max Bounce Rate',
                 'conversion': None,
                 'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
