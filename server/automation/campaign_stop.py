@@ -496,10 +496,14 @@ def _run_autopilot(campaign, daily_caps):
     return actions
 
 
-def _get_ad_group_ratios(ad_groups, per_date_data):
+def _get_ad_group_ratios(active_ad_groups, per_date_data):
+    active_ids = set(ag.id for ag in active_ad_groups)
     spend_per_ad_group = defaultdict(list)
     for key, val in per_date_data.iteritems():
         ad_group_id, _ = key
+        if ad_group_id not in active_ids:
+            continue
+
         spend_per_ad_group[ad_group_id].append(val)
 
     avg_spends = {}
