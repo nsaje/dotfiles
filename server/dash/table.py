@@ -1099,86 +1099,13 @@ class AccountsAccountsTable(object):
         return rows
 
 
-class AdGroupAdsTable(object):
-
-    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
-
-        helpers.get_ad_group(user, ad_group_id)
-        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-            select_related('campaign').\
-            prefetch_related('campaign__conversiongoal_set').get()
-
-        size = max(min(int(size or 5), 4294967295), 1)
-
-        result = reports.api_helpers.filter_by_permissions(reports.api.query(
-            start_date=start_date,
-            end_date=end_date,
-            breakdown=['article'],
-            order=[order],
-            ad_group=ad_group.id,
-            source=filtered_sources,
-        ), user)
-
-        result_pg, current_page, num_pages, count, start_index, end_index = \
-            utils.pagination.paginate(result, page, size)
-
-        rows = result_pg
-
-        if ad_group in models.AdGroup.demo_objects.all():
-            for i, row in enumerate(rows):
-                row['url'] = 'http://www.example.com/{}/{}'.format(slugify(ad_group.name), i)
-
-        totals_data = reports.api_helpers.filter_by_permissions(
-            reports.api.query(
-                start_date,
-                end_date,
-                ad_group=int(ad_group.id),
-                source=filtered_sources,
-            ), user)
-
-        ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child()
-
-        last_sync = helpers.get_last_sync(last_success_actions.values())
-
-        incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics_ad_groups(
-                start_date,
-                end_date,
-                [ad_group],
-                filtered_sources,
-            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
-
-        return {
-            'rows': rows,
-            'totals': totals_data,
-            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
-            'order': order,
-            'pagination': {
-                'currentPage': current_page,
-                'numPages': num_pages,
-                'count': count,
-                'startIndex': start_index,
-                'endIndex': end_index,
-                'size': size
-            },
-            'incomplete_postclick_metrics': incomplete_postclick_metrics
-        }
-
-
-class AdGroupAdsPlusTableUpdates(object):
+class AdGroupAdsTableUpdates(object):
 
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-
-        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
@@ -1224,7 +1151,7 @@ class AdGroupAdsPlusTableUpdates(object):
         return response_dict
 
 
-class AdGroupAdsPlusTable(object):
+class AdGroupAdsTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
@@ -1232,8 +1159,6 @@ class AdGroupAdsPlusTable(object):
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         size = max(min(int(size or 5), 4294967295), 1)
 

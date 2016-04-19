@@ -19,7 +19,7 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
     $scope.addScheduledReport = function () {
         $scope.clearErrors();
         $scope.showInProgress = true;
-        var url = $scope.baseUrl + 'export_plus/';
+        var url = $scope.baseUrl + 'export/';
         var data = {
             'type': $scope.export.type.value,
             'start_date': $scope.startDate.format(),

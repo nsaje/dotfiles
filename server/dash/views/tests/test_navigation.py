@@ -219,7 +219,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test adgroup 1',
-                'contentAdsTabWithCMS': True,
                 'state': 1,
                 'status': 1,
                 'autopilot_state': 2
@@ -249,7 +248,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 4,
                 'name': 'test adgroup 4',
-                'contentAdsTabWithCMS': True,
                 'state': 2,
                 'status': 2,
                 'autopilot_state': 2
@@ -273,7 +271,6 @@ class NavigationDataViewTest(TestCase):
             'ad_group': {
                 'id': 4,
                 'name': 'test adgroup 4',
-                'contentAdsTabWithCMS': True,
                 'state': 2,
                 'status': 2,
                 'autopilot_state': 2
@@ -318,7 +315,6 @@ class NavigationTreeViewTest(TestCase):
             "campaigns": [{
                 "adGroups": [{
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
                     "state": 1,
@@ -326,7 +322,6 @@ class NavigationTreeViewTest(TestCase):
                     "autopilot_state": 2,
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
                     "state": 1,
@@ -334,7 +329,6 @@ class NavigationTreeViewTest(TestCase):
                     "autopilot_state": 2,
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
                     "state": 2,
@@ -360,7 +354,6 @@ class NavigationTreeViewTest(TestCase):
             "campaigns": [{
                 "adGroups": [{
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
                     "state": 1,
@@ -368,7 +361,6 @@ class NavigationTreeViewTest(TestCase):
                     "autopilot_state": 2,
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
                     "state": 1,
@@ -376,7 +368,6 @@ class NavigationTreeViewTest(TestCase):
                     "autopilot_state": 2,
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
                     "state": 2,
@@ -403,7 +394,6 @@ class NavigationTreeViewTest(TestCase):
             "campaigns": [{
                 "adGroups": [
                     {
-                        "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
                         "state": 2,
@@ -433,7 +423,6 @@ class NavigationTreeViewTest(TestCase):
                 "adGroups": [
                     {
                         "archived": True,
-                        "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
                         "state": 2,

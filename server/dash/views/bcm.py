@@ -249,10 +249,11 @@ class CampaignBudgetView(api_common.BaseApiView):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt')
+        active_budget = self._get_active_budget(budget_items)
         return self.create_api_response({
-            'active': self._get_active_budget(budget_items),
+            'active': active_budget,
             'past': self._get_past_budget(budget_items),
-            'totals': self._get_budget_totals(campaign),
+            'totals': self._get_budget_totals(campaign, active_budget),
             'credits': self._get_available_credit_items(campaign),
         })
 
@@ -286,10 +287,10 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.INACTIVE,
         )]
 
-    def _get_budget_totals(self, campaign):
+    def _get_budget_totals(self, campaign, active_budget):
         data = {
             'current': {
-                'available': Decimal('0.0000'),
+                'available': sum([x['available'] for x in active_budget]),
                 'unallocated': Decimal('0.0000'),
                 'past': Decimal('0.0000'),
             },
@@ -301,23 +302,15 @@ class CampaignBudgetView(api_common.BaseApiView):
             }
         }
         for item in models.CreditLineItem.objects.filter(account=campaign.account):
-            allocated = item.get_allocated_amount()
-            if item.status != constants.CreditLineItemStatus.SIGNED:
+            if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue
-            data['current'][item.is_past() and 'past' or 'available'] += Decimal(allocated)
-            if not item.is_past():
-                data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - allocated)
+            data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - item.get_allocated_amount())
 
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
-            spend_data = item.get_spend_data(use_decimal=True)
-            if item.state() in (constants.BudgetLineItemState.ACTIVE,
-                                constants.BudgetLineItemState.PENDING):
-                data['current']['available'] -= Decimal(spend_data['total'])
-            else:
-                data['current']['past'] -= Decimal(spend_data['total'])
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
 
+            spend_data = item.get_spend_data(use_decimal=True)
             data['lifetime']['campaign_spend'] += spend_data['total']
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']

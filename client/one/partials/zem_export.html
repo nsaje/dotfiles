@@ -1,8 +1,10 @@
-<select ui-select2="config"
-        ng-model="exportType"
-        ng-change="downloadReport()"
-        data-placeholder="Download Report"
-        class="export">
-    <option value=""></option>
-    <option ng-repeat="option in options | filter:{hidden: '!true'}" value="{{option.value}}">{{option.name}}</option>
-</select>
+<ui-select
+        theme="select2"
+        search-enabled="false"
+        ng-model="export"
+        class="export-select">
+    <ui-select-match placeholder="Export">Export</ui-select-match>
+    <ui-select-choices repeat="op in exportModalTypes">
+        <div ng-click="showScheduledReportModal(op.value)">{{op.name}}</div>
+    </ui-select-choices>
+</ui-select>

@@ -395,7 +395,7 @@ class Report(object):
             source_param = result.group(2)
             publisher_param = result.group(3) or ''
             if publisher_param:
-                publisher_param = urllib.unquote(publisher_param)
+                publisher_param = urllib.unquote(publisher_param).decode('utf-8')
         return int(content_ad_id), source_param, publisher_param
 
 
@@ -426,7 +426,7 @@ class GAReport(Report):
         # by our partners.
         publisher_param = ''
         if '_z1_pub' in query_params:
-            publisher_param = query_params['_z1_pub'] or ''
+            publisher_param = query_params['_z1_pub'].decode('utf-8') or ''
 
         if content_ad_id is None or source_param == '':
             logger.warning(
