@@ -213,13 +213,13 @@
         created_by: 1
         account: 200
     model: dash.accountsettings
-    pk: 202
+    pk: 201
 
 # multiple updates (default_account_manager, default_sales_representative)
 -   fields:
         name: AccountSetting for Account 200
         default_account_manager: 2
-        default_sales_representative: 1
+        default_sales_representative: 2
         created_dt: '2015-09-23T09:57:23'
         created_by: 1
         account: 200
@@ -229,8 +229,8 @@
 # no updates
 -   fields:
         name: AccountSetting for Account 200
-        default_account_manager: 1
-        default_sales_representative: 1
+        default_account_manager: 2
+        default_sales_representative: 2
         created_dt: '2015-09-23T09:57:24'
         created_by: 1
         account: 200
@@ -240,8 +240,8 @@
 # no updates /w changes_text
 -   fields:
         name: AccountSetting for Account 200
-        default_account_manager: 1
-        default_sales_representative: 1
+        default_account_manager: 2
+        default_sales_representative: 2
         created_dt: '2015-09-23T09:57:25'
         created_by: 1
         changes_text: 'some text'
@@ -252,7 +252,7 @@
 # update /w changes_text
 -   fields:
         name: AccountSetting for Account 200
-        default_account_manager: 1
+        default_account_manager: 2
         default_sales_representative: 1
         created_dt: '2015-09-23T09:57:26'
         created_by: 1

@@ -287,7 +287,6 @@ class CampaignSettingsTest(TestCase):
             'campaign_manager': User.objects.get(pk=1),
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],
-            'service_fee': Decimal('0.2000'),
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
             'automatic_campaign_stop': False,
