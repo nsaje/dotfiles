@@ -56,7 +56,7 @@ beforeEach(function () {
 
         // wait for navigation to load
         browser.wait(function () {
-            return element(by.css('#nav div .account-name')).isPresent();
+            return element(by.css('#nav div .account-group')).isPresent();
         });
 
         browser.driver.sleep(3000).then(function () {
@@ -77,7 +77,7 @@ describe('Demo loading', function () {
 describe('Campaign management', function () {
     var elt = null;
     function newCampaign () {
-        element(by.css('#nav div .account-name')).click();
+        element(by.css('#nav div .account-group')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/accounts\/[0-9]+\/campaigns/);
         element(by.cssContainingText('.btn-add', '+ Campaign')).click();
     }
@@ -110,7 +110,7 @@ describe('Campaign management', function () {
 
     function enableAdGroup () {
         element(by.cssContainingText('.btn-success', 'Enabled')).click();
-        element(by.css('#nav div .account-name')).click();
+        element(by.css('#nav div .account-group')).click();
     }
 
     function checkIfPresentInLists () {
