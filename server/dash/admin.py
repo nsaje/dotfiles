@@ -507,7 +507,6 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'account_',
         'is_demo',
         'is_archived_',
-        'content_ads_tab_with_cms_',
         'created_dt',
         'modified_dt',
         'settings_',
@@ -521,13 +520,6 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     def view_on_site(self, obj):
         return '/ad_groups/{}/ads'.format(obj.id)
-
-    def content_ads_tab_with_cms_(self, obj):
-        return obj.content_ads_tab_with_cms
-    content_ads_tab_with_cms_.allow_tags = True
-    content_ads_tab_with_cms_.short_description = 'Has CMS'
-    content_ads_tab_with_cms_.boolean = True
-    content_ads_tab_with_cms_.admin_order_field = 'content_ads_tab_with_cms'
 
     def is_archived_(self, obj):
         try:

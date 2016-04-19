@@ -58,7 +58,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
                     then: function () {}
                 };
             }},
-            sourcesExportPlusAllowed: {
+            sourcesExportAllowed: {
                 get: mockApiFunc
             },
             adGroupOverview: {

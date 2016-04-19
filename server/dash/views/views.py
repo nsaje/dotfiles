@@ -487,7 +487,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         response = {
             'name': ad_group.name,
             'id': ad_group.id,
-            'content_ads_tab_with_cms': ad_group.content_ads_tab_with_cms
         }
 
         return self.create_api_response(response)
@@ -1137,7 +1136,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusUpload(api_common.BaseApiView):
+class AdGroupAdsUpload(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
@@ -1166,7 +1165,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -1216,7 +1215,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         return self.create_api_response({'batch_id': batch.pk})
 
 
-class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+class AdGroupAdsUploadReport(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
@@ -1240,7 +1239,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
-class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+class AdGroupAdsUploadCancel(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
@@ -1267,7 +1266,7 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+class AdGroupAdsUploadStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
@@ -1315,7 +1314,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         errors = {}
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
-                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                errors['report_url'] = reverse('ad_group_ads_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(
                     batch.num_errors, 's' if batch.num_errors > 1 else '')

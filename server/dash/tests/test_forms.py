@@ -398,7 +398,7 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertTrue(form.is_valid())
 
 
-class AdGroupAdsPlusUploadFormTest(TestCase):
+class AdGroupAdsUploadFormTest(TestCase):
     def setUp(self):
         self.batch_name = 'Test batch name'
         self.url = 'http://example.com'
@@ -714,7 +714,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         if data_updates is not None:
             data.update(data_updates)
 
-        return forms.AdGroupAdsPlusUploadForm(
+        return forms.AdGroupAdsUploadForm(
             data,
             {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )

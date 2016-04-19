@@ -745,7 +745,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.CAN_UPDATE_STATE
         ]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
         ad_group_source.ad_group.save(req)
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
@@ -769,8 +768,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.CAN_UPDATE_STATE
         ]
-
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
@@ -806,8 +803,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_STATE
         ]
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
-
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
                                                              allowed_sources)
@@ -827,8 +822,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.CAN_UPDATE_STATE
         ]
-
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
@@ -854,8 +847,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
-
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
                                                              allowed_sources)
@@ -874,8 +865,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.source.maintenance = True
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
-
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
                                                              allowed_sources)
@@ -892,8 +881,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         allowed_sources = set([ad_group_source.source_id])
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-
-        ad_group_source.ad_group.content_ads_tab_with_cms = True
 
         ad_group_source.can_manage_content_ads = False
 
@@ -916,7 +903,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.target_regions = ['693']
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
@@ -937,7 +923,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.target_regions = ['US-IL']
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
@@ -958,7 +943,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.target_regions = ['693', 'US-IL']
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, ad_group_source_settings,
@@ -983,7 +967,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_STATE,
             constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         ]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         action_log = actionlog.models.ActionLog(
             state=actionlog.constants.ActionState.WAITING,
@@ -1023,7 +1006,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_STATE,
             constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         ]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         action_log = actionlog.models.ActionLog(
             state=actionlog.constants.ActionState.WAITING,
@@ -1063,8 +1045,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_STATE,
             constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         ]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
-
         for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
             new_adgs_settings = adgs_settings.copy_settings()
             new_adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE

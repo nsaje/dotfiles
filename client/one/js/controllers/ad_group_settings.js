@@ -133,7 +133,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
 
                 if ($scope.user.showOnboardingGuidance && goToContentAds) {
                     $timeout(function () {
-                        $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
+                        $state.go('main.adGroups.ads', {id: $scope.settings.id});
                     }, 100);
                 }
             },

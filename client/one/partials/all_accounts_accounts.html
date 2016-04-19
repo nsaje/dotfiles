@@ -21,29 +21,19 @@
 
             <div class="loader" ng-show="requestInProgress"></div>
 
-            <div ng-if="!hasPermission('zemauth.exports_plus')" class="button-bar-item export-container">
+            <div class="button-bar-item pull-right">
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
                     base-url="'api/accounts/'"
-                    options="exportOptions">
-                </zem-export>
-            </div>
-
-            <div ng-if="hasPermission('zemauth.exports_plus')" class="button-bar-item pull-right">
-              <zem-internal-feature ng-if="isPermissionInternal('zemauth.exports_plus')" popover-placement="bottom"></zem-internal-feature>
-                <zem-export-plus
-                    start-date="dateRange.startDate"
-                    end-date="dateRange.endDate"
-                    base-url="'api/accounts/'"
-                    options="exportPlusOptions"
+                    options="exportOptions"
                     columns="columns"
                     order="order"
                     level="level"
                     export-sources="false"
                     zem-has-permission="hasPermission"
                     zem-is-permission-internal="isPermissionInternal">
-                </zem-export-plus>
+                </zem-export>
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>

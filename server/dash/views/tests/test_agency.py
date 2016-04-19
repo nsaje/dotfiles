@@ -859,7 +859,6 @@ class AdGroupAgencyTest(AgencyViewTestCase):
 
         self.add_permissions([
             'ad_group_agency_tab_view',
-            'new_content_ads_tab',
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
