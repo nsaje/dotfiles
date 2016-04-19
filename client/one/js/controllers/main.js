@@ -361,47 +361,19 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         };
     };
 
-    $scope.getAdGroupExtendedStatus = function(adGroup, campaign) {
-        if (adGroup.reloading) {
-            return constants.adGroupExtendedStatus.RELOADING;
-        }
-
-        if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
-            return constants.adGroupExtendedStatus.STOPPED;
-        }
-
-        if (campaign.landingMode) {
-            return constants.adGroupExtendedStatus.LANDING;
-        }
-
-        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
-            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
-            return constants.adGroupExtendedStatus.INACTIVE;
-        }
-
-        if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
-              adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
-            return constants.adGroupExtendedStatus.AUTOPILOT;
-        }
-
-        return constants.adGroupExtendedStatus.ACTIVE;
-    };
-
     $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        switch($scope.getAdGroupExtendedStatus(adGroup, campaign)) {
-        case constants.adGroupExtendedStatus.RELOADING:
+        if (adGroup.reloading) {
             return 'adgroup-status-reloading-icon';
-        case constants.adGroupExtendedStatus.STOPPED:
+        }
+
+        if (adGroup.active === constants.infoboxStatus.STOPPED) {
             return 'adgroup-status-stopped-icon';
-        case constants.adGroupExtendedStatus.LANDING:
+        } else if (adGroup.active === constants.infoboxStatus.LANDING_MODE) {
             return ($state.includes('main.adGroups', {id: adGroup.id.toString()})) ?
                 'adgroup-status-landing-mode-selected-icon' : 'adgroup-status-landing-mode-icon';
-        case constants.adGroupExtendedStatus.INACTIVE:
+        } else if (adGroup.active === constants.infoboxStatus.INACTIVE) {
             return 'adgroup-status-inactive-icon';
-        case constants.adGroupExtendedStatus.AUTOPILOT:
+        } else if (adGroup.active === constants.infoboxStatus.AUTOPILOT) {
             return 'adgroup-status-autopilot-icon';
         }
 

@@ -261,14 +261,18 @@ class AdGroupOverview(api_common.BaseApiView):
         async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
         async_perf_query.start()
 
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         ad_group_settings = ad_group.get_current_settings()
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group)\
+                                                                         .group_current_settings()\
+                                                                         .filter_by_sources(filtered_sources)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
+            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, ad_groups_sources_settings),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
