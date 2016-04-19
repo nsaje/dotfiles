@@ -111,6 +111,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                     function (data) {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
+                    },
+                    function () {
+                        zemNavigationService.notifyAdGroupReloading(adgroupId, false);
                     }
                 );
             },
