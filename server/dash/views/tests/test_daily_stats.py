@@ -442,8 +442,8 @@ class AdGroupAdsDailyStatsTest(TestCase):
             'data': {
                 'goal_fields': {
                     'avg_tos': {
-                        'id': 'time on site in seconds',
-                        'name': 'time on site in seconds'
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
                     },
                     'avg_cost_per_conversion_goal_1': {
                         'id': 'avg_cost_per_conversion_goal_1',
@@ -466,20 +466,20 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'name': '$CPA - test conversion goal 5'
                     },
                     'cpc': {
-                        'id': '$CPC',
-                        'name': '$CPC'
+                        'id': 'CPC',
+                        'name': 'CPC'
                     },
                     'total_pageviews': {
-                        'id': 'pages per session',
-                        'name': 'pages per session'
+                        'id': 'Pages per Session',
+                        'name': 'Pages per Session'
                     },
                     'bounce_rate': {
-                        'id': 'max bounce rate %',
-                        'name': 'max bounce rate %'
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
                     },
                     'percent_new_users': {
-                        'id': 'new visitors %',
-                        'name': 'new visitors %'
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
                     },
                 },
                 'chart_data': [{
@@ -601,8 +601,8 @@ class AdGroupAdsDailyStatsTest(TestCase):
             'data': {
                 'goal_fields': {
                     'avg_tos': {
-                        'id': 'time on site in seconds',
-                        'name': 'time on site in seconds'
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
                     },
                     'avg_cost_per_conversion_goal_1': {
                         'id': 'avg_cost_per_conversion_goal_1',
@@ -625,20 +625,20 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'name': '$CPA - Test Cg'
                     },
                     'cpc': {
-                        'id': '$CPC',
-                        'name': '$CPC'
+                        'id': 'CPC',
+                        'name': 'CPC'
                     },
                     'total_pageviews': {
-                        'id': 'pages per session',
-                        'name': 'pages per session'
+                        'id': 'Pages per Session',
+                        'name': 'Pages per Session'
                     },
                     'bounce_rate': {
-                        'id': 'max bounce rate %',
-                        'name': 'max bounce rate %'
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
                     },
                     'percent_new_users': {
-                        'id': 'new visitors %',
-                        'name': 'new visitors %'
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
                     },
                 },
                 'chart_data': [{
@@ -756,8 +756,8 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             'data': {
                 'goal_fields': {
                     'avg_tos': {
-                        'id': 'time on site in seconds',
-                        'name': 'time on site in seconds'
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
                     },
                     'avg_cost_per_conversion_goal_1': {
                         'id': 'avg_cost_per_conversion_goal_1',
@@ -780,20 +780,20 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'name': '$CPA - test conversion goal 5'
                     },
                     'cpc': {
-                        'id': '$CPC',
-                        'name': '$CPC'
+                        'id': 'CPC',
+                        'name': 'CPC'
                     },
                     'total_pageviews': {
-                        'id': 'pages per session',
-                        'name': 'pages per session'
+                        'id': 'Pages per Session',
+                        'name': 'Pages per Session'
                     },
                     'bounce_rate': {
-                        'id': 'max bounce rate %',
-                        'name': 'max bounce rate %'
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
                     },
                     'percent_new_users': {
-                        'id': 'new visitors %',
-                        'name': 'new visitors %'
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
                     },
                 },
                 'chart_data': [{

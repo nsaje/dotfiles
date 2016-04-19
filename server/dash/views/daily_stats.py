@@ -119,6 +119,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             result['goal_fields'] = campaign_goals.inverted_campaign_goal_map(
                 conversion_goals
             )
+
             result['campaign_goals'] = dict(
                 campaign_goals.get_campaign_goal_metrics(
                     campaign,

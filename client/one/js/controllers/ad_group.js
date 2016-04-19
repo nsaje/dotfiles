@@ -66,6 +66,10 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             $scope.campaign && $scope.campaign.landingMode;
     };
 
+    $scope.manageBudget = function () {
+        $state.go('main.campaigns.budget', {id: $scope.campaign.id});
+    };
+
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
         data[key] = value;

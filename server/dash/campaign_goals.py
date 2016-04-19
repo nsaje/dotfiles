@@ -154,9 +154,9 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
             request,
             campaign,
             constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
-            u'Changed campaign goal value: "{} {}"'.format(
-                value,
-                constants.CampaignGoalKPI.get_text(goal.type)
+
+            u'Changed campaign goal value: "{}"'.format(
+                CAMPAIGN_GOAL_NAME_FORMAT[goal.type].format(value)
             )
         )
 
@@ -523,8 +523,17 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
 def eliminate_duplicates(campaign_goal_values):
     date_hash = {}
     for campaign_goal_value in campaign_goal_values:
-        date_hash[campaign_goal_value.created_dt.date()] = campaign_goal_value
-    return sorted(date_hash.values(), key=lambda x: x.created_dt)
+        cgv_type = campaign_goal_value.campaign_goal.type
+        date_hash[cgv_type] = date_hash.get(cgv_type, {})
+        date_hash[cgv_type][campaign_goal_value.created_dt.date()] = campaign_goal_value
+
+    ret = []
+    for campaign_goal_type, date_values in date_hash.iteritems():
+        if len(date_values) == 0:
+            continue
+        sorted_values = sorted(date_values.values(), key=lambda x: x.created_dt)
+        ret.extend(sorted_values)
+    return sorted(ret, key=lambda x: x.created_dt)
 
 
 def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):
