@@ -334,11 +334,12 @@ class CampaignAdmin(admin.ModelAdmin):
     form = dash_forms.CampaignAdminForm
 
     def save_model(self, request, obj, form, change):
-        campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
-        new_settings = obj.get_current_settings().copy_settings()
-        new_settings.automatic_campaign_stop = campaign_stop
-        obj.save(request)
-        new_settings.save(request)
+        with transaction.atomic():
+            campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+            new_settings = obj.get_current_settings().copy_settings()
+            new_settings.automatic_campaign_stop = campaign_stop
+            obj.save(request)
+            new_settings.save(request)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
