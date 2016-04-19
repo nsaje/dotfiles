@@ -98,6 +98,18 @@ class AccountAgencySettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
 
+    def test_duplicated_account_name(self):
+        form = forms.AccountAgencySettingsForm({
+            'id': 1,
+            'name': 'test account 1',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+            'service_fee': 1,
+            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
+            })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('name'))
+
 
 class AdGroupSettingsFormTest(TestCase):
     fixtures = ['test_models.yaml']
@@ -386,8 +398,7 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertTrue(form.is_valid())
 
 
-class AdGroupAdsPlusUploadFormTest(TestCase):
-
+class AdGroupAdsUploadFormTest(TestCase):
     def setUp(self):
         self.batch_name = 'Test batch name'
         self.url = 'http://example.com'
@@ -700,7 +711,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         if data_updates is not None:
             data.update(data_updates)
 
-        return forms.AdGroupAdsPlusUploadForm(
+        return forms.AdGroupAdsUploadForm(
             data,
             {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )

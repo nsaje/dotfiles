@@ -138,26 +138,6 @@ class AdGroupSettingsTest(TestCase):
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2"'
         )
 
-    def test_get_changes_text_no_permissions(self):
-        user = User.objects.create()
-        old_settings = models.AdGroupSettings(ad_group_id=1)
-        new_settings = models.AdGroupSettings.objects.get(id=1)
-        new_settings.changes_text = None
-
-        user = User.objects.create(email="test.user@test.com")
-
-        self.assertEqual(
-            models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
-            'Daily budget set to "$50.00", '
-            'Locations set to "United States", '
-            'End date set to "2014-06-05", '
-            'Max CPC bid set to "$1.00", '
-            'Device targeting set to "Mobile", '
-            'State set to "Enabled", '
-            'Ad group name set to "AdGroup name", '
-            'Start date set to "2014-06-04"'
-        )
-
 
 class AdGroupRunningStatusTest(TestCase):
     fixtures = ['test_models.yaml']

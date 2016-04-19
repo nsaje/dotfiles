@@ -56,7 +56,7 @@ describe('AddScheduledReportModalCtrl', function () {
             scheduledReports: {
                 addScheduledReport: mockApiFunc
             },
-            exportPlusAllowed: {
+            exportAllowed: {
                 get: mockApiFunc
             }
         };
@@ -81,7 +81,7 @@ describe('AddScheduledReportModalCtrl', function () {
             $scope.$digest();
 
             expect(api.scheduledReports.addScheduledReport).toHaveBeenCalledWith(
-                'test/export_plus/',
+                'test/export/',
                 {
                     type: 'view-csv',
                     start_date : moment('2015-01-12').format(),
@@ -124,7 +124,7 @@ describe('AddScheduledReportModalCtrl', function () {
             $scope.$digest();
 
             expect(api.scheduledReports.addScheduledReport).toHaveBeenCalledWith(
-              'test/export_plus/',
+              'test/export/',
                 {
                     type: 'view-csv',
                     start_date : moment('2015-01-12').format(),
@@ -167,7 +167,7 @@ describe('AddScheduledReportModalCtrl', function () {
             $scope.$digest();
 
             expect(api.scheduledReports.addScheduledReport).toHaveBeenCalledWith(
-              'test/export_plus/',
+              'test/export/',
                 {
                     type: 'view-csv',
                     start_date : moment('2015-01-12').format(),

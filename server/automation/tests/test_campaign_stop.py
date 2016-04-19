@@ -538,6 +538,37 @@ class CalculateDailySpendsTestCase(TestCase):
         self.assertEqual(450, daily_caps[1])
         self.assertEqual(450, daily_caps[2])
 
+    @patch('utils.dates_helper.local_today')
+    def test_calculate_daily_caps_ad_group_inactive(self, mock_local_today):
+        today = datetime.date(2016, 4, 5)
+        mock_local_today.return_value = today
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        new_settings = ag1.get_current_settings().copy_settings()
+        new_settings.end_date = datetime.date(2016, 4, 4)
+        new_settings.save(None)
+
+        new_settings = ag2.get_current_settings().copy_settings()
+        new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+        new_settings.save(None)
+
+        remaining_today, _, _ = campaign_stop._get_minimum_remaining_budget(campaign)
+        self.assertEqual(Decimal(820), remaining_today)
+
+        active_ad_groups = campaign.adgroup_set.all().filter_active()
+        self.assertEqual(1, active_ad_groups.count())
+
+        per_date_spend = {
+            (1, datetime.date(2016, 4, 4)): Decimal('100'),
+            (2, datetime.date(2016, 4, 4)): Decimal('100'),
+        }
+
+        daily_caps = campaign_stop._calculate_daily_caps(campaign, per_date_spend)
+        self.assertEqual(820, daily_caps[1])
+
 
 class PrepareActiveSourceForAutopilotTestCase(TestCase):
 

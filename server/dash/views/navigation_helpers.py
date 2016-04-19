@@ -22,7 +22,6 @@ def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings, inc
     ad_group_dict = {
         'id': ad_group.id,
         'name': ad_group.name,
-        'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
         'status': running_status,
         'state': state,
         'autopilot_state': ad_group_settings.autopilot_state if ad_group_settings
