@@ -38,7 +38,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. Cost Per Second',
+            name: 'Avg. Cost per Second',
             field: 'avg_cost_per_second',
             checked: true,
             type: 'currency',
@@ -49,7 +49,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. Cost Per Pageview',
+            name: 'Avg. Cost per Pageview',
             field: 'avg_cost_per_pageview',
             checked: true,
             type: 'currency',
@@ -60,7 +60,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. Cost For Unbounced Visitor',
+            name: 'Avg. Cost for Unbounced Visitor',
             field: 'avg_cost_per_non_bounced_visitor',
             checked: true,
             type: 'currency',
@@ -71,7 +71,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. Cost For New Visitor',
+            name: 'Avg. Cost for New Visitor',
             field: 'avg_cost_for_new_visitor',
             checked: true,
             type: 'currency',
@@ -85,7 +85,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
         for (var i = 0; i < 5; i++) {
             columns.splice(position + i + 6, 0, {
-                name: 'Avg. cost per conversion',
+                name: 'Avg. Cost per Conversion',
                 field: 'avg_cost_per_conversion_goal_' + i,
                 checked: true,
                 type: 'currency',
