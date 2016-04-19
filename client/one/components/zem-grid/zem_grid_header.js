@@ -40,6 +40,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
             });
         },
         controller: [function () {
+            console.log(this.grid.header.columns);
             this.getCellStyle = function (index) {
                 var width = 'auto';
                 if (this.grid.ui.columnWidths[index]) {

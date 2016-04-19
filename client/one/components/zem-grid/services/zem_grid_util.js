@@ -13,12 +13,14 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
     var columnsWidths = [];
     for (var i = 0; i < columns.length; ++i) columnsWidths.push(0);
 
-    function load (dataSource) {
+    function load(dataSource) {
         var deferred = $q.defer();
         dataSource.getData().then(
             function (data) {
                 var grid = {
-                    header: {},
+                    header: {
+                        columns: columns
+                    },
                     body: {},
                     footer: {},
                     meta: {
@@ -38,7 +40,7 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
         return deferred.promise;
     }
 
-    function loadMore (grid, row, size) {
+    function loadMore(grid, row, size) {
         var deferred = $q.defer();
         grid.meta.source.getData(row.data, size).then(
             function (data) {
@@ -50,7 +52,7 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
         return deferred.promise;
     }
 
-    function parseData (grid, data) {
+    function parseData(grid, data) {
         // Level 0 -> total data and level 1 breakdown
         var totals = data.rows[0];
         var breakdown = totals.breakdown;
@@ -59,14 +61,14 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
         grid.body.rows = parseBreakdown(null, breakdown);
     }
 
-    function parseDataInplace (grid, row, data) {
+    function parseDataInplace(grid, row, data) {
         var rows = parseBreakdown(row.parent, data);
-        var idx = rows.indexOf(row);
         rows.pop();
+        var idx = grid.body.rows.indexOf(row);
         grid.body.rows.splice.apply(grid.body.rows, [idx, 0].concat(rows));
     }
 
-    function parseBreakdown (parent, breakdown) {
+    function parseBreakdown(parent, breakdown) {
         var rows = [];
         var level = breakdown.level;
 
@@ -98,7 +100,7 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
         return rows;
     }
 
-    function setRowCollapsed (grid, gridRow, collapsed) {
+    function setRowCollapsed(grid, gridRow, collapsed) {
         gridRow.collapsed = collapsed;
         var idx = grid.body.rows.indexOf(gridRow);
         while (++idx < grid.body.rows.length) {
@@ -108,11 +110,11 @@ oneApp.factory('zemGridUtil', ['$q', 'zemGridConstants', function ($q, zemGridCo
         }
     }
 
-    function toggleCollapse (grid, gridRow) {
+    function toggleCollapse(grid, gridRow) {
         setRowCollapsed(grid, gridRow, !gridRow.collapsed);
     }
 
-    function toggleCollapseLevel (grid, level) {
+    function toggleCollapseLevel(grid, level) {
         var collapsed = null;
         for (var i = 0; i < grid.body.rows.length; ++i) {
             var row = grid.body.rows[i];

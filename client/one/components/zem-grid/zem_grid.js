@@ -12,8 +12,8 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridUtil', 'zemDa
         controller: ['$scope', function ($scope) {
             var ctrl = this;
 
+            ctrl.grid = {header:{columns:['a','b']}} // FIXME: header watch not working without this
             ctrl.dataSource = new zemDataSourceService();
-
             ctrl.broadcastEvent = broadcastEvent;
 
             activate();
