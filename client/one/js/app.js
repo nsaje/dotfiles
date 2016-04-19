@@ -27,6 +27,8 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $urlRouterProvider.when('/demo_mode', ['$location', function ($location) {
         window.location = $location.absUrl();
     }]);
+    $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
+
     $urlRouterProvider.otherwise('/');
     $urlRouterProvider.rule(function ($injector, $location) {
         var path = $location.url();
@@ -182,6 +184,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return zemNavigationService.getAdGroup($stateParams.id);
                 }],
             },
+        })
+        .state('main.adGroups.adsplus', {
+            url: '/ads_plus',
+            abstract: true,
         })
         .state('main.adGroups.ads', {
             url: '/ads',
