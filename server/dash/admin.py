@@ -1044,6 +1044,14 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
 
     resource_class = CreditLineItemResource
 
+    def get_actions(self, request):
+        actions = super(CreditLineItemAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (

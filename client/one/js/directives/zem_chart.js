@@ -348,7 +348,6 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.EFFECTIVE_DATA_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.EFFECTIVE_MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.TOTAL_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.BILLING_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.LICENSE_FEE] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};

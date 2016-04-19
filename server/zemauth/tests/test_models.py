@@ -11,7 +11,7 @@ class UserManagerTestCase(test.TestCase):
         email_lowercase = 'normal@normal.com'
         user = models.User.objects.create_user(email_lowercase, password='123')
         self.assertEqual(user.email, email_lowercase)
-        self.assertIs(user.username, u'')
+        self.assertIs(user.username, None)
         self.assertTrue(user.has_usable_password())
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
@@ -20,7 +20,7 @@ class UserManagerTestCase(test.TestCase):
         email_lowercase = 'normal@normal.com'
         user = models.User.objects.create_superuser(email_lowercase, password='123')
         self.assertEqual(user.email, email_lowercase)
-        self.assertIs(user.username, u'')
+        self.assertIs(user.username, None)
         self.assertTrue(user.has_usable_password())
 
     def test_create_user_email_domain_normalize_rfc3696(self):

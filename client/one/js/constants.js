@@ -39,7 +39,6 @@ var constants = {
         EFFECTIVE_DATA_COST: 'e_data_cost',
         MEDIA_COST: 'media_cost',
         EFFECTIVE_MEDIA_COST: 'e_media_cost',
-        TOTAL_COST: 'total_cost',
         BILLING_COST: 'billing_cost',
         LICENSE_FEE: 'license_fee',
         CPC: 'cpc',
@@ -698,7 +697,6 @@ var options = {
     actualCostChartMetrics: [
         {name: 'Actual Media Spend', value: constants.chartMetric.MEDIA_COST},
         {name: 'Actual Data Cost', value: constants.chartMetric.DATA_COST},
-        {name: 'Actual Total Spend', value: constants.chartMetric.TOTAL_COST},
     ],
     iabCategories: [
         {name: 'IAB1 - Arts & Entertainment', value: constants.iabCategory.IAB1},
