@@ -8,6 +8,9 @@ from django.test import TestCase
 import actionlog.constants
 from automation import campaign_stop
 import dash.models
+import reports.models
+from django.db import connection
+
 from utils import dates_helper, test_helper
 
 
@@ -760,3 +763,88 @@ class UpdateCampaignsInLandingTestCase(TestCase):
 
         self.assertEqual(1, len(dash.models.Campaign.objects.all().filter_landing()))
         campaign_stop.update_campaigns_in_landing()
+
+
+class MinimumBudgetAmountTestCase(TestCase):
+    fixtures = ['test_campaign_stop.yaml']
+
+    @patch('utils.dates_helper.local_today')
+    @patch('utils.dates_helper.utc_now')
+    def test_is_current_time_valid_for_amount_editing(self, mock_utc_now, mock_local_today):
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        today = datetime.datetime(2016, 4, 5, 10, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertFalse(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 12, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertTrue(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 23, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertTrue(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 8, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertFalse(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 11, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertFalse(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+    @patch('utils.dates_helper.local_today')
+    def test_get_minimum_budget_amount(self, mock_local_today):
+        mock_local_today.return_value = datetime.date(2016, 4, 5)
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(dash.models.BudgetLineItem.objects.get(pk=1)),
+            None  # not active
+        )
+
+        budget = dash.models.BudgetLineItem.objects.get(pk=6)
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget),
+            Decimal('294.4444444444444444444444444')  # max daily budgets without spend
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            date=datetime.date(2016, 4, 4),
+            media_spend_nano=225000000000,
+            license_fee_nano=22500000000,
+            data_spend_nano=0,
+            budget=budget,
+        )
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget),
+            Decimal('541.9444444444444444444444444')  # max daily budgets without spend
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            date=datetime.date(2016, 4, 5),
+            media_spend_nano=125000000000,
+            license_fee_nano=12500000000,
+            data_spend_nano=0,
+            budget=budget,
+        )
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget),
+            Decimal('679.4444444444444444444444444')  # max daily budgets without spend
+        )

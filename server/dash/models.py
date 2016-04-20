@@ -2734,21 +2734,6 @@ class BudgetLineItem(FootprintModel):
                     -delta.quantize(Decimal('1.00'))
                 )
             )
-        if self.previous_value('amount') > self.amount:
-            self._validate_smaller_amount()
-
-    def _validate_smaller_amount(self):
-        spend_cc = self.get_spend_data()['total_cc']
-        if not spend_cc:
-            return
-        reserve = self.get_reserve_amount_cc(factor_offset=1)
-        minimum_amount = int(float(spend_cc + reserve) / TO_CC_MULTIPLIER + 1)
-        if self.amount < minimum_amount:
-            raise ValidationError(
-                'Budget exceeds the minimum budget amount by ${}.'.format(
-                    Decimal(minimum_amount - self.amount).quantize(Decimal('1.00'))
-                )
-            )
 
     class QuerySet(models.QuerySet):
 
