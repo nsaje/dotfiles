@@ -1449,6 +1449,21 @@ class AdGroup(models.Model):
                 values_list('ad_group_id', flat=True)
             return self.filter(id__in=active_ad_group_ids)
 
+        def filter_landing(self):
+            related_settings = AdGroupSettings.objects.all().filter(
+                ad_group__in=self
+            ).group_current_settings()
+
+            filtered = AdGroupSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                landing_mode=True
+            ).values_list(
+                'ad_group__id', flat=True
+            )
+
+            return self.filter(pk__in=filtered)
+
     class Meta:
         ordering = ('name',)
 

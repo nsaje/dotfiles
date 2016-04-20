@@ -1210,6 +1210,8 @@ class AdGroupAgency(api_common.BaseApiView):
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
             if new_settings.created_by is None:
                 changed_by = automation.settings.AUTOMATION_AI_NAME
+                if new_settings.system_user:
+                    changed_by = constants.SystemUserType.get_text(new_settings.system_user)
             else:
                 changed_by = new_settings.created_by.email
             history.append({
