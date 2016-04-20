@@ -410,7 +410,7 @@ def _resume_campaign(campaign):
 def _wrap_up_landing(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes='Campaign landed. Ad groups were paused and campaign was switched out of landing mode.'
+        notes='Campaign landed - no ad groups are left running.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=True)
 
