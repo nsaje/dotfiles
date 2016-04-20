@@ -2727,7 +2727,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2837,7 +2837,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
