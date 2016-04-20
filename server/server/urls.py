@@ -564,6 +564,6 @@ urlpatterns += [
 urlpatterns += [url(r'^tos/$', TemplateView.as_view(template_name='tos.html'))]
 
 urlpatterns += [
-    url(r'^api/', django.views.defaults.page_not_found),
+    url(r'^api/', django.views.defaults.page_not_found, {'exception': None}),
     url(r'^', dash.views.views.index, name='index')
 ]
