@@ -102,7 +102,7 @@ def get_publishers_data_and_conversion_goals(
                                            show_blacklisted_publishers,
                                            adg_blacklisted_publishers)
 
-    if publishers_data and can_see_conversion_goals:
+    if publishers_data:
         touchpoint_data = _get_conversion_goals(start_date,
                                                 end_date,
                                                 touchpoint_breakdown_fields,

@@ -1966,7 +1966,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=[],
+            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
             constraints_list=[],
         )
 
@@ -1976,7 +1976,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=[],
+            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
             constraints_list=[],
         )
 
@@ -1995,6 +1995,11 @@ class AdGroupPublishersTableTest(TestCase):
             u'domain_link': u'http://example.com',
             u'blacklisted': u'Active',
             u'can_blacklist_publisher': True,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
             u'ctr': 100.0,
             u'exchange': u'Adiant',
             u'cpc': 1.3,
