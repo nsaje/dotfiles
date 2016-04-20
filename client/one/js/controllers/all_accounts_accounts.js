@@ -289,7 +289,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'impressions', 'cost', 'data_cost', 'cpc',
+                'clicks', 'impressions', 'ctr', 'cost', 'data_cost', 'cpc',
                 'credit_projection', 'spend_projection',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'total_fee', 'flat_fee'

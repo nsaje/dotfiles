@@ -683,6 +683,7 @@ var options = {
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     legacyCostChartMetrics: [
