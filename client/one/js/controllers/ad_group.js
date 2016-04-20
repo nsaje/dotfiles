@@ -10,7 +10,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             route: 'main.adGroups.ads',
             active: true,
             hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
-                     $scope.adGroup && $scope.adGroup.archived),
+                        $scope.adGroup && $scope.adGroup.archived),
         }, {
             heading: 'Media Sources',
             route: 'main.adGroups.sources',
@@ -41,25 +41,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view'),
         }];
 
-        if ($scope.adGroup.contentAdsTabWithCMS) {
-            tabs.splice(0, 1, {
-                heading: 'Content Ads',
-                route: 'main.adGroups.adsPlus',
-                active: true,
-                hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
-                         $scope.adGroup && $scope.adGroup.archived),
-            });
-        } else if ($scope.hasPermission('zemauth.new_content_ads_tab')) {
-            tabs.push({
-                heading: 'Content Ads+',
-                route: 'main.adGroups.adsPlus',
-                active: false,
-                hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
-                         $scope.adGroup && $scope.adGroup.archived),
-                internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab'),
-            });
-        }
-
         return tabs;
     };
 
@@ -83,6 +64,10 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     $scope.isCampaignLanding = function () {
         return $scope.adGroup && $scope.adGroup.state === constants.adGroupSettingsState.ACTIVE &&
             $scope.campaign && $scope.campaign.landingMode;
+    };
+
+    $scope.manageBudget = function () {
+        $state.go('main.campaigns.budget', {id: $scope.campaign.id});
     };
 
     $scope.setAdGroupData = function (key, value) {

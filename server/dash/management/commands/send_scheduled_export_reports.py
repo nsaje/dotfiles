@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from dash import models
 from dash import constants
 from dash import scheduled_report
-from dash import export_plus
+from dash import export
 
 from utils.command_helpers import ExceptionCommand
 from utils.statsd_helper import statsd_timer
@@ -36,7 +36,7 @@ class Command(ExceptionCommand):
                 report_log.end_date = end_date
                 report_log.recipient_emails = ', '.join(email_adresses)
 
-                report_contents, report_filename = export_plus.get_report_from_export_report(sr.report, start_date, end_date)
+                report_contents, report_filename = export.get_report_from_export_report(sr.report, start_date, end_date)
                 report_log.report_filename = report_filename
 
                 email_helper.send_scheduled_export_report(

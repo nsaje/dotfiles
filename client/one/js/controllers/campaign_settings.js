@@ -86,7 +86,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                         zemNavigationService.addAdGroupToCache($scope.campaign.id, {
                             id: adGroupData.id,
                             name: adGroupData.name,
-                            contentAdsTabWithCMS: data.contentAdsTabWithCMS,
                             status: constants.adGroupSettingsState.INACTIVE,
                             state: constants.adGroupRunningStatus.INACTIVE,
                         });

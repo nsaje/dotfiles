@@ -53,24 +53,9 @@ describe('AdGroupCtrl', function () {
         expect($scope.account.id, 4);
     });
 
-    it('shows Content Ads+ tab when ad group has cms turned on', function () {
-        $scope.adGroup.contentAdsTabWithCMS = true;
-        var tabs = $scope.getTabs();
-        expect(tabs[0].route, 'main.adGroups.adsPlus');
-    });
-
     it('hides Content Ads+ tab when no permission', function () {
         var tabs = $scope.getTabs();
         expect(tabs.length).toEqual(5);
-    });
-
-    it('sets hidden and internal for Content Ads+ tab', function () {
-        $scope.user.permissions['zemauth.new_content_ads_tab'] = false;
-
-        var tabs = $scope.getTabs();
-
-        expect(tabs[5].hidden).toEqual(false);
-        expect(tabs[5].internal).toEqual(true);
     });
 
     describe('setAdGroupData', function () {

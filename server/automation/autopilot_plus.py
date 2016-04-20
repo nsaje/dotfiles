@@ -161,7 +161,9 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
         ).save()
 
 
-def set_autopilot_changes(cpc_changes={}, budget_changes={}, system_user=None, landing_mode=None):
+def set_autopilot_changes(cpc_changes={}, budget_changes={},
+                          system_user=dash.constants.SystemUserType.AUTOPILOT,
+                          landing_mode=None):
     actions = []
     for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
         changes = {}

@@ -1,24 +1,30 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import slugify
-
 from collections import OrderedDict
+from functools import partial
+import json
 
 import influx
 
 from django.conf import settings
+from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
 from dash import export
 from dash import constants
+from dash import scheduled_report
 from utils import api_common
 from utils import statsd_helper
-from utils.sort_helper import sort_results
 from utils import exc
 
-from reports.api_helpers import POSTCLICK_ACQUISITION_FIELDS, POSTCLICK_ENGAGEMENT_FIELDS
+
+log_direct_download_user_action = partial(helpers.log_useraction_if_necessary,
+                                          user_action_type=constants.UserActionType.DOWNLOAD_REPORT)
+
+log_schedule_report_user_action = partial(helpers.log_useraction_if_necessary,
+                                          user_action_type=constants.UserActionType.SCHEDULE_REPORT)
 
 
 class ExportApiView(api_common.BaseApiView):
@@ -34,249 +40,451 @@ class ExportApiView(api_common.BaseApiView):
     def _demo_export(self, request):
         data = []
         filename = 'export'
-        if request.GET.get('type') == 'excel':
-            detailed_data = []
-            columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('cost', 'Cost'),
+            ('cpc', 'Avg. CPC'),
+            ('clicks', 'Clicks'),
+            ('impressions', 'Impressions'),
+            ('ctr', 'CTR')
+        ])
 
-            detailed_columns = list(columns)  # make a copy
-            detailed_columns.insert(1, {'key': 'campaign', 'name': 'Campaign', 'width': 30})
+        content = export.get_csv_content(fieldnames, data)
+        return self.create_csv_response(filename, content=content)
 
-            content = export.get_excel_content([
-                ('Per Account Report', columns, data),
-                ('Detailed Report', detailed_columns, detailed_data)
-            ])
 
-            return self.create_excel_response(filename, content=content)
-        else:
-            filename = 'export'
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('cost', 'Cost'),
-                ('cpc', 'Avg. CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
+class ExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 500000
+    ALL_ACC_BD_ADG_MAX_DAYS = 62
+    ALL_ACC_BD_CAMP_MAX_DAYS = 160
 
-            content = export.get_csv_content(fieldnames, data)
-            return self.create_csv_response(filename, content=content)
+    @influx.timer('dash.export_plus.allowed_get', type='default')
+    @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
+    def get(self, request, level_, id_=None):
+        user = request.user
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        num_days = (end_date - start_date).days + 1
+
+        if level_ == 'ad_groups':
+            ad_group = helpers.get_ad_group(user, id_)
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_group).count()
+            return self.create_api_response({
+                'ad_group': True,
+                'content_ad': content_ad_rows <= self.MAX_ROWS,
+                'by_day': {
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS
+                }
+            })
+        elif level_ == 'campaigns':
+            campaign = helpers.get_campaign(user, id_)
+            ad_groups = models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
+            ad_group_rows = ad_groups.count()
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count()
+            return self.create_api_response({
+                'campaign': True,
+                'ad_group': ad_group_rows <= self.MAX_ROWS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS
+                }
+            })
+        elif level_ == 'accounts':
+            account = helpers.get_account(user, id_)
+            campaigns = models.Campaign.objects.filter(account=account).exclude_archived()
+            ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns).exclude_archived()
+            campaign_rows = campaigns.count()
+            ad_group_rows = ad_groups.count()
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count()
+            return self.create_api_response({
+                'account': True,
+                'campaign': campaign_rows <= self.MAX_ROWS,
+                'ad_group': ad_group_rows <= self.MAX_ROWS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS,
+                    'campaign': campaign_rows * num_days <= self.MAX_ROWS
+                }
+            })
+        elif level_ == 'all_accounts':
+            accounts_num = models.Account.objects.all().filter_by_user(user).exclude_archived().count()
+            campaigns_num = models.Campaign.objects.all().filter_by_user(user).exclude_archived().count()
+            ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).exclude_archived().count()
+            return self.create_api_response({
+                'all_accounts': True,
+                'account': accounts_num <= self.MAX_ROWS,
+                'campaign': campaigns_num <= self.MAX_ROWS,
+                'ad_group': ad_groups_num <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': num_days <= self.ALL_ACC_BD_ADG_MAX_DAYS,
+                    'campaign': num_days <= self.ALL_ACC_BD_CAMP_MAX_DAYS,
+                    'account': accounts_num * num_days <= self.MAX_ROWS
+                }
+            })
+        return self.create_api_response({
+            'view': True
+        })
+
+
+class SourcesExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 500000
+    ALL_ACC_BD_ADG_MAX_DAYS = 11
+    ALL_ACC_BD_CAMP_MAX_DAYS = 21
+    ALL_ACC_BD_ACC_MAX_DAYS = 62
+
+    @influx.timer('dash.export_plus.allowed_get', type='sources')
+    @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
+    def get(self, request, level_, id_=None):
+        user = request.user
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        num_days = (end_date - start_date).days + 1
+
+        if level_ == 'ad_groups':
+            ad_group = helpers.get_ad_group(user, id_)
+            active_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
+            num_sources = len(set([a.source for a in active_sources]).intersection(filtered_sources))
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_group).count() * num_sources
+            return self.create_api_response({
+                'ad_group': num_sources <= self.MAX_ROWS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': num_sources * num_days <= self.MAX_ROWS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS
+                }
+            })
+        elif level_ == 'campaigns':
+            campaign = helpers.get_campaign(user, id_)
+            active_sources = helpers.get_active_ad_group_sources(models.Campaign, [campaign])
+            num_sources = len(set([a.source for a in active_sources]).intersection(filtered_sources))
+            ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            ad_group_rows = ad_groups.count() * num_sources
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * num_sources
+            return self.create_api_response({
+                'campaign': num_sources <= self.MAX_ROWS,
+                'ad_group': ad_group_rows <= self.MAX_ROWS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS,
+                    'campaign': num_sources * num_days <= self.MAX_ROWS
+                }
+            })
+        elif level_ == 'accounts':
+            account = helpers.get_account(user, id_)
+            active_sources = helpers.get_active_ad_group_sources(models.Account, [account])
+            num_sources = len(set([a.source for a in active_sources]).intersection(filtered_sources))
+            campaigns = models.Campaign.objects.filter(account=account)
+            ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)
+            ad_group_rows = ad_groups.count() * num_sources
+            campaign_rows = campaigns.count() * num_sources
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * num_sources
+            return self.create_api_response({
+                'account': num_sources <= self.MAX_ROWS,
+                'campaign': campaign_rows <= self.MAX_ROWS,
+                'ad_group': ad_group_rows <= self.MAX_ROWS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS,
+                    'campaign': campaign_rows * num_days <= self.MAX_ROWS,
+                    'account': num_sources * num_days <= self.MAX_ROWS
+                }
+            })
+        elif level_ == 'all_accounts':
+            all_accounts = models.Account.objects.all().filter_by_user(user)
+            active_sources = helpers.get_active_ad_group_sources(models.Account, all_accounts)
+            num_sources = len(set([a.source for a in active_sources]).intersection(filtered_sources))
+            accounts_num = len(all_accounts)
+            campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
+            ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
+            many_sources = num_sources > 3
+            return self.create_api_response({
+                'all_accounts': num_sources <= self.MAX_ROWS,
+                'account': accounts_num * num_sources <= self.MAX_ROWS,
+                'campaign': campaigns_num * num_sources <= self.MAX_ROWS,
+                'ad_group': ad_groups_num * num_sources <= self.MAX_ROWS,
+                'by_day': {
+                    'ad_group': num_days <= (self.ALL_ACC_BD_ADG_MAX_DAYS if many_sources else self.ALL_ACC_BD_ADG_MAX_DAYS * 3),
+                    'campaign': num_days <= (self.ALL_ACC_BD_CAMP_MAX_DAYS if many_sources else self.ALL_ACC_BD_CAMP_MAX_DAYS * 3),
+                    'account': num_days <= (self.ALL_ACC_BD_ACC_MAX_DAYS if many_sources else self.ALL_ACC_BD_ACC_MAX_DAYS * 3),
+                    'all_accounts': num_sources * num_days <= self.MAX_ROWS
+                }
+            })
+        return self.create_api_response({
+            'view': True
+        })
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'accounts_campaigns_export_get')
+    @influx.timer('dash.export_plus.account', type='campaigns')
+    @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
+        content, filename = export.get_report_from_request(request, account=account)
 
-        campaigns = models.Campaign.objects.all().filter_by_user(request.user).filter(account=account)
+        log_direct_download_user_action(request, account=account)
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        return self.create_csv_response(filename, content=content)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+    @statsd_helper.statsd_timer('dash.api', 'accounts_campaigns_scheduled_report_put')
+    def put(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        response = _add_scheduled_report_from_request(request, account=account)
 
-        filename = '{0}_per_account_report_{1}_{2}'.format(
-            slugify.slugify(account.name),
-            start_date,
-            end_date
-        )
+        log_schedule_report_user_action(request, account=account)
 
-        data = export.generate_rows(
-            ['date'],
-            start_date,
-            end_date,
-            request.user,
-            campaign=campaigns,
-            source=filtered_sources,
-        )
-
-        if request.GET.get('type') == 'excel':
-            detailed_data = export.generate_rows(
-                ['date', 'campaign'],
-                start_date,
-                end_date,
-                request.user,
-                campaign=campaigns,
-                source=filtered_sources,
-            )
-
-            self.add_campaign_data(detailed_data, campaigns)
-
-            columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
-
-            detailed_columns = list(columns)  # make a copy
-            detailed_columns.insert(1, {'key': 'campaign', 'name': 'Campaign', 'width': 30})
-
-            content = export.get_excel_content([
-                ('Per Account Report', columns, data),
-                ('Detailed Report', detailed_columns, detailed_data)
-            ])
-
-            return self.create_excel_response(filename, content=content)
-        else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('cost', 'Cost'),
-                ('cpc', 'Avg. CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
-
-            content = export.get_csv_content(fieldnames, data)
-            return self.create_csv_response(filename, content=content)
-
-    def add_campaign_data(self, results, campaigns):
-        campaign_names = {campaign.id: campaign.name for campaign in campaigns}
-
-        for result in results:
-            result['campaign'] = campaign_names[result['campaign']]
+        return self.create_api_response(response)
 
 
 class CampaignAdGroupsExport(ExportApiView):
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'campaigns_ad_groups_export_get')
+    @influx.timer('dash.export_plus.campaign', type='ad_group')
+    @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        conversion_goals = []
-        if request.user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = campaign.conversiongoal_set.all()
+        content, filename = export.get_report_from_request(request, campaign=campaign)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        log_direct_download_user_action(request, campaign=campaign)
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        return self.create_csv_response(filename, content=content)
 
-        export_type = request.GET.get('type')
+    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_scheduled_report_put')
+    def put(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        response = _add_scheduled_report_from_request(request, campaign=campaign)
 
-        if export_type == 'excel_detailed' and \
-                not request.user.has_perm('zemauth.campaign_ad_groups_detailed_report'):
-            raise exc.MissingDataError()
+        log_schedule_report_user_action(request, campaign=campaign)
 
-        filename_format = '{0}_{1}_per_campaign_report_{2}_{3}'
+        return self.create_api_response(response)
 
-        data = export.generate_rows(
-            ['date'],
-            start_date,
-            end_date,
-            request.user,
-            conversion_goals=conversion_goals,
-            campaign=campaign,
-            source=filtered_sources,
-        )
 
-        if export_type == 'excel' or export_type == 'excel_detailed':
-            detailed_data = export.generate_rows(
-                ['date', 'ad_group'],
-                start_date,
-                end_date,
-                request.user,
-                conversion_goals=conversion_goals,
-                campaign=campaign,
-                source=filtered_sources,
-            )
+class AdGroupAdsExport(ExportApiView):
+    @influx.timer('dash.export_plus.ad_group', type='ads')
+    @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        content, filename = export.get_report_from_request(request, ad_group=ad_group)
 
-            self.add_ad_group_data(detailed_data, campaign)
-            detailed_data = sort_results(detailed_data, ['date', 'ad_group'])
+        log_direct_download_user_action(request, ad_group=ad_group)
 
-            # define columns
-            columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
+        return self.create_csv_response(filename, content=content)
 
-            for conversion_goal in conversion_goals:
-                columns.append({'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name})
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_scheduled_report_put')
+    def put(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        response = _add_scheduled_report_from_request(request, ad_group=ad_group)
 
-            detailed_columns = list(columns)  # make a copy
-            detailed_columns.insert(1, {'key': 'ad_group', 'name': 'Ad Group', 'width': 30})
+        log_schedule_report_user_action(request, ad_group=ad_group)
 
-            sheets = [
-                ('Per Campaign Report', columns, data),
-                ('Detailed Report', detailed_columns, detailed_data)
-            ]
+        return self.create_api_response(response)
 
-            if export_type == 'excel_detailed':
-                filename_format = '{0}_{1}_per_campaign_detailed_report_{2}_{3}'
-                breakdown = ['date', 'ad_group']
 
-                if campaign.account.id == 53:
-                    # temp for FindTheBest account, will be removed
-                    # when we switch to content ad stats for all accounts
-                    breakdown.append('content_ad')
-                else:
-                    breakdown.append('article')
+class AllAccountsSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.all_accounts', type='sources')
+    @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
+    def get(self, request):
+        content, filename = export.get_report_from_request(request, by_source=True)
 
-                per_content_ad_data = export.generate_rows(
-                    breakdown,
-                    start_date,
-                    end_date,
-                    request.user,
-                    conversion_goals=conversion_goals,
-                    campaign=campaign
-                )
+        log_direct_download_user_action(request)
 
-                self.add_ad_group_data(per_content_ad_data, campaign)
-                per_content_ad_data = sort_results(per_content_ad_data, ['date', 'ad_group', 'title'])
+        return self.create_csv_response(filename, content=content)
 
-                per_content_ad_columns = list(detailed_columns)
-                per_content_ad_columns.insert(2, {'key': 'title', 'name': 'Title', 'width': 30})
-                per_content_ad_columns.insert(3, {'key': 'url', 'name': 'URL', 'width': 40})
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_sources_scheduled_report_put')
+    def put(self, request):
+        response = _add_scheduled_report_from_request(request, by_source=True)
 
-                sheets.append(('Per Content Ad Report', per_content_ad_columns, per_content_ad_data))
+        log_schedule_report_user_action(request)
 
-            content = export.get_excel_content(sheets)
+        return self.create_api_response(response)
 
-            return self.create_excel_response(filename_format.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            ), content=content)
+
+class AccountSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.account', type='sources')
+    @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        content, filename = export.get_report_from_request(request, account=account, by_source=True)
+
+        log_direct_download_user_action(request, account=account)
+
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'account_sources_scheduled_report_put')
+    def put(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        response = _add_scheduled_report_from_request(request, account=account, by_source=True)
+
+        log_schedule_report_user_action(request, account=account)
+
+        return self.create_api_response(response)
+
+
+class CampaignSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.campaign', type='sources')
+    @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
+    def get(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        content, filename = export.get_report_from_request(request, campaign=campaign, by_source=True)
+
+        log_direct_download_user_action(request, campaign=campaign)
+
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_sources_scheduled_report_put')
+    def put(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
+
+        log_schedule_report_user_action(request, campaign=campaign)
+
+        return self.create_api_response(response)
+
+
+class AdGroupSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.ad_group', type='sources')
+    @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        content, filename = export.get_report_from_request(request, ad_group=ad_group, by_source=True)
+
+        log_direct_download_user_action(request, ad_group=ad_group)
+
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_scheduled_report_put')
+    def put(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        response = _add_scheduled_report_from_request(request, ad_group=ad_group, by_source=True)
+
+        log_schedule_report_user_action(request, ad_group=ad_group)
+
+        return self.create_api_response(response)
+
+
+class AllAccountsExport(ExportApiView):
+    @influx.timer('dash.export_plus.all_accounts', type='default')
+    @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
+    def get(self, request):
+        content, filename = export.get_report_from_request(request)
+
+        log_direct_download_user_action(request)
+
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_scheduled_report_put')
+    def put(self, request):
+        response = _add_scheduled_report_from_request(request)
+
+        log_schedule_report_user_action(request)
+
+        return self.create_api_response(response)
+
+
+def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, campaign=None, account=None):
+    try:
+        r = json.loads(request.body)
+    except ValueError:
+        raise exc.ValidationError(message='Invalid json')
+    filtered_sources = []
+    if len(r.get('filtered_sources')) > 0:
+        filtered_sources = helpers.get_filtered_sources(request.user, r.get('filtered_sources'))
+    scheduled_report.add_scheduled_report(
+        request.user,
+        report_name=r.get('report_name'),
+        filtered_sources=filtered_sources,
+        order=r.get('order'),
+        additional_fields=r.get('additional_fields'),
+        granularity=export.get_granularity_from_type(r.get('type')),
+        by_day=r.get('by_day') or False,
+        by_source=by_source,
+        include_model_ids=r.get('include_model_ids') or False,
+        ad_group=ad_group,
+        campaign=campaign,
+        account=account,
+        sending_frequency=scheduled_report.get_sending_frequency(r.get('frequency')),
+        recipient_emails=r.get('recipient_emails'))
+
+
+class ScheduledReports(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_get')
+    def get(self, request, account_id=None):
+        if account_id:
+            account = helpers.get_account(request.user, account_id)
+            reports = self.get_account_scheduled_reports(request.user, account)
         else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('cost', 'Cost'),
-                ('cpc', 'Avg. CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
+            reports = self.get_all_accounts_scheduled_reports(request.user)
+        response = {
+            'reports': self.format_reports(reports)
+        }
+        return self.create_api_response(response)
 
-            for conversion_goal in conversion_goals:
-                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
+    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_delete')
+    def delete(self, request, scheduled_report_id):
+        scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
 
-            content = export.get_csv_content(fieldnames, data)
-            return self.create_csv_response(filename_format.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            ), content=content)
+        if scheduled_report.created_by != request.user:
+            raise exc.ForbiddenError(message='Not allowed')
 
-    def add_ad_group_data(self, results, campaign):
-        ad_groups = {ad_group.id: ad_group for ad_group in models.AdGroup.objects.filter(campaign=campaign)}
+        scheduled_report.state = constants.ScheduledReportState.REMOVED
+        scheduled_report.save()
 
-        for result in results:
-            result['ad_group'] = ad_groups[result['ad_group']].name
+        self._log_deletion_user_action(request, scheduled_report)
+
+        return self.create_api_response({})
+
+    def _log_deletion_user_action(self, request, scheduled_report):
+        log_data = {}
+        if scheduled_report.report:
+            log_data = {
+                'ad_group': scheduled_report.report.ad_group,
+                'campaign': scheduled_report.report.campaign,
+                'account': scheduled_report.report.account,
+            }
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_SCHEDULED_REPORT, **log_data)
+
+    def format_reports(self, reports):
+        result = []
+        for r in reports:
+            item = {}
+            item['name'] = r.name
+
+            item['level'] = ' - '.join(filter(None, [
+                constants.ScheduledReportLevel.get_text(r.report.level),
+                (r.report.account.name if r.report.account else ''),
+                (r.report.campaign.account.name + ': ' + r.report.campaign.name if r.report.campaign else ''),
+                (r.report.ad_group.campaign.account.name + ': ' +
+                    r.report.ad_group.campaign.name + ': ' +
+                    r.report.ad_group.name if r.report.ad_group else '')]))
+
+            item['granularity'] = ', '.join(filter(None, [
+                constants.ScheduledReportGranularity.get_text(r.report.granularity),
+                ('by Media Source' if r.report.breakdown_by_source else ''),
+                ('by day' if r.report.breakdown_by_day else '')]))
+
+            item['frequency'] = constants.ScheduledReportSendingFrequency.get_text(r.sending_frequency)
+            item['scheduled_report_id'] = r.id
+            item['recipients'] = ', '.join(r.get_recipients_emails_list())
+            result.append(item)
+        return result
+
+    def get_account_scheduled_reports(self, user, account):
+        reports = models.ScheduledExportReport.objects.select_related('report').filter(
+            ~Q(state=constants.ScheduledReportState.REMOVED),
+            Q(created_by=user),
+            (Q(report__account=account) | Q(report__campaign__account=account) | Q(report__ad_group__campaign__account=account))
+        )
+        return reports
+
+    def get_all_accounts_scheduled_reports(self, user):
+        reports = models.ScheduledExportReport.objects.select_related('report').filter(
+            ~Q(state=constants.ScheduledReportState.REMOVED),
+            Q(created_by=user)
+        )
+        return reports
 
 
 class AdGroupAdsExportAllowed(api_common.BaseApiView):
@@ -313,35 +521,6 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134
-
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        num_days = (end_date - start_date).days + 1
-
-        num_contnent_ad_sources = models.ContentAdSource.objects.filter(ad_group=ad_group).count()
-
-        # estimate number of rows (worst case)
-        row_count = num_days * num_contnent_ad_sources
-
-        try:
-            max_days = self.MAX_ROWS / (num_contnent_ad_sources)
-        except ZeroDivisionError:
-            max_days = None
-
-        return self.create_api_response({
-            'allowed': row_count <= self.MAX_ROWS,
-            'max_days': max_days
-        })
-
-
 class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 8072
 
@@ -369,543 +548,3 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
             'allowed': row_count <= self.MAX_ROWS,
             'max_days': max_days
         })
-
-
-class AdGroupAdsExport(ExportApiView):
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
-            slugify.slugify(ad_group.campaign.account.name),
-            slugify.slugify(ad_group.name),
-            start_date,
-            end_date
-        )
-
-        ads_results = export.generate_rows(
-            ['date', 'article'],
-            start_date,
-            end_date,
-            request.user,
-            ad_group=ad_group,
-            source=filtered_sources,
-        )
-
-        if request.GET.get('type') == 'excel':
-            sources_results = export.generate_rows(
-                ['date', 'source', 'article'],
-                start_date,
-                end_date,
-                request.user,
-                ad_group=ad_group,
-                source=filtered_sources,
-            )
-
-            self.add_source_data(sources_results)
-
-            ads_columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'title', 'name': 'Title', 'width': 30},
-                {'key': 'url', 'name': 'URL', 'width': 40},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
-
-            sources_columns = list(ads_columns)  # make a shallow copy
-            sources_columns.insert(3, {'key': 'source', 'name': 'Source', 'width': 20})
-
-            content = export.get_excel_content([
-                ('Detailed Report', ads_columns, ads_results),
-                ('Per Source Report', sources_columns, sources_results)
-            ])
-
-            return self.create_excel_response(filename, content=content)
-        else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('title', 'Title'),
-                ('url', 'URL'),
-                ('cost', 'Cost'),
-                ('cpc', 'CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
-
-            content = export.get_csv_content(fieldnames, ads_results)
-            return self.create_csv_response(filename, content=content)
-
-    def add_source_data(self, results):
-        sources = {source.id: source for source in models.Source.objects.all()}
-
-        for result in results:
-            result['source'] = sources[result['source']].name
-
-
-class AdGroupAdsPlusExport(ExportApiView):
-
-    common_csv_columns = [
-        ('image_url', 'Image URL'),
-        ('title', 'Title'),
-        ('url', 'URL'),
-        ('uploaded', 'Uploaded'),
-        ('cost', 'Spend'),
-        ('cpc', 'Avg. CPC'),
-        ('clicks', 'Clicks'),
-        ('impressions', 'Impressions'),
-        ('ctr', 'CTR'),
-        ('visits', 'Visits'),
-        ('click_discrepancy', 'Click Discrepancy'),
-        ('pageviews', 'Pageviews'),
-        ('percent_new_users', '% New Users'),
-        ('bounce_rate', 'Bounce Rate'),
-        ('pv_per_visit', 'PV/Visit'),
-        ('avg_tos', 'Avg. ToS')
-    ]
-
-    # this duplication might look strange but is necessary - excel package does
-    # runtime magic substitution of percent format with it's internal types
-    common_csv_columns_w_date = [
-        ('date', 'Date'),
-    ] + common_csv_columns
-
-    common_excel_columns = [
-        {'key': 'image_url', 'name': 'Image URL', 'width': 40},
-        {'key': 'title', 'name': 'Title', 'width': 30},
-        {'key': 'url', 'name': 'URL', 'width': 40},
-        {'key': 'uploaded', 'name': 'Uploaded', 'width': 40, 'format': 'date'},
-        {'key': 'cost', 'name': 'Spend', 'width': 40},
-        {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-        {'key': 'clicks', 'name': 'Clicks'},
-        {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-        {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-        {'key': 'visits', 'name': 'Visits'},
-        {'key': 'click_discrepancy', 'name': 'Click Discrepancy', 'format': 'percent'},
-        {'key': 'pageviews', 'name': 'Pageviews'},
-        {'key': 'percent_new_users', 'name': '% New Users', 'format': 'percent'},
-        {'key': 'bounce_rate', 'name': 'Bounce Rate', 'format': 'percent'},
-        {'key': 'pv_per_visit', 'name': 'PV/Visit', 'format': 'decimal'},
-        {'key': 'avg_tos', 'name': 'Avg. ToS', 'format': 'decimal'}
-    ]
-
-    # this duplication might look strange but is necessary - excel package does
-    # runtime magic substitution of percent format with it's internal types
-    common_excel_columns_w_date = [
-        {'key': 'date', 'name': 'Date', 'format': 'date'},
-    ] + common_excel_columns
-
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        conversion_goals = []
-        if request.user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = ad_group.campaign.conversiongoal_set.all()
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        filename = '{0}_{1}_detailed_report_{2}_{3}'.format(
-            slugify.slugify(ad_group.campaign.account.name),
-            slugify.slugify(ad_group.name),
-            start_date,
-            end_date
-        )
-
-        report_type = request.GET.get('type')
-        if report_type == 'day-excel':
-            return self.create_by_day_excel(
-                filename, start_date, end_date,
-                request.user, ad_group, filtered_sources,
-                conversion_goals
-            )
-        elif report_type == 'day-csv':
-            return self.create_by_day_csv(
-                filename, start_date, end_date,
-                request.user, ad_group, filtered_sources,
-                conversion_goals
-            )
-        elif report_type == 'content-ad-excel':
-            return self.create_by_content_ad_excel(
-                filename, start_date, end_date,
-                request.user, ad_group, filtered_sources,
-                conversion_goals
-            )
-        elif report_type == 'content-ad-csv':
-            return self.create_by_content_ad_csv(
-                filename, start_date, end_date,
-                request.user, ad_group, filtered_sources,
-                conversion_goals
-            )
-
-        raise Exception("Invalid report type")
-
-    def create_by_day_csv(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
-        ads_results = export.generate_rows(
-            ['date', 'content_ad'],
-            start_date,
-            end_date,
-            user,
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=sources
-        )
-
-        fieldnames = self._copy_csv_columns(self.common_csv_columns_w_date, user)
-        self._add_csv_conversion_goal_columns(fieldnames, conversion_goals)
-
-        content = export.get_csv_content(fieldnames, ads_results)
-        return self.create_csv_response(filename, content=content)
-
-    def create_by_day_excel(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
-        ads_results = export.generate_rows(
-            ['date', 'content_ad'],
-            start_date,
-            end_date,
-            user,
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=sources
-        )
-        sources_results = export.generate_rows(
-            ['date', 'source', 'content_ad'],
-            start_date,
-            end_date,
-            user,
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=sources
-        )
-
-        self.add_source_data(sources_results)
-
-        ads_columns = self._copy_excel_columns(self.common_excel_columns_w_date, user)
-        self._add_excel_conversion_goal_columns(ads_columns, conversion_goals)
-
-        sources_columns = list(ads_columns)  # make a shallow copy
-        sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
-
-        content = export.get_excel_content([
-            ('Detailed Report', ads_columns, ads_results),
-            ('Per Source Report', sources_columns, sources_results)
-        ])
-
-        return self.create_excel_response(filename, content=content)
-
-    def create_by_content_ad_excel(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
-        ads_results = export.generate_rows(
-            ['content_ad'],
-            start_date,
-            end_date,
-            user,
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=sources
-        )
-        sources_results = export.generate_rows(
-            ['content_ad', 'source'],
-            start_date,
-            end_date,
-            user,
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=sources
-        )
-
-        self.add_source_data(sources_results)
-
-        ads_columns = self._copy_excel_columns(self.common_excel_columns, user)
-        self._add_excel_conversion_goal_columns(ads_columns, conversion_goals)
-
-        sources_columns = list(ads_columns)  # make a shallow copy
-        sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
-
-        content = export.get_excel_content([
-            ('Detailed Report', ads_columns, ads_results),
-            ('Per Source Report', sources_columns, sources_results)
-        ])
-        return self.create_excel_response(filename, content=content)
-
-    def create_by_content_ad_csv(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
-        ads_results = export.generate_rows(
-            ['content_ad'],
-            start_date,
-            end_date,
-            user,
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=sources
-        )
-        fieldnames = self._copy_csv_columns(self.common_csv_columns, user)
-        self._add_csv_conversion_goal_columns(fieldnames, conversion_goals)
-        content = export.get_csv_content(fieldnames, ads_results)
-        return self.create_csv_response(filename, content=content)
-
-    def _copy_excel_columns(self, columns, user):
-        columns_copy = []
-        include_acq_cols = user.has_perm('zemauth.content_ads_postclick_acquisition')
-        include_eng_cols = user.has_perm('zemauth.content_ads_postclick_engagement')
-        for col in columns:
-            key = col['key']
-            if (key in POSTCLICK_ACQUISITION_FIELDS and not include_acq_cols) or\
-               (key in POSTCLICK_ENGAGEMENT_FIELDS and not include_eng_cols):
-                continue
-
-            columns_copy.append(dict(col))
-        return columns_copy
-
-    def _copy_csv_columns(self, columns, user):
-        columns_copy = OrderedDict()
-        include_acq_cols = user.has_perm('zemauth.content_ads_postclick_acquisition')
-        include_eng_cols = user.has_perm('zemauth.content_ads_postclick_engagement')
-        for col in columns:
-            key = col[0]
-            if (key in POSTCLICK_ACQUISITION_FIELDS and not include_acq_cols) or\
-               (key in POSTCLICK_ENGAGEMENT_FIELDS and not include_eng_cols):
-                continue
-
-            columns_copy[key] = col[1]
-        return columns_copy
-
-    def _add_excel_conversion_goal_columns(self, columns, conversion_goals):
-        for conversion_goal in conversion_goals:
-            columns.append({'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name})
-
-    def _add_csv_conversion_goal_columns(self, columns, conversion_goals):
-        for conversion_goal in conversion_goals:
-            columns[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
-
-    def add_source_data(self, results):
-        sources = {source.id: source for source in models.Source.objects.all()}
-
-        for result in results:
-            result['source'] = sources[result['source']].name
-
-
-class AdGroupSourcesExport(ExportApiView):
-    @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_sources_export_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        conversion_goals = []
-        if request.user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = ad_group.campaign.conversiongoal_set.all()
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        filename = '{0}_{1}_per_sources_report_{2}_{3}'.format(
-            slugify.slugify(ad_group.campaign.account.name),
-            slugify.slugify(ad_group.name),
-            start_date,
-            end_date
-        )
-
-        date_source_results = export.generate_rows(
-            ['date', 'source'],
-            start_date,
-            end_date,
-            request.user,
-            conversion_goals=conversion_goals,
-            ad_group=ad_group,
-            source=filtered_sources,
-        )
-
-        self.add_source_data(date_source_results)
-
-        if request.GET.get('type') == 'excel':
-            date_source_columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'source', 'name': 'Source', 'width': 30},
-                {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
-
-            for conversion_goal in conversion_goals:
-                date_source_columns.append(
-                    {'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name}
-                )
-
-            sheets_data = [('Per Source Report', date_source_columns, date_source_results)]
-
-            date_results = export.generate_rows(
-                ['date'],
-                start_date,
-                end_date,
-                request.user,
-                conversion_goals=conversion_goals,
-                ad_group=ad_group,
-                source=filtered_sources,
-            )
-
-            date_columns = list(date_source_columns)  # make a shallow copy
-            date_columns.pop(1)
-
-            sheets_data.insert(0, ('Per Day Report', date_columns, date_results))
-
-            content = export.get_excel_content(sheets_data)
-            return self.create_excel_response(filename, content=content)
-        else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('source', 'Source'),
-                ('cost', 'Cost'),
-                ('cpc', 'CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
-
-            for conversion_goal in conversion_goals:
-                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
-
-            content = export.get_csv_content(fieldnames, date_source_results)
-            return self.create_csv_response(filename, content=content)
-
-    def add_source_data(self, results):
-        sources = {source.id: source for source in models.Source.objects.all()}
-
-        for result in results:
-            result['source'] = sources[result['source']].name
-
-
-class AllAccountsExport(ExportApiView):
-    def get(self, request):
-        accounts = models.Account.objects.all().filter_by_user(request.user)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        filename = 'all_accounts_report_{0}_{1}'.format(start_date, end_date)
-
-        results = export.generate_rows(
-            ['date', 'account'],
-            start_date,
-            end_date,
-            request.user,
-            account=accounts,
-            source=filtered_sources,
-        )
-
-        self.add_account_data(results, accounts)
-
-        if request.GET.get('type') == 'excel':
-            detailed_results = export.generate_rows(
-                ['date', 'account', 'campaign'],
-                start_date,
-                end_date,
-                request.user,
-                account=accounts,
-                source=filtered_sources,
-            )
-
-            self.add_account_data(detailed_results, accounts)
-            self.add_campaign_data(detailed_results, accounts)
-
-            columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'account', 'name': 'Account'},
-                {'key': 'cost', 'name': 'Spend', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-            ]
-
-            detailed_columns = [
-                {'key': 'date', 'name': 'Date', 'format': 'date'},
-                {'key': 'account', 'name': 'Account'},
-                {'key': 'campaign', 'name': 'Campaign'},
-                {'key': 'campaign_manager', 'name': 'Campaign Manager'},
-                {'key': 'sales_representative', 'name': 'Sales Representative'},
-                {'key': 'service_fee', 'name': 'Service Fee', 'format': 'percent'},
-                {'key': 'iab_category', 'name': 'IAB Category'},
-                {'key': 'promotion_goal', 'name': 'Promotion Goal'},
-                {'key': 'cost', 'name': 'Spend', 'format': 'currency'},
-                {'key': 'cpc', 'name': 'Avg. CPC', 'format': 'currency'},
-                {'key': 'clicks', 'name': 'Clicks'},
-                {'key': 'impressions', 'name': 'Impressions', 'width': 15},
-                {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
-                {'key': 'fee_amount', 'name': 'Fee Amount', 'format': 'currency'},
-                {'key': 'total_amount', 'name': 'Total Amount', 'format': 'currency'},
-            ]
-
-            content = export.get_excel_content([
-                ('All Accounts Report', columns, results),
-                ('Detailed Report', detailed_columns, detailed_results)
-            ], start_date, end_date)
-
-            return self.create_excel_response(filename, content=content)
-        else:
-            fieldnames = OrderedDict([
-                ('date', 'Date'),
-                ('account', 'Account'),
-                ('cost', 'Spend'),
-                ('cpc', 'CPC'),
-                ('clicks', 'Clicks'),
-                ('impressions', 'Impressions'),
-                ('ctr', 'CTR')
-            ])
-
-            content = export.get_csv_content(fieldnames, results, 'All accounts report', start_date, end_date)
-            return self.create_csv_response(filename, content=content)
-
-    def add_account_data(self, results, accounts):
-        accounts_by_id = {account.id: account.name for account in accounts}
-        account_settings_by_id = {account.id: account.get_current_settings() for account in accounts}
-
-        for result in results:
-            account_id = result['account']
-            result['account'] = accounts_by_id[account_id]
-            result['service_fee'] = (float(account_settings_by_id[account_id].service_fee) if
-                                     account_settings_by_id.get(account_id) else 'N/A')
-
-    def add_campaign_data(self, results, accounts):
-        campaign_names = {campaign.id: campaign.name for campaign in
-                          models.Campaign.objects.filter(account=accounts)}
-
-        settings_queryset = models.CampaignSettings.objects\
-                                                   .filter(campaign__account=accounts)\
-                                                   .group_current_settings()
-
-        campaign_settings = {s.campaign.id: s for s in settings_queryset}
-
-        for result in results:
-            campaign_id = result['campaign']
-            cs = campaign_settings.get(campaign_id)
-            sales_representative = cs.campaign.get_sales_representative() if cs is not None else None
-
-            has_service_fee = result.get('service_fee') and result['service_fee'] != 'N/A'
-            cost = result['cost'] or 0
-            result['campaign'] = campaign_names[campaign_id]
-            result['campaign_manager'] = cs.campaign_manager.email if cs is not None and cs.campaign_manager is not None else 'N/A'
-            result['sales_representative'] = sales_representative.email if sales_representative is not None else 'N/A'
-            result['iab_category'] = cs.iab_category if cs is not None else 'N/A'
-            result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal) if cs is not None else 'N/A'
-            result['fee_amount'] = (cost / (1.0 - result['service_fee'])) - cost if has_service_fee else 'N/A'
-            result['total_amount'] = cost + result['fee_amount'] if has_service_fee else 'N/A'
