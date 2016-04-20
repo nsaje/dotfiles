@@ -96,8 +96,9 @@ def get_campaign_goal_column_importance(campaign_goal):
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
         campaign_manager = camp.get_current_settings().campaign_manager
-        email_address = campaign_manager.email if campaign_manager else\
-            camp.account.get_current_settings().default_account_manager.email
+        account_manager = camp.account.get_current_settings().default_account_manager
+        email_address = [account_manager.email] + ([campaign_manager.email] if campaign_manager and
+                                                   account_manager.email != campaign_manager.email else [])
         if initialization:
             send_budget_autopilot_initialisation_email(
                 camp.name,
@@ -109,7 +110,7 @@ def send_autopilot_changes_emails(email_changes_data, data, initialization):
             send_autopilot_changes_email(camp.name,
                                          camp.id,
                                          camp.account.name,
-                                         [email_address],
+                                         email_address,
                                          changes_data)
 
 
@@ -151,10 +152,10 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
         logger.exception(u'Auto-pilot e-mail for campaign %s to %s was not sent' +
                          'because an exception was raised:',
                          campaign_name,
-                         u''.join(emails))
+                         u', '.join(emails))
         desc = {
             'campaign_name': campaign_name,
-            'email': ''.join(emails)
+            'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
@@ -204,10 +205,10 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
         logger.exception(u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign %s to %s was not sent because an exception was raised:',
                          campaign_name,
-                         u''.join(emails))
+                         u', '.join(emails))
         desc = {
             'campaign_name': campaign_name,
-            'email': ''.join(emails)
+            'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
