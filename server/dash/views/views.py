@@ -861,8 +861,7 @@ class AvailableSources(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
     def get(self, request):
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true'
         user_ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
         if not show_archived:
             user_ad_groups = user_ad_groups.exclude_archived()
@@ -1484,8 +1483,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
-        include_archived = request.GET.get('archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
+        include_archived = request.GET.get('archived') == 'true'
 
         content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
         content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(

@@ -125,7 +125,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('account_budget_view', 'Can view account budget.'),
             ('all_accounts_budget_view', 'Can view all accounts budget.'),
             ('archive_restore_entity', 'Can archive or restore an entity.'),
-            ('view_archived_entities', 'Can view archived entities.'),
             ('unspent_budget_view', 'Can view unspent budget.'),
             ('switch_to_demo_mode', 'Can switch to demo mode.'),
             ('account_agency_access_permissions', 'Can view and set account access permissions.'),

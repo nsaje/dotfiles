@@ -4,7 +4,7 @@
     </div>
 </div>
 
-<div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(hasPermission('zemauth.view_archived_entities') && adGroup && adGroup.archived) && !loadRequestInProgress">
+<div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(adGroup && adGroup.archived) && !loadRequestInProgress">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
     <alert type="info" ng-show="actionIsWaiting">
         Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
@@ -252,7 +252,7 @@
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
 	</form>
 </div>
-<div class="page page-ad-group-settings" ng-if="hasPermission('zemauth.view_archived_entities') && adGroup && adGroup.archived">
+<div class="page page-ad-group-settings" ng-if="adGroup && adGroup.archived">
     <p>
         <strong>This ad group is archived.</strong>
 

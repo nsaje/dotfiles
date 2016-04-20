@@ -227,8 +227,6 @@ class NavigationDataViewTest(TestCase):
 
         # archived entity
         user = User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='view_archived_entities')
-        user.user_permissions.add(permission)
 
         response = self._get(2, 'ad_groups', 4)
 
@@ -413,8 +411,6 @@ class NavigationTreeViewTest(TestCase):
 
         # add user right for archived flag
         user = User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='view_archived_entities')
-        user.user_permissions.add(permission)
 
         response = self._get(2)
 

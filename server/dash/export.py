@@ -600,8 +600,6 @@ class AllAccountsExport(object):
     def get_data(self, user, filtered_sources, start_date, end_date, order,
                  additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        if not user.has_perm('zemauth.view_archived_entities'):
-            accounts = accounts.exclude_archived()
 
         required_fields = ['start_date', 'end_date']
         dimensions = []

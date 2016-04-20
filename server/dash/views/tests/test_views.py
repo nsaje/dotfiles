@@ -3020,11 +3020,9 @@ class AccountOverviewTest(TestCase):
 
         permission = Permission.objects.get(codename='can_see_infobox')
         permission_2 = Permission.objects.get(codename='can_access_account_infobox')
-        permission_3 = Permission.objects.get(codename='view_archived_entities')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
         user.user_permissions.add(permission_2)
-        user.user_permissions.add(permission_3)
         user.save()
         self.user = user
 

@@ -71,7 +71,6 @@
     - [supply_dash_link_view, zemauth, user]
     - [switch_to_demo_mode, zemauth, user]
     - [upload_content_ads, zemauth, user]
-    - [view_archived_entities, zemauth, user]
   model: auth.group
   pk: 4
 - fields:
@@ -84,7 +83,6 @@
     - [campaign_sources_view, zemauth, user]
     - [filter_sources, zemauth, user]
     - [group_new_user_add, zemauth, user]
-    - [view_archived_entities, zemauth, user]
   model: auth.group
   pk: 5
 - fields:
