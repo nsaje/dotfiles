@@ -1869,8 +1869,7 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        can_see_conversion_goals = user.has_perm('zemauth.view_pubs_conversion_goals')
-        conversion_goals = adgroup.campaign.conversiongoal_set.all() if can_see_conversion_goals else []
+        conversion_goals = adgroup.campaign.conversiongoal_set.all()
         publishers_data, totals_data = self._query_filtered_publishers(
             user,
             show_blacklisted_publishers,
@@ -1930,13 +1929,11 @@ class PublishersTable(object):
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
 
-        conversion_goals_lst = []
-        if user.has_perm('zemauth.view_pubs_conversion_goals'):
-            conversion_goals_lst = [
-                {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                for cg in conversion_goals
-            ]
-            response['conversion_goals'] = conversion_goals_lst
+        conversion_goals_lst = [
+            {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+            for cg in conversion_goals
+        ]
+        response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = adgroup.campaign
@@ -2121,9 +2118,8 @@ class PublishersTable(object):
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
         campaign_goals.copy_fields(user, totals_data, result)
-        if user.has_perm('zemauth.view_pubs_conversion_goals'):
-            for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
-                result[key] = totals_data[key]
+        for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
+            result[key] = totals_data[key]
 
         return result
 
@@ -2173,9 +2169,8 @@ class PublishersTable(object):
             if user.has_perm('zemauth.can_view_actual_costs'):
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
-            if user.has_perm('zemauth.view_pubs_conversion_goals'):
-                for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
-                    row[key] = publisher_data[key]
+            for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
+                row[key] = publisher_data[key]
             campaign_goals.copy_fields(user, publisher_data, row)
             if 'performance' in publisher_data:
                 row['performance'] = publisher_data['performance']

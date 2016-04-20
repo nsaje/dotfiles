@@ -676,8 +676,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
             $scope.columns.length,
-            $scope.hasPermission('zemauth.view_pubs_conversion_goals'),
-            $scope.isPermissionInternal('zemauth.view_pubs_conversion_goals')
+            true,
+            false
         );
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
@@ -743,7 +743,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
                 $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
                 $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.view_pubs_conversion_goals'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults(
+                    $scope.columns, 
+                    data.conversionGoals, 
+                    true
+                );
             },
             function (data) {
                 // error
@@ -784,7 +788,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
             conversionGoals,
-            $scope.hasPermission('zemauth.view_pubs_conversion_goals')
+            true
         );
     };
 
@@ -802,13 +806,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             false
         );
 
-        if ($scope.hasPermission('zemauth.view_pubs_conversion_goals')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.campaignConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.view_pubs_conversion_goals')
-            );
-        }
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.campaignConversionGoalChartMetrics,
+            false
+        );
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(

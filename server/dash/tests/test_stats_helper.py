@@ -672,9 +672,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
         self.superuser = User.objects.get(id=1)
         self.user = User.objects.get(id=2)
 
-        self.assertTrue(self.superuser.has_perm('zemauth.view_pubs_conversion_goals'))
-        self.assertFalse(self.user.has_perm('zemauth.view_pubs_conversion_goals'))
-
     def test_no_permissions(self, mock_query, mock_touchpointconversins_query):
         ad_group = AdGroup.objects.get(pk=1)
         constraints = {'ad_group': ad_group.id}

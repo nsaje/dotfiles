@@ -86,13 +86,11 @@ def get_publishers_data_and_conversion_goals(
         order_fields=[],
         show_blacklisted_publishers=None,
         adg_blacklisted_publishers=None):
-    can_see_conversion_goals = user.has_perm('zemauth.view_pubs_conversion_goals')
 
     report_conversion_goals = []
     touchpoint_conversion_goals = []
-    if can_see_conversion_goals:
-        report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
-        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
+    report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
+    touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
     publishers_data = _get_publishers_data(query_func,
                                            start_date,
