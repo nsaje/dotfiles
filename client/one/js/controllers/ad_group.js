@@ -57,7 +57,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
-    $scope.setInfoboxHeader = function(infoboxHeader) {
+    $scope.setInfoboxHeader = function (infoboxHeader) {
         $scope.infoboxHeader = infoboxHeader;
     };
 
@@ -103,7 +103,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     $scope.updateInfoboxHeader = function () {
         zemNavigationService.getAdGroup($state.params.id).then(function (adGroupData) {
             if ($scope.infoboxHeader) {
-                $scope.infoboxHeader.active = adGroupData.adGroup.reloading ? 'reloading': adGroupData.adGroup.active;
+                $scope.infoboxHeader.active = adGroupData.adGroup.reloading ? 'reloading' : adGroupData.adGroup.active;
             }
         });
     };

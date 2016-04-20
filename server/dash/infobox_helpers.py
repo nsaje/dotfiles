@@ -506,7 +506,8 @@ def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
 
 
 def get_adgroup_running_status_class(ad_group_settings, running_status, state, is_in_landing):
-    if state == dash.constants.AdGroupSettingsState.INACTIVE and running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
+    if state == dash.constants.AdGroupSettingsState.INACTIVE and\
+       running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
         return dash.constants.InfoboxStatus.STOPPED
 
     if is_in_landing:

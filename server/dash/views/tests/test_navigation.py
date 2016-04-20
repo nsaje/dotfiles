@@ -262,7 +262,7 @@ class NavigationDataViewTest(TestCase):
     def test_get_ad_group_without_archived_flag(self):
         response = self._get(2, 'ad_groups', 4)
 
-        self.assertDictEquals(response, {
+        self.assertDictEqual(response, {
             'account': {
                 'id': 2,
                 'name': 'test account 2',

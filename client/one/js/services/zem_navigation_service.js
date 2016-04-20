@@ -132,7 +132,7 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
         $rootScope.$emit('navigation-updated');
     }
 
-    function notifyAdGroupReloading(id, reloading) {
+    function notifyAdGroupReloading (id, reloading) {
         $rootScope.$emit('navigation-adgroup-loading-' + id);
         var adGroupCached = findAdGroupInNavTree(id);
         updateModel(adGroupCached.adGroup, {
