@@ -647,22 +647,22 @@ var options = {
             shown: false,
         },
         {
-            name: 'Avg. Cost Per Second',
+            name: 'Avg. Cost per Second',
             value: constants.chartMetric.COST_PER_SECOND,
             shown: false,
         },
         {
-            name: 'Avg. Cost For Pageview',
+            name: 'Avg. Cost for Pageview',
             value: constants.chartMetric.COST_PER_PAGEVIEW,
             shown: false,
         },
         {
-            name: 'Avg. Cost For Nonbounced Visitor',
+            name: 'Avg. Cost for Unbounced Visitor',
             value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR,
             shown: false,
         },
         {
-            name: 'Avg. Cost For New Visitor',
+            name: 'Avg. Cost for New Visitor',
             value: constants.chartMetric.COST_PER_NEW_VISITOR,
             shown: false,
         },

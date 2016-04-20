@@ -206,7 +206,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 time on site in seconds"')
+        self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
 
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)
@@ -253,7 +253,7 @@ class CampaignGoalsTestCase(TestCase):
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
             },
             {
-                'name': 'Avg. cost per conversion',
+                'name': 'Avg. CPA',
                 'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},
@@ -332,7 +332,7 @@ class CampaignGoalsTestCase(TestCase):
                 'internal': True,
                 'type': 'setting',
                 'name': 'Goals:',
-                'value': '10.00 time on site in seconds',
+                'value': '10.00 Time on Site - Seconds',
                 'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
@@ -357,7 +357,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
-                '10.00 pages per session',
+                '10.00 Pages per Session',
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,
@@ -365,7 +365,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
-                'value': '10.00 % bounce rate',
+                'value': '10.00 % Max Bounce Rate',
                 'description': 'planned 75.00 %'
             }, {
                 'section_start': False,
@@ -373,7 +373,7 @@ class CampaignGoalsTestCase(TestCase):
                 'icon': constants.Emoticon.NEUTRAL,
                 'type': 'setting',
                 'name': '',
-                'value': '1.20 % new unique visitors'
+                'value': '1.20 % New Unique Visitors'
             }
         ])
 
@@ -409,7 +409,7 @@ class CampaignGoalsTestCase(TestCase):
                 'internal': True,
                 'type': 'setting',
                 'name': 'Goals:',
-                'value': '10.00 time on site in seconds',
+                'value': '10.00 Time on Site - Seconds',
                 'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
@@ -434,7 +434,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
-                '10.00 pages per session',
+                '10.00 Pages per Session',
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,
@@ -442,7 +442,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
-                'value': '10.00 % bounce rate',
+                'value': '10.00 % Max Bounce Rate',
                 'description': 'planned 75.00 %'
             }, {
                 'section_start': False,
@@ -450,7 +450,7 @@ class CampaignGoalsTestCase(TestCase):
                 'icon': constants.Emoticon.NEUTRAL,
                 'type': 'setting',
                 'name': '',
-                'value': '1.20 % new unique visitors'
+                'value': '1.20 % New Unique Visitors'
             }
         ])
 

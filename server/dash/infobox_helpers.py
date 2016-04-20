@@ -581,9 +581,11 @@ def get_campaign_goal_list(user, constraints, start_date, end_date):
     first = True
     permissions = user.get_all_permissions_with_access_levels()
     for status, metric_value, planned_value, campaign_goal in performance:
-        goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
-        if campaign_goal.conversion_goal:
-            goal_description += ' - ' + campaign_goal.conversion_goal.name
+        goal_description = dash.campaign_goals.format_campaign_goal(
+            campaign_goal.type,
+            metric_value,
+            campaign_goal.conversion_goal
+        )
 
         entry = OverviewSetting(
             '' if not first else 'Goals:',

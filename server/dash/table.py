@@ -91,7 +91,11 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in performance:
         performance_item = {
             'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
-            'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
+            'text': campaign_goals.format_campaign_goal(
+                goal.type,
+                goal_metric,
+                goal.conversion_goal
+            )
         }
         if goal_value:
             performance_item['text'] += ' (planned {})'.format(
