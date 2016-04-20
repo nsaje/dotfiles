@@ -7,6 +7,7 @@ from django.http import JsonResponse, Http404
 from django.db.models import F
 from django.conf import settings
 
+from dash import constants
 from utils import url_helper
 from utils import request_signer
 
@@ -28,7 +29,7 @@ def _response_error(msg, status=400):
 
 
 @csrf_exempt
-def get_ad_group_list(request):
+def get_ad_group_source_list(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
@@ -42,9 +43,10 @@ def get_ad_group_list(request):
     if not source_type:
         _response_error("Missing source type")
 
+    nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
     ad_group_sources = (
         dash.models.AdGroupSource.objects
-            .filter(source__source_type__type=source_type)
+            .filter(ad_group__in=nonarchived)
             .filter(source_credentials_id=credentials_id)
             .values(
                 'ad_group_id',
@@ -55,27 +57,50 @@ def get_ad_group_list(request):
 
 
 @csrf_exempt
-def get_content_ad_list(request):
+def get_content_ad_source_list(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
         logger.exception('Invalid K1 signature.')
         raise Http404
 
-    source_types = request.GET.getlist('source_type')
+    credentials_id = request.GET.get('credentials_id')
+    if not credentials_id:
+        _response_error("Missing credentials ID")
+    source_type = request.GET.get('source_type')
+    if not source_type:
+        _response_error("Missing source type")
 
-    ad_groups = (
-        dash.models.AdGroup.objects
-            .exclude_archived()
-            .values(
-                'id',
-            )
+    active = (
+        dash.models.ContentAd.objects
+        .filter(state=constants.ContentAdSourceState.ACTIVE)
+        .exclude_archived()
     )
-    if source_types:
-        ad_groups = ad_groups.filter(
-            source__source_type__type__in=source_types)
+    content_ad_sources = (
+        dash.models.ContentAdSource.objects
+            .filter(content_ad__in=active)
+            .select_related('content_ad')
+    )
+    ad_group_ids = [cas.content_ad.ad_group_id for cas in content_ad_sources]
+    ad_group_sources = (
+        dash.models.AdGroupSource.objects
+            .filter(ad_group_id__in=ad_group_ids)
+    )
+    ad_group_source_index = {ags.ad_group_id: ags for ags in ad_group_sources}
 
-    return _response_ok(list(ad_groups))
+    content_ads = []
+    for cas in content_ad_sources:
+        try:
+            ad_group_source = ad_group_source_index[cas['content_ad__ad_group_id']]
+        except:
+            raise Exception('Content ad source does not have matching ad group source!')
+        content_ads.append({
+            'ad_group_id': ad_group_source['ad_group_id'],
+            'source_campaign_key': ad_group_source['source_campaign_key'],
+            'content_ad_id': cas['content_ad_id'],
+            'source_content_ad_id': cas['source_content_ad_id'],
+        })
+    return _response_ok(list(content_ads))
 
 
 @csrf_exempt
