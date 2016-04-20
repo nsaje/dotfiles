@@ -2104,12 +2104,13 @@ class PublishersTable(object):
             result['visits'] = totals_data.get('visits', None)
             result['click_discrepancy'] = totals_data.get('click_discrepancy', None)
             result['pageviews'] = totals_data.get('pageviews', None)
-        if user.has_perm('zemauth.view_pubs_postclick_engagement'):
-            result['new_visits'] = totals_data.get('new_visits', None)
-            result['percent_new_users'] = totals_data.get('percent_new_users', None)
-            result['bounce_rate'] = totals_data.get('bounce_rate', None)
-            result['pv_per_visit'] = totals_data.get('pv_per_visit', None)
-            result['avg_tos'] = totals_data.get('avg_tos', None)
+
+        result['new_visits'] = totals_data.get('new_visits', None)
+        result['percent_new_users'] = totals_data.get('percent_new_users', None)
+        result['bounce_rate'] = totals_data.get('bounce_rate', None)
+        result['pv_per_visit'] = totals_data.get('pv_per_visit', None)
+        result['avg_tos'] = totals_data.get('avg_tos', None)
+
         if user.has_perm('zemauth.can_view_effective_costs'):
             del result['cost']
             result['e_data_cost'] = totals_data.get('e_data_cost', 0)

@@ -139,7 +139,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
             ('view_pubs_conversion_goals', 'Can view publishers conversion goals.'),
             ('view_pubs_postclick_acquisition', 'Can view publishers postclick acq. metrics.'),
-            ('view_pubs_postclick_engagement', 'Can view publishers postclick eng. metrics.'),
             ('data_status_column', 'Can see data status column in table.'),
             ('filter_sources', 'Can filter sources'),
             ('upload_content_ads', 'Can upload new content ads.'),

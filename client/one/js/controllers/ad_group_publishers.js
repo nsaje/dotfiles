@@ -669,8 +669,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
             $scope.columns.length,
-            $scope.hasPermission('zemauth.view_pubs_postclick_engagement'),
-            $scope.isPermissionInternal('zemauth.view_pubs_postclick_engagement')
+            true,
+            false
         );
 
         zemPostclickMetricsService.insertConversionGoalColumns(
@@ -797,12 +797,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.isPermissionInternal('zemauth.view_pubs_postclick_acquisition')
             );
         }
-        if ($scope.hasPermission('zemauth.view_pubs_postclick_engagement')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
-                $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.view_pubs_postclick_engagement')
-            );
-        }
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+            $scope.chartMetricOptions,
+            false
+        );
 
         if ($scope.hasPermission('zemauth.view_pubs_conversion_goals')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
