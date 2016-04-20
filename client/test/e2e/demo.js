@@ -77,7 +77,6 @@ describe('Demo loading', function () {
 describe('Campaign management', function () {
     var elt = null;
     function newCampaign () {
-        element(by.css('#nav div .account-group')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/accounts\/[0-9]+\/campaigns/);
         element(by.cssContainingText('.btn-add', '+ Campaign')).click();
     }
@@ -94,7 +93,7 @@ describe('Campaign management', function () {
                                          'New demo campaign')).getText()
         ).toEqual('New demo campaign 123');
         expect(
-            element(by.cssContainingText('.campaign-group.list-group-item a',
+            element(by.cssContainingText('.campaign-group a',
                                          'New demo campaign')).getText()
         ).toEqual('New demo campaign 123');
     }
@@ -103,14 +102,14 @@ describe('Campaign management', function () {
         element(by.cssContainingText('.btn-add', '+ Ad group')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/ad_groups\/[0-9]+\/settings/);
         expect(
-            element(by.cssContainingText('.ad-group-item.list-group-item span',
+            element(by.cssContainingText('.ad-group-name',
                                          'New demo ad group')).getText()
         ).toEqual('New demo ad group');
     }
 
     function enableAdGroup () {
         element(by.cssContainingText('.btn-success', 'Enabled')).click();
-        element(by.css('#nav div .account-group')).click();
+        element(by.css('.breadcrumb a:first-of-type')).click();
     }
 
     function checkIfPresentInLists () {
