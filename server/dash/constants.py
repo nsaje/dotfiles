@@ -1371,6 +1371,7 @@ class GATrackingType(ConstantBase):
 
 class SystemUserType(ConstantBase):
     CAMPAIGN_STOP = 1
+    AUTOPILOT = 2
 
     _VALUES = {
         CAMPAIGN_STOP: 'Campaign Stop'
