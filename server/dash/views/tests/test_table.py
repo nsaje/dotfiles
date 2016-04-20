@@ -1966,7 +1966,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
+            conversion_goals=[u'ga__2', u'ga__3', u'omniture__4', u'omniture__5'],
             constraints_list=[],
         )
 
@@ -1976,7 +1976,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
+            conversion_goals=[u'ga__2', u'ga__3', u'omniture__4', u'omniture__5'],
             constraints_list=[],
         )
 
