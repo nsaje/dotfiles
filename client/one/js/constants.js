@@ -607,7 +607,7 @@ var options = {
     adGroupEngagementChartPostClickMetrics: [
         {name: '% New Users', value: constants.chartMetric.NEW_USERS},
         {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
-        {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
+        {name: 'Pageviews per Visit', value: constants.chartMetric.PV_PER_VISIT},
         {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS},
     ],
     adGroupConversionGoalChartMetrics: [
@@ -1107,7 +1107,7 @@ var options = {
     campaignGoalKPIs: [
         {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
         {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
-        {name: 'Pages per Session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'Pageviews per Visit', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
         {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},

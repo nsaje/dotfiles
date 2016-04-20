@@ -43,7 +43,7 @@ FIELDNAMES = {
     'impressions': 'Impressions',
     'pageviews': 'Pageviews',
     'percent_new_users': 'Percent New Users',
-    'pv_per_visit': 'PV/Visit',
+    'pv_per_visit': 'Pageviews per Visit',
     'source': 'Source',
     'start_date': 'Start Date',
     'title': 'Title',
