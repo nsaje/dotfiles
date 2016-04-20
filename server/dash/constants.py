@@ -1374,5 +1374,6 @@ class SystemUserType(ConstantBase):
     AUTOPILOT = 2
 
     _VALUES = {
-        CAMPAIGN_STOP: 'Campaign Stop'
+        CAMPAIGN_STOP: 'Campaign Stop',
+        AUTOPILOT: 'Zemanta Autopilot'
     }
