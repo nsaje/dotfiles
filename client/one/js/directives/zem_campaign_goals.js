@@ -28,21 +28,22 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 if (goal.type === constants.campaignGoalKPI.CPC) {
                     value = $filter('number')(goal.value, 3);
                 }
+                
                 switch (goal.type) {
                 case constants.campaignGoalKPI.TIME_ON_SITE:
-                    return value + ' seconds';
+                    return value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.MAX_BOUNCE_RATE:
-                    return value + '% bounce rate';
+                    return value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.PAGES_PER_SESSION:
-                    return value + ' pages per session';
+                    return value  + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.CPA:
-                    return '$' + value + ' CPA';
+                    return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.CPC:
-                    return '$' + value + ' CPC';
+                    return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.CPM:
-                    return '$' + value + ' CPM';
+                    return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.NEW_UNIQUE_VISITORS:
-                    return value + ' % new unique visitors';
+                    return value + ' ' + constants.campaignGoalValueText[goal.type];
                 }
             };
 
