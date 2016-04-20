@@ -261,11 +261,6 @@ class AccountAgencySettingsForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
-    service_fee = forms.DecimalField(
-        min_value=0,
-        max_value=100,
-        decimal_places=2,
-    )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
 

@@ -268,7 +268,6 @@
         changes_text: 'changes'
         name: 'Test campaign 1'
         campaign_manager: 1
-        service_fee: '0.2000'
         iab_category: 1
         campaign_goal: 2
         goal_quantity: 10

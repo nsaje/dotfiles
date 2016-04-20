@@ -576,7 +576,6 @@ class AccountSettings(SettingsBase):
         'archived',
         'default_account_manager',
         'default_sales_representative',
-        'service_fee'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -598,11 +597,6 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
-    )
-    service_fee = models.DecimalField(
-        decimal_places=4,
-        max_digits=5,
-        default=Decimal('0.2000'),
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -633,7 +627,6 @@ class CampaignSettings(SettingsBase):
         'iab_category',
         'campaign_goal',
         'goal_quantity',
-        'service_fee',
         'promotion_goal',
         'archived',
         'target_devices',
@@ -659,12 +652,6 @@ class CampaignSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
-    )
-
-    service_fee = models.DecimalField(
-        decimal_places=4,
-        max_digits=5,
-        default=Decimal('0.2000'),
     )
     iab_category = models.SlugField(
         max_length=10,
@@ -751,7 +738,6 @@ class CampaignSettings(SettingsBase):
             'iab_category': 'IAB Category',
             'campaign_goal': 'Campaign Goal',
             'goal_quantity': 'Goal Quantity',
-            'service_fee': 'Service Fee',
             'promotion_goal': 'Promotion Goal',
             'archived': 'Archived',
             'target_devices': 'Device targeting',
@@ -770,8 +756,6 @@ class CampaignSettings(SettingsBase):
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':
             value = constants.CampaignGoal.get_text(value)
-        elif prop_name == 'service_fee':
-            value = views.helpers.format_decimal_to_percent(value) + '%'
         elif prop_name == 'promotion_goal':
             value = constants.PromotionGoal.get_text(value)
         elif prop_name == 'target_devices':

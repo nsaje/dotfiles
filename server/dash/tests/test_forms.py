@@ -36,7 +36,6 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 2,
             'default_sales_representative': 3,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name'}}
         })
         self.assertFalse(form.is_valid())
@@ -48,7 +47,6 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 2,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name'}}
         })
         self.assertFalse(form.is_valid())
@@ -60,7 +58,6 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
         })
         self.assertTrue(form.is_valid())
@@ -74,7 +71,6 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': allowed_sources_dict
         })
 
@@ -104,7 +100,6 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'test account 1',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
             })
         self.assertFalse(form.is_valid())

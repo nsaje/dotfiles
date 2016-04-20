@@ -483,7 +483,6 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'campaign',
         'campaign_manager',
-        'service_fee',
         'iab_category',
         'promotion_goal',
         'created_dt',
