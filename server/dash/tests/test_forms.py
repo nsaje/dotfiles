@@ -37,10 +37,14 @@ class AccountAgencySettingsFormTest(TestCase):
         self.assertTrue(form.has_error('default_sales_representative'))
 
     def test_invalid_account_manager(self):
+        account_manager_id = 123
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(pk=account_manager_id)
+
         form = forms.AccountAgencySettingsForm({
             'id': 1,
             'name': 'Name',
-            'default_account_manager': 2,
+            'default_account_manager': account_manager_id,
             'default_sales_representative': 2,
             'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name'}}

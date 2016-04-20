@@ -1879,6 +1879,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
+        self.add_permissions(['campaign_agency_view'])
+
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1922,15 +1924,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
 
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-
-    def test_permissions(self):
-        url = '/api/campaigns/1/settings/'
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
 
     def test_get(self):
         self.add_permissions(['settings_defaults_on_campaign_level'])
@@ -2264,6 +2257,8 @@ class CampaignSettingsTest(AgencyViewTestCase):
     def test_get_with_conversion_goals(self):
 
         ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.add_permissions(['can_see_campaign_goals'])
 
         convpix = models.ConversionPixel.objects.create(
             account=ad_group.campaign.account,

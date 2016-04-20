@@ -1167,7 +1167,7 @@ class AccountAgency(api_common.BaseApiView):
         return ', '.join(sources_text_list)
 
     def get_user_list(self, settings, perm_name=None):
-        users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
+        users = list(ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:

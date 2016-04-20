@@ -2658,24 +2658,6 @@ class AdGroupOverviewTest(TestCase):
         else:
             return None
 
-    def test_user_access_1(self):
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_user_access_2(self):
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
         self.setUpPermissions()
@@ -2867,24 +2849,6 @@ class CampaignOverviewTest(TestCase):
 
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
-
-    def test_user_access_1(self):
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_user_access_2(self):
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):

@@ -315,15 +315,6 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
 class CampaignBudgetViewTest(BCMViewTestCase):
 
-    def test_permissions(self):
-        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url, json.dumps({}), content_type='application/json')
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
@@ -463,21 +454,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
 
 class CampaignBudgetItemViewTest(BCMViewTestCase):
-
-    def test_permissions(self):
-        url = reverse('campaigns_budget_item', kwargs={
-            'campaign_id': 1,
-            'budget_id': 1,
-        })
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url, json.dumps({}),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 401)
 
     def test_get(self):
         url = reverse('campaigns_budget_item', kwargs={
