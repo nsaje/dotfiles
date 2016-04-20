@@ -50,7 +50,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
                 bandit.remove_source(s)
 
     if sum(new_budgets.values()) != daily_budget:
-        logger.warning('Budget Auto-Pilot tried assigning wrong ammount of total daily budgets - Expected: ' +
+        logger.warning('Budget Autopilot tried assigning wrong ammount of total daily budgets - Expected: ' +
                        str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on AdGroup: ' +
                        str(ad_group) + ' ( ' + str(ad_group.id) + ' )')
         comments = [DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]
@@ -160,7 +160,7 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
     if campaign_goal_type == CampaignGoalKPI.CPC:
         return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
                                                                   min_value_of_campaign_goal < float("inf")) else 0.0
-    raise exceptions.NotImplementedError('Budget Auto-Pilot campaign goal is not implemented: ', campaign_goal_type)
+    raise exceptions.NotImplementedError('Budget Autopilot campaign goal is not implemented: ', campaign_goal_type)
 
 
 def get_adgroup_minimum_daily_budget(adgroup=None):

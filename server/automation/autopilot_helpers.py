@@ -124,7 +124,7 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
 
-    On the ad groups in campaign {camp}, which are set to auto-pilot, the system made the following changes:{changes}
+    On the ad groups in campaign {camp}, which are set to autopilot, the system made the following changes:{changes}
 
     Please check {camp_url} for details.
 
@@ -139,7 +139,7 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
     )
     try:
         send_mail(
-            u'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
+            u'Campaign Autopilot Changes - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
@@ -149,7 +149,7 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
             fail_silently=False
         )
     except Exception as e:
-        logger.exception(u'Auto-pilot e-mail for campaign %s to %s was not sent' +
+        logger.exception(u'Autopilot e-mail for campaign %s to %s was not sent' +
                          'because an exception was raised:',
                          campaign_name,
                          u', '.join(emails))
@@ -160,7 +160,7 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_autopilot_email',
-            description=u'Auto-pilot e-mail for campaign was not sent because an exception was raised: {}'.
+            description=u'Autopilot e-mail for campaign was not sent because an exception was raised: {}'.
                         format(traceback.format_exc(e)),
             details=desc
         )
@@ -176,8 +176,8 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
 
-    Bid CPC and Daily Budgets Optimising Auto-Pilot's settings on Your ad group in campaign {camp} have been changed.
-    Auto-Pilot made the following changes:{changes}
+    Bid CPC and Daily Budgets Optimising Autopilot's settings on Your ad group in campaign {camp} have been changed.
+    Autopilot made the following changes:{changes}
     - all Paused Media Sources\' Daily Budgets have been set to minimum values.
 
     Please check {camp_url} for details.
@@ -193,7 +193,7 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     )
     try:
         send_mail(
-            u'Ad Group put on Bid CPC and Daily Budgets Optimising Auto-Pilot - {account}'.format(
+            u'Ad Group put on Bid CPC and Daily Budgets Optimising Autopilot - {account}'.format(
                 account=account_name
             ),
             body,
@@ -202,7 +202,7 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
             fail_silently=False
         )
     except Exception as e:
-        logger.exception(u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
+        logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign %s to %s was not sent because an exception was raised:',
                          campaign_name,
                          u', '.join(emails))
@@ -213,7 +213,7 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_autopilot_budget_initialisation_email',
-            description=u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
+            description=u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign was not sent because an exception was raised: {}'.
                         format(traceback.format_exc(e)),
             details=desc

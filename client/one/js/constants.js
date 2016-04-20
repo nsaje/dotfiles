@@ -576,7 +576,7 @@ var options = {
     ],
     adGroupSettingsAutopilotStates: [{
         name: 'Disabled',
-        help: 'Auto-Pilot will not operate on this Ad Group.',
+        help: 'Autopilot will not operate on this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.INACTIVE,
     }, {
         name: 'Optimize Bid CPCs',
