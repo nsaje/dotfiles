@@ -71,34 +71,66 @@ def get_content_ad_source_list(request):
     if not source_type:
         _response_error("Missing source type")
 
-    active = (
+    active_ad_groups = dash.models.AdGroup.objects.all().filter_active().exclude_archived()
+    ad_group_sources = (
+        dash.models.AdGroupSource.objects
+            .filter(ad_group__in=active_ad_groups)
+            .filter(source_credentials_id=credentials_id)
+            .select_related('source')
+    )
+    active_content_ads = (
         dash.models.ContentAd.objects
-        .filter(state=constants.ContentAdSourceState.ACTIVE)
-        .exclude_archived()
+            .filter(state=constants.ContentAdSourceState.ACTIVE)
+            .exclude_archived()
     )
     content_ad_sources = (
         dash.models.ContentAdSource.objects
-            .filter(content_ad__in=active)
+            .filter(content_ad__in=active_content_ads)
             .select_related('content_ad')
-    )
-    ad_group_ids = [cas.content_ad.ad_group_id for cas in content_ad_sources]
-    ad_group_sources = (
-        dash.models.AdGroupSource.objects
-            .filter(ad_group_id__in=ad_group_ids)
     )
     ad_group_source_index = {ags.ad_group_id: ags for ags in ad_group_sources}
 
     content_ads = []
-    for cas in content_ad_sources:
+    for content_ad_source in content_ad_sources:
         try:
-            ad_group_source = ad_group_source_index[cas['content_ad__ad_group_id']]
+            ad_group_source = ad_group_source_index[content_ad_source['content_ad__ad_group_id']]
         except:
             raise Exception('Content ad source does not have matching ad group source!')
+
+        if ad_group_source.source.update_tracking_codes_on_content_ads() and\
+                ad_group_source.can_manage_content_ads:
+            ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
+
+            url = content_ad_source.content_ad.url_with_tracking_codes(
+                url_helper.combine_tracking_codes(
+                    ad_group_tracking_codes,
+                    ad_group_source.get_tracking_ids(),
+                )
+            )
+        else:
+            url = content_ad_source.content_ad.url
+
         content_ads.append({
-            'ad_group_id': ad_group_source['ad_group_id'],
-            'source_campaign_key': ad_group_source['source_campaign_key'],
-            'content_ad_id': cas['content_ad_id'],
-            'source_content_ad_id': cas['source_content_ad_id'],
+            'credentials': ad_group_source.source_credentials.credentials,
+            'source_campaign_key': ad_group_source.source_campaign_key,
+            'ad_group_id': content_ad_source.content_ad.ad_group_id,
+            'content_ad_id': content_ad_source.content_ad_id,
+            'source_content_ad_id': content_ad_source.source_content_ad_id,
+            'state': content_ad_source.state,
+            'title': content_ad_source.content_ad.title,
+            'url': url,
+            'submission_status': content_ad_source.submission_status,
+            'image_id': content_ad_source.content_ad.image_id,
+            'image_width': content_ad_source.content_ad.image_width,
+            'image_height': content_ad_source.content_ad.image_height,
+            'image_hash': content_ad_source.content_ad.image_hash,
+            'redirect_id': content_ad_source.content_ad.redirect_id,
+            'display_url': content_ad_source.content_ad.display_url,
+            'brand_name': content_ad_source.content_ad.brand_name,
+            'description': content_ad_source.content_ad.description,
+            'call_to_action': content_ad_source.content_ad.call_to_action,
+            'tracking_slug': ad_group_source.source.tracking_slug,
+            'tracker_urls': content_ad_source.content_ad.tracker_urls
         })
     return _response_ok(list(content_ads))
 
