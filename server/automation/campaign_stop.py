@@ -483,29 +483,42 @@ def _restore_user_sources_settings(ad_group):
     actions = []
 
     ad_group_sources = ad_group.adgroupsource_set.all()
-    ad_group_sources_settings = {
+    user_ad_group_sources_settings = {
         ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=ad_group_sources,
             landing_mode=False,
         ).group_current_settings()
     }
+    current_ad_group_sources_settings = {
+        ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=ad_group_sources,
+        ).group_current_settings()
+    }
 
     for ad_group_source in ad_group.adgroupsource_set.all():
         settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-        old_settings = ad_group_sources_settings[ad_group_source.id]
-        actions.extend(
-            settings_writer.set(
-                {
-                    'state': old_settings.state,
-                    'cpc_cc': old_settings.cpc_cc,
-                    'daily_budget_cc': old_settings.daily_budget_cc,
-                },
-                request=None,
-                send_to_zwei=False,
-                system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-                landing_mode=False
+        user_settings = user_ad_group_sources_settings[ad_group_source.id]
+        current_settings = current_ad_group_sources_settings[ad_group_source.id]
+
+        for key in ['state', 'cpc_cc', 'daily_budget_cc']:
+            if getattr(user_settings, key) == getattr(current_settings, key):
+                continue
+
+            actions.extend(
+                settings_writer.set(
+                    {
+                        key: getattr(user_settings, key),
+                    },
+                    request=None,
+                    send_to_zwei=False,
+                    system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+                )
             )
-        )
+
+        if current_settings.landing_mode:
+            new_settings = ad_group_source.get_current_settings().copy_settings()
+            new_settings.landing_mode = False
+            new_settings.save(None)
 
     return actions
 

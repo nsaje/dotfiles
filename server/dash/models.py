@@ -1923,6 +1923,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         'state',
         'cpc_cc',
         'daily_budget_cc',
+        'landing_mode'
     ]
 
     id = models.AutoField(primary_key=True)
