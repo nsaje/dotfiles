@@ -430,7 +430,7 @@ class CampaignAdGroups(TestCase):
             ad_group_source__ad_group=ad_group
         ).group_current_settings()
         self.assertTrue(all(
-            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
         ))
 
     @patch('actionlog.api.create_campaign')
@@ -475,7 +475,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_source)
         self.assertTrue(mock_set_ad_group_source_settings.called)
         named_call_args = mock_set_ad_group_source_settings.call_args[1]
-        self.assertEqual(named_call_args['active'], True)
         self.assertEqual(named_call_args['mobile_only'], True)
 
     def test_create_new_settings(self):
