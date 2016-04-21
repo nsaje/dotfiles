@@ -1,7 +1,5 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
-    var freshSettings = $q.defer(),
-        goToContentAds = false;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
     $scope.actionIsWaiting = false;
@@ -47,8 +45,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
-                freshSettings.resolve(data.settings.name === 'New ad group');
-                goToContentAds = data.settings.name === 'New ad group';
             },
             function () {
                 // error
@@ -118,12 +114,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 zemNavigationService.reloadAdGroup($state.params.id);
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-
-                if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function () {
-                        $state.go('main.adGroups.ads', {id: $scope.settings.id});
-                    }, 100);
-                }
             },
             function (data) {
                 $scope.errors = data;

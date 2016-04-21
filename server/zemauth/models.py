@@ -81,11 +81,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                     'active. Unselect this instead of deleting accounts.')
     )
 
-    show_onboarding_guidance = models.BooleanField(
-        default=False,
-        help_text='Designates whether user has self-manage access and needs onboarding guidance.'
-    )
-
     is_test_user = models.BooleanField(
         default=False,
         help_text=_('Designates whether user is an internal testing user and will not contribute towards certain statistics.')

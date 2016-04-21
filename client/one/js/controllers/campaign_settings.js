@@ -76,21 +76,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                 $scope.requestInProgress = false;
                 $scope.saved = true;
 
-                if ($scope.user.automaticallyCreateAdGroup && $scope.user.showOnboardingGuidance) {
-                    $scope.user.automaticallyCreateAdGroup = false;
-                    api.campaignAdGroups.create($scope.campaign.id).then(function (adGroupData) {
-                        zemNavigationService.addAdGroupToCache($scope.campaign.id, {
-                            id: adGroupData.id,
-                            name: adGroupData.name,
-                            status: constants.adGroupSettingsState.INACTIVE,
-                            state: constants.adGroupRunningStatus.INACTIVE,
-                        });
-                        $timeout(function () {
-                            $state.go('main.adGroups.settings', {id: adGroupData.id});
-                        }, 100);
-                    });
-                }
-
                 $scope.campaignGoalsDiff.added = [];
                 $scope.campaignGoalsDiff.removed = [];
                 $scope.campaignGoalsDiff.primary = null;
