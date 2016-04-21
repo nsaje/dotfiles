@@ -2705,6 +2705,10 @@ class BudgetLineItem(FootprintModel):
             if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
                                                           constants.BudgetLineItemState.ACTIVE,):
                 raise ValidationError('Only pending and active budgets can change.')
+        elif self.credit.status == constants.CreditLineItemStatus.CANCELED:
+            raise ValidationError({
+                'credit': 'Canceled credits cannot have new budget items.'
+            })
 
         validate(
             self.validate_start_date,
@@ -2719,8 +2723,8 @@ class BudgetLineItem(FootprintModel):
     def validate_credit(self):
         if self.has_changed('credit'):
             raise ValidationError('Credit cannot change.')
-        if self.credit.status != constants.CreditLineItemStatus.SIGNED:
-            raise ValidationError('Cannot allocate budget from an unsigned or canceled credit.')
+        if self.credit.status == constants.CreditLineItemStatus.PENDING:
+            raise ValidationError('Cannot allocate budget from an unsigned credit.')
 
     def validate_start_date(self):
         if not self.start_date:
@@ -2737,6 +2741,9 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('Start date cannot be bigger than the end date.')
 
     def validate_amount(self):
+        if self.has_changed('amount') and \
+           self.credit.status == constants.CreditLineItemStatus.CANCELED:
+            raise ValidationError('Canceled credit\'s budget amounts cannot change.')
         if not self.amount:
             return
         if self.amount < 0:

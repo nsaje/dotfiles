@@ -676,7 +676,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'credit': 1,
             'start_date': '2015-10-01',
             'end_date': '2015-11-30',
-            'amount': 90000,
+            'amount': '90000',
             'comment': 'Test case test_post',
         }
 
