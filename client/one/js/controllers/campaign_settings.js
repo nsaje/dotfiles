@@ -27,10 +27,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         return primary;
     }
 
-    $scope.campaignHasFreshSettings = function () {
-        return campaignFreshSettings.promise;
-    };
-
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
         $scope.discarded = null;

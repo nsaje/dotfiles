@@ -86,10 +86,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return !!$scope.getDefaultAllAccountsState();
     };
 
-    $scope.canShowBudgetNotification = function () {
-        return $scope.remindToAddBudget.promise;
-    };
-
     $scope.getDefaultAccountState = function () {
         // keep the same tab if possible
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {

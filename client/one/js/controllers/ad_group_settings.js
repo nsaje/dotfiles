@@ -24,10 +24,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
 
-    $scope.adGroupHasFreshSettings = function () {
-        return freshSettings.promise;
-    };
-
     $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };

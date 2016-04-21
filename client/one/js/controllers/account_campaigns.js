@@ -24,10 +24,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
         canShowAddCampaignTutorial = $q.defer();
 
-    $scope.showAddCampaignTutorial = function () {
-        return canShowAddCampaignTutorial.promise;
-    };
-
     $scope.exportOptions = [
       {name: 'By Account (totals)', value: constants.exportType.ACCOUNT},
       {name: 'Current View', value: constants.exportType.CAMPAIGN, defaultOption: true},

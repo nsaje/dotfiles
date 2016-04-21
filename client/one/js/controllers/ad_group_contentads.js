@@ -877,10 +877,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             });
     };
 
-    $scope.canShowOnboardingGuidance = function () {
-        return contentAdsNotLoaded.promise;
-    };
-
     var updateTableData = function (rowsUpdates, totalsUpdates) {
         $scope.rows.forEach(function (row) {
             var rowUpdates = rowsUpdates[row.id];
