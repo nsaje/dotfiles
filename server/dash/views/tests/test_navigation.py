@@ -321,34 +321,6 @@ class NavigationTreeViewTest(TestCase):
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_archived_flag(self):
-
-        # user has no right for archived flag
-        response = self._get(2)
-
-        expected_response = [{
-            "campaigns": [{
-                "adGroups": [
-                    {
-                        "id": 4,
-                        "name": "test adgroup 4",
-                        "state": 2,
-                        "status": 2,
-                        "autopilot_state": 2,
-                    }
-                ],
-                "id": 2,
-                "name": "test campaign 2",
-                "landingMode": False,
-            }],
-            "id": 2,
-            "name": "test account 2",
-        }]
-
-        self.assertItemsEqual(response['data'], expected_response)
-
-        # add user right for archived flag
-        user = User.objects.get(pk=2)
-
         response = self._get(2)
 
         expected_response = [{
