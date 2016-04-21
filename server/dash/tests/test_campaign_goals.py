@@ -241,7 +241,7 @@ class CampaignGoalsTestCase(TestCase):
                 'fields': {'total_seconds': True, 'avg_cost_per_second': True},
             },
             {
-                'name': 'Pages per Session',
+                'name': 'Pageviews per Visit',
                 'conversion': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
@@ -275,7 +275,7 @@ class CampaignGoalsTestCase(TestCase):
             'media_cost': 5,
             'cost': 5,
             'bounce_rate': 10,
-            'total_pageviews': 10,
+            'pv_per_visit': 10,
             'avg_tos': 10,
             'percent_new_users': 1.2,
         }
@@ -313,6 +313,7 @@ class CampaignGoalsTestCase(TestCase):
         mock_contentads_query.return_value = {
             'bounce_rate': 10,
             'total_pageviews': 10,
+            'pv_per_visit': 10,
             'avg_tos': 10,
             'cpc': 0.1,
             'cost': 5,
@@ -357,7 +358,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
-                '10.00 Pages per Session',
+                '10.00 Pageviews per Visit',
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,
@@ -395,6 +396,7 @@ class CampaignGoalsTestCase(TestCase):
             'cpc': 0.1,
             'media_cost': 5,
             'cost': 5,
+            'pv_per_visit': 10,
             'percent_new_users': 1.2,
             'conversions': {
                 'ga__123': 20.00,
@@ -434,7 +436,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
-                '10.00 Pages per Session',
+                '10.00 Pageviews per Visit',
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,

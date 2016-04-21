@@ -15,7 +15,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: '{} Time on Site - Seconds',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} Max Bounce Rate',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Unique Visitors',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pages per Session',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
 }
@@ -51,7 +51,7 @@ CAMPAIGN_GOAL_MAP = {
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
