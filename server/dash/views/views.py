@@ -541,15 +541,12 @@ class CampaignAdGroups(api_common.BaseApiView):
         return actions
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
-        source = source_settings.source
         ad_group = ad_group_settings.ad_group
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
-            retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
-        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only(),
-                                             active=active_source_state)
+        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only())
+
         return ad_group_source
 
 
