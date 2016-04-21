@@ -982,6 +982,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
 
+    def has_add_permission(self, request):
+        return False
+
     def get_queryset(self, request):
         return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)
 
