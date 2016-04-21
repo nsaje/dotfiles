@@ -383,7 +383,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         Because of this we define a 'budget minimum':
         budget_minimum = budget_spend + sum(daily_budgets) - overall_available_campaign_budget
         """
-        amount = data.get('amount', 0)
+        amount = Decimal(data.get('amount', '0'))
         if amount >= item.instance.amount:
             return
         min_amount = campaign_stop.get_minimum_budget_amount(item.instance)

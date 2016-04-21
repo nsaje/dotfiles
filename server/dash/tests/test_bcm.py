@@ -1037,7 +1037,12 @@ class BudgetsTestCase(TestCase):
                          constants.BudgetLineItemState.INACTIVE)
 
         with self.assertRaises(ValidationError) as err:
-            b2 = create_budget(
+            b2.amount = b2.amount + 1
+            b2.save()
+        self.assertTrue('amount' in err.exception.error_dict)  # canceled credit cannot change amount
+
+        with self.assertRaises(ValidationError) as err:
+            create_budget(
                 credit=c,
                 amount=300,
                 start_date=TODAY,
