@@ -242,7 +242,7 @@ def get_content_ad_source_mapping(request):
         raise Http404
 
     source_content_ad_ids = json.loads(request.body)
-    if not source_content_ad_ids or not isinstance(source_content_ad_ids, list):
+    if not isinstance(source_content_ad_ids, list):
         return JsonResponse({
             "error": "Body must be a list of source content ad ids."
         }, status=400)
