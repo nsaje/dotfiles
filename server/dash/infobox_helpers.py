@@ -497,12 +497,14 @@ def _retrieve_active_budgetlineitems(campaign, date):
 def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
     campaign = ad_group_settings.ad_group.campaign
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
+    autopilot_state = ad_group_settings.autopilot_state if ad_group_settings\
+                      else dash.constants.AdGroupSettingsAutopilotState.INACTIVE
     ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__ad_group=ad_group_settings.ad_group).group_current_settings().\
         filter_by_sources(filtered_sources)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
 
-    return get_adgroup_running_status_class(ad_group_settings.autopilot_state, running_status,
+    return get_adgroup_running_status_class(autopilot_state, running_status,
                                             state, campaign.is_in_landing())
 
 

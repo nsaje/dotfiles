@@ -20,14 +20,15 @@ def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings, cam
     running_status = models.AdGroup.get_running_status(ad_group_settings, ad_group_source_settings)
     state = ad_group_settings.state if ad_group_settings else constants.AdGroupSettingsState.INACTIVE
     is_in_landing = campaign_settings.landing_mode if campaign_settings else False
+    autopilot_state = ad_group_settings.autopilot_state if ad_group_settings\
+                      else constants.AdGroupSettingsAutopilotState.INACTIVE
     ad_group_dict = {
         'id': ad_group.id,
         'name': ad_group.name,
         'status': running_status,
         'state': state,
-        'autopilot_state': ad_group_settings.autopilot_state if ad_group_settings
-        else constants.AdGroupSettingsAutopilotState.INACTIVE,
-        'active': infobox_helpers.get_adgroup_running_status_class(ad_group_settings.autopilot_state, running_status,
+        'autopilot_state': autopilot_state,
+        'active': infobox_helpers.get_adgroup_running_status_class(autopilot_state, running_status,
                                                                    state, is_in_landing),
     }
     if include_archived_flag:
