@@ -636,13 +636,11 @@ class UpdateAdGroupSettingsTestCase(TestCase):
         ag2 = dash.models.AdGroup.objects.get(id=2)
 
         ag1_settings = ag1.get_current_settings()
-        self.assertEqual(ag1_settings.landing_mode, False)
         self.assertEqual(ag1_settings.autopilot_state,
                          dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.assertEqual(ag1_settings.autopilot_daily_budget, Decimal('0.0000'))
 
         ag2_settings = ag2.get_current_settings()
-        self.assertEqual(ag2_settings.landing_mode, False)
         self.assertEqual(ag2_settings.autopilot_state,
                          dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.assertEqual(ag2_settings.autopilot_daily_budget, Decimal('0.0000'))
@@ -651,16 +649,14 @@ class UpdateAdGroupSettingsTestCase(TestCase):
             1: 12,
             2: 15,
         }
-        campaign_stop._update_ad_group_settings_to_landing(daily_caps)
+        campaign_stop._persist_new_autopilot_settings(daily_caps)
 
         ag1_settings = ag1.get_current_settings()
-        self.assertEqual(ag1_settings.landing_mode, True)
         self.assertEqual(ag1_settings.autopilot_state,
                          dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         self.assertEqual(ag1_settings.autopilot_daily_budget, Decimal('12'))
 
         ag2_settings = ag2.get_current_settings()
-        self.assertEqual(ag2_settings.landing_mode, True)
         self.assertEqual(ag2_settings.autopilot_state,
                          dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         self.assertEqual(ag2_settings.autopilot_daily_budget, Decimal('15'))
@@ -673,7 +669,7 @@ class UpdateAdGroupSettingsTestCase(TestCase):
     @patch('automation.campaign_stop._prepare_for_autopilot')
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('automation.campaign_stop._calculate_daily_caps')
-    @patch('automation.campaign_stop._update_ad_group_settings_to_landing')
+    @patch('automation.campaign_stop._persist_new_autopilot_settings')
     def test_update_ad_group_settings_called(self, mock_update_ags, mock_calc_caps,
                                              mock_past7, mock_prepare_ap, *mocks):
         caps = {
