@@ -502,10 +502,11 @@ def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
         filter_by_sources(filtered_sources)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
 
-    return get_adgroup_running_status_class(ad_group_settings, running_status, state, campaign.is_in_landing())
+    return get_adgroup_running_status_class(ad_group_settings.autopilot_state, running_status,
+                                            state, campaign.is_in_landing())
 
 
-def get_adgroup_running_status_class(ad_group_settings, running_status, state, is_in_landing):
+def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
     if state == dash.constants.AdGroupSettingsState.INACTIVE and\
        running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
         return dash.constants.InfoboxStatus.STOPPED
@@ -519,8 +520,8 @@ def get_adgroup_running_status_class(ad_group_settings, running_status, state, i
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
-            ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+    if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
+            autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
         return dash.constants.InfoboxStatus.AUTOPILOT
 
     return dash.constants.InfoboxStatus.ACTIVE
