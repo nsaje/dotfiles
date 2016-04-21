@@ -597,7 +597,7 @@ class AdGroupAdsTableTest(TestCase):
         params = {
             'page': 1,
             'order': '-title',
-            'size': 2,
+            'size': 3,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
         }
@@ -620,11 +620,11 @@ class AdGroupAdsTableTest(TestCase):
 
         self.assertIn('pagination', result['data'])
         self.assertEqual(result['data']['pagination'], {
-            'count': 3,
+            'count': 2,
             'currentPage': 1,
             'endIndex': 2,
-            'numPages': 2,
-            'size': 2,
+            'numPages': 1,
+            'size': 3,
             'startIndex': 1
         })
 
@@ -1966,7 +1966,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=[u'ga__2', u'ga__3', u'omniture__4', u'omniture__5'],
+            conversion_goals=[],
             constraints_list=[],
         )
 
@@ -1976,7 +1976,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=[u'ga__2', u'ga__3', u'omniture__4', u'omniture__5'],
+            conversion_goals=[],
             constraints_list=[],
         )
 
@@ -1995,11 +1995,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'domain_link': u'http://example.com',
             u'blacklisted': u'Active',
             u'can_blacklist_publisher': True,
-            u'conversion_goal_1': 0,
-            u'conversion_goal_2': None,
-            u'conversion_goal_3': None,
-            u'conversion_goal_4': None,
-            u'conversion_goal_5': None,
             u'ctr': 100.0,
             u'exchange': u'Adiant',
             u'cpc': 1.3,
