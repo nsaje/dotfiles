@@ -956,7 +956,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             $scope.dateRange.startDate,
             $scope.dateRange.endDate).then(
             function (data) {
-                $scope.infoboxHeader = data.header;
+                $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
                 $scope.reflowGraph(1);

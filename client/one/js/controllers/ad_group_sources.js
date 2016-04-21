@@ -122,6 +122,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 }
                 $scope.loadRequestInProgress = true;
                 $scope.autopilotChanges = '';
+
+                zemNavigationService.notifyAdGroupReloading($state.params.id, true);
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
@@ -707,7 +709,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.dateRange.startDate,
             $scope.dateRange.endDate).then(
             function (data) {
-                $scope.infoboxHeader = data.header;
+                $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
                 $scope.reflowGraph(1);
@@ -968,6 +970,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };
+
+    zemNavigationService.onUpdate($scope, function () {
+        $scope.updateInfoboxHeader($scope);
+    });
 
     $scope.init();
 }]);

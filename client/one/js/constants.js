@@ -22,6 +22,13 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
+    infoboxStatus: {
+        ACTIVE: 'active',
+        INACTIVE: 'inactive',
+        STOPPED: 'stopped',
+        LANDING_MODE: 'landing-mode',
+        AUTOPILOT: 'autopilot',
+    },
     publisherStatus: {
         ENABLED: 1,
         BLACKLISTED: 2,

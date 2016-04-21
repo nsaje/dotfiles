@@ -361,29 +361,19 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         };
     };
 
-    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
+    $scope.getAdGroupStatusClass = function (adGroup) {
+        if (adGroup.reloading) {
+            return 'adgroup-status-reloading-icon';
+        }
+
+        if (adGroup.active === constants.infoboxStatus.STOPPED) {
             return 'adgroup-status-stopped-icon';
-        }
-
-        if (campaign.landingMode) {
-            if ($state.includes('main.adGroups', {id: adGroup.id.toString()})) {
-                return 'adgroup-status-landing-mode-selected-icon';
-            }
-
-            return 'adgroup-status-landing-mode-icon';
-        }
-
-        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
-            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
+        } else if (adGroup.active === constants.infoboxStatus.LANDING_MODE) {
+            return ($state.includes('main.adGroups', {id: adGroup.id.toString()})) ?
+                'adgroup-status-landing-mode-selected-icon' : 'adgroup-status-landing-mode-icon';
+        } else if (adGroup.active === constants.infoboxStatus.INACTIVE) {
             return 'adgroup-status-inactive-icon';
-        }
-
-        if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
-              adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
+        } else if (adGroup.active === constants.infoboxStatus.AUTOPILOT) {
             return 'adgroup-status-autopilot-icon';
         }
 
