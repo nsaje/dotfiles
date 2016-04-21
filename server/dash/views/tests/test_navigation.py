@@ -110,16 +110,6 @@ class NavigationDataViewTest(TestCase):
             }
         })
 
-    def test_get_account_without_archived_flag(self):
-        response = self._get(2, 'accounts', 2)
-
-        self.assertDictEqual(response, {
-            'account': {
-                'id': 2,
-                'name': 'test account 2',
-            }
-        })
-
     def test_get_account_no_access(self):
         # has other accounts available
         response = self._get(1, 'accounts', 2)
@@ -165,21 +155,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test campaign 3',
-                'landingMode': False,
-            }
-        })
-
-    def test_get_campaign_without_archived_flag(self):
-        response = self._get(2, 'campaigns', 2)
-
-        self.assertDictEqual(response, {
-            'account': {
-                'id': 2,
-                'name': 'test account 2',
-            },
-            'campaign': {
-                'id': 2,
-                'name': 'test campaign 2',
                 'landingMode': False,
             }
         })
@@ -250,44 +225,6 @@ class NavigationDataViewTest(TestCase):
                 'status': 2,
                 'autopilot_state': 2
             }
-        })
-
-    @patch('datetime.datetime', MockDatetime)
-    def test_get_ad_group_without_archived_flag(self):
-        response = self._get(2, 'ad_groups', 4)
-
-        self.assertDictEqual(response, {
-            'account': {
-                'id': 2,
-                'name': 'test account 2',
-            },
-            'campaign': {
-                'id': 2,
-                'name': 'test campaign 2',
-                'landingMode': False,
-            },
-            'ad_group': {
-                'id': 4,
-                'name': 'test adgroup 4',
-                'state': 2,
-                'status': 2,
-                'autopilot_state': 2
-            }
-        })
-
-    def test_get_ad_group_no_access(self):
-        # has other available
-        response = self._get(1, 'ad_groups', 4)
-        self.assertDictEqual(response, {
-            'message': 'Ad Group does not exist',
-            'error_code': 'MissingDataError'
-        })
-
-        # has nothing available
-        response = self._get(4, 'ad_groups', 2)
-        self.assertDictEqual(response, {
-            'message': 'Ad Group does not exist',
-            'error_code': 'MissingDataError'
         })
 
 
