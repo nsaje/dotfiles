@@ -28,7 +28,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 if (goal.type === constants.campaignGoalKPI.CPC) {
                     value = $filter('number')(goal.value, 3);
                 }
-                
+
                 switch (goal.type) {
                 case constants.campaignGoalKPI.TIME_ON_SITE:
                     return value + ' ' + constants.campaignGoalValueText[goal.type];

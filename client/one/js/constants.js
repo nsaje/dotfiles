@@ -1158,7 +1158,7 @@ var defaults = {
     ],
 };
 
-constants.campaignGoalValueText = {}
+constants.campaignGoalValueText = {};
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPA] = 'CPA';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPC] = 'CPC';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPM] = 'CPM';
