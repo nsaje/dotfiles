@@ -196,3 +196,10 @@ GA_CLIENT_EMAIL = ''
 GA_PRIVATE_KEY = ''
 
 QUERY_INSPECT_ENABLED = False
+
+# k1
+K1_DEMO_MODE = False
+
+K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
+K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
+K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
