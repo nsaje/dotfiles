@@ -530,14 +530,9 @@ urlpatterns += [
         name='k1api.get_ad_group_source_list',
     ),
     url(
-        r'^k1api/content_ad_source$',
-        k1api.views.get_content_ad_source,
-        name='k1api.get_content_ad_source',
-    ),
-    url(
-        r'^k1api/content_ad_source_list$',
-        k1api.views.get_content_ad_source_list,
-        name='k1api.get_content_ad_source_list',
+        r'^k1api/content_ad_source_for_ad_group$',
+        k1api.views.get_content_ad_sources_for_ad_group,
+        name='k1api.get_content_ad_sources_for_ad_group',
     ),
     url(
         r'^k1api/get_accounts$',

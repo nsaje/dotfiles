@@ -29,7 +29,7 @@ def _response_error(msg, status=400):
 
 
 @csrf_exempt
-def get_ad_group_source_list(request):
+def get_ad_group_source_ids(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
@@ -47,6 +47,7 @@ def get_ad_group_source_list(request):
     ad_group_sources = (
         dash.models.AdGroupSource.objects
             .filter(ad_group__in=nonarchived)
+            .filter(source__source_type__type=source_type)
             .filter(source_credentials_id=credentials_id)
             .values(
                 'ad_group_id',
@@ -54,85 +55,6 @@ def get_ad_group_source_list(request):
             )
     )
     return _response_ok(list(ad_group_sources))
-
-
-@csrf_exempt
-def get_content_ad_source_list(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
-
-    credentials_id = request.GET.get('credentials_id')
-    if not credentials_id:
-        _response_error("Missing credentials ID")
-    source_type = request.GET.get('source_type')
-    if not source_type:
-        _response_error("Missing source type")
-
-    active_ad_groups = dash.models.AdGroup.objects.all().filter_active().exclude_archived()
-    ad_group_sources = (
-        dash.models.AdGroupSource.objects
-            .filter(ad_group__in=active_ad_groups)
-            .filter(source_credentials_id=credentials_id)
-            .select_related('source')
-    )
-    active_content_ads = (
-        dash.models.ContentAd.objects
-            .filter(state=constants.ContentAdSourceState.ACTIVE)
-            .exclude_archived()
-    )
-    content_ad_sources = (
-        dash.models.ContentAdSource.objects
-            .filter(content_ad__in=active_content_ads)
-            .select_related('content_ad')
-    )
-    ad_group_source_index = {ags.ad_group_id: ags for ags in ad_group_sources}
-
-    content_ads = []
-    for content_ad_source in content_ad_sources:
-        try:
-            ad_group_source = ad_group_source_index[content_ad_source['content_ad__ad_group_id']]
-        except:
-            raise Exception('Content ad source does not have matching ad group source!')
-
-        if ad_group_source.source.update_tracking_codes_on_content_ads() and\
-                ad_group_source.can_manage_content_ads:
-            ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
-
-            url = content_ad_source.content_ad.url_with_tracking_codes(
-                url_helper.combine_tracking_codes(
-                    ad_group_tracking_codes,
-                    ad_group_source.get_tracking_ids(),
-                )
-            )
-        else:
-            url = content_ad_source.content_ad.url
-
-        content_ads.append({
-            'credentials': ad_group_source.source_credentials.credentials,
-            'source_campaign_key': ad_group_source.source_campaign_key,
-            'ad_group_id': content_ad_source.content_ad.ad_group_id,
-            'content_ad_id': content_ad_source.content_ad_id,
-            'source_content_ad_id': content_ad_source.source_content_ad_id,
-            'state': content_ad_source.state,
-            'title': content_ad_source.content_ad.title,
-            'url': url,
-            'submission_status': content_ad_source.submission_status,
-            'image_id': content_ad_source.content_ad.image_id,
-            'image_width': content_ad_source.content_ad.image_width,
-            'image_height': content_ad_source.content_ad.image_height,
-            'image_hash': content_ad_source.content_ad.image_hash,
-            'redirect_id': content_ad_source.content_ad.redirect_id,
-            'display_url': content_ad_source.content_ad.display_url,
-            'brand_name': content_ad_source.content_ad.brand_name,
-            'description': content_ad_source.content_ad.description,
-            'call_to_action': content_ad_source.content_ad.call_to_action,
-            'tracking_slug': ad_group_source.source.tracking_slug,
-            'tracker_urls': content_ad_source.content_ad.tracker_urls
-        })
-    return _response_ok(list(content_ads))
 
 
 @csrf_exempt
@@ -179,70 +101,82 @@ def get_ad_group_source(request):
 
 
 @csrf_exempt
-def get_content_ad_source(request):
+def get_content_ad_sources_for_ad_group(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
         logger.exception('Invalid K1 signature.')
         raise Http404
 
-    content_ad_id = request.GET.get('content_ad_id', None)
-    if not content_ad_id:
-        return _response_error("Must provide content ad id.")
     source_type = request.GET.get('source_type')
     if not source_type:
         return _response_error("Must provide source type.")
+    ad_group_id = request.GET.get('ad_group_id', None)
+    if not ad_group_id:
+        return _response_error("Must provide ad group id.")
+    content_ad_id = request.GET.get('content_ad_id', None)
 
-    content_ad_source = (
-        dash.models.ContentAdSource.objects
-        .select_related('content_ad')
-        .get(
-            content_ad_id=content_ad_id,
-            source__source_type__type=source_type,
-        )
+    logger.info(ad_group_id)
+    logger.info(source_type)
+    ad_group_source = (
+        dash.models.AdGroupSource.objects
+            .select_related('ad_group', 'source')
+            .get(
+                ad_group_id=ad_group_id,
+                source__source_type__type=source_type
+            )
     )
 
-    ad_group_source = dash.models.AdGroupSource.objects.filter(
-        ad_group=content_ad_source.content_ad.ad_group,
-        source=content_ad_source.source
-    ).select_related('ad_group', 'source__source_type').get()
+    content_ad_sources = (
+        dash.models.ContentAdSource.objects
+        .select_related('content_ad')
+        .filter(content_ad__ad_group_id=ad_group_id)
+        .filter(source__source_type__type=source_type)
+        .exclude(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
+    )
+    if content_ad_id:
+        content_ad_sources = content_ad_sources.filter(content_ad_id=content_ad_id)
 
+    ad_group_tracking_codes = None
     if ad_group_source.source.update_tracking_codes_on_content_ads() and\
             ad_group_source.can_manage_content_ads:
         ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
 
-        url = content_ad_source.content_ad.url_with_tracking_codes(
-            url_helper.combine_tracking_codes(
-                ad_group_tracking_codes,
-                ad_group_source.get_tracking_ids(),
+    content_ads = []
+    for content_ad_source in content_ad_sources:
+        if ad_group_tracking_codes:
+            url = content_ad_source.content_ad.url_with_tracking_codes(
+                url_helper.combine_tracking_codes(
+                    ad_group_tracking_codes,
+                    ad_group_source.get_tracking_ids(),
+                )
             )
-        )
-    else:
-        url = content_ad_source.content_ad.url
+        else:
+            url = content_ad_source.content_ad.url
 
-    data = {
-        'credentials': ad_group_source.source_credentials.credentials,
-        'source_campaign_key': ad_group_source.source_campaign_key,
-        'ad_group_id': content_ad_source.content_ad.ad_group_id,
-        'content_ad_id': content_ad_source.content_ad_id,
-        'source_content_ad_id': content_ad_source.source_content_ad_id,
-        'state': content_ad_source.state,
-        'title': content_ad_source.content_ad.title,
-        'url': url,
-        'submission_status': content_ad_source.submission_status,
-        'image_id': content_ad_source.content_ad.image_id,
-        'image_width': content_ad_source.content_ad.image_width,
-        'image_height': content_ad_source.content_ad.image_height,
-        'image_hash': content_ad_source.content_ad.image_hash,
-        'redirect_id': content_ad_source.content_ad.redirect_id,
-        'display_url': content_ad_source.content_ad.display_url,
-        'brand_name': content_ad_source.content_ad.brand_name,
-        'description': content_ad_source.content_ad.description,
-        'call_to_action': content_ad_source.content_ad.call_to_action,
-        'tracking_slug': ad_group_source.source.tracking_slug,
-        'tracker_urls': content_ad_source.content_ad.tracker_urls
-    }
-    return _response_ok(data)
+        content_ads.append({
+            'credentials': ad_group_source.source_credentials.credentials,
+            'source_campaign_key': ad_group_source.source_campaign_key,
+            'ad_group_id': content_ad_source.content_ad.ad_group_id,
+            'content_ad_id': content_ad_source.content_ad_id,
+            'source_content_ad_id': content_ad_source.source_content_ad_id,
+            'state': content_ad_source.state,
+            'title': content_ad_source.content_ad.title,
+            'url': url,
+            'submission_status': content_ad_source.submission_status,
+            'image_id': content_ad_source.content_ad.image_id,
+            'image_width': content_ad_source.content_ad.image_width,
+            'image_height': content_ad_source.content_ad.image_height,
+            'image_hash': content_ad_source.content_ad.image_hash,
+            'redirect_id': content_ad_source.content_ad.redirect_id,
+            'display_url': content_ad_source.content_ad.display_url,
+            'brand_name': content_ad_source.content_ad.brand_name,
+            'description': content_ad_source.content_ad.description,
+            'call_to_action': content_ad_source.content_ad.call_to_action,
+            'tracking_slug': ad_group_source.source.tracking_slug,
+            'tracker_urls': content_ad_source.content_ad.tracker_urls
+        })
+    return _response_ok(list(content_ads))
 
 
 @csrf_exempt
