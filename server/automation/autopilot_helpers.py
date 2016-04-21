@@ -97,20 +97,20 @@ def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
         campaign_manager = camp.get_current_settings().campaign_manager
         account_manager = camp.account.get_current_settings().default_account_manager
-        email_address = [account_manager.email] + ([campaign_manager.email] if campaign_manager and
-                                                   account_manager.email != campaign_manager.email else [])
+        emails = [account_manager.email] + ([campaign_manager.email] if campaign_manager and
+                                            account_manager.email != campaign_manager.email else [])
         if initialization:
             send_budget_autopilot_initialisation_email(
                 camp.name,
                 camp.id,
                 camp.account.name,
-                [email_address],
+                emails,
                 changes_data)
         else:
             send_autopilot_changes_email(camp.name,
                                          camp.id,
                                          camp.account.name,
-                                         email_address,
+                                         emails,
                                          changes_data)
 
 
@@ -120,6 +120,7 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
         changesText.append(_get_email_adgroup_text(adgroup))
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
+        changesText.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
 
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
@@ -242,6 +243,19 @@ def _get_email_source_changes_text(ag_source, changes):
     if cpc_pilot_on:
         text += _get_cpc_changes_text(cpc_changed, changes)
     return text
+
+
+def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
+    suggested_sources = []
+    for ag_source in adgroup_changes:
+        changes = adgroup_changes[ag_source]
+        if all(b in changes for b in ['new_budget', 'old_budget']) and\
+                changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source):
+            suggested_sources.append(ag_source.source.name)
+    if suggested_sources:
+        return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
+               ", ".join(suggested_sources) + '.\n'
+    return ''
 
 
 def _get_budget_changes_text(budget_changed, changes):
