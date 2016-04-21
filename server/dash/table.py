@@ -91,7 +91,11 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in performance:
         performance_item = {
             'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
-            'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
+            'text': campaign_goals.format_campaign_goal(
+                goal.type,
+                goal_metric,
+                goal.conversion_goal
+            )
         }
         if goal_value:
             performance_item['text'] += ' (planned {})'.format(
@@ -108,7 +112,7 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
             colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
         if not colored_column:
             continue
-        
+
         if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
             stat['styles'][colored_column] = constants.Emoticon.HAPPY
         elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
@@ -490,7 +494,6 @@ class AdGroupSourcesTableUpdates(object):
                     'current_bid_cpc': current_bid_cpc,
                     'daily_budget': daily_budget,
                     'current_daily_budget': current_daily_budget,
-                    'autopilot_state': setting.autopilot_state
                 }
 
             response['rows'] = rows
@@ -573,7 +576,6 @@ class SourcesTable(object):
             last_success_actions_joined,
             e_yesterday_cost,
             yesterday_cost,
-            order=order,
             ad_group_level=ad_group_level,
         )
 
@@ -603,6 +605,9 @@ class SourcesTable(object):
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
+
+        if order:
+            rows = sort_results(rows, [order])
 
         response = {
             'rows': rows,
@@ -724,7 +729,6 @@ class SourcesTable(object):
             last_actions,
             e_yesterday_cost,
             yesterday_cost,
-            order=None,
             ad_group_level=False):
         rows = []
 
@@ -830,9 +834,6 @@ class SourcesTable(object):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_value
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
-
-                if source_settings is not None:
-                    row['autopilot_state'] = source_settings.autopilot_state
             else:
                 bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
                                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]
@@ -848,9 +849,6 @@ class SourcesTable(object):
                     row[field] = val
 
             rows.append(row)
-
-        if order:
-            rows = sort_results(rows, [order])
 
         return rows
 
@@ -905,12 +903,6 @@ class AccountsAccountsTable(object):
             totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
             totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
 
-        show_budgets = user.has_perm('zemauth.all_accounts_budget_view')
-        if show_budgets:
-            totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
-            totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
-            totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
-
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
             flat_fees = self.get_flat_fees(start_date, end_date, accounts)
@@ -942,7 +934,6 @@ class AccountsAccountsTable(object):
             account_total_spend,
             has_view_archived_permission,
             show_archived,
-            show_budgets,
             has_view_managers_permission,
             flat_fees,
             order=order,
@@ -1040,7 +1031,7 @@ class AccountsAccountsTable(object):
 
     def get_rows(self, user, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
-                 show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
+                 show_archived, has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -1095,11 +1086,6 @@ class AccountsAccountsTable(object):
                 row['credit_projection'] = projections['credit_projection'][aid]
                 row['spend_projection'] = projections['spend_projection'][aid]
 
-            if show_budgets:
-                row['budget'] = account_budget.get(aid, Decimal('0.0'))
-                row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
-                row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
-
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
                 row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
@@ -1115,86 +1101,13 @@ class AccountsAccountsTable(object):
         return rows
 
 
-class AdGroupAdsTable(object):
-
-    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
-
-        helpers.get_ad_group(user, ad_group_id)
-        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-            select_related('campaign').\
-            prefetch_related('campaign__conversiongoal_set').get()
-
-        size = max(min(int(size or 5), 4294967295), 1)
-
-        result = reports.api_helpers.filter_by_permissions(reports.api.query(
-            start_date=start_date,
-            end_date=end_date,
-            breakdown=['article'],
-            order=[order],
-            ad_group=ad_group.id,
-            source=filtered_sources,
-        ), user)
-
-        result_pg, current_page, num_pages, count, start_index, end_index = \
-            utils.pagination.paginate(result, page, size)
-
-        rows = result_pg
-
-        if ad_group in models.AdGroup.demo_objects.all():
-            for i, row in enumerate(rows):
-                row['url'] = 'http://www.example.com/{}/{}'.format(slugify(ad_group.name), i)
-
-        totals_data = reports.api_helpers.filter_by_permissions(
-            reports.api.query(
-                start_date,
-                end_date,
-                ad_group=int(ad_group.id),
-                source=filtered_sources,
-            ), user)
-
-        ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child()
-
-        last_sync = helpers.get_last_sync(last_success_actions.values())
-
-        incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics_ad_groups(
-                start_date,
-                end_date,
-                [ad_group],
-                filtered_sources,
-            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
-
-        return {
-            'rows': rows,
-            'totals': totals_data,
-            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
-            'order': order,
-            'pagination': {
-                'currentPage': current_page,
-                'numPages': num_pages,
-                'count': count,
-                'startIndex': start_index,
-                'endIndex': end_index,
-                'size': size
-            },
-            'incomplete_postclick_metrics': incomplete_postclick_metrics
-        }
-
-
-class AdGroupAdsPlusTableUpdates(object):
+class AdGroupAdsTableUpdates(object):
 
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-
-        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
@@ -1240,7 +1153,7 @@ class AdGroupAdsPlusTableUpdates(object):
         return response_dict
 
 
-class AdGroupAdsPlusTable(object):
+class AdGroupAdsTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
@@ -1248,8 +1161,6 @@ class AdGroupAdsPlusTable(object):
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -1561,7 +1472,6 @@ class CampaignAdGroupsTable(object):
             ad_groups_status_dict,
             stats,
             last_success_actions_joined,
-            order,
             has_view_archived_permission,
             show_archived,
             e_yesterday_cost,
@@ -1583,6 +1493,8 @@ class CampaignAdGroupsTable(object):
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
+
+        rows = self.sort_rows(rows, order, has_view_archived_permission)
 
         response = {
             'rows': rows,
@@ -1655,7 +1567,7 @@ class CampaignAdGroupsTable(object):
         )
 
     def get_rows(self, user, campaign, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
-                 order, has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
+                 has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
         # map settings for quicker access
@@ -1702,12 +1614,6 @@ class CampaignAdGroupsTable(object):
 
             rows.append(row)
 
-        if order:
-            if 'state' in order and has_view_archived_permission:
-                rows = sort_rows_by_order_and_archived(rows, order)
-            else:
-                rows = sort_results(rows, [order])
-
         return rows
 
     def get_totals(self, user, totals_data, e_yesterday_cost, yesterday_cost):
@@ -1716,6 +1622,15 @@ class CampaignAdGroupsTable(object):
         if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
             totals_data['yesterday_cost'] = yesterday_cost
         return totals_data
+
+    def sort_rows(self, rows, order, has_view_archived_permission):
+        if order:
+            if 'state' in order and has_view_archived_permission:
+                rows = sort_rows_by_order_and_archived(rows, order)
+            else:
+                rows = sort_results(rows, [order])
+
+        return rows
 
     def get_editable_fields(self, ad_group, campaign, row):
         state = {
@@ -1772,11 +1687,7 @@ class AccountCampaignsTable(object):
         campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
             c.pk for c in campaigns
         )
-        totals_stats['budget'] = sum(campaign_budget.itervalues())
         total_spend = sum(campaign_spend.itervalues())
-
-        totals_stats['available_budget'] = totals_stats['budget'] - total_spend
-        totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
@@ -1916,10 +1827,6 @@ class AccountCampaignsTable(object):
             row['last_sync'] = last_sync
 
             row.update(campaign_stat)
-
-            row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
-            row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
-            row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
 
             rows.append(row)
 
@@ -2212,7 +2119,6 @@ class PublishersTable(object):
             result['billing_cost'] = totals_data.get('billing_cost', 0)
             result['license_fee'] = totals_data.get('license_fee', 0)
         if user.has_perm('zemauth.can_view_actual_costs'):
-            result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
         campaign_goals.copy_fields(user, totals_data, result)
@@ -2266,7 +2172,6 @@ class PublishersTable(object):
                 row['e_media_cost'] = publisher_data.get('e_media_cost', 0)
                 row['billing_cost'] = publisher_data.get('billing_cost', 0)
             if user.has_perm('zemauth.can_view_actual_costs'):
-                row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
             if user.has_perm('zemauth.view_pubs_conversion_goals'):

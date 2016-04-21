@@ -487,7 +487,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         response = {
             'name': ad_group.name,
             'id': ad_group.id,
-            'content_ads_tab_with_cms': ad_group.content_ads_tab_with_cms
         }
 
         return self.create_api_response(response)
@@ -1069,10 +1068,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
-        autopilot_form = forms.AdGroupSourceSettingsAutopilotStateForm(resource)
-        if 'autopilot_state' in resource and not autopilot_form.is_valid():
-            errors.update(autopilot_form.errors)
-
         if ad_group.campaign.is_in_landing():
             for key in resource.keys():
                 errors.update({key: 'Not allowed'})
@@ -1087,11 +1082,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     'retargeting on adgroup with retargeting enabled.'
                 }
             )
-
-        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
-                'autopilot_state' in resource and\
-                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
-            errors.update(exc.ForbiddenError(message='Not allowed'))
 
         campaign_settings = ad_group.campaign.get_current_settings()
         if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:
@@ -1146,7 +1136,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusUpload(api_common.BaseApiView):
+class AdGroupAdsUpload(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
@@ -1175,7 +1165,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -1225,7 +1215,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         return self.create_api_response({'batch_id': batch.pk})
 
 
-class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+class AdGroupAdsUploadReport(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
@@ -1249,7 +1239,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
-class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+class AdGroupAdsUploadCancel(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
@@ -1276,7 +1266,7 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+class AdGroupAdsUploadStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
@@ -1324,7 +1314,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         errors = {}
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
-                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                errors['report_url'] = reverse('ad_group_ads_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(
                     batch.num_errors, 's' if batch.num_errors > 1 else '')

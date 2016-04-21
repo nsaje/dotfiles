@@ -4,6 +4,7 @@ import json
 from dash import models, constants, forms
 from utils import statsd_helper, api_common, exc
 from dash.views import helpers
+from automation import campaign_stop
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -197,14 +198,14 @@ class AccountCreditItemView(api_common.BaseApiView):
 
 class CampaignBudgetView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_get')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
         return self._get_response(campaign)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
@@ -222,6 +223,8 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save()
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
 
@@ -246,10 +249,11 @@ class CampaignBudgetView(api_common.BaseApiView):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt')
+        active_budget = self._get_active_budget(budget_items)
         return self.create_api_response({
-            'active': self._get_active_budget(budget_items),
+            'active': active_budget,
             'past': self._get_past_budget(budget_items),
-            'totals': self._get_budget_totals(campaign),
+            'totals': self._get_budget_totals(campaign, active_budget),
             'credits': self._get_available_credit_items(campaign),
         })
 
@@ -283,10 +287,10 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.INACTIVE,
         )]
 
-    def _get_budget_totals(self, campaign):
+    def _get_budget_totals(self, campaign, active_budget):
         data = {
             'current': {
-                'available': Decimal('0.0000'),
+                'available': sum([x['available'] for x in active_budget]),
                 'unallocated': Decimal('0.0000'),
                 'past': Decimal('0.0000'),
             },
@@ -298,23 +302,15 @@ class CampaignBudgetView(api_common.BaseApiView):
             }
         }
         for item in models.CreditLineItem.objects.filter(account=campaign.account):
-            allocated = item.get_allocated_amount()
-            if item.status != constants.CreditLineItemStatus.SIGNED:
+            if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue
-            data['current'][item.is_past() and 'past' or 'available'] += Decimal(allocated)
-            if not item.is_past():
-                data['current']['unallocated'] += Decimal(item.amount - allocated)
+            data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - item.get_allocated_amount())
 
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
-            spend_data = item.get_spend_data(use_decimal=True)
-            if item.state() in (constants.BudgetLineItemState.ACTIVE,
-                                constants.BudgetLineItemState.PENDING):
-                data['current']['available'] -= Decimal(spend_data['total'])
-            else:
-                data['current']['past'] -= Decimal(spend_data['total'])
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
 
+            spend_data = item.get_spend_data(use_decimal=True)
             data['lifetime']['campaign_spend'] += spend_data['total']
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']
@@ -346,15 +342,20 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
         data['campaign'] = campaign.id
 
+        instance = models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
         item = forms.BudgetLineItemForm(
             data,
-            instance=models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
+            instance=instance
         )
+
+        self._validate_amount(data, item)
 
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
         item.save()
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
 
@@ -369,7 +370,36 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             item.delete()
         except AssertionError:
             raise exc.ValidationError('Budget item is not pending')
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
         return self.create_api_response(True)
+
+    def _validate_amount(self, data, item):
+        """
+        Even if we run the campaign stop script every time the budget amount is lowered
+        and stop the campaign 'immediately', overspend is still possible because the campaign
+        will actually stop on external sources at the end of their local day.
+
+        Because of this we define a 'budget minimum':
+        budget_minimum = budget_spend + sum(daily_budgets) - overall_available_campaign_budget
+        """
+        amount = data.get('amount', 0)
+        if amount >= item.instance.amount:
+            return
+        min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
+        if min_amount is None:
+            return
+
+        if min_amount > amount:
+            item.errors.setdefault('amount', []).append(
+                'Budget exceeds the minimum budget amount by ${}.'.format(
+                    Decimal(min_amount - amount).quantize(Decimal('1.00'))
+                )
+            )
+        if not campaign_stop.is_current_time_valid_for_amount_editing(item.instance.campaign):
+            item.errors.setdefault('amount', []).append(
+                'You cannot lower the amount on an active budget line item at this time.'
+            )
 
     def _get_response(self, item):
         return self.create_api_response({

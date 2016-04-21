@@ -320,7 +320,7 @@ class AdGroupInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class CampaignAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -331,6 +331,15 @@ class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+    form = dash_forms.CampaignAdminForm
+
+    def save_model(self, request, obj, form, change):
+        with transaction.atomic():
+            campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+            new_settings = obj.get_current_settings().copy_settings()
+            new_settings.automatic_campaign_stop = campaign_stop
+            obj.save(request)
+            new_settings.save(request)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -370,7 +379,45 @@ class SourceAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt',
     )
-    readonly_fields = ('created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt', 'deprecated')
+
+    @transaction.atomic
+    def deprecate_selected(self, request, queryset):
+        deprecated_sources = []
+        all_stopped_ad_group_sources = set()
+        for source in queryset:
+            if source.deprecated:
+                continue
+            source.deprecated = True
+            source.save()
+            deprecated_sources.append(source.pk)
+            stopped_ad_group_sources = self._stop_ad_group_sources(source)
+            all_stopped_ad_group_sources = all_stopped_ad_group_sources.union(stopped_ad_group_sources)
+
+        if not deprecated_sources:
+            self.message_user(request, "All selected sources are already deprecated.")
+            return
+
+        logger.info('SOURCE DEPRECATION: Bulk deprecation of Sources: {}'.format(deprecated_sources))
+        logger.info('SOURCE DEPRECATION: Bulk deactivation of AdGroup Sources: {}'.format(all_stopped_ad_group_sources))
+        self.message_user(request, "Successfully deprecated {} source(s) and deactivated {} AdGroup Source(s)."
+                          .format(len(deprecated_sources), len(all_stopped_ad_group_sources)))
+
+    deprecate_selected.short_description = "Deprecate selected sources"
+    actions = [deprecate_selected]
+
+    def _stop_ad_group_sources(self, source):
+        # Deactivate all AdGroup Sources - there is no need to propagate settings updates
+        stopped_ad_group_sources = set()
+        settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__source=source).group_current_settings()
+        states = models.AdGroupSourceState.objects.filter(ad_group_source__source=source).group_current_states()
+        for s in list(settings) + list(states):
+            if s and s.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                stopped_ad_group_sources.add(s.ad_group_source_id)
+                s = s.copy_settings()
+                s.state = constants.AdGroupSourceSettingsState.INACTIVE
+                s.save(None)
+        return stopped_ad_group_sources
 
 
 class SourceTypeAdmin(admin.ModelAdmin):
@@ -436,7 +483,6 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'campaign',
         'campaign_manager',
-        'service_fee',
         'iab_category',
         'promotion_goal',
         'created_dt',
@@ -507,7 +553,6 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'account_',
         'is_demo',
         'is_archived_',
-        'content_ads_tab_with_cms_',
         'created_dt',
         'modified_dt',
         'settings_',
@@ -521,13 +566,6 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     def view_on_site(self, obj):
         return '/ad_groups/{}/ads'.format(obj.id)
-
-    def content_ads_tab_with_cms_(self, obj):
-        return obj.content_ads_tab_with_cms
-    content_ads_tab_with_cms_.allow_tags = True
-    content_ads_tab_with_cms_.short_description = 'Has CMS'
-    content_ads_tab_with_cms_.boolean = True
-    content_ads_tab_with_cms_.admin_order_field = 'content_ads_tab_with_cms'
 
     def is_archived_(self, obj):
         try:
@@ -1035,6 +1073,14 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.CreditLineItemAdminForm
 
     resource_class = CreditLineItemResource
+
+    def get_actions(self, request):
+        actions = super(CreditLineItemAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):

@@ -22,10 +22,6 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
-    adGroupSourceSettingsAutopilotState: {
-        ACTIVE: 1,
-        INACTIVE: 2,
-    },
     publisherStatus: {
         ENABLED: 1,
         BLACKLISTED: 2,
@@ -43,7 +39,6 @@ var constants = {
         EFFECTIVE_DATA_COST: 'e_data_cost',
         MEDIA_COST: 'media_cost',
         EFFECTIVE_MEDIA_COST: 'e_media_cost',
-        TOTAL_COST: 'total_cost',
         BILLING_COST: 'billing_cost',
         LICENSE_FEE: 'license_fee',
         CPC: 'cpc',
@@ -652,22 +647,22 @@ var options = {
             shown: false,
         },
         {
-            name: 'Avg. Cost Per Second',
+            name: 'Avg. Cost per Second',
             value: constants.chartMetric.COST_PER_SECOND,
             shown: false,
         },
         {
-            name: 'Avg. Cost For Pageview',
+            name: 'Avg. Cost for Pageview',
             value: constants.chartMetric.COST_PER_PAGEVIEW,
             shown: false,
         },
         {
-            name: 'Avg. Cost For Nonbounced Visitor',
+            name: 'Avg. Cost for Unbounced Visitor',
             value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR,
             shown: false,
         },
         {
-            name: 'Avg. Cost For New Visitor',
+            name: 'Avg. Cost for New Visitor',
             value: constants.chartMetric.COST_PER_NEW_VISITOR,
             shown: false,
         },
@@ -688,6 +683,7 @@ var options = {
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
+        {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     legacyCostChartMetrics: [
@@ -702,7 +698,6 @@ var options = {
     actualCostChartMetrics: [
         {name: 'Actual Media Spend', value: constants.chartMetric.MEDIA_COST},
         {name: 'Actual Data Cost', value: constants.chartMetric.DATA_COST},
-        {name: 'Actual Total Spend', value: constants.chartMetric.TOTAL_COST},
     ],
     iabCategories: [
         {name: 'IAB1 - Arts & Entertainment', value: constants.iabCategory.IAB1},
@@ -1111,12 +1106,12 @@ var options = {
         {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION},
     ],
     campaignGoalKPIs: [
-        {name: 'time on site in seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
-        {name: 'max bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
-        {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
+        {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
+        {name: 'Pages per Session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
-        {name: 'new unique visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
-        {name: 'CPA - Setup new conversion tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
+        {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
+        {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
     ],
     budgetAutomationGoals: [
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},

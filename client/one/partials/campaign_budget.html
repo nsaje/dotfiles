@@ -1,86 +1,98 @@
-<div class="page page-campaign-budget">
-
-    <form id="form-campaign-budget" class="form-horizontal">
-        <div class="form-group">
-            <label for="total-budget" class="col-xs-2 control-label">
-                Total budget
-                <zem-help-popover content="Total allocated budget" placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-2">
-                <p id="total-budget" class="control-label">{{ (total | decimalCurrency:"$":2) }}</p>
+<div class="page page-campaign-budget page-section" ng-if="!account.archived">
+    <div class="section budgets-overview">
+        <div class="title">Overview</div>
+        <div class="section named-data">
+            <div class="name">Available Budget</div>
+            <div class="value">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
+            <div class="name bottomborder">Unallocated Credit</div>
+            <div class="value bottomborder">
+                {{ budgetTotals.currentUnallocated | decimalCurrency:"$":2 }}
             </div>
-        </div>
-        <div class="form-group">
-            <label for="spend-budget" class="col-xs-2 control-label">
-                Spend
-                <zem-help-popover content="Total spent budget" placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-2">
-                <p id="spend-budget" class="control-label">{{ (spend | decimalCurrency:"$":2) }}</p>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="available-budget" class="col-xs-2 control-label">
-                Available budget
-                <zem-help-popover content="Total budget still available" placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-2">
-                <p id="available-budget" class="control-label">{{ (available | decimalCurrency:"$":2) }}</p>
-            </div>
-        </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.amount}">
-            <label for="manage-budget" class="col-xs-2 control-label">
-                Manage budget
-                <zem-help-popover content="Amount of budget to allocate/revoke" placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-2">
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input id="manage-budget" type="text" class="form-control" ng-model="amount" zem-currency-input>
-                </div>
-            </div>
-            <button type="button" class="btn btn-default col-xs-1" ng-click="allocateBudget()">Allocate</button>
-            <button type="button" class="btn btn-red col-xs-1" style="margin-left: 8px;" ng-click="revokeBudget()">Revoke</button>
-            <label ng-repeat="error in errors.amount" class="control-label error" for="manage-budget">{{ error }}</label>
-        </div>
-    </form>
-
-    <div class="section table-campaign-budget">
-        <div class="title">History<zem-help-popover content="History of budget changes" placement="top"></zem-help-popover></div>
-        <div class="loader-container">
-            <div class="loader" ng-show="history.length && requestInProgress"></div>
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th class="arrow" ng-class="{ordered: orderField === 'datetime' && !orderReverse, 'ordered-reverse': orderField === 'datetime' && orderReverse}"><a href class="order" ng-click="orderField = 'datetime'; orderReverse = !orderReverse">Date (EST)</a></th>
-                        <th class="arrow" ng-class="{ordered: orderField === 'user' && !orderReverse, 'ordered-reverse': orderField === 'user' && orderReverse}"><a href class="order" ng-click="orderField = 'user'; orderReverse = !orderReverse">User</a></th>
-                        <th>Allocate</th>
-                        <th>Revoke</th>
-                        <th>Total</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-if="requestInProgress && !history.length">
-                        <td colspan="3" class="loader-row">
-                            <div class="loader"></div>
-                        </td>
-                    </tr>
-                    <tr ng-show="(!history || !history.length) && !requestInProgress">
-                        <td class="no-data" colspan="6">No data</td>
-                    </tr>
-
-                    <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
-                        <td>{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
-                        <td>{{ item.user }}</td>
-                        <td>{{ item.allocate | decimalCurrency:"$":2 }}</td>
-                        <td>{{ item.revoke | decimalCurrency:"$":2 }}</td>
-                        <td>{{ item.total | decimalCurrency:"$":2 }}</td>
-                        <td>{{ item.comment }}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="name">Campaign Spend</div>
+            <div class="value">{{ budgetTotals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</div>
+            <div class="name">Media Spend</div>
+            <div class="value">{{ budgetTotals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</div>
+            <div class="name">Data Spend</div>
+            <div class="value">{{ budgetTotals.lifetimeDataSpend | decimalCurrency:"$":2 }}</div>
+            <div class="name">License Fee</div>
+            <div class="value">{{ budgetTotals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</div>
         </div>
     </div>
+    <div class="section budgets-active-pending">
+        <div class="title">Active Budget items</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Budget</th>
+                    <th>License Fee</th>
+                    <th>Total Spend</th>
+                    <th>Available Budget</th>
+                    <th>Notes</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in activeBudget" ng-class="{ 'row-updated': item.id == updatedId }">
+                    <td>{{ item.startDate }}</td>
+                    <td>{{ item.endDate }}</td>
+                    <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.licenseFee  }}</td>
+                    <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
+                    <td>
+                        <ul class="row-actions">
+                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr ng-show="!activeBudget.length" class="message">
+                    <td colspan="9">No active budget items.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
+    <button type="button" class="btn btn-default" ng-click="addBudgetItem()" ng-disabled="!getAvailableCredit().length">Add Budget Item</button>
+    <div class="section budgets-past-pending">
+        <div class="title">Depleted Budget Items</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Budget</th>
+                    <th>License Fee</th>
+                    <th>Total Spend</th>
+                    <th>Available Budget</th>
+                    <th>Notes</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in pastBudget" ng-class="{ 'row-updated': item.id == updatedId }">
+                    <td>{{ item.startDate }}</td>
+                    <td>{{ item.endDate }}</td>
+
+                    <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.licenseFee  }}</td>
+                    <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+
+                    <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
+                    
+                    <td>
+                        <ul class="row-actions">
+                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr ng-show="!pastBudget.length" class="message">
+                    <td colspan="9">No depleted budget items.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

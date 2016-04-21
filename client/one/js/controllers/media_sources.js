@@ -111,7 +111,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             unselectable: true,
             checked: true,
             type: 'clickPermissionOrText',
-            hasPermission: $scope.hasPermission('zemauth.filter_sources'),
+            hasPermission: $scope.hasPermission('zemauth.can_filter_sources_through_table'),
             clickCallback: zemFilterService.exclusivelyFilterSource,
             shown: true,
             hasTotalsLabel: true,
@@ -276,18 +276,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
             name: 'Total Spend',
             field: 'billing_cost',
             checked: false,
@@ -387,7 +375,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             'name': 'Traffic Acquisition',
             'fields': [
                 'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'cpc', 'clicks', 'impressions', 'ctr', 'license_fee',
                 'yesterday_cost', 'e_yesterday_cost'
             ]
@@ -697,7 +685,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetric1 = constants.chartMetric.COST;
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
             $scope.exportBaseUrl = 'api/' + constants.level.ALL_ACCOUNTS + '/sources/';
-            $scope.exportPlusOptions = [
+            $scope.exportOptions = [
               {name: 'Current View', value: constants.exportType.ALL_ACCOUNTS},
               {name: 'By Account', value: constants.exportType.ACCOUNT},
               {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
@@ -709,7 +697,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_account_infobox');
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
-            $scope.exportPlusOptions = [
+            $scope.exportOptions = [
               {name: 'Current View', value: constants.exportType.ACCOUNT},
               {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
               {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
@@ -721,7 +709,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_campaign_infobox');
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
-            $scope.exportPlusOptions = [
+            $scope.exportOptions = [
               {name: 'Current View', value: constants.exportType.CAMPAIGN},
               {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
               {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},

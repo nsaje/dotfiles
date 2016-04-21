@@ -58,6 +58,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         _('username'),
         max_length=30,
         blank=True,
+        null=True,
         help_text=_('30 characters or fewer. Letters, digits and '
                     '@/./+/-/_ only.'),
         validators=[
@@ -119,7 +120,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_ad_groups_add_ad_group', 'Can add ad groups.'),
             ('account_campaigns_add_campaign', 'Can add campaigns.'),
             ('all_accounts_accounts_add_account', 'Can add accounts.'),
-            ('all_new_sidebar', 'Can see new sidebar.'),
             ('campaign_budget_management_view', 'Can do campaign budget management.'),
             ('account_budget_view', 'Can view account budget.'),
             ('all_accounts_budget_view', 'Can view all accounts budget.'),
@@ -192,8 +192,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
             ('campaign_goal_performance', 'Can view goal performance information'),
             ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
-            ('has_drift', 'Has Drift snippet'),
             ('has_supporthero', 'Has Supporthero snippet'),
+            ('can_filter_sources_through_table', 'Can filter sources through sources table'),
         )
 
     def get_full_name(self):

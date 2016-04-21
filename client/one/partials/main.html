@@ -2,9 +2,9 @@
     <div class="row header" ng-include src="'/partials/header.html'"></div>
 
     <div class="row body">
-        <div class="sidebar" ng-show="accountsAccess.hasAccounts && navigationPaneVisible" ng-class="{'sidebar-new': hasPermission('zemauth.all_new_sidebar') }">
+        <div class="sidebar" ng-show="accountsAccess.hasAccounts && navigationPaneVisible">
             <div class="loader" ng-if="loadSidebarInProgress"></div>
-            <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
+            <div id="nav">
                 <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-show-archived="getShowArchived()" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
                 <div id="nav-menu">
                     <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.*') && (!account.archived || getShowArchived())" ng-repeat="account in accounts">
@@ -29,27 +29,9 @@
                     </div>
                 </div>
             </div>
-            <div id="nav" ng-if="!hasPermission('zemauth.all_new_sidebar')">
-                <div class="account-group" ng-if="!account.archived || getShowArchived()" ng-repeat="account in accounts">
-                    <div ng-if="!canAccessAccounts()" class="account-name" ng-class="{'archived': account.archived}">{{ account.name }}</div>
-                    <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }), 'archived': account.archived }" zem-in-link="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
-                    <ul class="list-group list-campaigns">
-                        <li class="campaign-group list-group-item" ng-if="!campaign.archived || getShowArchived()" ng-repeat="campaign in account.campaigns">
-                            <div ng-if="!canAccessCampaigns()" class="campaign-name" ng-class="{'archived': campaign.archived}">{{ campaign.name }}</div>
-                            <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" zem-in-link="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
-                            <ul class="list-group ad-groups">
-                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" zem-in-link="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                    <span class="ng-scope" ng-class="getAdGroupStatusClass(adGroup, campaign)"></span>
-                                    <span class="ad-group-name" ng-class="{'archived': adGroup.archived}">{{ adGroup.name }}</span>
-                                </a>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
         </div>
         <div class="content" ng-show="accountsAccess.hasAccounts" ng-class="{'content-short': navigationPaneVisible, 'content-full': !navigationPaneVisible}">
-            <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget_plus')">
+            <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">

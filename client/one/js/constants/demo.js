@@ -29,7 +29,6 @@ oneApp.constant('demoDefaults', {
             name: 'New demo ad group',
             endDate: null,
             startDate: null,
-            contentAdsTabWithCMS: true
         };
     },
     emptyChart: {
@@ -52,7 +51,6 @@ oneApp.constant('demoDefaults', {
             name: name,
             avg_tos: 0,
             bounce_rate: 0,
-            available_budget: 0,
             clicks: 0,
             click_discrepancy: 100,
             cost: 0,
@@ -65,7 +63,6 @@ oneApp.constant('demoDefaults', {
             percent_new_users: 0,
             pv_per_visit: 0,
             state: constants.adGroupSettingsState.ACTIVE,
-            unspent_budget: 0,
             visits: 0,
             campaign: id
         };
@@ -335,7 +332,7 @@ oneApp.constant('demoDefaults', {
         'notifications': {}, 'in_progress': false, 'rows': {}, 'last_change': null
     },
     tableColumns: {
-        adGroupAdsPlus: ['ad_selected', 'image_urls', 'status_setting', 'submission_status', undefined, 'titleLink', 'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'],
+        adGroupAds: ['ad_selected', 'image_urls', 'status_setting', 'submission_status', undefined, 'titleLink', 'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'],
         adGroupSources: ['checked', 'status_setting', 'name', 'status', 'bid_cpc', 'daily_budget', 'cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews', undefined]
     }
 });

@@ -27,6 +27,8 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $urlRouterProvider.when('/demo_mode', ['$location', function ($location) {
         window.location = $location.absUrl();
     }]);
+    $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
+
     $urlRouterProvider.otherwise('/');
     $urlRouterProvider.rule(function ($injector, $location) {
         var path = $location.url();
@@ -165,10 +167,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/campaign_settings.html',
             controller: 'CampaignSettingsCtrl',
         })
-        .state('main.campaigns.budget_plus', {
-            url: '/budget-plus',
-            templateUrl: '/partials/campaign_budget_plus.html',
-            controller: 'CampaignBudgetPlusCtrl',
+        .state('main.campaigns.budget', {
+            url: '/budget',
+            templateUrl: '/partials/campaign_budget.html',
+            controller: 'CampaignBudgetCtrl',
         });
 
 
@@ -182,6 +184,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return zemNavigationService.getAdGroup($stateParams.id);
                 }],
             },
+        })
+        .state('main.adGroups.adsplus', {
+            url: '/ads_plus',
+            abstract: true,
         })
         .state('main.adGroups.ads', {
             url: '/ads',
@@ -202,11 +208,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/agency',
             templateUrl: '/partials/ad_group_agency.html',
             controller: 'AdGroupAgencyCtrl'
-        })
-        .state('main.adGroups.adsPlus', {
-            url: '/ads_plus',
-            templateUrl: '/partials/ad_group_contentadsplus.html',
-            controller: 'AdGroupAdsPlusCtrl'
         })
         .state('main.adGroups.publishers', {
             url: '/publishers',

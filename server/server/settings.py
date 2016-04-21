@@ -32,7 +32,7 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 PROJECT_NAME = 'z1'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +50,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'automation',
     'timezone_field',
-)
+]
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -122,6 +122,8 @@ MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
 
+ENABLE_DJANGO_EXTENSIONS = False
+
 try:
     import qinspect
     MIDDLEWARE_CLASSES.append('qinspect.middleware.QueryInspectMiddleware'),
@@ -139,9 +141,11 @@ try:
 except ImportError:
     pass
 
-
 from celeryconfig import *
 from localsettings import *
+
+if ENABLE_DJANGO_EXTENSIONS:
+    INSTALLED_APPS.append('django_extensions')
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 
@@ -190,7 +194,7 @@ LOGGING = {
             'level': 'ERROR',
         },
         'celery.worker': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file', 'console', 'sentry'],
             'level': 'WARNING',
             'propagate': True
         },

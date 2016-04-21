@@ -1,4 +1,3 @@
-from collections import defaultdict
 import datetime
 from decimal import Decimal
 from mock import call, patch
@@ -8,7 +7,9 @@ from django.test import TestCase
 import actionlog.constants
 from automation import campaign_stop
 import dash.models
-from utils import dates_helper, test_helper
+import reports.models
+
+from utils import dates_helper
 
 
 class GetMinimumRemainingBudgetTestCase(TestCase):
@@ -17,6 +18,7 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
 
     def _configure_datetime_utcnow_mock(self, mock_datetime, utcnow_value):
         class DatetimeMock(datetime.datetime):
+
             @classmethod
             def utcnow(cls):
                 return utcnow_value
@@ -26,131 +28,93 @@ class GetMinimumRemainingBudgetTestCase(TestCase):
 
     @patch('utils.dates_helper.datetime')
     def test_get_mrb_no_budget_changes(self, mock_datetime):
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 1, 12))
+        now = datetime.datetime(2016, 3, 1, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('1395'), remaining_today)
         self.assertEqual(Decimal('1395'), available_tomorrow)
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('50'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('100'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
     @patch('utils.dates_helper.datetime')
     def test_get_mrb_one_budget_exhausted(self, mock_datetime):
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 5, 12))
+        now = datetime.datetime(2016, 3, 5, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('535'), remaining_today)
         self.assertEqual(Decimal('535'), available_tomorrow)
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
     @patch('utils.dates_helper.datetime')
     def test_get_mrb_one_budget_ends_today(self, mock_datetime):
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 12, 12))
+        now = datetime.datetime(2016, 3, 12, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('1535'), remaining_today)
         self.assertEqual(Decimal('900'), available_tomorrow)  # budget that will get the spend today expires tomorrow
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 15, 12))
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        now = datetime.datetime(2016, 3, 15, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
+
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('1535'), remaining_today)
         self.assertEqual(Decimal('635'), available_tomorrow)  # one budget gets spend today the other expires tomorrow
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
     @patch('utils.dates_helper.datetime')
     def test_get_mrb_no_budget_tomorrow(self, mock_datetime):
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 3, 31, 12))
+        now = datetime.datetime(2016, 3, 31, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('635'), remaining_today)
         self.assertEqual(Decimal('0'), available_tomorrow)
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
     @patch('utils.dates_helper.datetime')
     def test_get_mrb_new_budget_tomorrow(self, mock_datetime):
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 4, 1, 12))
+        now = datetime.datetime(2016, 4, 1, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('0'), remaining_today)
         self.assertEqual(Decimal('900'), available_tomorrow)
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
     @patch('utils.dates_helper.datetime')
     def test_get_mrb_different_license_fee_pcts(self, mock_datetime):
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 4, 11, 12))
+        now = datetime.datetime(2016, 4, 11, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
         c1 = dash.models.Campaign.objects.get(id=1)
 
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('635'), remaining_today)
         self.assertEqual(Decimal('635'), available_tomorrow)
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
-        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 4, 13, 12))
-        remaining_today, available_tomorrow, max_daily_budget = campaign_stop._get_minimum_remaining_budget(c1)
+        now = datetime.datetime(2016, 4, 13, 12)
+        self._configure_datetime_utcnow_mock(mock_datetime, now)
+
+        max_daily_budget = campaign_stop._get_max_daily_budget(now.date(), c1)
+        remaining_today, available_tomorrow, unattributed_budget = campaign_stop._get_minimum_remaining_budget(
+            c1, max_daily_budget)
         self.assertEqual(Decimal('535'), remaining_today)
         self.assertEqual(Decimal('535'), available_tomorrow)
-        self.assertEqual({
-            1: Decimal('55'),
-            2: Decimal('30'),
-            3: 0,
-            4: Decimal('20'),
-            5: Decimal('80'),
-            6: Decimal('80'),
-        }, max_daily_budget)
 
 
 class SwitchToLandingModeTestCase(TestCase):
@@ -169,17 +133,23 @@ class SwitchToLandingModeTestCase(TestCase):
 
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_depleting_budget(self, mock_get_mrb, mock_send_email):
-        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
+    @patch('automation.campaign_stop._get_max_daily_budget')
+    @patch('automation.campaign_stop._switch_campaign_to_landing_mode')
+    def test_depleting_budget(self, mock_switch, mock_max_daily_budget, mock_get_mrb, mock_send_email):
+        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), Decimal('0')
+        mock_max_daily_budget.return_value = Decimal('100')
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
         self.assertTrue(mock_send_email.called)
+        self.assertFalse(mock_switch.called)
 
     @patch('actionlog.zwei_actions.send')
     @patch('utils.email_helper.send_notification_mail')
+    @patch('automation.campaign_stop._get_max_daily_budget')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_switch_to_landing_mode(self, mock_get_mrb, mock_send_email, mock_send_actions):
-        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('110')}
+    def test_switch_to_landing_mode(self, mock_get_mrb, mock_max_daily_budget, mock_send_email, mock_send_actions):
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
+        mock_max_daily_budget.return_value = Decimal('150')
 
         in_30_days = datetime.datetime.utcnow().date() + datetime.timedelta(days=30)
         campaign = dash.models.Campaign.objects.get(id=1)
@@ -210,21 +180,23 @@ class SwitchToLandingModeTestCase(TestCase):
             for ags in ad_group.adgroupsource_set.all():
                 if ags.get_current_settings().state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
                     active_ad_group_sources.add(ags)
-        self.assertEqual(len(active_ad_group_sources), len(mock_send_actions.call_args[0][0]))
+        self.assertEqual(len(active_ad_group_sources), len(mock_send_actions.call_args_list[0][0][0]))
 
     @patch('automation.campaign_stop._set_end_date_to_today')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_manual(self, mock_get_mrb, mock_send_email, mock_set_end_date):
-        mock_get_mrb.return_value = Decimal('100'), Decimal('150')
-        mock_get_mrb.return_value = Decimal('200'), Decimal('150'), {1: Decimal('100')}
+        mock_get_mrb.return_value = Decimal('100'), Decimal('150'), Decimal('0')
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
         new_campaign_settings.automatic_campaign_stop = False
         new_campaign_settings.save(None)
 
-        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        campaign_stop.check_and_switch_campaign_to_landing_mode(
+            campaign,
+            campaign.get_current_settings()
+        )
         self.assertFalse(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
@@ -233,7 +205,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_already_landing(self, mock_get_mrb, mock_send_email, mock_set_end_date):
-        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
@@ -241,8 +213,9 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
-        self.assertFalse(mock_get_mrb.called)
+        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
+                                                                campaign.get_current_settings())
+        self.assertTrue(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
 
@@ -250,7 +223,7 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
-        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), {1: Decimal('150')}
+        mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
 
         campaign = dash.models.Campaign.objects.get(id=1)
         in_30_days = datetime.datetime.utcnow().date() + datetime.timedelta(days=30)
@@ -314,6 +287,74 @@ class GetMaxSettableDailyBudgetTestCase(TestCase):
                          campaign_stop.get_max_settable_daily_budget(dash.models.AdGroupSource.objects.get(id=7)))
 
 
+class GetMinBudgetIncreaseTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    @patch('automation.campaign_stop._get_user_daily_budget_per_ags')
+    @patch('automation.campaign_stop._get_max_daily_budget_per_ags')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_min_for_today(self, mock_min_remaining, mock_max_budgets, mock_user_budgets):
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        mock_max_budgets.return_value = {
+            1: Decimal('20.00'),
+            2: Decimal('40.00'),
+            4: Decimal('5.00')
+        }
+
+        mock_user_budgets.return_value = {
+            1: Decimal('10.00'),
+            3: Decimal('10.00'),
+            4: Decimal('20.00')
+        }
+
+        mock_min_remaining.return_value = Decimal('0.0'), Decimal('10.0'), Decimal('50.0')
+
+        min_budget_increase = campaign_stop.get_min_budget_increase(campaign)
+        mock_min_remaining.assert_called_once_with(campaign, Decimal('90.00'))
+        self.assertEqual(min_budget_increase, Decimal('50.0'))
+
+    @patch('automation.campaign_stop._get_user_daily_budget_per_ags')
+    @patch('automation.campaign_stop._get_max_daily_budget_per_ags')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_min_for_tomorrow(self, mock_min_remaining, mock_max_budgets, mock_user_budgets):
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        mock_max_budgets.return_value = {
+            1: Decimal('20.00'),
+            2: Decimal('40.00'),
+            4: Decimal('5.00')
+        }
+
+        mock_user_budgets.return_value = {
+            1: Decimal('10.00'),
+            3: Decimal('10.00'),
+            4: Decimal('20.00')
+        }
+
+        mock_min_remaining.return_value = Decimal('0.00'), Decimal('10.0'), Decimal('0')
+
+        min_budget_increase = campaign_stop.get_min_budget_increase(campaign)
+        mock_min_remaining.assert_called_once_with(campaign, Decimal('90.00'))
+        self.assertEqual(min_budget_increase, Decimal('30.0'))
+
+
+class GetUserDailyBudgetTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    def test_get_user_daily_budget(self):
+        campaign = dash.models.Campaign.objects.get(id=6)  # campaign in landing
+        user_daily_budget = campaign_stop._get_user_daily_budget_per_ags(campaign)
+        self.assertEqual(user_daily_budget, {
+            8: Decimal('200.0000'),
+            10: Decimal('100.0000'),
+            11: Decimal('40.0000'),
+            12: Decimal('15.0000')
+        })
+
+
 class GetMaximumDailyBudgetTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
@@ -322,14 +363,45 @@ class GetMaximumDailyBudgetTestCase(TestCase):
         c = dash.models.Campaign.objects.get(id=1)
         date = datetime.date(2016, 3, 1)
 
-        self.assertEqual({
+        self.assertEqual(campaign_stop._get_max_daily_budget_per_ags(date, c), {
             1: Decimal('55'),
             2: Decimal('50'),
             3: 0,
             4: Decimal('20'),
             5: Decimal('100'),
             6: Decimal('80'),
-        }, campaign_stop._get_max_daily_budget_per_ags(date, c))
+        })
+
+    def test_campaign_in_landing(self):
+        c = dash.models.Campaign.objects.get(id=6)  # campaign in landing
+        date = datetime.date(2016, 4, 6)  # user daily budgets were active in part that day
+
+        self.assertEqual(campaign_stop._get_max_daily_budget_per_ags(date, c), {
+            8: Decimal('200'),
+            9: 0,
+            10: Decimal('100'),
+            11: Decimal('40'),
+        })
+
+        date = datetime.date(2016, 4, 7)
+        # move end date
+        for ag in c.adgroup_set.all().filter_active():
+            new_settings = ag.get_current_settings().copy_settings()
+            new_settings.end_date = date
+            new_settings.save(None)
+
+        self.assertEqual(campaign_stop._get_max_daily_budget_per_ags(date, c), {
+            8: Decimal('50'),
+            9: 0,
+            10: Decimal('45'),
+            11: 0,
+        })
+
+    def test_campaign_in_landing_paused(self):
+        c = dash.models.Campaign.objects.get(id=6)  # campaign in landing
+        date = datetime.date(2016, 4, 7)  # end date has not yet been set
+
+        self.assertEqual(campaign_stop._get_max_daily_budget_per_ags(date, c), {})
 
     def test_get_running_ad_groups_on_date(self):
         c1 = dash.models.Campaign.objects.get(id=1)  # ad group started on date
@@ -434,6 +506,14 @@ class StopNonSpendingSourcesTestCase(TestCase):
         ad_groups = campaign.adgroup_set.all().filter_active()
         non_spending_ags_ids = [1, 2]
 
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertItemsEqual(
+            [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+
         mock_get_yesterday_spends.return_value = []
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
             row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
@@ -451,24 +531,18 @@ class StopNonSpendingSourcesTestCase(TestCase):
             self.assertTrue(current_ags_settings[ags_id].state == dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
         campaign_stop._stop_non_spending_sources(campaign)
-        new_ags_settings = {
-            ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
-                ad_group_source__ad_group__campaign=campaign,
-            ).group_current_settings()
-        }
-
-        for ags in dash.models.AdGroupSource.objects.filter(ad_group__campaign=campaign):
-            if ags.id in non_spending_ags_ids:
-                self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, new_ags_settings[ags.id].state)
-            else:
-                self.assertEqual(current_ags_settings[ags.id].state, new_ags_settings[ags.id].state)
+        self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
+        self.assertItemsEqual(
+            [4, 5], ag1.adgroupsource_set.all().filter_active().values_list('id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
     @patch('utils.dates_helper.local_today')
     @patch('reports.api_contentads.query')
-    @patch('automation.campaign_stop._restore_user_ad_group_settings')
-    def test_stop_whole_ad_group(self, mock_restore_ag_settings, mock_get_yesterday_spends, mock_local_today):
+    def test_stop_whole_ad_group(self, mock_get_yesterday_spends, mock_local_today):
         mock_local_today.return_value = datetime.date(2016, 3, 15)
         campaign = dash.models.Campaign.objects.get(id=1)
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
         ad_groups = campaign.adgroup_set.all().filter_active()
         non_spending_ag_ids = [1]
 
@@ -479,25 +553,11 @@ class StopNonSpendingSourcesTestCase(TestCase):
                 row['cost'] = Decimal(0)
             mock_get_yesterday_spends.return_value.append(row)
 
-        current_ag_settings = {
-            ags.ad_group_id: ags for ags in dash.models.AdGroupSettings.objects.filter(
-                ad_group__campaign=campaign,
-            ).group_current_settings()
-        }
-
         campaign_stop._stop_non_spending_sources(campaign)
-        self.assertTrue(mock_restore_ag_settings.called)
-
-        new_ag_settings = {
-            ags.ad_group_id: ags for ags in dash.models.AdGroupSettings.objects.filter(
-                ad_group__campaign=campaign,
-            ).group_current_settings()
-        }
-        for ag in dash.models.AdGroup.objects.filter(campaign=campaign):
-            if ag.id in non_spending_ag_ids:
-                self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, new_ag_settings[ag.id].state)
-            else:
-                self.assertEqual(current_ag_settings[ag.id].state, new_ag_settings[ag.id].state)
+        self.assertItemsEqual([2], campaign.adgroup_set.all().filter_active().values_list('id', flat=True))
+        self.assertItemsEqual(
+            [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('id', flat=True))
+        self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
 
 class CalculateDailySpendsTestCase(TestCase):
@@ -517,7 +577,8 @@ class CalculateDailySpendsTestCase(TestCase):
             new_settings.end_date = datetime.date(2016, 4, 4)
             new_settings.save(None)
 
-        remaining_today, _, _ = campaign_stop._get_minimum_remaining_budget(campaign)
+        max_daily_budget = campaign_stop._get_max_daily_budget(today, campaign)
+        remaining_today, _, _ = campaign_stop._get_minimum_remaining_budget(campaign, max_daily_budget)
         self.assertEqual(Decimal(900), remaining_today)
 
         active_ad_groups = campaign.adgroup_set.all().filter_active()
@@ -532,6 +593,38 @@ class CalculateDailySpendsTestCase(TestCase):
 
         self.assertEqual(450, daily_caps[1])
         self.assertEqual(450, daily_caps[2])
+
+    @patch('utils.dates_helper.local_today')
+    def test_calculate_daily_caps_ad_group_inactive(self, mock_local_today):
+        today = datetime.date(2016, 4, 5)
+        mock_local_today.return_value = today
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        new_settings = ag1.get_current_settings().copy_settings()
+        new_settings.end_date = datetime.date(2016, 4, 4)
+        new_settings.save(None)
+
+        new_settings = ag2.get_current_settings().copy_settings()
+        new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+        new_settings.save(None)
+
+        max_daily_budget = campaign_stop._get_max_daily_budget(today, campaign)
+        remaining_today, _, _ = campaign_stop._get_minimum_remaining_budget(campaign, max_daily_budget)
+        self.assertEqual(Decimal(820), remaining_today)
+
+        active_ad_groups = campaign.adgroup_set.all().filter_active()
+        self.assertEqual(1, active_ad_groups.count())
+
+        per_date_spend = {
+            (1, datetime.date(2016, 4, 4)): Decimal('100'),
+            (2, datetime.date(2016, 4, 4)): Decimal('100'),
+        }
+
+        daily_caps = campaign_stop._calculate_daily_caps(campaign, per_date_spend)
+        self.assertEqual(820, daily_caps[1])
 
 
 class PrepareActiveSourceForAutopilotTestCase(TestCase):
@@ -561,9 +654,10 @@ class PrepareActiveSourceForAutopilotTestCase(TestCase):
             2: 12
         }
 
-        campaign_stop._prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend)
+        campaign_stop._prepare_for_autopilot(campaign, daily_caps, per_source_spend)
         self.assertItemsEqual([ag1, ag2], campaign.adgroup_set.all().filter_active())
-        self.assertItemsEqual([1, 2], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
+        self.assertItemsEqual(
+            [1, 2], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
         self.assertItemsEqual([1], ag2.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
 
     def test_stop_whole_ad_group(self):
@@ -589,7 +683,7 @@ class PrepareActiveSourceForAutopilotTestCase(TestCase):
             2: 12
         }
 
-        campaign_stop._prepare_active_sources_for_autopilot(campaign, daily_caps, per_source_spend)
+        campaign_stop._prepare_for_autopilot(campaign, daily_caps, per_source_spend)
         self.assertItemsEqual([ag2], campaign.adgroup_set.all().filter_active())
         self.assertItemsEqual(
             [1, 2, 4, 5], ag1.adgroupsource_set.all().filter_active().values_list('source_id', flat=True))
@@ -722,5 +816,135 @@ class UpdateCampaignsInLandingTestCase(TestCase):
                 source_spend[(ags.ad_group_id, ags.source_id)] = Decimal('100')
         mock_get_past_data.return_value = (date_spend, source_spend)
 
-        self.assertEqual(1, len(dash.models.Campaign.objects.all().filter_landing()))
+        self.assertTrue(campaign.is_in_landing())
         campaign_stop.update_campaigns_in_landing()
+
+        for ad_group in campaign.adgroup_set.all().filter_active():
+            current_settings = ad_group.get_current_settings()
+            self.assertEqual(today, current_settings.end_date)
+
+    @patch('utils.dates_helper.local_today')
+    @patch('automation.campaign_stop._get_yesterday_source_spends')
+    @patch('automation.campaign_stop._get_past_7_days_data')
+    @patch('dash.api.order_ad_group_settings_update')
+    @patch('actionlog.zwei_actions.send')
+    def test_wrap_up_landing_mode(self, mock_zwei_send, mock_order_ad_group_update, mock_get_past_data,
+                                  mock_get_yesterday_spends, mock_local_today):
+        today = datetime.date(2016, 4, 5)
+
+        yesterday = today - datetime.timedelta(days=1)
+        mock_local_today.return_value = today
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        campaign_stop._switch_campaign_to_landing_mode(campaign)
+
+        mock_order_ad_group_update.reset_mock()
+        mock_order_ad_group_update.return_value = []
+
+        ret = {}
+        for ad_group in campaign.adgroup_set.all():
+            for ags in ad_group.adgroupsource_set.all():
+                ret[(ags.ad_group_id, ags.source_id)] = Decimal('100')
+        mock_get_yesterday_spends.return_value = ret
+
+        date_spend, source_spend = {}, {}
+        for ad_group in campaign.adgroup_set.all():
+            for ags in ad_group.adgroupsource_set.all():
+                # all ad groups without spend
+                date_spend[(ags.ad_group_id, yesterday)] = Decimal('0')
+                source_spend[(ags.ad_group_id, ags.source_id)] = Decimal('0')
+        mock_get_past_data.return_value = (date_spend, source_spend)
+
+        self.assertTrue(campaign.is_in_landing())
+        campaign_stop.update_campaigns_in_landing()
+
+        self.assertFalse(campaign.get_current_settings().landing_mode)
+        for ad_group in campaign.adgroup_set.all():
+            self.assertFalse(ad_group.get_current_settings().landing_mode)
+            for ad_group_source in ad_group.adgroupsource_set.all():
+                self.assertFalse(ad_group_source.get_current_settings().landing_mode)
+
+
+class MinimumBudgetAmountTestCase(TestCase):
+    fixtures = ['test_campaign_stop.yaml']
+
+    @patch('utils.dates_helper.local_today')
+    @patch('utils.dates_helper.utc_now')
+    def test_is_current_time_valid_for_amount_editing(self, mock_utc_now, mock_local_today):
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        today = datetime.datetime(2016, 4, 5, 10, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertFalse(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 12, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertTrue(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 23, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertTrue(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 8, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertFalse(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+        today = datetime.datetime(2016, 4, 5, 11, 10, 10)
+        mock_utc_now.return_value = today
+        mock_local_today.return_value = dates_helper.utc_datetime_to_local_date(today)
+        self.assertFalse(
+            campaign_stop.is_current_time_valid_for_amount_editing(campaign)
+        )
+
+    @patch('utils.dates_helper.local_today')
+    def test_get_minimum_budget_amount(self, mock_local_today):
+        mock_local_today.return_value = datetime.date(2016, 4, 5)
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(dash.models.BudgetLineItem.objects.get(pk=1)),
+            None  # not active
+        )
+
+        budget = dash.models.BudgetLineItem.objects.get(pk=6)
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget),
+            Decimal('294.4444444444444444444444444')  # max daily budgets without spend
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            date=datetime.date(2016, 4, 4),
+            media_spend_nano=225000000000,
+            license_fee_nano=22500000000,
+            data_spend_nano=0,
+            budget=budget,
+        )
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget),
+            Decimal('541.9444444444444444444444444')  # max daily budgets without spend
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            date=datetime.date(2016, 4, 5),
+            media_spend_nano=125000000000,
+            license_fee_nano=12500000000,
+            data_spend_nano=0,
+            budget=budget,
+        )
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget),
+            Decimal('679.4444444444444444444444444')  # max daily budgets without spend
+        )
