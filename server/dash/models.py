@@ -1449,6 +1449,21 @@ class AdGroup(models.Model):
                 values_list('ad_group_id', flat=True)
             return self.filter(id__in=active_ad_group_ids)
 
+        def filter_landing(self):
+            related_settings = AdGroupSettings.objects.all().filter(
+                ad_group__in=self
+            ).group_current_settings()
+
+            filtered = AdGroupSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                landing_mode=True
+            ).values_list(
+                'ad_group__id', flat=True
+            )
+
+            return self.filter(pk__in=filtered)
+
     class Meta:
         ordering = ('name',)
 
@@ -1908,6 +1923,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         'state',
         'cpc_cc',
         'daily_budget_cc',
+        'landing_mode'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -2732,21 +2748,6 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.'.format(
                     -delta.quantize(Decimal('1.00'))
-                )
-            )
-        if self.previous_value('amount') > self.amount:
-            self._validate_smaller_amount()
-
-    def _validate_smaller_amount(self):
-        spend_cc = self.get_spend_data()['total_cc']
-        if not spend_cc:
-            return
-        reserve = self.get_reserve_amount_cc(factor_offset=1)
-        minimum_amount = int(float(spend_cc + reserve) / TO_CC_MULTIPLIER + 1)
-        if self.amount < minimum_amount:
-            raise ValidationError(
-                'Budget exceeds the minimum budget amount by ${}.'.format(
-                    Decimal(minimum_amount - self.amount).quantize(Decimal('1.00'))
                 )
             )
 

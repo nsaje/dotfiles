@@ -47,7 +47,11 @@ class NavigationDataView(api_common.BaseApiView):
                                                                    .group_current_settings()
 
             response['ad_group'] = navigation_helpers.get_ad_group_dict(
-                ad_group, ad_group.get_current_settings(), ad_group_source_settings)
+                ad_group,
+                ad_group.get_current_settings(),
+                ad_group_source_settings,
+                ad_group.campaign.get_current_settings()
+            )
 
         return self.create_api_response(response)
 
@@ -83,13 +87,16 @@ class NavigationTreeView(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         user = request.user
 
-        ad_groups_data = self._load_ad_groups_data(user, filtered_sources)
-        campaigns_data = self._load_campaigns_data(ad_groups_data, user, filtered_sources)
+        campaigns, map_campaign_settings = self._fetch_campaign_data_from_db(
+            user, filtered_sources)
+        ad_groups_data = self._load_ad_groups_data(user, filtered_sources, map_campaign_settings)
+        campaigns_data = self._load_campaigns_data(ad_groups_data,
+                                                   campaigns, map_campaign_settings)
         accounts_data = self._load_accounts_data(campaigns_data, user, filtered_sources)
 
         return self.create_api_response(accounts_data)
 
-    def _load_ad_groups_data(self, user, filtered_sources):
+    def _load_ad_groups_data(self, user, filtered_sources, map_campaign_settings):
         # load necessary objects
         ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(
             filtered_sources).order_by('name')
@@ -119,7 +126,8 @@ class NavigationTreeView(api_common.BaseApiView):
             ad_group_source_settings = map_ad_groups_sources_settings.get(ad_group.id)
 
             ad_group_dict = navigation_helpers.get_ad_group_dict(
-                ad_group, ad_group_settings, ad_group_source_settings)
+                ad_group, ad_group_settings, ad_group_source_settings,
+                map_campaign_settings.get(ad_group.campaign_id))
 
             data_ad_groups.setdefault(ad_group.campaign_id, []).append(ad_group_dict)
 
@@ -134,10 +142,25 @@ class NavigationTreeView(api_common.BaseApiView):
 
         map_campaigns_settings = {cs.campaign_id: cs for cs in campaigns_settings}
 
+    def _fetch_campaign_data_from_db(self, user, filtered_sources):
+        campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(
+            filtered_sources).order_by('name')
+
+        map_campaigns_settings = {}
+        campaigns_settings = models.CampaignSettings.objects.filter(
+            campaign__in=campaigns).group_current_settings()
+
+        map_campaigns_settings = {cs.campaign_id: cs for cs in campaigns_settings}
+
+        return campaigns, map_campaigns_settings
+
+    def _load_campaigns_data(self, ad_groups_data,
+                             campaigns, map_campaign_settings):
         data_campaigns = {}
         for campaign in campaigns:
             campaign_dict = navigation_helpers.get_campaign_dict(
-                campaign, map_campaigns_settings.get(campaign.id))
+                campaign, map_campaign_settings.get(campaign.id)
+            )
 
             # use camel-case to optimize for JS naming conventions
             campaign_dict['adGroups'] = ad_groups_data.get(campaign.id, [])

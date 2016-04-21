@@ -1,5 +1,6 @@
 from dash import models
 from dash import constants
+from dash import infobox_helpers
 
 
 def map_ad_group_sources_settings(ad_groups_sources_settings, map_ad_group_source):
@@ -14,27 +15,30 @@ def map_ad_group_sources_settings(ad_groups_sources_settings, map_ad_group_sourc
     return map_ad_groups_sources_settings
 
 
-def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings):
-
+def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings, campaign_settings):
     running_status = models.AdGroup.get_running_status(ad_group_settings, ad_group_source_settings)
     state = ad_group_settings.state if ad_group_settings else constants.AdGroupSettingsState.INACTIVE
-
+    is_in_landing = campaign_settings.landing_mode if campaign_settings else False
+    autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
+                       else constants.AdGroupSettingsAutopilotState.INACTIVE)
     ad_group_dict = {
         'id': ad_group.id,
         'name': ad_group.name,
         'status': running_status,
         'state': state,
-        'autopilot_state': ad_group_settings.autopilot_state if ad_group_settings\
-            else constants.AdGroupSettingsAutopilotState.INACTIVE,
         'archived': ad_group_settings.archived if ad_group_settings else False,
+        'autopilot_state': autopilot_state,
+        'active': infobox_helpers.get_adgroup_running_status_class(autopilot_state, running_status,
+                                                                   state, is_in_landing),
     }
     return ad_group_dict
 
 
-def get_campaign_dict(campaign, campaign_settings=None):
+def get_campaign_dict(campaign, campaign_settings):
     campaign_dict = {
         'id': campaign.id,
         'name': campaign.name,
+        'landingMode': campaign_settings.landing_mode if campaign_settings else False,
         'landingMode': campaign.is_in_landing(),
         'archived': campaign_settings.archived if campaign_settings else False,
     }

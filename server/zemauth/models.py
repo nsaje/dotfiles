@@ -120,7 +120,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_ad_groups_add_ad_group', 'Can add ad groups.'),
             ('account_campaigns_add_campaign', 'Can add campaigns.'),
             ('all_accounts_accounts_add_account', 'Can add accounts.'),
-            ('all_new_sidebar', 'Can see new sidebar.'),
             ('campaign_budget_management_view', 'Can do campaign budget management.'),
             ('account_budget_view', 'Can view account budget.'),
             ('all_accounts_budget_view', 'Can view all accounts budget.'),

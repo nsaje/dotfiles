@@ -30,6 +30,9 @@ describe('AdGroupPublishersCtrl', function () {
             $scope.hasInfoboxPermission = function () {
                 return false;
             };
+            $scope.setInfoboxHeader = function (infoboxHeader) {
+                $scope.infoboxHeader = infoboxHeader;
+            };
             $scope.getTableData = function () {
                 return;
             };

@@ -107,27 +107,19 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
+        zemNavigationService.notifyAdGroupReloading($state.params.id, true);
+
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
                 var currAdGroup = $scope.adGroup.id;
                 $scope.errors = {};
-                if (prevAdGroup !== currAdGroup) {
-                    zemNavigationService.updateAdGroupCache(prevAdGroup, {
-                        name: data.settings.name,
-                        state: data.settings.state,
-                    });
-                } else {
+                if (prevAdGroup === currAdGroup) {
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
-
-                    zemNavigationService.updateAdGroupCache(currAdGroup, {
-                        name: data.settings.name,
-                        state: data.settings.state,
-                        status: status,
-                    });
                 }
 
+                zemNavigationService.reloadAdGroup($state.params.id);
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
 
@@ -141,6 +133,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.errors = data;
                 $scope.saveRequestInProgress = false;
                 $scope.saved = false;
+                zemNavigationService.notifyAdGroupReloading($state.params.id, false);
             }
         );
     };

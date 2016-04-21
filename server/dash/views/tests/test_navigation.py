@@ -7,6 +7,8 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 
+from utils import test_helper
+
 from zemauth.models import User
 
 
@@ -196,7 +198,8 @@ class NavigationDataViewTest(TestCase):
                 'name': 'test adgroup 1',
                 'state': 1,
                 'status': 1,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'active',
             }
         })
 
@@ -223,8 +226,24 @@ class NavigationDataViewTest(TestCase):
                 'name': 'test adgroup 4',
                 'state': 2,
                 'status': 2,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'stopped',
             }
+        })
+
+    def test_get_ad_group_no_access(self):
+        # has other available
+        response = self._get(1, 'ad_groups', 4)
+        self.assertDictEqual(response, {
+            'message': 'Ad Group does not exist',
+            'error_code': 'MissingDataError'
+        })
+
+        # has nothing available
+        response = self._get(4, 'ad_groups', 2)
+        self.assertDictEqual(response, {
+            'message': 'Ad Group does not exist',
+            'error_code': 'MissingDataError'
         })
 
 
@@ -255,6 +274,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
+                    "active": "active",
                 }, {
                     "archived": False,
                     "id": 2,
@@ -262,6 +282,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 2,  # past dates
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
                     "id": 3,
@@ -269,6 +290,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 2,
                     "status": 2,
                     "autopilot_state": 2,
+                    "active": "stopped",
                 }],
                 "archived": False,
                 "id": 1,
@@ -294,6 +316,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 2,  # source paused
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
                     "id": 2,
@@ -301,6 +324,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 2,
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
                     "id": 3,
@@ -308,6 +332,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 2,
                     "status": 2,  # source paused
                     "autopilot_state": 2,
+                    "active": "stopped",
                 }],
                 "landingMode": False,
                 "archived": False,
@@ -333,6 +358,7 @@ class NavigationTreeViewTest(TestCase):
                         "state": 2,
                         "status": 2,
                         "autopilot_state": 2,
+                        "active": "stopped",
                     }
                 ],
                 "id": 2,

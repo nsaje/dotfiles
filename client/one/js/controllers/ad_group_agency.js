@@ -32,16 +32,22 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
 
     $scope.archiveAdGroup = function () {
         if ($scope.canArchive) {
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
             api.adGroupArchive.archive($scope.adGroup.id).then(function () {
                 $scope.refreshPage();
+            }, function () {
+                zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
             });
         }
     };
 
     $scope.restoreAdGroup = function () {
         if ($scope.canRestore) {
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
             api.adGroupArchive.restore($scope.adGroup.id).then(function () {
                 $scope.refreshPage();
+            }, function () {
+                zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
             });
         }
     };

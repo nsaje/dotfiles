@@ -869,7 +869,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.dateRange.startDate,
             $scope.dateRange.endDate).then(
             function (data) {
-                $scope.infoboxHeader = data.header;
+                $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
                 $scope.reflowGraph(1);

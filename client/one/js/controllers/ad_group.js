@@ -54,6 +54,10 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
+    $scope.setInfoboxHeader = function (infoboxHeader) {
+        $scope.infoboxHeader = infoboxHeader;
+    };
+
     $scope.isAdGroupPaused = function () {
         return $scope.adGroup && $scope.adGroup.state === constants.adGroupSettingsState.INACTIVE;
     };
@@ -97,6 +101,14 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         );
     };
 
+    $scope.updateInfoboxHeader = function () {
+        zemNavigationService.getAdGroup($state.params.id).then(function (adGroupData) {
+            if ($scope.infoboxHeader) {
+                $scope.infoboxHeader.active = adGroupData.adGroup.reloading ? 'reloading' : adGroupData.adGroup.active;
+            }
+        });
+    };
+
     $scope.$on('$stateChangeStart', function () {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
@@ -124,7 +136,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         zemNavigationService.getAdGroup($state.params.id).then(function (adGroupData) {
             $scope.setModels(adGroupData);
             $scope.updateBreadcrumbAndTitle();
+            $scope.updateInfoboxHeader();
         });
+    });
+
+    zemNavigationService.onAdGroupLoading($scope, $state.params.id, function () {
+        $scope.updateInfoboxHeader();
     });
 
     $scope.$watch('adGroup.archived', function (newValue, oldValue) {

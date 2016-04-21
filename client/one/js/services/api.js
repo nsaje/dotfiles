@@ -582,6 +582,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 params: {}
             };
 
+            addFilteredSources(config.params);
+
             if (startDate) {
                 config.params.start_date = startDate.format();
             }

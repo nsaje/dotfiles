@@ -127,7 +127,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         c.pk: c for c in campaigns
     }
     all_campaign_goals = campaign_goals.fetch_goals(
-        [campaign.pk for campaign in campaigns], start_date, end_date
+        [campaign.pk for campaign in campaigns], end_date
     )
     for goal in all_campaign_goals:
         campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)
@@ -576,7 +576,6 @@ class SourcesTable(object):
             last_success_actions_joined,
             e_yesterday_cost,
             yesterday_cost,
-            order=order,
             ad_group_level=ad_group_level,
         )
 
@@ -606,6 +605,9 @@ class SourcesTable(object):
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
+
+        if order:
+            rows = sort_results(rows, [order])
 
         response = {
             'rows': rows,
@@ -727,7 +729,6 @@ class SourcesTable(object):
             last_actions,
             e_yesterday_cost,
             yesterday_cost,
-            order=None,
             ad_group_level=False):
         rows = []
 
@@ -848,9 +849,6 @@ class SourcesTable(object):
                     row[field] = val
 
             rows.append(row)
-
-        if order:
-            rows = sort_results(rows, [order])
 
         return rows
 
@@ -1484,6 +1482,8 @@ class CampaignAdGroupsTable(object):
                 campaign, totals, totals_cost
             )
 
+        rows = self.sort_rows(rows, order, has_view_archived_permission)
+
         response = {
             'rows': rows,
             'totals': totals,
@@ -1555,7 +1555,7 @@ class CampaignAdGroupsTable(object):
         )
 
     def get_rows(self, user, campaign, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
-                 order, show_archived, e_yesterday_cost, yesterday_cost):
+                 show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
         # map settings for quicker access
@@ -1600,12 +1600,6 @@ class CampaignAdGroupsTable(object):
 
             rows.append(row)
 
-        if order:
-            if 'state' in order:
-                rows = sort_rows_by_order_and_archived(rows, order)
-            else:
-                rows = sort_results(rows, [order])
-
         return rows
 
     def get_totals(self, user, totals_data, e_yesterday_cost, yesterday_cost):
@@ -1614,6 +1608,15 @@ class CampaignAdGroupsTable(object):
         if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
             totals_data['yesterday_cost'] = yesterday_cost
         return totals_data
+
+    def sort_rows(self, rows, order, has_view_archived_permission):
+        if order:
+            if 'state' in order and has_view_archived_permission:
+                rows = sort_rows_by_order_and_archived(rows, order)
+            else:
+                rows = sort_results(rows, [order])
+
+        return rows
 
     def get_editable_fields(self, ad_group, campaign, row):
         state = {
