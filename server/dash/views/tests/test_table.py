@@ -32,7 +32,7 @@ def copy(d):
 )
 @patch('dash.table.reports.api_touchpointconversions.query')
 @patch('dash.table.reports.api_contentads.query')
-class AdGroupAdsPlusTableTest(TestCase):
+class AdGroupAdsTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -157,7 +157,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -392,7 +392,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -468,7 +468,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -552,7 +552,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.save()
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -608,7 +608,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.save()
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -729,9 +729,6 @@ class AdGroupAdsPlusTableTest(TestCase):
         user = User.objects.create_user('some@email.si', 'secret2')
         ad_group.campaign.users.add(user)
         self.client.login(username=user.email, password='secret2')
-        user.user_permissions.add(
-            authmodels.Permission.objects.get(codename="new_content_ads_tab")
-        )
 
         params = {
             'page': 1,
@@ -741,7 +738,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'end_date': self.mock_date.isoformat(),
         }
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -755,7 +752,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         )
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -766,7 +763,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
 
-class AdGroupAdsPlusTableUpdatesTest(TestCase):
+class AdGroupAdsTableUpdatesTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -793,7 +790,7 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
 
         params = {}
         response = self.client.get(
-            reverse('ad_group_ads_plus_table_updates', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table_updates', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -1114,6 +1111,13 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
         self.assertEqual(result['data']['totals'], {
+            u'avg_cost_for_new_visitor': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+            u'total_pageviews': 0,
+            u'total_seconds': 0,
+            u'unbounced_visits': 0,
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1334,6 +1338,13 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
+            u'avg_cost_for_new_visitor': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+            u'total_pageviews': 0,
+            u'total_seconds': 0,
+            u'unbounced_visits': 0,
         })
 
     """
@@ -1686,6 +1697,13 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
+            u'avg_cost_for_new_visitor': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+            u'total_pageviews': 0,
+            u'total_seconds': 0,
+            u'unbounced_visits': 0,
         })
 
     def test_get_reverse_order(self, mock_query, mock_touchpointconversins_query):

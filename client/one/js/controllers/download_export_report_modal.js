@@ -5,7 +5,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
 
     $scope.setDisabledExportOptions = function () {
         $scope.showInProgress = true;
-        api.exportPlusAllowed.get($state.params.id, $scope.level,
+        api.exportAllowed.get($state.params.id, $scope.level,
             $scope.exportSources, $scope.startDate, $scope.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {
@@ -51,7 +51,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
     };
 
     $scope.downloadReport = function () {
-        var url = $scope.baseUrl + 'export_plus/?type=' + $scope.export.type.value +
+        var url = $scope.baseUrl + 'export/?type=' + $scope.export.type.value +
             '&start_date=' + $scope.startDate.format() +
             '&end_date=' + $scope.endDate.format() +
             '&order=' + $scope.order +

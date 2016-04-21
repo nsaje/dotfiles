@@ -23,9 +23,12 @@ def utc_datetime_to_local_date(dt):
     return utc_to_local_datetime(dt).date()
 
 
+def utc_now():
+    return datetime.datetime.utcnow()
+
+
 def utc_today():
-    now = datetime.datetime.utcnow()
-    return now.date()
+    return utc_now().date()
 
 
 def local_today():

@@ -859,7 +859,6 @@ class AdGroupAgencyTest(AgencyViewTestCase):
 
         self.add_permissions([
             'ad_group_agency_tab_view',
-            'new_content_ads_tab',
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
@@ -1863,7 +1862,6 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'IAB Category', 'value': 'Uncategorized'},
                 {'name': 'Campaign Goal', 'value': 'new unique visitors'},
                 {'name': 'Goal Quantity', 'value': '0.00'},
-                {'name': 'Service Fee', 'value': '20%'},
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
@@ -2372,7 +2370,6 @@ class AccountAgencyTest(TestCase):
         self.assertTrue(content['success'])
         self.assertDictEqual(content['data']['settings'], {
             'name': 'test account 1',
-            'service_fee': '13',
             'default_sales_representative': '3',
             'default_account_manager': '2',
             'id': '1',
@@ -2391,7 +2388,6 @@ class AccountAgencyTest(TestCase):
             json.dumps({
                 'settings': {
                     'name': 'changed name',
-                    'service_fee': '15',
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
@@ -2418,7 +2414,6 @@ class AccountAgencyTest(TestCase):
             'default_sales_representative': User.objects.get(pk=1),
             'default_account_manager': User.objects.get(pk=3),
             'name': 'changed name',
-            'service_fee': Decimal('0.1500')
         })
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
@@ -2436,7 +2431,6 @@ class AccountAgencyTest(TestCase):
             json.dumps({
                 'settings': {
                     'name': 'changed name',
-                    'service_fee': '15',
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
@@ -2454,7 +2448,7 @@ class AccountAgencyTest(TestCase):
         view = agency.AccountAgency()
         history = view.get_history(account)
 
-        self.assertEqual(len(history), 5)
+        self.assertEqual(len(history), 6)
         self.assertFalse(history[0]['show_old_settings'])
         self.assertTrue(history[1]['show_old_settings'])
         self.assertTrue(history[-1]['show_old_settings'])
@@ -2482,7 +2476,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 5)
+        self.assertEqual(len(settings_dict), 4)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertIn('old_value', settings_dict['name'])
@@ -2495,7 +2489,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 5)
+        self.assertEqual(len(settings_dict), 4)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertNotIn('old_value', settings_dict['name'])
@@ -2503,11 +2497,11 @@ class AccountAgencyTest(TestCase):
     def test_get_changes_text(self):
         expected_changes_strings = [
             'Created settings',
-            'Service Fee set to "10%"',
-            'Sales Representative set to "superuser@test.com", Service Fee set to "20%"',
+            'Sales Representative set to "superuser@test.com"',
+            'Sales Representative set to "user@test.com", Account Manager set to "user@test.com"',
             '',
             'some text',
-            'Service Fee set to "10%", some text'
+            'Sales Representative set to "superuser@test.com", some text'
         ]
 
         view = agency.AccountAgency()

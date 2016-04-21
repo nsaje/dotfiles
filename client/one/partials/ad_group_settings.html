@@ -237,9 +237,9 @@
 
             <div class="form-group indented" ng-if="showAutoPilotDailyBudgetInput()">
                 <div class="col-xs-10">
-                    Auto-Pilot will optimize media sources' daily budgets for <b>{{budgetAutopilotOptimizationGoalText()}}</b>.<br/>
-                    To change optimization objective please change Primary Campaign Goal in Campaign Settings.<br/>
-                    Minimum Total Daily Budget to run Daily Budget Automation Auto-Pilot on this Ad Group is <b>${{settings.autopilotMinBudget}}</b>.<br/>
+                    Auto-Pilot will optimize media sources' daily budgets for <b>{{budgetAutopilotOptimizationGoalText()}}</b>
+                    <zem-help-popover content="To change optimization objective please change Primary Campaign Goal in Campaign Settings." placement="top"></zem-help-popover><br/>
+                    <i>{{budgetAutopilotOptimizationCPAGoalText()}}</i>
                 </div>
             </div>
         </div>
