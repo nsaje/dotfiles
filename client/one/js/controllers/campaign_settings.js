@@ -1,4 +1,4 @@
-/* globals oneApp,constants,options */
+/* globals oneApp,options */
 oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
