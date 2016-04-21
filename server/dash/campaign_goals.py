@@ -9,13 +9,13 @@ from dash import models, constants, forms
 from dash.views import helpers
 import dash.stats_helper
 import utils.lc_helper
-from utils import dates_helper
+
 
 CAMPAIGN_GOAL_NAME_FORMAT = {
-    constants.CampaignGoalKPI.TIME_ON_SITE: '{} time on site in seconds',
-    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} bounce rate',
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} new unique visitors',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} pages per session',
+    constants.CampaignGoalKPI.TIME_ON_SITE: '{} Time on Site - Seconds',
+    constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} Max Bounce Rate',
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Unique Visitors',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pages per Session',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
 }
@@ -92,10 +92,13 @@ def format_value(goal_type, value):
         or 'N/A'
 
 
-def format_campaign_goal(goal_type, value):
-    return CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
+def format_campaign_goal(goal_type, value, conversion_goal):
+    description = CAMPAIGN_GOAL_NAME_FORMAT[goal_type].format(
         format_value(goal_type, value)
     )
+    if conversion_goal is not None:
+        description += ' - ' + conversion_goal.name
+    return description
 
 
 def create_campaign_goal(request, form, campaign, value=None, conversion_goal=None):
@@ -154,9 +157,9 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
             request,
             campaign,
             constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
-            u'Changed campaign goal value: "{} {}"'.format(
-                value,
-                constants.CampaignGoalKPI.get_text(goal.type)
+
+            u'Changed campaign goal value: "{}"'.format(
+                CAMPAIGN_GOAL_NAME_FORMAT[goal.type].format(value)
             )
         )
 
@@ -356,7 +359,7 @@ def get_campaign_goals(campaign, conversion_goals):
 
         conversion_goal_name = None
         if goal_type == constants.CampaignGoalKPI.CPA:
-            goal_name = 'Avg. cost per conversion'
+            goal_name = 'Avg. CPA'
             conversion_goal_name = cg_value.campaign_goal.conversion_goal.name
             fields = dict(('{}'.format(k['id']), True)
                           for k in conversion_goals if k['name'] == conversion_goal_name)
@@ -523,8 +526,17 @@ def get_campaign_conversion_goal_metrics(campaign, start_date, end_date, convers
 def eliminate_duplicates(campaign_goal_values):
     date_hash = {}
     for campaign_goal_value in campaign_goal_values:
-        date_hash[campaign_goal_value.created_dt.date()] = campaign_goal_value
-    return sorted(date_hash.values(), key=lambda x: x.created_dt)
+        cgv_type = campaign_goal_value.campaign_goal.type
+        date_hash[cgv_type] = date_hash.get(cgv_type, {})
+        date_hash[cgv_type][campaign_goal_value.created_dt.date()] = campaign_goal_value
+
+    ret = []
+    for campaign_goal_type, date_values in date_hash.iteritems():
+        if len(date_values) == 0:
+            continue
+        sorted_values = sorted(date_values.values(), key=lambda x: x.created_dt)
+        ret.extend(sorted_values)
+    return sorted(ret, key=lambda x: x.created_dt)
 
 
 def generate_series(campaign_goal_values, pre_cg_vals, start_date, end_date, conversion_goals=None):

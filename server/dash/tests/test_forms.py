@@ -18,7 +18,7 @@ class AccountAgencySettingsFormTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(AccountAgencySettingsFormTest, cls).setUpClass() # loads fixtures
+        super(AccountAgencySettingsFormTest, cls).setUpClass()  # loads fixtures
 
         permission = Permission.objects.get(codename='campaign_settings_account_manager')
         user = User.objects.get(pk=3)
@@ -36,9 +36,8 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 2,
             'default_sales_representative': 3,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name'}}
-            })
+        })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_sales_representative'))
 
@@ -48,9 +47,8 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 2,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name'}}
-            })
+        })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_account_manager'))
 
@@ -60,13 +58,12 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
-            })
+        })
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['allowed_sources'],
-            {1: {'name': 'Source name', 'allowed': False}}
-        )
+                         {1: {'name': 'Source name', 'allowed': False}}
+                         )
 
     def _gen_allowed_sources_form(self, allowed_sources_dict):
         return forms.AccountAgencySettingsForm({
@@ -74,9 +71,8 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'Name',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'service_fee': 1,
             'allowed_sources': allowed_sources_dict
-            })
+        })
 
     def test_invalid_allowed_sources_list(self):
         form = self._gen_allowed_sources_form([])
@@ -104,7 +100,15 @@ class AccountAgencySettingsFormTest(TestCase):
             'name': 'test account 1',
             'default_account_manager': 3,
             'default_sales_representative': 2,
-            'service_fee': 1,
+            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
+            })
+        self.assertTrue(form.is_valid(), "Form should be valid as the account id is the same")
+
+        form = forms.AccountAgencySettingsForm({
+            'id': 2,
+            'name': 'test account 1',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
             })
         self.assertFalse(form.is_valid())
@@ -452,7 +456,6 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'brand_name': ['This field is required.']})
 
-
     def test_empty_description_and_not_in_csv(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
@@ -491,7 +494,7 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_csv_empty_lines(self):
         csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Impression Trackers'], [],
-                                      [self.url, self.title, self.image_url, self.tracker_urls], []])
+                                           [self.url, self.title, self.image_url, self.tracker_urls], []])
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
 
@@ -566,12 +569,12 @@ class AdGroupAdsUploadFormTest(TestCase):
             }]
         })
 
-
     def test_form_optional_fields_in_csv(self):
         # optional fields in csv are present (display url, brand name, description, call to action)
         # they override the ones from the batch upload form for each content ad
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs', 'Display URL', 'Brand name', 'Description', 'Call to action'],
+            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs',
+                'Display URL', 'Brand name', 'Description', 'Call to action'],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
 
         form = self._init_form(csv_file, None)
@@ -589,7 +592,7 @@ class AdGroupAdsUploadFormTest(TestCase):
                 u'title': self.title,
                 u'url': self.url,
                 u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url + "2",	# From CSV
+                u'display_url': self.display_url + "2",  # From CSV
                 u'brand_name': self.brand_name + "2",
                 u'description': self.description + "2",
                 u'call_to_action': self.call_to_action + "2",
@@ -602,7 +605,8 @@ class AdGroupAdsUploadFormTest(TestCase):
         # they override the ones from the batch upload form for each content ad.
         # Those optional fields have alternative endings like spaces and (optional) added.
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)', 'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
+            ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)',
+             'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
 
         form = self._init_form(csv_file, None)
@@ -621,7 +625,7 @@ class AdGroupAdsUploadFormTest(TestCase):
                 u'title': self.title,
                 u'url': self.url,
                 u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url + "2",	# From CSV
+                u'display_url': self.display_url + "2",  # From CSV
                 u'brand_name': self.brand_name + "2",
                 u'description': self.description + "2",
                 u'call_to_action': self.call_to_action + "2",
@@ -629,17 +633,14 @@ class AdGroupAdsUploadFormTest(TestCase):
             }]
         })
 
-
     def test_form_optional_fields_duplicated(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas', 'Crop Areas'],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
 
         form = self._init_form(csv_file, None)
-        self.assertEqual(form.errors, {'content_ads': [u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
-
-
-
+        self.assertEqual(form.errors, {'content_ads': [
+                         u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
 
     def test_incorrect_csv_format(self):
         csv_file = StringIO.StringIO()
@@ -729,3 +730,46 @@ class AdGroupAdsUploadFormTest(TestCase):
             writer.writerow(row)
 
         return csv_file
+
+
+class CampaignAdminFormTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def test_empty_form(self):
+        form = forms.CampaignAdminForm()
+        self.assertTrue(form.initial['automatic_campaign_stop'])
+
+    def test_instance_witout_settings(self):
+        campaign = models.Campaign(
+            name='Test',
+            account_id=1,
+        )
+        campaign.save(None)
+        form = forms.CampaignAdminForm(
+            instance=campaign
+        )
+        self.assertFalse(form.initial['automatic_campaign_stop'])
+
+    def test_instance_with_settings(self):
+        campaign = models.Campaign(
+            name='Test',
+            account_id=1,
+        )
+        campaign.save(None)
+        settings = campaign.get_current_settings().copy_settings()
+        settings.automatic_campaign_stop = True
+        settings.save(None)
+
+        form = forms.CampaignAdminForm(
+            instance=campaign
+        )
+        self.assertTrue(form.initial['automatic_campaign_stop'])
+
+        settings = campaign.get_current_settings().copy_settings()
+        settings.automatic_campaign_stop = False
+        settings.save(None)
+
+        form = forms.CampaignAdminForm(
+            instance=campaign
+        )
+        self.assertFalse(form.initial['automatic_campaign_stop'])

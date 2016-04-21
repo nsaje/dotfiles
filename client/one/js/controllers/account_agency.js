@@ -59,18 +59,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
         $scope.selectedMediaSouces.allowed.length = 0;
     };
 
-    $scope.getServiceFees = function (search) {
-        // use fresh instance because we modify the collection on the fly
-        var fees = ['15', '20', '25'];
-
-        // adds the searched for value to the array
-        if (search && fees.indexOf(search) === -1) {
-            fees.unshift(search);
-        }
-
-        return fees;
-    };
-
     $scope.userActionChange = function (action, userId) {
         if (action === '') {
             return;

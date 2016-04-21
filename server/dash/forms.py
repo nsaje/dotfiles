@@ -261,18 +261,15 @@ class AccountAgencySettingsForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
-    service_fee = forms.DecimalField(
-        min_value=0,
-        max_value=100,
-        decimal_places=2,
-    )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
 
-        if models.Account.objects.filter(name=name).exists():
+        account_id = self.cleaned_data.get('id')
+
+        if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
             raise forms.ValidationError("Invalid account name.")
 
         return name
@@ -449,6 +446,26 @@ class CampaignGoalForm(forms.Form):
         if goals.count():
             raise forms.ValidationError('Multiple goals of the same type not allowed')
         return goal_type
+
+
+class CampaignAdminForm(forms.ModelForm):
+    automatic_campaign_stop = forms.BooleanField(required=False,
+                                                 label='Automatic campaign stop on low budget')
+
+    def __init__(self, *args, **kwargs):
+        initial = {
+            'automatic_campaign_stop': True,
+        }
+        if 'instance' in kwargs:
+            settings = kwargs['instance'].get_current_settings()
+            initial['automatic_campaign_stop'] = settings.automatic_campaign_stop
+        super(CampaignAdminForm, self).__init__(initial=initial, *args, **kwargs)
+
+    class Meta:
+        model = models.Campaign
+        exclude = (
+            'users', 'groups', 'created_dt', 'modified_dt', 'modified_by',
+        )
 
 
 class CampaignAgencyForm(forms.Form):
