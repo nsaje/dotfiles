@@ -127,7 +127,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         c.pk: c for c in campaigns
     }
     all_campaign_goals = campaign_goals.fetch_goals(
-        [campaign.pk for campaign in campaigns], start_date, end_date
+        [campaign.pk for campaign in campaigns], end_date
     )
     for goal in all_campaign_goals:
         campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)

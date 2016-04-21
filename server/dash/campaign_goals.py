@@ -416,11 +416,10 @@ def get_goal_performance_status(goal_type, metric_value, planned_value, cost=Non
     return constants.CampaignGoalPerformance.AVERAGE
 
 
-def fetch_goals(campaign_ids, start_date, end_date):
+def fetch_goals(campaign_ids, end_date):
     prefetch_values = Prefetch(
         'values',
         queryset=dash.models.CampaignGoalValue.objects.filter(
-            created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
             created_dt__lt=datetime.datetime.combine(end_date + datetime.timedelta(1),
                                                      datetime.datetime.min.time()),
         ).order_by('-created_dt')
@@ -454,7 +453,7 @@ def get_goals_performance(user, constraints, start_date, end_date,
     performance = []
     campaign = constraints.get('campaign') or constraints['ad_group'].campaign
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
-    goals = goals or fetch_goals([campaign.pk], start_date, end_date)
+    goals = goals or fetch_goals([campaign.pk], end_date)
 
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,
