@@ -1460,7 +1460,6 @@ class CampaignAdGroupsTable(object):
             ad_groups_status_dict,
             stats,
             last_success_actions_joined,
-            order,
             show_archived,
             e_yesterday_cost,
             yesterday_cost,
@@ -1482,7 +1481,7 @@ class CampaignAdGroupsTable(object):
                 campaign, totals, totals_cost
             )
 
-        rows = self.sort_rows(rows, order, has_view_archived_permission)
+        rows = self.sort_rows(rows, order)
 
         response = {
             'rows': rows,
@@ -1609,9 +1608,9 @@ class CampaignAdGroupsTable(object):
             totals_data['yesterday_cost'] = yesterday_cost
         return totals_data
 
-    def sort_rows(self, rows, order, has_view_archived_permission):
+    def sort_rows(self, rows, order):
         if order:
-            if 'state' in order and has_view_archived_permission:
+            if 'state' in order:
                 rows = sort_rows_by_order_and_archived(rows, order)
             else:
                 rows = sort_results(rows, [order])
