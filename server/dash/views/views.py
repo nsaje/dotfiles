@@ -1038,9 +1038,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
-        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         resource = json.loads(request.body)
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
