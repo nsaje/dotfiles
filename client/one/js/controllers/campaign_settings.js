@@ -1,4 +1,4 @@
-/* globals oneApp,constants,options */
+/* globals oneApp,options */
 oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
@@ -26,10 +26,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         }
         return primary;
     }
-
-    $scope.campaignHasFreshSettings = function () {
-        return campaignFreshSettings.promise;
-    };
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -79,21 +75,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
 
                 $scope.requestInProgress = false;
                 $scope.saved = true;
-
-                if ($scope.user.automaticallyCreateAdGroup && $scope.user.showOnboardingGuidance) {
-                    $scope.user.automaticallyCreateAdGroup = false;
-                    api.campaignAdGroups.create($scope.campaign.id).then(function (adGroupData) {
-                        zemNavigationService.addAdGroupToCache($scope.campaign.id, {
-                            id: adGroupData.id,
-                            name: adGroupData.name,
-                            status: constants.adGroupSettingsState.INACTIVE,
-                            state: constants.adGroupRunningStatus.INACTIVE,
-                        });
-                        $timeout(function () {
-                            $state.go('main.adGroups.settings', {id: adGroupData.id});
-                        }, 100);
-                    });
-                }
 
                 $scope.campaignGoalsDiff.added = [];
                 $scope.campaignGoalsDiff.removed = [];

@@ -182,7 +182,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 email: data.email,
                 permissions: data.permissions,
                 timezoneOffset: data.timezone_offset,
-                showOnboardingGuidance: data.show_onboarding_guidance
             };
         }
     }

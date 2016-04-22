@@ -12,8 +12,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.showSelectedPublisher = null;
     $scope.localStoragePrefix = 'main';
 
-    $scope.remindToAddBudget = $q.defer();
-
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
@@ -22,8 +20,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.infoboxEnabled = false;
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = true;
-
-    $scope.user.automaticallyCreateAdGroup = false;
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -84,10 +80,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.canAccessAllAccounts = function () {
         return !!$scope.getDefaultAllAccountsState();
-    };
-
-    $scope.canShowBudgetNotification = function () {
-        return $scope.remindToAddBudget.promise;
     };
 
     $scope.getDefaultAccountState = function () {

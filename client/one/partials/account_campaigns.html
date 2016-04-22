@@ -17,10 +17,7 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_campaigns_add_campaign')" popover-placement="bottom"></zem-internal-feature>
                 <button type="button"
                         class="btn btn-add"
-                        ng-click="addCampaign()"
-                        zem-tutorial-popover-condition-promise="showAddCampaignTutorial()"
-                        zem-tutorial-popover="Click here to create a campaign"
-                        zem-tutorial-popover-placement="top">
+                        ng-click="addCampaign()">
                     + Campaign
                 </button>
                 <div class="loader" ng-show="addCampaignRequestInProgress"></div>

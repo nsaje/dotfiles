@@ -21,12 +21,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.accounts.settings';
 
-    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
-        canShowAddCampaignTutorial = $q.defer();
-
-    $scope.showAddCampaignTutorial = function () {
-        return canShowAddCampaignTutorial.promise;
-    };
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
       {name: 'By Account (totals)', value: constants.exportType.ACCOUNT},
@@ -514,12 +509,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
                 $scope.dataStatus = data.dataStatus;
                 $scope.selectRows();
-
-                canShowAddCampaignTutorial.resolve($scope.rows.length == 0);
-                if ($scope.user.showOnboardingGuidance) {
-                    $scope.user.automaticallyCreateAdGroup = $scope.rows.length == 0;
-                }
-
             },
             function (data) {
                 // error

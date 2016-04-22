@@ -99,10 +99,7 @@
                     <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
                     <span class="sidenote" ng-if="!isDefaultTargetDevices() && hasPermission('zemauth.settings_defaults_on_campaign_level')">* different than campaign default</span>
                 </label>
-                <div class="col"
-                    zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
-                    zem-tutorial-popover="Set targeting and save"
-                    zem-tutorial-popover-placement="right">
+                <div class="col">
                     <div class="checkbox" ng-repeat='device in settings.targetDevices'>
                         <label>
                             <input type="checkbox" ng-model="device.checked"> {{ device.name }}
