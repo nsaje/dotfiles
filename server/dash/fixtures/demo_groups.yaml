@@ -73,7 +73,6 @@
     - [campaign_ad_groups_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [filter_sources, zemauth, user]
-    - [group_new_user_add, zemauth, user]
   model: auth.group
   pk: 5
 - fields:
