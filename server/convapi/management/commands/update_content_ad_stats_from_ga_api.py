@@ -13,7 +13,7 @@ from convapi.ga_api import GAApiReport
 from reports import refresh
 from reports import update
 from reports.constants import ReportType
-from utils.command_helpers import parse_date, parse_id_list, ExceptionCommand
+from utils.command_helpers import parse_date, ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,6 @@ class Command(ExceptionCommand):
 
     def _fetch_reports(self, service, date, ga_accounts, content_ads):
         ga_reports = GAApiReport(service, date)
-
         for ga_account in ga_accounts:
             ga_reports.download(ga_account)
 
