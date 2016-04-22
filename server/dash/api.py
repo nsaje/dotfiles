@@ -15,6 +15,7 @@ import dash.models
 import utils.exc
 from utils import redirector_helper
 from utils import email_helper
+from utils import k1_helper
 
 from dash import exc
 from dash import models
@@ -1291,6 +1292,7 @@ class AdGroupSourceSettingsWriter(object):
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems()}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
+                        k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
                         return actionlog.api.set_ad_group_source_settings(
                             filtered_settings_obj, new_settings.ad_group_source, request, send=send_to_zwei)
                 else:
@@ -1309,6 +1311,7 @@ class AdGroupSourceSettingsWriter(object):
                     'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                     self.ad_group_source
                 )
+                k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
                 return actionlog.api.set_ad_group_source_settings(
                     settings_obj, latest_settings.ad_group_source, request, send=send_to_zwei)
 

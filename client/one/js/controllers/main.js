@@ -115,7 +115,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         // keep the same tab if possible
-        if ($state.includes('**.sources') && $scope.hasPermission('zemauth.campaign_sources_view')) {
+        if ($state.includes('**.sources')) {
             return 'main.campaigns.sources';
         }
         if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_agency_view')) {

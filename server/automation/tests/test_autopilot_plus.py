@@ -18,6 +18,10 @@ class AutopilotPlusTestCase(test.TestCase):
     def setUp(self):
         refresh.refresh_adgroup_stats()
 
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
+
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
