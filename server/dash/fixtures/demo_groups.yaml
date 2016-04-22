@@ -60,7 +60,6 @@
     - [content_ads_postclick_engagement, zemauth, user]
     - [data_status_column, zemauth, user]
     - [filter_sources, zemauth, user]
-    - [see_current_ad_group_source_state, zemauth, user]
     - [supply_dash_link_view, zemauth, user]
     - [switch_to_demo_mode, zemauth, user]
   model: auth.group
@@ -92,8 +91,6 @@
   pk: 7
 - fields:
     name: self-serve-beta
-    permissions:
-    - [see_current_ad_group_source_state, zemauth, user]
   model: auth.group
   pk: 8
 - fields:

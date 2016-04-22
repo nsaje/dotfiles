@@ -822,9 +822,8 @@ class SourcesTable(object):
                 else:
                     row['daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
-                if user.has_perm('zemauth.see_current_ad_group_source_state'):
-                    row['current_bid_cpc'] = bid_cpc_value
-                    row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
+                row['current_bid_cpc'] = bid_cpc_value
+                row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
             else:
                 bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
                                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]

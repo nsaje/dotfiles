@@ -128,7 +128,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('switch_to_demo_mode', 'Can switch to demo mode.'),
             ('account_agency_access_permissions', 'Can view and set account access permissions.'),
             ('group_new_user_add', 'New users are added to this group.'),
-            ('see_current_ad_group_source_state', 'Can see current per-source state.'),
             ('campaign_ad_groups_detailed_report', 'Can download detailed report on campaign level.'),
             ('content_ads_postclick_acquisition', 'Can view content ads postclick acq. metrics.'),
             ('content_ads_postclick_engagement', 'Can view content ads postclick eng. metrics.'),
