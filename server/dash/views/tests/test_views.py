@@ -1359,12 +1359,6 @@ class AdGroupAdsUploadTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
     def test_missing_ad_group(self):
         non_existent_ad_group_id = 0
 
@@ -1528,12 +1522,6 @@ class AdGroupAdsUploadStatusTest(TestCase):
             }
         })
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
 
 class AdGroupAdsUploadCancelTest(TestCase):
 
@@ -1567,12 +1555,6 @@ class AdGroupAdsUploadCancelTest(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
-
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
 
     def test_validation(self):
         batch = models.UploadBatch.objects.get(pk=2)

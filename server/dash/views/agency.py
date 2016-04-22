@@ -428,9 +428,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         rows = []
@@ -467,9 +464,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
     def post(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         try:
@@ -495,9 +489,6 @@ class ConversionGoal(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
     def delete(self, request, campaign_id, conversion_goal_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
         campaign_goals.delete_conversion_goal(request, conversion_goal_id, campaign)
 
@@ -566,11 +557,6 @@ class CampaignSettings(api_common.BaseApiView):
 
         current_settings = campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
-        if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            # copy properties that can't be set by the user
-            # to pass validation
-            settings_dict['target_devices'] = new_settings.target_devices
-            settings_dict['target_regions'] = new_settings.target_regions
 
         settings_form = forms.CampaignSettingsForm(settings_dict)
         errors = {}
@@ -708,9 +694,8 @@ class CampaignSettings(api_common.BaseApiView):
             'goal_quantity': settings.goal_quantity,
         }
 
-        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            result['target_devices'] = settings.target_devices
-            result['target_regions'] = settings.target_regions
+        result['target_devices'] = settings.target_devices
+        result['target_regions'] = settings.target_regions
 
         return result
 
@@ -718,10 +703,8 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.campaign_goal = resource['campaign_goal']
         settings.goal_quantity = resource['goal_quantity']
-
-        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            settings.target_devices = resource['target_devices']
-            settings.target_regions = resource['target_regions']
+        settings.target_devices = resource['target_devices']
+        settings.target_regions = resource['target_regions']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
@@ -740,9 +723,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
         last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
@@ -766,9 +746,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)  # check access to account
 
         try:
@@ -814,9 +791,6 @@ class ConversionPixel(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         try:
             conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
         except models.ConversionPixel.DoesNotExist:
@@ -1306,8 +1280,6 @@ class AccountUsers(api_common.BaseApiView):
                 self._raise_validation_error(form.errors)
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
-
-            self._add_user_to_groups(user)
             email_helper.send_email_to_new_user(user, request)
 
             created = True
@@ -1364,13 +1336,6 @@ class AccountUsers(api_common.BaseApiView):
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
         }
-
-    def _add_user_to_groups(self, user):
-        perm = authmodels.Permission.objects.get(codename='group_new_user_add')
-        groups = authmodels.Group.objects.filter(permissions=perm)
-
-        for group in groups:
-            group.user_set.add(user)
 
 
 class UserActivation(api_common.BaseApiView):
