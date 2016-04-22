@@ -498,6 +498,11 @@ class StopNonSpendingSourcesTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
+    def setUp(self):
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
+
     @patch('utils.dates_helper.local_today')
     @patch('reports.api_contentads.query')
     def test_stop_non_spending_sources(self, mock_get_yesterday_spends, mock_local_today):
@@ -630,6 +635,11 @@ class CalculateDailySpendsTestCase(TestCase):
 class PrepareActiveSourceForAutopilotTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
+
+    def setUp(self):
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_stop_ad_group_source(self):
         campaign = dash.models.Campaign.objects.get(id=1)
