@@ -945,15 +945,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_permissions(self):
-        url = reverse('account_conversion_pixels', kwargs={'account_id': 0})
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
-
     @patch('dash.views.agency.redshift.get_pixels_last_verified_dt')
     def test_get(self, redshift_get_mock):
         utcnow = datetime.datetime.utcnow()
@@ -1107,12 +1098,6 @@ class ConversionPixelTestCase(AgencyViewTestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_permissions(self):
-        url = reverse('conversion_pixel', kwargs={'conversion_pixel_id': 0})
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
         self.add_permissions(['archive_restore_entity'])
@@ -1205,15 +1190,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertFalse(self.user.is_superuser)
 
         self.client.login(username=self.user.email, password='secret')
-
-    def test_permissions(self):
-        url = reverse('campaign_conversion_goals', kwargs={'campaign_id': 0})
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
 
     def test_get(self):
         response = self.client.get(
@@ -1666,12 +1642,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
         self.assertFalse(self.user.is_superuser)
 
         self.client.login(username=self.user.email, password='secret')
-
-    def test_permissions(self):
-        url = reverse('conversion_goal', kwargs={'campaign_id': 0, 'conversion_goal_id': 0})
-
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 401)
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_delete(self, mock_log_useraction):
