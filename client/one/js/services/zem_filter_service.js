@@ -20,9 +20,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
             }
         }
 
-        if ('zemauth.view_archived_entities' in user.permissions) {
-            showArchived = $location.search().show_archived || false;
-        }
+        showArchived = $location.search().show_archived || false;
 
         if ('zemauth.can_see_publishers' in user.permissions) {
             blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;

@@ -597,7 +597,7 @@ class AdGroupAdsTableTest(TestCase):
         params = {
             'page': 1,
             'order': '-title',
-            'size': 2,
+            'size': 3,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
         }
@@ -620,11 +620,11 @@ class AdGroupAdsTableTest(TestCase):
 
         self.assertIn('pagination', result['data'])
         self.assertEqual(result['data']['pagination'], {
-            'count': 3,
+            'count': 2,
             'currentPage': 1,
             'endIndex': 2,
-            'numPages': 2,
-            'size': 2,
+            'numPages': 1,
+            'size': 3,
             'startIndex': 1
         })
 
@@ -1966,7 +1966,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=[],
+            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
             constraints_list=[],
         )
 
@@ -1976,7 +1976,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=[],
+            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
             constraints_list=[],
         )
 
@@ -2005,6 +2005,11 @@ class AdGroupPublishersTableTest(TestCase):
             u'license_fee': 0.6,
             u'impressions': 10560,
             u'clicks': 123,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
             u'source_id': 7,
         })
 
