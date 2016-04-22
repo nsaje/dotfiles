@@ -93,7 +93,6 @@ class GetStatsWithConversionsTestCase(test.TestCase):
 
         # add permissions for postclick stats
         self.user.user_permissions.add(Permission.objects.get(codename='content_ads_postclick_acquisition'))
-        self.user.user_permissions.add(Permission.objects.get(codename='content_ads_postclick_engagement'))
 
         self.assertTrue(self.superuser.has_perm('zemauth.can_see_redshift_postclick_statistics'))
         self.assertFalse(self.user.has_perm('zemauth.can_see_redshift_postclick_statistics'))

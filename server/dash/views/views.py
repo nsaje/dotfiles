@@ -2171,6 +2171,7 @@ def sharethrough_approval(request):
     sig = request.GET.get('sig')
     if not sig:
         logger.debug('Sharethrough approval postback without signature. crid: %s', data['crid'])
+        calculated = None
     else:
         calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
                                                        msg=str(data['crid']),
