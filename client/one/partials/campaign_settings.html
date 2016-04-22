@@ -51,10 +51,9 @@
             </div>
         </div>
 
-        <div ng-if="hasPermission('zemauth.settings_defaults_on_campaign_level')" class="form-vertical">
+        <div class="form-vertical">
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
                 <label class="col-xs-3 control-label">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.settings_defaults_on_campaign_level')" popover-placement="right"></zem-internal-feature>
                     Default device targeting
                     <zem-help-popover content="The devices on which your content ads should be shown. Used for all newly created ad groups." placement="top"></zem-help-popover>
                 </label>
@@ -71,7 +70,6 @@
 
             <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
                 <label class="col-xs-2 control-label">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.settings_defaults_on_campaign_level')" popover-placement="right"></zem-internal-feature>
                     Default locations
                     <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown. Used for all newly created ad groups." placement="top"></zem-help-popover>
                 </label>

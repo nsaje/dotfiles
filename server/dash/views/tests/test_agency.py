@@ -1932,7 +1932,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1969,7 +1968,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
 
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2009,7 +2008,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
     def test_put_goals_added(self, p1, p2, p3):
         self.add_permissions([
             'campaign_settings_view',
-            'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
 
@@ -2092,7 +2090,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
 
         self.add_permissions([
             'campaign_settings_view',
-            'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
 
@@ -2138,7 +2135,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
 
         self.add_permissions([
             'campaign_settings_view',
-            'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
 
@@ -2206,7 +2202,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(settings.target_regions, ['NC', '501'])
 
     def test_validation(self):
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({

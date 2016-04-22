@@ -158,7 +158,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
             ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
-            ('settings_defaults_on_campaign_level', 'Can view ad group settings defaults on campaign level'),
             ('can_access_global_publisher_blacklist_status', 'Can view or modify global publishers blacklist status'),
             ('can_access_campaign_account_publisher_blacklist_status',
              'Can view or modify account and campaign publishers blacklist status'),

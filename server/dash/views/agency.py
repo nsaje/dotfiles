@@ -566,11 +566,6 @@ class CampaignSettings(api_common.BaseApiView):
 
         current_settings = campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
-        if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            # copy properties that can't be set by the user
-            # to pass validation
-            settings_dict['target_devices'] = new_settings.target_devices
-            settings_dict['target_regions'] = new_settings.target_regions
 
         settings_form = forms.CampaignSettingsForm(settings_dict)
         errors = {}
@@ -708,9 +703,8 @@ class CampaignSettings(api_common.BaseApiView):
             'goal_quantity': settings.goal_quantity,
         }
 
-        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            result['target_devices'] = settings.target_devices
-            result['target_regions'] = settings.target_regions
+        result['target_devices'] = settings.target_devices
+        result['target_regions'] = settings.target_regions
 
         return result
 
@@ -718,10 +712,8 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.campaign_goal = resource['campaign_goal']
         settings.goal_quantity = resource['goal_quantity']
-
-        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            settings.target_devices = resource['target_devices']
-            settings.target_regions = resource['target_regions']
+        settings.target_devices = resource['target_devices']
+        settings.target_regions = resource['target_regions']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
