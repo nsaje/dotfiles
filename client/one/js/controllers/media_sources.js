@@ -418,8 +418,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             zemPostclickMetricsService.insertConversionGoalColumns(
                 $scope.columns,
                 $scope.columns.length - 2,
-                $scope.hasPermission('zemauth.conversion_reports'),
-                $scope.isPermissionInternal('zemauth.conversion_reports')
+                true,
+                false
             );
         }
 
@@ -504,7 +504,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
             conversionGoals,
-            $scope.hasPermission('zemauth.conversion_reports')
+            true
         );
     };
 
@@ -529,7 +529,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.selectRows();
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, true);
                 if ($scope.level === constants.level.CAMPAIGNS) {
                     $scope.campaignGoals = data.campaign_goals;
                     zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
@@ -636,11 +636,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             );
         }
 
-        if ($scope.level == constants.level.CAMPAIGNS && $scope.hasPermission('zemauth.conversion_reports')) {
+        if ($scope.level == constants.level.CAMPAIGNS) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
                 options.campaignConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.conversion_reports')
+                false
             );
         }
 

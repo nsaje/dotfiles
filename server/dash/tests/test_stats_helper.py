@@ -96,10 +96,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         self.user.user_permissions.add(Permission.objects.get(codename='content_ads_postclick_engagement'))
 
         self.assertTrue(self.superuser.has_perm('zemauth.can_see_redshift_postclick_statistics'))
-        self.assertTrue(self.superuser.has_perm('zemauth.conversion_reports'))
-
         self.assertFalse(self.user.has_perm('zemauth.can_see_redshift_postclick_statistics'))
-        self.assertFalse(self.user.has_perm('zemauth.conversion_reports'))
 
     def test_no_permissions(self, mock_as_query, mock_ca_query, mock_tp_query):
         mock_as_query.side_effect = self._get_content_ad_stats

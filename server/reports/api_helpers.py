@@ -64,10 +64,9 @@ def filter_by_permissions(result, user):
             for field in POSTCLICK_ENGAGEMENT_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]
-        if user.has_perm('zemauth.conversion_reports'):
-            for field in CONVERSION_GOAL_FIELDS:
-                if field in row:
-                    filtered_row[field] = row[field]
+        for field in CONVERSION_GOAL_FIELDS:
+            if field in row:
+                filtered_row[field] = row[field]
         if user.has_perm('zemauth.campaign_goal_optimization'):
             for field in CAMPAIGN_GOAL_FIELDS:
                 if field in row:

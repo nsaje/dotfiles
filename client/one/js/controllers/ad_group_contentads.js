@@ -736,7 +736,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                 zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, true);
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
@@ -799,8 +799,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
             $scope.columns.length - 1,
-            $scope.hasPermission('zemauth.conversion_reports'),
-            $scope.isPermissionInternal('zemauth.conversion_reports')
+            true,
+            false
         );
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
@@ -977,13 +977,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             );
         }
 
-        if ($scope.hasPermission('zemauth.conversion_reports')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.adGroupConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.conversion_reports')
-            );
-        }
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.adGroupConversionGoalChartMetrics,
+            false
+        );
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
@@ -1023,7 +1021,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
             conversionGoals,
-            $scope.hasPermission('zemauth.conversion_reports')
+            true
         );
     };
 
