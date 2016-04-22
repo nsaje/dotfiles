@@ -276,24 +276,24 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -372,12 +372,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost',
+                'license_fee', 'billing_cost',
+                'yesterday_cost', 'e_yesterday_cost',
+            ]
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'cpc', 'clicks', 'impressions', 'ctr', 'license_fee',
-                'yesterday_cost', 'e_yesterday_cost'
+                'min_bid_cpc', 'max_bid_cpc', 'daily_budget',
+                'cpc', 'clicks', 'impressions', 'ctr',
             ]
         },
         {

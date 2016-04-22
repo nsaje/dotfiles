@@ -168,18 +168,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
@@ -214,6 +202,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_flat_fees'),
             shown: $scope.hasPermission('zemauth.can_view_flat_fees')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Avg. CPC',
@@ -287,12 +287,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            fields: [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost',
+                'license_fee', 'total_fee', 'flat_fee',
+                'billing_cost',
+                'credit_projection', 'spend_projection',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'impressions', 'ctr', 'cost', 'data_cost', 'cpc',
-                'credit_projection', 'spend_projection',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee', 'total_fee', 'flat_fee'
+                'clicks', 'impressions', 'ctr', 'cpc',
             ]
         },
         {
