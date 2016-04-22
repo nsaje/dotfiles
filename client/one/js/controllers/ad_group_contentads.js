@@ -54,7 +54,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }, {
         name: 'Download',
         value: 'download',
-        hasPermission: $scope.hasPermission('zemauth.get_content_ad_csv')
+        hasPermission: true,
     }, {
         name: 'Archive',
         value: 'archive',
