@@ -40,15 +40,11 @@ def get_ad_group_source_ids(request):
     credentials_id = request.GET.get('credentials_id')
     if not credentials_id:
         _response_error("Missing credentials ID")
-    source_type = request.GET.get('source_type')
-    if not source_type:
-        _response_error("Missing source type")
 
     nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
     ad_group_sources = (
         dash.models.AdGroupSource.objects
             .filter(ad_group__in=nonarchived)
-            .filter(source__source_type__type=source_type)
             .filter(source_credentials_id=credentials_id)
             .values(
                 'ad_group_id',
@@ -198,9 +194,7 @@ def get_accounts(request):
             )
     )
 
-    # construct response dict
-    data = {'accounts': list(accounts_list)}
-    return _response_ok(data)
+    return _response_ok({'accounts': list(accounts_list)})
 
 
 @csrf_exempt
@@ -227,10 +221,7 @@ def get_source_credentials_for_reports_sync(request):
         )
     )
 
-    # construct response dict
-    data = {}
-    data['source_credentials_list'] = list(source_credentials_list)
-    return _response_ok(data)
+    return _response_ok({'source_credentials_list': list(source_credentials_list)})
 
 
 @csrf_exempt
@@ -265,9 +256,7 @@ def get_content_ad_source_mapping(request):
     if source_types:
         contentadsources = contentadsources.filter(source__source_type__type__in=source_types)
 
-    data = {'content_ad_sources': list(contentadsources)}
-
-    return _response_ok(data)
+    return _response_ok({'content_ad_sources': list(contentadsources)})
 
 
 @csrf_exempt
@@ -289,4 +278,4 @@ def get_ga_accounts(request):
                    .values('account_id', 'ga_account_id', 'ga_web_property_id')
                    .distinct()
                    .order_by('account_id', 'ga_account_id'))
-    return JsonResponse({'ga_accounts': list(ga_accounts)})
+    return _response_ok({'ga_accounts': list(ga_accounts)})
