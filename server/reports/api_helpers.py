@@ -59,8 +59,7 @@ def filter_by_permissions(result, user):
             for field in POSTCLICK_ACQUISITION_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]
-        if (user.has_perm('zemauth.content_ads_postclick_engagement') or
-                user.has_perm('zemauth.aggregate_postclick_engagement')):
+        if user.has_perm('zemauth.aggregate_postclick_engagement'):
             for field in POSTCLICK_ENGAGEMENT_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]

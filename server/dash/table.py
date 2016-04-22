@@ -1205,8 +1205,7 @@ class AdGroupAdsTable(object):
                 end_date,
                 [ad_group],
                 filtered_sources,
-            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
+            ) if user.has_perm('zemauth.content_ads_postclick_acquisition') else False
 
         total_row = self._get_total_row(user, total_stats)
 

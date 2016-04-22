@@ -56,7 +56,6 @@
     - [campaign_settings_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [content_ads_postclick_acquisition, zemauth, user]
-    - [content_ads_postclick_engagement, zemauth, user]
     - [data_status_column, zemauth, user]
     - [supply_dash_link_view, zemauth, user]
     - [switch_to_demo_mode, zemauth, user]
@@ -116,7 +115,6 @@
     - [campaign_settings_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [content_ads_postclick_acquisition, zemauth, user]
-    - [content_ads_postclick_engagement, zemauth, user]
     - [content_ads_bulk_actions, zemauth, user]
   model: auth.group
   pk: 10
