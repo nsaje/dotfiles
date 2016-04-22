@@ -129,7 +129,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
             ('view_pubs_postclick_acquisition', 'Can view publishers postclick acq. metrics.'),
             ('data_status_column', 'Can see data status column in table.'),
-            ('filter_sources', 'Can filter sources'),
             ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
             ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
             ('can_toggle_adobe_performance_tracking', 'Can toggle Adobe Analytics performance tracking.'),

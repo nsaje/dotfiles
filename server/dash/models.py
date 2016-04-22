@@ -2859,7 +2859,7 @@ class ExportReport(models.Model):
 
     def get_filtered_sources(self):
         all_sources = Source.objects.all()
-        if not self.created_by.has_perm('zemauth.filter_sources') or len(self.filtered_sources.all()) == 0:
+        if len(self.filtered_sources.all()) == 0:
             return all_sources
         return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
 
