@@ -180,7 +180,7 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
 
-        if user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
+        if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
             if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
