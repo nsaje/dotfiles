@@ -1138,9 +1138,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         current_settings = ad_group.get_current_settings()
@@ -1157,9 +1154,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
@@ -1217,9 +1211,6 @@ class AdGroupAdsUploadReport(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1241,9 +1232,6 @@ class AdGroupAdsUploadCancel(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1268,9 +1256,6 @@ class AdGroupAdsUploadStatus(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
