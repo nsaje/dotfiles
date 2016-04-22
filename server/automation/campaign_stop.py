@@ -49,7 +49,7 @@ def switch_low_budget_campaigns_to_landing_mode():
 @transaction.atomic
 def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
-        return
+        return False
 
     today = dates_helper.local_today()
     max_daily_budget = _get_max_daily_budget(today, campaign)
@@ -58,7 +58,7 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
 
     should_switch_to_landing = available_tomorrow < max_daily_budget
     is_near_depleted = available_tomorrow < max_daily_budget * 2
-
+    is_resumed = False
     actions = []
     if not campaign_settings.landing_mode:
         if should_switch_to_landing:
@@ -68,7 +68,9 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
     elif _can_resume_campaign(campaign):
         actions = _resume_campaign(campaign)
+        is_resumed = True
     zwei_actions.send(actions)
+    return should_switch_to_landing or is_resumed
 
 
 def get_minimum_budget_amount(budget_item):

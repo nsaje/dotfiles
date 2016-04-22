@@ -419,6 +419,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
     def test_put(self, mock_lmode):
+        mock_lmode.return_value = False
         data = {
             'credit': 2,
             'amount': '1000',
@@ -490,7 +491,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
     @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
     def test_post(self, mock_lmode):
         data = {}
-
+        mock_lmode.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
@@ -525,13 +526,29 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             response = self.client.post(url, json.dumps(data),
                                         content_type='application/json')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content)['data'],
+            {'id': 1, 'state_changed': False}
+        )
         self.assertTrue(mock_lmode.called)
         self.assertEqual(models.BudgetLineItem.objects.get(pk=1).comment, 'Test case test_post')
+
+        mock_lmode.return_value = True
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 9, 30)
+            response = self.client.post(url, json.dumps(data),
+                                        content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content)['data'],
+            {'id': 1, 'state_changed': True}
+        )
 
     @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_unactive(self, mock_min_amount, mock_valid_time, mock_lmode):
+        mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -562,6 +579,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active(self, mock_min_amount, mock_valid_time, mock_lmode):
+        mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -593,6 +611,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active_too_low(self, mock_min_amount, mock_valid_time, mock_lmode):
+        mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -629,6 +648,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active_invalid_time(self, mock_min_amount, mock_valid_time, mock_lmode):
+        mock_lmode.return_value = False
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.status = 1
         credit.end_date = datetime.date(2015, 12, 31)
@@ -662,6 +682,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
 
     @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
     def test_delete(self, mock_lmode):
+        mock_lmode.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
