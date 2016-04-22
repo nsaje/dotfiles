@@ -146,7 +146,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('add_media_sources_automatically', 'Automatically add media sources on ad group creation'),
             ('has_intercom', 'Can see intercom widget'),
             ('can_see_publishers', 'Can see publishers'),
-            ('manage_conversion_goals', 'Can manage conversion goals on campaign level'),
             ('can_see_redshift_postclick_statistics', 'Can see Redshift postclick statistics'),
             ('group_campaign_stop_on_budget_depleted',
              'Automatic campaign stop on depleted budget applies to campaigns in this group'),

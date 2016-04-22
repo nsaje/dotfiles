@@ -428,9 +428,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         rows = []
@@ -467,9 +464,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
     def post(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         try:
@@ -495,9 +489,6 @@ class ConversionGoal(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
     def delete(self, request, campaign_id, conversion_goal_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
         campaign_goals.delete_conversion_goal(request, conversion_goal_id, campaign)
 

@@ -1216,7 +1216,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             follow=True,
@@ -1276,7 +1275,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertItemsEqual(expected_available_pixels, decoded_response['data']['available_pixels'])
 
     def test_get_campaign_no_permissions(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
             follow=True,
@@ -1299,7 +1297,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
             archived=False,
         )
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             follow=True,
@@ -1363,7 +1360,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertItemsEqual(expected_available_pixels, decoded_response['data']['available_pixels'])
 
     def test_get_non_existing_campaign(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 9876}),
             follow=True
@@ -1373,7 +1369,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_post(self, mock_log_useraction):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1396,7 +1391,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         )
 
     def test_post_campaign_no_permission(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
             json.dumps({
@@ -1428,7 +1422,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_max_conversion_goals(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             json.dumps({
@@ -1446,7 +1439,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual('Max conversion goals per campaign exceeded', decoded_response['data']['message'])
 
     def test_post_pixel_no_conversion_window(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1464,7 +1456,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(['conversion_window'],  decoded_response['data']['errors'].keys())
 
     def test_post_not_unique_name(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1497,7 +1488,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
     def test_post_same_name_and_goal_id_different_campaigns(self):
         models.ConversionGoal.objects.all().delete()
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             json.dumps({
@@ -1525,7 +1515,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_same_goal_id_different_types(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1553,7 +1542,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_not_unique_goal_id(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1584,7 +1572,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual({'goal_id': ['This field has to be unique.']}, decoded_response['data']['errors'])
 
     def test_post_non_existing_conversion_pixel(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1610,7 +1597,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
             'conversion_window': 168,
         }
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps(data),
@@ -1639,7 +1625,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
     def test_post_pixel_invalid_account(self):
         models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1692,7 +1677,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
     def test_delete(self, mock_log_useraction):
         conversion_goal = models.ConversionGoal.objects.get(id=1)
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': conversion_goal.id}),
             follow=True,
@@ -1711,7 +1695,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
     def test_delete_campaign_no_permissions(self):
         models.Account.objects.get(id=1).users.remove(User.objects.get(id=1))
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 1}),
             follow=True,
@@ -1728,7 +1711,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_delete_invalid_conversion_goal(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 9876}),
             follow=True,
@@ -1740,7 +1722,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
         self.assertEqual('Invalid conversion goal', decoded_response['data']['message'])
 
     def test_delete_goal_not_belonging_to_campaign(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 2, 'conversion_goal_id': 1}),
             follow=True,
