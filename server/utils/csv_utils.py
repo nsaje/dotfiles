@@ -10,6 +10,8 @@ def convert_to_xls(csv_str, encoding='utf-8'):
     '''
     Convert CSV file in a string to xlsx
     '''
+
+    # unicodecsv file reads and decodes byte strings
     lines = csv_str.encode('utf-8').strip().split('\n')
     reader = unicodecsv.reader(lines, encoding=encoding)
 

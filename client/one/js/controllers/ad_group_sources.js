@@ -25,11 +25,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
-      {name: 'By Day (CSV)', value: 'csv'},
-      {name: 'By Day (Excel)', value: 'excel'}
-    ];
-
-    $scope.exportPlusOptions = [
       {name: 'Current View', value: constants.exportType.AD_GROUP},
       {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
@@ -127,6 +122,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 }
                 $scope.loadRequestInProgress = true;
                 $scope.autopilotChanges = '';
+
+                zemNavigationService.notifyAdGroupReloading($state.params.id, true);
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
@@ -708,7 +705,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.dateRange.startDate,
             $scope.dateRange.endDate).then(
             function (data) {
-                $scope.infoboxHeader = data.header;
+                $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
                 $scope.reflowGraph(1);
@@ -969,6 +966,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };
+
+    zemNavigationService.onUpdate($scope, function () {
+        $scope.updateInfoboxHeader($scope);
+    });
 
     $scope.init();
 }]);

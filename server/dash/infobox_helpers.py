@@ -494,30 +494,36 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
-def get_adgroup_running_status(ad_group_settings):
-    ad_group = ad_group_settings.ad_group
-
-    ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group=ad_group
-    ).group_current_settings()
-
-    running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_group_source_settings)
+def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
+    campaign = ad_group_settings.ad_group.campaign
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
+    autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
+                       else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
+    ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group=ad_group_settings.ad_group).group_current_settings().\
+        filter_by_sources(filtered_sources)
+    running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
+
+    return get_adgroup_running_status_class(autopilot_state, running_status,
+                                            state, campaign.is_in_landing())
+
+
+def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
+    if state == dash.constants.AdGroupSettingsState.INACTIVE and\
+       running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
+        return dash.constants.InfoboxStatus.STOPPED
+
+    if is_in_landing:
+        return dash.constants.InfoboxStatus.LANDING_MODE
 
     if (running_status == dash.constants.AdGroupRunningStatus.INACTIVE and
             state == dash.constants.AdGroupSettingsState.ACTIVE) or\
             (running_status == dash.constants.AdGroupRunningStatus.ACTIVE and
              state == dash.constants.AdGroupSettingsState.INACTIVE):
-        return dash.constants.InfoboxStatus.STOPPED
-
-    if ad_group.campaign.is_in_landing():
-        return dash.constants.InfoboxStatus.LANDING_MODE
-
-    if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
-            ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+    if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
+            autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
         return dash.constants.InfoboxStatus.AUTOPILOT
 
     return dash.constants.InfoboxStatus.ACTIVE
@@ -581,9 +587,11 @@ def get_campaign_goal_list(user, constraints, start_date, end_date):
     first = True
     permissions = user.get_all_permissions_with_access_levels()
     for status, metric_value, planned_value, campaign_goal in performance:
-        goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
-        if campaign_goal.conversion_goal:
-            goal_description += ' - ' + campaign_goal.conversion_goal.name
+        goal_description = dash.campaign_goals.format_campaign_goal(
+            campaign_goal.type,
+            metric_value,
+            campaign_goal.conversion_goal
+        )
 
         entry = OverviewSetting(
             '' if not first else 'Goals:',
@@ -592,7 +600,7 @@ def get_campaign_goal_list(user, constraints, start_date, end_date):
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
-            internal=first and 'zemauth.campaign_goal_performance' in permissions,
+            internal=first and not permissions.get('zemauth.campaign_goal_performance'),
         )
         if campaign_goal.primary:
             entry.value_class = 'primary'

@@ -430,7 +430,7 @@ class CampaignAdGroups(TestCase):
             ad_group_source__ad_group=ad_group
         ).group_current_settings()
         self.assertTrue(all(
-            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
         ))
 
     @patch('actionlog.api.create_campaign')
@@ -475,7 +475,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_source)
         self.assertTrue(mock_set_ad_group_source_settings.called)
         named_call_args = mock_set_ad_group_source_settings.call_args[1]
-        self.assertEqual(named_call_args['active'], True)
         self.assertEqual(named_call_args['mobile_only'], True)
 
     def test_create_new_settings(self):
@@ -1264,7 +1263,7 @@ class AdGroupContentAdRestore(TestCase):
         )
 
 
-class AdGroupAdsPlusUploadTest(TestCase):
+class AdGroupAdsUploadTest(TestCase):
     fixtures = ['test_views.yaml']
 
     def _get_client(self, superuser=True):
@@ -1294,7 +1293,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
             'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'testname',
@@ -1327,7 +1326,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
             'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'testname',
@@ -1359,13 +1358,13 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
     def test_validation_error(self):
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 400)
 
     def test_permission(self):
         response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
@@ -1373,7 +1372,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         non_existent_ad_group_id = 0
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': non_existent_ad_group_id}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': non_existent_ad_group_id}),
             follow=True
         )
 
@@ -1381,7 +1380,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
     def test_description_too_long(self):
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'description': 'a' * 141
             },
@@ -1393,7 +1392,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
     def test_description_right_length(self):
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'description': 'a' * 140
             },
@@ -1403,7 +1402,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         self.assertNotIn('Description is too long', response.content)
 
 
-class AdGroupAdsPlusUploadStatusTest(TestCase):
+class AdGroupAdsUploadStatusTest(TestCase):
 
     fixtures = ['test_views.yaml']
 
@@ -1420,7 +1419,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
 
     def _get_status(self):
         response = self._get_client().get(
-            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         return json.loads(response.content)['data']
 
@@ -1526,7 +1525,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'batch_size': 100,
             'errors': {
                 'details': {
-                    'report_url': '/api/ad_groups/1/contentads_plus/upload/2/report/',
+                    'report_url': '/api/ad_groups/1/contentads/upload/2/report/',
                     'description': 'Found 12 errors.'
                 }
             }
@@ -1534,12 +1533,12 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
 
-class AdGroupAdsPlusUploadCancelTest(TestCase):
+class AdGroupAdsUploadCancelTest(TestCase):
 
     fixtures = ['test_views.yaml']
 
@@ -1556,7 +1555,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
 
     def _get_status(self):
         response = self._get_client().get(
-            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         return json.loads(response.content)['data']
 
@@ -1564,7 +1563,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         batch = models.UploadBatch.objects.get(pk=2)
         self.assertFalse(batch.cancelled)
         response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         response_dict = json.loads(response.content)
         self.assertDictEqual(response_dict, {'success': True})
@@ -1574,7 +1573,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
@@ -1584,7 +1583,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         batch.save()
 
         response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 400)
 
@@ -2694,7 +2693,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2804,7 +2803,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']

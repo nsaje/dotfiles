@@ -26,6 +26,14 @@
     model: dash.account
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+    model: dash.account
+    pk: 2
+
 # test ga accounts
 
 -   fields:
@@ -42,6 +50,13 @@
     model: dash.gaanalyticsaccount
     pk: 2
 
+-   fields:
+        account: 2
+        ga_account_id: 'acc3'
+        ga_web_property_id: 'prop3'
+    model: dash.gaanalyticsaccount
+    pk: 3
+
 # test campaign
 
 -   fields:
@@ -52,6 +67,15 @@
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 2 # test account 2
+        name: 'test campaign 2'
+    model: dash.campaign
+    pk: 2
 
 # source types
 
@@ -231,6 +255,48 @@
     model: dash.adgroup
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 2
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 3
+
+# test adgroup settings
+-   fields:
+        ad_group: 1
+        created_dt: '2014-06-04T00:00:00'
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+    model: dash.adgroupsettings
+    pk: 1
+
+-   fields:
+        ad_group: 2
+        created_dt: '2014-01-02T00:00:00'
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+    model: dash.adgroupsettings
+    pk: 2
+
+-   fields:
+        ad_group: 3
+        created_dt: '2014-01-01T00:00:00'
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+    model: dash.adgroupsettings
+    pk: 3
+
+-   fields:
+        ad_group: 3
+        created_dt: '2014-01-02T00:00:00'
+        enable_ga_tracking: false
+        ga_tracking_type: 1
+    model: dash.adgroupsettings
+    pk: 4
+
 
 # test adgroupsource
 
@@ -345,11 +411,51 @@
         image_id: '123456789'
         batch: 1
         url: 'http://testurl.com'
-        title: 'Test Article'
+        title: 'Test Article 1'
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
     model: dash.contentad
     pk: 1
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 2'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 2
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 3'
+        ad_group: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 3
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 4'
+        ad_group: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 4
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 5'
+        ad_group: 3
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 5
 
 # test contentadsource
 

@@ -576,7 +576,6 @@ class AccountSettings(SettingsBase):
         'archived',
         'default_account_manager',
         'default_sales_representative',
-        'service_fee'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -598,11 +597,6 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
-    )
-    service_fee = models.DecimalField(
-        decimal_places=4,
-        max_digits=5,
-        default=Decimal('0.2000'),
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -633,7 +627,6 @@ class CampaignSettings(SettingsBase):
         'iab_category',
         'campaign_goal',
         'goal_quantity',
-        'service_fee',
         'promotion_goal',
         'archived',
         'target_devices',
@@ -659,12 +652,6 @@ class CampaignSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
-    )
-
-    service_fee = models.DecimalField(
-        decimal_places=4,
-        max_digits=5,
-        default=Decimal('0.2000'),
     )
     iab_category = models.SlugField(
         max_length=10,
@@ -751,7 +738,6 @@ class CampaignSettings(SettingsBase):
             'iab_category': 'IAB Category',
             'campaign_goal': 'Campaign Goal',
             'goal_quantity': 'Goal Quantity',
-            'service_fee': 'Service Fee',
             'promotion_goal': 'Promotion Goal',
             'archived': 'Archived',
             'target_devices': 'Device targeting',
@@ -770,8 +756,6 @@ class CampaignSettings(SettingsBase):
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':
             value = constants.CampaignGoal.get_text(value)
-        elif prop_name == 'service_fee':
-            value = views.helpers.format_decimal_to_percent(value) + '%'
         elif prop_name == 'promotion_goal':
             value = constants.PromotionGoal.get_text(value)
         elif prop_name == 'target_devices':
@@ -838,7 +822,7 @@ class CampaignGoal(models.Model):
             campaign_goal['values'] = [
                 {'datetime': str(value.created_dt),
                  'value': Decimal(value.value).quantize(Decimal(
-                    rounding_format.get(self.type, default_rounding_format)
+                     rounding_format.get(self.type, default_rounding_format)
                  ))}
                 for value in self.values.all()
             ]
@@ -1254,12 +1238,6 @@ class AdGroup(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     is_demo = models.BooleanField(null=False, blank=False, default=False)
-    content_ads_tab_with_cms = models.BooleanField(
-        null=False,
-        blank=False,
-        default=True,
-        verbose_name='Content ads tab with CMS'
-    )
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
@@ -1470,6 +1448,21 @@ class AdGroup(models.Model):
                 filter(state=constants.AdGroupSettingsState.ACTIVE).\
                 values_list('ad_group_id', flat=True)
             return self.filter(id__in=active_ad_group_ids)
+
+        def filter_landing(self):
+            related_settings = AdGroupSettings.objects.all().filter(
+                ad_group__in=self
+            ).group_current_settings()
+
+            filtered = AdGroupSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                landing_mode=True
+            ).values_list(
+                'ad_group__id', flat=True
+            )
+
+            return self.filter(pk__in=filtered)
 
     class Meta:
         ordering = ('name',)
@@ -1834,9 +1827,6 @@ class AdGroupSettings(SettingsBase):
         change_strings = []
 
         for key, value in changes.iteritems():
-            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
-                    not user.has_perm('zemauth.new_content_ads_tab'):
-                continue
             if key == 'retargeting_ad_groups' and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
                 continue
@@ -1933,6 +1923,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         'state',
         'cpc_cc',
         'daily_budget_cc',
+        'landing_mode'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -2714,6 +2705,10 @@ class BudgetLineItem(FootprintModel):
             if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
                                                           constants.BudgetLineItemState.ACTIVE,):
                 raise ValidationError('Only pending and active budgets can change.')
+        elif self.credit.status == constants.CreditLineItemStatus.CANCELED:
+            raise ValidationError({
+                'credit': 'Canceled credits cannot have new budget items.'
+            })
 
         validate(
             self.validate_start_date,
@@ -2728,8 +2723,8 @@ class BudgetLineItem(FootprintModel):
     def validate_credit(self):
         if self.has_changed('credit'):
             raise ValidationError('Credit cannot change.')
-        if self.credit.status != constants.CreditLineItemStatus.SIGNED:
-            raise ValidationError('Cannot allocate budget from an unsigned or canceled credit.')
+        if self.credit.status == constants.CreditLineItemStatus.PENDING:
+            raise ValidationError('Cannot allocate budget from an unsigned credit.')
 
     def validate_start_date(self):
         if not self.start_date:
@@ -2746,6 +2741,9 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('Start date cannot be bigger than the end date.')
 
     def validate_amount(self):
+        if self.has_changed('amount') and \
+           self.credit.status == constants.CreditLineItemStatus.CANCELED:
+            raise ValidationError('Canceled credit\'s budget amounts cannot change.')
         if not self.amount:
             return
         if self.amount < 0:
@@ -2757,21 +2755,6 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.'.format(
                     -delta.quantize(Decimal('1.00'))
-                )
-            )
-        if self.previous_value('amount') > self.amount:
-            self._validate_smaller_amount()
-
-    def _validate_smaller_amount(self):
-        spend_cc = self.get_spend_data()['total_cc']
-        if not spend_cc:
-            return
-        reserve = self.get_reserve_amount_cc(factor_offset=1)
-        minimum_amount = int(float(spend_cc + reserve) / TO_CC_MULTIPLIER + 1)
-        if self.amount < minimum_amount:
-            raise ValidationError(
-                'Budget exceeds the minimum budget amount by ${}.'.format(
-                    Decimal(minimum_amount - self.amount).quantize(Decimal('1.00'))
                 )
             )
 

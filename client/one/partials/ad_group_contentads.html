@@ -1,22 +1,56 @@
-<div class="page page-ad-group-ads">
-    <div class="section" ng-class="{'chart-hidden': chartHidden}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" local-storage-prefix="localStoragePrefix"></zem-chart>
+<div class="page page-ad-group-ads-plus">
+    <div class="section">
+        <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
+            <div class="graph-infobox-row">
+                <div class="graph-container" ng-class="{'graph-collapsed': !graphVisible, 'graph-container-short': graphVisible}">
+                    <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
+                </div>
+                <div class="infobox-container">
+                    <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="section table-ad-group-ads">
+    <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
-            <zem-export
-                start-date="dateRange.startDate"
-                end-date="dateRange.endDate"
-                base-url="'api/ad_groups/' + $state.params.id + '/contentads/'"
-                options="exportOptions">
-            </zem-export>
+            <div ng-if="hasPermission('zemauth.upload_content_ads')" class="button-bar-item">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.upload_content_ads')" popover-placement="bottom"></zem-internal-feature>
+                <button
+                     type="button"
+                     class="btn btn-add"
+                     ng-click="addContentAds()"
+                     zem-tutorial-popover-condition-promise="canShowOnboardingGuidance()"
+                     zem-tutorial-popover="Click here to add content ads"
+                     zem-tutorial-popover-placement="top">
+                    + Content Ads
+                </button>
+            </div>
+
+            <div ng-show="hasPermission('zemauth.content_ads_bulk_actions')" class="button-bar-item">
+              <zem-dropdown
+                   zem-placeholder="Bulk Actions"
+                   zem-on-select="executeBulkAction(selected)"
+                   zem-disabled-title="At least one Content Ad has to be selected before using Bulk Actions."
+                   zem-check-disabled="!isAnythingSelected()"
+                   zem-dropdown-options="bulkActions"
+                   zem-css-class="show-rows"></zem-dropdown>
+            </div>
+
+            <div class="button-bar-item pull-right">
+                <zem-export
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/ad_groups/' + $state.params.id + '/'"
+                    options="exportOptions"
+                    columns="columns"
+                    order="order"
+                    level="level"
+                    export-sources="false"
+                    zem-has-permission="hasPermission"
+                    zem-is-permission-internal="isPermissionInternal">
+                </zem-export>
+            </div>
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-
-            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
-
-            <div class="clearfix"></div>
-            <div class="clearfix"></div>
         </div>
 
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
@@ -24,7 +58,14 @@
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
-        <zem-table class="ads-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)"></zem-table>
+        <alert type="info" class="alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
+                {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and
+                <ng-pluralize count="archivingResults.archived_count" when="{'1': 'it {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;wasn\'t&quot; }} ',
+                                                                            'other': '{{ archivingResults.active_count === 0 ? &quot;none&quot; : archivingResults.active_count }} of them {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;were&quot; }}'}"></ng-pluralize>
+                active at the time.
+        </alert>
+
+        <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications" zem-table-data-status="dataStatus"></zem-table>
 
         <div class="table-footnotes">
             <div ng-switch="lastSyncDate">
@@ -38,6 +79,7 @@
             <div ng-show="isIncompletePostclickMetrics">
                 * Postclick metrics are incomplete for the selected date range. Please check the graph for more details.
             </div>
+            <div>* All times are in Eastern Standard Time (EST).</div>
         </div>
 
         <div class="pagination" ng-show="rows.length">
@@ -56,3 +98,28 @@
         </div>
     </div>
 </div>
+
+<!-- We have the popup defined here, so it's not repeated for each row -->
+<script id="submissionStatusPopover.html" type="text/ng-template">
+    <div class="submission-status-popover">
+        <div class="submission-status-popover-table">
+            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': item.source_state !== ''}" ng-repeat="item in nonApproved">
+                <span class="submission-status-popover-cell left-cell">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''">&nbsp;{{item.source_state}}:&nbsp;</span></span>
+                <span class="submission-status-popover-cell bold">{{item.text}}</span>
+            </div>
+            <div ng-if="approved.length && nonApproved.length" class="submission-status-popover-row">
+                <span class="submission-status-popover-cell divider"><hr></span>
+                <span class="submission-status-popover-cell divider"><hr></span>
+            </div>
+            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': item.source_state !== ''}" ng-repeat="item in approved">
+                <span class="submission-status-popover-cell left-cell submission-status-label">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span>&nbsp;{{item.source_state}}<span ng-if="item.source_state != ''">:&nbsp;</span></span>
+                <span class="submission-status-popover-cell" >{{item.text}}</span>
+            </div>
+
+            <div ng-if="zeroStatusItems" class="submission-status-popover-row">
+                No Media Sources added yet.
+            </div>
+
+        </div>
+    </div>
+</script>

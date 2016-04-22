@@ -19,7 +19,7 @@ describe('UploadAdsModalCtrl', function () {
             opened: openedDeferred.promise,
         };
         api = {
-            adGroupAdsPlusUpload: {
+            adGroupAdsUpload: {
                 upload: function () {},
                 checkStatus: function () {},
                 cancel: function () {},
@@ -54,14 +54,14 @@ describe('UploadAdsModalCtrl', function () {
                 batchName: 'testname',
             };
 
-            spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($scope, 'pollBatchStatus');
 
             $scope.upload();
 
-            expect(api.adGroupAdsPlusUpload.upload).toHaveBeenCalledWith(
+            expect(api.adGroupAdsUpload.upload).toHaveBeenCalledWith(
                 $state.params.id, {file: $scope.formData.file, batchName: $scope.formData.batchName}
             );
             deferred.resolve(batchId);
@@ -79,7 +79,7 @@ describe('UploadAdsModalCtrl', function () {
                 errors: {'batchName': ['This is required']},
             };
 
-            spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -94,17 +94,17 @@ describe('UploadAdsModalCtrl', function () {
     describe('pollBatchStatus', function () {
         it('does nothing if polling is not in progress', function () {
             $scope.uploadStatus = null;
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus');
+            spyOn(api.adGroupAdsUpload, 'checkStatus');
 
             $scope.pollBatchStatus();
 
-            expect(api.adGroupAdsPlusUpload.checkStatus).not.toHaveBeenCalled();
+            expect(api.adGroupAdsUpload.checkStatus).not.toHaveBeenCalled();
         });
 
         it('stops polling in case of error', function () {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -121,7 +121,7 @@ describe('UploadAdsModalCtrl', function () {
         it('schedules another poll', function () {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -141,7 +141,7 @@ describe('UploadAdsModalCtrl', function () {
             var deferred = $q.defer();
             var batchId = 123;
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($modalInstance, 'close');
@@ -149,7 +149,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.pollBatchStatus(batchId);
             $timeout.flush();
 
-            expect(api.adGroupAdsPlusUpload.checkStatus).toHaveBeenCalledWith(
+            expect(api.adGroupAdsUpload.checkStatus).toHaveBeenCalledWith(
                 $state.params.id, batchId
             );
             deferred.resolve({status: constants.uploadBatchStatus.DONE});
@@ -167,7 +167,7 @@ describe('UploadAdsModalCtrl', function () {
                 errors: ['some error'],
             };
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($modalInstance, 'close');
@@ -176,7 +176,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.pollBatchStatus(batchId);
             $timeout.flush();
 
-            expect(api.adGroupAdsPlusUpload.checkStatus).toHaveBeenCalledWith(
+            expect(api.adGroupAdsUpload.checkStatus).toHaveBeenCalledWith(
                 $state.params.id, batchId
             );
             deferred.resolve(data);
@@ -200,7 +200,7 @@ describe('UploadAdsModalCtrl', function () {
                 },
             };
 
-            spyOn(api.adGroupAdsPlusUpload, 'cancel').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'cancel').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($scope, '$dismiss');
@@ -208,7 +208,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
             $scope.cancel();
 
-            expect(api.adGroupAdsPlusUpload.cancel).toHaveBeenCalledWith(
+            expect(api.adGroupAdsUpload.cancel).toHaveBeenCalledWith(
                 $state.params.id, batchId
             );
             deferred.reject(data);
@@ -223,7 +223,7 @@ describe('UploadAdsModalCtrl', function () {
             var batchId = 123;
             $scope.batchId = batchId;
 
-            spyOn(api.adGroupAdsPlusUpload, 'cancel').and.callFake(function () {
+            spyOn(api.adGroupAdsUpload, 'cancel').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($scope, '$dismiss');
@@ -231,7 +231,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
             $scope.cancel();
 
-            expect(api.adGroupAdsPlusUpload.cancel).toHaveBeenCalledWith(
+            expect(api.adGroupAdsUpload.cancel).toHaveBeenCalledWith(
                 $state.params.id, batchId
             );
 
@@ -243,13 +243,13 @@ describe('UploadAdsModalCtrl', function () {
         });
 
         it ('close modal when canceling upload that is not in progress', function () {
-            spyOn(api.adGroupAdsPlusUpload, 'cancel');
+            spyOn(api.adGroupAdsUpload, 'cancel');
             spyOn($scope, '$dismiss');
 
             $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
             $scope.cancel();
 
-            expect(api.adGroupAdsPlusUpload.cancel).not.toHaveBeenCalled();
+            expect(api.adGroupAdsUpload.cancel).not.toHaveBeenCalled();
 
             $scope.$root.$digest();
 

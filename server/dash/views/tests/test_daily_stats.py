@@ -388,7 +388,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
 
 @patch('dash.stats_helper.reports.api_contentads.query')
 @patch('dash.stats_helper.reports.api_touchpointconversions.query')
-class AdGroupAdsPlusDailyStatsTest(TestCase):
+class AdGroupAdsDailyStatsTest(TestCase):
     fixtures = ['test_views']
 
     def setUp(self):
@@ -421,7 +421,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_daily_stats', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_daily_stats', kwargs={'ad_group_id': 1}),
             params,
             follow=True
         )
@@ -442,8 +442,8 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             'data': {
                 'goal_fields': {
                     'avg_tos': {
-                        'id': 'time on site in seconds',
-                        'name': 'time on site in seconds'
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
                     },
                     'avg_cost_per_conversion_goal_1': {
                         'id': 'avg_cost_per_conversion_goal_1',
@@ -466,20 +466,20 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                         'name': '$CPA - test conversion goal 5'
                     },
                     'cpc': {
-                        'id': '$CPC',
-                        'name': '$CPC'
+                        'id': 'CPC',
+                        'name': 'CPC'
                     },
-                    'total_pageviews': {
-                        'id': 'pages per session',
-                        'name': 'pages per session'
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
                     },
                     'bounce_rate': {
-                        'id': 'max bounce rate %',
-                        'name': 'max bounce rate %'
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
                     },
                     'percent_new_users': {
-                        'id': 'new visitors %',
-                        'name': 'new visitors %'
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
                     },
                 },
                 'chart_data': [{
@@ -579,7 +579,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_daily_stats', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_daily_stats', kwargs={'ad_group_id': 1}),
             params,
             follow=True
         )
@@ -601,8 +601,8 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             'data': {
                 'goal_fields': {
                     'avg_tos': {
-                        'id': 'time on site in seconds',
-                        'name': 'time on site in seconds'
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
                     },
                     'avg_cost_per_conversion_goal_1': {
                         'id': 'avg_cost_per_conversion_goal_1',
@@ -625,20 +625,20 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                         'name': '$CPA - Test Cg'
                     },
                     'cpc': {
-                        'id': '$CPC',
-                        'name': '$CPC'
+                        'id': 'CPC',
+                        'name': 'CPC'
                     },
-                    'total_pageviews': {
-                        'id': 'pages per session',
-                        'name': 'pages per session'
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
                     },
                     'bounce_rate': {
-                        'id': 'max bounce rate %',
-                        'name': 'max bounce rate %'
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
                     },
                     'percent_new_users': {
-                        'id': 'new visitors %',
-                        'name': 'new visitors %'
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
                     },
                 },
                 'chart_data': [{
@@ -756,8 +756,8 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             'data': {
                 'goal_fields': {
                     'avg_tos': {
-                        'id': 'time on site in seconds',
-                        'name': 'time on site in seconds'
+                        'id': 'Time on Site - Seconds',
+                        'name': 'Time on Site - Seconds'
                     },
                     'avg_cost_per_conversion_goal_1': {
                         'id': 'avg_cost_per_conversion_goal_1',
@@ -780,20 +780,20 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'name': '$CPA - test conversion goal 5'
                     },
                     'cpc': {
-                        'id': '$CPC',
-                        'name': '$CPC'
+                        'id': 'CPC',
+                        'name': 'CPC'
                     },
-                    'total_pageviews': {
-                        'id': 'pages per session',
-                        'name': 'pages per session'
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
                     },
                     'bounce_rate': {
-                        'id': 'max bounce rate %',
-                        'name': 'max bounce rate %'
+                        'id': 'Max Bounce Rate',
+                        'name': 'Max Bounce Rate'
                     },
                     'percent_new_users': {
-                        'id': 'new visitors %',
-                        'name': 'new visitors %'
+                        'id': 'New Unique Visitors',
+                        'name': 'New Unique Visitors'
                     },
                 },
                 'chart_data': [{

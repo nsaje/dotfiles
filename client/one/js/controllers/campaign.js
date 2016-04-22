@@ -85,6 +85,10 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         return !!$scope.campaign.landingMode;
     };
 
+    $scope.manageBudget = function () {
+        $state.go('main.campaigns.budget', {id: $scope.campaign.id});
+    };
+
     $scope.$on('$stateChangeStart', function () {
         $location.search('page', null);
     });

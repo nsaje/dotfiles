@@ -7,6 +7,8 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 
+from utils import test_helper
+
 from zemauth.models import User
 
 
@@ -219,10 +221,10 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test adgroup 1',
-                'contentAdsTabWithCMS': True,
                 'state': 1,
                 'status': 1,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'active',
             }
         })
 
@@ -249,10 +251,10 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 4,
                 'name': 'test adgroup 4',
-                'contentAdsTabWithCMS': True,
                 'state': 2,
                 'status': 2,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'stopped',
             }
         })
 
@@ -273,10 +275,10 @@ class NavigationDataViewTest(TestCase):
             'ad_group': {
                 'id': 4,
                 'name': 'test adgroup 4',
-                'contentAdsTabWithCMS': True,
                 'state': 2,
                 'status': 2,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'stopped',
             }
         })
 
@@ -318,28 +320,28 @@ class NavigationTreeViewTest(TestCase):
             "campaigns": [{
                 "adGroups": [{
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
+                    "active": "active",
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
                     "state": 1,
                     "status": 2,  # past dates
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
                     "state": 2,
                     "status": 2,
                     "autopilot_state": 2,
+                    "active": "stopped",
                 }],
                 "archived": False,
                 "id": 1,
@@ -360,28 +362,28 @@ class NavigationTreeViewTest(TestCase):
             "campaigns": [{
                 "adGroups": [{
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
                     "state": 1,
                     "status": 2,  # source paused
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
                     "state": 1,
                     "status": 2,
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
-                    "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
                     "state": 2,
                     "status": 2,  # source paused
                     "autopilot_state": 2,
+                    "active": "stopped",
                 }],
                 "landingMode": False,
                 "archived": False,
@@ -403,12 +405,12 @@ class NavigationTreeViewTest(TestCase):
             "campaigns": [{
                 "adGroups": [
                     {
-                        "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
                         "state": 2,
                         "status": 2,
                         "autopilot_state": 2,
+                        "active": "stopped",
                     }
                 ],
                 "id": 2,
@@ -433,12 +435,12 @@ class NavigationTreeViewTest(TestCase):
                 "adGroups": [
                     {
                         "archived": True,
-                        "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
                         "state": 2,
                         "status": 2,
                         "autopilot_state": 2,
+                        "active": "stopped",
                     }
                 ],
                 "id": 2,

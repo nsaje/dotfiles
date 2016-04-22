@@ -91,7 +91,11 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in performance:
         performance_item = {
             'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
-            'text': campaign_goals.format_campaign_goal(goal.type, goal_metric)
+            'text': campaign_goals.format_campaign_goal(
+                goal.type,
+                goal_metric,
+                goal.conversion_goal
+            )
         }
         if goal_value:
             performance_item['text'] += ' (planned {})'.format(
@@ -123,7 +127,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         c.pk: c for c in campaigns
     }
     all_campaign_goals = campaign_goals.fetch_goals(
-        [campaign.pk for campaign in campaigns], start_date, end_date
+        [campaign.pk for campaign in campaigns], end_date
     )
     for goal in all_campaign_goals:
         campaign_goals_map.setdefault(goal.campaign_id, []).append(goal)
@@ -572,7 +576,6 @@ class SourcesTable(object):
             last_success_actions_joined,
             e_yesterday_cost,
             yesterday_cost,
-            order=order,
             ad_group_level=ad_group_level,
         )
 
@@ -602,6 +605,9 @@ class SourcesTable(object):
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
+
+        if order:
+            rows = sort_results(rows, [order])
 
         response = {
             'rows': rows,
@@ -723,7 +729,6 @@ class SourcesTable(object):
             last_actions,
             e_yesterday_cost,
             yesterday_cost,
-            order=None,
             ad_group_level=False):
         rows = []
 
@@ -844,9 +849,6 @@ class SourcesTable(object):
                     row[field] = val
 
             rows.append(row)
-
-        if order:
-            rows = sort_results(rows, [order])
 
         return rows
 
@@ -1099,86 +1101,13 @@ class AccountsAccountsTable(object):
         return rows
 
 
-class AdGroupAdsTable(object):
-
-    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
-
-        helpers.get_ad_group(user, ad_group_id)
-        ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-            select_related('campaign').\
-            prefetch_related('campaign__conversiongoal_set').get()
-
-        size = max(min(int(size or 5), 4294967295), 1)
-
-        result = reports.api_helpers.filter_by_permissions(reports.api.query(
-            start_date=start_date,
-            end_date=end_date,
-            breakdown=['article'],
-            order=[order],
-            ad_group=ad_group.id,
-            source=filtered_sources,
-        ), user)
-
-        result_pg, current_page, num_pages, count, start_index, end_index = \
-            utils.pagination.paginate(result, page, size)
-
-        rows = result_pg
-
-        if ad_group in models.AdGroup.demo_objects.all():
-            for i, row in enumerate(rows):
-                row['url'] = 'http://www.example.com/{}/{}'.format(slugify(ad_group.name), i)
-
-        totals_data = reports.api_helpers.filter_by_permissions(
-            reports.api.query(
-                start_date,
-                end_date,
-                ad_group=int(ad_group.id),
-                source=filtered_sources,
-            ), user)
-
-        ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
-        last_success_actions = ad_group_sync.get_latest_success_by_child()
-
-        last_sync = helpers.get_last_sync(last_success_actions.values())
-
-        incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics_ad_groups(
-                start_date,
-                end_date,
-                [ad_group],
-                filtered_sources,
-            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
-
-        return {
-            'rows': rows,
-            'totals': totals_data,
-            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
-            'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
-            'order': order,
-            'pagination': {
-                'currentPage': current_page,
-                'numPages': num_pages,
-                'count': count,
-                'startIndex': start_index,
-                'endIndex': end_index,
-                'size': size
-            },
-            'incomplete_postclick_metrics': incomplete_postclick_metrics
-        }
-
-
-class AdGroupAdsPlusTableUpdates(object):
+class AdGroupAdsTableUpdates(object):
 
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-
-        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
@@ -1224,7 +1153,7 @@ class AdGroupAdsPlusTableUpdates(object):
         return response_dict
 
 
-class AdGroupAdsPlusTable(object):
+class AdGroupAdsTable(object):
 
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
@@ -1232,8 +1161,6 @@ class AdGroupAdsPlusTable(object):
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
-        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -1545,7 +1472,6 @@ class CampaignAdGroupsTable(object):
             ad_groups_status_dict,
             stats,
             last_success_actions_joined,
-            order,
             has_view_archived_permission,
             show_archived,
             e_yesterday_cost,
@@ -1567,6 +1493,8 @@ class CampaignAdGroupsTable(object):
             totals = campaign_goals.create_goal_totals(
                 campaign, totals, totals_cost
             )
+
+        rows = self.sort_rows(rows, order, has_view_archived_permission)
 
         response = {
             'rows': rows,
@@ -1639,7 +1567,7 @@ class CampaignAdGroupsTable(object):
         )
 
     def get_rows(self, user, campaign, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
-                 order, has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
+                 has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
         # map settings for quicker access
@@ -1686,12 +1614,6 @@ class CampaignAdGroupsTable(object):
 
             rows.append(row)
 
-        if order:
-            if 'state' in order and has_view_archived_permission:
-                rows = sort_rows_by_order_and_archived(rows, order)
-            else:
-                rows = sort_results(rows, [order])
-
         return rows
 
     def get_totals(self, user, totals_data, e_yesterday_cost, yesterday_cost):
@@ -1700,6 +1622,15 @@ class CampaignAdGroupsTable(object):
         if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
             totals_data['yesterday_cost'] = yesterday_cost
         return totals_data
+
+    def sort_rows(self, rows, order, has_view_archived_permission):
+        if order:
+            if 'state' in order and has_view_archived_permission:
+                rows = sort_rows_by_order_and_archived(rows, order)
+            else:
+                rows = sort_results(rows, [order])
+
+        return rows
 
     def get_editable_fields(self, ad_group, campaign, row):
         state = {

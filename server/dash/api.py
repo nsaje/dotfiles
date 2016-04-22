@@ -1265,7 +1265,9 @@ class AdGroupSourceSettingsWriter(object):
         if any([
                 state is not None and state != latest_settings.state,
                 cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
-                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc]):
+                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc,
+                landing_mode is not None and landing_mode != latest_settings.landing_mode
+        ]):
             new_settings = latest_settings
             new_settings.pk = None  # make a copy of the latest settings
 

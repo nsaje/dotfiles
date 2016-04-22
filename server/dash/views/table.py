@@ -83,32 +83,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class AdGroupAdsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
-    def get(self, request, ad_group_id):
-        user = request.user
-        page = request.GET.get('page')
-        size = request.GET.get('size')
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        order = request.GET.get('order') or '-clicks'
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-
-        response = dt.AdGroupAdsTable().get(
-            user,
-            ad_group_id,
-            filtered_sources,
-            start_date,
-            end_date,
-            order,
-            page,
-            size
-        )
-
-        return self.create_api_response(response)
-
-
-class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
+class AdGroupAdsTableUpdates(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
     def get(self, request, ad_group_id):
         user = request.user
@@ -116,7 +91,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
-        response = dt.AdGroupAdsPlusTableUpdates().get(
+        response = dt.AdGroupAdsTableUpdates().get(
             user,
             ad_group_id,
             filtered_sources,
@@ -126,7 +101,7 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class AdGroupAdsPlusTable(api_common.BaseApiView):
+class AdGroupAdsTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
         user = request.user
@@ -140,7 +115,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         size = request.GET.get('size')
         show_archived = request.GET.get('show_archived')
 
-        response = dt.AdGroupAdsPlusTable().get(
+        response = dt.AdGroupAdsTable().get(
             user,
             ad_group_id,
             filtered_sources,

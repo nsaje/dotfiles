@@ -13,6 +13,7 @@ from convapi.ga_api import GAApiReport
 from reports import refresh
 from reports import update
 from reports.constants import ReportType
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 SOURCE_Z1 = 'z1'
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('-d', '--date',
                     help='Date for which Google Analytics reports need to be retrieved. Format YYYY-MM-DD',
@@ -64,7 +65,7 @@ class Command(BaseCommand):
         for entry in ga_report_entries:
             # filter out the GA entries that came from Z1 (i.e. one of the Zemanta employees clicked the link) and
             # the entries that belong to content ad grops that aren't configured to receive stats via GA API
-            if entry.source_param == SOURCE_Z1 and entry.content_ad_id not in content_ad_ids_ga_api_enabled:
+            if entry.source_param == SOURCE_Z1 or entry.content_ad_id not in content_ad_ids_ga_api_enabled:
                 continue
 
             ga_stats.append(entry)

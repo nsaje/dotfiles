@@ -622,7 +622,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.INACTIVE,
+            dash.constants.InfoboxStatus.STOPPED,
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
@@ -716,7 +716,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.STOPPED,
+            dash.constants.InfoboxStatus.INACTIVE,
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
@@ -735,7 +735,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.INACTIVE,
+            dash.constants.InfoboxStatus.STOPPED,
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 

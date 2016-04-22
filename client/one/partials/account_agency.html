@@ -43,21 +43,6 @@
             </div>
             <label ng-repeat="error in errors.defaultSalesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.serviceFee}">
-            <label for="service-fee-select" class="col-xs-2 control-label">
-                License Fee
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Software licence fee; calculated based on media spend." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <ui-select theme="select2" id="service-fee-select" class="form-control" ng-model="settings.serviceFee">
-                    <ui-select-match>{{$select.selected}}%</ui-select-match>
-                    <ui-select-choices repeat="fee in getServiceFees($select.search) | filter: $select.search">
-                        <span ng-bind-html="fee"></span>%
-                    </ui-select-choices>
-                </ui-select>
-            </div>
-            <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
-        </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.allowedSources}" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
             <label for="media-sources-options-choices" class="col-xs-2 control-label"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_allowed_sources')" popover-placement="right"></zem-internal-feature> Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>

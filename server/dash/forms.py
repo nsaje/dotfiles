@@ -261,13 +261,18 @@ class AccountAgencySettingsForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
-    service_fee = forms.DecimalField(
-        min_value=0,
-        max_value=100,
-        decimal_places=2,
-    )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+
+        account_id = self.cleaned_data.get('id')
+
+        if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
+            raise forms.ValidationError("Invalid account name.")
+
+        return name
 
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
@@ -441,6 +446,26 @@ class CampaignGoalForm(forms.Form):
         return goal_type
 
 
+class CampaignAdminForm(forms.ModelForm):
+    automatic_campaign_stop = forms.BooleanField(required=False,
+                                                 label='Automatic campaign stop on low budget')
+
+    def __init__(self, *args, **kwargs):
+        initial = {
+            'automatic_campaign_stop': True,
+        }
+        if 'instance' in kwargs:
+            settings = kwargs['instance'].get_current_settings()
+            initial['automatic_campaign_stop'] = settings.automatic_campaign_stop
+        super(CampaignAdminForm, self).__init__(initial=initial, *args, **kwargs)
+
+    class Meta:
+        model = models.Campaign
+        exclude = (
+            'users', 'groups', 'created_dt', 'modified_dt', 'modified_by',
+        )
+
+
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
     campaign_manager = forms.IntegerField()
@@ -529,7 +554,7 @@ class DisplayURLField(forms.URLField):
         return display_url
 
 
-class AdGroupAdsPlusUploadForm(forms.Form):
+class AdGroupAdsUploadForm(forms.Form):
     content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
@@ -699,7 +724,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
-        super(AdGroupAdsPlusUploadForm, self).clean()
+        super(AdGroupAdsUploadForm, self).clean()
 
         if self.errors:
             return

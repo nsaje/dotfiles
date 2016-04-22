@@ -21,6 +21,9 @@ describe('AdGroupPublishersCtrl', function () {
             $scope.infoboxBasicSettings = null;
             $scope.infoboxPerformanceSettings = null;
 
+            $scope.setInfoboxHeader = function (data) {
+                $scope.infoboxHeader = data;
+            };
             $scope.isPermissionInternal = function () {
                 return true;
             };
@@ -78,16 +81,6 @@ describe('AdGroupPublishersCtrl', function () {
                     $scope: $scope,
                     api: api,
                 }
-            );
-        });
-    });
-
-    describe('no permission for infobox data', function () {
-        it('fetch infobox data without permission', function () {
-            $scope.getInfoboxData();
-            $scope.$digest();
-            expect($scope.infoboxHeader).toEqual(
-                null
             );
         });
     });

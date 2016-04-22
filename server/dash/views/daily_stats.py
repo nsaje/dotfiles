@@ -119,6 +119,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             result['goal_fields'] = campaign_goals.inverted_campaign_goal_map(
                 conversion_goals
             )
+
             result['campaign_goals'] = dict(
                 campaign_goals.get_campaign_goal_metrics(
                     campaign,
@@ -462,13 +463,10 @@ class AccountsDailyStats(BaseDailyStatsView):
         ))
 
 
-class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
+class AdGroupAdsDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_daily_stats_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
-            raise exc.ForbiddenError(message='Not allowed')
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 

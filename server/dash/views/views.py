@@ -256,6 +256,7 @@ class AdGroupOverview(api_common.BaseApiView):
         async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
         async_perf_query.start()
 
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         ad_group_settings = ad_group.get_current_settings()
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -263,7 +264,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
+            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, filtered_sources),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
@@ -479,7 +480,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         response = {
             'name': ad_group.name,
             'id': ad_group.id,
-            'content_ads_tab_with_cms': ad_group.content_ads_tab_with_cms
         }
 
         return self.create_api_response(response)
@@ -533,15 +533,12 @@ class CampaignAdGroups(api_common.BaseApiView):
         return actions
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
-        source = source_settings.source
         ad_group = ad_group_settings.ad_group
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
-            retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
-        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only(),
-                                             active=active_source_state)
+        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only())
+
         return ad_group_source
 
 
@@ -1119,7 +1116,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusUpload(api_common.BaseApiView):
+class AdGroupAdsUpload(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
@@ -1148,7 +1145,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -1198,7 +1195,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         return self.create_api_response({'batch_id': batch.pk})
 
 
-class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+class AdGroupAdsUploadReport(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
@@ -1222,7 +1219,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
-class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+class AdGroupAdsUploadCancel(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
@@ -1249,7 +1246,7 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+class AdGroupAdsUploadStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
@@ -1297,7 +1294,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         errors = {}
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
-                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                errors['report_url'] = reverse('ad_group_ads_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(
                     batch.num_errors, 's' if batch.num_errors > 1 else '')

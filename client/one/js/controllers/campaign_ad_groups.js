@@ -66,15 +66,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'},
-        {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
-    ];
-
-    $scope.exportPlusOptions = [
       {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
       {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
-      {name: 'By content Ad', value: constants.exportType.CONTENT_AD},
+      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.columns = [
@@ -111,10 +105,15 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         row.stateText = $scope.getStateText(state);
                     }
                 });
+                zemNavigationService.notifyAdGroupReloading(adgroupId, true);
+
                 api.adGroupSettingsState.post(adgroupId, state).then(
                     function (data) {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
+                    },
+                    function () {
+                        zemNavigationService.notifyAdGroupReloading(adgroupId, false);
                     }
                 );
             },
@@ -418,7 +417,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 zemNavigationService.addAdGroupToCache(campaignId, {
                     id: data.id,
                     name: data.name,
-                    contentAdsTabWithCMS: data.contentAdsTabWithCMS,
                     status: constants.adGroupSettingsState.INACTIVE,
                     state: constants.adGroupRunningStatus.INACTIVE,
                 });
@@ -708,7 +706,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
-        setDisabledExportOptions();
         $scope.getInfoboxData();
     };
 
@@ -748,26 +745,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getTableData();
     });
-
-    var setDisabledExportOptions = function () {
-        api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
-            function (data) {
-                var option = null;
-                $scope.exportOptions.forEach(function (opt) {
-                    if (opt.value === 'excel_detailed') {
-                        option = opt;
-                    }
-                });
-
-                if (data.allowed) {
-                    option.disabled = false;
-                } else {
-                    option.disabled = true;
-                    option.maxDays = data.maxDays;
-                }
-            }
-        );
-    };
 
     $scope.init();
 }]);
