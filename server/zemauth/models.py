@@ -143,7 +143,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_subdivision_targeting', 'Can set subdivision targeting'),
             ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
-            ('manage_conversion_pixels', 'Can manage conversion pixels'),
             ('add_media_sources_automatically', 'Automatically add media sources on ad group creation'),
             ('has_intercom', 'Can see intercom widget'),
             ('can_see_publishers', 'Can see publishers'),

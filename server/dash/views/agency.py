@@ -732,9 +732,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
         last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
@@ -758,9 +755,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)  # check access to account
 
         try:
@@ -806,9 +800,6 @@ class ConversionPixel(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         try:
             conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
         except models.ConversionPixel.DoesNotExist:

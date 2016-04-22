@@ -962,7 +962,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
         account = models.Account.objects.get(pk=1)
         account.users.add(self.user)
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.get(
             reverse('account_conversion_pixels', kwargs={'account_id': account.id}),
             follow=True
@@ -982,7 +981,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
         }], decoded_response['data']['rows'])
 
     def test_get_non_existing_account(self):
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.get(
             reverse('account_conversion_pixels', kwargs={'account_id': 9876}),
             follow=True
@@ -992,7 +990,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_post(self, mock_log_useraction):
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'slug'}),
@@ -1023,7 +1020,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
     def test_post_slug_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': ''}),
@@ -1037,7 +1033,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
     def test_post_slug_invalid_chars(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'A'}),
@@ -1091,7 +1086,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
     def test_post_slug_too_long(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'a' * (models.ConversionPixel._meta.get_field('slug').max_length + 1)}),
@@ -1121,7 +1115,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': True}),
@@ -1146,7 +1140,6 @@ class ConversionPixelTestCase(AgencyViewTestCase):
             account=models.Account.objects.get(pk=1))
 
     def test_put_archive_no_permissions(self):
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': True}),
@@ -1159,7 +1152,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest('id')
 
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': conversion_pixel.id + 1}),
             json.dumps({'archived': True}),
@@ -1175,7 +1168,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
     def test_put_invalid_account(self):
         new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, slug='abcd')
 
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': new_conversion_pixel.id}),
             json.dumps({'archived': True}),
@@ -1189,7 +1182,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
     def test_put_invalid_archived_value(self):
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': 1}),
