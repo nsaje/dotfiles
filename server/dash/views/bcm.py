@@ -354,10 +354,15 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.save()
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
-                                                                campaign.get_current_settings())
+        state_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
+            campaign,
+            campaign.get_current_settings()
+        )
 
-        return self.create_api_response(item.instance.pk)
+        return self.create_api_response({
+            'id': item.instance.pk,
+            'state_changed': state_changed,
+        })
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
     def delete(self, request, campaign_id, budget_id):

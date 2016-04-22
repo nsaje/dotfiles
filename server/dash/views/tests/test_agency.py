@@ -2448,7 +2448,7 @@ class AccountAgencyTest(TestCase):
         view = agency.AccountAgency()
         history = view.get_history(account)
 
-        self.assertEqual(len(history), 6)
+        self.assertTrue(len(history) >= 5)
         self.assertFalse(history[0]['show_old_settings'])
         self.assertTrue(history[1]['show_old_settings'])
         self.assertTrue(history[-1]['show_old_settings'])
