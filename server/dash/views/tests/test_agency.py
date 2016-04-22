@@ -1932,6 +1932,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
+        self.add_permissions(['campaign_settings_view'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1943,17 +1944,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
         self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
-
-    def test_get_no_ad_group_default_settings_permission(self):
-        self.add_permissions(['campaign_settings_view'])
-        response = self.client.get(
-            '/api/campaigns/1/settings/'
-        )
-
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertNotIn('target_devices', content['data']['settings'])
-        self.assertNotIn('target_regions', content['data']['settings'])
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
@@ -2163,44 +2153,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertFalse(models.CampaignGoal.objects.all())
         self.assertFalse(models.CampaignGoalValue.objects.all())
 
-    @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_no_ad_group_default_settings_permission(self, mock_send_campaign_notification_email,
-                                                         mock_log_useraction, mock_insert_adgroup):
-        settings = models.Campaign.objects.get(pk=1).get_current_settings()
-        self.assertNotEqual(settings.goal_quantity, Decimal('10.00'))
-        self.assertEqual(settings.target_devices, ['mobile'])
-        self.assertEqual(settings.target_regions, ['NC', '501'])
-
-        self.add_permissions(['campaign_settings_view'])
-        response = self.client.put(
-            '/api/campaigns/1/settings/',
-            json.dumps({
-                'settings': {
-                    'id': 1,
-                    'name': 'test campaign 2',
-                    'campaign_goal': 2,
-                    'goal_quantity': 10,
-                    'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
-                }
-            }),
-            content_type='application/json',
-        )
-
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertNotIn('target_devices', content['data']['settings'])
-        self.assertNotIn('target_regions', content['data']['settings'])
-
-        settings = models.Campaign.objects.get(pk=1).get_current_settings()
-
-        # Goal quantity should change, but target info should stay the same
-        self.assertEqual(settings.goal_quantity, Decimal('10.00'))
-        self.assertEqual(settings.target_devices, ['mobile'])
-        self.assertEqual(settings.target_regions, ['NC', '501'])
-
     def test_validation(self):
         self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
@@ -2237,30 +2189,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertFalse(content['success'])
         self.assertTrue('campaign_goal' in content['data']['errors'])
         self.assertTrue('target_devices' in content['data']['errors'])
-
-    def test_validation_no_settings_defaults_permission(self):
-        self.add_permissions(['campaign_settings_view'])
-        response = self.client.put(
-            '/api/campaigns/1/settings/',
-            json.dumps({
-                'settings': {
-                    'id': 1,
-                    'name': 'test campaign 2',
-                    'campaign_goal': 50,
-                    'goal_quantity': 10,
-                }
-            }),
-            content_type='application/json',
-        )
-
-        content = json.loads(response.content)
-        self.assertFalse(content['success'])
-
-        self.assertIn('campaign_goal', content['data']['errors'])
-
-        # because target devices were copied from the latest settings,
-        # there should be no errors
-        self.assertNotIn('target_devices', content['data']['errors'])
 
     def test_get_with_conversion_goals(self):
         self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
