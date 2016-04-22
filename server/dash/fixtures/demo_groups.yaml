@@ -13,14 +13,6 @@
     - [all_accounts_accounts_view, zemauth, user]
     - [all_accounts_sources_view, zemauth, user]
     - [campaign_ad_groups_detailed_report, zemauth, user]
-<<<<<<< HEAD
-    - [campaign_ad_groups_view, zemauth, user]
-    - [campaign_settings_view, zemauth, user]
-    - [campaign_sources_view, zemauth, user]
-=======
-    - [filter_sources, zemauth, user]
-    - [set_content_ad_status, zemauth, user]
->>>>>>> origin
     - [supply_dash_link_view, zemauth, user]
     - [unspent_budget_view, zemauth, user]
   model: auth.group
