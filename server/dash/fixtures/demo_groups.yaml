@@ -115,6 +115,5 @@
     - [campaign_settings_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [content_ads_postclick_acquisition, zemauth, user]
-    - [content_ads_bulk_actions, zemauth, user]
   model: auth.group
   pk: 10

@@ -46,11 +46,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     $scope.bulkActions = [{
         name: 'Pause',
         value: 'pause',
-        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+        hasPermission: true,
     }, {
         name: 'Resume',
         value: 'resume',
-        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions')
+        hasPermission: true
     }, {
         name: 'Download',
         value: 'download',
@@ -159,8 +159,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         field: 'ad_selected',
         type: 'checkbox',
         showSelectionMenu: true,
-        shown: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
-        hasPermission: $scope.hasPermission('zemauth.content_ads_bulk_actions'),
+        shown: true,
+        hasPermission: true,
         checked: true,
         totalRow: false,
         unselectable: true,

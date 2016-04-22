@@ -1162,13 +1162,11 @@ class AdGroupAdsTable(object):
             user
         )
 
-        batches = []
-        if user.has_perm('zemauth.content_ads_bulk_actions'):
-            batch_ids = set([row['batch_id'] for row in rows])
-            batches = models.UploadBatch.objects.filter(
-                id__in=tuple(batch_ids),
-                status=constants.UploadBatchStatus.DONE,
-            ).order_by('-created_dt')
+        batch_ids = set([row['batch_id'] for row in rows])
+        batches = models.UploadBatch.objects.filter(
+            id__in=tuple(batch_ids),
+            status=constants.UploadBatchStatus.DONE,
+        ).order_by('-created_dt')
 
         if 'status_setting' in order:
             rows = sort_rows_by_order_and_archived(rows, order)
