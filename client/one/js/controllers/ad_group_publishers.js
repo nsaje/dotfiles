@@ -860,10 +860,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.adGroupOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,

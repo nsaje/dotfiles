@@ -943,10 +943,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.adGroupOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,
