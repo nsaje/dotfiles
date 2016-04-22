@@ -15,4 +15,9 @@ oneApp.controller('AllAccountsCtrl', ['$scope', '$state', function ($scope, $sta
     $scope.$on('$stateChangeSuccess', function () {
         $scope.setBreadcrumbAndTitle([], 'All accounts');
     });
+
+    $scope.hasInfoboxPermission = function () {
+        return $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
+    };
+
 }]);

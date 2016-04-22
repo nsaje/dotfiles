@@ -315,19 +315,9 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
 class CampaignBudgetViewTest(BCMViewTestCase):
 
-    def test_permissions(self):
-        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url, json.dumps({}), content_type='application/json')
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
@@ -439,7 +429,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
@@ -468,28 +457,12 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
 class CampaignBudgetItemViewTest(BCMViewTestCase):
 
-    def test_permissions(self):
-        url = reverse('campaigns_budget_item', kwargs={
-            'campaign_id': 1,
-            'budget_id': 1,
-        })
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url, json.dumps({}),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
             'budget_id': 1,
         })
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
             response = self.client.get(url)
@@ -523,7 +496,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.post(url, json.dumps(data),
@@ -565,7 +537,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        self.add_permission('campaign_budget_view')
         mock_min_amount.return_value = Decimal('80000.0000')
         mock_valid_time.return_value = True
         url = reverse('campaigns_budget_item', kwargs={
@@ -596,7 +567,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        self.add_permission('campaign_budget_view')
         mock_min_amount.return_value = Decimal('80000.0000')
         mock_valid_time.return_value = True
         url = reverse('campaigns_budget_item', kwargs={
@@ -628,7 +598,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        self.add_permission('campaign_budget_view')
         mock_min_amount.return_value = Decimal('95000.0000')
         mock_valid_time.return_value = True
         url = reverse('campaigns_budget_item', kwargs={
@@ -665,7 +634,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         credit.end_date = datetime.date(2015, 12, 31)
         credit.save()
 
-        self.add_permission('campaign_budget_view')
         mock_min_amount.return_value = Decimal('80000.0000')
         mock_valid_time.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
@@ -699,13 +667,11 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2016, 1, 1)
             response = self.client.delete(url)
         self.assertEqual(response.status_code, 400)
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.delete(url)
@@ -744,7 +710,6 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
-        self.add_permission('campaign_budget_view')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = today
             response = self.client.get(url)

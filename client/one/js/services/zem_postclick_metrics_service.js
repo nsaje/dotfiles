@@ -75,7 +75,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. ToS',
+            name: 'Time on Site',
             field: 'avg_tos',
             checked: false,
             type: 'seconds',

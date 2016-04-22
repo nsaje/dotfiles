@@ -219,14 +219,28 @@ def _update_landing_campaign(campaign):
     if not campaign.adgroup_set.all().filter_active().count() > 0:
         return actions + _wrap_up_landing(campaign)
 
-    # TODO: set autopilot_daily_budget setting to daily_cap on ad group settings
     if any_ad_group_stopped:
         daily_caps = _calculate_daily_caps(campaign, per_date_spend)
+
+    _persist_new_autopilot_settings(daily_caps)
 
     actions.extend(_run_autopilot(daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
     return actions
+
+
+def _persist_new_autopilot_settings(daily_caps):
+    adgroup_settings_list = dash.models.AdGroupSettings.objects.filter(
+        ad_group_id__in=daily_caps.keys()
+    ).group_current_settings()
+    for settings in adgroup_settings_list:
+        dcap = decimal.Decimal(daily_caps.get(settings.ad_group_id, 0))
+        new_settings = settings.copy_settings()
+        new_settings.autopilot_state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_daily_budget = dcap
+        new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
+        new_settings.save(None)
 
 
 def _stop_non_spending_sources(campaign):

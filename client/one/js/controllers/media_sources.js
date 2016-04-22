@@ -21,7 +21,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
-    $scope.hasInfoboxPermission = false;
+
     var userSettings = null,
         hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
 
@@ -37,7 +37,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
     };
 
-    $scope.selectedSourcesChanged = function (row, checked) {
+    $scope.selectedSourcesChanged = function (row) {
         if (row.id) {
             $scope.updateSelectedSources(row.id);
         } else {
@@ -276,24 +276,24 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -372,12 +372,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost',
+                'license_fee', 'billing_cost',
+                'yesterday_cost', 'e_yesterday_cost',
+            ]
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'cpc', 'clicks', 'impressions', 'ctr', 'license_fee',
-                'yesterday_cost', 'e_yesterday_cost'
+                'min_bid_cpc', 'max_bid_cpc', 'daily_budget',
+                'cpc', 'clicks', 'impressions', 'ctr',
             ]
         },
         {
@@ -573,7 +580,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         });
     };
 
-    var updateInfoboxData = function (data) { 
+    var updateInfoboxData = function (data) {
         $scope.infoboxHeader = data.header;
         $scope.infoboxBasicSettings = data.basicSettings;
         $scope.infoboxPerformanceSettings = data.performanceSettings;
@@ -581,12 +588,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+            if (!$scope.hasInfoboxPermission()) {
                 return;
             }
             api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
@@ -595,18 +598,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
-            if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
-                return;
-            }
             api.accountOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
-            if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
-                return;
-            }
             api.campaignOverview.get(
                 $state.params.id,
                 $scope.dateRange.startDate,
@@ -677,10 +674,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var init = function () {
-        $scope.hasInfoboxPermission = $scope.hasPermission('zemauth.can_see_infobox');
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
             $scope.chartMetrics = options.allAccountsChartMetrics;
             $scope.chartMetric1 = constants.chartMetric.COST;
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
@@ -690,11 +685,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Account', value: constants.exportType.ACCOUNT},
               {name: 'By Campaign', value: constants.exportType.CAMPAIGN},
               {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
-            ];            
+            ];
 
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_account_infobox');
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
             $scope.exportOptions = [
@@ -706,7 +700,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.accounts.settings';
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             $scope.localStoragePrefix = 'campaignSources';
-            $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_campaign_infobox');
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
             $scope.exportOptions = [
@@ -716,10 +709,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             ];
 
             $scope.infoboxLinkTo = 'main.campaigns.settings';
-        }
-
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            $scope.hasInfoboxPermission = false;
         }
 
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
