@@ -60,7 +60,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         ]($scope.campaign.id, $scope.budgetItem).then(function (data) {
             $scope.saved = true;
             closeModal();
-            if (data.state_changed) {
+            if (data.stateChanged) {
                 zemNavigationService.reload();
             }
         }, function (resp) {
