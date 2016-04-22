@@ -769,7 +769,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
         result_mock = self._mock_publishers_and_touchpoint_data(date)
         self.assertEqual(result_mock, publisher_data)
 
-
     @patch('dash.table.reports.api_publishers.query_blacklisted_publishers')
     def test_blacklisted_publishers_with_conversion_goals_permissions(self, mock_blacklisted, mock_query, mock_touchpointconversions_query):
         ad_group = AdGroup.objects.get(pk=1)

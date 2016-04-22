@@ -164,8 +164,8 @@ class NavigationTreeView(api_common.BaseApiView):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(
             filtered_sources)
 
-        accounts_settings = models.AccountSettings.objects.filter(account__in=accounts)\
-                                                            .group_current_settings()
+        accounts_settings = models.AccountSettings.objects.filter(
+            account__in=accounts) .group_current_settings()
         map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
         data_accounts = []

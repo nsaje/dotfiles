@@ -744,8 +744,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
                 $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults(
-                    $scope.columns, 
-                    data.conversionGoals, 
+                    $scope.columns,
+                    data.conversionGoals,
                     true
                 );
             },
