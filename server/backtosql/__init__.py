@@ -1,5 +1,6 @@
 from django.template import loader
 from backtosql import helpers
+from backtosql.q import Q
 
 
 class BackToSQLException(Exception):
@@ -22,6 +23,10 @@ class TemplateColumn(object):
 
         self.group = group
         self.alias = alias  # is set automatically through model if defined on a model
+
+    @property
+    def column_name(self):
+        return self.context.get('column_name')
 
     def _get_default_context(self, prefix):
         return {
@@ -157,3 +162,7 @@ class Model(object):
             columns = [x for x in columns if x.group == group]
 
         return columns
+
+    @classmethod
+    def generate_constraints(cls, constraints_dict, prefix=None):
+        return Q(**constraints_dict).expand(cls, prefix)
