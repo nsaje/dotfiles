@@ -13,16 +13,17 @@ class QTestCase(TestCase):
         py_dog = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog'}, group=2)
 
     def test_generate_constraints(self):
-        c = {
+        constraints_dict = {
             'py_foo__eq': [1, 2, 3],
             'py_bar': datetime.date.today(),
         }
 
-        constraints, params = self.ModelA.generate_constraints(c)
+        c = self.ModelA.get_constraints(constraints_dict)
+        constraints, params = c.g()
         self.assertEquals(constraints, "(bar=%s AND foo IN %s)")
         self.assertItemsEqual(params, [[1, 2, 3], datetime.date.today()])
 
-        constraints, params = self.ModelA.generate_constraints(c, "v")
+        c = self.ModelA.get_constraints(constraints_dict)
+        constraints, params = c.g("v")
         self.assertEquals(constraints, "(v.bar=%s AND v.foo IN %s)")
-
         self.assertItemsEqual(params, [[1, 2, 3], datetime.date.today()])

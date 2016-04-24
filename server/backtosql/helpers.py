@@ -1,4 +1,8 @@
+import collections
 import sqlparse
+
+# TODO: find a better solution
+from django.db.models.query import QuerySet
 
 
 def clean_alias(alias):
@@ -26,3 +30,8 @@ def clean_prefix(prefix=None):
 
 def printsql(sql):
     print(clean_sql(sql))
+
+
+def is_collection(value):
+    return ((isinstance(value, collections.Iterable) or isinstance(value, QuerySet))
+            and type(value) not in (str, unicode))

@@ -252,7 +252,7 @@ class QueryConstructionTestCase(TestCase, TestSQLMixin):
             'table': 'cats_n_dogs',
             'offset': 50,
             'limit': 100,
-            'order': [model.get_column(c).as_order(c) for c in order],
+            'order': model.select_order(order)
         }
 
         sql = backtosql.generate_sql('test_query.sql', context)

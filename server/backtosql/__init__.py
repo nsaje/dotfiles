@@ -1,3 +1,5 @@
+from functools import partial
+
 from django.template import loader
 from backtosql import helpers
 from backtosql.q import Q
@@ -131,6 +133,7 @@ class Model(object):
     def _init_columns(cls):
         columns = [(name, getattr(cls, name)) for name in dir(cls)
                    if isinstance(getattr(cls, name), TemplateColumn)]
+
         for name, col in columns:
             if col.alias is None:
                 col.alias = name
@@ -164,5 +167,9 @@ class Model(object):
         return columns
 
     @classmethod
-    def generate_constraints(cls, constraints_dict, prefix=None):
-        return Q(**constraints_dict).expand(cls, prefix)
+    def get_constraints(cls, constraints_dict):
+        return Q(cls, **constraints_dict)
+
+    @classmethod
+    def select_order(cls, subset):
+        return [cls.get_column(c).as_order(c) for c in subset]
