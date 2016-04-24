@@ -15,9 +15,9 @@ from django.conf import settings
 import reports.api
 import reports.models
 from reports import exc
-from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from reports import daily_statements
+from redshift.db import dictfetchall
 from utils import json_helper
 from utils import s3helpers
 from utils import statsd_helper

@@ -4,7 +4,7 @@ from mock import patch, Mock, call
 from django.test import TestCase, override_settings
 
 from reports import redshift
-from reports.db_raw_helpers import MyCursor
+from redshift.db import RSCursor
 
 
 @patch('reports.redshift.get_cursor')
@@ -14,7 +14,7 @@ class RedshiftTest(TestCase):
 
     def test_delete_contentadstats(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         date = datetime.date(2015, 1, 1)
         campaign_id = 1
@@ -39,7 +39,7 @@ class RedshiftTest(TestCase):
     @override_settings(S3_BUCKET_STATS='test-bucket-stats')
     def test_load_contentadstats(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         redshift.load_contentadstats('test/s3/key.json')
 
@@ -84,7 +84,7 @@ class RedshiftTest(TestCase):
 
     def test_vacuum_contentadstats(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         redshift.vacuum_contentadstats()
 
@@ -106,7 +106,7 @@ class RedshiftTest(TestCase):
 
     def test_delete_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         date = datetime.date(2015, 1, 1)
         account_id = 1
@@ -120,7 +120,7 @@ class RedshiftTest(TestCase):
 
     def test_delete_publishers(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         date = datetime.date(2015, 1, 1)
         redshift.delete_publishers(date)
@@ -134,7 +134,7 @@ class RedshiftTest(TestCase):
     @override_settings(S3_BUCKET_STATS='test-bucket-stats')
     def test_load_publishers(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         s3_key = 'publishers/2015-01-01-2015-01-31--123456789/part-00000'
         redshift.load_publishers(s3_key)
@@ -146,7 +146,7 @@ class RedshiftTest(TestCase):
 
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = MyCursor(mock_cursor)
+        mock_get_cursor.return_value = RSCursor(mock_cursor)
 
         redshift.vacuum_touchpoint_conversions()
 
