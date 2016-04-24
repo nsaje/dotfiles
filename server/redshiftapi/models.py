@@ -1,7 +1,7 @@
 import backtosql
 
-from redshift import constants
-from redshift import models_helpers
+from redshiftapi import constants
+from redshiftapi import models_helpers
 
 class RSContentAdStats(backtosql.Model, models_helpers.RSModelMixin):
     # this model defines the basic materialized view that has

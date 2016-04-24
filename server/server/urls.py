@@ -20,6 +20,7 @@ import stats.views
 
 import dash.views.daily_stats
 import dash.views.bcm
+import dash.views.breakdowns
 import dash.views.export
 import dash.views.sync
 import dash.views.table

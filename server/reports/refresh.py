@@ -17,7 +17,7 @@ import reports.models
 from reports import exc
 from reports import redshift
 from reports import daily_statements
-from redshift.db import dictfetchall
+from redshiftapi.db import dictfetchall
 from utils import json_helper
 from utils import s3helpers
 from utils import statsd_helper

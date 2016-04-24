@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from redshift import models
-from redshift import constants
+from redshiftapi import models
+from redshiftapi import constants
 
 class RSContentAdStats(TestCase):
     def test_columns(self):

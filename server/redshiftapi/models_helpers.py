@@ -1,7 +1,7 @@
 import backtosql
 from functools import partial
 
-from redshift.constants import ColumnGroup
+from redshiftapi.constants import ColumnGroup
 
 class RSModelMixin(object):
 

@@ -10,7 +10,7 @@ from utils.statsd_helper import statsd_timer
 from reports import exc
 from reports.db_raw_helpers import is_collection
 
-from redshift.db import get_cursor
+from redshiftapi.db import get_cursor
 
 
 JSON_KEY_DELIMITER = '--'

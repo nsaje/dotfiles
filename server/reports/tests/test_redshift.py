@@ -4,7 +4,7 @@ from mock import patch, Mock, call
 from django.test import TestCase, override_settings
 
 from reports import redshift
-from redshift.db import RSCursor
+from redshiftapi.db import RSCursor
 
 
 @patch('reports.redshift.get_cursor')

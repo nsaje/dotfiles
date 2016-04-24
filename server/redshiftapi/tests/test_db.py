@@ -2,7 +2,7 @@ from mock import Mock
 
 from django.test import TestCase
 
-from redshift import db
+from redshiftapi import db
 
 
 class DBTest(TestCase):
