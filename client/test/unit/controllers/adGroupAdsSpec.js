@@ -1,7 +1,9 @@
+/* global constants, describe, spyOn, expect, inject, beforeEach, module, it */
+/* eslint-disable camelcase */
 'use strict';
 
-describe('AdGroupAdsPlusCtrl', function () {
-    var $scope, api, $q, $state, $window, $httpBackend;
+describe('AdGroupAdsCtrl', function () {
+    var $scope, api, $q, $state, $window;
     var zemFilterServiceMock;
 
     beforeEach(module('one'));
@@ -9,15 +11,21 @@ describe('AdGroupAdsPlusCtrl', function () {
 
     beforeEach(module(function ($provide) {
         zemFilterServiceMock = {
-            getShowArchived: function () { return true; },
-            getFilteredSources: function () {}
+            getShowArchived: function () {
+                return true;
+            },
+            getFilteredSources: function () {},
         };
 
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', zemFilterServiceMock);
         $provide.value('zemCustomTableColsService', {
-            load: function () { return []; },
-            save: function () { return []; }
+            load: function () {
+                return [];
+            },
+            save: function () {
+                return [];
+            },
         });
     }));
 
@@ -25,59 +33,62 @@ describe('AdGroupAdsPlusCtrl', function () {
         $q = _$q_;
         $scope = $rootScope.$new();
 
-        $scope.isPermissionInternal = function () { return true; };
-        $scope.hasPermission = function () { return true; };
-        $scope.hasInfoboxPermission = function () { return true; };
+        $scope.isPermissionInternal = function () {
+            return true;
+        };
+        $scope.hasPermission = function () {
+            return true;
+        };
         $scope.dateRange = {
             startDate: {
-                isSame: function () {}
+                isSame: function () {},
             },
             endDate: {
-                isSame: function () {}
-            }
+                isSame: function () {},
+            },
         };
 
-        $scope.adGroup = {contentAdsTabWithCMS: false};
+        $scope.adGroup = {};
 
         var mockApiFunc = function () {
             return {
                 then: function () {
                     return {
-                        finally: function () {}
+                        finally: function () {},
                     };
-                }
+                },
             };
         };
         api = {
             adGroupContentAdArchive: {
                 archive: mockApiFunc,
-                restore: mockApiFunc
+                restore: mockApiFunc,
             },
-            adGroupAdsPlusTable: {
+            adGroupAdsTable: {
                 get: mockApiFunc,
-                getUpdates: mockApiFunc
+                getUpdates: mockApiFunc,
             },
             dailyStats: {
-                listContentAdStats: mockApiFunc
+                listContentAdStats: mockApiFunc,
             },
-            adGroupAdsPlusUploadBatches: {
-                list: mockApiFunc
+            adGroupAdsUploadBatches: {
+                list: mockApiFunc,
             },
-            adGroupAdsPlusExportAllowed: {
-                get: mockApiFunc
+            adGroupAdsExportAllowed: {
+                get: mockApiFunc,
             },
             adGroupContentAdState: {
-                save: mockApiFunc
+                save: mockApiFunc,
             },
-            exportPlusAllowed: {
-                get: mockApiFunc
+            exportAllowed: {
+                get: mockApiFunc,
             },
             adGroupOverview: {
-                get: mockApiFunc
+                get: mockApiFunc,
             },
             campaignOverview: {
-                get: mockApiFunc
-            }
+                get: mockApiFunc,
+            },
         };
 
         $state = _$state_;
@@ -85,7 +96,7 @@ describe('AdGroupAdsPlusCtrl', function () {
 
         $window = _$window_;
 
-        $controller('AdGroupAdsPlusCtrl', {$scope: $scope, api: api});
+        $controller('AdGroupAdsCtrl', {$scope: $scope, api: api});
     }));
 
     describe('addContentAds', function (done) {
@@ -98,7 +109,7 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('archiveContentAds', function (done) {
+    describe('archiveContentAds', function () {
         beforeEach(function () {
             $scope.selectedAll = true;
         });
@@ -138,7 +149,7 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('restoreContentAds', function (done) {
+    describe('restoreContentAds', function () {
         beforeEach(function () {
             $scope.selectedAll = true;
         });
@@ -269,7 +280,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true},
                 {id: 2, ad_selected: true},
-                {id: 3, ad_selected: false}
+                {id: 3, ad_selected: false},
             ];
 
             $scope.clearContentAdSelection();
@@ -285,7 +296,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: false, batch_id: 1},
                 {id: 2, ad_selected: false, batch_id: 1},
-                {id: 3, ad_selected: false, batch_id: 2}
+                {id: 3, ad_selected: false, batch_id: 2},
             ];
         });
 
@@ -370,7 +381,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
                 {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
-                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.contentAdSourceState.ACTIVE}
+                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.contentAdSourceState.ACTIVE},
             ];
 
             $state.params.id = 1;
@@ -400,7 +411,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.INACTIVE},
                 {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.INACTIVE},
-                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.contentAdSourceState.INACTIVE}
+                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.contentAdSourceState.INACTIVE},
             ];
 
             $state.params.id = 1;
@@ -430,7 +441,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1},
                 {id: 2, ad_selected: true, batch_id: 1},
-                {id: 3, ad_selected: false, batch_id: 2}
+                {id: 3, ad_selected: false, batch_id: 2},
             ];
 
             $state.params.id = 1;
@@ -444,7 +455,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.executeBulkAction('download');
 
             expect($window.open).toHaveBeenCalledWith(
-                '/api/ad_groups/1/contentads/csv/?content_ad_ids_selected=1,2&content_ad_ids_not_selected=3&archived=true',
+                '/api/ad_groups/1/contentads/csv/?content_ad_ids_selected=1,2&content_ad_ids_not_selected=3&archived=true', // eslint-disable-line max-len
                 '_blank'
             );
         });
@@ -453,7 +464,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, archived: false},
                 {id: 2, ad_selected: true, batch_id: 1, archived: false},
-                {id: 3, ad_selected: false, batch_id: 2, archived: false}
+                {id: 3, ad_selected: false, batch_id: 2, archived: false},
             ];
 
             $scope.selectedContentAdsStatus[1] = true;
@@ -477,7 +488,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, archived: false},
                 {id: 2, ad_selected: true, batch_id: 1, archived: false},
-                {id: 3, ad_selected: false, batch_id: 2, archived: false}
+                {id: 3, ad_selected: false, batch_id: 2, archived: false},
             ];
 
             $scope.selectedContentAdsStatus[1] = true;
@@ -501,7 +512,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.rows = [
                 {id: 1, ad_selected: false, batch_id: 1, archived: false},
                 {id: 2, ad_selected: false, batch_id: 1, archived: false},
-                {id: 3, ad_selected: false, batch_id: 2, archived: false}
+                {id: 3, ad_selected: false, batch_id: 2, archived: false},
             ];
 
             $scope.selectedContentAdsStatus[1] = false;

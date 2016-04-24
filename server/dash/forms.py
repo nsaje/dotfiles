@@ -194,11 +194,6 @@ class AdGroupSettingsForm(forms.Form):
 
     def clean_autopilot_state(self):
         autopilot_state = self.cleaned_data.get('autopilot_state')
-        from dash import campaign_goals
-        campaign_goal = campaign_goals.get_primary_campaign_goal(self.ad_group.campaign)
-        if autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-                campaign_goal and campaign_goal.type == constants.CampaignGoalKPI.CPA:
-            raise forms.ValidationError('Automatic budget allocation for CPA campaign goal is not supported.')
         return autopilot_state
 
     def clean_autopilot_daily_budget(self):
@@ -256,14 +251,6 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AdGroupSourceSettingsAutopilotStateForm(forms.Form):
-    autopilot_state = forms.TypedChoiceField(
-        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices(),
-        coerce=int,
-        empty_value=None
-    )
-
-
 class AccountAgencySettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
@@ -274,13 +261,18 @@ class AccountAgencySettingsForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
-    service_fee = forms.DecimalField(
-        min_value=0,
-        max_value=100,
-        decimal_places=2,
-    )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+
+        account_id = self.cleaned_data.get('id')
+
+        if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
+            raise forms.ValidationError("Invalid account name.")
+
+        return name
 
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
@@ -288,9 +280,7 @@ class AccountAgencySettingsForm(forms.Form):
         err_msg = 'Invalid account manager.'
 
         try:
-            account_manager = ZemUser.objects.\
-                get_users_with_perm('campaign_settings_account_manager', True).\
-                get(pk=account_manager_id)
+            account_manager = ZemUser.objects.get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)
 
@@ -456,6 +446,26 @@ class CampaignGoalForm(forms.Form):
         return goal_type
 
 
+class CampaignAdminForm(forms.ModelForm):
+    automatic_campaign_stop = forms.BooleanField(required=False,
+                                                 label='Automatic campaign stop on low budget')
+
+    def __init__(self, *args, **kwargs):
+        initial = {
+            'automatic_campaign_stop': True,
+        }
+        if 'instance' in kwargs:
+            settings = kwargs['instance'].get_current_settings()
+            initial['automatic_campaign_stop'] = settings.automatic_campaign_stop
+        super(CampaignAdminForm, self).__init__(initial=initial, *args, **kwargs)
+
+    class Meta:
+        model = models.Campaign
+        exclude = (
+            'users', 'groups', 'created_dt', 'modified_dt', 'modified_by',
+        )
+
+
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
     campaign_manager = forms.IntegerField()
@@ -469,9 +479,7 @@ class CampaignAgencyForm(forms.Form):
         err_msg = 'Invalid campaign manager.'
 
         try:
-            campaign_manager = ZemUser.objects.\
-                get_users_with_perm('campaign_settings_account_manager', True).\
-                get(pk=campaign_manager_id)
+            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)
 
@@ -500,31 +508,6 @@ class CampaignSettingsForm(forms.Form):
         required=False,
         choices=constants.AdTargetLocation.get_choices()
     )
-
-
-class CampaignBudgetForm(forms.Form):
-    amount = forms.DecimalField(decimal_places=4)
-    action = forms.CharField(max_length=8)
-
-    def clean_amount(self):
-        x = self.cleaned_data.get('amount')
-        return float(x)
-
-    def get_allocate_amount(self):
-        x = self.cleaned_data['amount']
-        a = self.cleaned_data.get('action')
-        if a == 'allocate':
-            return float(x)
-        else:
-            return 0
-
-    def get_revoke_amount(self):
-        x = self.cleaned_data['amount']
-        a = self.cleaned_data.get('action')
-        if a == 'revoke':
-            return float(x)
-        else:
-            return 0
 
 
 class UserForm(forms.Form):
@@ -571,7 +554,7 @@ class DisplayURLField(forms.URLField):
         return display_url
 
 
-class AdGroupAdsPlusUploadForm(forms.Form):
+class AdGroupAdsUploadForm(forms.Form):
     content_ads = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
@@ -741,7 +724,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
-        super(AdGroupAdsPlusUploadForm, self).clean()
+        super(AdGroupAdsUploadForm, self).clean()
 
         if self.errors:
             return

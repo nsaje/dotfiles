@@ -145,7 +145,6 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
-                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()
@@ -251,16 +250,12 @@ class AdGroupOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_ad_group_infobox'):
-            raise exc.AuthorizationError()
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
         async_perf_query.start()
 
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         ad_group_settings = ad_group.get_current_settings()
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -268,7 +263,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
+            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, filtered_sources),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
@@ -471,9 +466,6 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
-            raise exc.MissingDataError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
         ad_group_settings.save(request)
@@ -487,7 +479,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         response = {
             'name': ad_group.name,
             'id': ad_group.id,
-            'content_ads_tab_with_cms': ad_group.content_ads_tab_with_cms
         }
 
         return self.create_api_response(response)
@@ -541,15 +532,12 @@ class CampaignAdGroups(api_common.BaseApiView):
         return actions
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
-        source = source_settings.source
         ad_group = ad_group_settings.ad_group
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
-            retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
-        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only(),
-                                             active=active_source_state)
+        helpers.set_ad_group_source_settings(request, ad_group_source, mobile_only=ad_group_settings.is_mobile_only())
+
         return ad_group_source
 
 
@@ -558,11 +546,6 @@ class CampaignOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_campaign_infobox'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
@@ -727,11 +710,6 @@ class AccountOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_overview')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_account_infobox'):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)
 
         header = {
@@ -862,8 +840,7 @@ class AvailableSources(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
     def get(self, request):
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
+        show_archived = request.GET.get('show_archived') == 'true'
         user_ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
         if not show_archived:
             user_ad_groups = user_ad_groups.exclude_archived()
@@ -1069,10 +1046,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
-        autopilot_form = forms.AdGroupSourceSettingsAutopilotStateForm(resource)
-        if 'autopilot_state' in resource and not autopilot_form.is_valid():
-            errors.update(autopilot_form.errors)
-
         if ad_group.campaign.is_in_landing():
             for key in resource.keys():
                 errors.update({key: 'Not allowed'})
@@ -1087,11 +1060,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     'retargeting on adgroup with retargeting enabled.'
                 }
             )
-
-        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
-                'autopilot_state' in resource and\
-                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
-            errors.update(exc.ForbiddenError(message='Not allowed'))
 
         campaign_settings = ad_group.campaign.get_current_settings()
         if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:
@@ -1146,7 +1114,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsPlusUpload(api_common.BaseApiView):
+class AdGroupAdsUpload(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
@@ -1175,7 +1143,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsPlusUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -1225,7 +1193,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         return self.create_api_response({'batch_id': batch.pk})
 
 
-class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+class AdGroupAdsUploadReport(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
@@ -1249,7 +1217,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
-class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+class AdGroupAdsUploadCancel(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
@@ -1276,7 +1244,7 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+class AdGroupAdsUploadStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
@@ -1324,7 +1292,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         errors = {}
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
-                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                errors['report_url'] = reverse('ad_group_ads_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(
                     batch.num_errors, 's' if batch.num_errors > 1 else '')
@@ -1494,8 +1462,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')
-        include_archived = request.GET.get('archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
+        include_archived = request.GET.get('archived') == 'true'
 
         content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
         content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(
@@ -2007,8 +1974,6 @@ class AllAccountsOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
     def get(self, request):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
 

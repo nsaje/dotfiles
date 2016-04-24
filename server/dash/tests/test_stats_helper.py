@@ -74,13 +74,14 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         defaults = {
             'slug': [cg.pixel.slug for cg in conversion_goals],
             'account': [cg.pixel.account_id for cg in conversion_goals],
-            'conversion_window': [cg.conversion_window for cg in conversion_goals]
+            'conversion_window': [cg.conversion_window for cg in conversion_goals],
+            'campaign': [cg.campaign.id for cg in conversion_goals],
         }
         if self.use_separate_rows_for_tp_conversions:
-            for b in set(breakdown) - set(['slug']):
+            for b in set(breakdown) - set(['slug', 'campaign']):
                 defaults[b] = [9999 for cg in conversion_goals]
-
-        _update_with_defaults(touchpoint_conversion_stats, breakdown + ['slug', 'account', 'conversion_window'],
+        bd = breakdown + ['slug', 'account', 'conversion_window']
+        _update_with_defaults(touchpoint_conversion_stats, bd + ['campaign'] if 'campaign' not in bd else bd,
                               defaults=defaults)
         return touchpoint_conversion_stats
 
@@ -406,6 +407,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'touchpoint_count': 10,
             'conversion_count': 5,
             'account': conversion_goals[0].pixel.account_id,
+            'campaign': conversion_goals[0].campaign.id,
             'slug': conversion_goals[0].pixel.slug,
             'conversion_window': conversion_goals[0].conversion_window
         }]
@@ -511,6 +513,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         mock_tp_query.side_effect = [
             [{
                 "account": 1,
+                "campaign": 1,
                 "ad_group": 9999,
                 "conversion_count": 5,
                 "slug": "test",
@@ -518,6 +521,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
                 "conversion_window": 168,
             }, {
                 "account": 1,
+                "campaign": 1,
                 "ad_group": 9999,
                 "conversion_count": 4,
                 "slug": "test",
@@ -525,6 +529,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
                 "conversion_window": 1,
             }, {
                 "account": 1,
+                "campaign": 1,
                 "ad_group": 9999,
                 "conversion_count": 11,
                 "slug": "test",
@@ -597,7 +602,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
@@ -638,7 +642,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
@@ -668,37 +671,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
     def setUp(self):
         self.superuser = User.objects.get(id=1)
         self.user = User.objects.get(id=2)
-
-        self.assertTrue(self.superuser.has_perm('zemauth.view_pubs_conversion_goals'))
-        self.assertFalse(self.user.has_perm('zemauth.view_pubs_conversion_goals'))
-
-    def test_no_permissions(self, mock_query, mock_touchpointconversins_query):
-        ad_group = AdGroup.objects.get(pk=1)
-        constraints = {'ad_group': ad_group.id}
-        conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        date = datetime.date(2016, 3, 14)
-
-        publisher_data_mock = self._mock_publisher_data(date)
-        mock_query.side_effect = [publisher_data_mock]
-
-        publishers_breakdown_fields = ['domain', 'exchange']
-        publisher_data = stats_helper.get_publishers_data_and_conversion_goals(self.user, reports.api_publishers.query,
-                                                                               date, date, constraints,
-                                                                               conversion_goals,
-                                                                               publishers_breakdown_fields)
-
-        mock_query.assert_any_call(
-            date,
-            date,
-            breakdown_fields=publishers_breakdown_fields,
-            order_fields=[],
-            constraints=constraints,
-            conversion_goals=[],
-            constraints_list=[],
-        )
-
-        self.assertFalse(mock_touchpointconversins_query.called)
-        self.assertEqual(publisher_data_mock, publisher_data)
 
     def test_with_conversion_goals_permissions(self, mock_query, mock_touchpointconversions_query):
         ad_group = AdGroup.objects.get(pk=1)
@@ -745,43 +717,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
 
         result_mock = self._mock_publishers_and_touchpoint_data(date)
         self.assertEqual(result_mock, publisher_data)
-
-    @patch('dash.table.reports.api_publishers.query_active_publishers')
-    def test_active_publishers_no_permissions(self, mock_active, mock_query, mock_touchpointconversions_query):
-        ad_group = AdGroup.objects.get(pk=1)
-        constraints = {'ad_group': ad_group.id}
-        conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        date = datetime.date(2016, 3, 14)
-
-        publisher_data_mock = self._mock_publisher_data(date)
-        mock_active.side_effect = [publisher_data_mock]
-
-        publishers_breakdown_fields = ['domain', 'exchange']
-        touchpoint_breakdown_fields = ['publisher', 'source']
-        publisher_data = stats_helper.get_publishers_data_and_conversion_goals(
-            self.user,
-            reports.api_publishers.query_active_publishers,
-            date,
-            date,
-            constraints,
-            conversion_goals,
-            publishers_breakdown_fields,
-            touchpoint_breakdown_fields,
-            show_blacklisted_publishers=constants.PublisherBlacklistFilter.SHOW_ACTIVE)
-
-        mock_active.assert_any_call(
-            date,
-            date,
-            breakdown_fields=publishers_breakdown_fields,
-            order_fields=[],
-            constraints=constraints,
-            conversion_goals=[],
-            constraints_list=[],
-        )
-
-        self.assertFalse(mock_query.called)
-        self.assertFalse(mock_touchpointconversions_query.called)
-        self.assertEqual(publisher_data_mock, publisher_data)
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
     def test_active_publishers_with_conversion_goals_permissions(self, mock_active, mock_query, mock_touchpointconversions_query):
@@ -833,43 +768,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
 
         result_mock = self._mock_publishers_and_touchpoint_data(date)
         self.assertEqual(result_mock, publisher_data)
-
-    @patch('dash.table.reports.api_publishers.query_blacklisted_publishers')
-    def test_blacklisted_publishers_no_permissions(self, mock_blacklisted, mock_query, mock_touchpointconversions_query):
-        ad_group = AdGroup.objects.get(pk=1)
-        constraints = {'ad_group': ad_group.id}
-        conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        date = datetime.date(2016, 3, 14)
-
-        publisher_data_mock = self._mock_publisher_data(date)
-        mock_blacklisted.side_effect = [publisher_data_mock]
-
-        publishers_breakdown_fields = ['domain', 'exchange']
-        touchpoint_breakdown_fields = ['publisher', 'source']
-        publisher_data = stats_helper.get_publishers_data_and_conversion_goals(
-            self.user,
-            reports.api_publishers.query_blacklisted_publishers,
-            date,
-            date,
-            constraints,
-            conversion_goals,
-            publishers_breakdown_fields,
-            touchpoint_breakdown_fields,
-            show_blacklisted_publishers=constants.PublisherBlacklistFilter.SHOW_BLACKLISTED)
-
-        mock_blacklisted.assert_any_call(
-            date,
-            date,
-            breakdown_fields=publishers_breakdown_fields,
-            order_fields=[],
-            constraints=constraints,
-            conversion_goals=[],
-            constraints_list=[],
-        )
-
-        self.assertFalse(mock_query.called)
-        self.assertFalse(mock_touchpointconversions_query.called)
-        self.assertEqual(publisher_data_mock, publisher_data)
 
     @patch('dash.table.reports.api_publishers.query_blacklisted_publishers')
     def test_blacklisted_publishers_with_conversion_goals_permissions(self, mock_blacklisted, mock_query, mock_touchpointconversions_query):
@@ -1017,7 +915,6 @@ class GetPublishersDataAndConversionGoalsTestCase(test.TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,

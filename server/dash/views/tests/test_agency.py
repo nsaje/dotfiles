@@ -164,9 +164,6 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'retargeting': {
-                    'text': "You have some active media sources that"
-                            " don't support retargeting. To start using it please disable/pause"
-                            " these media sources:",
                     'sources': [
                         'AdsNative',
                         'Gravity',
@@ -195,9 +192,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         self.assertDictEqual(
             json.loads(response.content)['data']['warnings'], {
                 'end_date': {
-                    'text': 'Your campaign has been switched to landing mode. '
-                    'Please add the budget and continue to adjust settings by your needs. '
-                    '<a href="http://testserver/campaigns/1/budget-plus/">Add budget</a>'
+                    'campaign_id': 1,
                 }
             }
         )
@@ -864,7 +859,6 @@ class AdGroupAgencyTest(AgencyViewTestCase):
 
         self.add_permissions([
             'ad_group_agency_tab_view',
-            'new_content_ads_tab',
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
@@ -1868,7 +1862,6 @@ class CampaignAgencyTest(AgencyViewTestCase):
                 {'name': 'IAB Category', 'value': 'Uncategorized'},
                 {'name': 'Campaign Goal', 'value': 'new unique visitors'},
                 {'name': 'Goal Quantity', 'value': '0.00'},
-                {'name': 'Service Fee', 'value': '20%'},
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
@@ -1884,7 +1877,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
-        self.add_permissions(['campaign_agency_view', 'campaign_settings_account_manager'])
+        self.add_permissions(['campaign_agency_view'])
+
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1929,17 +1923,8 @@ class CampaignSettingsTest(AgencyViewTestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-    def test_permissions(self):
-        url = '/api/campaigns/1/settings/'
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1953,7 +1938,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
 
     def test_get_no_ad_group_default_settings_permission(self):
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1976,7 +1960,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
 
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2015,7 +1999,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_added(self, p1, p2, p3):
         self.add_permissions([
-            'campaign_settings_view',
             'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
@@ -2098,7 +2081,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'campaign_settings_view',
             'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
@@ -2144,7 +2126,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'campaign_settings_view',
             'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
@@ -2184,7 +2165,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(settings.target_devices, ['mobile'])
         self.assertEqual(settings.target_regions, ['NC', '501'])
 
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2213,7 +2193,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(settings.target_regions, ['NC', '501'])
 
     def test_validation(self):
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2250,7 +2230,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertTrue('target_devices' in content['data']['errors'])
 
     def test_validation_no_settings_defaults_permission(self):
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2274,9 +2253,10 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotIn('target_devices', content['data']['errors'])
 
     def test_get_with_conversion_goals(self):
-        self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
 
         ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.add_permissions(['can_see_campaign_goals'])
 
         convpix = models.ConversionPixel.objects.create(
             account=ad_group.campaign.account,
@@ -2318,11 +2298,6 @@ class AccountAgencyTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super(AccountAgencyTest, cls).setUpClass()
-
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
 
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=1)
@@ -2377,7 +2352,6 @@ class AccountAgencyTest(TestCase):
         self.assertTrue(content['success'])
         self.assertDictEqual(content['data']['settings'], {
             'name': 'test account 1',
-            'service_fee': '13',
             'default_sales_representative': '3',
             'default_account_manager': '2',
             'id': '1',
@@ -2396,7 +2370,6 @@ class AccountAgencyTest(TestCase):
             json.dumps({
                 'settings': {
                     'name': 'changed name',
-                    'service_fee': '15',
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
@@ -2423,7 +2396,6 @@ class AccountAgencyTest(TestCase):
             'default_sales_representative': User.objects.get(pk=1),
             'default_account_manager': User.objects.get(pk=3),
             'name': 'changed name',
-            'service_fee': Decimal('0.1500')
         })
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
@@ -2441,7 +2413,6 @@ class AccountAgencyTest(TestCase):
             json.dumps({
                 'settings': {
                     'name': 'changed name',
-                    'service_fee': '15',
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
@@ -2459,7 +2430,7 @@ class AccountAgencyTest(TestCase):
         view = agency.AccountAgency()
         history = view.get_history(account)
 
-        self.assertEqual(len(history), 5)
+        self.assertTrue(len(history) >= 5)
         self.assertFalse(history[0]['show_old_settings'])
         self.assertTrue(history[1]['show_old_settings'])
         self.assertTrue(history[-1]['show_old_settings'])
@@ -2487,7 +2458,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 5)
+        self.assertEqual(len(settings_dict), 4)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertIn('old_value', settings_dict['name'])
@@ -2500,7 +2471,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 5)
+        self.assertEqual(len(settings_dict), 4)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertNotIn('old_value', settings_dict['name'])
@@ -2508,11 +2479,11 @@ class AccountAgencyTest(TestCase):
     def test_get_changes_text(self):
         expected_changes_strings = [
             'Created settings',
-            'Service Fee set to "10%"',
-            'Sales Representative set to "superuser@test.com", Service Fee set to "20%"',
+            'Sales Representative set to "superuser@test.com"',
+            'Sales Representative set to "user@test.com", Account Manager set to "user@test.com"',
             '',
             'some text',
-            'Service Fee set to "10%", some text'
+            'Sales Representative set to "superuser@test.com", some text'
         ]
 
         view = agency.AccountAgency()

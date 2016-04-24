@@ -3,7 +3,7 @@ TRAFFIC_FIELDS = [
     'clicks', 'impressions', 'cost', 'data_cost',
     'cpc', 'ctr', 'title', 'url',
     'media_cost', 'e_media_cost', 'e_data_cost',
-    'license_fee', 'billing_cost', 'total_cost',
+    'license_fee', 'billing_cost',
 ]
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
@@ -37,10 +37,10 @@ FIELD_PERMISSION_MAPPING = {
     'e_data_cost':    'zemauth.can_view_effective_costs',
     'license_fee':    'zemauth.can_view_effective_costs',
     'billing_cost':   'zemauth.can_view_effective_costs',
-    'total_cost':     'zemauth.can_view_actual_costs',
     'media_cost':     'zemauth.can_view_actual_costs',
     'data_cost':      'zemauth.can_view_actual_costs',
 }
+
 
 def filter_by_permissions(result, user):
     '''

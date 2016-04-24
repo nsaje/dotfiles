@@ -1205,7 +1205,7 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
 
 
-class PublisherCallbackTest(TransactionTestCase):
+class PublisherCallbackTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def test_update_publisher_blacklist(self):
@@ -1482,6 +1482,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
                                   .filter(ad_group=self.ad_group_source.ad_group) \
                                   .latest('created_dt')
         assert self.ad_group_settings.state == 2
+
+        patcher = mock.patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_can_not_trigger_action_if_ad_group_disabled(self):
         self.assertFalse(self.writer.can_trigger_action())

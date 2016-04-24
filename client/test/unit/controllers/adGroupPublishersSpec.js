@@ -21,14 +21,14 @@ describe('AdGroupPublishersCtrl', function () {
             $scope.infoboxBasicSettings = null;
             $scope.infoboxPerformanceSettings = null;
 
+            $scope.setInfoboxHeader = function (data) {
+                $scope.infoboxHeader = data;
+            };
             $scope.isPermissionInternal = function () {
                 return true;
             };
             $scope.hasPermission = function () {
                 return true;
-            };
-            $scope.hasInfoboxPermission = function () {
-                return false;
             };
             $scope.getTableData = function () {
                 return;
@@ -85,16 +85,6 @@ describe('AdGroupPublishersCtrl', function () {
         });
     });
 
-    describe('no permission for infobox data', function () {
-        it('fetch infobox data without permission', function () {
-            $scope.getInfoboxData();
-            $scope.$digest();
-            expect($scope.infoboxHeader).toEqual(
-                null
-            );
-        });
-    });
-
     describe('getInfoboxData', function () {
         it('fetch infobox data with permission', function () {
             spyOn(api.adGroupOverview, 'get').and.callFake(function () {
@@ -111,9 +101,6 @@ describe('AdGroupPublishersCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.hasInfoboxPermission = function () {
-                return true;
-            };
             $scope.getInfoboxData();
             $scope.$digest();
             expect($scope.infoboxHeader).toEqual(

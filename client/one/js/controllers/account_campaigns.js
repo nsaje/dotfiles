@@ -21,19 +21,9 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.accounts.settings';
 
-    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
-        canShowAddCampaignTutorial = $q.defer();
-
-    $scope.showAddCampaignTutorial = function () {
-        return canShowAddCampaignTutorial.promise;
-    };
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'}
-    ];
-
-    $scope.exportPlusOptions = [
       {name: 'By Account (totals)', value: constants.exportType.ACCOUNT},
       {name: 'Current View', value: constants.exportType.CAMPAIGN, defaultOption: true},
       {name: 'By Ad Group', value: constants.exportType.AD_GROUP},
@@ -145,42 +135,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             shown: $scope.hasPermission('zemauth.can_see_managers_in_campaigns_table'),
         },
         {
-            name: 'Total Budget',
-            field: 'budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of allocated budget.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
-            name: 'Available Budget',
-            field: 'available_budget',
-            checked: true,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total amount of budget still available.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.all_accounts_budget_view'),
-            shown: $scope.hasPermission('zemauth.all_accounts_budget_view')
-        },
-        {
-            name: 'Unspent Budget',
-            field: 'unspent_budget',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Total budget minus the spend within the date range.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
-            shown: $scope.hasPermission('zemauth.unspent_budget_view')
-        },
-        {
             name: 'Spend',
             field: 'cost',
             checked: true,
@@ -241,16 +195,16 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
+            name: 'License Fee',
+            field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
+            help: 'Zemanta One platform usage cost.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Total Spend',
@@ -259,18 +213,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             type: 'currency',
             totalRow: true,
             help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'License Fee',
-            field: 'license_fee',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Zemanta One platform usage cost.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -348,12 +290,17 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
+                'license_fee',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
-                'budget', 'available_budget', 'unspent_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
-                'license_fee'
+                'cpc', 'clicks', 'impressions', 'ctr',
             ]
         },
         {
@@ -505,10 +452,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.accountOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
@@ -568,12 +511,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
                 $scope.dataStatus = data.dataStatus;
                 $scope.selectRows();
-
-                canShowAddCampaignTutorial.resolve($scope.rows.length == 0);
-                if ($scope.user.showOnboardingGuidance) {
-                    $scope.user.automaticallyCreateAdGroup = $scope.rows.length == 0;
-                }
-
             },
             function (data) {
                 // error

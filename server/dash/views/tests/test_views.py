@@ -60,7 +60,6 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
-                    'show_onboarding_guidance': False,
                     'timezone_offset': -18000.0
                 }
             },
@@ -81,7 +80,6 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
-                    'show_onboarding_guidance': False,
                     'timezone_offset': -14400.0
                 }
             },
@@ -103,7 +101,6 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
-                    'show_onboarding_guidance': False,
                     'timezone_offset': -14400.0
                 }
             },
@@ -175,6 +172,10 @@ class AdGroupSourceSettingsTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
         self.ad_group = models.AdGroup.objects.get(pk=1)
+
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def _set_ad_group_end_date(self, days_delta=0):
         current_settings = self.ad_group.get_current_settings()
@@ -430,7 +431,7 @@ class CampaignAdGroups(TestCase):
             ad_group_source__ad_group=ad_group
         ).group_current_settings()
         self.assertTrue(all(
-            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
         ))
 
     @patch('actionlog.api.create_campaign')
@@ -475,7 +476,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_source)
         self.assertTrue(mock_set_ad_group_source_settings.called)
         named_call_args = mock_set_ad_group_source_settings.call_args[1]
-        self.assertEqual(named_call_args['active'], True)
         self.assertEqual(named_call_args['mobile_only'], True)
 
     def test_create_new_settings(self):
@@ -1264,7 +1264,7 @@ class AdGroupContentAdRestore(TestCase):
         )
 
 
-class AdGroupAdsPlusUploadTest(TestCase):
+class AdGroupAdsUploadTest(TestCase):
     fixtures = ['test_views.yaml']
 
     def _get_client(self, superuser=True):
@@ -1294,7 +1294,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
             'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'testname',
@@ -1327,7 +1327,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
             'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'testname',
@@ -1359,13 +1359,13 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
     def test_validation_error(self):
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 400)
 
     def test_permission(self):
         response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
@@ -1373,7 +1373,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         non_existent_ad_group_id = 0
 
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': non_existent_ad_group_id}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': non_existent_ad_group_id}),
             follow=True
         )
 
@@ -1381,7 +1381,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
     def test_description_too_long(self):
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'description': 'a' * 141
             },
@@ -1393,7 +1393,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
     def test_description_right_length(self):
         response = self._get_client().post(
-            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
             {
                 'description': 'a' * 140
             },
@@ -1403,7 +1403,7 @@ class AdGroupAdsPlusUploadTest(TestCase):
         self.assertNotIn('Description is too long', response.content)
 
 
-class AdGroupAdsPlusUploadStatusTest(TestCase):
+class AdGroupAdsUploadStatusTest(TestCase):
 
     fixtures = ['test_views.yaml']
 
@@ -1420,7 +1420,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
 
     def _get_status(self):
         response = self._get_client().get(
-            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         return json.loads(response.content)['data']
 
@@ -1526,7 +1526,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'batch_size': 100,
             'errors': {
                 'details': {
-                    'report_url': '/api/ad_groups/1/contentads_plus/upload/2/report/',
+                    'report_url': '/api/ad_groups/1/contentads/upload/2/report/',
                     'description': 'Found 12 errors.'
                 }
             }
@@ -1534,12 +1534,12 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
 
-class AdGroupAdsPlusUploadCancelTest(TestCase):
+class AdGroupAdsUploadCancelTest(TestCase):
 
     fixtures = ['test_views.yaml']
 
@@ -1556,7 +1556,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
 
     def _get_status(self):
         response = self._get_client().get(
-            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         return json.loads(response.content)['data']
 
@@ -1564,7 +1564,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         batch = models.UploadBatch.objects.get(pk=2)
         self.assertFalse(batch.cancelled)
         response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         response_dict = json.loads(response.content)
         self.assertDictEqual(response_dict, {'success': True})
@@ -1574,7 +1574,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
@@ -1584,7 +1584,7 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         batch.save()
 
         response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 400)
 
@@ -1865,7 +1865,7 @@ class SharethroughApprovalTest(TestCase):
         mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
 
 
-class PublishersBlacklistStatusTest(TransactionTestCase):
+class PublishersBlacklistStatusTest(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
@@ -2636,13 +2636,6 @@ class AdGroupOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = [
-            'can_see_infobox',
-            'can_access_ad_group_infobox'
-        ]
-        for p in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=p))
-        self.user.save()
         campaign = models.Campaign.objects.get(pk=1)
         campaign.users.add(self.user)
 
@@ -2664,32 +2657,6 @@ class AdGroupOverviewTest(TestCase):
             return ret[0]
         else:
             return None
-
-    def test_user_access_1(self):
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission = Permission.objects.get(codename='can_see_infobox')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_user_access_2(self):
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission_2 = Permission.objects.get(codename='can_access_ad_group_infobox')
-        self.user.user_permissions.add(permission_2)
-        self.user.save()
-
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
@@ -2727,7 +2694,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2837,7 +2804,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2866,13 +2833,6 @@ class CampaignOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = [
-            'can_see_infobox',
-            'can_access_campaign_infobox'
-        ]
-        for p in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=p))
-        self.user.save()
         campaign = models.Campaign.objects.get(pk=1)
         campaign.users.add(self.user)
 
@@ -2889,32 +2849,6 @@ class CampaignOverviewTest(TestCase):
 
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
-
-    def test_user_access_1(self):
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission = Permission.objects.get(codename='can_see_infobox')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_user_access_2(self):
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission_2 = Permission.objects.get(codename='can_access_campaign_infobox')
-        self.user.user_permissions.add(permission_2)
-        self.user.save()
-
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
@@ -3018,15 +2952,7 @@ class AccountOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
-        permission_2 = Permission.objects.get(codename='can_access_account_infobox')
-        permission_3 = Permission.objects.get(codename='view_archived_entities')
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
-        user.user_permissions.add(permission_2)
-        user.user_permissions.add(permission_3)
-        user.save()
-        self.user = user
+        self.user = zemauth.models.User.objects.get(pk=2)
 
     def _get_account_overview(self, account_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
@@ -3142,10 +3068,8 @@ class AllAccountsOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
         permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
         user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
         user.user_permissions.add(permission_2)
         user.save()
 

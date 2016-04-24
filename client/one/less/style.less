@@ -462,6 +462,9 @@ a:visited {
 .info-landing-mode {
     .tabset-label;
     color: @default-color;
+    a {
+        text-decoration: underline;
+    }
 }
 
 .tabset-icon {
@@ -758,16 +761,6 @@ div[datepicker] {
     display: none;
 }
 
-.graph-container-short {
-    display: table-cell;
-    width: 100%;
-}
-
-.graph-container-long {
-    display: table-cell;
-    width: 100%;
-}
-
 .infobox-container {
     display: table-cell;
     width: 350px;
@@ -969,6 +962,15 @@ img.zem-icon {
     color: @infobox-dark-gray;
 }
 
+.infobox-reloading-icon {
+    color: #00cc18;
+    text-align: center;
+    background-image: url('img/loader.gif');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+
 .infobox-active-icon {
     color: #00cc18;
     text-align: center;
@@ -981,7 +983,7 @@ img.zem-icon {
 .infobox-inactive-icon {
     color: @infobox-black;
     text-align: center;
-    background-image: url('img/adgroup_status_paused_gray.svg');
+    background-image: url('img/adgroup_status_enabled_red.svg');
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 15px 15px;
@@ -990,7 +992,7 @@ img.zem-icon {
 .infobox-stopped-icon {
     color: @infobox-black;
     text-align: center;
-    background-image: url('img/adgroup_status_paused_red.svg');
+    background-image: url('img/adgroup_status_paused_gray.svg');
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 15px 15px;
@@ -1763,11 +1765,7 @@ ul.icon-list li {
             z-index: 1;
         }
 
-        &.sidebar-new {
-            padding-left: 0;
-        }
-
-        #nav-new {
+        #nav {
             height: 100%;
             padding: 0;
 
@@ -1829,103 +1827,6 @@ ul.icon-list li {
                     }
                 }
             }
-        }
-
-        #nav {
-            height: 100%;
-            padding: 0;
-            overflow: auto;
-
-            .account-group {
-                padding-bottom: 10px;
-            }
-
-            .list-group {
-                margin-bottom: 0;
-
-                &.list-campaigns {
-                    border-top: 1px solid #f4f4f4;
-                }
-
-                &.ad-groups {
-                    padding-left: 0px;
-                }
-            }
-
-            .list-group-item {
-                border: 0; padding: 0;
-
-                &:last-child,
-                &:first-child {
-                    border: 0;
-                    border-radius: 0;
-                }
-
-                &.active {
-                    .nav-item-active();
-                    .ad-group-name {
-                        color: white;
-                    }
-                }
-            }
-
-            .account-name, .campaign-name, .ad-group-item {
-                padding: 0 0 0 5px;
-                display: block;
-                margin: 0;
-            }
-
-            .account-name {
-                text-transform: uppercase;
-                color: #2ea9c9;
-                font-size: 16px;
-
-                &.archived {
-                    color: #d9d9d9;
-                }
-
-                &:hover,
-                &.active {
-                    text-decoration: none;
-                }
-            }
-
-            .campaign-name {
-                font-size: 14px;
-                font-weight: 600;
-                color: #414141;
-
-                &.archived {
-                    color: #d9d9d9;
-                }
-
-                &.active {
-                    .nav-item-active();
-                    color: white;
-                }
-
-                &:hover,
-                &.active {
-                    text-decoration: none;
-                }
-            }
-
-            .ad-group-name {
-                font-size: 13px;
-                font-weight: 300;
-                color: #414141;
-
-                &.archived {
-                    color: #d9d9d9;
-                }
-            }
-
-            .ad-group-item img {
-                position: relative;
-                bottom: 3px;
-                width: 25px;
-                margin: -7px;
-             }
         }
     }
 
@@ -2143,6 +2044,7 @@ ul.icon-list li {
 
             .button-bar-item {
                 display: inline;
+                float: left;
                 margin-right: 10px;
                 .btn {
                     margin-left: 0;
@@ -2719,6 +2621,11 @@ ul.icon-list li {
     background-image: url('img/adgroup_status_paused_gray.svg');
 }
 
+.adgroup-status-reloading-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/loader.gif');
+}
+
 .adgroup-status-autopilot-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/auto_pilot_icon.svg');
@@ -2737,7 +2644,7 @@ ul.icon-list li {
     background-image: url('img/adgroup_status_landing_mode_white.svg');
 }
 
-#nav-new .nav-name.active, #nav .ad-group-item.active {
+#nav .nav-name.active, #nav .ad-group-item.active {
     .adgroup-status-enabled-running-icon {
         background-image: url('img/adgroup_status_enabled_green_selected.svg');
     }
@@ -2848,6 +2755,17 @@ ul.icon-list li {
 
     thead > tr > th.arrow.ordered-reverse a.order::after {
         .arrow-up();
+    }
+
+    thead > tr > th.arrow.ordered a.performance-icon.order,
+    thead > tr > th.arrow.ordered-reverse a.performance-icon.order {
+        position: relative;
+        margin-right: 15px;
+
+        &:after {
+            position: absolute;
+            margin-left: 17px !important;
+        }
     }
 
     thead > tr > th.trimmed-currency a {

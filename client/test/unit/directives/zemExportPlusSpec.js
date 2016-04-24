@@ -1,10 +1,10 @@
 'use strict';
 
-describe('zemExportPlus', function () {
+describe('zemExport', function () {
     var $scope, isolate, controller;
 
     beforeEach(module('one'));
-    var template = '<zem-export-plus start-date="test" end-date="test" base-url="test" options="options" columns="test" order="test" level="test" export-sources="false" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-export-plus>';
+    var template = '<zem-export start-date="test" end-date="test" base-url="test" options="options" columns="test" order="test" level="test" export-sources="false" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-export>';
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();
         $scope.options = [{value: 1}, {value: 2, defaultOption: true}];
@@ -17,7 +17,7 @@ describe('zemExportPlus', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('zemExportPlus', function () {
+    describe('zemExport', function () {
         it('tests options', function () {
             expect(isolate.defaultOption).not.toBe(undefined);
             expect(isolate.defaultOption.value).toEqual(2);

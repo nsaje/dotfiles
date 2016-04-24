@@ -21,7 +21,6 @@ import stats.views
 import dash.views.daily_stats
 import dash.views.bcm
 import dash.views.export
-import dash.views.export_plus
 import dash.views.sync
 import dash.views.table
 import dash.views.agency
@@ -119,12 +118,9 @@ urlpatterns += [
         login_required(dash.views.sync.AdGroupPublisherBlacklistCheckSyncProgress.as_view()),
         name='ad_group_publishers_blacklist_sync_progress'
     ),
+
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
-        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/allowed/',
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),
     url(
@@ -132,57 +128,33 @@ urlpatterns += [
         login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/',
-        login_required(dash.views.export.CampaignAdGroupsExport.as_view())
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/campaigns/export/',
-        login_required(dash.views.export.AccountCampaignsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
-        login_required(dash.views.export.AdGroupAdsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/',
-        login_required(dash.views.export.AdGroupAdsPlusExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',
-        login_required(dash.views.export.AdGroupSourcesExport.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/updates/',
+        login_required(dash.views.table.AdGroupAdsTableUpdates.as_view()),
+        name='ad_group_ads_table_updates'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
         login_required(dash.views.table.AdGroupAdsTable.as_view()),
+        name='ad_group_ads_table'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/updates/',
-        login_required(dash.views.table.AdGroupAdsPlusTableUpdates.as_view()),
-        name='ad_group_ads_plus_table_updates'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
+        login_required(dash.views.views.AdGroupAdsUploadStatus.as_view()),
+        name='ad_group_ads_upload_status'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/table/',
-        login_required(dash.views.table.AdGroupAdsPlusTable.as_view()),
-        name='ad_group_ads_plus_table'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/cancel/',
+        login_required(dash.views.views.AdGroupAdsUploadCancel.as_view()),
+        name='ad_group_ads_upload_cancel'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/status/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadStatus.as_view()),
-        name='ad_group_ads_plus_upload_status'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/report/',
+        login_required(dash.views.views.AdGroupAdsUploadReport.as_view()),
+        name='ad_group_ads_upload_report'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/cancel/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadCancel.as_view()),
-        name='ad_group_ads_plus_upload_cancel'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/report/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadReport.as_view()),
-        name='ad_group_ads_plus_upload_report'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/',
-        login_required(dash.views.views.AdGroupAdsPlusUpload.as_view()), name='ad_group_ads_plus_upload'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/',
+        login_required(dash.views.views.AdGroupAdsUpload.as_view()), name='ad_group_ads_upload'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
@@ -240,9 +212,9 @@ urlpatterns += [
         name='ad_group_daily_stats'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupAdsPlusDailyStats.as_view()),
-        name='ad_group_ads_plus_daily_stats'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
+        login_required(dash.views.daily_stats.AdGroupAdsDailyStats.as_view()),
+        name='ad_group_ads_daily_stats'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
@@ -376,10 +348,6 @@ urlpatterns += [
         name='ad_group_restore',
     ),
     url(
-        r'^api/accounts/export/',
-        login_required(dash.views.export.AllAccountsExport.as_view())
-    ),
-    url(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
     ),
@@ -399,12 +367,12 @@ urlpatterns += [
         name='account_overview'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/(?P<budget_id>\d+)/',
         login_required(dash.views.bcm.CampaignBudgetItemView.as_view()),
         name='campaigns_budget_item'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget/',
         login_required(dash.views.bcm.CampaignBudgetView.as_view()),
         name='campaigns_budget'
     ),
@@ -429,64 +397,64 @@ urlpatterns += [
         name='user'
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/export_plus/allowed/',
-        login_required(dash.views.export_plus.ExportAllowed.as_view())
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/export/allowed/',
+        login_required(dash.views.export.ExportAllowed.as_view())
     ),
     url(
-        r'^api/(?P<level_>(all_accounts))/export_plus/allowed/',
-        login_required(dash.views.export_plus.ExportAllowed.as_view())
+        r'^api/(?P<level_>(all_accounts))/export/allowed/',
+        login_required(dash.views.export.ExportAllowed.as_view())
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/sources/export_plus/allowed/',
-        login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/sources/export/allowed/',
+        login_required(dash.views.export.SourcesExportAllowed.as_view())
     ),
     url(
-        r'^api/(?P<level_>(all_accounts))/sources/export_plus/allowed/',
-        login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
+        r'^api/(?P<level_>(all_accounts))/sources/export/allowed/',
+        login_required(dash.views.export.SourcesExportAllowed.as_view())
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/export_plus/',
-        login_required(dash.views.export_plus.CampaignAdGroupsExport.as_view())
+        r'^api/campaigns/(?P<campaign_id>\d+)/export/',
+        login_required(dash.views.export.CampaignAdGroupsExport.as_view())
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/export_plus/',
-        login_required(dash.views.export_plus.AccountCampaignsExport.as_view())
+        r'^api/accounts/(?P<account_id>\d+)/export/',
+        login_required(dash.views.export.AccountCampaignsExport.as_view())
     ),
     url(
         r'^api/all_accounts/reports/',
-        login_required(dash.views.export_plus.ScheduledReports.as_view())
+        login_required(dash.views.export.ScheduledReports.as_view())
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/reports/',
-        login_required(dash.views.export_plus.ScheduledReports.as_view())
+        login_required(dash.views.export.ScheduledReports.as_view())
     ),
     url(
         r'^api/accounts/reports/remove/(?P<scheduled_report_id>\d+)',
-        login_required(dash.views.export_plus.ScheduledReports.as_view())
+        login_required(dash.views.export.ScheduledReports.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',
-        login_required(dash.views.export_plus.AdGroupAdsPlusExport.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/export/',
+        login_required(dash.views.export.AdGroupAdsExport.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export_plus/',
-        login_required(dash.views.export_plus.AdGroupSourcesExport.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',
+        login_required(dash.views.export.AdGroupSourcesExport.as_view())
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export_plus/',
-        login_required(dash.views.export_plus.CampaignSourcesExport.as_view())
+        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export/',
+        login_required(dash.views.export.CampaignSourcesExport.as_view())
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/sources/export_plus/',
-        login_required(dash.views.export_plus.AccountSourcesExport.as_view())
+        r'^api/accounts/(?P<account_id>\d+)/sources/export/',
+        login_required(dash.views.export.AccountSourcesExport.as_view())
     ),
     url(
-        r'^api/all_accounts/sources/export_plus/',
-        login_required(dash.views.export_plus.AllAccountsSourcesExport.as_view())
+        r'^api/all_accounts/sources/export/',
+        login_required(dash.views.export.AllAccountsSourcesExport.as_view())
     ),
     url(
-        r'^api/accounts/export_plus/',
-        login_required(dash.views.export_plus.AllAccountsExport.as_view())
+        r'^api/accounts/export/',
+        login_required(dash.views.export.AllAccountsExport.as_view())
     ),
     url(
         r'^api/stats/testdata/',
@@ -540,6 +508,11 @@ urlpatterns += [
         k1api.views.get_content_ad_source_mapping,
         name='k1api.get_content_ad_source_mapping',
     ),
+    url(
+        r'^k1api/get_ga_accounts$',
+        k1api.views.get_ga_accounts,
+        name='k1api.get_ga_accounts',
+    )
 ]
 
 # Crossvalidation Api
@@ -597,6 +570,6 @@ urlpatterns += [
 urlpatterns += [url(r'^tos/$', TemplateView.as_view(template_name='tos.html'))]
 
 urlpatterns += [
-    url(r'^api/', django.views.defaults.page_not_found),
+    url(r'^api/', django.views.defaults.page_not_found, {'exception': None}),
     url(r'^', dash.views.views.index, name='index')
 ]

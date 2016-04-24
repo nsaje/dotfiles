@@ -157,7 +157,7 @@ class ContentAdStats(models.Model):
 class SupplyReportRecipient(models.Model):
     first_name = models.CharField('first name', max_length=30, blank=True)
     last_name = models.CharField('last name', max_length=30, blank=True)
-    email = models.EmailField('email address', max_length=255, unique=True)
+    email = models.EmailField('email address', max_length=255)
     source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')

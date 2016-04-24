@@ -144,9 +144,9 @@ describe('api', function () {
         });
     });
 
-    describe('adGroupAdsPlusUpload', function () {
+    describe('adGroupAdsUpload', function () {
         var adGroupId = 123;
-        var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/';
+        var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/';
 
         describe('getDefaults', function () {
             it('get settings defaults', function () {
@@ -163,7 +163,7 @@ describe('api', function () {
                 };
 
                 $httpBackend.expectGET(url).respond(200, data);
-                api.adGroupAdsPlusUpload.getDefaults(adGroupId).then(function (data) {
+                api.adGroupAdsUpload.getDefaults(adGroupId).then(function (data) {
                     result = data;
                 });
                 $httpBackend.flush();
@@ -186,7 +186,7 @@ describe('api', function () {
 
                 $httpBackend.expectPOST(url).respond(200, {data: {batch_id: 123}});
 
-                api.adGroupAdsPlusUpload.upload(adGroupId, file, batchName).then(function (data) {
+                api.adGroupAdsUpload.upload(adGroupId, file, batchName).then(function (data) {
                     resolvedData = data;
                 });
                 $httpBackend.flush();
@@ -210,7 +210,7 @@ describe('api', function () {
                 };
 
                 $httpBackend.expectPOST(url).respond(400, data);
-                api.adGroupAdsPlusUpload.upload(adGroupId, file, batchName).then(null, function (errors) {
+                api.adGroupAdsUpload.upload(adGroupId, file, batchName).then(null, function (errors) {
                     result = errors;
                 });
                 $httpBackend.flush();

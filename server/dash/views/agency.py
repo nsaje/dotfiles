@@ -112,23 +112,13 @@ class AdGroupSettings(api_common.BaseApiView):
             )
         if not supports_retargeting:
             retargeting_warning = {
-                'text': "You have some active media sources that don't support retargeting. "
-                        "To start using it please disable/pause these media sources:",
                 'sources': [s.name for s in unsupported_sources]
             }
             warnings['retargeting'] = retargeting_warning
 
         if ad_group_settings.landing_mode:
             warnings['end_date'] = {
-                'text': 'Your campaign has been switched to landing mode. '
-                'Please add the budget and continue to adjust settings by your needs. '
-                '<a href="{link}">Add budget</a>'.format(
-                    link=request.build_absolute_uri(
-                        '/campaigns/{campaign_id}/budget-plus/'.format(
-                            campaign_id=ad_group_settings.ad_group.campaign.id
-                        ),
-                    )
-                )
+                'campaign_id': ad_group_settings.ad_group.campaign.id,
             }
 
         return warnings
@@ -190,7 +180,7 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
 
-        if user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
+        if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
             if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
@@ -318,7 +308,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'campaign_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'campaign_managers': self.get_user_list(campaign_settings),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -423,8 +413,8 @@ class CampaignAgency(api_common.BaseApiView):
         settings.campaign_manager = resource['campaign_manager']
         settings.iab_category = resource['iab_category']
 
-    def get_user_list(self, settings, perm_name):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+    def get_user_list(self, settings):
+        users = ZemUser.objects.all()
 
         manager = settings.campaign_manager
         if manager is not None and manager not in users:
@@ -547,9 +537,6 @@ class CampaignSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
@@ -566,9 +553,6 @@ class CampaignSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
 
@@ -692,7 +676,7 @@ class CampaignSettings(api_common.BaseApiView):
                     'created_dt'
                 )
             )
-        ).select_related('conversion_goal')
+        ).select_related('conversion_goal').order_by('id')
 
         for campaign_goal in goals:
             goal_blob = campaign_goal.to_dict(with_values=True)
@@ -881,7 +865,7 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
+            'account_managers': self.get_user_list(account_settings),
             'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
@@ -1033,7 +1017,6 @@ class AccountAgency(api_common.BaseApiView):
         settings.name = resource['name']
         settings.default_account_manager = resource['default_account_manager']
         settings.default_sales_representative = resource['default_sales_representative']
-        settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
     def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
@@ -1067,7 +1050,6 @@ class AccountAgency(api_common.BaseApiView):
                 'default_sales_representative':
                     str(settings.default_sales_representative.id)
                     if settings.default_sales_representative is not None else None,
-                'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
             }
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 result['allowed_sources'] = self.get_allowed_sources(
@@ -1121,10 +1103,6 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
-            ('service_fee', {
-                'name': 'Service Fee',
-                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
-            }),
         ])
 
         if old_settings is not None:
@@ -1138,9 +1116,6 @@ class AccountAgency(api_common.BaseApiView):
             if old_settings.default_sales_representative is not None:
                 settings_dict['default_sales_representative']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
-
-            settings_dict['service_fee']['old_value'] = \
-                helpers.format_decimal_to_percent(old_settings.service_fee) + '%'
 
         return settings_dict
 
@@ -1182,8 +1157,8 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+    def get_user_list(self, settings, perm_name=None):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:
@@ -1229,6 +1204,8 @@ class AdGroupAgency(api_common.BaseApiView):
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
             if new_settings.created_by is None:
                 changed_by = automation.settings.AUTOMATION_AI_NAME
+                if new_settings.system_user:
+                    changed_by = constants.SystemUserType.get_text(new_settings.system_user)
             else:
                 changed_by = new_settings.created_by.email
             history.append({
@@ -1245,10 +1222,6 @@ class AdGroupAgency(api_common.BaseApiView):
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
-            if field in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
-                    not user.has_perm('zemauth.new_content_ads_tab'):
-                continue
-
             if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
                     not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
                 continue

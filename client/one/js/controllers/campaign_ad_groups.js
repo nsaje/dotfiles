@@ -66,15 +66,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'},
-        {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
-    ];
-
-    $scope.exportPlusOptions = [
       {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
       {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
-      {name: 'By content Ad', value: constants.exportType.CONTENT_AD},
+      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.columns = [
@@ -111,10 +105,15 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         row.stateText = $scope.getStateText(state);
                     }
                 });
+                zemNavigationService.notifyAdGroupReloading(adgroupId, true);
+
                 api.adGroupSettingsState.post(adgroupId, state).then(
                     function (data) {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
+                    },
+                    function () {
+                        zemNavigationService.notifyAdGroupReloading(adgroupId, false);
                     }
                 );
             },
@@ -258,16 +257,16 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
+            name: 'License Fee',
+            field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
+            help: 'Zemanta One platform usage cost.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Total Spend',
@@ -276,18 +275,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             type: 'currency',
             totalRow: true,
             help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'License Fee',
-            field: 'license_fee',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Zemanta One platform usage cost.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -365,11 +352,17 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
+                'license_fee', 'yesterday_cost', 'e_yesterday_cost',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
-                'license_fee', 'yesterday_cost', 'e_yesterday_cost'
+                'cpc', 'clicks', 'impressions', 'ctr',
             ]
         },
         {
@@ -377,7 +370,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'click_discrepancy'
+                'click_discrepancy',
             ]
         },
         {
@@ -430,7 +423,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 zemNavigationService.addAdGroupToCache(campaignId, {
                     id: data.id,
                     name: data.name,
-                    contentAdsTabWithCMS: data.contentAdsTabWithCMS,
                     status: constants.adGroupSettingsState.INACTIVE,
                     state: constants.adGroupRunningStatus.INACTIVE,
                 });
@@ -446,10 +438,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.campaignOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,
@@ -724,7 +712,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
-        setDisabledExportOptions();
         $scope.getInfoboxData();
     };
 
@@ -764,26 +751,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getTableData();
     });
-
-    var setDisabledExportOptions = function () {
-        api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
-            function (data) {
-                var option = null;
-                $scope.exportOptions.forEach(function (opt) {
-                    if (opt.value === 'excel_detailed') {
-                        option = opt;
-                    }
-                });
-
-                if (data.allowed) {
-                    option.disabled = false;
-                } else {
-                    option.disabled = true;
-                    option.maxDays = data.maxDays;
-                }
-            }
-        );
-    };
 
     $scope.init();
 }]);

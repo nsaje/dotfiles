@@ -1,7 +1,7 @@
-<div id="filter" class="pull-right" ng-show="hasPermission('zemauth.view_archived_entities') || hasPermission('zemauth.filter_sources')">
+<div id="filter" class="pull-right" ng-show="hasPermission('zemauth.filter_sources')">
     <div id="filter-dropdown" class="dropdown" dropdown on-toggle="onToggle(open)" is-open="isFilterOpen">
 
-        <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.view_archived_entities') && isPermissionInternal('zemauth.filter_sources')"></zem-internal-feature>
+        <zem-internal-feature popover-placement="left" ng-if="isPermissionInternal('zemauth.filter_sources')"></zem-internal-feature>
         <div class="btn btn-default" ng-class="{'filter-enabled': isFilterOn() && hasPermission('zemauth.filter_sources')}">
             <div ng-if="isFilterOn() && hasPermission('zemauth.filter_sources')">
                 <div class="btn-remove" ng-click="removeFiltering()">
@@ -34,8 +34,7 @@
                 </div>
             </li>
 
-            <li ng-show="hasPermission('zemauth.view_archived_entities')">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.view_archived_entities')" popover-placement="left"></zem-internal-feature>
+            <li>
                 <div class="title">Filter by Status</div>
                 <div class="checkbox">
                     <label><input type="checkbox" ng-model="showArchivedSelected">Show archived items</label>

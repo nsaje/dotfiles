@@ -47,7 +47,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     $scope.pollBatchStatus = function (batchId) {
         if ($scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS) {
             $timeout(function () {
-                api.adGroupAdsPlusUpload.checkStatus($state.params.id, batchId).then(
+                api.adGroupAdsUpload.checkStatus($state.params.id, batchId).then(
                     function (data) {
                         $scope.step = data.step;
                         $scope.count = data.count;
@@ -94,7 +94,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
         cleanDisplayUrl($scope.formData);
 
-        api.adGroupAdsPlusUpload.upload(
+        api.adGroupAdsUpload.upload(
             $state.params.id, $scope.formData
         ).then(function (batchId) {
 
@@ -110,7 +110,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     };
 
     $scope.init = function () {
-        api.adGroupAdsPlusUpload.getDefaults($state.params.id).then(
+        api.adGroupAdsUpload.getDefaults($state.params.id).then(
             function (data) {
                 angular.extend($scope.formData, data.defaults);
                 $scope.formData.batchName = '';
@@ -131,7 +131,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             return;
         }
 
-        api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
+        api.adGroupAdsUpload.cancel($state.params.id, $scope.batchId).then(function () {
             $scope.cancelErrors = null;
         }, function (data) {
             $scope.cancelErrors = data.data.errors;
@@ -149,12 +149,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
     $scope.viewUploadedAds = function () {
         $modalInstance.close();
-
-        if ($scope.user.showOnboardingGuidance) {
-            api.campaignBudget.get($scope.campaign.id).then(function (data) {
-                $scope.remindToAddBudget.resolve(data.available <= 0);
-            });
-        }
     };
 
     $scope.init();

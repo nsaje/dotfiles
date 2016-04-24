@@ -32,7 +32,7 @@ def copy(d):
 )
 @patch('dash.table.reports.api_touchpointconversions.query')
 @patch('dash.table.reports.api_contentads.query')
-class AdGroupAdsPlusTableTest(TestCase):
+class AdGroupAdsTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -61,7 +61,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'data_cost': None,
             'e_data_cost': None,
             'e_media_cost': 100,
-            'total_cost': 110,
             'billing_cost': 110,
             'license_fee': 10,
             'visits': 40,
@@ -82,7 +81,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'data_cost': None,
             'e_data_cost': None,
             'e_media_cost': None,
-            'total_cost': 200,
             'billing_cost': 200,
             'license_fee': 0,
             'ctr': '15.5000',
@@ -114,7 +112,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'data_cost': None,
             'e_data_cost': None,
             'e_media_cost': 100,
-            'total_cost': 110,
             'billing_cost': 110,
             'license_fee': 10,
             'visits': 40,
@@ -135,7 +132,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'data_cost': None,
             'e_data_cost': None,
             'e_media_cost': None,
-            'total_cost': 200,
             'billing_cost': 200,
             'license_fee': 0,
             'ctr': '15.5000',
@@ -161,7 +157,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -239,7 +235,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'data_cost': None,
             'e_data_cost': None,
             'e_media_cost': 100,
-            'total_cost': 110,
             'billing_cost': 110,
             'license_fee': 10,
             'cpc': '0.0100',
@@ -306,7 +301,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'media_cost': None,
             'e_data_cost': None,
             'e_media_cost': None,
-            'total_cost': None,
             'billing_cost': None,
             'license_fee': None,
             'batch_name': 'batch 1',
@@ -341,7 +335,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'data_cost': None,
             'e_data_cost': None,
             'e_media_cost': None,
-            'total_cost': 200,
             'billing_cost': 200,
             'license_fee': 0,
             'cpc': '0.0200',
@@ -399,7 +392,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -475,7 +468,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -559,7 +552,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.save()
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -604,7 +597,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         params = {
             'page': 1,
             'order': '-title',
-            'size': 2,
+            'size': 3,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
         }
@@ -615,7 +608,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             batch.save()
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -627,11 +620,11 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertIn('pagination', result['data'])
         self.assertEqual(result['data']['pagination'], {
-            'count': 3,
+            'count': 2,
             'currentPage': 1,
             'endIndex': 2,
-            'numPages': 2,
-            'size': 2,
+            'numPages': 1,
+            'size': 3,
             'startIndex': 1
         })
 
@@ -736,9 +729,6 @@ class AdGroupAdsPlusTableTest(TestCase):
         user = User.objects.create_user('some@email.si', 'secret2')
         ad_group.campaign.users.add(user)
         self.client.login(username=user.email, password='secret2')
-        user.user_permissions.add(
-            authmodels.Permission.objects.get(codename="new_content_ads_tab")
-        )
 
         params = {
             'page': 1,
@@ -748,7 +738,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'end_date': self.mock_date.isoformat(),
         }
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -762,7 +752,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         )
 
         response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -773,7 +763,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
 
-class AdGroupAdsPlusTableUpdatesTest(TestCase):
+class AdGroupAdsTableUpdatesTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
@@ -800,7 +790,7 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
 
         params = {}
         response = self.client.get(
-            reverse('ad_group_ads_plus_table_updates', kwargs={'ad_group_id': ad_group.id}),
+            reverse('ad_group_ads_table_updates', kwargs={'ad_group_id': ad_group.id}),
             params,
             follow=True
         )
@@ -944,7 +934,6 @@ class AdGroupPublishersTableTest(TestCase):
             'license_fee': 0.1,
             'external_id': '12345',
             'billing_cost': 2.5,
-            'total_cost': 2.5,
             'cpc': 1.3,
             'ctr': 100.0,
             'impressions': 10560,
@@ -971,7 +960,6 @@ class AdGroupPublishersTableTest(TestCase):
             'license_fee': 0.2,
             'external_id': '12345',
             'billing_cost': 4.2,
-            'total_cost': 4.2,
             'cpc': 1.2,
             'ctr': 99.0,
             'impressions': 1560,
@@ -1093,7 +1081,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'external_id': '12345',
             u'license_fee': 0.1,
             u'billing_cost': 2.5,
-            u'total_cost': 2.5,
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'blacklisted': u'Active',
@@ -1124,12 +1111,18 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
         self.assertEqual(result['data']['totals'], {
+            u'avg_cost_for_new_visitor': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+            u'total_pageviews': 0,
+            u'total_seconds': 0,
+            u'unbounced_visits': 0,
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
             u'media_cost': 2.1,
             u'license_fee': 0.2,
-            u'total_cost': 4.2,
             u'billing_cost': 4.2,
             u'e_data_cost': 1.9,
             u'data_cost': 1.9,
@@ -1160,7 +1153,6 @@ class AdGroupPublishersTableTest(TestCase):
             'media_cost': 2.4,
             'e_media_cost': 2.4,
             'external_id': '12345',
-            'total_cost': 2.4,
             'billing_cost': 2.4,
             'cpc': 1.3,
             'ctr': 100.0,
@@ -1184,7 +1176,6 @@ class AdGroupPublishersTableTest(TestCase):
             'media_cost': 2.4,
             'e_media_cost': 2.4,
             'external_id': '12345',
-            'total_cost': 2.4,
             'billing_cost': 2.4,
             'cpc': 1.3,
             'ctr': 100.0,
@@ -1301,7 +1292,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'data_cost': 0,
             u'e_data_cost': 0,
             u'license_fee': 0,
-            u'total_cost': 2.4,
             u'billing_cost': 2.4,
             u'impressions': 10560,
             u'clicks': 123,
@@ -1332,7 +1322,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'data_cost': 0,
             u'e_data_cost': 0,
             u'license_fee': 0,
-            u'total_cost': 2.4,
             u'billing_cost': 2.4,
             u'impressions': 10560,
             u'clicks': 123,
@@ -1349,6 +1338,13 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
+            u'avg_cost_for_new_visitor': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+            u'total_pageviews': 0,
+            u'total_seconds': 0,
+            u'unbounced_visits': 0,
         })
 
     """
@@ -1498,7 +1494,6 @@ class AdGroupPublishersTableTest(TestCase):
             'license_fee': 0.1,
             'external_id': '12345',
             'billing_cost': 2.5,
-            'total_cost': 2.5,
             'cpc': 1.3,
             'ctr': 100.0,
             'impressions': 10560,
@@ -1525,7 +1520,6 @@ class AdGroupPublishersTableTest(TestCase):
             'license_fee': 0.2,
             'external_id': '12345',
             'billing_cost': 4.2,
-            'total_cost': 4.2,
             'cpc': 1.2,
             'ctr': 99.0,
             'impressions': 1560,
@@ -1648,7 +1642,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'external_id': '12345',
             u'license_fee': 0.1,
             u'billing_cost': 2.5,
-            u'total_cost': 2.5,
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'blacklisted': u'Blacklisted',
@@ -1686,7 +1679,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 99.0,
             u'media_cost': 2.1,
             u'license_fee': 0.2,
-            u'total_cost': 4.2,
             u'billing_cost': 4.2,
             u'e_data_cost': 1.9,
             u'data_cost': 1.9,
@@ -1705,6 +1697,13 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
+            u'avg_cost_for_new_visitor': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+            u'total_pageviews': 0,
+            u'total_seconds': 0,
+            u'unbounced_visits': 0,
         })
 
     def test_get_reverse_order(self, mock_query, mock_touchpointconversins_query):
@@ -1716,7 +1715,6 @@ class AdGroupPublishersTableTest(TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
@@ -1743,7 +1741,6 @@ class AdGroupPublishersTableTest(TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
@@ -1860,7 +1857,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'external_id': '12345',
             u'data_cost': 0,
             u'e_data_cost': 0,
-            u'total_cost': 3,
             u'billing_cost': 3,
             u'license_fee': 0.6,
             u'impressions': 10560,
@@ -1902,7 +1898,6 @@ class AdGroupPublishersTableTest(TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
@@ -1929,7 +1924,6 @@ class AdGroupPublishersTableTest(TestCase):
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
-            'total_cost': 3,
             'billing_cost': 3,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
@@ -1972,7 +1966,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=[],
+            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
             constraints_list=[],
         )
 
@@ -1982,7 +1976,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=[],
+            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
             constraints_list=[],
         )
 
@@ -2011,6 +2005,16 @@ class AdGroupPublishersTableTest(TestCase):
             u'license_fee': 0.6,
             u'impressions': 10560,
             u'clicks': 123,
+            u'bounce_rate': 0.3,
+            u'avg_tos': 20,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'pv_per_visit': 10,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
             u'source_id': 7,
         })
 

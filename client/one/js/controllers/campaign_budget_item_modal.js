@@ -1,5 +1,5 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', function ($scope, $modalInstance, $timeout, api) {
+oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', 'zemNavigationService', function ($scope, $modalInstance, $timeout, api, zemNavigationService) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = {isOpen: false};
@@ -55,13 +55,16 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.upsertBudgetItem = function () {
         $scope.saveRequestInProgress = true;
         $scope.budgetItem.id = $scope.selectedBudgetId;
-        api.campaignBudgetPlus[
+        api.campaignBudget[
             $scope.isNew ? 'create' : 'save'
         ]($scope.campaign.id, $scope.budgetItem).then(function (data) {
             $scope.saved = true;
             closeModal();
+            if (data.stateChanged) {
+                zemNavigationService.reload();
+            }
         }, function (resp) {
-            $scope.errors = api.campaignBudgetPlus.convert.error(resp);
+            $scope.errors = api.campaignBudget.convert.error(resp);
             $scope.saved = false;
         }).finally(function () {
             $scope.saveRequestInProgress = false;
@@ -75,7 +78,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
 
     $scope.deleteBudgetItem = function () {
         if (!confirm('Are you sure you want to delete the budget line item?')) { return; }
-        api.campaignBudgetPlus.delete($scope.campaign.id, $scope.selectedBudgetId).then(function () {
+        api.campaignBudget.delete($scope.campaign.id, $scope.selectedBudgetId).then(function () {
             closeModal();
         });
     };
@@ -102,7 +105,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             $scope.budgetItem.amount = parseInt($scope.getAvailableCredit()[0].total);
 
         } else {
-            api.campaignBudgetPlus.get(
+            api.campaignBudget.get(
                 $scope.campaign.id,
                 $scope.selectedBudgetId
             ).then(function (data) {

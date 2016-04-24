@@ -1,7 +1,5 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
-    var freshSettings = $q.defer(),
-        goToContentAds = false;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
     $scope.actionIsWaiting = false;
@@ -23,10 +21,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     // https://github.com/angular/angular.js/wiki/Understanding-Scopes
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
-
-    $scope.adGroupHasFreshSettings = function () {
-        return freshSettings.promise;
-    };
 
     $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
@@ -50,8 +44,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
-                freshSettings.resolve(data.settings.name === 'New ad group');
-                goToContentAds = data.settings.name === 'New ad group';
+                $scope.updateWarningText();
             },
             function () {
                 // error
@@ -60,6 +53,22 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         ).finally(function () {
             $scope.loadRequestInProgress = false;
         });
+    };
+
+    $scope.updateWarningText = function () {
+        if (!$scope.warnings) {
+            return;
+        }
+
+        if ($scope.warnings.retargeting !== undefined) {
+            $scope.warnings.retargeting.text = 'You have some active media sources that don\'t support retargeting. ' +
+               'To start using it please disable/pause these media sources:';
+        }
+
+        if ($scope.warnings.endDate !== undefined) {
+            $scope.warnings.endDate.text = 'Your campaign has been switched to landing mode. ' +
+                'Please add the budget and continue to adjust settings by your needs. ';
+        }
     };
 
     $scope.discardSettings = function () {
@@ -90,40 +99,27 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
+        zemNavigationService.notifyAdGroupReloading($state.params.id, true);
+
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
                 var currAdGroup = $scope.adGroup.id;
                 $scope.errors = {};
-                if (prevAdGroup !== currAdGroup) {
-                    zemNavigationService.updateAdGroupCache(prevAdGroup, {
-                        name: data.settings.name,
-                        state: data.settings.state,
-                    });
-                } else {
+                if (prevAdGroup === currAdGroup) {
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
-
-                    zemNavigationService.updateAdGroupCache(currAdGroup, {
-                        name: data.settings.name,
-                        state: data.settings.state,
-                        status: status,
-                    });
                 }
 
+                zemNavigationService.reloadAdGroup($state.params.id);
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-
-                if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function () {
-                        $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
-                    }, 100);
-                }
             },
             function (data) {
                 $scope.errors = data;
                 $scope.saveRequestInProgress = false;
                 $scope.saved = false;
+                zemNavigationService.notifyAdGroupReloading($state.params.id, false);
             }
         );
     };
@@ -172,11 +168,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         return result;
     };
 
-    $scope.showAutoPilotOption = function (adGroupSettingsAutopilotState) {
-        return !(adGroupSettingsAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET &&
-                $scope.settings.autopilotOptimizationGoal === constants.campaignGoalKPI.CPA);
-    };
-
     $scope.showAutoPilotDailyBudgetInput = function () {
         return $scope.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
     };
@@ -189,6 +180,13 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
             }
         });
         return goalName;
+    };
+
+    $scope.budgetAutopilotOptimizationCPAGoalText = function () {
+        if ($scope.settings.autopilotOptimizationGoal !== constants.campaignGoalKPI.CPA) {
+            return '';
+        }
+        return 'Note: CPA optimization works best when at least 20 conversions have occurred in the past two weeks.';
     };
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {

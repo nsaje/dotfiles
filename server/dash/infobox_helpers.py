@@ -209,57 +209,6 @@ def get_mtd_all_accounts_spend():
     ).get('media', Decimal(0))
 
 
-def get_goal_value(user, campaign, campaign_settings, goal_type):
-    # we are interested in reaching the goal by today
-    end_date = datetime.datetime.today().date()
-    totals_stats = reports.api_helpers.filter_by_permissions(
-        reports.api_contentads.query(
-            campaign.created_dt,
-            end_date,
-            campaign=campaign,
-        ), user)
-    if goal_type == dash.constants.CampaignGoal.CPA:
-        # CPA is still being implemented via Conversion&Goals epic
-        return 0  # TODO implement this properly
-    elif goal_type == dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE:
-        return totals_stats.get('bounce_rate', 0) or 0
-    elif goal_type == dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS:
-        return totals_stats.get('new_visits', 0) or 0
-    elif goal_type == dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE:
-        return totals_stats.get('avg_tos', 0) or 0
-    elif goal_type == dash.constants.CampaignGoal.PAGES_PER_SESSION:
-        return totals_stats.get('pv_per_visit', 0) or 0
-
-    # assuming we will add moar campaign goals in the future
-    raise exceptions.NotImplementedError()
-
-
-def get_goal_difference(goal_type, target, actual):
-    """
-    Returns difference as (value, description, success) tuple
-    """
-    if actual is None:
-        return 0, "N/A", False
-
-    if goal_type in (dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
-        diff = target - actual
-        rate = diff / target if target > 0 else 0
-        description = '{rate:.2f}% {word} planned'.format(
-            rate=rate,
-            word='above' if rate > 0 else 'below'
-        )
-        success = diff <= 0
-        return diff, description, success
-    else:
-        diff = target - actual
-        description = '{diff} {word} planned'.format(
-            diff=abs(diff),
-            word='above' if diff < 0 else 'below',
-        )
-        success = diff <= 0
-        return diff, description, success
-
-
 def goals_and_spend_settings(user, campaign):
     settings = []
 
@@ -277,15 +226,6 @@ def goals_and_spend_settings(user, campaign):
 
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
-
-
-def format_goal_value(goal_value, goal_type):
-    if not goal_value:
-        return 0
-    if goal_type in (dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
-        return float(goal_value)
-    else:
-        return int(goal_value)
 
 
 def calculate_daily_ad_group_cap(ad_group):
@@ -554,30 +494,36 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
-def get_adgroup_running_status(ad_group_settings):
-    ad_group = ad_group_settings.ad_group
-
-    ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group=ad_group
-    ).group_current_settings()
-
-    running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_group_source_settings)
+def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
+    campaign = ad_group_settings.ad_group.campaign
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
+    autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
+                       else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
+    ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group=ad_group_settings.ad_group).group_current_settings().\
+        filter_by_sources(filtered_sources)
+    running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
+
+    return get_adgroup_running_status_class(autopilot_state, running_status,
+                                            state, campaign.is_in_landing())
+
+
+def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
+    if state == dash.constants.AdGroupSettingsState.INACTIVE and\
+       running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
+        return dash.constants.InfoboxStatus.STOPPED
+
+    if is_in_landing:
+        return dash.constants.InfoboxStatus.LANDING_MODE
 
     if (running_status == dash.constants.AdGroupRunningStatus.INACTIVE and
             state == dash.constants.AdGroupSettingsState.ACTIVE) or\
             (running_status == dash.constants.AdGroupRunningStatus.ACTIVE and
              state == dash.constants.AdGroupSettingsState.INACTIVE):
-        return dash.constants.InfoboxStatus.STOPPED
-
-    if ad_group.campaign.is_in_landing():
-        return dash.constants.InfoboxStatus.LANDING_MODE
-
-    if state == dash.constants.AdGroupSettingsState.INACTIVE:
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
-            ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+    if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
+            autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
         return dash.constants.InfoboxStatus.AUTOPILOT
 
     return dash.constants.InfoboxStatus.ACTIVE
@@ -641,9 +587,11 @@ def get_campaign_goal_list(user, constraints, start_date, end_date):
     first = True
     permissions = user.get_all_permissions_with_access_levels()
     for status, metric_value, planned_value, campaign_goal in performance:
-        goal_description = dash.campaign_goals.format_campaign_goal(campaign_goal.type, metric_value)
-        if campaign_goal.conversion_goal:
-            goal_description += ' - ' + campaign_goal.conversion_goal.name
+        goal_description = dash.campaign_goals.format_campaign_goal(
+            campaign_goal.type,
+            metric_value,
+            campaign_goal.conversion_goal
+        )
 
         entry = OverviewSetting(
             '' if not first else 'Goals:',
@@ -652,7 +600,7 @@ def get_campaign_goal_list(user, constraints, start_date, end_date):
                 dash.campaign_goals.format_value(campaign_goal.type, planned_value),
             ) or None,
             section_start=first,
-            internal=first and 'zemauth.campaign_goal_performance' in permissions,
+            internal=first and not permissions.get('zemauth.campaign_goal_performance'),
         )
         if campaign_goal.primary:
             entry.value_class = 'primary'

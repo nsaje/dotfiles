@@ -70,6 +70,15 @@
   model: dash.campaign
   pk: 5
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 6'
+  model: dash.campaign
+  pk: 6
+
 # Campaign Settings
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -120,6 +129,29 @@
     automatic_campaign_stop: True
   model: dash.campaignsettings
   pk: 5
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 6'
+    campaign_manager: 1
+    campaign: 6
+    automatic_campaign_stop: True
+    landing_mode: False
+  model: dash.campaignsettings
+  pk: 6
+
+- fields:
+    created_dt: '2016-04-05T12:00:00'
+    created_by_id: null
+    name: 'Campaign Settings 7'
+    campaign_manager: 1
+    campaign: 6
+    automatic_campaign_stop: True
+    landing_mode: True
+    system_user: 1
+  model: dash.campaignsettings
+  pk: 7
 
 # Ad Groups
 - fields:
@@ -175,6 +207,42 @@
     name: 'Test AdGroup 6'
   model: dash.adgroup
   pk: 6
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 6
+    name: 'Test AdGroup 7'
+  model: dash.adgroup
+  pk: 7
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 6
+    name: 'Test AdGroup 8'
+  model: dash.adgroup
+  pk: 8
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 6
+    name: 'Test AdGroup 9'
+  model: dash.adgroup
+  pk: 9
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 6
+    name: 'Test AdGroup 10'
+  model: dash.adgroup
+  pk: 10
 
 # Ad Group Settings
 - fields:
@@ -242,9 +310,109 @@
     created_dt: '2016-03-01T09:58:21'
     created_by: 1
     state: 2
-
   model: dash.adgroupsettings
   pk: 8
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2016-04-01T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-30'
+    landing_mode: False
+  model: dash.adgroupsettings
+  pk: 9
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2016-04-05T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-05'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 10
+
+- fields:
+    ad_group_id: 7
+    created_dt: '2016-04-06T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-06'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 11
+
+- fields:
+    ad_group_id: 8
+    created_dt: '2016-04-01T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-30'
+    landing_mode: False
+  model: dash.adgroupsettings
+  pk: 12
+
+- fields:
+    ad_group_id: 8
+    created_dt: '2016-04-05T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-05'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 13
+
+- fields:
+    ad_group_id: 8
+    created_dt: '2016-04-06T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-06'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 14
+
+- fields:
+    ad_group_id: 9
+    created_dt: '2016-04-01T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-30'
+    landing_mode: False
+  model: dash.adgroupsettings
+  pk: 15
+
+- fields:
+    ad_group_id: 9
+    created_dt: '2016-04-05T12:00:00'
+    created_by: 1
+    state: 1
+    end_date: '2016-04-05'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 16
+
+- fields:
+    ad_group_id: 9
+    created_dt: '2016-04-06T12:00:00'
+    created_by: 1
+    state: 2
+    end_date: '2016-04-05'
+    landing_mode: True
+  model: dash.adgroupsettings
+  pk: 17
+
+- fields:
+    ad_group_id: 10
+    created_dt: '2016-04-01T12:00:00'
+    created_by: 1
+    state: 2
+    end_date: '2016-04-30'
+    landing_mode: False
+  model: dash.adgroupsettings
+  pk: 18
+
 # Source Types
 -   fields:
         type: 'adblade'
@@ -374,6 +542,48 @@
   model: dash.adgroupsource
   pk: 7
 
+- fields:
+    source: 1
+    ad_group: 7
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 8
+
+- fields:
+    source: 2
+    ad_group: 7
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 9
+
+- fields:
+    source: 1
+    ad_group: 8
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 10
+
+- fields:
+    source: 2
+    ad_group: 8
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 11
+
+- fields:
+    source: 1
+    ad_group: 9
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 12
+
+- fields:
+    source: 1
+    ad_group: 10
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 13
+
 # Ad Group Source Settings
 - fields:
     created_dt: '2016-02-29T09:00:00'
@@ -500,6 +710,136 @@
     state: 1
   model: dash.adgroupsourcesettings
   pk: 14
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 8
+    cpc_cc: '0.48'
+    daily_budget_cc: '200.00'
+    state: 1
+    landing_mode: False
+  model: dash.adgroupsourcesettings
+  pk: 15
+
+- fields:
+    created_dt: '2016-04-05T12:00:00'
+    ad_group_source: 8
+    cpc_cc: '0.48'
+    daily_budget_cc: '200.00'
+    state: 1
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 16
+
+- fields:
+    created_dt: '2016-04-06T12:00:00'
+    ad_group_source: 8
+    cpc_cc: '0.24'
+    daily_budget_cc: '50.00'
+    state: 1
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 17
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 9
+    cpc_cc: '0.48'
+    daily_budget_cc: '500.00'
+    state: 2
+    landing_mode: False
+  model: dash.adgroupsourcesettings
+  pk: 18
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 10
+    cpc_cc: '0.12'
+    daily_budget_cc: '100.00'
+    state: 1
+    landing_mode: False
+  model: dash.adgroupsourcesettings
+  pk: 19
+
+- fields:
+    created_dt: '2016-04-05T12:00:00'
+    ad_group_source: 10
+    cpc_cc: '0.12'
+    daily_budget_cc: '100.00'
+    state: 1
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 20
+
+- fields:
+    created_dt: '2016-04-06T12:00:00'
+    ad_group_source: 10
+    cpc_cc: '0.22'
+    daily_budget_cc: '45.00'
+    state: 1
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 21
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 11
+    cpc_cc: '0.06'
+    daily_budget_cc: '40.00'
+    state: 1
+    landing_mode: False
+  model: dash.adgroupsourcesettings
+  pk: 22
+
+- fields:
+    created_dt: '2016-04-05T12:00:00'
+    ad_group_source: 11
+    cpc_cc: '0.06'
+    daily_budget_cc: '40.00'
+    state: 1
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 23
+
+- fields:
+    created_dt: '2016-04-06T12:00:00'
+    ad_group_source: 11
+    cpc_cc: '0.06'
+    daily_budget_cc: '40.00'
+    state: 2
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 24
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 12
+    cpc_cc: '0.06'
+    daily_budget_cc: '15.00'
+    state: 1
+    landing_mode: False
+  model: dash.adgroupsourcesettings
+  pk: 25
+
+- fields:
+    created_dt: '2016-04-05T12:00:00'
+    ad_group_source: 12
+    cpc_cc: '0.06'
+    daily_budget_cc: '15.00'
+    state: 1
+    landing_mode: True
+  model: dash.adgroupsourcesettings
+  pk: 26
+
+- fields:
+    created_dt: '2016-02-29T16:00:00'
+    ad_group_source: 13
+    cpc_cc: '0.06'
+    daily_budget_cc: '20.00'
+    state: 1
+    landing_mode: False
+  model: dash.adgroupsourcesettings
+  pk: 27
 
 # Credit line items
 - fields:

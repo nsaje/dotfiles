@@ -34,6 +34,11 @@ class K1ApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+        response = self.client.get(
+            reverse('k1api.get_ga_accounts')
+        )
+        self.assertEqual(response.status_code, 404)
+
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_get_accounts(self, mock_verify_wsgi_request):
@@ -126,3 +131,22 @@ class K1ApiTest(TestCase):
         test_cases = itertools.product(test_source_filters, test_source_content_ads)
         for source_types, source_content_ad_ids in test_cases:
             self._test_content_ad_source_ids_filters(mock_verify_wsgi_request, source_types, source_content_ad_ids)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ga_accounts(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ga_accounts'),
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+
+        self.assertEqual(len(data['ga_accounts']), 2)
+        self.assertEqual(data['ga_accounts'][0]['account_id'], 1)
+        self.assertEqual(data['ga_accounts'][1]['account_id'], 1)
+        self.assertEqual(data['ga_accounts'][0]['ga_account_id'], 'acc1')
+        self.assertEqual(data['ga_accounts'][1]['ga_account_id'], 'acc2')
+        self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'prop1')
+        self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'prop2')
