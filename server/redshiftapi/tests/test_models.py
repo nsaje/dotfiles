@@ -1,9 +1,9 @@
-from unittest import TestCase
+from django.test import TestCase
 
 from redshiftapi import models
 from redshiftapi import constants
 
-class RSContentAdStats(TestCase):
+class RSContentAdStatsTest(TestCase):
     def test_columns(self):
         columns = models.RSContentAdStats.get_columns()
         self.assertEquals(len(columns), 26)

@@ -3,7 +3,7 @@ import backtosql
 from redshiftapi import constants
 from redshiftapi import models_helpers
 
-class RSContentAdStats(backtosql.Model, models_helpers.RSModelMixin):
+class RSContentAdStats(backtosql.Model, models_helpers.RSBreakdownMixin):
     # this model defines the basic materialized view that has
     # all the fields available
 
@@ -11,8 +11,8 @@ class RSContentAdStats(backtosql.Model, models_helpers.RSModelMixin):
     # 'contentadstats' table. The model definition is based
     # on that table for now.
 
-    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'dt'},
-                                    constants.ColumnGroup.BREAKDOWN)
+    dt = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'dt'},
+                                  constants.ColumnGroup.BREAKDOWN)
 
     account_id = backtosql.Column('account_id', constants.ColumnGroup.BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', constants.ColumnGroup.BREAKDOWN)
@@ -52,3 +52,9 @@ class RSContentAdStats(backtosql.Model, models_helpers.RSModelMixin):
     @classmethod
     def get_best_view(cls, breakdown, constraints):
         return 'contentadstats'
+
+    @classmethod
+    def get_best_query_template(cls, breakdown, constraints):
+        if len(breakdown) == 2:
+            return 'q_2_breakdowns.sql'
+        return 'q_simple_breakdown.sql'
