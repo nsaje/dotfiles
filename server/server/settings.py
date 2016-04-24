@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'automation',
     'timezone_field',
     'stats',
+    'backtosql',
 ]
 
 MIDDLEWARE_CLASSES = [
