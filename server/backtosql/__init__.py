@@ -13,7 +13,10 @@ def generate_sql(template_name, context):
 
 class TemplateColumn(object):
 
-    def __init__(self, template_name, context=None, group=None, alias=None):
+    def __init__(self, template_name, context={}, group=None, alias=None):
+        if not context:
+            context = {}
+
         self.template_name = template_name
         self.context = context
 
@@ -57,7 +60,7 @@ class TemplateColumn(object):
 
 class Column(TemplateColumn):
 
-    def __init__(self, column_name, alias=None, group=None):
+    def __init__(self, column_name, group=None, alias=None):
         super(Column, self).__init__('column.sql', {'column_name': column_name}, alias=alias, group=group)
 
 
