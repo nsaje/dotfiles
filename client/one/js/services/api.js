@@ -182,7 +182,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 email: data.email,
                 permissions: data.permissions,
                 timezoneOffset: data.timezone_offset,
-                showOnboardingGuidance: data.show_onboarding_guidance
             };
         }
     }
@@ -3012,7 +3011,15 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.save = function (campaignId, budget) {
             var url = '/api/campaigns/' + campaignId + '/budget/' + budget.id + '/';
-            return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
+            return $http.post(
+                url,
+                self.convert.dataToApi(budget)
+            ).then(processResponse).then(function (data) {
+                return {
+                    id: data.id,
+                    stateChanged: data.state_changed,
+                };
+            });
         };
 
         this.get = function (campaignId, budgetId) {

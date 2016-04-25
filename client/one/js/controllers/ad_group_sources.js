@@ -392,24 +392,24 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -488,14 +488,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'yesterday_cost', 'e_yesterday_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
+                'license_fee',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'bid_cpc', 'daily_budget', 'cost', 'data_cost',
+                'bid_cpc', 'daily_budget',
                 'cpc', 'clicks', 'impressions', 'ctr',
-                'yesterday_cost', 'supply_dash_url',
+                'supply_dash_url',
                 'current_bid_cpc', 'current_daily_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee', 'e_yesterday_cost'
             ]
         },
         {
@@ -700,10 +707,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.adGroupOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,

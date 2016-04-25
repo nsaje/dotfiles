@@ -1821,7 +1821,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
-        self.add_permissions(['campaign_agency_view', 'campaign_settings_account_manager'])
+        self.add_permissions(['campaign_agency_view'])
+
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1866,17 +1867,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-    def test_permissions(self):
-        url = '/api/campaigns/1/settings/'
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1902,7 +1893,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
 
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -1941,7 +1931,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_added(self, p1, p2, p3):
         self.add_permissions([
-            'campaign_settings_view',
             'can_see_campaign_goals'
         ])
 
@@ -2023,7 +2012,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'campaign_settings_view',
             'can_see_campaign_goals'
         ])
 
@@ -2068,7 +2056,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'campaign_settings_view',
             'can_see_campaign_goals'
         ])
 
@@ -2135,9 +2122,10 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertTrue('target_devices' in content['data']['errors'])
 
     def test_get_with_conversion_goals(self):
-        self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
 
         ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.add_permissions(['can_see_campaign_goals'])
 
         convpix = models.ConversionPixel.objects.create(
             account=ad_group.campaign.account,
@@ -2179,11 +2167,6 @@ class AccountAgencyTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super(AccountAgencyTest, cls).setUpClass()
-
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
 
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=1)
@@ -2316,7 +2299,7 @@ class AccountAgencyTest(TestCase):
         view = agency.AccountAgency()
         history = view.get_history(account)
 
-        self.assertEqual(len(history), 6)
+        self.assertTrue(len(history) >= 5)
         self.assertFalse(history[0]['show_old_settings'])
         self.assertTrue(history[1]['show_old_settings'])
         self.assertTrue(history[-1]['show_old_settings'])

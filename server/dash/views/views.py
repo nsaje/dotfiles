@@ -145,7 +145,6 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
-                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()
@@ -251,11 +250,6 @@ class AdGroupOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_ad_group_infobox'):
-            raise exc.AuthorizationError()
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
@@ -472,9 +466,6 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
-            raise exc.MissingDataError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
         ad_group_settings.save(request)
@@ -555,11 +546,6 @@ class CampaignOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_campaign_infobox'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
@@ -724,11 +710,6 @@ class AccountOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_overview')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_account_infobox'):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)
 
         header = {
@@ -1972,8 +1953,6 @@ class AllAccountsOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
     def get(self, request):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
 
