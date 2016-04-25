@@ -32,7 +32,6 @@ OB_RAW_PUB_DATA_S3_PREFIX = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/'
 B1_RAW_PUB_DATA_S3_URI = 'b1_publishers_raw/{year}/{month:02d}/{day:02d}/part-00000'
 
 RAW_PUB_POSTCLICK_DATA_S3_PREFIX = 'publishers_postclick_raw/{year}/{month:02d}/{day:02d}/'
-RAW_PUB_POSTCLICK_DATA_S3_URI = RAW_PUB_POSTCLICK_DATA_S3_PREFIX + '{ts}.json'
 
 LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
 LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
@@ -241,27 +240,26 @@ def put_pub_stats_to_s3(date, rows, key_fmt):
     return s3_key
 
 
-def put_pub_postclick_stats_to_s3(date, entries):
+def put_pub_postclick_stats_to_s3(date, entries, s3_name):
     if not entries:
         return
 
-    s3_key = RAW_PUB_POSTCLICK_DATA_S3_URI.format(
+    s3_key = RAW_PUB_POSTCLICK_DATA_S3_PREFIX.format(
         year=date.year,
         month=date.month,
         day=date.day,
-        ts=int(time.time() * 1000)
-    )
+    ) + s3_name
 
     data = {}
-    s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-    s3_list = s3.list(s3_key)
-    if not s3_list:
-        return
+    # s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+    # s3_list = s3.list(s3_key)
+    # if not s3_list:
+    #     return
 
-    if list(s3_list):
-        json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
-        if json_data:
-            data = json.loads(json_data)
+    # if list(s3_list):
+    #     json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
+    #     if json_data:
+    #         data = json.loads(json_data)
 
     for entry in entries:
         source = entry.source_param.lower()
