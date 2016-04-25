@@ -44,6 +44,23 @@
             <label ng-repeat="error in errors.defaultSalesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!errors.accountType}" ng-if="hasPermission('zemauth.can_modify_account_type')">
+            <label for="sales-representative-select" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_account_type')" popover-placement="right"></zem-internal-feature>
+                Account Type
+                <zem-help-popover content="Type of account." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="account-type-select" class="form-control" ng-model="settings.accountType" search-enabled="false">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="type.id as type in accountTypes">
+                        <div ng-bind-html="type.name"></div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.accountType" class="control-label error" for="account-type-select">{{ error }}</label>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': !!errors.allowedSources}" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
             <label for="media-sources-options-choices" class="col-xs-2 control-label"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_allowed_sources')" popover-placement="right"></zem-internal-feature> Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
 

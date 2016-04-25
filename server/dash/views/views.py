@@ -721,7 +721,7 @@ class AccountOverview(api_common.BaseApiView):
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
-        basic_settings = self._basic_settings(account)
+        basic_settings = self._basic_settings(request.user, account)
 
         performance_settings = self._performance_settings(account, request.user)
         for setting in performance_settings[1:]:
@@ -735,7 +735,7 @@ class AccountOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, account):
+    def _basic_settings(self, user, account):
         settings = []
 
         count_campaigns = infobox_helpers.count_active_campaigns(account)
@@ -759,6 +759,13 @@ class AccountOverview(api_common.BaseApiView):
             tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
+
+        if user.has_perm('zemauth.can_see_account_type'):
+            account_type_setting = infobox_helpers.OverviewSetting(
+                'Account Type:',
+                constants.AccountType.get_text(account_settings.account_type)
+            )
+            settings.append(account_type_setting.as_dict())
 
         all_users = account.users.all()
         if all_users.count() == 0:

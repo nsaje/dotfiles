@@ -261,6 +261,9 @@ class AccountAgencyAgencyForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
+    account_type = forms.IntegerField(
+        required=False
+    )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
 
@@ -302,6 +305,17 @@ class AccountAgencyAgencyForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return sales_representative
+
+    def clean_account_type(self):
+        account_type = self.cleaned_data.get('account_type')
+
+        if account_type is None:
+            return None
+
+        if account_type not in constants.AccountType.get_all():
+            raise forms.ValidationError('Invalid account type.')
+
+        return account_type
 
     def clean_allowed_sources(self):
         err = forms.ValidationError('Invalid allowed source.')
