@@ -58,7 +58,7 @@ class Command(ExceptionCommand):
             ga_reports.download(ga_account)
         stats_ga_enabled = self._filter_valid_stats(ga_reports.get_content_ad_stats(), content_ad_ids_ga_api_enabled)
         update.process_report(ga_date, stats_ga_enabled, ReportType.GOOGLE_ANALYTICS)
-        refresh.put_pub_postclick_stats_to_s3(ga_date, ga_reports.get_publisher_stats())
+        refresh.put_pub_postclick_stats_to_s3(ga_date, ga_reports.get_publisher_stats(), "ga_api")
 
     def _filter_valid_stats(self, ga_report_entries, content_ad_ids_ga_api_enabled):
         ga_stats = []
