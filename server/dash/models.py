@@ -2655,6 +2655,9 @@ class BudgetLineItem(FootprintModel):
             raise AssertionError('Cannot delete nonpending budgets')
         super(BudgetLineItem, self).delete()
 
+    def get_overlap(self, start_date, end_date):
+        return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
+
     def get_available_amount(self, date=None):
         if date is None:
             date = dates_helper.local_today()
