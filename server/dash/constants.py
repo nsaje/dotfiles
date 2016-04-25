@@ -9,6 +9,14 @@ MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
 
+class Groups(ConstantBase):
+    PUBLIC = 5
+
+    _VALUES = {
+        PUBLIC: 'Public',
+    }
+
+
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2

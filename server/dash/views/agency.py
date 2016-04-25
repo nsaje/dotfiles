@@ -1274,6 +1274,8 @@ class AccountUsers(api_common.BaseApiView):
                 self._raise_validation_error(form.errors)
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
+            public_group = authmodels.Group.objects.get(id=constants.Groups.PUBLIC)
+            public_group.user_set.add(user)
             email_helper.send_email_to_new_user(user, request)
 
             created = True
