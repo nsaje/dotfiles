@@ -63,6 +63,7 @@ def _report_atoi(raw_str):
 
     return None
 
+
 def _report_atof(raw_str):
     try:
         ret_str = (raw_str or '0').replace(',', '')
@@ -72,6 +73,16 @@ def _report_atof(raw_str):
         logger.exception('Failed converting to float {}'.format(raw_str))
 
     return None
+
+
+def _parse_publisher_param(publisher_param):
+    if publisher_param:
+        publisher_param = urllib.unquote(publisher_param)
+        if not isinstance(publisher_param, unicode):
+            publisher_param = publisher_param.decode('utf-8', 'replace')
+    else:
+        publisher_param = ''
+    return publisher_param
 
 
 class ReportRow(object):
@@ -393,14 +404,7 @@ class Report(object):
         else:
             content_ad_id = result.group(1)
             source_param = result.group(2)
-            publisher_param = result.group(3) or ''
-            if publisher_param:
-                # Temporary fix
-                # FIXME: find better solution for this problem (maybe errors='replace')
-                try:
-                    publisher_param = urllib.unquote(publisher_param).decode('utf-8')
-                except UnicodeEncodeError:
-                    publisher_param = urllib.unquote(publisher_param)
+            publisher_param = _parse_publisher_param(result.group(3))
         return int(content_ad_id), source_param, publisher_param
 
 
@@ -431,13 +435,7 @@ class GAReport(Report):
         # by our partners.
         publisher_param = ''
         if '_z1_pub' in query_params:
-            # Temporary fix
-            # FIXME: find better solution for this problem (maybe errors='replace')
-            try:
-                publisher_param = query_params['_z1_pub'].decode('utf-8') or ''
-            except UnicodeEncodeError:
-                publisher_param = query_params['_z1_pub'] or ''
-
+            publisher_param = _parse_publisher_param(query_params['_z1_pub'])
         if content_ad_id is None or source_param == '':
             logger.warning(
                     'Could not parse landing page url %s. content_ad_id: %s, source_param: %s, publisher_param: %s',
