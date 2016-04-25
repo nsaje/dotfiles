@@ -3,3 +3,12 @@
     window.{{ variable }} = {{ value }};
     {% endfor %}
 </script>
+
+{% if window_data.isDemo == 'true' %}
+<!-- CSS related to demo mode -->
+<style>
+.infobox-container {
+	display:none !important;
+}
+</style>
+{% endif %}
