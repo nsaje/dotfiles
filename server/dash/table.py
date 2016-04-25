@@ -406,14 +406,12 @@ class AdGroupSourcesTable(object):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
 
     def get_data_status(self, user):
-        state_messages = None
-        if user.has_perm('zemauth.set_ad_group_source_settings'):
-            state_messages = helpers.get_ad_group_sources_state_messages(
-                self.active_ad_group_sources,
-                self.ad_group_settings,
-                self.ad_group_sources_settings,
-                self.ad_group_sources_states,
-            )
+        state_messages = helpers.get_ad_group_sources_state_messages(
+            self.active_ad_group_sources,
+            self.ad_group_settings,
+            self.ad_group_sources_settings,
+            self.ad_group_sources_states,
+        )
 
         last_pixel_sync_message = None
         if user.has_perm('zemauth.conversion_reports'):
@@ -430,9 +428,6 @@ class AdGroupSourcesTable(object):
 class AdGroupSourcesTableUpdates(object):
 
     def get(self, user, last_change_dt, filtered_sources, ad_group_id_=None):
-        if not user.has_perm('zemauth.set_ad_group_source_settings'):
-            raise exc.ForbiddenError('Not allowed')
-
         ad_group_sources_table = AdGroupSourcesTable(user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
 
@@ -631,18 +626,17 @@ class SourcesTable(object):
             response['data_status'] = level_sources_table.get_data_status(user)
 
         if ad_group_level:
-            if user.has_perm('zemauth.set_ad_group_source_settings'):
-                response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
-                    ad_group_sources,
-                    ad_group_sources_settings,
-                    sources_states
-                )[0]
-                response['notifications'] = helpers.get_ad_group_sources_notifications(
-                    ad_group_sources,
-                    level_sources_table.ad_group_settings,
-                    ad_group_sources_settings,
-                    sources_states
-                )
+            response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
+                ad_group_sources,
+                ad_group_sources_settings,
+                sources_states
+            )[0]
+            response['notifications'] = helpers.get_ad_group_sources_notifications(
+                ad_group_sources,
+                level_sources_table.ad_group_settings,
+                ad_group_sources_settings,
+                sources_states
+            )
             response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
             response['enabling_autopilot_sources_allowed'] = helpers.enabling_autopilot_sources_allowed(
@@ -691,7 +685,7 @@ class SourcesTable(object):
         if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
             del result['yesterday_cost']
 
-        if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
+        if ad_group_level:
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
             result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
         else:
@@ -808,32 +802,28 @@ class SourcesTable(object):
                     allowed_sources
                 )
 
-                if user.has_perm('zemauth.set_ad_group_source_settings')\
-                   and source_settings is not None \
+                if source_settings is not None \
                    and source_settings.state is not None:
                     row['status_setting'] = source_settings.state
                 else:
                     row['status_setting'] = row['status']
 
-                if user.has_perm('zemauth.set_ad_group_source_settings') \
-                   and 'bid_cpc' in row['editable_fields'] \
+                if 'bid_cpc' in row['editable_fields'] \
                    and source_settings is not None \
                    and source_settings.cpc_cc is not None:
                     row['bid_cpc'] = source_settings.cpc_cc
                 else:
                     row['bid_cpc'] = bid_cpc_value
 
-                if user.has_perm('zemauth.set_ad_group_source_settings') \
-                   and 'daily_budget' in row['editable_fields'] \
+                if 'daily_budget' in row['editable_fields'] \
                    and source_settings is not None \
                    and source_settings.daily_budget_cc is not None:
                     row['daily_budget'] = source_settings.daily_budget_cc
                 else:
                     row['daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
-                if user.has_perm('zemauth.see_current_ad_group_source_state'):
-                    row['current_bid_cpc'] = bid_cpc_value
-                    row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
+                row['current_bid_cpc'] = bid_cpc_value
+                row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
             else:
                 bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
                                   s.state == constants.AdGroupSourceSettingsState.ACTIVE]

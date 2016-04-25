@@ -73,15 +73,6 @@ describe('AdGroupSourcesCtrlSpec', function () {
     }));
 
     describe('pollSourcesTableUpdates', function () {
-        it('returns early if user doesn\'t have permission', function () {
-            $scope.hasPermission = function () { return false; };
-            spyOn(api, 'adGroupSourcesUpdates');
-
-            $scope.pollSourcesTableUpdates();
-
-            expect(api.adGroupSourcesUpdates).not.toHaveBeenCalled();
-        });
-
         it('returns early if lastChangeTimeout is set', function () {
             spyOn(api, 'adGroupSourcesUpdates');
             $scope.lastChangeTimeout = 123;

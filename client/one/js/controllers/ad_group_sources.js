@@ -109,8 +109,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
-            shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            internal: false,
+            shown: true,
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -221,7 +221,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            settingsField: true,
             initialOrder: 'desc',
             statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
@@ -247,8 +247,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             fractionSize: 3,
             checked: false,
             type: 'currency',
-            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            internal: false,
+            shown: true,
             totalRow: false,
             order: true,
             help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
@@ -264,7 +264,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            settingsField: true,
             initialOrder: 'desc',
             statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
@@ -290,8 +290,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             fractionSize: 0,
             type: 'currency',
-            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            internal: false,
+            shown: true,
             totalRow: true,
             order: true,
             help: 'Maximum budget per day.',
@@ -921,8 +921,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     pollSyncStatus();
 
     $scope.pollSourcesTableUpdates = function () {
-        if (!$scope.hasPermission('zemauth.set_ad_group_source_settings') ||
-            $scope.lastChangeTimeout) {
+        if ($scope.lastChangeTimeout) {
             return;
         }
 
