@@ -895,8 +895,8 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
                         {u'name': u'Enable Adobe tracking', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'value': u''},
-                        {u'name': u'Auto-Pilot', u'value': u'Disabled'},
-                        {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
+                        {u'name': u'Autopilot', u'value': u'Disabled'},
+                        {u'name': u'Autopilot\'s Daily Budget', u'value': u'$0.00'},
                         {u'name': u'Landing Mode', u'value': False},
                     ],
                     u'show_old_settings': False
@@ -924,8 +924,8 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
                         {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
-                        {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
-                        {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
+                        {u'name': u'Autopilot', u'old_value': u'Disabled', u'value': u'Disabled'},
+                        {u'name': u'Autopilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
                         {u'name': u'Landing Mode', u'old_value': False, u'value': False},
                     ],
                     u'show_old_settings': True
