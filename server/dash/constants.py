@@ -147,7 +147,7 @@ class InfoboxStatus(ConstantBase):
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
         LANDING_MODE: 'Landing Mode',
-        AUTOPILOT: 'Auto-Pilot'
+        AUTOPILOT: 'Autopilot'
     }
 
 

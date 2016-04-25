@@ -1274,6 +1274,7 @@ class AccountUsers(api_common.BaseApiView):
                 self._raise_validation_error(form.errors)
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
+            self._add_user_to_groups(user)
             email_helper.send_email_to_new_user(user, request)
 
             created = True
@@ -1291,6 +1292,12 @@ class AccountUsers(api_common.BaseApiView):
             {'user': self._get_user_dict(user)},
             status_code=201 if created else 200
         )
+
+    def _add_user_to_groups(self, user):
+        perm = authmodels.Permission.objects.get(codename='group_new_user_add')
+        groups = authmodels.Group.objects.filter(permissions=perm)
+        for group in groups:
+            group.user_set.add(user)
 
     def _raise_validation_error(self, errors, message=None):
         raise exc.ValidationError(

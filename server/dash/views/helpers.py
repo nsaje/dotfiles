@@ -970,7 +970,7 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
 
     if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
                                              constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:
-        return 'This value cannot be edited because the ad group is on Auto-Pilot.'
+        return 'This value cannot be edited because the ad group is on Autopilot.'
 
     return 'This media source doesn\'t support setting this value through the dashboard.'
 

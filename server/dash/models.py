@@ -1681,7 +1681,7 @@ class AdGroupSettings(SettingsBase):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Auto-Pilot\'s Daily Budget',
+        verbose_name='Autopilot\'s Daily Budget',
         default=0
     )
     landing_mode = models.BooleanField(default=False)
@@ -1773,8 +1773,8 @@ class AdGroupSettings(SettingsBase):
             'ad_group_name': 'Ad group name',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
-            'autopilot_state': 'Auto-Pilot',
-            'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
+            'autopilot_state': 'Autopilot',
+            'autopilot_daily_budget': 'Autopilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter',
             'landing_mode': 'Landing Mode',
