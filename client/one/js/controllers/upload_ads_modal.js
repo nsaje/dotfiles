@@ -149,12 +149,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
     $scope.viewUploadedAds = function () {
         $modalInstance.close();
-
-        if ($scope.user.showOnboardingGuidance) {
-            api.campaignBudget.get($scope.campaign.id).then(function (data) {
-                $scope.remindToAddBudget.resolve(data.available <= 0);
-            });
-        }
     };
 
     $scope.init();

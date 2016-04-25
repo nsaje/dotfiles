@@ -147,7 +147,7 @@ class InfoboxStatus(ConstantBase):
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
         LANDING_MODE: 'Landing Mode',
-        AUTOPILOT: 'Auto-Pilot'
+        AUTOPILOT: 'Autopilot'
     }
 
 
@@ -1031,7 +1031,7 @@ class CampaignGoalKPI(ConstantBase):
     _VALUES = {
         TIME_ON_SITE: 'Time on Site - Seconds',
         MAX_BOUNCE_RATE: 'Max Bounce Rate',
-        PAGES_PER_SESSION: 'Pages per Session',
+        PAGES_PER_SESSION: 'Pageviews per Visit',
         CPA: '$CPA',
         CPC: 'CPC',
         #        CPM: '$CPM',

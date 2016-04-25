@@ -470,9 +470,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'campaign_manager':
-            kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
-                'campaign_settings_account_manager'
-            ).order_by('last_name')
+            kwargs['queryset'] = ZemUser.objects.all().order_by('last_name')
 
         return super(CampaignSettingsAdmin, self).\
             formfield_for_foreignkey(db_field, request, **kwargs)
@@ -981,6 +979,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
+
+    def has_add_permission(self, request):
+        return False
 
     def get_queryset(self, request):
         return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)

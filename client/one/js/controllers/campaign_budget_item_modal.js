@@ -1,5 +1,5 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', function ($scope, $modalInstance, $timeout, api) {
+oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', 'zemNavigationService', function ($scope, $modalInstance, $timeout, api, zemNavigationService) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = {isOpen: false};
@@ -60,6 +60,9 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         ]($scope.campaign.id, $scope.budgetItem).then(function (data) {
             $scope.saved = true;
             closeModal();
+            if (data.stateChanged) {
+                zemNavigationService.reload();
+            }
         }, function (resp) {
             $scope.errors = api.campaignBudget.convert.error(resp);
             $scope.saved = false;

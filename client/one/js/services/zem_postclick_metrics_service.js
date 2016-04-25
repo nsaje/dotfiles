@@ -63,7 +63,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'PV/Visit',
+            name: 'Pageviews per Visit',
             field: 'pv_per_visit',
             checked: false,
             type: 'number',
@@ -75,7 +75,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
-            name: 'Avg. ToS',
+            name: 'Time on Site',
             field: 'avg_tos',
             checked: false,
             type: 'seconds',

@@ -193,10 +193,11 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.automatic_campaign_stop = False
         new_campaign_settings.save(None)
 
-        campaign_stop.check_and_switch_campaign_to_landing_mode(
+        has_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
             campaign,
             campaign.get_current_settings()
         )
+        self.assertFalse(has_changed)
         self.assertFalse(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
@@ -213,8 +214,11 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
-                                                                campaign.get_current_settings())
+        has_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
+            campaign,
+            campaign.get_current_settings()
+        )
+        self.assertTrue(has_changed)
         self.assertTrue(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
@@ -498,6 +502,11 @@ class StopNonSpendingSourcesTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
+    def setUp(self):
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
+
     @patch('utils.dates_helper.local_today')
     @patch('reports.api_contentads.query')
     def test_stop_non_spending_sources(self, mock_get_yesterday_spends, mock_local_today):
@@ -627,9 +636,72 @@ class CalculateDailySpendsTestCase(TestCase):
         self.assertEqual(820, daily_caps[1])
 
 
+class UpdateAdGroupSettingsTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    def test_ad_group_settings_values(self):
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        ag1_settings = ag1.get_current_settings()
+        self.assertEqual(ag1_settings.autopilot_state,
+                         dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.assertEqual(ag1_settings.autopilot_daily_budget, Decimal('0.0000'))
+
+        ag2_settings = ag2.get_current_settings()
+        self.assertEqual(ag2_settings.autopilot_state,
+                         dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.assertEqual(ag2_settings.autopilot_daily_budget, Decimal('0.0000'))
+
+        daily_caps = {
+            1: 12,
+            2: 15,
+        }
+        campaign_stop._persist_new_autopilot_settings(daily_caps)
+
+        ag1_settings = ag1.get_current_settings()
+        self.assertEqual(ag1_settings.autopilot_state,
+                         dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+        self.assertEqual(ag1_settings.autopilot_daily_budget, Decimal('12'))
+
+        ag2_settings = ag2.get_current_settings()
+        self.assertEqual(ag2_settings.autopilot_state,
+                         dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+        self.assertEqual(ag2_settings.autopilot_daily_budget, Decimal('15'))
+
+    @patch('automation.campaign_stop._wrap_up_landing')
+    @patch('automation.campaign_stop._stop_non_spending_sources')
+    @patch('automation.campaign_stop._wrap_up_landing')
+    @patch('automation.campaign_stop._run_autopilot')
+    @patch('automation.campaign_stop._set_end_date_to_today')
+    @patch('automation.campaign_stop._prepare_for_autopilot')
+    @patch('automation.campaign_stop._get_past_7_days_data')
+    @patch('automation.campaign_stop._calculate_daily_caps')
+    @patch('automation.campaign_stop._persist_new_autopilot_settings')
+    def test_update_ad_group_settings_called(self, mock_update_ags, mock_calc_caps,
+                                             mock_past7, mock_prepare_ap, *mocks):
+        caps = {
+            1: 12,
+            2: 15,
+        }
+        mock_past7.return_value = None, None
+        mock_prepare_ap.return_value = [], None
+        mock_calc_caps.return_value = caps
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        campaign_stop._update_landing_campaign(campaign)
+        self.assertTrue(mock_update_ags.called)
+        mock_update_ags.assert_called_once_with(caps)
+
+
 class PrepareActiveSourceForAutopilotTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
+
+    def setUp(self):
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_stop_ad_group_source(self):
         campaign = dash.models.Campaign.objects.get(id=1)

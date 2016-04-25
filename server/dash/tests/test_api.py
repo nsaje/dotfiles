@@ -1483,6 +1483,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
                                   .latest('created_dt')
         assert self.ad_group_settings.state == 2
 
+        patcher = mock.patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_can_not_trigger_action_if_ad_group_disabled(self):
         self.assertFalse(self.writer.can_trigger_action())
 

@@ -761,16 +761,6 @@ div[datepicker] {
     display: none;
 }
 
-.graph-container-short {
-    display: table-cell;
-    width: 100%;
-}
-
-.graph-container-long {
-    display: table-cell;
-    width: 100%;
-}
-
 .infobox-container {
     display: table-cell;
     width: 350px;
@@ -972,6 +962,15 @@ img.zem-icon {
     color: @infobox-dark-gray;
 }
 
+.infobox-reloading-icon {
+    color: #00cc18;
+    text-align: center;
+    background-image: url('img/loader.gif');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+
 .infobox-active-icon {
     color: #00cc18;
     text-align: center;
@@ -984,7 +983,7 @@ img.zem-icon {
 .infobox-inactive-icon {
     color: @infobox-black;
     text-align: center;
-    background-image: url('img/adgroup_status_paused_gray.svg');
+    background-image: url('img/adgroup_status_enabled_red.svg');
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 15px 15px;
@@ -993,7 +992,7 @@ img.zem-icon {
 .infobox-stopped-icon {
     color: @infobox-black;
     text-align: center;
-    background-image: url('img/adgroup_status_paused_red.svg');
+    background-image: url('img/adgroup_status_paused_gray.svg');
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 15px 15px;
@@ -2620,6 +2619,11 @@ ul.icon-list li {
 .adgroup-status-stopped-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_paused_gray.svg');
+}
+
+.adgroup-status-reloading-icon {
+    .adgroup-status-icon-placeholder();
+    background-image: url('img/loader.gif');
 }
 
 .adgroup-status-autopilot-icon {

@@ -895,8 +895,8 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
                         {u'name': u'Enable Adobe tracking', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'value': u''},
-                        {u'name': u'Auto-Pilot', u'value': u'Disabled'},
-                        {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
+                        {u'name': u'Autopilot', u'value': u'Disabled'},
+                        {u'name': u'Autopilot\'s Daily Budget', u'value': u'$0.00'},
                         {u'name': u'Landing Mode', u'value': False},
                     ],
                     u'show_old_settings': False
@@ -924,8 +924,8 @@ class AdGroupAgencyTest(AgencyViewTestCase):
                         {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
                         {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
-                        {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
-                        {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
+                        {u'name': u'Autopilot', u'old_value': u'Disabled', u'value': u'Disabled'},
+                        {u'name': u'Autopilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
                         {u'name': u'Landing Mode', u'old_value': False, u'value': False},
                     ],
                     u'show_old_settings': True
@@ -1877,7 +1877,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
-        self.add_permissions(['campaign_agency_view', 'campaign_settings_account_manager'])
+        self.add_permissions(['campaign_agency_view'])
+
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1922,17 +1923,8 @@ class CampaignSettingsTest(AgencyViewTestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-    def test_permissions(self):
-        url = '/api/campaigns/1/settings/'
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1946,7 +1938,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
 
     def test_get_no_ad_group_default_settings_permission(self):
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1969,7 +1960,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
 
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2008,7 +1999,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_added(self, p1, p2, p3):
         self.add_permissions([
-            'campaign_settings_view',
             'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
@@ -2091,7 +2081,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'campaign_settings_view',
             'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
@@ -2137,7 +2126,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'campaign_settings_view',
             'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
@@ -2177,7 +2165,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(settings.target_devices, ['mobile'])
         self.assertEqual(settings.target_regions, ['NC', '501'])
 
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2206,7 +2193,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(settings.target_regions, ['NC', '501'])
 
     def test_validation(self):
-        self.add_permissions(['campaign_settings_view', 'settings_defaults_on_campaign_level'])
+        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2243,7 +2230,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertTrue('target_devices' in content['data']['errors'])
 
     def test_validation_no_settings_defaults_permission(self):
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2267,9 +2253,10 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotIn('target_devices', content['data']['errors'])
 
     def test_get_with_conversion_goals(self):
-        self.add_permissions(['campaign_settings_view', 'can_see_campaign_goals'])
 
         ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.add_permissions(['can_see_campaign_goals'])
 
         convpix = models.ConversionPixel.objects.create(
             account=ad_group.campaign.account,
@@ -2311,11 +2298,6 @@ class AccountAgencyTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super(AccountAgencyTest, cls).setUpClass()
-
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
 
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=1)
@@ -2448,7 +2430,7 @@ class AccountAgencyTest(TestCase):
         view = agency.AccountAgency()
         history = view.get_history(account)
 
-        self.assertEqual(len(history), 6)
+        self.assertTrue(len(history) >= 5)
         self.assertFalse(history[0]['show_old_settings'])
         self.assertTrue(history[1]['show_old_settings'])
         self.assertTrue(history[-1]['show_old_settings'])

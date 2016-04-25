@@ -81,11 +81,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                     'active. Unselect this instead of deleting accounts.')
     )
 
-    show_onboarding_guidance = models.BooleanField(
-        default=False,
-        help_text='Designates whether user has self-manage access and needs onboarding guidance.'
-    )
-
     is_test_user = models.BooleanField(
         default=False,
         help_text=_('Designates whether user is an internal testing user and will not contribute towards certain statistics.')
@@ -101,11 +96,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ('campaign_settings_view', "Can view campaign's settings tab."),
             ('campaign_agency_view', "Can view campaign's agency tab."),
-            ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
-            ('campaign_budget_view', "Can view campaign's budget tab."),
-            ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
             ('supply_dash_link_view', 'Can view supply dash link.'),
             ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
@@ -114,17 +105,14 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('account_agency_view', "Can view accounts's agency tab."),
             ('account_credit_view', "Can view accounts's credit tab."),
             ('ad_group_sources_add_source', "Can add media sources."),
-            ('campaign_sources_view', 'Can view campaign sources view.'),
             ('account_sources_view', 'Can view account sources view.'),
             ('all_accounts_sources_view', 'Can view all accounts sources view.'),
-            ('campaign_ad_groups_add_ad_group', 'Can add ad groups.'),
             ('account_campaigns_add_campaign', 'Can add campaigns.'),
             ('all_accounts_accounts_add_account', 'Can add accounts.'),
             ('campaign_budget_management_view', 'Can do campaign budget management.'),
             ('account_budget_view', 'Can view account budget.'),
             ('all_accounts_budget_view', 'Can view all accounts budget.'),
             ('archive_restore_entity', 'Can archive or restore an entity.'),
-            ('view_archived_entities', 'Can view archived entities.'),
             ('unspent_budget_view', 'Can view unspent budget.'),
             ('switch_to_demo_mode', 'Can switch to demo mode.'),
             ('account_agency_access_permissions', 'Can view and set account access permissions.'),
@@ -136,11 +124,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('content_ads_postclick_engagement', 'Can view content ads postclick eng. metrics.'),
             ('aggregate_postclick_acquisition', 'Can view aggregate postclick acq. metrics.'),
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
-            ('view_pubs_conversion_goals', 'Can view publishers conversion goals.'),
             ('view_pubs_postclick_acquisition', 'Can view publishers postclick acq. metrics.'),
-            ('view_pubs_postclick_engagement', 'Can view publishers postclick eng. metrics.'),
             ('data_status_column', 'Can see data status column in table.'),
-            ('new_content_ads_tab', 'Can view new content ads tab.'),
             ('filter_sources', 'Can filter sources'),
             ('upload_content_ads', 'Can upload new content ads.'),
             ('set_content_ad_status', 'Can set status of content ads.'),
@@ -162,14 +147,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
-            ('exports_plus', 'Can download reports using new export facilities'),
             ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
             ('settings_defaults_on_campaign_level', 'Can view ad group settings defaults on campaign level'),
             ('can_access_global_publisher_blacklist_status', 'Can view or modify global publishers blacklist status'),
             ('can_access_campaign_account_publisher_blacklist_status',
              'Can view or modify account and campaign publishers blacklist status'),
             ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
-            ('can_see_infobox', 'Can see info box'),
             ('account_account_view', "Can view account's Account tab."),
             ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),
@@ -185,9 +168,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_managers_in_accounts_table', "Can see Account Manager and Sales Representative in accounts table."),
             ('can_see_managers_in_campaigns_table', "Can see Campaign Manager in campaigns table."),
             ('can_hide_chart', 'Can show or hide chart'),
-            ('can_access_ad_group_infobox', 'Can access info box on adgroup level'),
-            ('can_access_campaign_infobox', 'Can access info box on campaign level'),
-            ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
             ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
             ('campaign_goal_performance', 'Can view goal performance information'),

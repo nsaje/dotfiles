@@ -13,6 +13,7 @@ from convapi.ga_api import GAApiReport
 from reports import refresh
 from reports import update
 from reports.constants import ReportType
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 SOURCE_Z1 = 'z1'
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('-d', '--date',
                     help='Date for which Google Analytics reports need to be retrieved. Format YYYY-MM-DD',

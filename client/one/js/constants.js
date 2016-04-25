@@ -22,6 +22,13 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
+    infoboxStatus: {
+        ACTIVE: 'active',
+        INACTIVE: 'inactive',
+        STOPPED: 'stopped',
+        LANDING_MODE: 'landing-mode',
+        AUTOPILOT: 'autopilot',
+    },
     publisherStatus: {
         ENABLED: 1,
         BLACKLISTED: 2,
@@ -576,7 +583,7 @@ var options = {
     ],
     adGroupSettingsAutopilotStates: [{
         name: 'Disabled',
-        help: 'Auto-Pilot will not operate on this Ad Group.',
+        help: 'Autopilot will not operate on this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.INACTIVE,
     }, {
         name: 'Optimize Bid CPCs',
@@ -607,8 +614,8 @@ var options = {
     adGroupEngagementChartPostClickMetrics: [
         {name: '% New Users', value: constants.chartMetric.NEW_USERS},
         {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
-        {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
-        {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS},
+        {name: 'Pageviews per Visit', value: constants.chartMetric.PV_PER_VISIT},
+        {name: 'Time on Site', value: constants.chartMetric.AVG_TOS},
     ],
     adGroupConversionGoalChartMetrics: [
         {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
@@ -691,7 +698,6 @@ var options = {
     ],
     effectiveCostChartMetrics: [
         {name: 'Data Cost', value: constants.chartMetric.EFFECTIVE_DATA_COST},
-        {name: 'License Fee', value: constants.chartMetric.LICENSE_FEE},
         {name: 'Media Spend', value: constants.chartMetric.EFFECTIVE_MEDIA_COST},
         {name: 'Total Spend', value: constants.chartMetric.BILLING_COST},
     ],
@@ -1108,7 +1114,7 @@ var options = {
     campaignGoalKPIs: [
         {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
         {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
-        {name: 'Pages per Session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'Pageviews per Visit', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
         {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
@@ -1158,3 +1164,12 @@ var defaults = {
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
     ],
 };
+
+constants.campaignGoalValueText = {};
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPA] = 'CPA';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPC] = 'CPC';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPM] = 'CPM';
+constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] = 'Bounce Rate';
+constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = 'New Unique Visitors';
+constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
+constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';

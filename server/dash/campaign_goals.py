@@ -15,7 +15,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: '{} Time on Site - Seconds',
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: '{} Max Bounce Rate',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: '{} New Unique Visitors',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pages per Session',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
 }
@@ -51,7 +51,7 @@ CAMPAIGN_GOAL_MAP = {
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: 'bounce_rate',
-    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'total_pageviews',
+    constants.CampaignGoalKPI.PAGES_PER_SESSION: 'pv_per_visit',
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
@@ -416,11 +416,10 @@ def get_goal_performance_status(goal_type, metric_value, planned_value, cost=Non
     return constants.CampaignGoalPerformance.AVERAGE
 
 
-def fetch_goals(campaign_ids, start_date, end_date):
+def fetch_goals(campaign_ids, end_date):
     prefetch_values = Prefetch(
         'values',
         queryset=dash.models.CampaignGoalValue.objects.filter(
-            created_dt__gte=datetime.datetime.combine(start_date, datetime.datetime.min.time()),
             created_dt__lt=datetime.datetime.combine(end_date + datetime.timedelta(1),
                                                      datetime.datetime.min.time()),
         ).order_by('-created_dt')
@@ -454,7 +453,7 @@ def get_goals_performance(user, constraints, start_date, end_date,
     performance = []
     campaign = constraints.get('campaign') or constraints['ad_group'].campaign
     conversion_goals = conversion_goals or campaign.conversiongoal_set.all()
-    goals = goals or fetch_goals([campaign.pk], start_date, end_date)
+    goals = goals or fetch_goals([campaign.pk], end_date)
 
     stats = stats or dash.stats_helper.get_stats_with_conversions(
         user,

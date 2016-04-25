@@ -7,6 +7,8 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 
+from utils import test_helper
+
 from zemauth.models import User
 
 
@@ -110,16 +112,6 @@ class NavigationDataViewTest(TestCase):
             }
         })
 
-    def test_get_account_without_archived_flag(self):
-        response = self._get(2, 'accounts', 2)
-
-        self.assertDictEqual(response, {
-            'account': {
-                'id': 2,
-                'name': 'test account 2',
-            }
-        })
-
     def test_get_account_no_access(self):
         # has other accounts available
         response = self._get(1, 'accounts', 2)
@@ -169,21 +161,6 @@ class NavigationDataViewTest(TestCase):
             }
         })
 
-    def test_get_campaign_without_archived_flag(self):
-        response = self._get(2, 'campaigns', 2)
-
-        self.assertDictEqual(response, {
-            'account': {
-                'id': 2,
-                'name': 'test account 2',
-            },
-            'campaign': {
-                'id': 2,
-                'name': 'test campaign 2',
-                'landingMode': False,
-            }
-        })
-
     def test_get_campaign_no_access(self):
         # has other campaigns available
         response = self._get(1, 'campaigns', 2)
@@ -221,14 +198,13 @@ class NavigationDataViewTest(TestCase):
                 'name': 'test adgroup 1',
                 'state': 1,
                 'status': 1,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'active',
             }
         })
 
         # archived entity
         user = User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='view_archived_entities')
-        user.user_permissions.add(permission)
 
         response = self._get(2, 'ad_groups', 4)
 
@@ -250,30 +226,8 @@ class NavigationDataViewTest(TestCase):
                 'name': 'test adgroup 4',
                 'state': 2,
                 'status': 2,
-                'autopilot_state': 2
-            }
-        })
-
-    @patch('datetime.datetime', MockDatetime)
-    def test_get_ad_group_without_archived_flag(self):
-        response = self._get(2, 'ad_groups', 4)
-
-        self.assertDictEqual(response, {
-            'account': {
-                'id': 2,
-                'name': 'test account 2',
-            },
-            'campaign': {
-                'id': 2,
-                'name': 'test campaign 2',
-                'landingMode': False,
-            },
-            'ad_group': {
-                'id': 4,
-                'name': 'test adgroup 4',
-                'state': 2,
-                'status': 2,
-                'autopilot_state': 2
+                'autopilot_state': 2,
+                'active': 'stopped',
             }
         })
 
@@ -320,6 +274,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
+                    "active": "active",
                 }, {
                     "archived": False,
                     "id": 2,
@@ -327,6 +282,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 2,  # past dates
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
                     "id": 3,
@@ -334,6 +290,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 2,
                     "status": 2,
                     "autopilot_state": 2,
+                    "active": "stopped",
                 }],
                 "archived": False,
                 "id": 1,
@@ -359,6 +316,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 2,  # source paused
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
                     "id": 2,
@@ -366,6 +324,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 2,
                     "autopilot_state": 2,
+                    "active": "inactive",
                 }, {
                     "archived": False,
                     "id": 3,
@@ -373,6 +332,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 2,
                     "status": 2,  # source paused
                     "autopilot_state": 2,
+                    "active": "stopped",
                 }],
                 "landingMode": False,
                 "archived": False,
@@ -386,36 +346,6 @@ class NavigationTreeViewTest(TestCase):
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_archived_flag(self):
-
-        # user has no right for archived flag
-        response = self._get(2)
-
-        expected_response = [{
-            "campaigns": [{
-                "adGroups": [
-                    {
-                        "id": 4,
-                        "name": "test adgroup 4",
-                        "state": 2,
-                        "status": 2,
-                        "autopilot_state": 2,
-                    }
-                ],
-                "id": 2,
-                "name": "test campaign 2",
-                "landingMode": False,
-            }],
-            "id": 2,
-            "name": "test account 2",
-        }]
-
-        self.assertItemsEqual(response['data'], expected_response)
-
-        # add user right for archived flag
-        user = User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='view_archived_entities')
-        user.user_permissions.add(permission)
-
         response = self._get(2)
 
         expected_response = [{
@@ -428,6 +358,7 @@ class NavigationTreeViewTest(TestCase):
                         "state": 2,
                         "status": 2,
                         "autopilot_state": 2,
+                        "active": "stopped",
                     }
                 ],
                 "id": 2,

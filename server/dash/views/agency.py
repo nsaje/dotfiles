@@ -180,7 +180,7 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
 
-        if user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
+        if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
             if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
@@ -308,7 +308,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'campaign_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'campaign_managers': self.get_user_list(campaign_settings),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -413,8 +413,8 @@ class CampaignAgency(api_common.BaseApiView):
         settings.campaign_manager = resource['campaign_manager']
         settings.iab_category = resource['iab_category']
 
-    def get_user_list(self, settings, perm_name):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+    def get_user_list(self, settings):
+        users = ZemUser.objects.all()
 
         manager = settings.campaign_manager
         if manager is not None and manager not in users:
@@ -537,9 +537,6 @@ class CampaignSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
@@ -556,9 +553,6 @@ class CampaignSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
 
@@ -871,7 +865,7 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
+            'account_managers': self.get_user_list(account_settings),
             'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
@@ -1163,8 +1157,8 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+    def get_user_list(self, settings, perm_name=None):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:

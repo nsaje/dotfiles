@@ -469,9 +469,9 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'CPC',
                         'name': 'CPC'
                     },
-                    'total_pageviews': {
-                        'id': 'Pages per Session',
-                        'name': 'Pages per Session'
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
                     },
                     'bounce_rate': {
                         'id': 'Max Bounce Rate',
@@ -628,9 +628,9 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'CPC',
                         'name': 'CPC'
                     },
-                    'total_pageviews': {
-                        'id': 'Pages per Session',
-                        'name': 'Pages per Session'
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
                     },
                     'bounce_rate': {
                         'id': 'Max Bounce Rate',
@@ -783,9 +783,9 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'id': 'CPC',
                         'name': 'CPC'
                     },
-                    'total_pageviews': {
-                        'id': 'Pages per Session',
-                        'name': 'Pages per Session'
+                    'pv_per_visit': {
+                        'id': 'Pageviews per Visit',
+                        'name': 'Pageviews per Visit'
                     },
                     'bounce_rate': {
                         'id': 'Max Bounce Rate',
