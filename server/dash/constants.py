@@ -147,7 +147,7 @@ class InfoboxStatus(ConstantBase):
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
         LANDING_MODE: 'Landing Mode',
-        AUTOPILOT: 'Auto-Pilot'
+        AUTOPILOT: 'Autopilot'
     }
 
 
@@ -1029,13 +1029,13 @@ class CampaignGoalKPI(ConstantBase):
     NEW_UNIQUE_VISITORS = 7
 
     _VALUES = {
-        TIME_ON_SITE: 'time on site in seconds',
-        MAX_BOUNCE_RATE: 'max bounce rate %',
-        PAGES_PER_SESSION: 'pages per session',
+        TIME_ON_SITE: 'Time on Site - Seconds',
+        MAX_BOUNCE_RATE: 'Max Bounce Rate',
+        PAGES_PER_SESSION: 'Pageviews per Visit',
         CPA: '$CPA',
-        CPC: '$CPC',
+        CPC: 'CPC',
         #        CPM: '$CPM',
-        NEW_UNIQUE_VISITORS: 'new visitors %',
+        NEW_UNIQUE_VISITORS: 'New Unique Visitors',
     }
 
 
@@ -1371,7 +1371,9 @@ class GATrackingType(ConstantBase):
 
 class SystemUserType(ConstantBase):
     CAMPAIGN_STOP = 1
+    AUTOPILOT = 2
 
     _VALUES = {
-        CAMPAIGN_STOP: 'Campaign Stop'
+        CAMPAIGN_STOP: 'Campaign Stop',
+        AUTOPILOT: 'Zemanta Autopilot'
     }

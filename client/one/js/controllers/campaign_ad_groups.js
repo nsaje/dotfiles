@@ -105,10 +105,15 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         row.stateText = $scope.getStateText(state);
                     }
                 });
+                zemNavigationService.notifyAdGroupReloading(adgroupId, true);
+
                 api.adGroupSettingsState.post(adgroupId, state).then(
                     function (data) {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
+                    },
+                    function () {
+                        zemNavigationService.notifyAdGroupReloading(adgroupId, false);
                     }
                 );
             },
@@ -252,24 +257,24 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -347,11 +352,17 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
+                'license_fee', 'yesterday_cost', 'e_yesterday_cost',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee', 'yesterday_cost', 'e_yesterday_cost'
+                'cpc', 'clicks', 'impressions', 'ctr',
             ]
         },
         {
@@ -359,7 +370,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'click_discrepancy'
+                'click_discrepancy',
             ]
         },
         {
@@ -427,10 +438,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.campaignOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,

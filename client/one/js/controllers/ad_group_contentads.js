@@ -186,8 +186,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         initialOrder: 'asc',
         enabledValue: constants.contentAdSourceState.ACTIVE,
         pausedValue: constants.contentAdSourceState.INACTIVE,
-        internal: $scope.isPermissionInternal('zemauth.set_content_ad_status'),
-        shown: $scope.hasPermission('zemauth.set_content_ad_status'),
+        internal: false,
+        shown: true,
         checked: true,
         totalRow: false,
         unselectable: true,
@@ -389,23 +389,23 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
         shown: $scope.hasPermission('zemauth.can_view_effective_costs')
     }, {
-        name: 'Total Spend',
-        field: 'billing_cost',
-        checked: false,
-        type: 'currency',
-        totalRow: true,
-        help: 'Sum of media spend, data cost and license fee.',
-        order: true,
-        initialOrder: 'desc',
-        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-    }, {
         name: 'License Fee',
         field: 'license_fee',
         checked: false,
         type: 'currency',
         totalRow: true,
         help: 'Zemanta One platform usage cost.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'Total Spend',
+        field: 'billing_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee.',
         order: true,
         initialOrder: 'desc',
         internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -465,13 +465,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }];
 
     $scope.columnCategories = [{
+        'name': 'Costs',
+        'fields': ['cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
+                   'billing_cost', 'license_fee'],
+    }, {
         'name': 'Content Sync',
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
-        'fields': ['cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
-                   'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                   'license_fee']
+        'fields': ['cpc', 'clicks', 'impressions', 'ctr']
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
@@ -877,10 +879,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             });
     };
 
-    $scope.canShowOnboardingGuidance = function () {
-        return contentAdsNotLoaded.promise;
-    };
-
     var updateTableData = function (rowsUpdates, totalsUpdates) {
         $scope.rows.forEach(function (row) {
             var rowUpdates = rowsUpdates[row.id];
@@ -947,16 +945,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.adGroupOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,
             $scope.dateRange.endDate).then(
             function (data) {
-                $scope.infoboxHeader = data.header;
+                $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
                 $scope.reflowGraph(1);

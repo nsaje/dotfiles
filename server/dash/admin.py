@@ -320,7 +320,7 @@ class AdGroupInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class CampaignAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -331,6 +331,15 @@ class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
+    form = dash_forms.CampaignAdminForm
+
+    def save_model(self, request, obj, form, change):
+        with transaction.atomic():
+            campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+            new_settings = obj.get_current_settings().copy_settings()
+            new_settings.automatic_campaign_stop = campaign_stop
+            obj.save(request)
+            new_settings.save(request)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -461,9 +470,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'campaign_manager':
-            kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
-                'campaign_settings_account_manager'
-            ).order_by('last_name')
+            kwargs['queryset'] = ZemUser.objects.all().order_by('last_name')
 
         return super(CampaignSettingsAdmin, self).\
             formfield_for_foreignkey(db_field, request, **kwargs)
@@ -474,7 +481,6 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'campaign',
         'campaign_manager',
-        'service_fee',
         'iab_category',
         'promotion_goal',
         'created_dt',
@@ -973,6 +979,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
+
+    def has_add_permission(self, request):
+        return False
 
     def get_queryset(self, request):
         return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)

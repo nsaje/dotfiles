@@ -488,6 +488,21 @@ urlpatterns += [
 # K1 Api
 urlpatterns += [
     url(
+        r'^k1api/ad_group_source$',
+        k1api.views.get_ad_group_source,
+        name='k1api.get_ad_group_source',
+    ),
+    url(
+        r'^k1api/ad_group_source_ids$',
+        k1api.views.get_ad_group_source_ids,
+        name='k1api.get_ad_group_source_ids',
+    ),
+    url(
+        r'^k1api/content_ad_sources_for_ad_group$',
+        k1api.views.get_content_ad_sources_for_ad_group,
+        name='k1api.get_content_ad_sources_for_ad_group',
+    ),
+    url(
         r'^k1api/get_accounts$',
         k1api.views.get_accounts,
         name='k1api.get_accounts',
@@ -564,6 +579,6 @@ urlpatterns += [
 urlpatterns += [url(r'^tos/$', TemplateView.as_view(template_name='tos.html'))]
 
 urlpatterns += [
-    url(r'^api/', django.views.defaults.page_not_found),
+    url(r'^api/', django.views.defaults.page_not_found, {'exception': None}),
     url(r'^', dash.views.views.index, name='index')
 ]

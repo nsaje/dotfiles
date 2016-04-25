@@ -200,15 +200,11 @@ class CampaignBudgetView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
         return self._get_response(campaign)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         request_data = json.loads(request.body)
@@ -322,8 +318,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_get')
     def get(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         item = models.BudgetLineItem.objects.get(
             campaign_id=campaign_id,
             pk=budget_id,
@@ -332,8 +326,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_post')
     def post(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         request_data = json.loads(request.body)
@@ -342,25 +334,30 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
         data['campaign'] = campaign.id
 
+        instance = models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
         item = forms.BudgetLineItemForm(
             data,
-            instance=models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
+            instance=instance
         )
+
+        self._validate_amount(data, item)
 
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
         item.save()
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
-                                                                campaign.get_current_settings())
+        state_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
+            campaign,
+            campaign.get_current_settings()
+        )
 
-        return self.create_api_response(item.instance.pk)
+        return self.create_api_response({
+            'id': item.instance.pk,
+            'state_changed': state_changed,
+        })
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
     def delete(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.campaign_budget_view'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
         try:
@@ -370,6 +367,33 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
                                                                 campaign.get_current_settings())
         return self.create_api_response(True)
+
+    def _validate_amount(self, data, item):
+        """
+        Even if we run the campaign stop script every time the budget amount is lowered
+        and stop the campaign 'immediately', overspend is still possible because the campaign
+        will actually stop on external sources at the end of their local day.
+
+        Because of this we define a 'budget minimum':
+        budget_minimum = budget_spend + sum(daily_budgets) - overall_available_campaign_budget
+        """
+        amount = Decimal(data.get('amount', '0'))
+        if amount >= item.instance.amount:
+            return
+        min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
+        if min_amount is None:
+            return
+
+        if min_amount > amount:
+            item.errors.setdefault('amount', []).append(
+                'Budget exceeds the minimum budget amount by ${}.'.format(
+                    Decimal(min_amount - amount).quantize(Decimal('1.00'))
+                )
+            )
+        if not campaign_stop.is_current_time_valid_for_amount_editing(item.instance.campaign):
+            item.errors.setdefault('amount', []).append(
+                'You cannot lower the amount on an active budget line item at this time.'
+            )
 
     def _get_response(self, item):
         return self.create_api_response({

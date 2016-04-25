@@ -1,7 +1,5 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
-    var freshSettings = $q.defer(),
-        goToContentAds = false;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
     $scope.actionIsWaiting = false;
@@ -23,10 +21,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     // https://github.com/angular/angular.js/wiki/Understanding-Scopes
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
-
-    $scope.adGroupHasFreshSettings = function () {
-        return freshSettings.promise;
-    };
 
     $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
@@ -51,8 +45,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
-                freshSettings.resolve(data.settings.name === 'New ad group');
-                goToContentAds = data.settings.name === 'New ad group';
             },
             function () {
                 // error
@@ -107,40 +99,27 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
+        zemNavigationService.notifyAdGroupReloading($state.params.id, true);
+
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
                 var currAdGroup = $scope.adGroup.id;
                 $scope.errors = {};
-                if (prevAdGroup !== currAdGroup) {
-                    zemNavigationService.updateAdGroupCache(prevAdGroup, {
-                        name: data.settings.name,
-                        state: data.settings.state,
-                    });
-                } else {
+                if (prevAdGroup === currAdGroup) {
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
-
-                    zemNavigationService.updateAdGroupCache(currAdGroup, {
-                        name: data.settings.name,
-                        state: data.settings.state,
-                        status: status,
-                    });
                 }
 
+                zemNavigationService.reloadAdGroup($state.params.id);
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-
-                if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function () {
-                        $state.go('main.adGroups.ads', {id: $scope.settings.id});
-                    }, 100);
-                }
             },
             function (data) {
                 $scope.errors = data;
                 $scope.saveRequestInProgress = false;
                 $scope.saved = false;
+                zemNavigationService.notifyAdGroupReloading($state.params.id, false);
             }
         );
     };

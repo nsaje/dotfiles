@@ -18,6 +18,10 @@ class AutopilotPlusTestCase(test.TestCase):
     def setUp(self):
         refresh.refresh_adgroup_stats()
 
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
+
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
@@ -26,7 +30,8 @@ class AutopilotPlusTestCase(test.TestCase):
             'new_cpc_cc': Decimal('0.2')
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes)
-        mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')}, None, None)
+        mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')},
+                                              dash.constants.SystemUserType.AUTOPILOT, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -37,7 +42,8 @@ class AutopilotPlusTestCase(test.TestCase):
             'new_budget': Decimal('200')
         }}
         autopilot_plus.set_autopilot_changes(budget_changes=budget_changes)
-        mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')}, None, None)
+        mock_update_values.assert_called_with(ag_source, {'daily_budget_cc': Decimal('200')},
+                                              dash.constants.SystemUserType.AUTOPILOT, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -53,7 +59,8 @@ class AutopilotPlusTestCase(test.TestCase):
         }}
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
         mock_update_values.assert_called_with(
-            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, None, None)
+            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')},
+            dash.constants.SystemUserType.AUTOPILOT, None)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')

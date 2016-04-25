@@ -12,18 +12,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.showSelectedPublisher = null;
     $scope.localStoragePrefix = 'main';
 
-    $scope.remindToAddBudget = $q.defer();
-
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
 
-    $scope.infoboxEnabled = false;
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = true;
-
-    $scope.user.automaticallyCreateAdGroup = false;
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -86,10 +81,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return !!$scope.getDefaultAllAccountsState();
     };
 
-    $scope.canShowBudgetNotification = function () {
-        return $scope.remindToAddBudget.promise;
-    };
-
     $scope.getDefaultAccountState = function () {
         // keep the same tab if possible
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
@@ -124,35 +115,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         // keep the same tab if possible
-        if ($state.includes('**.sources') && $scope.hasPermission('zemauth.campaign_sources_view')) {
+        if ($state.includes('**.sources')) {
             return 'main.campaigns.sources';
         }
         if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
-        if ($state.includes('**.settings') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($state.includes('**.settings')) {
             return 'main.campaigns.settings';
         }
 
         // otherwise get default state
-        if ($scope.hasPermission('zemauth.campaign_ad_groups_view')) {
-            return 'main.campaigns.ad_groups';
-        }
-        if ($scope.hasPermission('zemauth.campaign_sources_view')) {
-            return 'main.campaigns.sources';
-        }
-        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
-            return 'main.campaigns.agency';
-        }
-        if ($scope.hasPermission('zemauth.campaign_budget_view')) {
-            return 'main.campaigns.budget';
-        }
-        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
-            return 'main.campaigns.settings';
-        }
-
-        // no permissions
-        return null;
+        return 'main.campaigns.ad_groups';
     };
 
     $scope.canAccessCampaigns = function () {
@@ -283,53 +257,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $scope.enablePublisherFilter = visible;
     };
 
-    $scope.isInfoboxEnabled = function () {
-        // infobox will be visible only on certain views and
-        // is entirely housed within main atm
-        if ($state.is('main.campaigns.ad_groups') ||
-            $state.is('main.campaigns.sources') ||
-            $state.is('main.adGroups.ads') ||
-            $state.is('main.adGroups.sources') ||
-            $state.is('main.adGroups.publishers') ||
-            $state.is('main.accounts.campaigns') ||
-            $state.is('main.accounts.sources') ||
-            $state.is('main.allAccounts.accounts') ||
-            $state.is('main.allAccounts.sources')) {
-            return true;
-        }
-
-        return false;
-    };
-
-    $scope.hasInfoboxPermission = function () { // eslint-disable-line max-len
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return false;
-        }
-
-        if ($state.is('main.adGroups.ads') ||
-            $state.is('main.adGroups.sources') ||
-            $state.is('main.adGroups.publishers')) {
-            return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
-        }
-
-        if ($state.is('main.campaigns.ad_groups') ||
-            $state.is('main.campaigns.sources')) {
-            return $scope.hasPermission('zemauth.can_access_campaign_infobox');
-        }
-
-        if ($state.is('main.accounts.campaigns') ||
-            $state.is('main.accounts.sources')) {
-            return $scope.hasPermission('zemauth.can_access_account_infobox');
-        }
-
-        if ($state.is('main.allAccounts.accounts') ||
-            $state.is('main.allAccounts.sources')) {
-            return $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
-        }
-
-        return false;
-    };
-
     $scope.isChartVisible = function () {
         return $state.is('main.adGroups.ads') ||
             $state.is('main.adGroups.sources') ||
@@ -361,29 +288,19 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         };
     };
 
-    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        if (adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE) {
+    $scope.getAdGroupStatusClass = function (adGroup) {
+        if (adGroup.reloading) {
+            return 'adgroup-status-reloading-icon';
+        }
+
+        if (adGroup.active === constants.infoboxStatus.STOPPED) {
             return 'adgroup-status-stopped-icon';
-        }
-
-        if (campaign.landingMode) {
-            if ($state.includes('main.adGroups', {id: adGroup.id.toString()})) {
-                return 'adgroup-status-landing-mode-selected-icon';
-            }
-
-            return 'adgroup-status-landing-mode-icon';
-        }
-
-        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
-             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
-            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
-            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
+        } else if (adGroup.active === constants.infoboxStatus.LANDING_MODE) {
+            return ($state.includes('main.adGroups', {id: adGroup.id.toString()})) ?
+                'adgroup-status-landing-mode-selected-icon' : 'adgroup-status-landing-mode-icon';
+        } else if (adGroup.active === constants.infoboxStatus.INACTIVE) {
             return 'adgroup-status-inactive-icon';
-        }
-
-        if (adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC ||
-              adGroup.autopilot_state === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) {
+        } else if (adGroup.active === constants.infoboxStatus.AUTOPILOT) {
             return 'adgroup-status-autopilot-icon';
         }
 
@@ -393,10 +310,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
-
-        // infobox will be visible only on certain views and
-        // is entirely housed within main atm
-        $scope.infoboxEnabled = $scope.isInfoboxEnabled() && $scope.hasInfoboxPermission();
 
         // Redirect from default state
         var state = null;

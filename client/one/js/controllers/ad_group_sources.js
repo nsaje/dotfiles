@@ -109,8 +109,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
-            shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            internal: false,
+            shown: true,
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -122,6 +122,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 }
                 $scope.loadRequestInProgress = true;
                 $scope.autopilotChanges = '';
+
+                zemNavigationService.notifyAdGroupReloading($state.params.id, true);
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
@@ -219,7 +221,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            settingsField: true,
             initialOrder: 'desc',
             statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
@@ -245,8 +247,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             fractionSize: 3,
             checked: false,
             type: 'currency',
-            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            internal: false,
+            shown: true,
             totalRow: false,
             order: true,
             help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
@@ -262,7 +264,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            settingsField: true,
             initialOrder: 'desc',
             statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
@@ -288,8 +290,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             fractionSize: 0,
             type: 'currency',
-            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            internal: false,
+            shown: true,
             totalRow: true,
             order: true,
             help: 'Maximum budget per day.',
@@ -390,24 +392,24 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -486,14 +488,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'yesterday_cost', 'e_yesterday_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
+                'license_fee',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'bid_cpc', 'daily_budget', 'cost', 'data_cost',
+                'bid_cpc', 'daily_budget',
                 'cpc', 'clicks', 'impressions', 'ctr',
-                'yesterday_cost', 'supply_dash_url',
+                'supply_dash_url',
                 'current_bid_cpc', 'current_daily_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee', 'e_yesterday_cost'
             ]
         },
         {
@@ -698,16 +707,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.adGroupOverview.get(
             $state.params.id,
             $scope.dateRange.startDate,
             $scope.dateRange.endDate).then(
             function (data) {
-                $scope.infoboxHeader = data.header;
+                $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
                 $scope.reflowGraph(1);
@@ -916,8 +921,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     pollSyncStatus();
 
     $scope.pollSourcesTableUpdates = function () {
-        if (!$scope.hasPermission('zemauth.set_ad_group_source_settings') ||
-            $scope.lastChangeTimeout) {
+        if ($scope.lastChangeTimeout) {
             return;
         }
 
@@ -968,6 +972,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };
+
+    zemNavigationService.onUpdate($scope, function () {
+        $scope.updateInfoboxHeader($scope);
+    });
 
     $scope.init();
 }]);

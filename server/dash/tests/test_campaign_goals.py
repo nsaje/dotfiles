@@ -97,7 +97,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Campaign goal "time on site in seconds" set as primary')
+        self.assertEqual(settings.changes_text, 'Campaign goal "Time on Site - Seconds" set as primary')
 
     def test_cpa_goal_primary(self):
         campaign_goals.set_campaign_goal_primary(
@@ -132,7 +132,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(goal.campaign_id, 1)
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Added campaign goal "time on site in seconds"')
+        self.assertEqual(settings.changes_text, 'Added campaign goal "Time on Site - Seconds"')
 
         with self.assertRaises(exc.ValidationError):
             goal_form = forms.CampaignGoalForm({}, campaign_id=self.campaign.pk)
@@ -161,7 +161,7 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoal.objects.all().count())
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Deleted campaign goal "time on site in seconds"')
+        self.assertEqual(settings.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
 
         conv_goal = models.ConversionGoal.objects.create(
             goal_id='123',
@@ -206,7 +206,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 time on site in seconds"')
+        self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
 
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)
@@ -235,25 +235,25 @@ class CampaignGoalsTestCase(TestCase):
 
         result = [
             {
-                'name': 'time on site in seconds',
+                'name': 'Time on Site - Seconds',
                 'conversion': None,
                 'value': 60,
                 'fields': {'total_seconds': True, 'avg_cost_per_second': True},
             },
             {
-                'name': 'pages per session',
+                'name': 'Pageviews per Visit',
                 'conversion': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
             },
             {
-                'name': 'max bounce rate %',
+                'name': 'Max Bounce Rate',
                 'conversion': None,
                 'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
             },
             {
-                'name': 'Avg. cost per conversion',
+                'name': 'Avg. CPA',
                 'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},
@@ -275,7 +275,7 @@ class CampaignGoalsTestCase(TestCase):
             'media_cost': 5,
             'cost': 5,
             'bounce_rate': 10,
-            'total_pageviews': 10,
+            'pv_per_visit': 10,
             'avg_tos': 10,
             'percent_new_users': 1.2,
         }
@@ -313,6 +313,7 @@ class CampaignGoalsTestCase(TestCase):
         mock_contentads_query.return_value = {
             'bounce_rate': 10,
             'total_pageviews': 10,
+            'pv_per_visit': 10,
             'avg_tos': 10,
             'cpc': 0.1,
             'cost': 5,
@@ -332,7 +333,7 @@ class CampaignGoalsTestCase(TestCase):
                 'internal': True,
                 'type': 'setting',
                 'name': 'Goals:',
-                'value': '10.00 time on site in seconds',
+                'value': '10.00 Time on Site - Seconds',
                 'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
@@ -357,7 +358,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
-                '10.00 pages per session',
+                '10.00 Pageviews per Visit',
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,
@@ -365,7 +366,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
-                'value': '10.00 % bounce rate',
+                'value': '10.00 % Max Bounce Rate',
                 'description': 'planned 75.00 %'
             }, {
                 'section_start': False,
@@ -373,7 +374,7 @@ class CampaignGoalsTestCase(TestCase):
                 'icon': constants.Emoticon.NEUTRAL,
                 'type': 'setting',
                 'name': '',
-                'value': '1.20 % new unique visitors'
+                'value': '1.20 % New Unique Visitors'
             }
         ])
 
@@ -395,6 +396,7 @@ class CampaignGoalsTestCase(TestCase):
             'cpc': 0.1,
             'media_cost': 5,
             'cost': 5,
+            'pv_per_visit': 10,
             'percent_new_users': 1.2,
             'conversions': {
                 'ga__123': 20.00,
@@ -409,7 +411,7 @@ class CampaignGoalsTestCase(TestCase):
                 'internal': True,
                 'type': 'setting',
                 'name': 'Goals:',
-                'value': '10.00 time on site in seconds',
+                'value': '10.00 Time on Site - Seconds',
                 'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
@@ -434,7 +436,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'icon': constants.Emoticon.HAPPY,
                 'name': '', 'value':
-                '10.00 pages per session',
+                '10.00 Pageviews per Visit',
                 'description': 'planned 5.00'
             }, {
                 'section_start': False,
@@ -442,7 +444,7 @@ class CampaignGoalsTestCase(TestCase):
                 'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
-                'value': '10.00 % bounce rate',
+                'value': '10.00 % Max Bounce Rate',
                 'description': 'planned 75.00 %'
             }, {
                 'section_start': False,
@@ -450,7 +452,7 @@ class CampaignGoalsTestCase(TestCase):
                 'icon': constants.Emoticon.NEUTRAL,
                 'type': 'setting',
                 'name': '',
-                'value': '1.20 % new unique visitors'
+                'value': '1.20 % New Unique Visitors'
             }
         ])
 

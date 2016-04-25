@@ -182,7 +182,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 email: data.email,
                 permissions: data.permissions,
                 timezoneOffset: data.timezone_offset,
-                showOnboardingGuidance: data.show_onboarding_guidance
             };
         }
     }
@@ -581,6 +580,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var config = {
                 params: {}
             };
+
+            addFilteredSources(config.params);
 
             if (startDate) {
                 config.params.start_date = startDate.format();
@@ -1271,7 +1272,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 name: settings.name,
                 defaultAccountManager: settings.default_account_manager,
                 defaultSalesRepresentative: settings.default_sales_representative,
-                serviceFee: settings.service_fee,
                 allowedSources: settings.allowed_sources
             };
         }
@@ -1282,7 +1282,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 name: settings.name,
                 default_account_manager: settings.defaultAccountManager,
                 default_sales_representative: settings.defaultSalesRepresentative,
-                service_fee: settings.serviceFee,
                 allowed_sources: settings.allowedSources
             };
         }
@@ -1293,7 +1292,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 name: data.errors.name,
                 defaultAccountManager: data.errors.default_account_manager,
                 defaultSalesRepresentative: data.errors.default_sales_representative,
-                serviceFee: data.errors.service_fee,
                 allowedSources: data.errors.allowed_sources,
                 allowedSourcesData: data.data.allowed_sources
             };
@@ -3013,7 +3011,15 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.save = function (campaignId, budget) {
             var url = '/api/campaigns/' + campaignId + '/budget/' + budget.id + '/';
-            return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
+            return $http.post(
+                url,
+                self.convert.dataToApi(budget)
+            ).then(processResponse).then(function (data) {
+                return {
+                    id: data.id,
+                    stateChanged: data.state_changed,
+                };
+            });
         };
 
         this.get = function (campaignId, budgetId) {

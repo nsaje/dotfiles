@@ -15,6 +15,7 @@ import dash.models
 import utils.exc
 from utils import redirector_helper
 from utils import email_helper
+from utils import k1_helper
 
 from dash import exc
 from dash import models
@@ -1265,7 +1266,9 @@ class AdGroupSourceSettingsWriter(object):
         if any([
                 state is not None and state != latest_settings.state,
                 cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
-                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc]):
+                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc,
+                landing_mode is not None and landing_mode != latest_settings.landing_mode
+        ]):
             new_settings = latest_settings
             new_settings.pk = None  # make a copy of the latest settings
 
@@ -1289,6 +1292,7 @@ class AdGroupSourceSettingsWriter(object):
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems()}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
+                        k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
                         return actionlog.api.set_ad_group_source_settings(
                             filtered_settings_obj, new_settings.ad_group_source, request, send=send_to_zwei)
                 else:
@@ -1307,6 +1311,7 @@ class AdGroupSourceSettingsWriter(object):
                     'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                     self.ad_group_source
                 )
+                k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
                 return actionlog.api.set_ad_group_source_settings(
                     settings_obj, latest_settings.ad_group_source, request, send=send_to_zwei)
 

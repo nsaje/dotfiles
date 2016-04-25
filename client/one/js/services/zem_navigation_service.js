@@ -132,6 +132,14 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
         $rootScope.$emit('navigation-updated');
     }
 
+    function notifyAdGroupReloading (id, reloading) {
+        $rootScope.$emit('navigation-adgroup-loading-' + id);
+        var adGroupCached = findAdGroupInNavTree(id);
+        updateModel(adGroupCached.adGroup, {
+            reloading: reloading,
+        });
+    }
+
     function updateAllAccountsCache (data) {
         Object.keys(data).forEach(function (key) {
             accounts[key] = data[key];
@@ -206,12 +214,15 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
     }
 
     function reloadAdGroup (id) {
-        return api.navigation.getAdGroup(id).then(function (adGroupData) {
+        notifyAdGroupReloading(id, true);
 
+        return api.navigation.getAdGroup(id).then(function (adGroupData) {
             var adGroupCached = findAdGroupInNavTree(id);
             updateModel(adGroupCached.account, adGroupData.account);
             updateModel(adGroupCached.campaign, adGroupData.campaign);
             updateModel(adGroupCached.adGroup, adGroupData.adGroup);
+            notifyAdGroupReloading(id, false);
+
             notifyCacheUpdate();
             return adGroupCached;
         });
@@ -229,6 +240,8 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
         reloadCampaign: reloadCampaign,
         reloadAdGroup: reloadAdGroup,
 
+        notifyAdGroupReloading: notifyAdGroupReloading,
+
         updateAllAccountsCache: updateAllAccountsCache,
         updateAdGroupCache: updateAdGroupCache,
         updateCampaignCache: updateCampaignCache,
@@ -245,6 +258,11 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
 
         onLoading: function (scope, callback) {
             var handler = $rootScope.$on('navigation-loading', callback);
+            scope.$on('$destroy', handler);
+        },
+
+        onAdGroupLoading: function (scope, id, callback) {
+            var handler = $rootScope.$on('navigation-adgroup-loading-' + id, callback);
             scope.$on('$destroy', handler);
         },
 
