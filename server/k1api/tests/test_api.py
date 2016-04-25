@@ -36,7 +36,8 @@ class K1ApiTest(TestCase):
             'k1api.get_accounts',
             'k1api.get_source_credentials_for_reports_sync',
             'k1api.get_content_ad_source_mapping',
-            'k1api.get_ga_accounts'
+            'k1api.get_ga_accounts',
+            'k1api.get_publishers_blacklist',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -269,3 +270,73 @@ class K1ApiTest(TestCase):
         ]
         for ad_group_id, content_ad_id in test_cases:
             self._test_get_content_ad_sources_for_ad_group(mock_verify_wsgi_request, ad_group_id, content_ad_id)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['blacklist']), 4)
+
+        sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status']))
+        self.assertDictEqual(sorted_blacklist[0], {
+            'ad_group_id': 1,
+            'domain': 'pub1.com',
+            'exchange': 'adblade',
+            'status': 1,
+        })
+        self.assertDictEqual(sorted_blacklist[1], {
+            'ad_group_id': 1,
+            'domain': 'pub2.com',
+            'exchange': 'gravity',
+            'status': 2,
+        })
+        self.assertDictEqual(sorted_blacklist[2], {
+            'ad_group_id': 2,
+            'domain': 'pub3.com',
+            'exchange': 'gravity',
+            'status': 1,
+        })
+        self.assertDictEqual(sorted_blacklist[3], {
+            'ad_group_id': 3,
+            'domain': '',
+            'exchange': 'gravity',
+            'status': 2,
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_with_ad_group_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist'),
+            {'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['blacklist']), 2)
+
+        sorted_blacklist = sorted(data['blacklist'], key=lambda b: b['domain'])
+        self.assertDictEqual(sorted_blacklist[0], {
+            'ad_group_id': 1,
+            'domain': 'pub1.com',
+            'exchange': 'adblade',
+            'status': 1,
+        })
+        self.assertDictEqual(sorted_blacklist[1], {
+            'ad_group_id': 1,
+            'domain': 'pub2.com',
+            'exchange': 'gravity',
+            'status': 2,
+        })
+

@@ -521,7 +521,12 @@ urlpatterns += [
         r'^k1api/get_ga_accounts$',
         k1api.views.get_ga_accounts,
         name='k1api.get_ga_accounts',
-    )
+    ),
+    url(
+        r'^k1api/get_publishers_blacklist$',
+        k1api.views.get_publishers_blacklist,
+        name='k1api.get_publishers_blacklist',
+    ),
 ]
 
 # Crossvalidation Api

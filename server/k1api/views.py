@@ -29,13 +29,17 @@ def _response_error(msg, status=400):
     }, status=status)
 
 
-@csrf_exempt
-def get_ad_group_source_ids(request):
+def _validate_signature(request):
     try:
         request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
     except request_signer.SignatureError:
         logger.exception('Invalid K1 signature.')
         raise Http404
+
+
+@csrf_exempt
+def get_ad_group_source_ids(request):
+    _validate_signature(request)
 
     credentials_id = request.GET.get('credentials_id')
     if not credentials_id:
@@ -56,11 +60,7 @@ def get_ad_group_source_ids(request):
 
 @csrf_exempt
 def get_ad_group_source(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
+    _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
     if not ad_group_id:
@@ -99,11 +99,7 @@ def get_ad_group_source(request):
 
 @csrf_exempt
 def get_content_ad_sources_for_ad_group(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
+    _validate_signature(request)
 
     source_type = request.GET.get('source_type')
     if not source_type:
@@ -178,11 +174,7 @@ def get_content_ad_sources_for_ad_group(request):
 
 @csrf_exempt
 def get_accounts(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
+    _validate_signature(request)
 
     accounts_list = (
         dash.models.Account.objects
@@ -199,11 +191,7 @@ def get_accounts(request):
 
 @csrf_exempt
 def get_source_credentials_for_reports_sync(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
+    _validate_signature(request)
 
     source_types = request.GET.getlist('source_type')
 
@@ -226,11 +214,7 @@ def get_source_credentials_for_reports_sync(request):
 
 @csrf_exempt
 def get_content_ad_source_mapping(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
+    _validate_signature(request)
 
     source_content_ad_ids = json.loads(request.body)
     if not isinstance(source_content_ad_ids, list):
@@ -261,11 +245,7 @@ def get_content_ad_source_mapping(request):
 
 @csrf_exempt
 def get_ga_accounts(request):
-    try:
-        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
-    except request_signer.SignatureError:
-        logger.exception('Invalid K1 signature.')
-        raise Http404
+    _validate_signature(request)
 
     all_current_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().prefetch_related(
         'ad_group')
@@ -279,3 +259,33 @@ def get_ga_accounts(request):
                    .distinct()
                    .order_by('account_id', 'ga_account_id'))
     return _response_ok({'ga_accounts': list(ga_accounts)})
+
+
+@csrf_exempt
+def get_publishers_blacklist(request):
+    _validate_signature(request)
+
+    ad_group_id = request.GET.get('ad_group_id')
+    if ad_group_id is not None:
+        blacklisted = (dash.models.PublisherBlacklist.objects
+                       .filter(ad_group__id=ad_group_id)
+                       .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
+    else:
+        blacklisted = dash.models.PublisherBlacklist.objects.values('name',
+                                                                    'ad_group_id',
+                                                                    'source__tracking_slug',
+                                                                    'status')
+    blacklist = []
+    for item in blacklisted:
+        exchange = None
+        if 'source__tracking_slug' in item:
+            exchange = item['source__tracking_slug'].replace('b1_', '')
+
+        blacklist.append({
+            'ad_group_id': item.get('ad_group_id'),
+            'domain': item['name'],
+            'exchange': exchange,
+            'status': item['status']
+        })
+
+    return _response_ok({'blacklist': blacklist})
