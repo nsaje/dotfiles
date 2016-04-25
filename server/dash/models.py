@@ -212,6 +212,37 @@ class OutbrainAccount(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
 
+class Agency(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    groups = models.ManyToManyField(auth_models.Group)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    def save(self, request, *args, **kwargs):
+        self.modified_by = request.user
+        super(Agency, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = 'Agencies'
+        ordering = ('-created_dt',)
+
+
 class Account(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -221,6 +252,7 @@ class Account(models.Model):
         blank=False,
         null=False
     )
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, null=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')

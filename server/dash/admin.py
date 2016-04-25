@@ -242,6 +242,19 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     credentials_.admin_order_field = 'credentials'
 
 
+# Agency
+
+class AgencyAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = (
+        'name',
+        'sales_representative',
+        'created_dt',
+        'modified_dt'
+    )
+    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+
+
 # Account
 
 class AccountUserInline(admin.TabularInline):
@@ -1305,6 +1318,7 @@ class GAAnalyticsAccount(admin.ModelAdmin):
     pass
 
 
+admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
