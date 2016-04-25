@@ -2085,7 +2085,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertFalse(models.CampaignGoalValue.objects.all())
 
     def test_validation(self):
-        self.add_permissions(['campaign_settings_view'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
