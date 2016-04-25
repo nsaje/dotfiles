@@ -251,16 +251,6 @@ def put_pub_postclick_stats_to_s3(date, entries, s3_name):
     ) + s3_name
 
     data = {}
-    # s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-    # s3_list = s3.list(s3_key)
-    # if not s3_list:
-    #     return
-
-    # if list(s3_list):
-    #     json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
-    #     if json_data:
-    #         data = json.loads(json_data)
-
     for entry in entries:
         source = entry.source_param.lower()
         if source.startswith("b1_"):
