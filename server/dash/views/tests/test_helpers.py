@@ -1130,7 +1130,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         self.assertEqual(result, {
             'enabled': False,
-            'message': 'This value cannot be edited because the ad group is on Auto-Pilot.'
+            'message': 'This value cannot be edited because the ad group is on Autopilot.'
         })
 
     def test_get_editable_fields_bid_cpc_adgroup_budget_autopilot(self):
@@ -1146,7 +1146,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         self.assertEqual(result, {
             'enabled': False,
-            'message': 'This value cannot be edited because the ad group is on Auto-Pilot.'
+            'message': 'This value cannot be edited because the ad group is on Autopilot.'
         })
 
     def test_get_editable_fields_bid_cpc_maintenance(self):
@@ -1257,7 +1257,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         self.assertEqual(result, {
             'enabled': False,
-            'message': 'This value cannot be edited because the ad group is on Auto-Pilot.'
+            'message': 'This value cannot be edited because the ad group is on Autopilot.'
         })
 
     def test_get_editable_fields_daily_budget_maintenance(self):

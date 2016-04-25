@@ -196,7 +196,7 @@
         <div class="form-group" ng-if="hasPermission('zemauth.can_set_adgroup_to_auto_pilot')">
             <label class="col-xs-12 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
-                Auto-Pilot
+                Autopilot
                 <zem-help-popover content="Bid CPC and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
             </label>
 			<div class="col-xs-12 alert alert-info form-alert-box" ng-if="isCampaignLanding()" >
@@ -207,8 +207,8 @@
             </div>
             <div class="col-xs-12 form-group indented" ng-class="{'has-error': !!errors.autopilotState}">
                 <label class="col-xs-2 control-label">
-                    Auto-Pilot's Status
-                    <zem-help-popover content="State of the Auto-Pilot on this Ad Group" placement="top"></zem-help-popover>
+                    Autopilot's Status
+                    <zem-help-popover content="State of the Autopilot on this Ad Group" placement="top"></zem-help-popover>
                 </label>
                 <div class="col">
                     <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
@@ -224,7 +224,7 @@
             <div class="form-group indented" ng-if="showAutoPilotDailyBudgetInput()" ng-class="{'has-error': !!errors.autopilotBudget}">
                 <label for="autopilot-budget" class="col-xs-2 control-label">
                     Daily Budget
-                    <zem-help-popover content="Amount of budget Auto-Pilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
+                    <zem-help-popover content="Amount of budget Autopilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-2">
                     <div class="input-group">
@@ -239,7 +239,7 @@
 
             <div class="form-group indented" ng-if="showAutoPilotDailyBudgetInput()">
                 <div class="col-xs-10">
-                    Auto-Pilot will optimize media sources' daily budgets for <b>{{budgetAutopilotOptimizationGoalText()}}</b>
+                    Autopilot will optimize media sources' daily budgets for <b>{{budgetAutopilotOptimizationGoalText()}}</b>
                     <zem-help-popover content="To change optimization objective please change Primary Campaign Goal in Campaign Settings." placement="top"></zem-help-popover><br/>
                     <i>{{budgetAutopilotOptimizationCPAGoalText()}}</i>
                 </div>
