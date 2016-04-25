@@ -250,7 +250,7 @@ class Account(models.Model):
         blank=False,
         null=False
     )
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, null=True)
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, blank=True, null=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')

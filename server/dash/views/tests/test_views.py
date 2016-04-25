@@ -5,7 +5,7 @@ from mock import patch, ANY
 import datetime
 import decimal
 
-from django.test import TestCase, Client, TransactionTestCase, RequestFactory
+from django.test import TestCase, Client, RequestFactory
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +17,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+from utils import exc
 
 from reports import redshift
 import reports.models
@@ -106,6 +107,38 @@ class UserTest(TestCase):
             },
             'success': True
         })
+
+
+class AccountsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def test_put(self):
+        johnny = User.objects.get(pk=2)
+
+        rf = RequestFactory().put('accounts')
+        rf.user = johnny
+        with self.assertRaises(exc.MissingDataError):
+            views.Account().put(rf)
+
+        permission = Permission.objects.get(codename='all_accounts_accounts_add_account')
+        johnny.user_permissions.add(permission)
+        johnny.save()
+
+        johnny = User.objects.get(pk=2)
+        rf.user = johnny
+        response = views.Account().put(rf)
+        response_blob = json.loads(response.content)
+        self.assertTrue(response_blob['success'])
+        self.assertDictEqual(
+            {
+                'name': 'New account',
+                'id': 2,
+            },
+            response_blob['data']
+        )
+
+        acc = models.Account.objects.get(pk=2)
+        self.assertIsNone(acc.agency)
 
 
 @patch('dash.views.views.helpers.log_useraction_if_necessary')
