@@ -39,10 +39,12 @@ class DailyBudgetChangeComment(ConstantBase):
     NO_ACTIVE_SOURCES_WITH_SPEND = 1
     NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET = 2
     INITIALIZE_PILOT_PAUSED_SOURCE = 3
+    USED_UP_BUDGET_THEN_UNIFORMLY_REDISTRIBUTED = 4
 
     _VALUES = {
         NO_ACTIVE_SOURCES_WITH_SPEND: 'Ad Group does not have any active sources with enough spend.' +
                                       ' Budget was uniformly redistributed.',
-        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Autopilot tried assigning wrong ammount of total daily budgets',
-        INITIALIZE_PILOT_PAUSED_SOURCE: 'Budget Autopilot initialization - set paused source to minimum budget.'
+        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Autopilot tried assigning wrong ammount of total daily budgets.',
+        INITIALIZE_PILOT_PAUSED_SOURCE: 'Budget Autopilot initialization - set paused source to minimum budget.',
+        USED_UP_BUDGET_THEN_UNIFORMLY_REDISTRIBUTED: 'Used up all smart budget, then uniformly redistributed remaining.'
     }
