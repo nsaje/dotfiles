@@ -28,6 +28,7 @@ TEMP_EMAILS = [
     'urska.kosec@zemanta.com',
     'ana.dejanovic@zemanta.com',
     'tadej.pavlic@zemanta.com',
+    'ziga.stopinsek@zemanta.com',
 ]
 
 
@@ -226,7 +227,7 @@ def _update_landing_campaign(campaign):
 
     _persist_new_autopilot_settings(daily_caps)
 
-    actions.extend(_run_autopilot(daily_caps))
+    actions.extend(_run_autopilot(campaign, daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
     return actions
@@ -278,7 +279,7 @@ def _stop_non_spending_sources(campaign):
 
         if to_stop:
             for ags in to_stop:
-                _stop_ad_group_source(ags)
+                actions.extend(_stop_ad_group_source(ags))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes='Stopping non spending ad group sources on ad group {}. '
@@ -867,7 +868,12 @@ Zemanta'''  # noqa
         yesterday_spend=yesterday_spend,
     )
 
-    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
+    account_settings = campaign.account.get_current_settings()
+    emails = TEMP_EMAILS
+    if account_settings.default_account_manager:
+        emails = [account_settings.default_account_manager.email] + emails
+
+    email_helper.send_notification_mail(emails, subject, body)
 
 
 def _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
@@ -898,4 +904,9 @@ Zemanta'''  # noqa
         yesterday_spend=yesterday_spend,
     )
 
-    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
+    account_settings = campaign.account.get_current_settings()
+    emails = TEMP_EMAILS
+    if account_settings.default_account_manager:
+        emails = [account_settings.default_account_manager.email] + emails
+
+    email_helper.send_notification_mail(emails, subject, body)
