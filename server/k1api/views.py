@@ -9,8 +9,7 @@ from django.db.models import F, Q
 from django.conf import settings
 
 from dash import constants
-from utils import url_helper
-from utils import request_signer
+from utils import url_helper, request_signer
 
 logger = logging.getLogger(__name__)
 
@@ -271,10 +270,15 @@ def get_publishers_blacklist(request):
                        .filter(ad_group__id=ad_group_id)
                        .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
     else:
-        ad_group_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().select_related(
+        current_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().select_related(
             'ad_group')
-        running_ad_groups = [ad_group_setting.ad_group.id for ad_group_setting in ad_group_settings if
-                             ad_group_setting.state == constants.AdGroupSettingsState.ACTIVE]
+
+        running_ad_groups = []
+        for ad_group_settings in current_settings:
+            if ad_group_settings.ad_group.get_running_status_by_flight_time(
+                    ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE:
+                running_ad_groups.append(ad_group_settings.ad_group.id)
+
         blacklisted = (dash.models.PublisherBlacklist.objects
                        .filter(Q(ad_group__isnull=True) | Q(ad_group__id__in=running_ad_groups))
                        .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
