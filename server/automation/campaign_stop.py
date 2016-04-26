@@ -279,7 +279,7 @@ def _stop_non_spending_sources(campaign):
 
         if to_stop:
             for ags in to_stop:
-                _stop_ad_group_source(ags)
+                actions.extend(_stop_ad_group_source(ags))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes='Stopping non spending ad group sources on ad group {}. '
