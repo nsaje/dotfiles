@@ -114,7 +114,10 @@ def _get_dates(date, campaign):
     return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
 
 
-def get_effective_spend_pcts(date, campaign, campaign_spend):
+def _get_effective_spend_pcts(date, campaign, campaign_spend):
+    if campaign_spend is None:
+        return 0, 0
+
     attributed_spends = reports.models.BudgetDailyStatementK1.objects.\
         filter(budget__campaign=campaign, date=date).\
         aggregate(
@@ -181,6 +184,7 @@ def _get_campaign_spend(date, all_campaigns):
 
 def _get_redshift_date_query(date):
     hour_from = dates_helper.local_to_utc_time(datetime.datetime(date.year, date.month, date.day))
+
     date_next = date + datetime.timedelta(days=1)
     hour_to = dates_helper.local_to_utc_time(datetime.datetime(date_next.year, date_next.month, date_next.day))
 
@@ -213,12 +217,22 @@ def reprocess_daily_statements(date_since):
     logger.info("Reprocessing dailiy statements for %s", date_since)
 
     total_spend = {}
+    all_dates = set()
 
     campaigns = dash.models.Campaign.objects.prefetch_related('adgroup_set').all().exclude_archived()
     for campaign in campaigns:
         dates = _get_dates(date_since, campaign)
         for date in dates:
+            all_dates.add(date)
             if date not in total_spend:
                 total_spend[date] = _get_campaign_spend(date, campaigns)
 
         _reprocess_campaign_statements(campaign, dates, total_spend)
+
+    effective_spend = defaultdict(lambda: {})
+    for campaign in dash.models.Campaign.objects.all():
+        for date in all_dates:
+            spend = total_spend[date].get(campaign.id)
+            effective_spend[date][campaign] = _get_effective_spend_pcts(date, campaign, spend)
+
+    return dict(effective_spend)
