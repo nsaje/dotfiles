@@ -227,7 +227,7 @@ def _update_landing_campaign(campaign):
 
     _persist_new_autopilot_settings(daily_caps)
 
-    actions.extend(_run_autopilot(daily_caps))
+    actions.extend(_run_autopilot(campaign, daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
     return actions
