@@ -918,7 +918,8 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('automation.campaign_stop._check_ad_groups_end_date')
     @patch('dash.api.order_ad_group_settings_update')
     @patch('actionlog.zwei_actions.send')
-    def test_wrap_up_landing_mode(self, mock_zwei_send, mock_order_ad_group_update, mock_get_end_date, mock_get_past_data,
+    def test_wrap_up_landing_mode(self, mock_zwei_send, mock_order_ad_group_update,
+                                  mock_get_end_date, mock_get_past_data,
                                   mock_get_yesterday_spends, mock_local_today):
         today = datetime.date(2016, 4, 5)
 
