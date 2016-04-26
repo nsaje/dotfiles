@@ -635,11 +635,11 @@ Segment: All Visits (No Segment),,,,,,,,,,
         report.entries = {1: MagicMock(visits=1020)}
         report._check_session_counts({'Visits': '1000'})
 
-        # no exeption should be raised, inside acceptable deviation
+        # no exeption should be raised, inside acceptable relative deviation
         report.entries = {1: MagicMock(visits=1030)}
         report._check_session_counts({'Visits': '1000'})
 
-        # outside of acceptable deviation
+        # outside of acceptable deviation (relative and absolute)
         report.entries = {1: MagicMock(visits=1040)}
         with self.assertRaisesRegexp(exc.IncompleteReportException, r'Number of total sessions'):
             report._check_session_counts({'Visits': '1000'})
