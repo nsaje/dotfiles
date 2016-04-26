@@ -78,6 +78,24 @@ class AbstractUserForm(forms.ModelForm):
             self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
 
 
+class AgencyUserForm(AbstractUserForm):
+    ''' Derived from a more abstract hack with validation '''
+
+    def clean(self):
+        super(AgencyUserForm, self).clean()
+
+        if not 'user' in self.cleaned_data:
+            return
+
+        agencies = models.Agency.objects.filter(
+            users=self.cleaned_data['user']
+        )
+        if agencies.exists():
+            raise ValidationError('User {} is already part of another agency'.format(
+                self.cleaned_data['user'].get_full_name()
+            ))
+
+
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
 
     def clean(self):
@@ -247,7 +265,7 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
 
 class AgencyUserInline(admin.TabularInline):
     model = models.Agency.users.through
-    form = AbstractUserForm
+    form = AgencyUserForm
     extra = 0
     raw_id_fields = ("user", )
 
@@ -272,8 +290,7 @@ class AgencyAccountInline(admin.TabularInline):
     )
 
     ordering = ('-created_dt',)
-    readonly_fields = ('name', 'admin_link',)
-    max_num = 0
+    readonly_fields = ('admin_link',)
 
 
 class AgencyAdmin(admin.ModelAdmin):
@@ -288,8 +305,22 @@ class AgencyAdmin(admin.ModelAdmin):
         'users',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    inlines = (AgencyAccountInline, AgencyUserInline)
 
-    inlines = (AgencyUserInline, AgencyAccountInline, )
+    def __init__(self, model, admin_site):
+        super(AgencyAdmin, self).__init__(model, admin_site)
+        self.form.admin_site = admin_site # capture the admin_site
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.Account:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
 
 
 # Account
@@ -330,6 +361,7 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users', 'groups')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
+
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Campaign:
