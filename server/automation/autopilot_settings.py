@@ -4,7 +4,7 @@ from dash.constants import CampaignGoalKPI
 
 # Autopilot General Settings
 SYNC_IS_RECENT_HOURS = 2
-AUTOMATION_AI_NAME = 'Zemanta Auto-Pilot'
+AUTOMATION_AI_NAME = 'Zemanta Autopilot'
 AUTOPILOT_EMAIL = 'help@zemanta.com'
 
 
@@ -36,12 +36,12 @@ MAX_BUDGET_GAIN = Decimal(1.2)
 MAX_BUDGET_LOSS = Decimal(0.8)
 BUDGET_AP_MIN_SOURCE_BUDGET = Decimal(5.0)
 GOALS_COLUMNS = {
-    CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.TIME_ON_SITE: {'col': ['avg_tos', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.PAGES_PER_SESSION: {'col': ['pv_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
+    CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.6], 'spend_perc': Decimal(0.4)},
+    CampaignGoalKPI.TIME_ON_SITE: {'col': ['avg_tos', 0.6], 'spend_perc': Decimal(0.4)},
+    CampaignGoalKPI.PAGES_PER_SESSION: {'col': ['pv_per_visit', 0.6], 'spend_perc': Decimal(0.4)},
     CampaignGoalKPI.CPA: {'col': ['conversions', 0.4], 'spend_perc': Decimal(0.6)},
-    CampaignGoalKPI.CPC: {'col': ['cpc', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.NEW_UNIQUE_VISITORS: {'col': ['percent_new_users', 0.7], 'spend_perc': Decimal(0.3)},
+    CampaignGoalKPI.CPC: {'col': ['cpc', 0.6], 'spend_perc': Decimal(0.4)},
+    CampaignGoalKPI.NEW_UNIQUE_VISITORS: {'col': ['percent_new_users', 0.6], 'spend_perc': Decimal(0.4)},
 }
 GOALS_WORST_VALUE = {
     'bounce_rate': 100.00,
@@ -52,8 +52,8 @@ GOALS_WORST_VALUE = {
     'percent_new_users': 0.0,
     'conversions': 0
 }
-SPEND_PERC_LOWERING_THRESHOLD = 0.8
-LOW_SPEND_PROB_LOWERING_FACTOR = 0.3
+SPEND_PERC_LOWERING_THRESHOLD = 1.0
+LOW_SPEND_PROB_LOWERING_FACTOR = 0.25
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
 AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS = 14
 AUTOPILOT_MIN_SPEND_PERC = Decimal(0.50)

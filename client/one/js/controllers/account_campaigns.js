@@ -195,24 +195,24 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
             name: 'License Fee',
             field: 'license_fee',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
@@ -290,11 +290,17 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
     $scope.columnCategories = [
         {
+            'name': 'Costs',
+            'fields': [
+                'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
+                'license_fee',
+            ],
+        },
+        {
             'name': 'Traffic Acquisition',
             'fields': [
-                'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee'
+                'cpc', 'clicks', 'impressions', 'ctr',
             ]
         },
         {
@@ -446,10 +452,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.accountOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;

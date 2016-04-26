@@ -250,11 +250,6 @@ class AdGroupOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_ad_group_infobox'):
-            raise exc.AuthorizationError()
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
@@ -471,9 +466,6 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
-            raise exc.MissingDataError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
         ad_group_settings.save(request)
@@ -554,11 +546,6 @@ class CampaignOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_campaign_infobox'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
@@ -723,11 +710,6 @@ class AccountOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_overview')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
-        if not request.user.has_perm('zemauth.can_access_account_infobox'):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)
 
         header = {
@@ -1037,9 +1019,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
-        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         resource = json.loads(request.body)
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
@@ -1137,9 +1116,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         current_settings = ad_group.get_current_settings()
@@ -1156,9 +1132,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
@@ -1216,9 +1189,6 @@ class AdGroupAdsUploadReport(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1240,9 +1210,6 @@ class AdGroupAdsUploadCancel(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1267,9 +1234,6 @@ class AdGroupAdsUploadStatus(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1415,9 +1379,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.set_content_ad_status'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
@@ -1992,8 +1953,6 @@ class AllAccountsOverview(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
     def get(self, request):
-        if not request.user.has_perm('zemauth.can_see_infobox'):
-            raise exc.AuthorizationError()
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
 

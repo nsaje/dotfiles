@@ -173,6 +173,10 @@ class AdGroupSourceSettingsTest(TestCase):
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
         self.ad_group = models.AdGroup.objects.get(pk=1)
 
+        patcher = patch('dash.api.k1_helper')
+        self.k1_helper_mock = patcher.start()
+        self.addCleanup(patcher.stop)
+
     def _set_ad_group_end_date(self, days_delta=0):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -1359,12 +1363,6 @@ class AdGroupAdsUploadTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
     def test_missing_ad_group(self):
         non_existent_ad_group_id = 0
 
@@ -1528,12 +1526,6 @@ class AdGroupAdsUploadStatusTest(TestCase):
             }
         })
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
 
 class AdGroupAdsUploadCancelTest(TestCase):
 
@@ -1567,12 +1559,6 @@ class AdGroupAdsUploadCancelTest(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
-
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
 
     def test_validation(self):
         batch = models.UploadBatch.objects.get(pk=2)
@@ -2632,13 +2618,6 @@ class AdGroupOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = [
-            'can_see_infobox',
-            'can_access_ad_group_infobox'
-        ]
-        for p in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=p))
-        self.user.save()
         campaign = models.Campaign.objects.get(pk=1)
         campaign.users.add(self.user)
 
@@ -2660,32 +2639,6 @@ class AdGroupOverviewTest(TestCase):
             return ret[0]
         else:
             return None
-
-    def test_user_access_1(self):
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission = Permission.objects.get(codename='can_see_infobox')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_user_access_2(self):
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission_2 = Permission.objects.get(codename='can_access_ad_group_infobox')
-        self.user.user_permissions.add(permission_2)
-        self.user.save()
-
-        response = self._get_ad_group_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
@@ -2862,13 +2815,6 @@ class CampaignOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def setUpPermissions(self):
-        permissions = [
-            'can_see_infobox',
-            'can_access_campaign_infobox'
-        ]
-        for p in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=p))
-        self.user.save()
         campaign = models.Campaign.objects.get(pk=1)
         campaign.users.add(self.user)
 
@@ -2885,32 +2831,6 @@ class CampaignOverviewTest(TestCase):
 
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
-
-    def test_user_access_1(self):
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission = Permission.objects.get(codename='can_see_infobox')
-        self.user.user_permissions.add(permission)
-        self.user.save()
-
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_user_access_2(self):
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-        permission_2 = Permission.objects.get(codename='can_access_campaign_infobox')
-        self.user.user_permissions.add(permission_2)
-        self.user.save()
-
-        response = self._get_campaign_overview(1)
-        self.assertFalse(response['success'])
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
@@ -3014,13 +2934,7 @@ class AccountOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
-        permission_2 = Permission.objects.get(codename='can_access_account_infobox')
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
-        user.user_permissions.add(permission_2)
-        user.save()
-        self.user = user
+        self.user = zemauth.models.User.objects.get(pk=2)
 
     def _get_account_overview(self, account_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
@@ -3136,10 +3050,8 @@ class AllAccountsOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
         permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
         user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
         user.user_permissions.add(permission_2)
         user.save()
 

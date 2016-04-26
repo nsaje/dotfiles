@@ -9,7 +9,6 @@ from django.contrib.auth.models import Permission
 
 from dash import forms
 from dash import models
-from dash import constants
 from zemauth.models import User
 
 
@@ -19,12 +18,6 @@ class AccountAgencySettingsFormTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super(AccountAgencySettingsFormTest, cls).setUpClass()  # loads fixtures
-
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
-
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=2)
         user.user_permissions.add(permission)
@@ -42,10 +35,14 @@ class AccountAgencySettingsFormTest(TestCase):
         self.assertTrue(form.has_error('default_sales_representative'))
 
     def test_invalid_account_manager(self):
+        account_manager_id = 123
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(pk=account_manager_id)
+
         form = forms.AccountAgencySettingsForm({
             'id': 1,
             'name': 'Name',
-            'default_account_manager': 2,
+            'default_account_manager': account_manager_id,
             'default_sales_representative': 2,
             'allowed_sources': {'1': {'name': 'Source name'}}
         })

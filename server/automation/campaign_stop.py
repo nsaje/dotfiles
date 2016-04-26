@@ -28,6 +28,7 @@ TEMP_EMAILS = [
     'urska.kosec@zemanta.com',
     'ana.dejanovic@zemanta.com',
     'tadej.pavlic@zemanta.com',
+    'ziga.stopinsek@zemanta.com',
 ]
 
 
@@ -49,7 +50,7 @@ def switch_low_budget_campaigns_to_landing_mode():
 @transaction.atomic
 def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
-        return
+        return False
 
     today = dates_helper.local_today()
     max_daily_budget = _get_max_daily_budget(today, campaign)
@@ -58,7 +59,7 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
 
     should_switch_to_landing = available_tomorrow < max_daily_budget
     is_near_depleted = available_tomorrow < max_daily_budget * 2
-
+    is_resumed = False
     actions = []
     if not campaign_settings.landing_mode:
         if should_switch_to_landing:
@@ -68,7 +69,9 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
             _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
     elif _can_resume_campaign(campaign):
         actions = _resume_campaign(campaign)
+        is_resumed = True
     zwei_actions.send(actions)
+    return should_switch_to_landing or is_resumed
 
 
 def get_minimum_budget_amount(budget_item):
@@ -224,7 +227,7 @@ def _update_landing_campaign(campaign):
 
     _persist_new_autopilot_settings(daily_caps)
 
-    actions.extend(_run_autopilot(daily_caps))
+    actions.extend(_run_autopilot(campaign, daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
     return actions
@@ -865,7 +868,12 @@ Zemanta'''  # noqa
         yesterday_spend=yesterday_spend,
     )
 
-    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
+    account_settings = campaign.account.get_current_settings()
+    emails = TEMP_EMAILS
+    if account_settings.default_account_manager:
+        emails = [account_settings.default_account_manager.email] + emails
+
+    email_helper.send_notification_mail(emails, subject, body)
 
 
 def _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
@@ -896,4 +904,9 @@ Zemanta'''  # noqa
         yesterday_spend=yesterday_spend,
     )
 
-    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
+    account_settings = campaign.account.get_current_settings()
+    emails = TEMP_EMAILS
+    if account_settings.default_account_manager:
+        emails = [account_settings.default_account_manager.email] + emails
+
+    email_helper.send_notification_mail(emails, subject, body)
