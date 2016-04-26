@@ -291,35 +291,6 @@ class AgencyAdmin(admin.ModelAdmin):
 
     inlines = (AgencyUserInline, AgencyAccountInline, )
 
-    def save_formset(self, request, form, formset, change):
-        if formset.model == models.Account:
-            from pudb import set_trace; set_trace()
-
-            newly_added = set([])
-            from pudb import set_trace; set_trace()
-            for f in formset.forms:
-                for account in f.cleaned_data['account']:
-                    account.agency = self.obj
-                    account.save(request)
-                    newly_added.add(account.id)
-
-                deleted_accounts = f.fields['account'].queryset.filter(
-                    agency=self.obj
-                ).exclude(
-                    id__in=newly_added
-                )
-
-                for deleted_account in deleted_accounts:
-                    deleted_account.agency = None
-                    deleted_account.save(request)
-
-            formset.save()
-        else:
-            formset.save()
-
-    def save_model(self, request, obj, form, change):
-        self.obj = obj
-        obj.save(request)
 
 # Account
 
