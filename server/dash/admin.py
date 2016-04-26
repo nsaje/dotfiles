@@ -84,7 +84,7 @@ class AgencyUserForm(AbstractUserForm):
     def clean(self):
         super(AgencyUserForm, self).clean()
 
-        if not 'user' in self.cleaned_data:
+        if 'user' not in self.cleaned_data:
             return
 
         agencies = models.Agency.objects.filter(
@@ -309,7 +309,7 @@ class AgencyAdmin(admin.ModelAdmin):
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
-        self.form.admin_site = admin_site # capture the admin_site
+        self.form.admin_site = admin_site
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Account:
@@ -361,7 +361,6 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users', 'groups')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
-
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Campaign:
