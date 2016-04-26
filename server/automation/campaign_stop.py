@@ -214,6 +214,8 @@ def _update_landing_campaign(campaign):
     if not campaign.adgroup_set.all().filter_active().count() > 0:
         return actions + _wrap_up_landing(campaign)
 
+    actions.extend(_check_ad_groups_end_date(campaign))
+
     per_date_spend, per_source_spend = _get_past_7_days_data(campaign)
     daily_caps = _calculate_daily_caps(campaign, per_date_spend)
     ap_stop_actions, any_ad_group_stopped = _prepare_for_autopilot(campaign, daily_caps, per_source_spend)
@@ -229,6 +231,25 @@ def _update_landing_campaign(campaign):
     actions.extend(_run_autopilot(daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
+    return actions
+
+
+def _check_ad_groups_end_date(campaign):
+    today = dates_helper.local_today()
+    actions, finished = [], []
+    for ad_group in campaign.adgroup_set.all().filter_active():
+        user_settings = _get_last_user_ad_group_settings(ad_group)
+        if user_settings.end_date and user_settings.end_date <= today:
+            finished.append(ad_group)
+            actions.append(_stop_ad_group(ad_group))
+
+    if finished:
+        models.CampaignStopLog.objects.create(
+            campaign=campaign,
+            notes='Stopped finished ad groups {}'.format(', '.join(
+                str(ad_group) for ad_group in finished
+            ))
+        )
     return actions
 
 
@@ -460,11 +481,15 @@ def _set_ad_group_end_date(ad_group, end_date):
     )
 
 
-def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
-    user_settings = dash.models.AdGroupSettings.objects.filter(
+def _get_last_user_ad_group_settings(ad_group):
+    return dash.models.AdGroupSettings.objects.filter(
         ad_group=ad_group,
         landing_mode=False
     ).latest('created_dt')
+
+
+def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
+    user_settings = _get_last_user_ad_group_settings(ad_group)
 
     current_settings = ad_group.get_current_settings()
 
@@ -562,7 +587,9 @@ def _set_end_date_to_today(campaign):
     actions = []
     today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
-        actions.extend(_set_ad_group_end_date(ad_group, today))
+        actions.extend(
+            _set_ad_group_end_date(ad_group, today)
+        )
     models.CampaignStopLog.objects.create(
         campaign=campaign,
         notes='End date set to {}'.format(today)
