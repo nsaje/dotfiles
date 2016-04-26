@@ -219,3 +219,20 @@ class BudgetDailyStatement(models.Model):
     class Meta:
         get_latest_by = 'date'
         unique_together = ('budget', 'date')
+
+
+# insert into reports_budgetdailystatementk1 (id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano) select id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano from reports_budgetdailystatement ;
+class BudgetDailyStatementK1(models.Model):
+    budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements_k1')
+    date = models.DateField()
+    media_spend_nano = models.BigIntegerField()
+    data_spend_nano = models.BigIntegerField()
+    license_fee_nano = models.BigIntegerField()
+
+    @property
+    def total_spend_nano(self):
+        return self.media_spend_nano + self.data_spend_nano + self.license_fee_nano
+
+    class Meta:
+        get_latest_by = 'date'
+        unique_together = ('budget', 'date')
