@@ -283,7 +283,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 4)
+        self.assertEqual(len(data['blacklist']), 3)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status']))
         self.assertDictEqual(sorted_blacklist[0], {
@@ -303,12 +303,6 @@ class K1ApiTest(TestCase):
             'domain': 'pub3.com',
             'exchange': 'gravity',
             'status': 1,
-        })
-        self.assertDictEqual(sorted_blacklist[3], {
-            'ad_group_id': 3,
-            'domain': '',
-            'exchange': 'gravity',
-            'status': 2,
         })
 
     @patch('utils.request_signer.verify_wsgi_request')

@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.models
 import dash.constants
 from django.http import JsonResponse, Http404
-from django.db.models import F
+from django.db.models import F, Q
 from django.conf import settings
 
 from dash import constants
@@ -271,14 +271,18 @@ def get_publishers_blacklist(request):
                        .filter(ad_group__id=ad_group_id)
                        .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
     else:
-        blacklisted = dash.models.PublisherBlacklist.objects.values('name',
-                                                                    'ad_group_id',
-                                                                    'source__tracking_slug',
-                                                                    'status')
+        ad_group_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().select_related(
+            'ad_group')
+        running_ad_groups = [ad_group_setting.ad_group.id for ad_group_setting in ad_group_settings if
+                             ad_group_setting.state == constants.AdGroupSettingsState.ACTIVE]
+        blacklisted = (dash.models.PublisherBlacklist.objects
+                       .filter(Q(ad_group__isnull=True) | Q(ad_group__id__in=running_ad_groups))
+                       .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
+
     blacklist = []
     for item in blacklisted:
         exchange = None
-        if 'source__tracking_slug' in item:
+        if item.get('source__tracking_slug') is not None:
             exchange = item['source__tracking_slug'].replace('b1_', '')
 
         blacklist.append({

@@ -270,6 +270,7 @@
         created_dt: '2014-06-04T00:00:00'
         enable_ga_tracking: true
         ga_tracking_type: 2
+        state: 1
     model: dash.adgroupsettings
     pk: 1
 
@@ -278,6 +279,7 @@
         created_dt: '2014-01-02T00:00:00'
         enable_ga_tracking: true
         ga_tracking_type: 2
+        state: 1
     model: dash.adgroupsettings
     pk: 2
 
@@ -286,6 +288,7 @@
         created_dt: '2014-01-01T00:00:00'
         enable_ga_tracking: true
         ga_tracking_type: 2
+        state: 1
     model: dash.adgroupsettings
     pk: 3
 
@@ -294,6 +297,7 @@
         created_dt: '2014-01-02T00:00:00'
         enable_ga_tracking: false
         ga_tracking_type: 1
+        state: 2
     model: dash.adgroupsettings
     pk: 4
 
