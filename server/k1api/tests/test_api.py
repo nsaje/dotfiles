@@ -333,4 +333,3 @@ class K1ApiTest(TestCase):
             'exchange': 'gravity',
             'status': 2,
         })
-
