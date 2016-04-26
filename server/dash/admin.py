@@ -77,28 +77,6 @@ class AbstractUserForm(forms.ModelForm):
             self.fields['last_name'].required = False
             self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
 
-class AccountRowForm(forms.ModelForm):
-    '''
-    Similar in spirit to AbstractUserForm but for accounts
-    '''
-    account = forms.ModelMultipleChoiceField(
-        queryset=None,
-        label=('Select Account'),)
-
-    def __init__(self, *args, **kwargs):
-        super(AccountRowForm, self).__init__(*args, **kwargs)
-        self.fields['account'].widget = RelatedFieldWidgetWrapper(
-            FilteredSelectMultiple(('account'), False, ),
-            models.Account._meta.get_field('account'),
-            self.admin_site
-        )
-
-        self.fields['account'].queryset = models.Account.objects.all()
-        self.fields['account'].initial = models.Account.objects.all().filter(
-            agency=self.obj
-        )
-        self.fields['account'].required = False
-
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
 
@@ -280,36 +258,22 @@ class AgencyUserInline(admin.TabularInline):
 class AgencyAccountInline(admin.TabularInline):
     model = models.Account
     fk_name = 'agency'
-    form = AccountRowForm
     extra = 0
+    can_delete = False
 
-    can_delete = True
-    raw_id_fields = ('agency',)
-    list_display = ('id', 'name', 'agency',)
     exclude = (
+        'allowed_sources',
+        'outbrain_marketer_id',
         'users',
         'groups',
         'created_dt',
         'modified_dt',
-        'modified_by',
-        'allowed_sources',
-        'outbrain_marketer_id',
+        'modified_by'
     )
-    readonly_fields = ('id', 'name', 'agency',)
+
     ordering = ('-created_dt',)
-
-    def __init__(self, model, admin_site):
-        super(AgencyAccountInline, self).__init__(model, admin_site)
-        self.form.admin_site = admin_site  # capture the admin_site
-
-    def get_formset(self, request, obj=None, **kwargs):
-        ret = super(AgencyAccountInline, self).get_formset(request, obj, **kwargs)
-        self.form.obj = obj
-        ret.request = request
-        return ret
-
-    def save_formset(self, request, form, formset, change):
-        formset.save()
+    readonly_fields = ('name', 'admin_link',)
+    max_num = 0
 
 
 class AgencyAdmin(admin.ModelAdmin):

@@ -335,6 +335,13 @@ class Account(models.Model):
             new_settings.archived = False
             new_settings.save(request)
 
+    def admin_link(self):
+        if self.id:
+            return '<a href="/admin/dash/account/%d/">Edit</a>' % self.id
+        else:
+            return 'N/A'
+    admin_link.allow_tags = True
+
     def get_account_url(self, request):
         account_settings_url = request.build_absolute_uri(
             reverse('admin:dash_account_change', args=(self.pk,))
