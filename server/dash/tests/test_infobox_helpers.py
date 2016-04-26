@@ -780,6 +780,17 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
+        for adg in campaign.adgroup_set.all():
+            adg_settings = adg.get_current_settings().copy_settings()
+            adg_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+            adg_settings.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.STOPPED,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+
+
     def test_get_account_running_status(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
@@ -811,6 +822,15 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_account_running_status(campaign.account)
         )
 
+        for adg in dash.models.AdGroup.objects.filter(campaign__account=campaign.account) :
+            adg_settings = adg.get_current_settings().copy_settings()
+            adg_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+            adg_settings.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.STOPPED,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
 
 class AllAccountsInfoboxHelpersTest(TestCase):
     fixtures = ['test_models.yaml']
