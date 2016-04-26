@@ -32,6 +32,13 @@ TEMP_EMAILS = [
 ]
 
 
+def run_job():
+    in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
+
+    switch_low_budget_campaigns_to_landing_mode()
+    update_campaigns_in_landing(in_landing)  # only update those that were already in landing
+
+
 def switch_low_budget_campaigns_to_landing_mode():
     settings_qs = dash.models.CampaignSettings.objects.all()\
                                                       .distinct('campaign_id')\
@@ -122,8 +129,8 @@ def is_current_time_valid_for_amount_editing(campaign):
     return not (utc_now.hour < 12 and any_source_after_midnight)
 
 
-def update_campaigns_in_landing():
-    for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+def update_campaigns_in_landing(campaigns):
+    for campaign in campaigns:
         logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
         try:
