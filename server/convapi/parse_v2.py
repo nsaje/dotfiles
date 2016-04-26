@@ -79,7 +79,7 @@ def _parse_publisher_param(publisher_param):
     if publisher_param:
         publisher_param = urllib.unquote(publisher_param)
         if not isinstance(publisher_param, unicode):
-            publisher_param = publisher_param.decode('utf-8', 'replace')
+            publisher_param = publisher_param.decode('utf-8')
     else:
         publisher_param = ''
     return publisher_param
