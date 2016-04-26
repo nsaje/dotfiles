@@ -701,8 +701,9 @@ class OmnitureReport(Report):
         # between session totals and sums of session entries
         acceptable_deviation = False
         if sessions_sum >= sessions_total:
-            deviation = abs(float(sessions_total) - float(sessions_sum)) / float(sessions_total)
-            if deviation <= 0.03:
+            absolute_deviation = abs(float(sessions_total) - float(sessions_sum))
+            relative_deviation = absolute_deviation / float(sessions_total)
+            if absolute_deviation < 10 or relative_deviation <= 0.03:
                 acceptable_deviation = True
 
         if sessions_total != sessions_sum and not acceptable_deviation:
