@@ -871,7 +871,7 @@ Zemanta'''  # noqa
     account_settings = campaign.account.get_current_settings()
     emails = TEMP_EMAILS
     if account_settings.default_account_manager:
-        emails = [account_settings.default_account_manager] + emails
+        emails = [account_settings.default_account_manager.email] + emails
 
     email_helper.send_notification_mail(emails, subject, body)
 
@@ -907,6 +907,6 @@ Zemanta'''  # noqa
     account_settings = campaign.account.get_current_settings()
     emails = TEMP_EMAILS
     if account_settings.default_account_manager:
-        emails = [account_settings.default_account_manager] + emails
+        emails = [account_settings.default_account_manager.email] + emails
 
     email_helper.send_notification_mail(emails, subject, body)
