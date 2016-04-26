@@ -4,6 +4,7 @@ import urllib
 
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 from django.db import transaction
 from django import forms
 from django.utils.safestring import mark_safe
@@ -75,6 +76,28 @@ class AbstractUserForm(forms.ModelForm):
             self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
             self.fields['last_name'].required = False
             self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
+
+class AccountRowForm(forms.ModelForm):
+    '''
+    Similar in spirit to AbstractUserForm but for accounts
+    '''
+    account = forms.ModelMultipleChoiceField(
+        queryset=None,
+        label=('Select Account'),)
+
+    def __init__(self, *args, **kwargs):
+        super(AccountRowForm, self).__init__(*args, **kwargs)
+        self.fields['account'].widget = RelatedFieldWidgetWrapper(
+            FilteredSelectMultiple(('account'), False, ),
+            models.Account._meta.get_field('account'),
+            self.admin_site
+        )
+
+        self.fields['account'].queryset = models.Account.objects.all()
+        self.fields['account'].initial = models.Account.objects.all().filter(
+            agency=self.obj
+        )
+        self.fields['account'].required = False
 
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
@@ -244,16 +267,95 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
 
 # Agency
 
-class AgencyAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class AgencyUserInline(admin.TabularInline):
+    model = models.Agency.users.through
+    form = AbstractUserForm
+    extra = 0
+    raw_id_fields = ("user", )
+
+    def __unicode__(self):
+        return self.name
+
+
+class AgencyAccountInline(admin.TabularInline):
+    model = models.Account
+    fk_name = 'agency'
+    form = AccountRowForm
+    extra = 0
+
+    can_delete = True
+    raw_id_fields = ('agency',)
+    list_display = ('id', 'name', 'agency',)
+    exclude = (
+        'users',
+        'groups',
+        'created_dt',
+        'modified_dt',
+        'modified_by',
+        'allowed_sources',
+        'outbrain_marketer_id',
+    )
+    readonly_fields = ('id', 'name', 'agency',)
+    ordering = ('-created_dt',)
+
+    def __init__(self, model, admin_site):
+        super(AgencyAccountInline, self).__init__(model, admin_site)
+        self.form.admin_site = admin_site  # capture the admin_site
+
+    def get_formset(self, request, obj=None, **kwargs):
+        ret = super(AgencyAccountInline, self).get_formset(request, obj, **kwargs)
+        self.form.obj = obj
+        ret.request = request
+        return ret
+
+    def save_formset(self, request, form, formset, change):
+        formset.save()
+
+
+class AgencyAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
         'sales_representative',
         'created_dt',
-        'modified_dt'
+        'modified_dt',
+    )
+    exclude = (
+        'users',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
 
+    inlines = (AgencyUserInline, AgencyAccountInline, )
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.Account:
+            from pudb import set_trace; set_trace()
+
+            newly_added = set([])
+            from pudb import set_trace; set_trace()
+            for f in formset.forms:
+                for account in f.cleaned_data['account']:
+                    account.agency = self.obj
+                    account.save(request)
+                    newly_added.add(account.id)
+
+                deleted_accounts = f.fields['account'].queryset.filter(
+                    agency=self.obj
+                ).exclude(
+                    id__in=newly_added
+                )
+
+                for deleted_account in deleted_accounts:
+                    deleted_account.agency = None
+                    deleted_account.save(request)
+
+            formset.save()
+        else:
+            formset.save()
+
+    def save_model(self, request, obj, form, change):
+        self.obj = obj
+        obj.save(request)
 
 # Account
 
