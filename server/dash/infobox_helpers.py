@@ -490,7 +490,7 @@ def _retrieve_active_budgetlineitems(campaign, date):
             campaign__in=campaign
         )
     else:
-        qs = dash.models.BudgetLineItem.objects.all()
+        qs = dash.models.BudgetLineItem.objects.none()
     return qs.filter_active(date)
 
 
