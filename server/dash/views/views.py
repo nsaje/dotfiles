@@ -967,11 +967,10 @@ class Account(api_common.BaseApiView):
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
 
-        can_manage_agency = request.user.has_perm('zemauth.can_manage_agency')
-        if can_manage_agency:
-            managed_agency = models.Agency.objects.all().filter(
+        if request.user.has_perm('zemauth.can_manage_agency'):
+            managed_agency = models.Agency.objects.all().get(
                 users=request.user
-            ).first()
+            )
             account.agency = managed_agency
 
         account.save(request)
