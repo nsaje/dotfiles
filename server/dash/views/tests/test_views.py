@@ -5,7 +5,7 @@ from mock import patch, ANY
 import datetime
 import decimal
 
-from django.test import TestCase, Client, TransactionTestCase, RequestFactory
+from django.test import TestCase, Client, RequestFactory
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +17,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+from utils import exc
 
 from reports import redshift
 import reports.models
@@ -106,6 +107,77 @@ class UserTest(TestCase):
             },
             'success': True
         })
+
+
+class AccountsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def test_put(self):
+        johnny = User.objects.get(pk=2)
+
+        rf = RequestFactory().put('accounts')
+        rf.user = johnny
+        with self.assertRaises(exc.MissingDataError):
+            views.Account().put(rf)
+
+        permission = Permission.objects.get(codename='all_accounts_accounts_add_account')
+        johnny.user_permissions.add(permission)
+        johnny.save()
+
+        johnny = User.objects.get(pk=2)
+        rf.user = johnny
+        response = views.Account().put(rf)
+        response_blob = json.loads(response.content)
+        self.assertTrue(response_blob['success'])
+        self.assertDictEqual(
+            {
+                'name': 'New account',
+                'id': 2,
+            },
+            response_blob['data']
+        )
+
+        acc = models.Account.objects.get(pk=2)
+        self.assertIsNone(acc.agency)
+
+    def test_put_as_agency_manager(self):
+        johnny = User.objects.get(pk=2)
+
+        rf = RequestFactory().put('accounts')
+        rf.user = johnny
+
+        ag = models.Agency(
+            name='6Pack'
+        )
+        ag.save(rf)
+        ag.users.add(johnny)
+        ag.save(rf)
+
+        with self.assertRaises(exc.MissingDataError):
+            views.Account().put(rf)
+
+        permission1 = Permission.objects.get(codename='all_accounts_accounts_add_account')
+        permission2 = Permission.objects.get(codename='can_manage_agency')
+        johnny.user_permissions.add(permission1)
+        johnny.user_permissions.add(permission2)
+        johnny.save()
+
+        johnny = User.objects.get(pk=2)
+        rf.user = johnny
+        response = views.Account().put(rf)
+        response_blob = json.loads(response.content)
+
+        acc = models.Account.objects.all().order_by('-created_dt').first()
+
+        self.assertTrue(response_blob['success'])
+        self.assertDictEqual(
+            {
+                'name': 'New account',
+                'id': acc.id,
+            },
+            response_blob['data']
+        )
+        self.assertIsNotNone(acc.agency)
 
 
 @patch('dash.views.views.helpers.log_useraction_if_necessary')
@@ -1363,12 +1435,6 @@ class AdGroupAdsUploadTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
     def test_missing_ad_group(self):
         non_existent_ad_group_id = 0
 
@@ -1532,12 +1598,6 @@ class AdGroupAdsUploadStatusTest(TestCase):
             }
         })
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
 
 class AdGroupAdsUploadCancelTest(TestCase):
 
@@ -1571,12 +1631,6 @@ class AdGroupAdsUploadCancelTest(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
-
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
 
     def test_validation(self):
         batch = models.UploadBatch.objects.get(pk=2)

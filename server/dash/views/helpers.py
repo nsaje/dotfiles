@@ -850,10 +850,6 @@ def _is_end_date_past(ad_group_settings):
 
 def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, user, allowed_sources):
     editable_fields = {}
-
-    if not user.has_perm('zemauth.set_ad_group_source_settings'):
-        return editable_fields
-
     editable_fields['status_setting'] = _get_editable_fields_status_setting(
         ad_group,
         ad_group_source,

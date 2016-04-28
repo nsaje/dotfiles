@@ -5,6 +5,7 @@ from django.conf import settings
 
 register = template.Library()
 
+
 def is_demo_user(user):
     return user.email == settings.DEMO_USER_EMAIL or user.email in settings.DEMO_USERS
 

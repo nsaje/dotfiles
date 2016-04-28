@@ -945,15 +945,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_permissions(self):
-        url = reverse('account_conversion_pixels', kwargs={'account_id': 0})
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
-
     @patch('dash.views.agency.redshift.get_pixels_last_verified_dt')
     def test_get(self, redshift_get_mock):
         utcnow = datetime.datetime.utcnow()
@@ -962,7 +953,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
         account = models.Account.objects.get(pk=1)
         account.users.add(self.user)
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.get(
             reverse('account_conversion_pixels', kwargs={'account_id': account.id}),
             follow=True
@@ -982,7 +972,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
         }], decoded_response['data']['rows'])
 
     def test_get_non_existing_account(self):
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.get(
             reverse('account_conversion_pixels', kwargs={'account_id': 9876}),
             follow=True
@@ -992,7 +981,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_post(self, mock_log_useraction):
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'slug'}),
@@ -1023,7 +1011,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
     def test_post_slug_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': ''}),
@@ -1037,7 +1024,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
     def test_post_slug_invalid_chars(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'A'}),
@@ -1091,7 +1077,6 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
     def test_post_slug_too_long(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'a' * (models.ConversionPixel._meta.get_field('slug').max_length + 1)}),
@@ -1113,15 +1098,9 @@ class ConversionPixelTestCase(AgencyViewTestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_permissions(self):
-        url = reverse('conversion_pixel', kwargs={'conversion_pixel_id': 0})
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': True}),
@@ -1146,7 +1125,6 @@ class ConversionPixelTestCase(AgencyViewTestCase):
             account=models.Account.objects.get(pk=1))
 
     def test_put_archive_no_permissions(self):
-        self.add_permissions(['manage_conversion_pixels'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': True}),
@@ -1159,7 +1137,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest('id')
 
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': conversion_pixel.id + 1}),
             json.dumps({'archived': True}),
@@ -1175,7 +1153,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
     def test_put_invalid_account(self):
         new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, slug='abcd')
 
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': new_conversion_pixel.id}),
             json.dumps({'archived': True}),
@@ -1189,7 +1167,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
     def test_put_invalid_archived_value(self):
-        self.add_permissions(['manage_conversion_pixels', 'archive_restore_entity'])
+        self.add_permissions(['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': 1}),
@@ -1213,17 +1191,7 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_permissions(self):
-        url = reverse('campaign_conversion_goals', kwargs={'campaign_id': 0})
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             follow=True,
@@ -1283,7 +1251,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertItemsEqual(expected_available_pixels, decoded_response['data']['available_pixels'])
 
     def test_get_campaign_no_permissions(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
             follow=True,
@@ -1306,7 +1273,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
             archived=False,
         )
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             follow=True,
@@ -1370,7 +1336,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertItemsEqual(expected_available_pixels, decoded_response['data']['available_pixels'])
 
     def test_get_non_existing_campaign(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.get(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 9876}),
             follow=True
@@ -1380,7 +1345,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_post(self, mock_log_useraction):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1403,7 +1367,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         )
 
     def test_post_campaign_no_permission(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
             json.dumps({
@@ -1435,7 +1398,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_max_conversion_goals(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             json.dumps({
@@ -1453,7 +1415,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual('Max conversion goals per campaign exceeded', decoded_response['data']['message'])
 
     def test_post_pixel_no_conversion_window(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1471,7 +1432,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(['conversion_window'],  decoded_response['data']['errors'].keys())
 
     def test_post_not_unique_name(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1504,7 +1464,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
     def test_post_same_name_and_goal_id_different_campaigns(self):
         models.ConversionGoal.objects.all().delete()
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             json.dumps({
@@ -1532,7 +1491,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_same_goal_id_different_types(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1560,7 +1518,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_not_unique_goal_id(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1591,7 +1548,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual({'goal_id': ['This field has to be unique.']}, decoded_response['data']['errors'])
 
     def test_post_non_existing_conversion_pixel(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1617,7 +1573,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
             'conversion_window': 168,
         }
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps(data),
@@ -1646,7 +1601,6 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
     def test_post_pixel_invalid_account(self):
         models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1689,17 +1643,10 @@ class ConversionGoalTestCase(AgencyViewTestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_permissions(self):
-        url = reverse('conversion_goal', kwargs={'campaign_id': 0, 'conversion_goal_id': 0})
-
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 401)
-
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_delete(self, mock_log_useraction):
         conversion_goal = models.ConversionGoal.objects.get(id=1)
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': conversion_goal.id}),
             follow=True,
@@ -1718,7 +1665,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
     def test_delete_campaign_no_permissions(self):
         models.Account.objects.get(id=1).users.remove(User.objects.get(id=1))
 
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 1}),
             follow=True,
@@ -1735,7 +1681,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_delete_invalid_conversion_goal(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 9876}),
             follow=True,
@@ -1747,7 +1692,6 @@ class ConversionGoalTestCase(AgencyViewTestCase):
         self.assertEqual('Invalid conversion goal', decoded_response['data']['message'])
 
     def test_delete_goal_not_belonging_to_campaign(self):
-        self.add_permissions(['manage_conversion_goals'])
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 2, 'conversion_goal_id': 1}),
             follow=True,
@@ -1924,7 +1868,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_get(self):
-        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1936,16 +1879,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
         self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
-
-    def test_get_no_ad_group_default_settings_permission(self):
-        response = self.client.get(
-            '/api/campaigns/1/settings/'
-        )
-
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertNotIn('target_devices', content['data']['settings'])
-        self.assertNotIn('target_regions', content['data']['settings'])
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
@@ -1960,7 +1893,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
 
-        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -1999,7 +1931,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_added(self, p1, p2, p3):
         self.add_permissions([
-            'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
 
@@ -2081,7 +2012,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
 
@@ -2126,7 +2056,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         )
 
         self.add_permissions([
-            'settings_defaults_on_campaign_level',
             'can_see_campaign_goals'
         ])
 
@@ -2155,45 +2084,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertFalse(models.CampaignGoal.objects.all())
         self.assertFalse(models.CampaignGoalValue.objects.all())
 
-    @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_no_ad_group_default_settings_permission(self, mock_send_campaign_notification_email,
-                                                         mock_log_useraction, mock_insert_adgroup):
-        settings = models.Campaign.objects.get(pk=1).get_current_settings()
-        self.assertNotEqual(settings.goal_quantity, Decimal('10.00'))
-        self.assertEqual(settings.target_devices, ['mobile'])
-        self.assertEqual(settings.target_regions, ['NC', '501'])
-
-        response = self.client.put(
-            '/api/campaigns/1/settings/',
-            json.dumps({
-                'settings': {
-                    'id': 1,
-                    'name': 'test campaign 2',
-                    'campaign_goal': 2,
-                    'goal_quantity': 10,
-                    'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
-                }
-            }),
-            content_type='application/json',
-        )
-
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertNotIn('target_devices', content['data']['settings'])
-        self.assertNotIn('target_regions', content['data']['settings'])
-
-        settings = models.Campaign.objects.get(pk=1).get_current_settings()
-
-        # Goal quantity should change, but target info should stay the same
-        self.assertEqual(settings.goal_quantity, Decimal('10.00'))
-        self.assertEqual(settings.target_devices, ['mobile'])
-        self.assertEqual(settings.target_regions, ['NC', '501'])
-
     def test_validation(self):
-        self.add_permissions(['settings_defaults_on_campaign_level'])
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2228,29 +2119,6 @@ class CampaignSettingsTest(AgencyViewTestCase):
         self.assertFalse(content['success'])
         self.assertTrue('campaign_goal' in content['data']['errors'])
         self.assertTrue('target_devices' in content['data']['errors'])
-
-    def test_validation_no_settings_defaults_permission(self):
-        response = self.client.put(
-            '/api/campaigns/1/settings/',
-            json.dumps({
-                'settings': {
-                    'id': 1,
-                    'name': 'test campaign 2',
-                    'campaign_goal': 50,
-                    'goal_quantity': 10,
-                }
-            }),
-            content_type='application/json',
-        )
-
-        content = json.loads(response.content)
-        self.assertFalse(content['success'])
-
-        self.assertIn('campaign_goal', content['data']['errors'])
-
-        # because target devices were copied from the latest settings,
-        # there should be no errors
-        self.assertNotIn('target_devices', content['data']['errors'])
 
     def test_get_with_conversion_goals(self):
 
