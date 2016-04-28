@@ -48,6 +48,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'asc'
         },
         {
+            name: 'Agency',
+            field: 'agency',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Agency to which this account belongs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_account_agency_information'),
+            shown: $scope.hasPermission('zemauth.can_view_account_agency_information')
+        },
+        {
             name: 'Status',
             field: 'status',
             unselectable: true,
@@ -71,18 +83,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
             shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
-        },
-        {
-            name: 'Agency',
-            field: 'agency',
-            checked: false,
-            type: 'text',
-            totalRow: false,
-            help: 'Agency to which this account belongs.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_account_agency_information'),
-            shown: $scope.hasPermission('zemauth.can_view_account_agency_information')
         },
         {
             name: 'Sales Representative',
