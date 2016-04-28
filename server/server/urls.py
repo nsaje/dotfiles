@@ -349,7 +349,6 @@ urlpatterns += [
     url(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
-        name='accounts_create',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
