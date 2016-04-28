@@ -50,7 +50,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             name: 'Agency',
             field: 'agency',
-            checked: false,
+            unselectable: true,
+            checked: true,
             type: 'text',
             totalRow: false,
             help: 'Agency to which this account belongs.',
