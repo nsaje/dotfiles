@@ -117,4 +117,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
             $scope.setActiveTab();
         }
     });
+
+    $scope.hasInfoboxPermission = function () {
+        return true;
+    };
 }]);

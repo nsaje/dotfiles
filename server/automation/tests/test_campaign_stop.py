@@ -889,7 +889,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         mock_get_past_data.return_value = (date_spend, source_spend)
 
         self.assertTrue(campaign.is_in_landing())
-        campaign_stop.update_campaigns_in_landing()
+        campaign_stop.update_campaigns_in_landing(dash.models.Campaign.objects.all().filter_landing())
 
         for ad_group in campaign.adgroup_set.all().filter_active():
             current_settings = ad_group.get_current_settings()
@@ -928,7 +928,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         mock_get_past_data.return_value = (date_spend, source_spend)
 
         self.assertTrue(campaign.is_in_landing())
-        campaign_stop.update_campaigns_in_landing()
+        campaign_stop.update_campaigns_in_landing(dash.models.Campaign.objects.all().filter_landing())
 
         self.assertFalse(campaign.get_current_settings().landing_mode)
         for ad_group in campaign.adgroup_set.all():

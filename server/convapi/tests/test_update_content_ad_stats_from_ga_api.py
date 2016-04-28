@@ -24,7 +24,7 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
         _download_stats_from_ga_mock.side_effect = self._download_stats_from_ga_side_effect
         ga_service_mock.return_value = None
         command = Command()
-        command.handle(ga_date='2015-12-07')
+        command.handle(from_date='2015-12-07', to_date='2015-12-07')
         postclick_stats = ContentAdPostclickStats.objects.all()
         self.assertTrue(postclick_stats.count() == 1)
         self.assertEqual(
@@ -38,6 +38,31 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
                          model_to_dict(goal_conversion_stats.first(), exclude='id'))
         sqs_write_message_mock.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
                                                        {'date': '2015-12-07', 'campaign_id': 1})
+
+    @mock.patch('convapi.ga_api.get_ga_service')
+    @mock.patch.object(Command, '_fetch_reports')
+    def test_handle_arguments(self, _fetch_reports_mock, ga_service_mock):
+        ga_service_mock.return_value = None
+        command = Command()
+        command.handle(from_date='2015-12-07', to_date='2015-12-07')
+        self.assertEqual(1, _fetch_reports_mock.call_count)
+
+        _fetch_reports_mock.call_count = 0
+        command.handle(from_date='2015-12-07', to_date='2015-12-08')
+        self.assertEqual(2, _fetch_reports_mock.call_count)
+
+        _fetch_reports_mock.call_count = 0
+        command.handle(from_date=None, to_date='2015-12-08')
+        self.assertEqual(0, _fetch_reports_mock.call_count)
+
+        _fetch_reports_mock.call_count = 0
+        from_date = datetime.date.today() - datetime.timedelta(days=3)
+        command.handle(from_date=str(from_date), to_date=None)
+        self.assertEqual(3, _fetch_reports_mock.call_count)
+
+        _fetch_reports_mock.call_count = 0
+        command.handle(from_date=None, to_date=None)
+        self.assertEqual(1, _fetch_reports_mock.call_count)
 
     def _create_ga_profiles_mock(self):
         return {'items': [{'id': '100021248', 'accountId': '2175716', 'webPropertyId': 'UA-2175716-35'}],
