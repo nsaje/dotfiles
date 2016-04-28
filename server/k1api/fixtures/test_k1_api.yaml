@@ -384,6 +384,15 @@
     model: dash.adgroupsourcestate
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcestate
+    pk: 2
+
 # test adgroupsourcesettings
 
 -   fields:
@@ -403,6 +412,24 @@
         state: 2
     model: dash.adgroupsourcesettings
     pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: null
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 7
+        cpc_cc: '0.12'
+        daily_budget_cc: null
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 4
 
 
 # test uploadbatch
@@ -519,8 +546,6 @@
 
 -   fields:
         name: 'pub1.com'
-        account: 1
-        campaign: 1
         ad_group: 1
         source: 1
         external_id: ''
@@ -531,8 +556,6 @@
 
 -   fields:
         name: 'pub2.com'
-        account: 1
-        campaign: 1
         ad_group: 1
         source: 2
         external_id: ''
@@ -543,8 +566,6 @@
 
 -   fields:
         name: 'pub3.com'
-        account: 1
-        campaign: 1
         ad_group: 2
         source: 2
         external_id: ''
@@ -555,8 +576,6 @@
 
 -   fields:
         name: ''
-        account: 1
-        campaign: 1
         ad_group: 3
         source: 2
         external_id: ''
@@ -564,3 +583,23 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.publisherblacklist
     pk: 4
+
+-   fields:
+        name: 'pub5.com'
+        account: 1
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 5
+
+-   fields:
+        name: 'pub6.com'
+        campaign: 1
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 6

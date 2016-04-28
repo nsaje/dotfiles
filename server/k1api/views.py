@@ -10,7 +10,7 @@ from django.http import JsonResponse, Http404
 from django.db.models import F, Q
 from django.conf import settings
 
-from dash import constants
+from dash import constants, publisher_helpers
 from k1api import codelists
 from utils import url_helper, request_signer
 
@@ -73,13 +73,17 @@ def get_ad_group_source(request):
     if not source_type:
         return _response_error("Must provide source type.")
 
-    ad_group_source = (
-        dash.models.AdGroupSource.objects
-        .get(
-            ad_group_id=ad_group_id,
-            source__source_type__type=source_type,
+    try:
+        ad_group_source = (
+            dash.models.AdGroupSource.objects
+            .get(
+                ad_group_id=ad_group_id,
+                source__source_type__type=source_type,
+            )
         )
-    )
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_error("The ad group %s is not present on source %s" %
+                               (ad_group_id, source_type), status=404)
 
     ad_group_source_settings = ad_group_source.get_current_settings()
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
@@ -271,37 +275,85 @@ def get_publishers_blacklist(request):
 
     ad_group_id = request.GET.get('ad_group_id')
     if ad_group_id is not None:
+        ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
+        blacklist_filter = Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
         blacklisted = (dash.models.PublisherBlacklist.objects
-                       .filter(ad_group__id=ad_group_id)
-                       .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
+                       .filter(blacklist_filter)
+                       .select_related('source', 'ad_group'))
     else:
-        current_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().select_related(
-            'ad_group')
+        running_ad_groups = dash.models.AdGroup.objects.all().filter_running().select_related('campaign',
+                                                                                              'campaign__account')
+        running_campaigns = set([ag.campaign for ag in running_ad_groups])
+        running_accounts = set([c.account for c in running_campaigns])
 
-        running_ad_groups = []
-        for ad_group_settings in current_settings:
-            if ad_group_settings.ad_group.get_running_status_by_flight_time(
-                    ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE:
-                running_ad_groups.append(ad_group_settings.ad_group.id)
-
+        blacklist_filter = (Q(ad_group__isnull=True) |
+                            Q(ad_group__in=running_ad_groups) |
+                            Q(campaign__in=running_campaigns) |
+                            Q(account__in=running_accounts))
         blacklisted = (dash.models.PublisherBlacklist.objects
-                       .filter(Q(ad_group__isnull=True) | Q(ad_group__id__in=running_ad_groups))
-                       .values('name', 'ad_group_id', 'source__tracking_slug', 'status'))
+                       .filter(blacklist_filter)
+                       .select_related('source', 'ad_group',  'campaign', 'account', 'account'))
 
-    blacklist = []
+    blacklist = {}
     for item in blacklisted:
         exchange = None
-        if item.get('source__tracking_slug') is not None:
-            exchange = item['source__tracking_slug'].replace('b1_', '')
+        if item.source is not None:
+            exchange = publisher_helpers.publisher_exchange(item.source)
 
-        blacklist.append({
-            'ad_group_id': item.get('ad_group_id'),
-            'domain': item['name'],
+        # for single ad group ad_group_id is always the one queried
+        if ad_group_id:
+            entry = {
+                'ad_group_id': ad_group.id,
+                'domain': item.name,
+                'exchange': exchange,
+                'status': item.status
+            }
+            blacklist[hash(tuple(entry.values()))] = entry
+        # for all ad groups generate all ad_group_ids
+        else:
+            _process_item(blacklist, item, exchange, running_ad_groups)
+
+    return _response_ok({'blacklist': list(blacklist.values())})
+
+
+def _process_item(blacklist, item, exchange, running_ad_groups):
+    # if ad_group then use this ad_group_id
+    if item.ad_group:
+        entry = {
+            'ad_group_id': item.ad_group_id,
+            'domain': item.name,
             'exchange': exchange,
-            'status': item['status']
-        })
+            'status': item.status
+        }
+        blacklist[hash(tuple(entry.values()))] = entry
+    # if campaign then generate all running ad groups is this campaign
+    elif item.campaign:
+        _process_campaign(blacklist, item, item.campaign, exchange, running_ad_groups)
+    # if account then generate all running ad groups in this account
+    elif item.account:
+        for campaign in item.account.campaign_set.all():
+            _process_campaign(blacklist, item, campaign, exchange, running_ad_groups)
+    # global blacklist
+    else:
+        entry = {
+            'ad_group_id': None,
+            'domain': item.name,
+            'exchange': exchange,
+            'status': item.status
+        }
+        blacklist[hash(tuple(entry.values()))] = entry
 
-    return _response_ok({'blacklist': blacklist})
+
+def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
+    for ad_group in campaign.adgroup_set.all():
+        if ad_group in running_ad_groups:
+            entry = {
+                'ad_group_id': ad_group.id,
+                'domain': item.name,
+                'exchange': exchange,
+                'status': item.status
+            }
+            blacklist[hash(tuple(entry.values()))] = entry
 
 
 @csrf_exempt
