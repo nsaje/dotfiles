@@ -8,6 +8,7 @@ import reports
 import StringIO
 import unicodecsv
 import re
+import time
 import xlrd
 
 from django.conf import settings
@@ -442,7 +443,10 @@ def process_report_v2(report_task, report_type):
         )
 
         refresh.put_pub_postclick_stats_to_s3(
-                report.get_date(), report.get_publisher_stats())
+            report.get_date(),
+            report.get_publisher_stats(),
+            str(int(time.time() * 1000))
+        )
 
         report_log.visits_imported = report.imported_visits()
         report_log.visits_reported = report.reported_visits()

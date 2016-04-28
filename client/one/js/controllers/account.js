@@ -63,4 +63,8 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'a
     $scope.$on('$stateChangeSuccess', function () {
         $scope.updateBreadcrumbAndTitle();
     });
+
+    $scope.hasInfoboxPermission = function () {
+        return true;
+    };
 }]);

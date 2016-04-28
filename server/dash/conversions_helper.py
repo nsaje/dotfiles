@@ -76,15 +76,11 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
     reorder = False
     for key, touchpoints in touchpoint_data_by_key.iteritems():
         publisher = publishers_data_by_key.get(key)
+        # Skip merge when publisher data is not available
+        if not publisher:
+            continue
 
         for touchpoint in touchpoints:
-            if not publisher:
-                publisher = {publisher_breakdown_fields[i]: touchpoint[touchpoint_breakdown_fields[i]] for i in
-                             range(len(touchpoint_breakdown_fields))}
-                publishers_data.append(publisher)
-                publishers_data_by_key[create_key(publisher_breakdown_fields)(publisher)] = publisher
-                reorder = True
-
             publisher.setdefault('conversions', {})
             key = (touchpoint['slug'], touchpoint['account'], touchpoint['conversion_window'])
             publisher['conversions'][key] = touchpoint['conversion_count']

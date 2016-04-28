@@ -485,12 +485,13 @@ def _until_today():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    if campaign:
-        qs = dash.models.BudgetLineItem.objects.filter(
-            campaign__in=campaign
-        )
-    else:
-        qs = dash.models.BudgetLineItem.objects.all()
+    if not campaign:
+        return dash.models.BudgetLineItem.objects.none()
+
+    qs = dash.models.BudgetLineItem.objects.filter(
+        campaign__in=campaign
+    )
+
     return qs.filter_active(date)
 
 
@@ -530,24 +531,31 @@ def get_adgroup_running_status_class(autopilot_state, running_status, state, is_
 
 
 def get_campaign_running_status(campaign):
-    count_active = dash.models.AdGroup.objects.filter(
+    running_exists = dash.models.AdGroup.objects.filter(
         campaign=campaign
-    ).filter_running().count()
-    if count_active > 0:
+    ).filter_running().exists()
+    if running_exists:
         if campaign.is_in_landing():
             return dash.constants.InfoboxStatus.LANDING_MODE
         return dash.constants.InfoboxStatus.ACTIVE
-    return dash.constants.InfoboxStatus.INACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(
+        campaign=campaign
+    ).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
 def get_account_running_status(account):
-    count_active = dash.models.AdGroup.objects.filter(
+    running_exists = dash.models.AdGroup.objects.filter(
         campaign__account=account
-    ).filter_running().count()
-    if count_active > 0:
+    ).filter_running().exists()
+    if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
-    else:
-        return dash.constants.InfoboxStatus.INACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(
+        campaign__account=account
+    ).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
 def _retrieve_active_creditlineitems(account, date):

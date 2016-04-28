@@ -224,6 +224,7 @@ class Agency(models.Model):
     sales_representative = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
+        blank=True,
         related_name="+",
         on_delete=models.PROTECT
     )
@@ -235,6 +236,9 @@ class Agency(models.Model):
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name_plural = 'Agencies'
@@ -250,7 +254,7 @@ class Account(models.Model):
         blank=False,
         null=False
     )
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, blank=True, null=True)
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, null=True, blank=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -334,6 +338,13 @@ class Account(models.Model):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save(request)
+
+    def admin_link(self):
+        if self.id:
+            return '<a href="/admin/dash/account/%d/">Edit</a>' % self.id
+        else:
+            return 'N/A'
+    admin_link.allow_tags = True
 
     def get_account_url(self, request):
         account_settings_url = request.build_absolute_uri(
