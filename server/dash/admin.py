@@ -80,16 +80,19 @@ class AbstractUserForm(forms.ModelForm):
 class AgencyUserForm(AbstractUserForm):
     ''' Derived from a more abstract hack with validation '''
 
+    def __init__(self, *args, **kwargs):
+        super(AgencyUserForm, self).__init__(*args, **kwargs)
+
     def clean(self):
         super(AgencyUserForm, self).clean()
 
         if 'user' not in self.cleaned_data:
             return
 
-        agencies = models.Agency.objects.filter(
+        agency = models.Agency.objects.filter(
             users=self.cleaned_data['user']
-        )
-        if agencies.exists():
+        ).first()
+        if agency is not None and agency != self.cleaned_data.get('agency'):
             raise ValidationError('User {} is already part of another agency'.format(
                 self.cleaned_data['user'].get_full_name()
             ))
@@ -267,6 +270,8 @@ class AgencyUserInline(admin.TabularInline):
     form = AgencyUserForm
     extra = 0
     raw_id_fields = ("user", )
+    verbose_name = "Agency Manager"
+    verbose_name_plural = "Agency Managers"
 
     def __unicode__(self):
         return self.name
@@ -292,23 +297,46 @@ class AgencyAccountInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
+class AgencyFormAdmin(forms.ModelForm):
+    class Meta:
+        model = models.Agency
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(AgencyFormAdmin, self).__init__(*args, **kwargs)
+        self.fields['sales_representative'].queryset =\
+            ZemUser.objects.all().exclude(
+                first_name=''
+            ).exclude(
+                last_name=''
+            )
+        self.fields['sales_representative'].label_from_instance = lambda obj: "%s" % obj.get_full_name()
+
+
 class AgencyAdmin(admin.ModelAdmin):
     search_fields = ['name']
+    form = AgencyFormAdmin
     list_display = (
         'name',
-        'sales_representative',
+        'id',
+        '_users',
         'created_dt',
         'modified_dt',
     )
-    exclude = (
-        'users',
-    )
-    readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
+    exclude = ('users',)
+    readonly_fields = ('id', 'created_dt', 'modified_dt', 'modified_by')
     inlines = (AgencyAccountInline, AgencyUserInline)
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
         self.form.admin_site = admin_site
+
+    def _users(self, obj):
+        names = []
+        for user in obj.users.all():
+            names.append(user.get_full_name())
+        return ', '.join(names)
+    _users.short_description = 'Agency Managers'
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Account:
