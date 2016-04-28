@@ -218,6 +218,16 @@ class K1ApiTest(TestCase):
         self.assertEqual(data['source_campaign_key'], db_ags.source_campaign_key)
         self.assertLessEqual(required_fields, set(data.keys()))
 
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_group_source_nonexisting(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_group_source'),
+            {'source_type': 'nonexistingsource',
+             'ad_group_id': 1},
+        )
+        self.assertEqual(response.status_code, 404)
+
     def _test_get_content_ad_sources_for_ad_group(self, mock_verify_wsgi_request, ad_group_id, content_ad_id):
         response = self.client.get(
             reverse('k1api.get_content_ad_sources_for_ad_group'),

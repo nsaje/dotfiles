@@ -168,6 +168,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('has_supporthero', 'Has Supporthero snippet'),
             ('can_filter_sources_through_table', 'Can filter sources through sources table'),
             ('can_view_account_agency_information', 'Can view relations between account and agency'),
+            ('can_manage_agency', 'Can manage agency'),
         )
 
     def get_full_name(self):

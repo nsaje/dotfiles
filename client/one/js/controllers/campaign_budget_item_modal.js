@@ -111,13 +111,13 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             ).then(function (data) {
                 $scope.budgetItem = data;
 
-                $scope.minDate = data.startDate;
-                $scope.maxDate = data.endDate;
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
 
                 $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
                 $scope.availableCredit = $scope.getAvailableCredit(false, data.credit.id);
+                $scope.minDate = data.startDate;
+                $scope.maxDate = data.credit.endDate;
             });
         }
     };
