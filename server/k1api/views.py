@@ -387,43 +387,16 @@ def get_ad_groups(request):
             'displayUrl': ad_group_settings.display_url,
             'trackingCodes': ad_group_settings.get_tracking_codes(),
             'deviceTargeting': ad_group_settings.target_devices,
+            'iabCategory': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
         }
 
         if ad_group_settings.end_date:
-            day = datetime.timedelta(days=1)
-            ad_group['endDt'] = datetime.datetime.combine(ad_group_settings.end_date + day,
-                                                            datetime.datetime.min.time()).replace(
-                tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
+            end_date = ad_group_settings.end_date + datetime.timedelta(days=1)
+            end_date = datetime.datetime.combine(end_date, datetime.datetime.min.time())
+            ad_group['endDt'] = end_date.replace(tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
 
-        campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign.id]
-        ad_group['iabCategory'] = campaign_settings.iab_category
-
-        # divide ad group settings target regions
-        geo_targeting = []
-        subdivision_targeting = []
-        dma_targeting = []
-
-        # separate countries, subdivisions and DMAs
-        for tr in ad_group_settings.target_regions:
-            if tr in codelists.DMA_WOEID:
-                dma_targeting.append(int(tr))
-            elif tr in codelists.SUBDIVISION_WOEID:
-                subdivision_targeting.append(_translate_subdivision(tr))
-            elif tr in codelists.COUNTRY_CODE_WOEID:
-                geo_targeting.append(tr)
-
-        ad_group['geoTargeting'] = geo_targeting
-        ad_group['dmaTargeting'] = dma_targeting
-        ad_group['regionTargeting'] = subdivision_targeting
-
-        # retargeting ad groups
-        retargeting_blob = []
-        for ad_group_id in ad_group_settings.retargeting_ad_groups:
-            retargeting_blob.append({
-                'event_type': EVENT_RETARGET_ADGROUP,
-                'event_id': '{}'.format(ad_group_id),
-            })
-        ad_group['retargetings'] = retargeting_blob
+        # targeting and re-targeting
+        _process_targeting(ad_group, ad_group_settings)
 
         ad_groups.append(ad_group)
 
@@ -436,3 +409,31 @@ def _translate_subdivision(subdivision):
     else:
         return subdivision
 
+
+def _process_targeting(ad_group, ad_group_settings):
+    # divide ad group settings target regions
+    geo_targeting = []
+    subdivision_targeting = []
+    dma_targeting = []
+
+    # separate countries, subdivisions and DMAs
+    for tr in ad_group_settings.target_regions:
+        if tr in codelists.DMA_WOEID:
+            dma_targeting.append(int(tr))
+        elif tr in codelists.SUBDIVISION_WOEID:
+            subdivision_targeting.append(_translate_subdivision(tr))
+        elif tr in codelists.COUNTRY_CODE_WOEID:
+            geo_targeting.append(tr)
+
+    ad_group['geoTargeting'] = geo_targeting
+    ad_group['dmaTargeting'] = dma_targeting
+    ad_group['regionTargeting'] = subdivision_targeting
+
+    # re-targeting ad groups
+    retargeting_blob = []
+    for ad_group_id in ad_group_settings.retargeting_ad_groups:
+        retargeting_blob.append({
+            'event_type': EVENT_RETARGET_ADGROUP,
+            'event_id': '{}'.format(ad_group_id),
+        })
+    ad_group['retargetings'] = retargeting_blob
