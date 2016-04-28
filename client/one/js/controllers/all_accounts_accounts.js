@@ -351,7 +351,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     'campaigns': [],
                 });
 
-                $state.go('main.accounts.agency', {id: data.id});
+                if ($scope.hasPermission('zemauth.can_manage_agency') && $scope.hasAgency()) {
+                    $state.go('main.accounts.settings', {id: data.id});
+                } else {
+                    $state.go('main.accounts.agency', {id: data.id});
+                }
             },
             function (data) {
                 // error

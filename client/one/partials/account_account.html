@@ -1,4 +1,27 @@
 <div class="page page-account-account" ng-if="!account.archived">
+
+    <form ng-if="hasPermission('zemauth.can_manage_agency')" id="form-account-agency" class="form-horizontal">
+        <div class="form-group" ng-class="{'has-error': !!errors.name}">
+            <label for="name-input" class="col-xs-2 control-label">
+                Name
+                <zem-help-popover content="Name of the account." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <input id="name-input" type="text" class="form-control" ng-model="settings.name">
+            </div>
+
+            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
+        </div>
+
+
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+        <div class="loader" ng-show="requestInProgress"></div>
+        <span ng-show="saved" class="success feedback-text">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error feedback-text">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success feedback-text">Your updates have been discarded.</span>
+    </form>
+
     <zem-conversion-pixels
         zem-account="account"
         zem-has-permission="hasPermission"

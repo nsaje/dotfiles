@@ -35,6 +35,14 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         });
     };
 
+    $scope.hasAgency = function () {
+        if ($scope.user.agency) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     $scope.isPermissionInternal = function (permission) {
         if (Object.keys($scope.user.permissions).indexOf(permission) < 0) {
             return false;
