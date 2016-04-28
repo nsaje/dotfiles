@@ -6,7 +6,6 @@ import dateutil.parser
 import rfc3987
 import datetime
 from decimal import Decimal
-from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 
 from collections import Counter
 

@@ -4,7 +4,6 @@ import urllib
 
 from django.contrib import admin
 from django.contrib import messages
-from django.contrib.admin.widgets import FilteredSelectMultiple, RelatedFieldWidgetWrapper
 from django.db import transaction
 from django import forms
 from django.utils.safestring import mark_safe
