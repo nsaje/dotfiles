@@ -272,21 +272,22 @@ def get_publishers_blacklist(request):
     if ad_group_id is not None:
         ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
         blacklist_filter = Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
-        blacklisted = dash.models.PublisherBlacklist.objects.filter(blacklist_filter).select_related('source',
-                                                                                                     'ad_group')
+        blacklisted = (dash.models.PublisherBlacklist.objects
+                       .filter(blacklist_filter)
+                       .select_related('source', 'ad_group'))
     else:
         running_ad_groups = dash.models.AdGroup.objects.all().filter_running().select_related('campaign',
                                                                                               'campaign__account')
         running_campaigns = set([ag.campaign for ag in running_ad_groups])
         running_accounts = set([c.account for c in running_campaigns])
 
-        blacklist_filter = Q(ad_group__isnull=True) | Q(ad_group__in=running_ad_groups) | Q(
-            campaign__in=running_campaigns) | Q(account__in=running_accounts)
-        blacklisted = dash.models.PublisherBlacklist.objects.filter(blacklist_filter).select_related('source',
-                                                                                                     'ad_group',
-                                                                                                     'campaign',
-                                                                                                     'account',
-                                                                                                     'account')
+        blacklist_filter = (Q(ad_group__isnull=True) |
+                            Q(ad_group__in=running_ad_groups) |
+                            Q(campaign__in=running_campaigns) |
+                            Q(account__in=running_accounts))
+        blacklisted = (dash.models.PublisherBlacklist.objects
+                       .filter(blacklist_filter)
+                       .select_related('source', 'ad_group',  'campaign', 'account', 'account'))
 
     blacklist = {}
     for item in blacklisted:
@@ -305,46 +306,46 @@ def get_publishers_blacklist(request):
             blacklist[hash(tuple(entry.values()))] = entry
         # for all ad groups generate all ad_group_ids
         else:
-            # if ad_group then use this ad_group_id
-            if item.ad_group:
-                entry = {
-                    'ad_group_id': item.ad_group_id,
-                    'domain': item.name,
-                    'exchange': exchange,
-                    'status': item.status
-                }
-                blacklist[hash(tuple(entry.values()))] = entry
-            # if campaign then generate all running ad groups is this campaign
-            elif item.campaign:
-                for ad_group in item.campaign.adgroup_set.all():
-                    if ad_group in running_ad_groups:
-                        entry = {
-                            'ad_group_id': ad_group.id,
-                            'domain': item.name,
-                            'exchange': exchange,
-                            'status': item.status
-                        }
-                        blacklist[hash(tuple(entry.values()))] = entry
-            # if account then generate all running ad groups in this account
-            elif item.account:
-                for campaign in item.account.campaign_set.all():
-                    for ad_group in campaign.adgroup_set.all():
-                        if ad_group in running_ad_groups:
-                            entry = {
-                                'ad_group_id': ad_group.id,
-                                'domain': item.name,
-                                'exchange': exchange,
-                                'status': item.status
-                            }
-                            blacklist[hash(tuple(entry.values()))] = entry
-            # global blacklist
-            else:
-                entry = {
-                    'ad_group_id': None,
-                    'domain': item.name,
-                    'exchange': exchange,
-                    'status': item.status
-                }
-                blacklist[hash(tuple(entry.values()))] = entry
+            _process_item(blacklist, item, exchange, running_ad_groups)
 
     return _response_ok({'blacklist': list(blacklist.values())})
+
+
+def _process_item(blacklist, item, exchange, running_ad_groups):
+    # if ad_group then use this ad_group_id
+    if item.ad_group:
+        entry = {
+            'ad_group_id': item.ad_group_id,
+            'domain': item.name,
+            'exchange': exchange,
+            'status': item.status
+        }
+        blacklist[hash(tuple(entry.values()))] = entry
+    # if campaign then generate all running ad groups is this campaign
+    elif item.campaign:
+        _process_campaign(blacklist, item, item.campaign, exchange, running_ad_groups)
+    # if account then generate all running ad groups in this account
+    elif item.account:
+        for campaign in item.account.campaign_set.all():
+            _process_campaign(blacklist, item, campaign, exchange, running_ad_groups)
+    # global blacklist
+    else:
+        entry = {
+            'ad_group_id': None,
+            'domain': item.name,
+            'exchange': exchange,
+            'status': item.status
+        }
+        blacklist[hash(tuple(entry.values()))] = entry
+
+
+def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
+    for ad_group in campaign.adgroup_set.all():
+        if ad_group in running_ad_groups:
+            entry = {
+                'ad_group_id': ad_group.id,
+                'domain': item.name,
+                'exchange': exchange,
+                'status': item.status
+            }
+            blacklist[hash(tuple(entry.values()))] = entry
