@@ -966,6 +966,13 @@ class Account(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
+
+        if request.user.has_perm('zemauth.can_manage_agency'):
+            managed_agency = models.Agency.objects.all().get(
+                users=request.user
+            )
+            account.agency = managed_agency
+
         account.save(request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
