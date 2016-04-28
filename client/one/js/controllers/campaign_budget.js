@@ -5,6 +5,7 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$modal',  'api', f
         $scope.activeBudget = data.active;
         $scope.pastBudget = data.past;
         $scope.budgetTotals = data.totals;
+        $scope.minAmount = data.minAmount;
         availableCredit = data.credits;
     }
     function refresh (updatedId) {

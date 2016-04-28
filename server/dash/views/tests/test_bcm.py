@@ -354,6 +354,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "start_date": "2015-10-01"
                 }
             ],
+            u"min_amount": 0,
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -403,6 +404,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "start_date": "2015-10-01"
                 }
             ],
+            "min_amount": 0,
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -476,7 +478,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                 "is_editable": False,
                 "is_updatable": True,
                 "amount": 100000,
-                "min_amount":  0,
                 "end_date": "2015-11-30",
                 "state": 1,
                 "created_at": "2014-06-04T05:58:21",
@@ -768,6 +769,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"start_date": u"2015-10-01",
                 }
             ],
+            u"min_amount": 0,
             u"past": [],
             u"credits": [
                 {

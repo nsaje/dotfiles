@@ -251,6 +251,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'past': self._get_past_budget(budget_items),
             'totals': self._get_budget_totals(campaign, active_budget),
             'credits': self._get_available_credit_items(campaign),
+            'min_amount': campaign_stop.get_min_budget_increase(campaign),
         })
 
     def _get_available_credit_items(self, campaign):
@@ -398,7 +399,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
     def _get_response(self, item):
         return self.create_api_response({
             'amount': item.amount,
-            'min_amount': campaign_stop.get_min_budget_increase(item.campaign),
             'created_by': str(item.created_by or 'Zemanta One'),
             'created_at': item.created_dt,
             'start_date': item.start_date,
