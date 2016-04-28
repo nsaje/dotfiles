@@ -1,6 +1,8 @@
 import json
 import logging
 
+import datetime
+from dateutil import tz
 from django.views.decorators.csrf import csrf_exempt
 import dash.models
 import dash.constants
@@ -9,9 +11,12 @@ from django.db.models import F, Q
 from django.conf import settings
 
 from dash import constants
+from k1api import codelists
 from utils import url_helper, request_signer
 
 logger = logging.getLogger(__name__)
+
+EVENT_RETARGET_ADGROUP = "redirect_adgroup"
 
 
 def _response_ok(content):
@@ -297,3 +302,85 @@ def get_publishers_blacklist(request):
         })
 
     return _response_ok({'blacklist': blacklist})
+
+
+@csrf_exempt
+def get_ad_groups(request):
+    _validate_signature(request)
+
+    ad_group_id = request.GET.get('ad_group_id')
+    if ad_group_id is not None:
+        ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
+            ad_group__id=ad_group_id).group_current_settings().select_related('ad_group', 'ad_group__campaign')
+    else:
+        ad_groups_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().select_related(
+            'ad_group', 'campaign')
+
+    ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings]
+    campaigns_settings = dash.models.CampaignSettings.objects.filter(
+        campaign__adgroup__id__in=ad_group_ids).select_related('campaign')
+    campaigns_settings_map = {cs.campaign.id: cs for cs in campaigns_settings}
+
+    from_tz = tz.gettz(settings.DEFAULT_TIME_ZONE)
+    to_tz = tz.gettz('UTC')
+
+    ad_groups = []
+    for ad_group_settings in ad_groups_settings:
+        ad_group = {
+            'id': ad_group_settings.ad_group.id,
+            'name': ad_group_settings.ad_group.name,
+            'startDt': datetime.datetime.combine(ad_group_settings.start_date, datetime.datetime.min.time()).replace(
+                tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'brandName': ad_group_settings.brand_name,
+            'displayUrl': ad_group_settings.display_url,
+            'trackingCodes': ad_group_settings.get_tracking_codes(),
+            'deviceTargeting': ad_group_settings.target_devices,
+        }
+
+        if ad_group_settings.end_date:
+            day = datetime.timedelta(days=1)
+            ad_group['endDt'] = datetime.datetime.combine(ad_group_settings.end_date + day,
+                                                            datetime.datetime.min.time()).replace(
+                tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign.id]
+        ad_group['iabCategory'] = campaign_settings.iab_category
+
+        # divide ad group settings target regions
+        geo_targeting = []
+        subdivision_targeting = []
+        dma_targeting = []
+
+        # separate countries, subdivisions and DMAs
+        for tr in ad_group_settings.target_regions:
+            if tr in codelists.DMA_WOEID:
+                dma_targeting.append(int(tr))
+            elif tr in codelists.SUBDIVISION_WOEID:
+                subdivision_targeting.append(_translate_subdivision(tr))
+            elif tr in codelists.COUNTRY_CODE_WOEID:
+                geo_targeting.append(tr)
+
+        ad_group['geoTargeting'] = geo_targeting
+        ad_group['dmaTargeting'] = dma_targeting
+        ad_group['regionTargeting'] = subdivision_targeting
+
+        # retargeting ad groups
+        retargeting_blob = []
+        for ad_group_id in ad_group_settings.retargeting_ad_groups:
+            retargeting_blob.append({
+                'event_type': EVENT_RETARGET_ADGROUP,
+                'event_id': '{}'.format(ad_group_id),
+            })
+        ad_group['retargetings'] = retargeting_blob
+
+        ad_groups.append(ad_group)
+
+    return _response_ok(ad_groups)
+
+
+def _translate_subdivision(subdivision):
+    if subdivision.startswith('US-'):
+        return subdivision[3:]
+    else:
+        return subdivision
+
