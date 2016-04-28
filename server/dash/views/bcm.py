@@ -398,6 +398,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
     def _get_response(self, item):
         return self.create_api_response({
             'amount': item.amount,
+            'min_amount': campaign_stop.get_min_budget_increase(item.campaign),
             'created_by': str(item.created_by or 'Zemanta One'),
             'created_at': item.created_dt,
             'start_date': item.start_date,

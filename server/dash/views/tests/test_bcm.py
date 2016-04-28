@@ -324,6 +324,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)['data']
+
         self.assertEqual(data, {
             "active": [
                 {
@@ -475,6 +476,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                 "is_editable": False,
                 "is_updatable": True,
                 "amount": 100000,
+                "min_amount":  0,
                 "end_date": "2015-11-30",
                 "state": 1,
                 "created_at": "2014-06-04T05:58:21",

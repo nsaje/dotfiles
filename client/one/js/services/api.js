@@ -2936,6 +2936,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     id: obj.id,
                     credit: obj.credit,
                     amount: obj.amount,
+                    minAmount: obj.min_amount,
                     startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                     endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                     total: obj.total || obj.amount,
