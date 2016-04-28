@@ -180,7 +180,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
                 id: 1,
                 endDate: '12/31/2015',
                 startDate: '12/1/2015',
-                credit: {id: 1}
+                credit: {id: 1, endDate: '12/31/2016'}
             });
 
             $scope.$digest();
@@ -188,7 +188,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             expect($scope.isNew).toBe(false);
             expect($scope.canDelete).toBe(false);
             expect($scope.minDate).toBe('12/1/2015');
-            expect($scope.maxDate).toBe('12/31/2015');
+            expect($scope.maxDate).toBe('12/31/2016');
             expect($scope.availableCredit).toBeTruthy();
             expect(api.campaignBudget.get).toHaveBeenCalled();
         });
