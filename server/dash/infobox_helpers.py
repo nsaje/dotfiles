@@ -485,12 +485,13 @@ def _until_today():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    if campaign:
-        qs = dash.models.BudgetLineItem.objects.filter(
-            campaign__in=campaign
-        )
-    else:
-        qs = dash.models.BudgetLineItem.objects.all()
+    if not campaign:
+        return dash.models.BudgetLineItem.objects.none()
+
+    qs = dash.models.BudgetLineItem.objects.filter(
+        campaign__in=campaign
+    )
+
     return qs.filter_active(date)
 
 

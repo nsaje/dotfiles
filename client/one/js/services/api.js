@@ -3000,6 +3000,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                             isAvailable: obj.is_available,
                         };
                     }),
+                    minAmount: data.min_amount,
                 };
             });
         };

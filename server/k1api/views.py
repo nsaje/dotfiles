@@ -73,13 +73,17 @@ def get_ad_group_source(request):
     if not source_type:
         return _response_error("Must provide source type.")
 
-    ad_group_source = (
-        dash.models.AdGroupSource.objects
-        .get(
-            ad_group_id=ad_group_id,
-            source__source_type__type=source_type,
+    try:
+        ad_group_source = (
+            dash.models.AdGroupSource.objects
+            .get(
+                ad_group_id=ad_group_id,
+                source__source_type__type=source_type,
+            )
         )
-    )
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_error("The ad group %s is not present on source %s" %
+                               (ad_group_id, source_type), status=404)
 
     ad_group_source_settings = ad_group_source.get_current_settings()
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
