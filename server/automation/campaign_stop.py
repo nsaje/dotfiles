@@ -78,12 +78,7 @@ def get_minimum_budget_amount(budget_item):
         return None
     today = dates_helper.local_today()
 
-    other_active_budgets = dash.models.BudgetLineItem.objects.filter(
-        campaign=budget_item.campaign
-    ).filter_active().exclude(pk=budget_item.pk)
-    covered_amount = decimal.Decimal('0')
-    for b in other_active_budgets:
-        covered_amount += b.get_available_amount()
+    covered_amount = _combined_active_budget_from_other_items(budget_item)
 
     spend = budget_item.get_spend_data(use_decimal=True)['total']
     max_daily_budget = _get_max_daily_budget(today, budget_item.campaign)
@@ -169,6 +164,15 @@ def get_min_budget_increase(campaign):
     user_daily_budget_sum = sum(user_daily_budget_per_ags.itervalues())
     min_needed_tomorrow = user_daily_budget_sum - available_tomorrow
     return max(min_needed_today, min_needed_tomorrow, 0)
+
+
+def _combined_active_budget_from_other_items(budget_item):
+    other_active_budgets = dash.models.BudgetLineItem.objects.filter(
+        campaign=budget_item.campaign
+    ).filter_active().exclude(pk=budget_item.pk)
+    return sum(
+        b.get_available_amount() for b in other_active_budgets
+    )
 
 
 def _can_resume_campaign(campaign):
