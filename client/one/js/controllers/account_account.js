@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', function ($scope, $state, $q, api) {
+oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNavigationService', function ($scope, $state, $q, api, zemNavigationService) {
     $scope.canEditAccount = false;
 
     $scope.settings = {};

@@ -850,12 +850,15 @@ class AccountAgency(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_agency_view'):
+        if not (request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.agency_set.first() is not None \
+                and request.user.has_perm('zemauth.can_manage_agency')):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
-        form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
+
+        form = forms.AccountAgencyAgencyForm(resource.get('settings', {}))
 
         with transaction.atomic():
             if form.is_valid():
