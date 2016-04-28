@@ -32,6 +32,13 @@ TEMP_EMAILS = [
 ]
 
 
+def run_job():
+    in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
+
+    switch_low_budget_campaigns_to_landing_mode()
+    update_campaigns_in_landing(in_landing)  # only update those that were already in landing
+
+
 def switch_low_budget_campaigns_to_landing_mode():
     settings_qs = dash.models.CampaignSettings.objects.all()\
                                                       .distinct('campaign_id')\
@@ -122,8 +129,8 @@ def is_current_time_valid_for_amount_editing(campaign):
     return not (utc_now.hour < 12 and any_source_after_midnight)
 
 
-def update_campaigns_in_landing():
-    for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+def update_campaigns_in_landing(campaigns):
+    for campaign in campaigns:
         logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
         try:
@@ -227,7 +234,7 @@ def _update_landing_campaign(campaign):
 
     _persist_new_autopilot_settings(daily_caps)
 
-    actions.extend(_run_autopilot(daily_caps))
+    actions.extend(_run_autopilot(campaign, daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
     return actions
@@ -279,7 +286,7 @@ def _stop_non_spending_sources(campaign):
 
         if to_stop:
             for ags in to_stop:
-                _stop_ad_group_source(ags)
+                actions.extend(_stop_ad_group_source(ags))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes='Stopping non spending ad group sources on ad group {}. '
@@ -871,7 +878,7 @@ Zemanta'''  # noqa
     account_settings = campaign.account.get_current_settings()
     emails = TEMP_EMAILS
     if account_settings.default_account_manager:
-        emails = [account_settings.default_account_manager] + emails
+        emails = [account_settings.default_account_manager.email] + emails
 
     email_helper.send_notification_mail(emails, subject, body)
 
@@ -907,6 +914,6 @@ Zemanta'''  # noqa
     account_settings = campaign.account.get_current_settings()
     emails = TEMP_EMAILS
     if account_settings.default_account_manager:
-        emails = [account_settings.default_account_manager] + emails
+        emails = [account_settings.default_account_manager.email] + emails
 
     email_helper.send_notification_mail(emails, subject, body)
