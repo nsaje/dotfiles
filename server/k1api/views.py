@@ -1,25 +1,18 @@
+import datetime
 import json
 import logging
-import decimal
-
-import datetime
-from collections import defaultdict
-
 from dateutil import tz
-from django.views.decorators.csrf import csrf_exempt
-import dash.models
-import dash.constants
-from django.http import JsonResponse, Http404
-from django.db.models import F, Q
 from django.conf import settings
-
+from django.db.models import F, Q
+from django.http import JsonResponse, Http404
+from django.views.decorators.csrf import csrf_exempt
+import dash.constants
+import dash.models
 from dash import constants, publisher_helpers
-from k1api import codelists
 from utils import url_helper, request_signer
 
-logger = logging.getLogger(__name__)
 
-EVENT_RETARGET_ADGROUP = "redirect_adgroup"
+logger = logging.getLogger(__name__)
 
 
 def _response_ok(content):
@@ -384,22 +377,21 @@ def get_ad_groups(request):
         ad_group = {
             'id': ad_group_settings.ad_group.id,
             'name': ad_group_settings.ad_group.name,
-            'startDt': datetime.datetime.combine(ad_group_settings.start_date, datetime.datetime.min.time()).replace(
+            'start_date': datetime.datetime.combine(ad_group_settings.start_date, datetime.datetime.min.time()).replace(
                 tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ'),
-            'brandName': ad_group_settings.brand_name,
-            'displayUrl': ad_group_settings.display_url,
-            'trackingCodes': ad_group_settings.get_tracking_codes(),
-            'deviceTargeting': ad_group_settings.target_devices,
-            'iabCategory': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
+            'brand_name': ad_group_settings.brand_name,
+            'display_url': ad_group_settings.display_url,
+            'tracking_codes': ad_group_settings.get_tracking_codes(),
+            'device_targeting': ad_group_settings.target_devices,
+            'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
+            'target_regions': ad_group_settings.target_regions,
+            'retargeting_ad_groups': ad_group_settings.retargeting_ad_groups,
         }
 
         if ad_group_settings.end_date:
             end_date = ad_group_settings.end_date + datetime.timedelta(days=1)
             end_date = datetime.datetime.combine(end_date, datetime.datetime.min.time())
-            ad_group['endDt'] = end_date.replace(tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        # targeting and re-targeting
-        _process_targeting(ad_group, ad_group_settings)
+            ad_group['end_date'] = end_date.replace(tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
 
         ad_groups.append(ad_group)
 
@@ -437,52 +429,12 @@ def get_ad_groups_exchanges(request):
         source = {
             'exchange': ad_group_source_setting.ad_group_source.source.bidder_slug,
             'status': ad_group_source_setting.state,
-            'cpc': _cc_to_dollar_str(ad_group_source_setting.cpc_cc),
-            'dailyBudget': _cc_to_dollar_str(ad_group_source_setting.daily_budget_cc),
+            'cpc_cc': ad_group_source_setting.cpc_cc,
+            'daily_budget_cc': ad_group_source_setting.daily_budget_cc,
         }
         ad_group_sources.setdefault(ad_group_id, []).append(source)
 
     return _response_ok(ad_group_sources)
 
 
-def _translate_subdivision(subdivision):
-    if subdivision.startswith('US-'):
-        return subdivision[3:]
-    else:
-        return subdivision
 
-
-def _process_targeting(ad_group, ad_group_settings):
-    # divide ad group settings target regions
-    geo_targeting = []
-    subdivision_targeting = []
-    dma_targeting = []
-
-    # separate countries, subdivisions and DMAs
-    for tr in ad_group_settings.target_regions:
-        if tr in codelists.DMA_WOEID:
-            dma_targeting.append(int(tr))
-        elif tr in codelists.SUBDIVISION_WOEID:
-            subdivision_targeting.append(_translate_subdivision(tr))
-        elif tr in codelists.COUNTRY_CODE_WOEID:
-            geo_targeting.append(tr)
-
-    ad_group['geoTargeting'] = geo_targeting
-    ad_group['dmaTargeting'] = dma_targeting
-    ad_group['regionTargeting'] = subdivision_targeting
-
-    # re-targeting ad groups
-    retargeting_blob = []
-    for ad_group_id in ad_group_settings.retargeting_ad_groups:
-        retargeting_blob.append({
-            'event_type': EVENT_RETARGET_ADGROUP,
-            'event_id': '{}'.format(ad_group_id),
-        })
-    ad_group['retargetings'] = retargeting_blob
-
-
-def _cc_to_dollar_str(num):
-    if num:
-        return str(decimal.Decimal(num) / 10000)
-    else:
-        return None
