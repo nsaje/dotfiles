@@ -1,6 +1,7 @@
 import logging
 import json
 from collections import defaultdict
+from decimal import Decimal
 
 from django.db import connections
 from django.conf import settings
@@ -91,7 +92,7 @@ class ContentAdStats(object):
 
         for row in self._stats_breakdown(date).rows():
             ad_group = ad_groups_map[row[0]]
-            media_source = media_sources_map[row[3].lower()]  # TODO remove lower
+            media_source = media_sources_map[row[3]]
 
             cost = row[6] or 0
             data_cost = row[7] or 0
@@ -112,8 +113,8 @@ class ContentAdStats(object):
                 row[4],  # impressions
                 row[5],  # clicks
 
-                cost / CC_TO_MICRO,
-                data_cost / CC_TO_MICRO,
+                _micro_to_cc(cost),
+                _micro_to_cc(data_cost),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -182,3 +183,7 @@ def _calculate_effective_cost(cost, data_cost, factors):
 
 def _decimal_to_int(d):
     return int(round(d))
+
+
+def _micro_to_cc(d):
+    return _decimal_to_int(Decimal(d) / CC_TO_MICRO)
