@@ -364,7 +364,7 @@ def get_ad_groups(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    if ad_group_id is not None:
+    if ad_group_id:
         ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
             ad_group__id=ad_group_id).group_current_settings().select_related('ad_group', 'ad_group__campaign')
     else:
@@ -411,9 +411,10 @@ def get_ad_groups_exchanges(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    if ad_group_id is not None:
+    if ad_group_id:
         ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                     .filter(ad_group_source__ad_group__id=ad_group_id)
+                                     .filter(ad_group_source__ad_group__id=ad_group_id,
+                                             ad_group_source__source__source_type__type='b1')
                                      .group_current_settings()
                                      .select_related('ad_group_source',
                                                      'ad_group_source__source',
@@ -423,21 +424,23 @@ def get_ad_groups_exchanges(request):
                      .select_related('ad_group')
                      .values_list('ad_group', flat=True))
         ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                     .filter(ad_group_source__ad_group__in=ad_groups)
+                                     .filter(ad_group_source__ad_group__in=ad_groups,
+                                             ad_group_source__source__source_type__type='b1')
                                      .group_current_settings()
                                      .select_related('ad_group_source',
                                                      'ad_group_source__source',
                                                      'ad_group_source__ad_group'))
 
-    ad_group_sources = defaultdict(list)
+    ad_group_sources = {}
     for ad_group_source_setting in ad_group_sources_settings:
+        ad_group_id = ad_group_source_setting.ad_group_source.ad_group.id
         source = {
             'exchange': ad_group_source_setting.ad_group_source.source.bidder_slug,
             'status': ad_group_source_setting.state,
             'cpc': _cc_to_dollar_str(ad_group_source_setting.cpc_cc),
             'dailyBudget': _cc_to_dollar_str(ad_group_source_setting.daily_budget_cc),
         }
-        ad_group_sources[ad_group_source_setting.ad_group_source.ad_group.id].append(source)
+        ad_group_sources.setdefault(ad_group_id, []).append(source)
 
     return _response_ok(ad_group_sources)
 
