@@ -38,6 +38,8 @@ class K1ApiTest(TestCase):
             'k1api.get_content_ad_source_mapping',
             'k1api.get_ga_accounts',
             'k1api.get_publishers_blacklist',
+            'k1api.get_ad_groups',
+            'k1api.get_ad_groups_exchanges',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -378,4 +380,121 @@ class K1ApiTest(TestCase):
             'domain': 'pub6.com',
             'exchange': 'gravity',
             'status': 2,
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_with_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups'),
+            {'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(data[0], {
+            u'id': 1,
+            u'name': u'test adgroup 1',
+            u'start_date': u'2014-06-04T04:00:00Z',
+            u'brand_name': u'brand1',
+            u'display_url': u'brand1.com',
+            u'tracking_codes': u'tracking1&tracking2',
+            u'device_targeting': [],
+            u'iab_category': u'IAB24',
+            u'target_regions': [],
+            u'retargeting_ad_groups': [],
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_with_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 3)
+
+        required_fields = {
+            u'id',
+            u'name',
+            u'start_date',
+            u'brand_name',
+            u'display_url',
+            u'tracking_codes',
+            u'device_targeting',
+            u'iab_category',
+            u'target_regions',
+            u'retargeting_ad_groups',
+        }
+
+        for item in data:
+            self.assertEqual(required_fields, set(item.keys()))
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_exchanges(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups_exchanges'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data['1']), 1)
+        self.assertEqual(len(data['2']), 2)
+
+        self.assertDictEqual(data['1'][0], {
+            u'exchange': 'b1_adiant',
+            u'status': 1,
+            u'cpc_cc': '0.1200',
+            u'daily_budget_cc': '1.5000',
+        })
+
+        sorted_exchanges = sorted(data['2'], key=lambda b: b['exchange'])
+        self.assertDictEqual(sorted_exchanges[0], {
+            u'exchange': u'b1_facebook',
+            u'status': 1,
+            u'cpc_cc': u'0.1400',
+            u'daily_budget_cc': u'1.7000',
+        })
+        self.assertDictEqual(sorted_exchanges[1], {
+            u'exchange': u'b1_google',
+            u'status': 1,
+            u'cpc_cc': u'0.1300',
+            u'daily_budget_cc': u'1.6000',
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_exchanges_with_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups_exchanges'),
+            {'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(data['1'][0], {
+            u'exchange': 'b1_adiant',
+            u'status': 1,
+            u'cpc_cc': '0.1200',
+            u'daily_budget_cc': '1.5000',
         })
