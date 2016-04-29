@@ -42,7 +42,11 @@ class S3Helper(object):
         if settings.USE_S3:
             return self.bucket.list(prefix=prefix)
         elif settings.FILE_STORAGE_DIR:
-            return [name for name in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, name))]
+            try:
+                return [name for name in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, name))]
+            except OSError:
+                return []
+        return []
 
 
 def generate_safe_filename(filename, content):
