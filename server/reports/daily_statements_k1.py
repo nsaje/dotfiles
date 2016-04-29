@@ -154,8 +154,6 @@ def _get_campaign_spend(date, all_campaigns):
         for ad_group in campaign.adgroup_set.all():
             ad_group_campaign[ad_group.id] = campaign.id
 
-    cursor = connections[settings.STATS_DB_NAME].cursor()
-
     query = """
         select ad_group_id, sum(spend), sum(data_spend)
         from stats
@@ -164,20 +162,22 @@ def _get_campaign_spend(date, all_campaigns):
     """.format(date_query=_get_redshift_date_query(date))
 
     logger.info("Running redshift query: %s", query)
-    cursor.execute(query)
 
-    for ad_group_id, media_spend, data_spend in cursor.fetchall():
-        campaign_id = ad_group_campaign.get(ad_group_id)
-        if campaign_id is None:
-            logger.warn("Got spend for archived adgroup: %s", ad_group_id)
+    with connections[settings.STATS_DB_NAME].cursor() as c:
+        c.execute(query)
 
-        if media_spend is None:
-            media_spend = 0
-        if data_spend is None:
-            data_spend = 0
+        for ad_group_id, media_spend, data_spend in c:
+            campaign_id = ad_group_campaign.get(ad_group_id)
+            if campaign_id is None:
+                logger.warn("Got spend for archived adgroup: %s", ad_group_id)
 
-        campaign_spend[campaign_id]['media_nano'] += media_spend * MICRO_TO_NANO
-        campaign_spend[campaign_id]['data_nano'] += data_spend * MICRO_TO_NANO
+            if media_spend is None:
+                media_spend = 0
+            if data_spend is None:
+                data_spend = 0
+
+            campaign_spend[campaign_id]['media_nano'] += media_spend * MICRO_TO_NANO
+            campaign_spend[campaign_id]['data_nano'] += data_spend * MICRO_TO_NANO
 
     return campaign_spend
 

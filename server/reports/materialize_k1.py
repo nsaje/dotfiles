@@ -45,6 +45,8 @@ class ContentAdStats(object):
         )
 
     def _sum_conversion(self, conversion_str):
+        return {}  # TODO
+
         conv = defaultdict(int)
 
         for line in conversion_str.split('\n'):
@@ -79,7 +81,7 @@ class ContentAdStats(object):
 
     def generate_rows(self, date, campaign_factors):
         content_ad_postclick = defaultdict(list)
-        for row in self._postclick_stats_breakdown(date).execute():
+        for row in self._postclick_stats_breakdown(date).rows():
             content_ad_id = row[0]
             media_source = row[2]
             content_ad_postclick[(content_ad_id, media_source)].append(row)
@@ -87,7 +89,7 @@ class ContentAdStats(object):
         ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
         media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
 
-        for row in self._stats_breakdown(date).execute():
+        for row in self._stats_breakdown(date).rows():
             ad_group = ad_groups_map[row[0]]
             media_source = media_sources_map[row[3].lower()]  # TODO remove lower
 
@@ -134,13 +136,13 @@ class Breakdown(object):
         self.breakdowns = breakdowns
         self.values = values
 
-    def execute(self):
-        cursor = connections[settings.STATS_DB_NAME].cursor()
+    def rows(self):
         query = self._get_materialize_query()
         logger.info("Breakdown query: %s", query)
-        cursor.execute(query)
-
-        return cursor
+        with connections[settings.STATS_DB_NAME].cursor() as c:
+            c.execute(query)
+            for row in c:
+                yield row
 
     def _get_materialize_query(self):
         aggr_values = []
