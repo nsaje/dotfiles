@@ -231,12 +231,14 @@ def get_content_ad_source_mapping(request):
         .annotate(
             ad_group_id=F('content_ad__ad_group_id'),
             source_name=F('source__name'),
+            slug=F('source__bidder_slug'),
         )
         .values(
             'source_content_ad_id',
             'content_ad_id',
             'ad_group_id',
             'source_name',
+            'slug',
         )
     )
     source_types = request.GET.getlist('source_type')

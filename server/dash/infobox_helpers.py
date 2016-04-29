@@ -568,11 +568,6 @@ def _compute_daily_cap(ad_groups):
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups
     )
-    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_states().values_list('ad_group_source__id', 'state')
-
-    adg_state = dict(ad_group_source_states)
 
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources
@@ -580,11 +575,16 @@ def _compute_daily_cap(ad_groups):
 
     adgs_settings = dict(ad_group_source_settings)
 
+    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_states()
+
     ret = 0
-    for adgsid, state in adg_state.iteritems():
-        if not state or state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    for adgs_state in ad_group_source_states:
+        if not adgs_state.state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
-        ret += adgs_settings.get(adgsid) or 0
+        ret += adgs_settings.get(adgs_state.ad_group_source_id) or adgs_state.daily_budget_cc or 0
+
     return ret
 
 

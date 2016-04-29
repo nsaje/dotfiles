@@ -118,6 +118,7 @@ class K1ApiTest(TestCase):
             self.assertEqual(content_ad_source['ad_group_id'], db_cas.content_ad.ad_group_id)
             self.assertEqual(content_ad_source['source_id'], db_cas.source_id)
             self.assertEqual(content_ad_source['source_name'], db_cas.source.name)
+            self.assertEqual(content_ad_source['slug'], db_cas.source.bidder_slug)
 
         contentadsources = dash.models.ContentAdSource.objects
         if source_content_ad_ids:
