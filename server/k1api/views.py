@@ -284,6 +284,7 @@ def get_ga_accounts(request):
                    .order_by('account_id', 'ga_account_id'))
     return _response_ok({'ga_accounts': list(ga_accounts)})
 
+
 @csrf_exempt
 def get_sources_by_tracking_slug(request):
     try:
@@ -301,6 +302,7 @@ def get_sources_by_tracking_slug(request):
         }
 
     return _response_ok(data)
+
 
 @csrf_exempt
 def get_accounts_slugs_ad_groups(request):
