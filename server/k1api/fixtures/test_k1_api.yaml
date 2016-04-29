@@ -506,3 +506,21 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 4
+
+
+# test conversionpixel
+
+-   fields:
+        account: 1
+        slug: 'testslug1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 1
+
+
+-   fields:
+        account: 2
+        slug: 'testslug2'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 2

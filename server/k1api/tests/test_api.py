@@ -279,3 +279,45 @@ class K1ApiTest(TestCase):
         ]
         for ad_group_id, content_ad_id in test_cases:
             self._test_get_content_ad_sources_for_ad_group(mock_verify_wsgi_request, ad_group_id, content_ad_id)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_sources_by_tracking_slug(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_sources_by_tracking_slug')
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertGreater(len(data), 0)
+        for source in data.values():
+            self.assertIn('id', source)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_accounts_slugs_ad_groups(self, mock_verify_wsgi_request):
+        accounts = (1, 2)
+        response = self.client.get(
+            reverse('k1api.get_accounts_slugs_ad_groups'),
+            {'account': accounts},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        for account_id, account_data in data.items():
+            self.assertIn(int(account_id), accounts)
+
+            self.assertIn('ad_groups', account_data)
+            self.assertIn('slugs', account_data)
+
+            self.assertGreater(len(account_data['ad_groups']), 0)
+            for ad_group in account_data['ad_groups'].values():
+                self.assertIn('campaign_id', ad_group)
+
+            self.assertGreater(len(account_data['slugs']), 0)
