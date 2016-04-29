@@ -293,46 +293,52 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 7)
+        self.assertEqual(len(data['blacklist']), 8)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status'], b['domain']))
         self.assertDictEqual(sorted_blacklist[0], {
+            'ad_group_id': None,
+            'domain': 'global',
+            'exchange': None,
+            'status': 1,
+        })
+        self.assertDictEqual(sorted_blacklist[1], {
             'ad_group_id': 1,
             'domain': 'pub1.com',
             'exchange': 'adblade',
             'status': 1,
         })
-        self.assertDictEqual(sorted_blacklist[1], {
+        self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
             'domain': 'pub2.com',
             'exchange': 'gravity',
             'status': 2,
         })
-        self.assertDictEqual(sorted_blacklist[2], {
+        self.assertDictEqual(sorted_blacklist[3], {
             'ad_group_id': 1,
             'domain': 'pub5.com',
             'exchange': 'gravity',
             'status': 2,
         })
-        self.assertDictEqual(sorted_blacklist[3], {
+        self.assertDictEqual(sorted_blacklist[4], {
             'ad_group_id': 1,
             'domain': 'pub6.com',
             'exchange': 'gravity',
             'status': 2,
         })
-        self.assertDictEqual(sorted_blacklist[4], {
+        self.assertDictEqual(sorted_blacklist[5], {
             'ad_group_id': 2,
             'domain': 'pub3.com',
             'exchange': 'gravity',
             'status': 1,
         })
-        self.assertDictEqual(sorted_blacklist[5], {
+        self.assertDictEqual(sorted_blacklist[6], {
             'ad_group_id': 2,
             'domain': 'pub5.com',
             'exchange': 'gravity',
             'status': 2,
         })
-        self.assertDictEqual(sorted_blacklist[6], {
+        self.assertDictEqual(sorted_blacklist[7], {
             'ad_group_id': 2,
             'domain': 'pub6.com',
             'exchange': 'gravity',

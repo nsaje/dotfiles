@@ -603,3 +603,30 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.publisherblacklist
     pk: 6
+
+-   fields:
+        name: 'global'
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 7
+
+-   fields:
+        name: 'not_global'
+        account: 2
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 8
+
+-   fields:
+        name: 'not_global_either'
+        campaign: 2
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 9
+
