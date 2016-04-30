@@ -909,8 +909,25 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             new_settings.save(None)
 
         actions = campaign_stop._check_ad_groups_end_date(campaign)
-        self.assertEqual(len(actions), 2)
+        self.assertEqual(len(actions), 6)
         self.assertFalse(campaign.adgroup_set.all().filter_active().count())
+
+    @patch('utils.dates_helper.local_today')
+    def test_check_ad_groups_end_date_today(self, mock_today):
+        today = datetime.date(2016, 4, 5)
+        mock_today.return_value = today
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        for ad_group in campaign.adgroup_set.all().filter_active():
+            current_settings = ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
+            new_settings.end_date = today
+            new_settings.landing_mode = False
+            new_settings.save(None)
+
+        actions = campaign_stop._check_ad_groups_end_date(campaign)
+        self.assertEqual(len(actions), 0)
+        self.assertEqual(2, campaign.adgroup_set.all().filter_active().count())
 
     @patch('utils.dates_helper.local_today')
     @patch('automation.campaign_stop._get_yesterday_source_spends')

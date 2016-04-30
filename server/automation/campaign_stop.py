@@ -54,7 +54,6 @@ def switch_low_budget_campaigns_to_landing_mode():
         check_and_switch_campaign_to_landing_mode(campaign, campaign._current_settings[0])
 
 
-@transaction.atomic
 def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
         return False
@@ -68,15 +67,17 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     is_near_depleted = available_tomorrow < max_daily_budget * 2
     is_resumed = False
     actions = []
-    if not campaign_settings.landing_mode:
-        if should_switch_to_landing:
-            actions = _switch_campaign_to_landing_mode(campaign)
-            _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-        elif is_near_depleted:
-            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-    elif _can_resume_campaign(campaign):
-        actions = _resume_campaign(campaign)
-        is_resumed = True
+
+    with transaction.atomic():
+        if not campaign_settings.landing_mode:
+            if should_switch_to_landing:
+                actions = _switch_campaign_to_landing_mode(campaign)
+                _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+            elif is_near_depleted:
+                _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+        elif _can_resume_campaign(campaign):
+            actions = _resume_campaign(campaign)
+            is_resumed = True
     zwei_actions.send(actions)
     return should_switch_to_landing or is_resumed
 
@@ -227,6 +228,8 @@ def _update_landing_campaign(campaign):
         return actions + _wrap_up_landing(campaign)
 
     actions.extend(_check_ad_groups_end_date(campaign))
+    if not campaign.adgroup_set.all().filter_active().count() > 0:
+        return actions + _wrap_up_landing(campaign)
 
     per_date_spend, per_source_spend = _get_past_7_days_data(campaign)
     daily_caps = _calculate_daily_caps(campaign, per_date_spend)
@@ -251,9 +254,9 @@ def _check_ad_groups_end_date(campaign):
     actions, finished = [], []
     for ad_group in campaign.adgroup_set.all().filter_active():
         user_settings = _get_last_user_ad_group_settings(ad_group)
-        if user_settings.end_date and user_settings.end_date <= today:
+        if user_settings.end_date and user_settings.end_date < today:
             finished.append(ad_group)
-            actions.append(_stop_ad_group(ad_group))
+            actions.extend(_stop_ad_group(ad_group))
 
     if finished:
         models.CampaignStopLog.objects.create(
