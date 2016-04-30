@@ -220,6 +220,9 @@ def _update_landing_campaign(campaign):
     so it's not an issue.
     """
     actions = []
+    if _can_resume_campaign(campaign):
+        return _resume_campaign(campaign)
+
     if not campaign.adgroup_set.all().filter_active().count() > 0:
         return _wrap_up_landing(campaign)
 
@@ -454,7 +457,8 @@ def _switch_campaign_to_landing_mode(campaign):
 def _resume_campaign(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes='Campaign returned to normal mode.'
+        notes='Campaign returned to normal mode - enough campaign budget '
+              'today and tomorrow to cover daily budgets set before landing mode.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=False)
 
