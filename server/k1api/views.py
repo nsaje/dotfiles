@@ -442,4 +442,28 @@ def get_ad_groups_exchanges(request):
     return _response_ok(ad_group_sources)
 
 
+@csrf_exempt
+def get_content_ads(request):
+    _validate_signature(request)
+
+    ad_group_id = request.GET.get('ad_group_id')
+    if ad_group_id:
+        # TODO MV: impl
+        pass
+    else:
+        # TODO MV: impl
+        pass
+
+
+@csrf_exempt
+def get_content_ads_exchanges(request):
+    _validate_signature(request)
+
+    content_ad_id = request.GET.get('content_ad_id')
+    if content_ad_id:
+        # TODO MV: impl
+        pass
+    else:
+        # TODO MV: impl
+        pass
 
