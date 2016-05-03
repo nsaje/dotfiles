@@ -355,7 +355,8 @@ def get_publishers_blacklist(request):
                 'ad_group_id': ad_group.id,
                 'domain': item.name,
                 'exchange': exchange,
-                'status': item.status
+                'status': item.status,
+                'external_id': item.external_id,
             }
             blacklist[hash(tuple(entry.values()))] = entry
         # for all ad groups generate all ad_group_ids
