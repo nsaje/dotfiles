@@ -69,13 +69,17 @@ def get_ad_group_source(request):
     if not source_type:
         return _response_error("Must provide source type.")
 
-    ad_group_source = (
-        dash.models.AdGroupSource.objects
-        .get(
-            ad_group_id=ad_group_id,
-            source__source_type__type=source_type,
+    try:
+        ad_group_source = (
+            dash.models.AdGroupSource.objects
+            .get(
+                ad_group_id=ad_group_id,
+                source__source_type__type=source_type,
+            )
         )
-    )
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_error("The ad group %s is not present on source %s" %
+                               (ad_group_id, source_type), status=404)
 
     ad_group_source_settings = ad_group_source.get_current_settings()
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
@@ -244,12 +248,14 @@ def get_content_ad_source_mapping(request):
         .annotate(
             ad_group_id=F('content_ad__ad_group_id'),
             source_name=F('source__name'),
+            slug=F('source__bidder_slug'),
         )
         .values(
             'source_content_ad_id',
             'content_ad_id',
             'ad_group_id',
             'source_name',
+            'slug',
         )
     )
     source_types = request.GET.getlist('source_type')
