@@ -1,7 +1,5 @@
-import datetime
 import json
 import logging
-from dateutil import tz
 from django.conf import settings
 from django.db.models import F, Q
 from django.http import JsonResponse, Http404
@@ -348,7 +346,8 @@ def get_publishers_blacklist(request):
                 'ad_group_id': ad_group.id,
                 'domain': item.name,
                 'exchange': exchange,
-                'status': item.status
+                'status': item.status,
+                'external_id': item.external_id,
             }
             blacklist[hash(tuple(entry.values()))] = entry
         # for all ad groups generate all ad_group_ids
@@ -365,7 +364,8 @@ def _process_item(blacklist, item, exchange, running_ad_groups):
             'ad_group_id': item.ad_group_id,
             'domain': item.name,
             'exchange': exchange,
-            'status': item.status
+            'status': item.status,
+            'external_id': item.external_id,
         }
         blacklist[hash(tuple(entry.values()))] = entry
     # if campaign then generate all running ad groups is this campaign
@@ -381,7 +381,8 @@ def _process_item(blacklist, item, exchange, running_ad_groups):
             'ad_group_id': None,
             'domain': item.name,
             'exchange': exchange,
-            'status': item.status
+            'status': item.status,
+            'external_id': item.external_id,
         }
         blacklist[hash(tuple(entry.values()))] = entry
 
@@ -393,7 +394,8 @@ def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
                 'ad_group_id': ad_group.id,
                 'domain': item.name,
                 'exchange': exchange,
-                'status': item.status
+                'status': item.status,
+                'external_id': item.external_id,
             }
             blacklist[hash(tuple(entry.values()))] = entry
 
@@ -402,17 +404,17 @@ def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
 def get_ad_groups(request):
     _validate_signature(request)
 
-    ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(request)
-    from_tz = tz.gettz(settings.DEFAULT_TIME_ZONE)
-    to_tz = tz.gettz('UTC')
+    ad_group_id = request.GET.get('ad_group_id')
+    ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id)
 
     ad_groups = []
     for ad_group_settings in ad_groups_settings:
         ad_group = {
             'id': ad_group_settings.ad_group.id,
             'name': ad_group_settings.ad_group.name,
-            'start_date': datetime.datetime.combine(ad_group_settings.start_date, datetime.datetime.min.time()).replace(
-                tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'start_date': ad_group_settings.start_date,
+            'end_date': ad_group_settings.end_date,
+            'time_zone': settings.DEFAULT_TIME_ZONE,
             'brand_name': ad_group_settings.brand_name,
             'display_url': ad_group_settings.display_url,
             'tracking_codes': ad_group_settings.get_tracking_codes(),
@@ -422,35 +424,31 @@ def get_ad_groups(request):
             'retargeting_ad_groups': ad_group_settings.retargeting_ad_groups,
         }
 
-        if ad_group_settings.end_date:
-            end_date = ad_group_settings.end_date + datetime.timedelta(days=1)
-            end_date = datetime.datetime.combine(end_date, datetime.datetime.min.time())
-            ad_group['end_date'] = end_date.replace(tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
-
         ad_groups.append(ad_group)
 
     return _response_ok(ad_groups)
 
 
-def _get_ad_groups_and_campaigns_settings(request):
-    ad_group_id = request.GET.get('ad_group_id')
+def _get_ad_groups_and_campaigns_settings(ad_group_id):
     if ad_group_id:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id=ad_group_id)
                               .group_current_settings()
                               .select_related('ad_group', 'ad_group__campaign'))
-        campaigns_settings_map = {}
+        ad_group_ids = [ad_group_id]
     else:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .filter(archived=False)
+                              .all()
                               .group_current_settings()
                               .select_related('ad_group', 'ad_group__campaign'))
+        ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
+                        not ad_group_settings.archived]
 
-        ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings]
-        campaigns_settings = (dash.models.CampaignSettings.objects
-                              .filter(campaign__adgroup__id__in=ad_group_ids)
-                              .select_related('campaign'))
-        campaigns_settings_map = {cs.campaign.id: cs for cs in campaigns_settings}
+    campaigns_settings = (dash.models.CampaignSettings.objects
+                          .filter(campaign__adgroup__id__in=ad_group_ids)
+                          .group_current_settings()
+                          .select_related('campaign'))
+    campaigns_settings_map = {cs.campaign.id: cs for cs in campaigns_settings}
 
     return ad_groups_settings, campaigns_settings_map
 
@@ -459,7 +457,8 @@ def _get_ad_groups_and_campaigns_settings(request):
 def get_ad_groups_exchanges(request):
     _validate_signature(request)
 
-    ad_group_sources_settings = _get_ad_group_sources_settings(request)
+    ad_group_id = request.GET.get('ad_group_id')
+    ad_group_sources_settings = _get_ad_group_sources_settings(ad_group_id)
 
     ad_group_sources = {}
     for ad_group_source_setting in ad_group_sources_settings:
@@ -475,27 +474,24 @@ def get_ad_groups_exchanges(request):
     return _response_ok(ad_group_sources)
 
 
-def _get_ad_group_sources_settings(request):
-    ad_group_id = request.GET.get('ad_group_id')
+def _get_ad_group_sources_settings(ad_group_id):
     if ad_group_id:
-        ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                     .filter(ad_group_source__ad_group__id=ad_group_id,
-                                             ad_group_source__source__source_type__type='b1')
-                                     .group_current_settings()
-                                     .select_related('ad_group_source',
-                                                     'ad_group_source__source',
-                                                     'ad_group_source__ad_group'))
+        ad_group_ids = [ad_group_id]
     else:
-        ad_groups = (dash.models.AdGroupSettings.objects.filter(archived=False).group_current_settings()
-                     .select_related('ad_group')
-                     .values_list('ad_group', flat=True))
-        ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                     .filter(ad_group_source__ad_group__in=ad_groups,
-                                             ad_group_source__source__source_type__type='b1')
-                                     .group_current_settings()
-                                     .select_related('ad_group_source',
-                                                     'ad_group_source__source',
-                                                     'ad_group_source__ad_group'))
+        ad_groups_settings = (dash.models.AdGroupSettings.objects
+                              .all()
+                              .group_current_settings()
+                              .select_related('ad_group'))
+        ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
+                        not ad_group_settings.archived]
+
+    ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
+                                 .filter(ad_group_source__ad_group__id__in=ad_group_ids,
+                                         ad_group_source__source__source_type__type='b1')
+                                 .group_current_settings()
+                                 .select_related('ad_group_source',
+                                                 'ad_group_source__source',
+                                                 'ad_group_source__ad_group'))
 
     return ad_group_sources_settings
 
