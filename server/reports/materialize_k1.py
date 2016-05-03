@@ -45,21 +45,6 @@ class ContentAdStats(object):
              ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
         )
 
-    def _sum_conversion(self, conversion_str):
-        return {}  # TODO
-
-        conv = defaultdict(int)
-
-        for line in conversion_str.split('\n'):
-            line = line.strip()
-            if not line:
-                continue
-            c = json.loads(line)
-            for k, v in c.iteritems():
-                conv[k] += v
-
-        return dict(conv)
-
     def _get_post_click_data(self, ad_group, post_click_list):
         if not post_click_list:
             return {}
@@ -77,7 +62,7 @@ class ContentAdStats(object):
             "bounced_visits": post_click[5],
             "pageviews": post_click[6],
             "time_on_site": post_click[7],
-            "conversions": json.dumps(self._sum_conversion(post_click[8])),
+            "conversions": json.dumps(_sum_conversion(post_click[8])),
         }
 
     def generate_rows(self, date, campaign_factors):
@@ -127,6 +112,60 @@ class ContentAdStats(object):
                 _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
                 _decimal_to_int(license_fee * MICRO_TO_NANO),
             )
+
+
+class Publishers(object):
+        """
+        date, adgroup_id, exchange,
+        domain, external_id,
+        clicks, impressions,
+        cost_nano, data_cost_nano,
+        effective_cost_nano, effective_data_cost_nano, license_fee_nano
+        visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions
+        """
+
+        def table_name(self):
+            return 'publishers'
+
+        def _stats_breakdown(self, date):
+            return Breakdown(
+                date,
+                'stats',
+                ['ad_group_id', 'media_source_type', 'media_source_type', 'media_source', 'publisher'],
+                [('impressions', 'sum'), ('clicks', 'sum'), ('spend', 'sum'), ('data_spend', 'sum')],
+            )
+
+        def _postclick_stats_breakdown(self, date):
+            return Breakdown(
+                date,
+                'postclickstats',
+                ['content_ad_id', 'type', 'source', 'publisher'],
+                [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
+                 ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+            )
+
+        def _get_post_click_data(self, ad_group, post_click_list):
+            if not post_click_list:
+                return {}
+
+            if len(post_click_list) > 1:
+                logger.warn("Multiple post click statistics for ad group: %s", ad_group.id)
+
+            post_click = post_click_list[0]
+            if len(post_click) < 10:
+                raise Exception("Invalid post click row")
+
+            return {
+                "visits": post_click[4],
+                "new_visits": post_click[5],
+                "bounced_visits": post_click[6],
+                "pageviews": post_click[7],
+                "time_on_site": post_click[8],
+                "conversions": json.dumps(_sum_conversion(post_click[9])),
+            }
+
+        def generate_rows(self, date, campaign_factors):
+            pass
 
 
 class Breakdown(object):
@@ -187,3 +226,19 @@ def _decimal_to_int(d):
 
 def _micro_to_cc(d):
     return _decimal_to_int(Decimal(d) / CC_TO_MICRO)
+
+
+def _sum_conversion(self, conversion_str):
+    return {}  # TODO
+
+    conv = defaultdict(int)
+
+    for line in conversion_str.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        c = json.loads(line)
+        for k, v in c.iteritems():
+            conv[k] += v
+
+        return dict(conv)
