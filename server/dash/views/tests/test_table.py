@@ -2063,11 +2063,8 @@ class AccountsAccountsTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
-        self.normal_user = User.objects.get(pk=1)
-        self.redshift_user = User.objects.get(pk=2)
-
-        redshift_perm = authmodels.Permission.objects.get(codename="can_see_redshift_postclick_statistics")
-        self.redshift_user.user_permissions.add(redshift_perm)
+        date = datetime.date(2015, 2, 22)
+        self.normal_user = User.objects.get(pk=2)
 
         allaccperm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
         self.normal_user.user_permissions.add(allaccperm)
@@ -2080,9 +2077,7 @@ class AccountsAccountsTableTest(TestCase):
 
         redshift.STATS_DB_NAME = 'default'
 
-    def test_get(self, mock_api_query, mock_get_cursor):
-        date = datetime.date(2015, 2, 22)
-        mock_stats1 = {
+        self.mock_stats = {
             'date': date.isoformat(),
             'account': 1,
             'cpc': '0.0200',
@@ -2105,8 +2100,10 @@ class AccountsAccountsTableTest(TestCase):
             'pv_per_visit': 0.8,
             'avg_tos': 0.9,
         }
-        mock_api_query.side_effect = [[mock_stats1], mock_stats1]
-        # mock_api_query.return_value = mock_stats1
+
+    def test_get(self, mock_api_query, mock_get_cursor):
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
 
         t = table.AccountsAccountsTable()
         r = HttpRequest()
@@ -2122,4 +2119,40 @@ class AccountsAccountsTableTest(TestCase):
         filtered_sources = None
         # from pudb import set_trace; set_trace()
         response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
-        self.assertEqual('N/A', response['rows'][0]['agency'])
+        self.assertNotIn('agency', response['rows'][0])
+
+        # self.assertEqual('N/A', ['agency'])
+
+    def test_get_agency(self, mock_api_query, mock_get_cursor):
+        allaccperm = authmodels.Permission.objects.get(codename="can_view_account_agency_information")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
+
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        agency = models.Agency(
+            name='AdPro',
+        )
+        agency.save(r)
+        agency.users.add(self.normal_user)
+
+        acc = models.Account.objects.all().get(pk=1)
+        acc.agency = agency
+        acc.save(r)
+
+        t = table.AccountsAccountsTable()
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        # from pudb import set_trace; set_trace()
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('AdPro', response['rows'][0]['agency'])
