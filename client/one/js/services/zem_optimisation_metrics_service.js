@@ -156,6 +156,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
     function concatChartOptions (goals, chartOptions, newOptions, isInternal) {
         return chartOptions.concat(newOptions.map(function (option) {
+            option = angular.extend({}, option);
             option.internal = isInternal;
             option.shown = false;
             return option;

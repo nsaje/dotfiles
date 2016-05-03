@@ -167,8 +167,9 @@ oneApp.factory('zemPostclickMetricsService', function () {
 
     function concatChartOptions (chartOptions, newOptions, isInternal, isHidden) {
         return chartOptions.concat(newOptions.map(function (option) {
+            option = angular.extend({}, option);
             option.internal = isInternal;
-            options.hidden = isHidden;
+            option.hidden = isHidden;
             return option;
         }));
     }
