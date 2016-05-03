@@ -2194,7 +2194,7 @@ class AccountAgencyTest(TestCase):
         return client
 
     def _get_form_with_allowed_sources_dict(self, allowed_sources_dict):
-        form = forms.AccountAgencySettingsForm()
+        form = forms.AccountAgencyAgencyForm()
         form.cleaned_data = {'allowed_sources': allowed_sources_dict}
         return form
 
