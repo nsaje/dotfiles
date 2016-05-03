@@ -48,6 +48,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'asc'
         },
         {
+            name: 'Agency',
+            field: 'agency',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            totalRow: false,
+            help: 'Agency to which this account belongs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_account_agency_information'),
+            shown: $scope.hasPermission('zemauth.can_view_account_agency_information')
+        },
+        {
             name: 'Status',
             field: 'status',
             unselectable: true,

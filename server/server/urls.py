@@ -522,6 +522,16 @@ urlpatterns += [
         r'^k1api/get_ga_accounts$',
         k1api.views.get_ga_accounts,
         name='k1api.get_ga_accounts',
+    ),
+    url(
+        r'^k1api/get_sources_by_tracking_slug$',
+        k1api.views.get_sources_by_tracking_slug,
+        name='k1api.get_sources_by_tracking_slug',
+    ),
+    url(
+        r'^k1api/get_accounts_slugs_ad_groups$',
+        k1api.views.get_accounts_slugs_ad_groups,
+        name='k1api.get_accounts_slugs_ad_groups',
     )
 ]
 
