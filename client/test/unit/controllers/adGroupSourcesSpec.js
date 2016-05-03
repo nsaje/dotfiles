@@ -221,7 +221,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
         expect($scope.chartMetric1).toBe('clicks');
         expect($scope.chartMetric2).toBe('conversion_goal_2');
 
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true});
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: true, hidden: true});
     });
 });
