@@ -446,13 +446,37 @@ def get_ad_groups_exchanges(request):
 def get_content_ads(request):
     _validate_signature(request)
 
+    content_ad_id = request.GET.get('content_ad_id')
     ad_group_id = request.GET.get('ad_group_id')
-    if ad_group_id:
-        # TODO MV: impl
-        pass
+    if content_ad_id:
+        content_ads = dash.models.ContentAd.objects.filter(id=content_ad_id).select_related('ad_group')
+    elif ad_group_id:
+        content_ads = dash.models.ContentAd.objects.filter(ad_group__id=ad_group_id).select_related('ad_group')
     else:
-        # TODO MV: impl
-        pass
+        return _response_error("Must provide content ad id or ad group id.")
+
+    response = []
+    for item in content_ads:
+        content_ad = {
+            'id': item.id,
+            'ad_group_id': item.ad_group.id,
+            'title': item.title,
+            # TODO matijav 03.05.2016 not sure about the url --> check: api_contentads._get_content_ad_dict
+            'url': item.url,
+            'redirect_id': item.redirect_id,
+            'image_id': item.image_id,
+            'image_width': item.image_width,
+            'image_height': item.image_height,
+            'image_hash': item.image_hash,
+            'description': item.description,
+            'brand_name': item.brand_name,
+            'display_url': item.display_url,
+            'call_to_action': item.call_to_action,
+            'tracker_urls': item.tracker_urls,
+        }
+        response.append(content_ad)
+
+    return _response_ok(response)
 
 
 @csrf_exempt
@@ -460,9 +484,26 @@ def get_content_ads_exchanges(request):
     _validate_signature(request)
 
     content_ad_id = request.GET.get('content_ad_id')
+    ad_group_id = request.GET.get('ad_group_id')
     if content_ad_id:
-        # TODO MV: impl
-        pass
+        content_ad_sources = (dash.models.ContentAdSource.objects
+                              .filter(content_ad__id=content_ad_id, source__source_type__type='b1')
+                              .select_related('content_ad', 'source'))
+    elif ad_group_id:
+        content_ad_sources = (dash.models.ContentAdSource.objects
+                              .filter(content_ad__ad_group__id=ad_group_id, source__source_type__type='b1')
+                              .select_related('content_ad', 'source'))
     else:
-        # TODO MV: impl
-        pass
+        return _response_error("Must provide content ad id or ad group id.")
+
+    content_ad_exchanges = {}
+    for content_ad_source in content_ad_sources:
+        exchange = {
+            'exchange': content_ad_source.source.bidder_slug,
+            'source_content_ad_id': content_ad_source.source_content_ad_id,
+            'submission_status': content_ad_source.submission_status,
+            'state': content_ad_source.state,
+        }
+        content_ad_exchanges.setdefault(content_ad_source.content_ad.id, []).append(exchange)
+
+    return _response_ok(content_ad_exchanges)

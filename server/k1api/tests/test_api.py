@@ -505,3 +505,11 @@ class K1ApiTest(TestCase):
             u'cpc_cc': '0.1200',
             u'daily_budget_cc': '1.5000',
         })
+
+    def test_get_content_ads(self):
+        # TODO matijav 03.05.2016
+        pass
+
+    def test_get_content_ads_exchanges(self):
+        # TODO matijav 03.05.2016
+        pass
