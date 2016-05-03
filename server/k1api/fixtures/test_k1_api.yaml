@@ -118,6 +118,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         tracking_slug: 'adblade'
+        bidder_slug: 'adblade'
         source_type: 1
         maintenance: False
     model: dash.source
@@ -128,6 +129,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         tracking_slug: 'gravity'
+        bidder_slug: 'gravity'
         source_type: 2
         maintenance: False
     model: dash.source
@@ -138,6 +140,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         tracking_slug: 'outbrain'
+        bidder_slug: 'outbrain'
         source_type: 3
         maintenance: False
     model: dash.source
@@ -148,6 +151,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
         tracking_slug: 'taboola'
+        bidder_slug: 'taboola'
         source_type: 4
         maintenance: False
     model: dash.source
@@ -158,6 +162,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
         tracking_slug: 'yahoo'
+        bidder_slug: 'yahoo'
         source_type: 5
         maintenance: False
     model: dash.source
@@ -168,6 +173,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Adiant
         tracking_slug: 'adiant'
+        bidder_slug: 'adiant'
         source_type: 6
         content_ad_submission_type: 2
         maintenance: False
@@ -506,3 +512,21 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 4
+
+
+# test conversionpixel
+
+-   fields:
+        account: 1
+        slug: 'testslug1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 1
+
+
+-   fields:
+        account: 2
+        slug: 'testslug2'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 2
