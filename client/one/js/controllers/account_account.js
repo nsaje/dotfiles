@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNavigationService', function ($scope, $state, $q, api, zemNavigationService) {
+oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNavigationService', function ($scope, $state, $q, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.canEditAccount = false;
 
     $scope.settings = {};
@@ -63,7 +63,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         zemNavigationService.reload();
         $scope.getSettings();
     };
-    
+
     $scope.init = function () {
         $scope.getSettings();
         $scope.setActiveTab();
