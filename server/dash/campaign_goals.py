@@ -71,7 +71,7 @@ STATUS_TO_EMOTICON_MAP = {
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
-MEDIA_COST_COLUMN = 'e_media_cost'
+E_MEDIA_COST_COLUMN = 'e_media_cost'
 
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
@@ -274,8 +274,8 @@ def create_conversion_goal(request, form, campaign, value=None):
     return conversion_goal, campaign_goal
 
 
-def extract_media_cost(data):
-    return data.get(MEDIA_COST_COLUMN, 0)
+def extract_e_media_cost(data):
+    return data.get(E_MEDIA_COST_COLUMN, 0)
 
 
 def create_goals(campaign, data):
@@ -283,24 +283,23 @@ def create_goals(campaign, data):
     ret = []
     for row in data:
         new_row = dict(row)
-        cost = extract_media_cost(row)
-        if cost:
+        e_media_cost = extract_e_media_cost(row)
+        if e_media_cost:
             for campaign_goal_value in campaign_goal_values:
                 goal_type = campaign_goal_value.campaign_goal.type
-                new_row.update(calculate_goal_values(row, goal_type, cost))
+                new_row.update(calculate_goal_values(row, goal_type, e_media_cost))
         ret.append(exclude_goal_columns(new_row, campaign_goal_values))
     return ret
 
 
-def create_goal_totals(campaign, data, cost):
-    if not cost:
-        return data
-
+def create_goal_totals(campaign, data):
     ret = dict(data)
     campaign_goal_values = get_campaign_goal_values(campaign)
-    for campaign_goal_value in campaign_goal_values:
-        goal_type = campaign_goal_value.campaign_goal.type
-        ret.update(calculate_goal_values(data, goal_type, cost))
+    e_media_cost = extract_e_media_cost(data)
+    if e_media_cost:
+        for campaign_goal_value in campaign_goal_values:
+            goal_type = campaign_goal_value.campaign_goal.type
+            ret.update(calculate_goal_values(data, goal_type, e_media_cost))
 
     ret = exclude_goal_columns(ret, campaign_goal_values)
     return ret
@@ -333,7 +332,7 @@ def exclude_goal_columns(row, goal_types):
     return ret_row
 
 
-def calculate_goal_values(row, goal_type, cost):
+def calculate_goal_values(row, goal_type, e_media_cost):
     ret = {}
     if goal_type == constants.CampaignGoalKPI.CPA:
         goal_index = 1
@@ -341,8 +340,8 @@ def calculate_goal_values(row, goal_type, cost):
         while goal_index == 1 or goal_name in row:
             goal_name = 'conversion_goal_{}'.format(goal_index)
             if goal_name in row and row[goal_name]:
-                ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] =\
-                    float(cost) / row[goal_name]
+                ret['avg_cost_per_conversion_goal_{}'.format(goal_index)] = \
+                    float(e_media_cost) / row[goal_name]
             goal_index += 1
     return ret
 
@@ -433,15 +432,15 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     goal_values = campaign_goal.values.all()
     last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
-    cost = extract_media_cost(stats)
+    e_media_cost = extract_e_media_cost(stats)
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         metric = stats.get(conversion_column, 0)
-        metric_value = (float(cost) / metric) if (metric and cost is not None) else None
+        metric_value = (float(e_media_cost) / metric) if (metric and e_media_cost is not None) else None
     else:
         metric_value = stats.get(CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
     return (
-        get_goal_performance_status(campaign_goal.type, metric_value, planned_value, cost=cost),
+        get_goal_performance_status(campaign_goal.type, metric_value, planned_value, cost=e_media_cost),
         metric_value,
         planned_value,
         campaign_goal,

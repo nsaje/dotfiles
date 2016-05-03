@@ -593,13 +593,8 @@ class SourcesTable(object):
             elif level_ == 'campaigns':
                 campaign = level_sources_table.campaign
 
-            totals_media_cost = campaign_goals.extract_media_cost(totals)
-            rows = campaign_goals.create_goals(
-                campaign, rows
-            )
-            totals = campaign_goals.create_goal_totals(
-                campaign, totals, totals_media_cost
-            )
+            rows = campaign_goals.create_goals(campaign, rows)
+            totals = campaign_goals.create_goal_totals(campaign, totals)
 
         if order:
             rows = sort_results(rows, [order])
@@ -1224,13 +1219,8 @@ class AdGroupAdsTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = ad_group.campaign
-            totals_media_cost = campaign_goals.extract_media_cost(total_stats)
-            rows = campaign_goals.create_goals(
-                campaign, rows
-            )
-            total_row = campaign_goals.create_goal_totals(
-                campaign, total_row, totals_media_cost
-            )
+            rows = campaign_goals.create_goals(campaign, rows)
+            total_row = campaign_goals.create_goal_totals(campaign, total_row)
 
         response = {
             'rows': rows,
@@ -1463,13 +1453,8 @@ class CampaignAdGroupsTable(object):
         )
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            totals_media_cost = campaign_goals.extract_media_cost(totals)
-            rows = campaign_goals.create_goals(
-                campaign, rows
-            )
-            totals = campaign_goals.create_goal_totals(
-                campaign, totals, totals_media_cost
-            )
+            rows = campaign_goals.create_goals(campaign, rows)
+            totals = campaign_goals.create_goal_totals(campaign, totals)
 
         rows = self.sort_rows(rows, order)
 
@@ -1883,9 +1868,8 @@ class PublishersTable(object):
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = adgroup.campaign
-            media_cost = campaign_goals.extract_media_cost(totals)
             rows = campaign_goals.create_goals(campaign, rows)
-            totals = campaign_goals.create_goal_totals(campaign, totals, media_cost)
+            totals = campaign_goals.create_goal_totals(campaign, totals)
 
         response = {
             'rows': rows,

@@ -324,7 +324,7 @@ class AdGroupAdsTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
 
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             'clicks': 1500,
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
@@ -1111,14 +1111,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
+        self.assertDictEqual(result['data']['totals'], {
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1315,7 +1308,7 @@ class AdGroupPublishersTableTest(TestCase):
         })
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             u'ctr': 100.0,
             u'cpc': 1.3,
             u'media_cost': 2.4,
@@ -1339,13 +1332,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
         })
 
     """
@@ -1674,7 +1660,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1698,13 +1684,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
         })
 
     def test_get_reverse_order(self, mock_query, mock_touchpointconversins_query):
