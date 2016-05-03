@@ -1,7 +1,5 @@
-import datetime
 import json
 import logging
-from dateutil import tz
 from django.conf import settings
 from django.db.models import F, Q
 from django.http import JsonResponse, Http404
@@ -411,16 +409,15 @@ def get_ad_groups(request):
     _validate_signature(request)
 
     ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(request)
-    from_tz = tz.gettz(settings.DEFAULT_TIME_ZONE)
-    to_tz = tz.gettz('UTC')
 
     ad_groups = []
     for ad_group_settings in ad_groups_settings:
         ad_group = {
             'id': ad_group_settings.ad_group.id,
             'name': ad_group_settings.ad_group.name,
-            'start_date': datetime.datetime.combine(ad_group_settings.start_date, datetime.datetime.min.time()).replace(
-                tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'start_date': ad_group_settings.start_date,
+            'end_date': ad_group_settings.end_date,
+            'time_zone': settings.DEFAULT_TIME_ZONE,
             'brand_name': ad_group_settings.brand_name,
             'display_url': ad_group_settings.display_url,
             'tracking_codes': ad_group_settings.get_tracking_codes(),
@@ -429,11 +426,6 @@ def get_ad_groups(request):
             'target_regions': ad_group_settings.target_regions,
             'retargeting_ad_groups': ad_group_settings.retargeting_ad_groups,
         }
-
-        if ad_group_settings.end_date:
-            end_date = ad_group_settings.end_date + datetime.timedelta(days=1)
-            end_date = datetime.datetime.combine(end_date, datetime.datetime.min.time())
-            ad_group['end_date'] = end_date.replace(tzinfo=from_tz).astimezone(to_tz).strftime('%Y-%m-%dT%H:%M:%SZ')
 
         ad_groups.append(ad_group)
 
