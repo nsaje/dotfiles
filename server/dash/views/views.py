@@ -262,7 +262,7 @@ class AdGroupOverview(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         header = {
-            'title': ad_group_settings.ad_group_name,
+            'title': ad_group.name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, filtered_sources),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
