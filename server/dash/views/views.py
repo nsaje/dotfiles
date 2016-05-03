@@ -138,19 +138,19 @@ class User(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def get_dict(self, user):
-        result = {}
+        if not user:
+            return {}
 
-        if user:
-            result = {
-                'id': str(user.pk),
-                'email': user.email,
-                'name': user.get_full_name(),
-                'permissions': user.get_all_permissions_with_access_levels(),
-                'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
-                    datetime.datetime.utcnow(), is_dst=True).total_seconds()
-            }
-
-        return result
+        agency = user.agency_set.first()
+        return {
+            'id': str(user.pk),
+            'email': user.email,
+            'name': user.get_full_name(),
+            'agency': agency.id if agency else None,
+            'permissions': user.get_all_permissions_with_access_levels(),
+            'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
+                datetime.datetime.utcnow(), is_dst=True).total_seconds()
+        }
 
 
 @login_required

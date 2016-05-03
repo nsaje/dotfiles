@@ -251,7 +251,7 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AccountAgencySettingsForm(forms.Form):
+class AccountAgencyAgencyForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,

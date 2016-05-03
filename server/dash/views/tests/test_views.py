@@ -54,11 +54,12 @@ class UserTest(TestCase):
 
         response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -18000.0
@@ -79,6 +80,7 @@ class UserTest(TestCase):
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -14400.0
@@ -95,11 +97,12 @@ class UserTest(TestCase):
 
         response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -14400.0

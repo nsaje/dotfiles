@@ -180,6 +180,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 id: data.id,
                 name: data.name,
                 email: data.email,
+                agency: data.agency,
                 permissions: data.permissions,
                 timezoneOffset: data.timezone_offset,
             };

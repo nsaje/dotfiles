@@ -1,4 +1,42 @@
 <div class="page page-account-account" ng-if="!account.archived">
+
+    <form ng-if="hasPermission('zemauth.can_manage_agency')" id="form-account-agency" class="form-horizontal">
+        <div class="form-group" ng-class="{'has-error': !!errors.name}">
+            <label for="name-input" class="col-xs-2 control-label">
+                Name
+                <zem-help-popover content="Name of the account." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <input id="name-input" type="text" class="form-control" ng-model="settings.name">
+            </div>
+
+            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
+            <label for="account-manager-select" class="col-xs-2 control-label">
+                Account Manager
+                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.defaultAccountManager">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="manager.id as manager in accountManagers | orderBy:getName | filter:$select.search">
+                        <div ng-bind-html="manager.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.defaultAccountManager" class="control-label error" for="account-manager-select">{{ error }}</label>
+        </div>
+
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+        <div class="loader" ng-show="requestInProgress"></div>
+        <span ng-show="saved" class="success feedback-text">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error feedback-text">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success feedback-text">Your updates have been discarded.</span>
+    </form>
+
     <zem-conversion-pixels
         zem-account="account"
         zem-has-permission="hasPermission"
