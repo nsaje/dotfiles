@@ -438,13 +438,17 @@ def get_ad_groups(request):
 
 
 def _get_ad_groups_and_campaigns_settings(ad_group_id):
-    ad_groups_settings = (dash.models.AdGroupSettings.objects
-                          .group_current_settings()
-                          .select_related('ad_group', 'ad_group__campaign'))
     if ad_group_id:
-        ad_groups_settings = ad_groups_settings.filter(ad_group__id=ad_group_id)
+        ad_groups_settings = (dash.models.AdGroupSettings.objects
+                              .filter(ad_group__id=ad_group_id)
+                              .group_current_settings()
+                              .select_related('ad_group', 'ad_group__campaign'))
         ad_group_ids = [ad_group_id]
     else:
+        ad_groups_settings = (dash.models.AdGroupSettings.objects
+                              .all()
+                              .group_current_settings()
+                              .select_related('ad_group', 'ad_group__campaign'))
         ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
                         not ad_group_settings.archived]
 
@@ -480,24 +484,22 @@ def get_ad_groups_exchanges(request):
 
 def _get_ad_group_sources_settings(ad_group_id):
     if ad_group_id:
-        ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                     .filter(ad_group_source__ad_group__id=ad_group_id,
-                                             ad_group_source__source__source_type__type='b1')
-                                     .group_current_settings()
-                                     .select_related('ad_group_source',
-                                                     'ad_group_source__source',
-                                                     'ad_group_source__ad_group'))
+        ad_group_ids = [ad_group_id]
     else:
-        ad_groups = (dash.models.AdGroupSettings.objects.filter(archived=False).group_current_settings()
-                     .select_related('ad_group')
-                     .values_list('ad_group', flat=True))
-        ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                     .filter(ad_group_source__ad_group__in=ad_groups,
-                                             ad_group_source__source__source_type__type='b1')
-                                     .group_current_settings()
-                                     .select_related('ad_group_source',
-                                                     'ad_group_source__source',
-                                                     'ad_group_source__ad_group'))
+        ad_groups_settings = (dash.models.AdGroupSettings.objects
+                              .all()
+                              .group_current_settings()
+                              .select_related('ad_group'))
+        ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
+                        not ad_group_settings.archived]
+
+    ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
+                                 .filter(ad_group_source__ad_group__id__in=ad_group_ids,
+                                         ad_group_source__source__source_type__type='b1')
+                                 .group_current_settings()
+                                 .select_related('ad_group_source',
+                                                 'ad_group_source__source',
+                                                 'ad_group_source__ad_group'))
 
     return ad_group_sources_settings
 

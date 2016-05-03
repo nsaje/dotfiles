@@ -461,7 +461,9 @@ class K1ApiTest(TestCase):
         self.assertDictEqual(data[0], {
             u'id': 1,
             u'name': u'test adgroup 1',
-            u'start_date': u'2014-06-04T04:00:00Z',
+            u'start_date': u'2014-06-04',
+            u'end_date': None,
+            u'time_zone': u'America/New_York',
             u'brand_name': u'brand1',
             u'display_url': u'brand1.com',
             u'tracking_codes': u'tracking1&tracking2',
@@ -473,7 +475,7 @@ class K1ApiTest(TestCase):
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
-    def test_get_ad_groups_with_id(self, mock_verify_wsgi_request):
+    def test_get_ad_groups(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_ad_groups'),
         )
@@ -489,6 +491,8 @@ class K1ApiTest(TestCase):
             u'id',
             u'name',
             u'start_date',
+            u'end_date',
+            u'time_zone',
             u'brand_name',
             u'display_url',
             u'tracking_codes',
