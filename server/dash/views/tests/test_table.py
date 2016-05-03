@@ -8,6 +8,7 @@ from django.contrib.auth import models as authmodels
 
 from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
+from django.test.client import RequestFactory
 from unittest import skip
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -2054,3 +2055,71 @@ class AllAccountsSourcesTableTest(TestCase):
         self.assertTrue(t.has_complete_postclick_metrics(today, today))
 
         self.assertFalse(t.is_sync_in_progress())
+
+
+@patch('reports.redshift.get_cursor')
+@patch('dash.table.reports.api_contentads.query')
+class AccountsAccountsTableTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        self.normal_user = User.objects.get(pk=1)
+        self.redshift_user = User.objects.get(pk=2)
+
+        redshift_perm = authmodels.Permission.objects.get(codename="can_see_redshift_postclick_statistics")
+        self.redshift_user.user_permissions.add(redshift_perm)
+
+        allaccperm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        r = RequestFactory()
+        r.user = self.normal_user
+
+        acc1 = models.Account.objects.get(pk=1)
+        acc1.users.add(self.normal_user)
+
+        redshift.STATS_DB_NAME = 'default'
+
+    def test_get(self, mock_api_query, mock_get_cursor):
+        date = datetime.date(2015, 2, 22)
+        mock_stats1 = {
+            'date': date.isoformat(),
+            'account': 1,
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'media_cost': 200,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'billing_cost': 200,
+            'license_fee': 0,
+            'ctr': '15.5000',
+            'content_ad': 2,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
+        }
+        mock_api_query.side_effect = [[mock_stats1], mock_stats1]
+        # mock_api_query.return_value = mock_stats1
+
+        t = table.AccountsAccountsTable()
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        # from pudb import set_trace; set_trace()
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('N/A', response['rows'][0]['agency'])
