@@ -346,48 +346,56 @@ class K1ApiTest(TestCase):
             'domain': 'global',
             'exchange': None,
             'status': 1,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[1], {
             'ad_group_id': 1,
             'domain': 'pub1.com',
             'exchange': 'adblade',
             'status': 1,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
             'domain': 'pub2.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[3], {
             'ad_group_id': 1,
             'domain': 'pub5.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[4], {
             'ad_group_id': 1,
             'domain': 'pub6.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[5], {
             'ad_group_id': 2,
             'domain': 'pub3.com',
             'exchange': 'gravity',
             'status': 1,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[6], {
             'ad_group_id': 2,
             'domain': 'pub5.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[7], {
             'ad_group_id': 2,
             'domain': 'pub6.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
 
     @patch('utils.request_signer.verify_wsgi_request')
@@ -411,24 +419,28 @@ class K1ApiTest(TestCase):
             'domain': 'pub1.com',
             'exchange': 'adblade',
             'status': 1,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[1], {
             'ad_group_id': 1,
             'domain': 'pub2.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
             'domain': 'pub5.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[3], {
             'ad_group_id': 1,
             'domain': 'pub6.com',
             'exchange': 'gravity',
             'status': 2,
+            'external_id': '',
         })
 
     @patch('utils.request_signer.verify_wsgi_request')

@@ -372,7 +372,8 @@ def _process_item(blacklist, item, exchange, running_ad_groups):
             'ad_group_id': item.ad_group_id,
             'domain': item.name,
             'exchange': exchange,
-            'status': item.status
+            'status': item.status,
+            'external_id': item.external_id,
         }
         blacklist[hash(tuple(entry.values()))] = entry
     # if campaign then generate all running ad groups is this campaign
@@ -388,7 +389,8 @@ def _process_item(blacklist, item, exchange, running_ad_groups):
             'ad_group_id': None,
             'domain': item.name,
             'exchange': exchange,
-            'status': item.status
+            'status': item.status,
+            'external_id': item.external_id,
         }
         blacklist[hash(tuple(entry.values()))] = entry
 
@@ -400,7 +402,8 @@ def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
                 'ad_group_id': ad_group.id,
                 'domain': item.name,
                 'exchange': exchange,
-                'status': item.status
+                'status': item.status,
+                'external_id': item.external_id,
             }
             blacklist[hash(tuple(entry.values()))] = entry
 
