@@ -77,6 +77,24 @@
     model: dash.campaign
     pk: 2
 
+# test campaign settings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        name: 'test campaign 1'
+        campaign: 1
+        iab_category: IAB24
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        name: 'test campaign 2'
+        campaign: 2
+        iab_category: IAB25
+    model: dash.campaignsettings
+    pk: 2
+
 # source types
 
 -   fields:
@@ -173,12 +191,36 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Adiant
         tracking_slug: 'adiant'
-        bidder_slug: 'adiant'
+        bidder_slug: 'b1_adiant'
         source_type: 6
         content_ad_submission_type: 2
         maintenance: False
     model: dash.source
     pk: 6
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Google
+        tracking_slug: 'google'
+        bidder_slug: 'b1_google'
+        source_type: 6
+        content_ad_submission_type: 2
+        maintenance: False
+    model: dash.source
+    pk: 7
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Facebook
+        tracking_slug: 'facebook'
+        bidder_slug: 'b1_facebook'
+        source_type: 6
+        content_ad_submission_type: 2
+        maintenance: False
+    model: dash.source
+    pk: 8
 
 # test source credentials
 -   fields:
@@ -278,6 +320,9 @@
         enable_ga_tracking: true
         ga_tracking_type: 2
         state: 1
+        brand_name: 'brand1'
+        display_url: 'brand1.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 1
 
@@ -288,6 +333,9 @@
         enable_ga_tracking: true
         ga_tracking_type: 2
         state: 1
+        brand_name: 'brand2'
+        display_url: 'brand2.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 2
 
@@ -298,6 +346,9 @@
         enable_ga_tracking: true
         ga_tracking_type: 2
         state: 1
+        brand_name: 'brand3'
+        display_url: 'brand3.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 3
 
@@ -308,6 +359,9 @@
         enable_ga_tracking: false
         ga_tracking_type: 1
         state: 2
+        brand_name: 'brand4'
+        display_url: 'brand4.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 4
 
@@ -379,6 +433,22 @@
     model: dash.adgroupsource
     pk: 8
 
+-   fields:
+        source: 7
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 9
+
+-   fields:
+        source: 8
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 10
+
 # test adgroupsourcestate
 
 -   fields:
@@ -436,6 +506,33 @@
         state: 1
     model: dash.adgroupsourcesettings
     pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 6
+        cpc_cc: '0.12'
+        daily_budget_cc: '1.5'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 9
+        cpc_cc: '0.13'
+        daily_budget_cc: '1.6'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 6
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 10
+        cpc_cc: '0.14'
+        daily_budget_cc: '1.7'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 7
 
 
 # test uploadbatch
