@@ -502,6 +502,3 @@ def _get_ad_group_sources_settings(ad_group_id):
                                                  'ad_group_source__ad_group'))
 
     return ad_group_sources_settings
-
-
-
