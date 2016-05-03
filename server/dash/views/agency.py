@@ -831,7 +831,7 @@ class AccountAgency(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
-        if not (self._is_valid_account_manager(account_id, request.user) or
+        if not (self._is_valid_agency_manager(account_id, request.user) or
                 request.user.has_perm('zemauth.account_agency_view')):
             raise exc.AuthorizationError()
 
@@ -852,7 +852,7 @@ class AccountAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
         if not (request.user.has_perm('zemauth.account_agency_view') or
-                self._is_valid_account_manager(account_id, request.user)):
+                self._is_valid_agency_manager(account_id, request.user)):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
@@ -898,8 +898,8 @@ class AccountAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _is_valid_account_manager(self, account_id, user):
-        if not user.has_perm('zemauth.account_agency_view'):
+    def _is_valid_agency_manager(self, account_id, user):
+        if not user.has_perm('zemauth.can_manage_agency'):
             return False
 
         agency = user.agency_set.first()
