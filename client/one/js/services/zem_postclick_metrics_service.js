@@ -1,4 +1,4 @@
-/* globals oneApp,options,constants*/
+/* globals oneApp,options,constants,angular */
 'use strict';
 
 oneApp.factory('zemPostclickMetricsService', function () {
