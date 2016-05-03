@@ -41,7 +41,7 @@ class Command(ExceptionCommand):
         date = from_date
         while date <= to_date:
             logger.info("Retrieving post click data for publisher from Google Analytics for date %s.", date)
-            self._fetch_reports(ga_service, from_date, ga_accounts, content_ads)
+            self._fetch_reports(ga_service, date, ga_accounts, content_ads)
             date += datetime.timedelta(days=1)
 
     def _get_ga_accounts_and_content_ads(self):

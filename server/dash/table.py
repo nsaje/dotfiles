@@ -2128,7 +2128,7 @@ class PublishersTable(object):
                 'ctr': publisher_data.get('ctr', None),
             }
 
-            if user.has_perm('zemauth.view_pubs_postclick_stats'):
+            if user.has_perm('zemauth.view_pubs_postclick_acquisition'):
                 row['visits'] = publisher_data.get('visits', None)
                 row['click_discrepancy'] = publisher_data.get('click_discrepancy', None)
                 row['pageviews'] = publisher_data.get('pageviews', None)

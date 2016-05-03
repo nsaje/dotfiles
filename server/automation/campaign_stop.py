@@ -54,7 +54,6 @@ def switch_low_budget_campaigns_to_landing_mode():
         check_and_switch_campaign_to_landing_mode(campaign, campaign._current_settings[0])
 
 
-@transaction.atomic
 def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
         return False
@@ -68,15 +67,17 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     is_near_depleted = available_tomorrow < max_daily_budget * 2
     is_resumed = False
     actions = []
-    if not campaign_settings.landing_mode:
-        if should_switch_to_landing:
-            actions = _switch_campaign_to_landing_mode(campaign)
-            _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-        elif is_near_depleted:
-            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-    elif _can_resume_campaign(campaign):
-        actions = _resume_campaign(campaign)
-        is_resumed = True
+
+    with transaction.atomic():
+        if not campaign_settings.landing_mode:
+            if should_switch_to_landing:
+                actions = _switch_campaign_to_landing_mode(campaign)
+                _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+            elif is_near_depleted:
+                _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+        elif _can_resume_campaign(campaign):
+            actions = _resume_campaign(campaign)
+            is_resumed = True
     zwei_actions.send(actions)
     return should_switch_to_landing or is_resumed
 
@@ -219,6 +220,9 @@ def _update_landing_campaign(campaign):
     so it's not an issue.
     """
     actions = []
+    if _can_resume_campaign(campaign):
+        return _resume_campaign(campaign)
+
     if not campaign.adgroup_set.all().filter_active().count() > 0:
         return _wrap_up_landing(campaign)
 
@@ -227,6 +231,8 @@ def _update_landing_campaign(campaign):
         return actions + _wrap_up_landing(campaign)
 
     actions.extend(_check_ad_groups_end_date(campaign))
+    if not campaign.adgroup_set.all().filter_active().count() > 0:
+        return actions + _wrap_up_landing(campaign)
 
     per_date_spend, per_source_spend = _get_past_7_days_data(campaign)
     daily_caps = _calculate_daily_caps(campaign, per_date_spend)
@@ -251,9 +257,9 @@ def _check_ad_groups_end_date(campaign):
     actions, finished = [], []
     for ad_group in campaign.adgroup_set.all().filter_active():
         user_settings = _get_last_user_ad_group_settings(ad_group)
-        if user_settings.end_date and user_settings.end_date <= today:
+        if user_settings.end_date and user_settings.end_date < today:
             finished.append(ad_group)
-            actions.append(_stop_ad_group(ad_group))
+            actions.extend(_stop_ad_group(ad_group))
 
     if finished:
         models.CampaignStopLog.objects.create(
@@ -451,7 +457,8 @@ def _switch_campaign_to_landing_mode(campaign):
 def _resume_campaign(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes='Campaign returned to normal mode.'
+        notes='Campaign returned to normal mode - enough campaign budget '
+              'today and tomorrow to cover daily budgets set before landing mode.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=False)
 
@@ -632,7 +639,9 @@ def _get_yesterday_source_spends(ad_groups):
 
     yesterday_spends = {}
     for row in rows:
-        yesterday_spends[(row['ad_group'], row['source'])] = row['cost'] + row['data_cost']
+        media_cost = row['cost'] or 0
+        data_cost = row['data_cost'] or 0
+        yesterday_spends[(row['ad_group'], row['source'])] = media_cost + data_cost
 
     return yesterday_spends
 
@@ -733,7 +742,9 @@ def _get_past_7_days_data(campaign):
     date_spend = defaultdict(int)
     source_spend = defaultdict(int)
     for item in data:
-        spend = item['cost'] + item['data_cost']
+        media_cost = item['cost'] or 0
+        data_cost = item['data_cost'] or 0
+        spend = media_cost + data_cost
         date_spend[(item['ad_group'], item['date'])] += spend
         source_spend[(item['ad_group'], item['source'])] += spend
 
