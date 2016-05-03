@@ -667,20 +667,19 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
-        # adgroup is active, sources are active and campaign is in landing mode
-        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
-        new_campaign_settings.landing_mode = True
-        new_campaign_settings.save(None)
+        # adgroup is in landing mode and active, sources are active
+        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.landing_mode = True
+        new_ad_group_settings.save(None)
 
-        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.LANDING_MODE,
-            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(new_ad_group_settings)
         )
 
-        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
-        new_campaign_settings.landing_mode = False
-        new_campaign_settings.save(None)
+        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.landing_mode = False
+        new_ad_group_settings.save(None)
 
         # adgroup is active, sources are active and adgroup is on CPC autopilot
         start_date = datetime.datetime.today().date()
@@ -759,7 +758,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.get_campaign_running_status(campaign)
+            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
         )
 
         start_date = datetime.datetime.today().date()
@@ -782,17 +781,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.get_campaign_running_status(campaign)
-        )
-
-        # campaign is in landing mode
-        new_campaign_settings = campaign.get_current_settings().copy_settings()
-        new_campaign_settings.landing_mode = True
-        new_campaign_settings.save(None)
-
-        self.assertEqual(
-            dash.constants.InfoboxStatus.LANDING_MODE,
-            dash.infobox_helpers.get_campaign_running_status(campaign)
+            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
         )
 
         for adg in campaign.adgroup_set.all():
@@ -802,7 +791,17 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_campaign_running_status(campaign)
+            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
+        )
+
+        # campaign is in landing mode
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
+            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
         )
 
     def test_get_account_running_status(self):
@@ -843,7 +842,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_campaign_running_status(campaign)
+            dash.infobox_helpers.get_campaign_running_status(campaign, campaign.get_current_settings())
         )
 
 
