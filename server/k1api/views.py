@@ -334,3 +334,20 @@ def get_accounts_slugs_ad_groups(request):
         }
 
     return _response_ok(data)
+
+
+@csrf_exempt
+def get_content_ad_ad_group(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    content_ad_ids = json.loads(request.body)
+
+    content_ads = (dash.models.ContentAd.objects
+                   .filter(id__in=content_ad_ids)
+                   .values('id', 'ad_group_id'))
+
+    return _response_ok(list(content_ads))

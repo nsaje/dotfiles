@@ -532,6 +532,11 @@ urlpatterns += [
         r'^k1api/get_accounts_slugs_ad_groups$',
         k1api.views.get_accounts_slugs_ad_groups,
         name='k1api.get_accounts_slugs_ad_groups',
+    ),
+    url(
+        r'^k1api/get_content_ad_ad_group$',
+        k1api.views.get_content_ad_ad_group,
+        name='k1api.get_content_ad_ad_group',
     )
 ]
 
