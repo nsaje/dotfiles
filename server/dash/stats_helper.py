@@ -87,8 +87,6 @@ def get_publishers_data_and_conversion_goals(
         show_blacklisted_publishers=None,
         adg_blacklisted_publishers=None):
 
-    report_conversion_goals = []
-    touchpoint_conversion_goals = []
     report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
     touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 

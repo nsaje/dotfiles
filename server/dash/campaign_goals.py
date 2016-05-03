@@ -71,7 +71,7 @@ STATUS_TO_EMOTICON_MAP = {
 
 EXISTING_COLUMNS_FOR_GOALS = ('cpc', )
 
-DEFAULT_COST_COLUMN = 'cost'
+MEDIA_COST_COLUMN = 'e_media_cost'
 
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
@@ -274,8 +274,8 @@ def create_conversion_goal(request, form, campaign, value=None):
     return conversion_goal, campaign_goal
 
 
-def extract_cost(data):
-    return data.get(DEFAULT_COST_COLUMN, 0)
+def extract_media_cost(data):
+    return data.get(MEDIA_COST_COLUMN, 0)
 
 
 def create_goals(campaign, data):
@@ -283,7 +283,7 @@ def create_goals(campaign, data):
     ret = []
     for row in data:
         new_row = dict(row)
-        cost = extract_cost(row)
+        cost = extract_media_cost(row)
         if cost:
             for campaign_goal_value in campaign_goal_values:
                 goal_type = campaign_goal_value.campaign_goal.type
@@ -433,7 +433,7 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
     goal_values = campaign_goal.values.all()
     last_goal_value = goal_values and goal_values[0]
     planned_value = last_goal_value and last_goal_value.value or None
-    cost = extract_cost(stats)
+    cost = extract_media_cost(stats)
     if campaign_goal.type == constants.CampaignGoalKPI.CPA:
         conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
         metric = stats.get(conversion_column, 0)
