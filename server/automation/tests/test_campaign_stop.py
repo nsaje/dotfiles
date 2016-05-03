@@ -855,17 +855,20 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     fixtures = ['test_campaign_stop.yaml']
 
     @patch('utils.dates_helper.local_today')
+    @patch('automation.campaign_stop._can_resume_campaign')
     @patch('automation.campaign_stop._run_autopilot')
     @patch('automation.campaign_stop._get_yesterday_source_spends')
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('dash.api.order_ad_group_settings_update')
     @patch('actionlog.zwei_actions.send')
     def test_update_campaigns_in_landing(self, mock_zwei_send, mock_order_ad_group_update, mock_get_past_data,
-                                         mock_get_yesterday_spends, mock_run_ap, mock_local_today):
+                                         mock_get_yesterday_spends, mock_run_ap, mock_can_resume, mock_local_today):
         today = datetime.date(2016, 4, 5)
 
         yesterday = today - datetime.timedelta(days=1)
         mock_local_today.return_value = today
+
+        mock_can_resume.return_value = False
 
         campaign = dash.models.Campaign.objects.get(id=1)
         campaign_stop._switch_campaign_to_landing_mode(campaign)
@@ -909,10 +912,28 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             new_settings.save(None)
 
         actions = campaign_stop._check_ad_groups_end_date(campaign)
-        self.assertEqual(len(actions), 2)
+        self.assertEqual(len(actions), 6)
         self.assertFalse(campaign.adgroup_set.all().filter_active().count())
 
     @patch('utils.dates_helper.local_today')
+    def test_check_ad_groups_end_date_today(self, mock_today):
+        today = datetime.date(2016, 4, 5)
+        mock_today.return_value = today
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        for ad_group in campaign.adgroup_set.all().filter_active():
+            current_settings = ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
+            new_settings.end_date = today
+            new_settings.landing_mode = False
+            new_settings.save(None)
+
+        actions = campaign_stop._check_ad_groups_end_date(campaign)
+        self.assertEqual(len(actions), 0)
+        self.assertEqual(2, campaign.adgroup_set.all().filter_active().count())
+
+    @patch('utils.dates_helper.local_today')
+    @patch('automation.campaign_stop._can_resume_campaign')
     @patch('automation.campaign_stop._get_yesterday_source_spends')
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('automation.campaign_stop._check_ad_groups_end_date')
@@ -920,11 +941,13 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('actionlog.zwei_actions.send')
     def test_wrap_up_landing_mode(self, mock_zwei_send, mock_order_ad_group_update,
                                   mock_get_end_date, mock_get_past_data,
-                                  mock_get_yesterday_spends, mock_local_today):
+                                  mock_get_yesterday_spends, mock_can_resume, mock_local_today):
         today = datetime.date(2016, 4, 5)
 
         yesterday = today - datetime.timedelta(days=1)
         mock_local_today.return_value = today
+
+        mock_can_resume.return_value = False
 
         campaign = dash.models.Campaign.objects.get(id=1)
         campaign_stop._switch_campaign_to_landing_mode(campaign)
@@ -953,7 +976,6 @@ class UpdateCampaignsInLandingTestCase(TestCase):
 
         campaign_stop.update_campaigns_in_landing(dash.models.Campaign.objects.all().filter_landing())
         self.assertTrue(mock_get_end_date.called)
-
 
         self.assertFalse(campaign.get_current_settings().landing_mode)
         for ad_group in campaign.adgroup_set.all():

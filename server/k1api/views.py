@@ -267,6 +267,55 @@ def get_ga_accounts(request):
 
 
 @csrf_exempt
+def get_sources_by_tracking_slug(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    data = {}
+
+    sources = dash.models.Source.objects.all()
+    for source in sources:
+        data[source.tracking_slug] = {
+            'id': source.id,
+        }
+
+    return _response_ok(data)
+
+
+@csrf_exempt
+def get_accounts_slugs_ad_groups(request):
+    try:
+        request_signer.verify_wsgi_request(request, settings.K1_API_SIGN_KEY)
+    except request_signer.SignatureError:
+        logger.exception('Invalid K1 signature.')
+        raise Http404
+
+    accounts = [int(account) for account in request.GET.getlist('account')]
+
+    data = {account: {'slugs': [], 'ad_groups': {}} for account in accounts}
+
+    conversion_pixels = (dash.models.ConversionPixel.objects
+                         .filter(account_id__in=accounts)
+                         .filter(archived=False))
+    for conversion_pixel in conversion_pixels:
+        data[conversion_pixel.account_id]['slugs'].append(conversion_pixel.slug)
+
+    ad_groups = (dash.models.AdGroup.objects.all()
+                 .exclude_archived()
+                 .select_related('campaign')
+                 .filter(campaign__account_id__in=accounts))
+    for ad_group in ad_groups:
+        data[ad_group.campaign.account_id]['ad_groups'][ad_group.id] = {
+            'campaign_id': ad_group.campaign_id,
+        }
+
+    return _response_ok(data)
+
+
+@csrf_exempt
 def get_publishers_blacklist(request):
     _validate_signature(request)
 

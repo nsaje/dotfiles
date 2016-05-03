@@ -1064,6 +1064,9 @@ class AccountsAccountsTable(object):
             if row['last_sync']:
                 row['last_sync'] = row['last_sync']
 
+            if user.has_perm('zemauth.can_view_account_agency_information'):
+                row['agency'] = account.agency.name if account.agency else 'N/A'
+
             row.update(account_data)
 
             if projections:
