@@ -441,6 +441,7 @@ class CampaignAdGroups(TestCase):
 
         self.assertIsNotNone(ad_group_settings.id)
         self.assertIsNotNone(ad_group_settings.changes_text)
+        self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
 

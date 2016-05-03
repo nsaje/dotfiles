@@ -505,6 +505,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         new_settings.target_devices = campaign_settings.target_devices
         new_settings.target_regions = campaign_settings.target_regions
+        new_settings.ad_group_name = ad_group.name
+
         return new_settings
 
     def _add_media_sources(self, ad_group, ad_group_settings, request):
