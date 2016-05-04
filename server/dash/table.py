@@ -1,9 +1,10 @@
 import datetime
 import pytz
 from decimal import Decimal
-from slugify import slugify
 from django.conf import settings
 from django.db.models import Q
+
+from automation import campaign_stop
 
 from dash.views import helpers
 from dash import models
@@ -357,6 +358,12 @@ class AdGroupSourcesTable(object):
             select_related('campaign').\
             prefetch_related('campaign__conversiongoal_set').get()
         self.ad_group_settings = self.ad_group.get_current_settings()
+        self.campaign_settings = self.ad_group.campaign.get_current_settings()
+        self.source_campaign_stop_check = campaign_stop.can_enable_media_sources(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.campaign_settings,
+        )
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
@@ -787,14 +794,18 @@ class SourcesTable(object):
                 row['supply_dash_disabled_message'] = self._get_supply_dash_disabled_message(ad_group_source)
 
                 ad_group_settings = level_sources_table.ad_group_settings
+                campaign_settings = level_sources_table.campaign_settings
+                can_enable_source = level_sources_table.source_campaign_stop_check[ad_group_source.id]
 
                 row['editable_fields'] = helpers.get_editable_fields(
                     level_sources_table.ad_group,
                     ad_group_source,
                     ad_group_settings,
                     source_settings,
+                    campaign_settings,
                     user,
-                    allowed_sources
+                    allowed_sources,
+                    can_enable_source,
                 )
 
                 if source_settings is not None \
@@ -1541,6 +1552,9 @@ class CampaignAdGroupsTable(object):
         # map settings for quicker access
         ad_group_settings_dict = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
+        campaign_settings = campaign.get_current_settings()
+        campaign_stop_check = campaign_stop.can_enable_ad_groups(campaign, campaign_settings)
+
         for ad_group in ad_groups:
             row = {
                 'name': ad_group.name,
@@ -1576,7 +1590,8 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-            row['editable_fields'] = self.get_editable_fields(ad_group, campaign, row)
+            row['editable_fields'] = self.get_editable_fields(
+                ad_group, campaign, row, campaign_stop_check[ad_group.id])
 
             rows.append(row)
 
@@ -1598,12 +1613,12 @@ class CampaignAdGroupsTable(object):
 
         return rows
 
-    def get_editable_fields(self, ad_group, campaign, row):
+    def get_editable_fields(self, ad_group, campaign, row, can_enable_ad_group):
         state = {
             'enabled': True,
             'message': None
         }
-        if campaign.is_in_landing():
+        if not can_enable_ad_group:
             state['enabled'] = False
             state['message'] = 'Please add additional budget to your campaign to make changes.'
         elif row['state'] == constants.AdGroupSettingsState.INACTIVE \

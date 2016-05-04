@@ -11,7 +11,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_plus, campaign_stop
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -267,7 +267,9 @@ class AdGroupSettingsState(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         data = json.loads(request.body)
         new_state = data.get('state')
-        self._validate_state(ad_group, new_state)
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        self._validate_state(ad_group, ad_group.campaign, campaign_settings, new_state)
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -282,11 +284,11 @@ class AdGroupSettingsState(api_common.BaseApiView):
             'state': new_settings.state,
         })
 
-    def _validate_state(self, ad_group, state):
+    def _validate_state(self, ad_group, campaign, campaign_settings, state):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        if ad_group.campaign.is_in_landing():
+        if not campaign_stop.can_enable_ad_group(ad_group, campaign, campaign_settings):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSettingsState.ACTIVE and \
