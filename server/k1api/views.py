@@ -95,6 +95,8 @@ def get_ad_group_source(request):
         'end_date': ad_group_settings.start_date,
         'target_devices': ad_group_settings.target_devices,
         'target_regions': ad_group_settings.target_regions,
+        'tracking_code': ad_group_settings.tracking_code,
+        'tracking_slug': ad_group_source.source.tracking_slug,
     }
     return _response_ok(data)
 
@@ -150,6 +152,7 @@ def get_content_ad_sources_for_ad_group(request):
             url = content_ad_source.content_ad.url
 
         content_ads.append({
+            'content_ad_source_id': content_ad_source.id,
             'credentials': ad_group_source.source_credentials.credentials,
             'source_campaign_key': ad_group_source.source_campaign_key,
             'ad_group_id': content_ad_source.content_ad.ad_group_id,
