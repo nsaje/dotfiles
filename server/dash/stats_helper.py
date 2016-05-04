@@ -265,8 +265,8 @@ def _get_stats_with_conversions(
             conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
                                                      tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
         except KeyError:
-            # when querying above campaign level, result can include same conversion pixel on different campaigns,
-            # only return those that were queried
+            # when querying for multiple campaigns, a pixel can get returned when no campaign goal with such pixel is
+            # defined
             continue
 
         if key in ca_stats_by_breakdown:
