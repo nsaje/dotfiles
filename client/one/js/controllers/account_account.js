@@ -12,6 +12,10 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         allowed: [], 
         available: []
     };
+    $scope.users = null;
+    $scope.addUserRequestInProgress = false;
+    $scope.addUserData = {};
+    $scope.addUserErrors = null;
 
     $scope.getAllowedMediaSources = function () {
         var list = [];
@@ -49,6 +53,21 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         });
         $scope.selectedMediaSources.available.length = 0;
         $scope.selectedMediaSources.allowed.length = 0;
+    };
+
+    $scope.userActionChange = function (action, userId) {
+        if (action === '') {
+            return;
+        }
+
+        var usr = getUser(userId);
+        if (action === 'remove') {
+            $scope.removeUser(userId);
+        } else if (action === 'resend') {
+            $scope.resendActivationMail(userId);
+        }
+
+        usr.action = null;
     };
 
     $scope.getSettings = function (discarded) {
@@ -102,8 +121,119 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         $scope.getSettings();
     };
 
+    var getUser = function (userId) {
+        var result;
+        $scope.users.forEach(function (user, index) {
+            if (user.id === userId) {
+                result = user;
+            }
+        });
+
+        return result;
+    };
+
+    $scope.getUsers = function () {
+        api.accountUsers.list($state.params.id).then(
+            function (data) {
+                $scope.users = data.users;
+                $scope.users.forEach(function (user, index) {
+                    user.action = null;
+                    user.emailResent = false;
+                });
+            }
+        );
+    };
+
+    $scope.addUser = function () {
+        $scope.addUserRequestInProgress = true;
+
+        api.accountUsers.put($state.params.id, $scope.addUserData).then(
+            function (data) {
+                var user = getUser(data.user.id);
+
+                if (!user) {
+                    user = data.user;
+                    $scope.users.push(user);
+                } else {
+                    user.name = data.user.name;
+                }
+
+                user.saved = true;
+                user.removed = false;
+                user.emailSent = data.created;
+                user.action = null;
+                $scope.addUserErrors = null;
+                $scope.addUserData = {};
+                $scope.getSettings(); // updates history
+            },
+            function (data) {
+                $scope.addUserErrors = data;
+            }
+        ).finally(function () {
+            $scope.addUserRequestInProgress = false;
+        });
+    };
+
+    $scope.removeUser = function (userId) {
+        var user = getUser(userId);
+        user.requestInProgress = true;
+
+        api.accountUsers.remove($state.params.id, userId).then(
+            function (userId) {
+                if (user) {
+                    user.removed = true;
+                    user.saved = false;
+                }
+
+                $scope.getSettings(); // updates history
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
+    };
+
+    $scope.resendActivationMail = function (userId) {
+        var user = getUser(userId);
+        user.requestInProgress = true;
+
+        api.userActivation.post($state.params.id, userId).then(
+            function (userId) {
+                user.saved = true;
+                user.emailResent = true;
+            },
+            function (data) {
+                user.saved = false;
+                user.emailResent = false;
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+            $scope.getSettings(); // updates history
+        });
+    };
+
+    $scope.undoRemove = function (userId) {
+        var user = getUser(userId);
+        user.requestInProgress = true;
+
+        api.accountUsers.put($state.params.id, {email: user.email}).then(
+            function (data) {
+                user.removed = false;
+                $scope.getSettings(); // updates history
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
+    };
+
+    $scope.getName = function (user) {
+        return user.name;
+    };
+
     $scope.init = function () {
         $scope.getSettings();
+        if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
+            $scope.getUsers();
+        }
         $scope.setActiveTab();
     };
 
