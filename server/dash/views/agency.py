@@ -873,7 +873,6 @@ class AccountAgency(api_common.BaseApiView):
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
 
-                from pudb import set_trace; set_trace()
                 if 'allowed_sources' in form.cleaned_data and\
                         form.cleaned_data['allowed_sources'] is not None and\
                         not request.user.has_perm('zemauth.can_modify_allowed_sources'):
