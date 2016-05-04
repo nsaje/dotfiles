@@ -261,8 +261,14 @@ def _get_stats_with_conversions(
                              cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
-        conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
-                                                tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
+        try:
+            conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
+                                                     tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
+        except KeyError:
+            # when querying above campaign level, result can include same conversion pixel on different campaigns,
+            # only return those that were queried
+            continue
+
         if key in ca_stats_by_breakdown:
             ca_stats_by_breakdown[key][conversion_goal.get_view_key(conversion_goals)] = tp_conv_stat['conversion_count']
             continue
