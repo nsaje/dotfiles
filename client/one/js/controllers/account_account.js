@@ -234,7 +234,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
             $scope.getUsers();
         }
-        $scope.setActiveTab();
     };
 
     $scope.init();
