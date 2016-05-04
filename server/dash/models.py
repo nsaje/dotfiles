@@ -618,6 +618,7 @@ class AccountSettings(SettingsBase):
         'archived',
         'default_account_manager',
         'default_sales_representative',
+        'account_type',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -639,6 +640,10 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
+    )
+    account_type = models.IntegerField(
+        default=constants.AccountType.UNKNOWN,
+        choices=constants.AccountType.get_choices()
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)

@@ -2135,3 +2135,26 @@ class AccountsAccountsTableTest(TestCase):
         # from pudb import set_trace; set_trace()
         response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('AdPro', response['rows'][0]['agency'])
+
+    def test_get_account_type(self, mock_api_query, mock_get_cursor):
+        allaccperm = authmodels.Permission.objects.get(codename="can_see_account_type")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
+
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        t = table.AccountsAccountsTable()
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('Sandbox', response['rows'][0]['account_type'])

@@ -1052,6 +1052,9 @@ class AccountsAccountsTable(object):
                     row['default_sales_representative'] = helpers.get_user_full_name_or_email(
                         account_settings.default_sales_representative, default_value=None)
 
+            if user.has_perm('zemauth.can_see_account_type') and account_settings:
+                row['account_type'] = constants.AccountType.get_text(account_settings.account_type)
+
             row['status'] = accounts_status_dict[account.id]
             row['archived'] = archived
 

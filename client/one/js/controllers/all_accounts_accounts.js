@@ -98,6 +98,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
+            name: 'Account Type',
+            field: 'account_type',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Type of account.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_account_type'),
+            shown: $scope.hasPermission('zemauth.can_see_account_type')
+        },
+        {
             name: 'Total Credit',
             field: 'credit_projection',
             checked: false,
@@ -326,7 +338,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Management',
             'fields': [
-                'default_account_manager', 'default_sales_representative'
+                'default_account_manager', 'default_sales_representative', 'account_type'
             ]
         },
         {
