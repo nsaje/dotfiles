@@ -795,7 +795,7 @@ class SourcesTable(object):
 
                 ad_group_settings = level_sources_table.ad_group_settings
                 campaign_settings = level_sources_table.campaign_settings
-                can_enable_source = level_sources_table.source_campaign_stop_check[ad_group_source.id]
+                can_enable_source = level_sources_table.source_campaign_stop_check.get(ad_group_source.id, True)
 
                 row['editable_fields'] = helpers.get_editable_fields(
                     level_sources_table.ad_group,
@@ -1591,7 +1591,7 @@ class CampaignAdGroupsTable(object):
 
             row['last_sync'] = last_sync
             row['editable_fields'] = self.get_editable_fields(
-                ad_group, campaign, row, campaign_stop_check[ad_group.id])
+                ad_group, campaign, row, campaign_stop_check.get(ad_group.id, True))
 
             rows.append(row)
 
