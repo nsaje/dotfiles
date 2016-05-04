@@ -862,6 +862,11 @@ class AccountAgency(api_common.BaseApiView):
 
         with transaction.atomic():
             if form.is_valid():
+                if 'default_sales_representative' in form.cleaned_data and not (
+                        request.user.has_perm('zemauth.account_agency_view') or
+                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
+                    raise exc.AuthorizationError()
+
                 self.set_account(account, form.cleaned_data)
 
                 settings = models.AccountSettings()
@@ -1036,10 +1041,14 @@ class AccountAgency(api_common.BaseApiView):
                 'default_account_manager':
                     str(settings.default_account_manager.id)
                     if settings.default_account_manager is not None else None,
-                'default_sales_representative':
-                    str(settings.default_sales_representative.id)
-                    if settings.default_sales_representative is not None else None,
             }
+
+            if request.user.has_perm('zemauth.account_agency_view') or\
+                    request.user.has_perm('zemauth.can_set_account_sales_representative'):
+                result['default_sales_representative'] =\
+                    str(settings.default_sales_representative.id) if\
+                    settings.default_sales_representative is not None else None
+
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 result['allowed_sources'] = self.get_allowed_sources(
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
