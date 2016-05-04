@@ -213,6 +213,8 @@ class K1ApiTest(TestCase):
             u'end_date',
             u'target_devices',
             u'target_regions',
+            u'tracking_code',
+            u'tracking_slug',
         }
 
         db_ags = dash.models.AdGroupSource.objects.get(

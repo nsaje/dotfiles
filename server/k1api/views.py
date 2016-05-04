@@ -95,6 +95,8 @@ def get_ad_group_source(request):
         'end_date': ad_group_settings.start_date,
         'target_devices': ad_group_settings.target_devices,
         'target_regions': ad_group_settings.target_regions,
+        'tracking_code': ad_group_settings.tracking_code,
+        'tracking_slug': ad_group_source.source.tracking_slug,
     }
     return _response_ok(data)
 
