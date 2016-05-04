@@ -3,9 +3,53 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.canEditAccount = false;
     $scope.salesReps = [];
     $scope.settings = {};
+    $scope.settings.allowedSources = {};
     $scope.saved = false;
     $scope.errors = {};
     $scope.requestInProgress = false;
+    $scope.mediaSourcesOrderByProp = 'name';
+    $scope.selectedMediaSources = {
+        allowed: [], 
+        available: []
+    };
+
+    $scope.getAllowedMediaSources = function () {
+        var list = [];
+        angular.forEach($scope.settings.allowedSources, function (value, key) {
+            if (value.allowed) {
+                value.value = key;
+                this.push(value);
+            }
+        }, list);
+        return list;
+    };
+
+    $scope.getAvailableMediaSources = function () {
+        var list = [];
+        angular.forEach($scope.settings.allowedSources, function (value, key) {
+            if (!value.allowed) {
+                value.value = key;
+                this.push(value);
+            }
+        }, list);
+        return list;
+    };
+
+    $scope.addToAllowedMediaSources =  function () {
+        angular.forEach($scope.selectedMediaSources.available, function (value, _) {
+            $scope.settings.allowedSources[value].allowed = true;
+        });
+        $scope.selectedMediaSources.allowed.length = 0;
+        $scope.selectedMediaSources.available.length = 0;
+    };
+
+    $scope.removeFromAllowedMediaSources = function () {
+        angular.forEach($scope.selectedMediaSources.allowed, function (value, _) {
+            $scope.settings.allowedSources[value].allowed = false;
+        });
+        $scope.selectedMediaSources.available.length = 0;
+        $scope.selectedMediaSources.allowed.length = 0;
+    };
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -45,6 +89,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             },
             function (data) {
                 $scope.errors = data;
+                $scope.settings.allowedSources = data.allowedSourcesData;
                 $scope.saved = false;
             }
         ).finally(function () {
