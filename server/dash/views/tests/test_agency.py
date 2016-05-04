@@ -2247,6 +2247,25 @@ class AccountAgencyTest(TestCase):
             'archived': False
         })
 
+        user.user_permissions.add(Permission.objects.get(codename='can_set_account_sales_representative'))
+        user.save()
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        )
+
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertDictEqual(content['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'id': '1000',
+            'archived': False,
+        })
+
+
     def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions(['account_agency_view'])
 
