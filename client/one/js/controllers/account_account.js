@@ -9,8 +9,8 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.requestInProgress = false;
     $scope.mediaSourcesOrderByProp = 'name';
     $scope.selectedMediaSources = {
-        allowed: [], 
-        available: []
+        allowed: [],
+        available: [],
     };
     $scope.users = null;
     $scope.addUserRequestInProgress = false;
