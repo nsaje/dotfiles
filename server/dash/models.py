@@ -362,7 +362,8 @@ class Account(models.Model):
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id)
+                models.Q(groups__user__id=user.id) |
+                models.Q(agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
