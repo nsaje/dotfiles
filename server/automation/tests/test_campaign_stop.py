@@ -666,7 +666,6 @@ class CanEnableAdGroupsTestCase(TestCase):
 
         mock_get_min_remaining.return_value = Decimal('10'), Decimal('10'), None
         can_enable = campaign_stop.can_enable_ad_groups(campaign, campaign.get_current_settings())
-        print can_enable
         self.assertEqual({
             1: True,
             2: True,
