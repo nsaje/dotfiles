@@ -862,7 +862,8 @@ class AccountAgency(api_common.BaseApiView):
 
         with transaction.atomic():
             if form.is_valid():
-                if 'default_sales_representative' in form.cleaned_data and not (
+                if 'default_sales_representative' in form.cleaned_data and\
+                        form.cleaned_data['default_sales_representative'] is not None and not (
                         request.user.has_perm('zemauth.account_agency_view') or
                         request.user.has_perm('zemauth.can_set_account_sales_representative')):
                     raise exc.AuthorizationError()
@@ -872,11 +873,14 @@ class AccountAgency(api_common.BaseApiView):
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
 
-                if 'allowed_sources' in form.cleaned_data \
-                        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                from pudb import set_trace; set_trace()
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None and\
+                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
                     raise exc.AuthorizationError()
 
-                if 'allowed_sources' in form.cleaned_data:
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None:
                     self.set_allowed_sources(
                         settings,
                         account,

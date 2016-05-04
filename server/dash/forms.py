@@ -308,6 +308,9 @@ class AccountAgencyAgencyForm(forms.Form):
 
         allowed_sources_dict = self.cleaned_data['allowed_sources']
 
+        if allowed_sources_dict is None:
+            return None
+
         if not isinstance(allowed_sources_dict, dict):
             raise err
 
