@@ -247,6 +247,7 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         required_fields = {
+            u'content_ad_source_id',
             u'credentials',
             u'source_campaign_key',
             u'ad_group_id',

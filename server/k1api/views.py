@@ -152,6 +152,7 @@ def get_content_ad_sources_for_ad_group(request):
             url = content_ad_source.content_ad.url
 
         content_ads.append({
+            'content_ad_source_id': content_ad_source.id,
             'credentials': ad_group_source.source_credentials.credentials,
             'source_campaign_key': ad_group_source.source_campaign_key,
             'ad_group_id': content_ad_source.content_ad.ad_group_id,
