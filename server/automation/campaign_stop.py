@@ -19,6 +19,8 @@ import reports.api_contentads
 import reports.budget_helpers
 import reports.models
 
+import utils.k1_helper
+
 from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
@@ -79,7 +81,12 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
             actions = _resume_campaign(campaign)
             is_resumed = True
     zwei_actions.send(actions)
-    return should_switch_to_landing or is_resumed
+
+    if should_switch_to_landing or is_resumed:
+        for ad_group in campaign.adgroup_set.all().filter_active():
+            utils.k1_helper.update_ad_group(ad_group.pk)
+        return True
+    return False
 
 
 def get_minimum_budget_amount(budget_item):
@@ -137,6 +144,8 @@ def update_campaigns_in_landing(campaigns):
             continue
 
         zwei_actions.send(actions)
+        for ad_group in campaign.adgroup_set.all().filter_active():
+            utils.k1_helper.update_ad_group(ad_group.pk)
 
 
 def get_max_settable_daily_budget(ad_group_source):

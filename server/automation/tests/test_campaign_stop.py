@@ -135,19 +135,24 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('automation.campaign_stop._get_max_daily_budget')
     @patch('automation.campaign_stop._switch_campaign_to_landing_mode')
-    def test_depleting_budget(self, mock_switch, mock_max_daily_budget, mock_get_mrb, mock_send_email):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_depleting_budget(self, mock_k1_ping, mock_switch, mock_max_daily_budget,
+                              mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('200'), Decimal('150'), Decimal('0')
         mock_max_daily_budget.return_value = Decimal('100')
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
         self.assertTrue(mock_send_email.called)
         self.assertFalse(mock_switch.called)
+        self.assertEqual(mock_k1_ping.call_count, 0)
 
     @patch('actionlog.zwei_actions.send')
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_max_daily_budget')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_switch_to_landing_mode(self, mock_get_mrb, mock_max_daily_budget, mock_send_email, mock_send_actions):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_switch_to_landing_mode(self, mock_k1_ping, mock_get_mrb, mock_max_daily_budget,
+                                    mock_send_email, mock_send_actions):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
         mock_max_daily_budget.return_value = Decimal('150')
 
@@ -161,6 +166,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
         self.assertTrue(mock_send_email.called)
+        self.assertEqual(mock_k1_ping.call_count, 4)
 
         current_campaign_settings = campaign.get_current_settings()
         self.assertTrue(current_campaign_settings.landing_mode)
@@ -861,8 +867,11 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('dash.api.order_ad_group_settings_update')
     @patch('actionlog.zwei_actions.send')
-    def test_update_campaigns_in_landing(self, mock_zwei_send, mock_order_ad_group_update, mock_get_past_data,
-                                         mock_get_yesterday_spends, mock_run_ap, mock_can_resume, mock_local_today):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_update_campaigns_in_landing(self, mock_k1_ping, mock_zwei_send,
+                                         mock_order_ad_group_update, mock_get_past_data,
+                                         mock_get_yesterday_spends, mock_run_ap,
+                                         mock_can_resume, mock_local_today):
         today = datetime.date(2016, 4, 5)
 
         yesterday = today - datetime.timedelta(days=1)
@@ -893,6 +902,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
 
         self.assertTrue(campaign.is_in_landing())
         campaign_stop.update_campaigns_in_landing(dash.models.Campaign.objects.all().filter_landing())
+        self.assertEqual(mock_k1_ping.call_count, 6)
 
         for ad_group in campaign.adgroup_set.all().filter_active():
             current_settings = ad_group.get_current_settings()

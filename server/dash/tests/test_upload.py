@@ -364,7 +364,8 @@ class ProcessCallbackTest(TestCase):
     @override_settings(
         SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
     )
-    def test_process_callback(self, mock_redirect_insert):
+    @patch('utils.k1_helper.update_content_ads')
+    def test_process_callback(self, mock_k1_ping, mock_redirect_insert):
         image_id = 'test_image_id'
         image_width = 100
         image_height = 200
@@ -451,6 +452,11 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(content_ad.batch.name, batch_name)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.ACTIVE)
         self.assertEqual(content_ad.crop_areas, crop_areas)
+
+        # Check for pings
+        mock_k1_ping.assert_called_with(
+            ad_group_id, [content_ad.id]
+        )
 
         content_ad_source = models.ContentAdSource.objects.get(content_ad_id=content_ad.id)
         self.assertEqual(content_ad_source.source_id, ad_group_source.source_id)

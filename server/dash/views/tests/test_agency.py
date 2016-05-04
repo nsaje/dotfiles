@@ -200,7 +200,9 @@ class AdGroupSettingsTest(AgencyViewTestCase):
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction, mock_actionlog_api, mock_order_ad_group_settings_update):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_put(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+                 mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -230,6 +232,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 json.dumps(self.settings_dict),
                 follow=True
             )
+            mock_k1_ping.assert_called_with(1)
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
@@ -704,7 +707,8 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
 
     @patch('dash.validation_helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
-    def test_activate(self, mock_zwei_send, mock_budget_check):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_activate(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
@@ -720,10 +724,12 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args), 2)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
+        mock_k1_ping.assert_called_with(2)
 
     @patch('dash.validation_helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
-    def test_activate_already_activated(self, mock_zwei_send, mock_budget_check):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
 
@@ -737,9 +743,11 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(mock_zwei_send.called, False)
+        self.assertFalse(mock_k1_ping.called)
 
     @patch('actionlog.zwei_actions.send')
-    def test_activate_without_budget(self, mock_zwei_send):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_activate_without_budget(self, mock_k1_ping, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
 
         self.add_permissions(['can_control_ad_group_state_in_table'])
@@ -753,6 +761,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(mock_zwei_send.called, False)
+        self.assertFalse(mock_k1_ping.called)
 
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
@@ -773,7 +782,8 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
     @patch('actionlog.zwei_actions.send')
-    def test_inactivate(self, mock_zwei_send):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_inactivate(self, mock_k1_ping, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         self.add_permissions(['can_control_ad_group_state_in_table'])
@@ -788,6 +798,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args[0]), 1)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+        mock_k1_ping.assert_called_with(1)
 
     @patch('actionlog.zwei_actions.send')
     def test_inactivate_already_inactivated(self, mock_zwei_send):
@@ -1883,7 +1894,8 @@ class CampaignSettingsTest(AgencyViewTestCase):
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
         campaign = models.Campaign.objects.get(pk=1)
 
         settings = campaign.get_current_settings()
@@ -1907,6 +1919,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
             }),
             content_type='application/json',
         )
+        self.assertEqual(mock_k1_ping.call_count, 1)
 
         content = json.loads(response.content)
         self.assertTrue(content['success'])
