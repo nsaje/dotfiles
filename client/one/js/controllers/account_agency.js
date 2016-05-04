@@ -19,7 +19,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     $scope.addUserErrors = null;
 
     $scope.mediaSourcesOrderByProp = 'name';
-    $scope.selectedMediaSouces = {allowed:[], available:[]};
+    $scope.selectedMediaSources = {allowed:[], available:[]};
 
     $scope.getAllowedMediaSources = function () {
         var list = [];
@@ -44,19 +44,19 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     };
 
     $scope.addToAllowedMediaSources =  function () {
-        angular.forEach($scope.selectedMediaSouces.available, function (value, _) {
+        angular.forEach($scope.selectedMediaSources.available, function (value, _) {
             $scope.settings.allowedSources[value].allowed = true;
         });
-        $scope.selectedMediaSouces.allowed.length = 0;
-        $scope.selectedMediaSouces.available.length = 0;
+        $scope.selectedMediaSources.allowed.length = 0;
+        $scope.selectedMediaSources.available.length = 0;
     };
 
     $scope.removeFromAllowedMediaSources = function () {
-        angular.forEach($scope.selectedMediaSouces.allowed, function (value, _) {
+        angular.forEach($scope.selectedMediaSources.allowed, function (value, _) {
             $scope.settings.allowedSources[value].allowed = false;
         });
-        $scope.selectedMediaSouces.available.length = 0;
-        $scope.selectedMediaSouces.allowed.length = 0;
+        $scope.selectedMediaSources.available.length = 0;
+        $scope.selectedMediaSources.allowed.length = 0;
     };
 
     $scope.userActionChange = function (action, userId) {
