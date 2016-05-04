@@ -234,9 +234,7 @@ def _micro_to_cc(d):
     return _decimal_to_int(Decimal(d) / CC_TO_MICRO)
 
 
-def _sum_conversion(self, conversion_str):
-    return {}  # TODO
-
+def _sum_conversion(conversion_str):
     conv = defaultdict(int)
 
     for line in conversion_str.split('\n'):
