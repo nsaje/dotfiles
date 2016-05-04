@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, options */
 oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.settings.allowedSources = {};
@@ -7,6 +7,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     $scope.canRestore = true;
     $scope.accountManagers = [];
     $scope.salesReps = [];
+    $scope.accountTypes = options.accountTypes;
     $scope.errors = {};
     $scope.requestInProgress = false;
     $scope.saved = null;

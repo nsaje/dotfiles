@@ -49,6 +49,15 @@ class AccountAgencyAgencyFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_account_manager'))
 
+    def test_invalid_account_type(self):
+        form = forms.AccountAgencyAgencyForm({
+            'id': 1,
+            'name': 'Name',
+            'account_type': 'invalid'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('account_type'))
+
     def test_allowed_sources(self):
         form = forms.AccountAgencyAgencyForm({
             'id': 1,

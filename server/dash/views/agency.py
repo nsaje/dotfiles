@@ -860,40 +860,7 @@ class AccountAgency(api_common.BaseApiView):
 
         form = forms.AccountAgencyAgencyForm(resource.get('settings', {}))
 
-        with transaction.atomic():
-            if form.is_valid():
-                if 'default_sales_representative' in form.cleaned_data and\
-                        form.cleaned_data['default_sales_representative'] is not None and not (
-                        request.user.has_perm('zemauth.account_agency_view') or
-                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
-                    raise exc.AuthorizationError()
-
-                self.set_account(account, form.cleaned_data)
-
-                settings = models.AccountSettings()
-                self.set_settings(settings, account, form.cleaned_data)
-
-                if 'allowed_sources' in form.cleaned_data and\
-                        form.cleaned_data['allowed_sources'] is not None and\
-                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                    raise exc.AuthorizationError()
-
-                if 'allowed_sources' in form.cleaned_data and\
-                        form.cleaned_data['allowed_sources'] is not None:
-                    self.set_allowed_sources(
-                        settings,
-                        account,
-                        request.user.has_perm('zemauth.can_see_all_available_sources'),
-                        form
-                    )
-
-            # Form is additionally validated in self.set_allowed_sources method
-            if not form.is_valid():
-                data = self.get_validation_error_data(request, account)
-                raise exc.ValidationError(errors=dict(form.errors), data=data)
-
-            account.save(request)
-            settings.save(request)
+        settings = self.save_settings(request, account, form)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
                                             account=account)
@@ -917,6 +884,54 @@ class AccountAgency(api_common.BaseApiView):
             return True
 
         return False
+
+    def save_settings(self, request, account, form):
+        with transaction.atomic():
+            if form.is_valid():
+                if 'default_sales_representative' in form.cleaned_data and\
+                        form.cleaned_data['default_sales_representative'] is not None and not (
+                        request.user.has_perm('zemauth.account_agency_view') or
+                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
+                    raise exc.AuthorizationError()
+
+                self.set_account(account, form.cleaned_data)
+
+                settings = models.AccountSettings()
+                self.set_settings(settings, account, form.cleaned_data)
+
+<<<<<<< HEAD
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None and\
+                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+=======
+                if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
+                    if not request.user.has_perm('zemauth.can_modify_account_type'):
+                        raise exc.AuthorizationError()
+                    settings.account_type = form.cleaned_data['account_type']
+
+                if 'allowed_sources' in form.cleaned_data \
+                        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+>>>>>>> origin
+                    raise exc.AuthorizationError()
+
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None:
+                    self.set_allowed_sources(
+                        settings,
+                        account,
+                        request.user.has_perm('zemauth.can_see_all_available_sources'),
+                        form
+                    )
+
+            # Form is additionally validated in self.set_allowed_sources method
+            if not form.is_valid():
+                data = self.get_validation_error_data(request, account)
+                raise exc.ValidationError(errors=dict(form.errors), data=data)
+
+            account.save(request)
+            settings.save(request)
+
+            return settings
 
     def get_validation_error_data(self, request, account):
         data = {}
@@ -1051,7 +1066,8 @@ class AccountAgency(api_common.BaseApiView):
                 result['default_sales_representative'] =\
                     str(settings.default_sales_representative.id) if\
                     settings.default_sales_representative is not None else None
-
+            if request.user.has_perm('zemauth.can_modify_account_type'):
+                result['account_type'] = settings.account_type
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 result['allowed_sources'] = self.get_allowed_sources(
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
@@ -1104,6 +1120,10 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
+            ('account_type', {
+                'name': 'Account Type',
+                'value': constants.AccountType.get_text(new_settings.account_type)
+            }),
         ])
 
         if old_settings is not None:
@@ -1117,6 +1137,9 @@ class AccountAgency(api_common.BaseApiView):
             if old_settings.default_sales_representative is not None:
                 settings_dict['default_sales_representative']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
+            if old_settings.account_type is not None:
+                settings_dict['account_type']['old_value'] = constants.AccountType.get_text(old_settings.account_type)
 
         return settings_dict
 

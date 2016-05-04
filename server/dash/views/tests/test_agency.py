@@ -2209,6 +2209,25 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
+        client = self._get_client_with_permissions(['account_agency_view', 'can_modify_account_type'])
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            follow=True
+        )
+
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertDictEqual(content['data']['settings'], {
+            'name': 'test account 1',
+            'default_sales_representative': '3',
+            'default_account_manager': '2',
+            'account_type': 3,
+            'id': '1',
+            'archived': False
+        })
+
+    def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions(['account_agency_view'])
 
         response = client.get(
@@ -2230,6 +2249,7 @@ class AccountAgencyTest(TestCase):
     def test_put(self, mock_log_useraction):
         client = self._get_client_with_permissions([
             'account_agency_view',
+            'can_modify_account_type',
             'can_modify_allowed_sources'
         ])
 
@@ -2240,6 +2260,7 @@ class AccountAgencyTest(TestCase):
                     'name': 'changed name',
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
+                    'account_type': '4',
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
@@ -2263,6 +2284,7 @@ class AccountAgencyTest(TestCase):
             'archived': False,
             'default_sales_representative': User.objects.get(pk=1),
             'default_account_manager': User.objects.get(pk=3),
+            'account_type': 4,
             'name': 'changed name',
         })
         mock_log_useraction.assert_called_with(
@@ -2270,6 +2292,32 @@ class AccountAgencyTest(TestCase):
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
             account=account
         )
+
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put_no_permission_can_modify_account_type(self, mock_log_useraction):
+        client = self._get_client_with_permissions([
+            'account_agency_view',
+            'can_modify_allowed_sources'
+        ])
+
+        response = client.put(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            json.dumps({
+                'settings': {
+                    'name': 'changed name',
+                    'default_sales_representative': '1',
+                    'default_account_manager': '3',
+                    'account_type': '4',
+                    'id': '1',
+                    'allowed_sources': {
+                        '1': {'allowed': True}
+                    }
+                }
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 401)
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_no_permission_can_modify_allowed_sources(self, mock_log_useraction):
@@ -2326,7 +2374,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 4)
+        self.assertEqual(len(settings_dict), 5)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertIn('old_value', settings_dict['name'])
@@ -2339,7 +2387,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 4)
+        self.assertEqual(len(settings_dict), 5)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertNotIn('old_value', settings_dict['name'])
@@ -2348,7 +2396,7 @@ class AccountAgencyTest(TestCase):
         expected_changes_strings = [
             'Created settings',
             'Sales Representative set to "superuser@test.com"',
-            'Sales Representative set to "user@test.com", Account Manager set to "user@test.com"',
+            'Account Type set to "Pilot", Sales Representative set to "user@test.com", Account Manager set to "user@test.com"',
             '',
             'some text',
             'Sales Representative set to "superuser@test.com", some text'
