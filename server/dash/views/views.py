@@ -262,7 +262,7 @@ class AdGroupOverview(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         header = {
-            'title': ad_group_settings.ad_group_name,
+            'title': ad_group.name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, filtered_sources),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
@@ -505,6 +505,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         new_settings.target_devices = campaign_settings.target_devices
         new_settings.target_regions = campaign_settings.target_regions
+        new_settings.ad_group_name = ad_group.name
+
         return new_settings
 
     def _add_media_sources(self, ad_group, ad_group_settings, request):
