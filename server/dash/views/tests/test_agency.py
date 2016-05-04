@@ -2161,7 +2161,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
 
 
 class AccountAgencyTest(TestCase):
-    fixtures = ['test_views.yaml', 'test_account_agency.yaml']
+    fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
     @classmethod
     def setUpClass(cls):
@@ -2224,6 +2224,26 @@ class AccountAgencyTest(TestCase):
             'default_account_manager': '2',
             'account_type': 3,
             'id': '1',
+            'archived': False
+        })
+
+    def test_get_as_agency_manager(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        )
+
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertDictEqual(content['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'id': '1000',
             'archived': False
         })
 
