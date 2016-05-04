@@ -144,7 +144,7 @@ class Breakdown(object):
     def rows(self):
         query = self._get_materialize_query()
         logger.info("Breakdown query: %s", query)
-        with connections[settings.STATS_DB_NAME].cursor() as c:
+        with connections[settings.K1_DB_NAME].cursor() as c:
             c.execute(query)
             for row in c:
                 yield row

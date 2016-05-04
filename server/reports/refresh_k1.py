@@ -62,7 +62,7 @@ def _generate_table(date, materialized_view, campaign_factors):
 
 
 def _load_to_redshift(date, table_name, s3_path):
-    with transaction.atomic(using=settings.STATS_DB_NAME):
+    with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
         _delete_from_redshift_table(table_name, date)
         _load_to_redshift_table(table_name, s3_path)
 
@@ -71,7 +71,7 @@ def _delete_from_redshift_table(table, date):
     logger.info("Deleting from redshift %s, %s", table, date)
 
     query = 'DELETE FROM {table} WHERE date = %s'.format(table=table)
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
         c.execute(query, [date.isoformat()])
 
 
@@ -97,7 +97,7 @@ def _load_to_redshift_table(table, s3_path):
     else:
         credentials = _get_aws_credentials_from_role()
 
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
         c.execute(query, [s3_url, CSV_DELIMITER, credentials])
 
 
