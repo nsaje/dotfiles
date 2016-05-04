@@ -899,20 +899,15 @@ class AccountAgency(api_common.BaseApiView):
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
 
-<<<<<<< HEAD
                 if 'allowed_sources' in form.cleaned_data and\
                         form.cleaned_data['allowed_sources'] is not None and\
                         not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-=======
+                    raise exc.AuthorizationError()
+
                 if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
                     if not request.user.has_perm('zemauth.can_modify_account_type'):
                         raise exc.AuthorizationError()
                     settings.account_type = form.cleaned_data['account_type']
-
-                if 'allowed_sources' in form.cleaned_data \
-                        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
->>>>>>> origin
-                    raise exc.AuthorizationError()
 
                 if 'allowed_sources' in form.cleaned_data and\
                         form.cleaned_data['allowed_sources'] is not None:
