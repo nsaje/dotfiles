@@ -2386,7 +2386,8 @@ class PublisherBlacklist(models.Model):
 
 
 class CreditLineItem(FootprintModel):
-    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
+    agency = models.ForeignKey(Agency, related_name='agencies', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
 
