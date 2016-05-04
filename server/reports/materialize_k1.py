@@ -46,8 +46,6 @@ class ContentAdStats(object):
         )
 
     def _sum_conversion(self, conversion_str):
-        return {}  # TODO
-
         conv = defaultdict(int)
 
         for line in conversion_str.split('\n'):
@@ -91,8 +89,14 @@ class ContentAdStats(object):
         media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
 
         for row in self._stats_breakdown(date).rows():
-            ad_group = ad_groups_map[row[0]]
-            media_source = media_sources_map[row[3]]
+            ad_group = ad_groups_map.get(row[0])
+            if ad_group is None:
+                logger.error("Got spend for invalid adgroup: %s", row[0])
+                continue
+            media_source = media_sources_map.get(row[3])
+            if media_source is None:
+                logger.error("Got spend for invalid media_source: %s", row[3])
+                continue
 
             cost = row[6] or 0
             data_cost = row[7] or 0

@@ -169,7 +169,8 @@ def _get_campaign_spend(date, all_campaigns):
         for ad_group_id, media_spend, data_spend in c:
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
-                logger.warn("Got spend for archived adgroup: %s", ad_group_id)
+                logger.error("Got spend for invalid adgroup: %s", ad_group_id)
+                continue
 
             if media_spend is None:
                 media_spend = 0
@@ -189,8 +190,8 @@ def _get_redshift_date_query(date):
     hour_to = dates_helper.local_to_utc_time(datetime.datetime(date_next.year, date_next.month, date_next.day))
 
     query = """
-    (date = '{date}' and hour = -1) or (
-        hour >= 0 and (
+    (date = '{date}' and hour is null) or (
+        hour is not null and (
             (date = '{tzdate_from}' and hour >= {tzhour_from}) or
             (date = '{tzdate_to}' and hour < {tzhour_to})
         )
