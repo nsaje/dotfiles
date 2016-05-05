@@ -310,6 +310,19 @@ def get_accounts_slugs_ad_groups(request):
 
 
 @csrf_exempt
+def get_content_ad_ad_group(request):
+    _validate_signature(request)
+
+    content_ad_ids = json.loads(request.body)
+
+    content_ads = (dash.models.ContentAd.objects
+                   .filter(id__in=content_ad_ids)
+                   .values('id', 'ad_group_id'))
+
+    return _response_ok(list(content_ads))
+
+
+@csrf_exempt
 def get_publishers_blacklist(request):
     _validate_signature(request)
 
