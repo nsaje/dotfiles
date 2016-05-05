@@ -325,7 +325,7 @@ class AdGroupAdsTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
 
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             'clicks': 1500,
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
@@ -1112,14 +1112,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
+        self.assertDictEqual(result['data']['totals'], {
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1316,7 +1309,7 @@ class AdGroupPublishersTableTest(TestCase):
         })
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             u'ctr': 100.0,
             u'cpc': 1.3,
             u'media_cost': 2.4,
@@ -1340,13 +1333,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
         })
 
     """
@@ -1675,7 +1661,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1699,13 +1685,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
         })
 
     def test_get_reverse_order(self, mock_query, mock_touchpointconversins_query):
@@ -2117,7 +2096,6 @@ class AccountsAccountsTableTest(TestCase):
         show_archived = True
 
         filtered_sources = None
-        # from pudb import set_trace; set_trace()
         response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
         self.assertNotIn('agency', response['rows'][0])
 
@@ -2153,6 +2131,28 @@ class AccountsAccountsTableTest(TestCase):
         show_archived = True
 
         filtered_sources = None
-        # from pudb import set_trace; set_trace()
         response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('AdPro', response['rows'][0]['agency'])
+
+    def test_get_account_type(self, mock_api_query, mock_get_cursor):
+        allaccperm = authmodels.Permission.objects.get(codename="can_see_account_type")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
+
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        t = table.AccountsAccountsTable()
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('Sandbox', response['rows'][0]['account_type'])

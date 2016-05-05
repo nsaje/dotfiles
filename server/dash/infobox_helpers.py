@@ -496,7 +496,6 @@ def _retrieve_active_budgetlineitems(campaign, date):
 
 
 def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
-    campaign = ad_group_settings.ad_group.campaign
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
@@ -505,17 +504,17 @@ def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
         filter_by_sources(filtered_sources)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
 
-    return get_adgroup_running_status_class(autopilot_state, running_status,
-                                            state, campaign.is_in_landing())
+    return get_adgroup_running_status_class(autopilot_state, running_status, state,
+                                            ad_group_settings.landing_mode)
 
 
 def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
+    if is_in_landing:
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
     if state == dash.constants.AdGroupSettingsState.INACTIVE and\
        running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
         return dash.constants.InfoboxStatus.STOPPED
-
-    if is_in_landing:
-        return dash.constants.InfoboxStatus.LANDING_MODE
 
     if (running_status == dash.constants.AdGroupRunningStatus.INACTIVE and
             state == dash.constants.AdGroupSettingsState.ACTIVE) or\
@@ -530,13 +529,14 @@ def get_adgroup_running_status_class(autopilot_state, running_status, state, is_
     return dash.constants.InfoboxStatus.ACTIVE
 
 
-def get_campaign_running_status(campaign):
+def get_campaign_running_status(campaign, campaign_settings):
+    if campaign_settings.landing_mode:
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
     running_exists = dash.models.AdGroup.objects.filter(
         campaign=campaign
     ).filter_running().exists()
     if running_exists:
-        if campaign.is_in_landing():
-            return dash.constants.InfoboxStatus.LANDING_MODE
         return dash.constants.InfoboxStatus.ACTIVE
 
     active_exists = dash.models.AdGroup.objects.filter(

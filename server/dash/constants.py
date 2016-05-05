@@ -121,6 +121,24 @@ class PublisherStatus(ConstantBase):
     }
 
 
+class AccountType(ConstantBase):
+    UNKNOWN = 1
+    TEST = 2
+    SANDBOX = 3
+    PILOT = 4
+    SELF_MANAGED = 5
+    MANAGED = 6
+
+    _VALUES = {
+        UNKNOWN: 'Unknown',
+        TEST: 'Test',
+        SANDBOX: 'Sandbox',
+        PILOT: 'Pilot',
+        SELF_MANAGED: 'Self-managed',
+        MANAGED: 'Managed',
+    }
+
+
 class InfoboxLevel(ConstantBase):
     ADGROUP = 'adgroup'
     CAMPAIGN = 'campaign'

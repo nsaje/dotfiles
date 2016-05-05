@@ -362,7 +362,8 @@ class Account(models.Model):
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id)
+                models.Q(groups__user__id=user.id) |
+                models.Q(agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -617,6 +618,7 @@ class AccountSettings(SettingsBase):
         'archived',
         'default_account_manager',
         'default_sales_representative',
+        'account_type',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -638,6 +640,10 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
+    )
+    account_type = models.IntegerField(
+        default=constants.AccountType.UNKNOWN,
+        choices=constants.AccountType.get_choices()
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -2341,7 +2347,7 @@ class PublisherBlacklist(models.Model):
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
-    external_id = models.CharField(max_length=127, blank=False, null=True, verbose_name='External ID')
+    external_id = models.CharField(max_length=127, blank=True, null=True, verbose_name='External ID')
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,

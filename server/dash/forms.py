@@ -251,7 +251,7 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AccountAgencySettingsForm(forms.Form):
+class AccountAgencyAgencyForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
@@ -259,6 +259,9 @@ class AccountAgencySettingsForm(forms.Form):
     )
     default_account_manager = forms.IntegerField()
     default_sales_representative = forms.IntegerField(
+        required=False
+    )
+    account_type = forms.IntegerField(
         required=False
     )
     # this is a dict with custom validation
@@ -303,10 +306,24 @@ class AccountAgencySettingsForm(forms.Form):
 
         return sales_representative
 
+    def clean_account_type(self):
+        account_type = self.cleaned_data.get('account_type')
+
+        if account_type is None:
+            return None
+
+        if account_type not in constants.AccountType.get_all():
+            raise forms.ValidationError('Invalid account type.')
+
+        return account_type
+
     def clean_allowed_sources(self):
         err = forms.ValidationError('Invalid allowed source.')
 
         allowed_sources_dict = self.cleaned_data['allowed_sources']
+
+        if allowed_sources_dict is None:
+            return None
 
         if not isinstance(allowed_sources_dict, dict):
             raise err
