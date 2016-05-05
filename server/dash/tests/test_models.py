@@ -581,17 +581,17 @@ class AdGroupTestCase(TestCase):
     def test_filter_by_agency_manager(self):
         u = User.objects.get(pk=3)
         qs = models.AdGroup.objects.all().filter_by_user(u)
-        self.assertEqual(4, qs.count())
+        oldcount = qs.count()
+        self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(u)
         qs = models.AdGroup.objects.all().filter_by_user(u)
-        self.assertEqual(5, qs.count())
+        self.assertEqual(oldcount+1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
-
-        self.assertEqual(len(qs), 7)
+        self.assertEqual(len(qs), 8)
 
 
 class CampaignTestCase(TestCase):
@@ -600,17 +600,17 @@ class CampaignTestCase(TestCase):
     def test_filter_by_agency_manager(self):
         u = User.objects.get(pk=3)
         qs = models.Campaign.objects.all().filter_by_user(u)
-        self.assertEqual(2, qs.count())
+        oldcount = qs.count()
+        self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(u)
         qs = models.Campaign.objects.all().filter_by_user(u)
-        self.assertEqual(3, qs.count())
+        self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Campaign.objects.all().exclude_archived()
-
-        self.assertEqual(len(qs), 4)
+        self.assertEqual(len(qs), 5)
 
     def test_get_current_settings(self):
         campaign = models.Campaign.objects.get(pk=2)
@@ -641,14 +641,15 @@ class AccountTestCase(TestCase):
     def test_filter_by_agency_manager(self):
         u = User.objects.get(pk=3)
         qs = models.Account.objects.all().filter_by_user(u)
-        self.assertEqual(1, qs.count())
+        oldcount = qs.count()
+        self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(u)
 
-        self.assertEqual(2, qs.count())
+        self.assertEqual(oldcount+ 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 3)
+        self.assertEqual(len(qs), 4)
