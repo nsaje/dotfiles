@@ -1,15 +1,14 @@
-/* global module,beforeEach,it,describe,expect,inject,spyOn */
+/* global module,beforeEach,it,describe,expect,inject */
 'use strict';
 
 describe('AccountAccountCtrl', function () {
-    var $scope, $state, $q, api;
+    var $scope, $state, api;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, _$state_, _$q_) {
-            $q = _$q_;
+        inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
 
             $scope.isPermissionInternal = function () {
@@ -26,7 +25,7 @@ describe('AccountAccountCtrl', function () {
                         return {
                             finally: function () {},
                         };
-                    }
+                    },
                 };
             };
 
@@ -58,7 +57,7 @@ describe('AccountAccountCtrl', function () {
 
         it('gets allowed media sources', function () {
             expect($scope.getAllowedMediaSources()).toEqual([
-                {name: 'source 2', allowed: true, value: '2'}
+                {name: 'source 2', allowed: true, value: '2'},
             ]);
         });
 
