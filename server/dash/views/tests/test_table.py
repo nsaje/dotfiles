@@ -2096,7 +2096,6 @@ class AccountsAccountsTableTest(TestCase):
         show_archived = True
 
         filtered_sources = None
-        # from pudb import set_trace; set_trace()
         response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
         self.assertNotIn('agency', response['rows'][0])
 
@@ -2132,7 +2131,6 @@ class AccountsAccountsTableTest(TestCase):
         show_archived = True
 
         filtered_sources = None
-        # from pudb import set_trace; set_trace()
         response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('AdPro', response['rows'][0]['agency'])
 
