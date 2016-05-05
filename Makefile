@@ -1,6 +1,9 @@
 run:	## runs whole stack with docker-compose
 	docker-compose up --force-recreate -d
 
+run_devenv:     ## run only development environment (i.e. services that are needed by eins).
+	docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
+
 stop:	## stops the whole stack
 	docker-compose stop
 

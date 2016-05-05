@@ -1,0 +1,16 @@
+postgres:
+    ports:
+      - "5432:5432"
+
+# this is fake statsd that only prints stats on stdout
+statsd:
+    ports:
+      - "8125:8125/udp"
+
+telegraf:
+    ports:
+      - "8135:8135/udp"
+
+memcached:
+    ports:
+      - "11211:11211"

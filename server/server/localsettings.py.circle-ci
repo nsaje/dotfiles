@@ -182,8 +182,6 @@ R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_
 R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
 
-BIDDER_API_SIGN_KEY = ''
-
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 BIDDER_API_SIGN_KEY = Secret('').get()

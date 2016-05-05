@@ -19,16 +19,10 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
+from utils.test_helper import add_permissions
 
 
-class AgencyViewTestCase(TestCase):
-
-    def add_permissions(self, permissions):
-        for permission in permissions:
-            self.user.user_permissions.add(Permission.objects.get(codename=permission))
-
-
-class AdGroupSettingsTest(AgencyViewTestCase):
+class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -75,7 +69,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.add_permissions(['settings_view', 'can_view_retargeting_settings'])
+        add_permissions(self.user, ['settings_view', 'can_view_retargeting_settings'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
@@ -155,7 +149,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
             new_source_settings.save(req)
 
-        self.add_permissions(['settings_view'])
+        add_permissions(self.user, ['settings_view'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
@@ -183,7 +177,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         new_settings.landing_mode = True
         new_settings.save(req)
 
-        self.add_permissions(['settings_view'])
+        add_permissions(self.user, ['settings_view'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
@@ -217,7 +211,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
 
-            self.add_permissions([
+            add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
                 'can_toggle_ga_performance_tracking',
@@ -305,7 +299,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             self.settings_dict['settings']['cpc_cc'] = None
             self.settings_dict['settings']['daily_budget_cc'] = None
 
-            self.add_permissions(['settings_view', 'can_set_ad_group_max_cpc'])
+            add_permissions(self.user, ['settings_view', 'can_set_ad_group_max_cpc'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -352,7 +346,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             self.settings_dict['settings']['autopilot_state'] = 1
             self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
 
-            self.add_permissions(['settings_view', 'can_set_adgroup_to_auto_pilot'])
+            add_permissions(self.user, ['settings_view', 'can_set_adgroup_to_auto_pilot'])
             self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -392,7 +386,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
 
             self.settings_dict['settings']['id'] = 10
 
-            self.add_permissions([
+            add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
                 'can_toggle_ga_performance_tracking',
@@ -483,7 +477,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             self.settings_dict['settings']['tracking_code'] = 'asd=123'
             self.settings_dict['settings']['enable_ga_tracking'] = False
 
-            self.add_permissions(['settings_view', 'can_toggle_ga_performance_tracking'])
+            add_permissions(self.user, ['settings_view', 'can_toggle_ga_performance_tracking'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -504,7 +498,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
 
         self.settings_dict['settings']['target_regions'] = ["123"]
 
-        self.add_permissions(['settings_view'])
+        add_permissions(self.user, ['settings_view'])
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             json.dumps(self.settings_dict),
@@ -524,7 +518,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
 
         self.settings_dict['settings']['target_regions'] = ['US', '693']
 
-        self.add_permissions(['settings_view'])
+        add_permissions(self.user, ['settings_view'])
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             json.dumps(self.settings_dict),
@@ -548,7 +542,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
 
             self.settings_dict['settings']['end_date'] = '2015-05-02'
 
-            self.add_permissions(['settings_view'])
+            add_permissions(self.user, ['settings_view'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -568,7 +562,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
 
         self.settings_dict['settings']['id'] = 2
 
-        self.add_permissions(['settings_view'])
+        add_permissions(self.user, ['settings_view'])
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             json.dumps(self.settings_dict),
@@ -589,7 +583,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
-            self.add_permissions(['settings_view'])
+            add_permissions(self.user, ['settings_view'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -608,7 +602,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
 
-class AdGroupSettingsRetargetableAdgroupsTest(AgencyViewTestCase):
+class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -631,7 +625,7 @@ class AdGroupSettingsRetargetableAdgroupsTest(AgencyViewTestCase):
     def test_permissions(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.add_permissions(['settings_view'])
+        add_permissions(self.user, ['settings_view'])
         response = self._get_retargetable_adgroups(ad_group.id)
 
         self.assertEqual([], response['data']['retargetable_adgroups'])
@@ -639,7 +633,7 @@ class AdGroupSettingsRetargetableAdgroupsTest(AgencyViewTestCase):
     def test_essential(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.add_permissions(['settings_view', 'can_view_retargeting_settings'])
+        add_permissions(self.user, ['settings_view', 'can_view_retargeting_settings'])
         response = self._get_retargetable_adgroups(ad_group.id)
 
         self.assertTrue(response['success'])
@@ -663,7 +657,7 @@ class AdGroupSettingsRetargetableAdgroupsTest(AgencyViewTestCase):
         self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
 
 
-class AdGroupSettingsStateTest(AgencyViewTestCase):
+class AdGroupSettingsStateTest(TestCase):
     fixtures = ['test_models.yaml', 'test_adgroup_settings_state.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -688,7 +682,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.get(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             follow=True,
@@ -708,7 +702,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 1}),
@@ -727,7 +721,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 1}),
@@ -742,7 +736,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     def test_activate_without_budget(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 1}),
@@ -761,7 +755,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 1}),
@@ -776,7 +770,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     def test_inactivate(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 2}),
@@ -793,7 +787,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
     def test_inactivate_already_inactivated(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=2)
 
-        self.add_permissions(['can_control_ad_group_state_in_table'])
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 2}),
@@ -805,7 +799,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
 
-class AdGroupAgencyTest(AgencyViewTestCase):
+class AdGroupAgencyTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -857,7 +851,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
             )
             settings.save(request)
 
-        self.add_permissions([
+        add_permissions(self.user, [
             'ad_group_agency_tab_view',
             'can_toggle_adobe_performance_tracking'
         ])
@@ -935,7 +929,7 @@ class AdGroupAgencyTest(AgencyViewTestCase):
         })
 
 
-class AccountConversionPixelsTestCase(AgencyViewTestCase):
+class AccountConversionPixelsTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1088,7 +1082,7 @@ class AccountConversionPixelsTestCase(AgencyViewTestCase):
         self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
 
 
-class ConversionPixelTestCase(AgencyViewTestCase):
+class ConversionPixelTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1100,7 +1094,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
-        self.add_permissions(['archive_restore_entity'])
+        add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': True}),
@@ -1137,7 +1131,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest('id')
 
-        self.add_permissions(['archive_restore_entity'])
+        add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': conversion_pixel.id + 1}),
             json.dumps({'archived': True}),
@@ -1153,7 +1147,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
     def test_put_invalid_account(self):
         new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, slug='abcd')
 
-        self.add_permissions(['archive_restore_entity'])
+        add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': new_conversion_pixel.id}),
             json.dumps({'archived': True}),
@@ -1167,7 +1161,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
     def test_put_invalid_archived_value(self):
-        self.add_permissions(['archive_restore_entity'])
+        add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': 1}),
@@ -1181,7 +1175,7 @@ class ConversionPixelTestCase(AgencyViewTestCase):
         self.assertEqual('Invalid value', decoded_response['data']['message'])
 
 
-class CampaignConversionGoalsTestCase(AgencyViewTestCase):
+class CampaignConversionGoalsTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1633,7 +1627,7 @@ class CampaignConversionGoalsTestCase(AgencyViewTestCase):
         self.assertEqual('Invalid conversion pixel', decoded_response['data']['message'])
 
 
-class ConversionGoalTestCase(AgencyViewTestCase):
+class ConversionGoalTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1703,7 +1697,7 @@ class ConversionGoalTestCase(AgencyViewTestCase):
         self.assertEqual('Invalid conversion goal', decoded_response['data']['message'])
 
 
-class UserActivationTest(AgencyViewTestCase):
+class UserActivationTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1728,7 +1722,7 @@ class UserActivationTest(AgencyViewTestCase):
 
         data = {}
 
-        self.add_permissions(['account_agency_access_permissions'])
+        add_permissions(self.user, ['account_agency_access_permissions'])
         response = self.client.post(
             reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
             data,
@@ -1753,7 +1747,7 @@ class UserActivationTest(AgencyViewTestCase):
 
         data = {}
 
-        self.add_permissions(['account_agency_access_permissions'])
+        add_permissions(self.user, ['account_agency_access_permissions'])
         response = self.client.post(
             reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
             data,
@@ -1764,7 +1758,7 @@ class UserActivationTest(AgencyViewTestCase):
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
 
 
-class CampaignAgencyTest(AgencyViewTestCase):
+class CampaignAgencyTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1787,7 +1781,7 @@ class CampaignAgencyTest(AgencyViewTestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
-        self.add_permissions(['campaign_agency_view'])
+        add_permissions(self.user, ['campaign_agency_view'])
         response = self.client.get(
             '/api/campaigns/1/agency/'
         )
@@ -1821,7 +1815,7 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
-        self.add_permissions(['campaign_agency_view'])
+        add_permissions(self.user, ['campaign_agency_view'])
 
         response = self.client.put(
             '/api/campaigns/1/agency/',
@@ -1854,7 +1848,7 @@ class CampaignAgencyTest(AgencyViewTestCase):
         )
 
 
-class CampaignSettingsTest(AgencyViewTestCase):
+class CampaignSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1930,7 +1924,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_added(self, p1, p2, p3):
-        self.add_permissions([
+        add_permissions(self.user, [
             'can_see_campaign_goals'
         ])
 
@@ -2011,7 +2005,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
             value=Decimal('0.1')
         )
 
-        self.add_permissions([
+        add_permissions(self.user, [
             'can_see_campaign_goals'
         ])
 
@@ -2055,7 +2049,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
             campaign_id=1,
         )
 
-        self.add_permissions([
+        add_permissions(self.user, [
             'can_see_campaign_goals'
         ])
 
@@ -2124,7 +2118,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.add_permissions(['can_see_campaign_goals'])
+        add_permissions(self.user, ['can_see_campaign_goals'])
 
         convpix = models.ConversionPixel.objects.create(
             account=ad_group.campaign.account,
@@ -2161,16 +2155,13 @@ class CampaignSettingsTest(AgencyViewTestCase):
 
 
 class AccountAgencyTest(TestCase):
-    fixtures = ['test_views.yaml', 'test_account_agency.yaml']
+    fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
     @classmethod
     def setUpClass(cls):
         super(AccountAgencyTest, cls).setUpClass()
-
-        permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=1)
-        user.user_permissions.add(permission)
-        user.save()
+        add_permissions(user, ['campaign_settings_sales_rep'])
 
     def setUp(self):
         account = models.Account.objects.get(pk=1)
@@ -2183,20 +2174,26 @@ class AccountAgencyTest(TestCase):
     def _get_client_with_permissions(self, permissions_list):
         password = 'secret'
         user = User.objects.get(pk=2)
-
-        for perm in permissions_list:
-            permission_object = Permission.objects.get(codename=perm)
-            user.user_permissions.add(permission_object)
+        add_permissions(user, permissions_list)
         user.save()
-
         client = Client()
         client.login(username=user.email, password=password)
         return client
 
     def _get_form_with_allowed_sources_dict(self, allowed_sources_dict):
-        form = forms.AccountAgencySettingsForm()
+        form = forms.AccountAgencyAgencyForm()
         form.cleaned_data = {'allowed_sources': allowed_sources_dict}
         return form
+
+    def _put_account_agency(self, client, settings, account_id):
+        response = client.put(
+            reverse('account_agency', kwargs={'account_id': account_id}),
+            json.dumps({
+                'settings': settings,
+            }),
+            content_type='application/json',
+        )
+        return response, response.json()
 
     def test_permissions(self):
         url = reverse('account_agency', kwargs={'account_id': 0})
@@ -2209,7 +2206,7 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
-        client = self._get_client_with_permissions(['account_agency_view'])
+        client = self._get_client_with_permissions(['account_agency_view', 'can_modify_account_type'])
 
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1}),
@@ -2222,6 +2219,160 @@ class AccountAgencyTest(TestCase):
             'name': 'test account 1',
             'default_sales_representative': '3',
             'default_account_manager': '2',
+            'account_type': 3,
+            'id': '1',
+            'archived': False
+        })
+
+    def test_get_as_agency_manager(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'id': '1000',
+            'archived': False
+        })
+
+        add_permissions(user, ['can_set_account_sales_representative'])
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'id': '1000',
+            'archived': False,
+        })
+
+        add_permissions(user, ['can_modify_allowed_sources'])
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True}},
+            'id': '1000',
+            'archived': False,
+        })
+
+        add_permissions(user, ['can_modify_account_type'])
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True}},
+            'account_type': constants.AccountType.UNKNOWN,
+            'id': '1000',
+            'archived': False,
+        })
+
+    def test_put_as_agency_manager(self):
+        client = self._get_client_with_permissions([])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+        }
+
+        response, content = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401)
+
+        add_permissions(user, ['can_manage_agency'])
+
+        response, content = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+    def test_put_as_agency_manager_sales_rep(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'default_sales_representative': '3',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 400, msg='Designated sales rep doesn''t have permission')
+
+        add_permissions(User.objects.get(pk=3), ['campaign_settings_sales_rep'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401, 'agency manager cannot set sales rep. without permission')
+
+        add_permissions(user, ['can_set_account_sales_representative'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+    def test_put_as_agency_manager_sources(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'allowed_sources': {
+                '1': {'allowed': True},
+            },
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401, msg='Agency manager doesn''t have permission for changing allowed sources')
+
+        add_permissions(user, ['can_modify_allowed_sources'])
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_no_permission_can_modify_account_type(self):
+        client = self._get_client_with_permissions(['account_agency_view'])
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'test account 1',
+            'default_sales_representative': '3',
+            'default_account_manager': '2',
             'id': '1',
             'archived': False
         })
@@ -2230,6 +2381,7 @@ class AccountAgencyTest(TestCase):
     def test_put(self, mock_log_useraction):
         client = self._get_client_with_permissions([
             'account_agency_view',
+            'can_modify_account_type',
             'can_modify_allowed_sources'
         ])
 
@@ -2240,6 +2392,7 @@ class AccountAgencyTest(TestCase):
                     'name': 'changed name',
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
+                    'account_type': '4',
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
@@ -2263,6 +2416,7 @@ class AccountAgencyTest(TestCase):
             'archived': False,
             'default_sales_representative': User.objects.get(pk=1),
             'default_account_manager': User.objects.get(pk=3),
+            'account_type': 4,
             'name': 'changed name',
         })
         mock_log_useraction.assert_called_with(
@@ -2270,6 +2424,32 @@ class AccountAgencyTest(TestCase):
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
             account=account
         )
+
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put_no_permission_can_modify_account_type(self, mock_log_useraction):
+        client = self._get_client_with_permissions([
+            'account_agency_view',
+            'can_modify_allowed_sources'
+        ])
+
+        response = client.put(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            json.dumps({
+                'settings': {
+                    'name': 'changed name',
+                    'default_sales_representative': '1',
+                    'default_account_manager': '3',
+                    'account_type': '4',
+                    'id': '1',
+                    'allowed_sources': {
+                        '1': {'allowed': True}
+                    }
+                }
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 401)
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_no_permission_can_modify_allowed_sources(self, mock_log_useraction):
@@ -2326,7 +2506,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 4)
+        self.assertEqual(len(settings_dict), 5)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertIn('old_value', settings_dict['name'])
@@ -2339,7 +2519,7 @@ class AccountAgencyTest(TestCase):
         settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
 
         self.assertIsNotNone(settings_dict)
-        self.assertEqual(len(settings_dict), 4)
+        self.assertEqual(len(settings_dict), 5)
         self.assertIn('name', settings_dict['name'])
         self.assertIn('value', settings_dict['name'])
         self.assertNotIn('old_value', settings_dict['name'])
@@ -2348,7 +2528,7 @@ class AccountAgencyTest(TestCase):
         expected_changes_strings = [
             'Created settings',
             'Sales Representative set to "superuser@test.com"',
-            'Sales Representative set to "user@test.com", Account Manager set to "user@test.com"',
+            'Account Type set to "Pilot", Sales Representative set to "user@test.com", Account Manager set to "user@test.com"',
             '',
             'some text',
             'Sales Representative set to "superuser@test.com", some text'

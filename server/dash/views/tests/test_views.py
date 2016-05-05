@@ -54,11 +54,12 @@ class UserTest(TestCase):
 
         response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -18000.0
@@ -79,6 +80,7 @@ class UserTest(TestCase):
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -14400.0
@@ -95,11 +97,12 @@ class UserTest(TestCase):
 
         response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -14400.0
@@ -327,9 +330,9 @@ class AdGroupSourceSettingsTest(TestCase):
             ad_group=self.ad_group)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
-    @patch('automation.campaign_stop.get_max_settable_daily_budget')
-    def test_daily_budget_over_max_settable(self, mock_max_daily_budget):
-        mock_max_daily_budget.return_value = decimal.Decimal('500')
+    @patch('automation.campaign_stop.get_max_settable_source_budget')
+    def test_daily_budget_over_max_settable(self, mock_max_settable_budget):
+        mock_max_settable_budget.return_value = decimal.Decimal('500')
         self._set_ad_group_end_date(days_delta=3)
         self._set_campaign_automatic_campaign_stop(False)
         response = self.client.put(
@@ -441,6 +444,7 @@ class CampaignAdGroups(TestCase):
 
         self.assertIsNotNone(ad_group_settings.id)
         self.assertIsNotNone(ad_group_settings.changes_text)
+        self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
 
@@ -2747,7 +2751,7 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertEqual(header['title'], u'test adgroup 1 Čžš')
         self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
@@ -2857,7 +2861,7 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertEqual(header['title'], u'test adgroup 1 Čžš')
         self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\

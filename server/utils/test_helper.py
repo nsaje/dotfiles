@@ -2,7 +2,6 @@ import datetime
 import httplib
 import operator
 
-import codecs
 import mock
 import unittest
 
@@ -11,6 +10,15 @@ from django.db import DEFAULT_DB_ALIAS
 from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
+from django.contrib.auth.models import Permission
+
+
+def add_permissions(user, permissions):
+    ''' utility intended to be used in unit tests only '''
+    for permission in permissions:
+        user.user_permissions.add(
+            Permission.objects.get(codename=permission)
+        )
 
 
 class MockDateTime(datetime.datetime):

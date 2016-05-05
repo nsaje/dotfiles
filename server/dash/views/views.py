@@ -138,19 +138,19 @@ class User(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def get_dict(self, user):
-        result = {}
+        if not user:
+            return {}
 
-        if user:
-            result = {
-                'id': str(user.pk),
-                'email': user.email,
-                'name': user.get_full_name(),
-                'permissions': user.get_all_permissions_with_access_levels(),
-                'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
-                    datetime.datetime.utcnow(), is_dst=True).total_seconds()
-            }
-
-        return result
+        agency = user.agency_set.first()
+        return {
+            'id': str(user.pk),
+            'email': user.email,
+            'name': user.get_full_name(),
+            'agency': agency.id if agency else None,
+            'permissions': user.get_all_permissions_with_access_levels(),
+            'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
+                datetime.datetime.utcnow(), is_dst=True).total_seconds()
+        }
 
 
 @login_required
@@ -262,7 +262,7 @@ class AdGroupOverview(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         header = {
-            'title': ad_group_settings.ad_group_name,
+            'title': ad_group.name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, filtered_sources),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
@@ -505,6 +505,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         new_settings.target_devices = campaign_settings.target_devices
         new_settings.target_regions = campaign_settings.target_regions
+        new_settings.ad_group_name = ad_group.name
+
         return new_settings
 
     def _add_media_sources(self, ad_group, ad_group_settings, request):
@@ -554,7 +556,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         header = {
             'title': campaign.name,
-            'active': infobox_helpers.get_campaign_running_status(campaign),
+            'active': infobox_helpers.get_campaign_running_status(campaign, campaign_settings),
             'level': constants.InfoboxLevel.CAMPAIGN,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }
@@ -719,7 +721,7 @@ class AccountOverview(api_common.BaseApiView):
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
-        basic_settings = self._basic_settings(account)
+        basic_settings = self._basic_settings(request.user, account)
 
         performance_settings = self._performance_settings(account, request.user)
         for setting in performance_settings[1:]:
@@ -733,7 +735,7 @@ class AccountOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, account):
+    def _basic_settings(self, user, account):
         settings = []
 
         count_campaigns = infobox_helpers.count_active_campaigns(account)
@@ -757,6 +759,13 @@ class AccountOverview(api_common.BaseApiView):
             tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
+
+        if user.has_perm('zemauth.can_see_account_type'):
+            account_type_setting = infobox_helpers.OverviewSetting(
+                'Account Type:',
+                constants.AccountType.get_text(account_settings.account_type)
+            )
+            settings.append(account_type_setting.as_dict())
 
         all_users = account.users.all()
         if all_users.count() == 0:
@@ -1037,6 +1046,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        campaign_settings = ad_group.campaign.get_current_settings()
+
         errors = {}
 
         state_form = forms.AdGroupSourceSettingsStateForm(resource)
@@ -1051,10 +1063,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
-        if ad_group.campaign.is_in_landing():
-            for key in resource.keys():
-                errors.update({key: 'Not allowed'})
-
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
         if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
@@ -1066,17 +1074,36 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        campaign_settings = ad_group.campaign.get_current_settings()
-        if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:
-            max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
-            if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
-                errors.update({
-                    'daily_budget_cc': [
-                        'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
-                            max_daily_budget=max_daily_budget
-                        )
-                    ]
-                })
+        if campaign_settings.landing_mode:
+            for key in resource.keys():
+                errors.update({key: 'Not allowed'})
+        elif campaign_settings.automatic_campaign_stop:
+            if 'daily_budget_cc' in resource:
+                new_daily_budget = decimal.Decimal(resource['daily_budget_cc'])
+                max_daily_budget = campaign_stop.get_max_settable_source_budget(
+                    ad_group_source,
+                    new_daily_budget,
+                    ad_group.campaign,
+                    ad_group_source_settings,
+                    ad_group_settings,
+                    campaign_settings
+                )
+                if max_daily_budget is not None and new_daily_budget > max_daily_budget:
+                    errors.update({
+                        'daily_budget_cc': [
+                            'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
+                                max_daily_budget=max_daily_budget
+                            )
+                        ]
+                    })
+
+            if 'state' in resource:
+                can_enable_media_source = campaign_stop.can_enable_media_source(
+                    ad_group_source, ad_group.campaign, campaign_settings)
+                if not can_enable_media_source:
+                    errors.update({
+                        'state': ['Please add additional budget to your campaign to make changes.']
+                    })
 
         if errors:
             raise exc.ValidationError(errors=errors)
@@ -1111,8 +1138,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source,
                 ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
+                campaign_settings,
                 request.user,
-                allowed_sources
+                allowed_sources,
+                campaign_stop.can_enable_media_source(ad_group_source, ad_group.campaign, campaign_settings)
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text,
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)

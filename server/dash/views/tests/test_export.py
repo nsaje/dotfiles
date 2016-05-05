@@ -8,6 +8,7 @@ import time
 
 from django import test
 from django import http
+from django.contrib.auth.models import Permission
 
 from dash.views import export
 import dash.models
@@ -464,15 +465,19 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
+
+        user = models.User.objects.get(pk=2)
+        user.user_permissions.add(Permission.objects.get(codename='can_see_account_type'))
+        user.save()
+        request.user = user
 
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
             'Start Date,End Date,Account,Status (' + time.strftime('%Y-%m-%d') + ')'
-            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
-            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.230,203,200000\r\n'
+            ',Account Type,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Self-managed,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -493,19 +498,23 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
         request.GET['order'] = '-impressions'
+
+        user = models.User.objects.get(pk=2)
+        user.user_permissions.add(Permission.objects.get(codename='can_see_account_type'))
+        user.save()
+        request.user = user
 
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
             'Start Date,End Date,Account,Campaign,Status (' + time.strftime('%Y-%m-%d') + ')'
-            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
+            ',Account Type,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,'
-            'Inactive,20.230,203,200000\r\n2014-06-30,2014-07-01,'
+            'Inactive,Self-managed,20.230,203,200000\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r\n'
+            ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Self-managed,10.230,103,100000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -526,22 +535,26 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
         request.GET['order'] = 'impressions'
+
+        user = models.User.objects.get(pk=2)
+        user.user_permissions.add(Permission.objects.get(codename='can_see_account_type'))
+        user.save()
+        request.user = user
 
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
             'Start Date,End Date,Account,Campaign,Ad Group,Status ('
-            '' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
+            '' + time.strftime('%Y-%m-%d') + '),Account Type,Average CPC,Clicks,'
             'Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
             ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1'
             ',test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',Inactive,10.230,103,100000\r\n2014-06-30,2014-07-01'
+            ',Inactive,Self-managed,10.230,103,100000\r\n2014-06-30,2014-07-01'
             ',test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test campaign 2,test adgroup 2,Inactive,20.230,203,200000\r\n'
+            ',test campaign 2,test adgroup 2,Inactive,Self-managed,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
