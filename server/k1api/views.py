@@ -321,6 +321,7 @@ def get_content_ad_ad_group(request):
 
     return _response_ok(list(content_ads))
 
+
 @csrf_exempt
 def get_publishers_blacklist(request):
     _validate_signature(request)
