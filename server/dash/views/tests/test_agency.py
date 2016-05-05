@@ -2236,11 +2236,10 @@ class AccountAgencyTest(TestCase):
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
             follow=True
-        )
+        ).json()
 
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertDictEqual(content['data']['settings'], {
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
             'name': 'Chuck ads',
             'default_account_manager': None,
             'id': '1000',
@@ -2253,11 +2252,10 @@ class AccountAgencyTest(TestCase):
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
             follow=True
-        )
+        ).json()
 
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertDictEqual(content['data']['settings'], {
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
@@ -2271,11 +2269,10 @@ class AccountAgencyTest(TestCase):
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
             follow=True
-        )
+        ).json()
 
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertDictEqual(content['data']['settings'], {
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
@@ -2290,11 +2287,10 @@ class AccountAgencyTest(TestCase):
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
             follow=True
-        )
+        ).json()
 
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertDictEqual(content['data']['settings'], {
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
