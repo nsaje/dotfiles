@@ -2481,18 +2481,9 @@ class CreditLineItem(FootprintModel):
         )
 
     def __unicode__(self):
-        if self.account is not None:
-            parent_id = self.account.id
-        else:
-            parent_id = self.agency.id
-
-        if self.account is not None:
-            parent_name = unicode(self.account)
-        else:
-            parent_name = unicode(self.agency)
-
+        parent = self.agency or self.account
         return u'{} - {} - ${} - from {} to {}'.format(
-            parent_id, parent_name, self.amount,
+            parent.id, unicode(parent), self.amount,
             self.start_date, self.end_date)
 
     def is_editable(self):
