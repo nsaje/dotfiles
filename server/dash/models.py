@@ -511,7 +511,8 @@ class Campaign(models.Model, PermissionMixin):
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id) |
                 models.Q(account__users__id=user.id) |
-                models.Q(account__groups__user__id=user.id)
+                models.Q(account__groups__user__id=user.id) |
+                models.Q(account__agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -1419,7 +1420,8 @@ class AdGroup(models.Model):
                 models.Q(campaign__users__id=user.id) |
                 models.Q(campaign__groups__user__id=user.id) |
                 models.Q(campaign__account__users__id=user.id) |
-                models.Q(campaign__account__groups__user__id=user.id)
+                models.Q(campaign__account__groups__user__id=user.id) |
+                models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -2350,7 +2352,7 @@ class PublisherBlacklist(models.Model):
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
-    external_id = models.CharField(max_length=127, blank=False, null=True, verbose_name='External ID')
+    external_id = models.CharField(max_length=127, blank=True, null=True, verbose_name='External ID')
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,

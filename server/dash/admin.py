@@ -1299,6 +1299,7 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_dt',
         'everywhere',
+        'external_id',
         'ad_group_id',
         'campaign_id',
         'account_id',
