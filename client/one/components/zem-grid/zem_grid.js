@@ -1,31 +1,27 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridUtil', 'zemDataSourceService', function (config, zemGridConstants, zemGridUtil, zemDataSourceService) {
+oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', function (config, zemGridConstants, zemGridService) {
     return {
         restrict: 'E',
         replace: true,
         scope: {},
         controllerAs: 'ctrl',
-        bindToController: {},
+        bindToController: {
+            dataSource: '=',
+        },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', function ($scope) {
-            var ctrl = this;
+        controller: ['$scope', 'zemGridPubSub', function ($scope, zemGridPubSub) {
 
-            ctrl.grid = {header:{columns:['a','b']}} // FIXME: header watch not working without this
-            ctrl.dataSource = new zemDataSourceService();
-            ctrl.broadcastEvent = broadcastEvent;
+            var ctrl = this;
+            ctrl.pubsub = zemGridPubSub.createInstance($scope);
 
             activate();
 
             function activate () {
-                zemGridUtil.load(ctrl.dataSource).then(function (grid) {
+                zemGridService.load(ctrl.dataSource).then(function (grid) {
                     ctrl.grid = grid;
                 });
-            }
-
-            function broadcastEvent (event, data) {
-                $scope.$broadcast(event, data);
             }
         }],
     };

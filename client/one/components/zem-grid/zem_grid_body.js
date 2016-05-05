@@ -6,29 +6,31 @@ oneApp.directive('zemGridBody', ['$timeout', 'config', 'zemGridConstants', funct
     return {
         restrict: 'E',
         replace: true,
-        require: '^zemGrid',
         scope: {},
         controllerAs: 'ctrl',
         bindToController: {
             grid: '=',
+            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
-        link: function (scope, element, attributes, zemGridController) {
+        link: function (scope, element) {
             var lastScrollLeft = 0;
             var lastScrollTop = 0;
+            var pubsub = scope.ctrl.pubsub;
+
             function handleScroll (event) {
                 if (lastScrollLeft !== event.target.scrollLeft) {
                     lastScrollLeft = event.target.scrollLeft;
-                    zemGridController.broadcastEvent(
-                        zemGridConstants.events.BODY_HORIZONTAL_SCROLL,
+                    pubsub.notify(
+                        pubsub.EVENTS.BODY_HORIZONTAL_SCROLL,
                         event.target.scrollLeft
                     );
                 }
 
                 if (lastScrollTop !== event.target.scrollTop) {
                     lastScrollTop = this.scrollTop;
-                    zemGridController.broadcastEvent(
-                        zemGridConstants.events.BODY_VERTICAL_SCROLL,
+                    pubsub.notify(
+                        pubsub.EVENTS.BODY_VERTICAL_SCROLL,
                         event.target.scrollTop
                     );
                 }

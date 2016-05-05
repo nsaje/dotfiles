@@ -13,7 +13,7 @@ oneApp.directive('zemGridRow', ['config', function (config) {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridUtil', function ($scope, zemGridConstants, zemGridUtil) {
+        controller: ['$scope', 'zemGridConstants', 'zemGridService', function ($scope, zemGridConstants, zemGridUtil) {
             $scope.constants = zemGridConstants;
 
             this.loadMore = function () {

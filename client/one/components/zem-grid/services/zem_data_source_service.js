@@ -1,11 +1,21 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridUtil', function ($rootScope, $http, $q) {
+oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) {
+
+    var EVENTS = {
+        PRE_GET_DATA: 'pre-get-data',
+        POST_GET_DATA: 'post-get-data',
+        PRE_GET_META_DATA: 'pre-get-meta-data',
+        POST_GET_META_DATA: 'post-get-meta-data',
+        PRE_UPDATE: 'pre-update',
+        POST_UPDATE: 'post-update',
+    };
 
     function DataSource () {
         var ds = this;
 
+        this.EVENTS = EVENTS;
         this.breakdowns = ['ad_group', 'age', 'date'];
         this.endpoint = '/api/stats/testdata/';
         this.defaultPagination = [2, 3, 5];
@@ -68,7 +78,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridUti
             current.pagination.size += breakdown.pagination.size;
         }
 
-        function getMetaData () { /* TODO */ }
+        function getMetaData () { /* TODO */
+        }
 
         function getData (breakdown, size) { // level, page
             var config = prepareBreakdownConfig(breakdown, size);
@@ -85,7 +96,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridUti
             return deferred.promise;
         }
 
-        function updateData () { /* TODO */ }
+        function updateData () { /* TODO */
+        }
 
         function registerListener (event, scope, callback) {
             var handler = $rootScope.$on(event, callback);
@@ -97,14 +109,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridUti
         }
     }
 
-    DataSource.EVENTS = {
-        PRE_GET_DATA: 'pre-get-data',
-        POST_GET_DATA: 'post-get-data',
-        PRE_GET_META_DATA: 'pre-get-meta-data',
-        POST_GET_META_DATA: 'post-get-meta-data',
-        PRE_UPDATE: 'pre-update',
-        POST_UPDATE: 'post-update',
+    return {
+        createInstance: function () {
+            return new DataSource();
+        },
     };
-
-    return DataSource;
 }]);

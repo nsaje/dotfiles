@@ -10,9 +10,12 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
         controllerAs: 'ctrl',
         bindToController: {
             grid: '=',
+            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function postLink (scope, element) {
+            var pubsub = scope.ctrl.pubsub;
+
             scope.$watch('ctrl.grid.header', function (header) {
                 if (header) {
                     $timeout(function () {
@@ -28,7 +31,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
                 }
             });
 
-            scope.$on(zemGridConstants.events.BODY_HORIZONTAL_SCROLL, function (event, value) {
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, value) {
                 var leftOffset = -1 * value;
                 var translateCssProperty = 'translateX(' + leftOffset + 'px)';
 
@@ -40,7 +43,6 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
             });
         },
         controller: [function () {
-            console.log(this.grid.header.columns);
             this.getCellStyle = function (index) {
                 var width = 'auto';
                 if (this.grid.ui.columnWidths[index]) {

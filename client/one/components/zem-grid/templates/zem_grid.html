@@ -1,12 +1,12 @@
 <div>
     <div class="zem-grid-debug-container">
-        <zem-grid-debug></zem-grid-debug>
+        <zem-grid-debug grid="ctrl.grid" pubsub="ctrl.pubsub"></zem-grid-debug>
     </div>
     <div class="zem-grid-container">
-        <div class="zem-grid">
-            <zem-grid-header grid="ctrl.grid"></zem-grid-header>
-            <zem-grid-body grid="ctrl.grid"></zem-grid-body>
-            <zem-grid-footer grid="ctrl.grid"></zem-grid-footer>
+        <div class="zem-grid" ng-if="ctrl.grid">
+            <zem-grid-header grid="ctrl.grid" pubsub="ctrl.pubsub"></zem-grid-header>
+            <zem-grid-body grid="ctrl.grid" pubsub="ctrl.pubsub"></zem-grid-body>
+            <zem-grid-footer grid="ctrl.grid" pubsub="ctrl.pubsub"></zem-grid-footer>
         </div>
     </div>
 </div>
