@@ -616,7 +616,17 @@ class CampaignTestCase(TestCase):
 
 
 class AccountTestCase(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
+
+    def test_filter_by_agency_manager(self):
+        u = User.objects.get(pk=3)
+        qs = models.Account.objects.all().filter_by_user(u)
+        self.assertEqual(1, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+
+        self.assertEqual(2, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
