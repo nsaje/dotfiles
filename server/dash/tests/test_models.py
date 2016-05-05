@@ -576,7 +576,17 @@ class ArchiveRestoreTestCase(TestCase):
 
 
 class AdGroupTestCase(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
+
+    def test_filter_by_agency_manager(self):
+        u = User.objects.get(pk=3)
+        qs = models.AdGroup.objects.all().filter_by_user(u)
+        self.assertEqual(4, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+        qs = models.AdGroup.objects.all().filter_by_user(u)
+        self.assertEqual(5, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
@@ -585,7 +595,17 @@ class AdGroupTestCase(TestCase):
 
 
 class CampaignTestCase(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
+
+    def test_filter_by_agency_manager(self):
+        u = User.objects.get(pk=3)
+        qs = models.Campaign.objects.all().filter_by_user(u)
+        self.assertEqual(2, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+        qs = models.Campaign.objects.all().filter_by_user(u)
+        self.assertEqual(3, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Campaign.objects.all().exclude_archived()

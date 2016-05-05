@@ -14,3 +14,21 @@
         modified_by: 1
     model: dash.account
     pk: 1000
+
+-   fields:
+        name: Le chuck
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+        account: 1000
+    model: dash.campaign
+    pk: 1000
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1000
+        name: 'Mobile'
+    model: dash.adgroup
+    pk: 1000
