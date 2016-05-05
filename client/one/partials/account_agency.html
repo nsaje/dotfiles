@@ -63,43 +63,31 @@
 
         <div class="form-group" ng-class="{'has-error': !!errors.allowedSources}" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
             <label for="media-sources-options-choices" class="col-xs-2 control-label"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_allowed_sources')" popover-placement="right"></zem-internal-feature> Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
-
-
             <div class="col-xs-10">
-
                 <div class="row media-source-control-row">
                     <div class="col-xs-2"><span class="control-label">Available</span></div>
                     <div class="col-xs-2"><span class="control-label">Allowed</span></div>
                 </div>
-
-
                 <div class="row media-source-control-row">
-
                     <div class="col-xs-2">
-
-                        <select ng-model="selectedMediaSouces.available" multiple="" class="media-source-select">
+                        <select ng-model="selectedMediaSources.available" multiple="" class="media-source-select">
                             <option ng-repeat="mediaSource in getAvailableMediaSources() | orderBy:mediaSourcesOrderByProp" value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' : '(unreleased)'}}</option>
                         </select>
                     </div>
-
                     <div class="col-xs-2">
-
-                        <select ng-model="selectedMediaSouces.allowed" multiple="" class="media-source-select">
+                        <select ng-model="selectedMediaSources.allowed" multiple="" class="media-source-select">
                             <option ng-repeat="mediaSource in getAllowedMediaSources() | orderBy:mediaSourcesOrderByProp" value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' : '(unreleased)'}}</option>
                         </select>
                     </div>
-
                     <div class="col-xs-3">
                         <label ng-repeat="error in errors.allowedSources" class="control-label error feedback-text" for="service-fee-select">{{ error }}</label>
                     </div>
                 </div>
-
                 <div class="row media-source-control-row">
                     <div class="col-xs-2">
                         <div class="btn-group btn-group-justified" role="group">
                             <a ng-click="addToAllowedMediaSources()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-right"></span></a>
                         </div>
-
                     </div>
                     <div class="col-xs-2">
                         <div class="btn-group btn-group-justified" role="group">
@@ -168,7 +156,6 @@
                         <button type="button" class="btn btn-default" ng-click="addUser()">Add new user</button>
                         <div class="loader" ng-show="addUserRequestInProgress"></div>
                     </div>
-                    <br />
                     <div class="col-xs-12" ng-show="addUserErrors">
                         <label class="error">{{addUserErrors.message}}</label>
                         <label ng-show="addUserErrors.conflict" class="error"></label>

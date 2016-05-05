@@ -890,21 +890,29 @@ class AccountAgency(api_common.BaseApiView):
     def save_settings(self, request, account, form):
         with transaction.atomic():
             if form.is_valid():
+                if 'default_sales_representative' in form.cleaned_data and\
+                        form.cleaned_data['default_sales_representative'] is not None and not (
+                        request.user.has_perm('zemauth.account_agency_view') or
+                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
+                    raise exc.AuthorizationError()
+
                 self.set_account(account, form.cleaned_data)
 
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
+
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None and\
+                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                    raise exc.AuthorizationError()
 
                 if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
                     if not request.user.has_perm('zemauth.can_modify_account_type'):
                         raise exc.AuthorizationError()
                     settings.account_type = form.cleaned_data['account_type']
 
-                if 'allowed_sources' in form.cleaned_data \
-                        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                    raise exc.AuthorizationError()
-
-                if 'allowed_sources' in form.cleaned_data:
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None:
                     self.set_allowed_sources(
                         settings,
                         account,
@@ -1048,10 +1056,13 @@ class AccountAgency(api_common.BaseApiView):
                 'default_account_manager':
                     str(settings.default_account_manager.id)
                     if settings.default_account_manager is not None else None,
-                'default_sales_representative':
-                    str(settings.default_sales_representative.id)
-                    if settings.default_sales_representative is not None else None,
             }
+
+            if request.user.has_perm('zemauth.account_agency_view') or\
+                    request.user.has_perm('zemauth.can_set_account_sales_representative'):
+                result['default_sales_representative'] =\
+                    str(settings.default_sales_representative.id) if\
+                    settings.default_sales_representative is not None else None
             if request.user.has_perm('zemauth.can_modify_account_type'):
                 result['account_type'] = settings.account_type
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
