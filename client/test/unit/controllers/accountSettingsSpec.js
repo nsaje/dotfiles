@@ -1,25 +1,30 @@
+/* global module,beforeEach,it,describe,expect,inject,spyOn */
 'use strict';
 
 describe('AccountAccountCtrl', function () {
-    var $modalStack, $scope, $state, $q, api;
+    var $scope, $state, $q, api;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, _$state_, _$q_, _$modalStack_) {
+        inject(function ($rootScope, $controller, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function () { return true; };
-            $scope.hasPermission = function () { return true; };
+            $scope.isPermissionInternal = function () {
+                return true;
+            };
+            $scope.hasPermission = function () {
+                return true;
+            };
             $scope.account = {id: 1};
 
             var mockApiFunc = function () {
                 return {
                     then: function () {
                         return {
-                            finally: function () {}
+                            finally: function () {},
                         };
                     }
                 };
@@ -27,17 +32,15 @@ describe('AccountAccountCtrl', function () {
 
             api = {
                 accountAgency: {
-                    get: mockApiFunc
+                    get: mockApiFunc,
                 },
                 accountUsers: {
-                    list: mockApiFunc
-                }
+                    list: mockApiFunc,
+                },
             };
 
             $state = _$state_;
             $state.params = {id: 1};
-
-            $modalStack = _$modalStack_;
 
             $controller('AccountAccountCtrl', {$scope: $scope, api: api});
         });
@@ -48,9 +51,9 @@ describe('AccountAccountCtrl', function () {
             $scope.settings.allowedSources = {
                 '1': {name: 'source 1'},
                 '2': {name: 'source 2', allowed: true},
-                '3': {name: 'source 3', allowed: false}
+                '3': {name: 'source 3', allowed: false},
             };
-            $scope.selectedMediaSources = {allowed:[], available:[]};
+            $scope.selectedMediaSources = {allowed: [], available: []};
         });
 
         it('gets allowed media sources', function () {
