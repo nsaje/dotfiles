@@ -2294,7 +2294,7 @@ class AccountAgencyTest(TestCase):
             'archived': False,
         })
 
-    def test_put_as_agency_manager_1(self):
+    def test_put_as_agency_manager(self):
         client = self._get_client_with_permissions([])
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
@@ -2308,6 +2308,36 @@ class AccountAgencyTest(TestCase):
 
         response, content = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 401)
+
+        add_permissions(user, ['can_manage_agency'])
+
+        response, content = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_put_as_agency_manager_sales_rep(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'default_sales_representative': '3',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 400, msg='Designated sales rep doesn''t have permission')
+
+        add_permissions(User.objects.get(pk=3), ['campaign_settings_sales_rep'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401, 'user cannot set sales rep. without permission')
+
+        add_permissions(user, ['can_set_account_sales_representative'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
 
     def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions(['account_agency_view'])
