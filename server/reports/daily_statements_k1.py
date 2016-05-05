@@ -38,8 +38,12 @@ def _generate_statements(date, campaign, campaign_spend):
         per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.data_spend_nano
         per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.license_fee_nano
 
-    total_media_nano = campaign_spend['media_nano']
-    total_data_nano = campaign_spend['data_nano']
+    if campaign_spend is not None:
+        total_media_nano = campaign_spend['media_nano']
+        total_data_nano = campaign_spend['data_nano']
+    else:
+        total_media_nano = 0
+        total_data_nano = 0
 
     for budget in budgets.order_by('created_dt'):
         budget_amount_nano = budget.amount * DOLAR_TO_NANO
@@ -100,13 +104,14 @@ def _get_dates(date, campaign):
     today = dates_helper.local_today()
     from_date = min(date, *(budget.start_date for budget in budgets))
     to_date = min(max(budget.end_date for budget in budgets), today)
-    while True:
+
+    while from_date <= to_date and from_date < date:
         found = False
         for budget in budgets:
             if budget.start_date <= from_date <= budget.end_date and budget.id not in by_date[from_date]:
                 found = True
 
-        if found or from_date == date or from_date > to_date:
+        if found:
             break
 
         from_date += datetime.timedelta(days=1)
@@ -210,7 +215,7 @@ def _get_redshift_date_query(date):
 @transaction.atomic
 def _reprocess_campaign_statements(campaign, dates, total_spend):
     for date in dates:
-        _generate_statements(date, campaign, total_spend[date][campaign.id])
+        _generate_statements(date, campaign, total_spend[date].get(campaign.id))
     return dates
 
 

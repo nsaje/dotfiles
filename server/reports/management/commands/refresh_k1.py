@@ -1,8 +1,11 @@
 import datetime
+import logging
 
 from utils.command_helpers import ExceptionCommand
 
 import reports.refresh_k1
+
+logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
@@ -28,7 +31,7 @@ class Command(ExceptionCommand):
                 err.append(e)
 
         if since is None:
-            print err
+            logger.error(err)
             return
 
         reports.refresh_k1.refresh_k1_reports(since)

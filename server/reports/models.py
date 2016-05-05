@@ -221,8 +221,14 @@ class BudgetDailyStatement(models.Model):
         unique_together = ('budget', 'date')
 
 
-# insert into reports_budgetdailystatementk1 (id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano) select id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano from reports_budgetdailystatement ;
 class BudgetDailyStatementK1(models.Model):
+    """
+    insert into reports_budgetdailystatementk1
+        (id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano)
+            select id, date, budget_id, data_spend_nano, license_fee_nano, media_spend_nano
+                from reports_budgetdailystatement;
+    """
+
     budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements_k1')
     date = models.DateField()
     media_spend_nano = models.BigIntegerField()
