@@ -508,7 +508,8 @@ class Campaign(models.Model, PermissionMixin):
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id) |
                 models.Q(account__users__id=user.id) |
-                models.Q(account__groups__user__id=user.id)
+                models.Q(account__groups__user__id=user.id) |
+                models.Q(account__agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -1416,7 +1417,8 @@ class AdGroup(models.Model):
                 models.Q(campaign__users__id=user.id) |
                 models.Q(campaign__groups__user__id=user.id) |
                 models.Q(campaign__account__users__id=user.id) |
-                models.Q(campaign__account__groups__user__id=user.id)
+                models.Q(campaign__account__groups__user__id=user.id) |
+                models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
