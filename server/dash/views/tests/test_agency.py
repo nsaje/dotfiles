@@ -2160,11 +2160,8 @@ class AccountAgencyTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super(AccountAgencyTest, cls).setUpClass()
-
-        permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=1)
-        user.user_permissions.add(permission)
-        user.save()
+        add_permissions(user, ['campaign_settings_sales_rep'])
 
     def setUp(self):
         account = models.Account.objects.get(pk=1)
@@ -2177,12 +2174,8 @@ class AccountAgencyTest(TestCase):
     def _get_client_with_permissions(self, permissions_list):
         password = 'secret'
         user = User.objects.get(pk=2)
-
-        for perm in permissions_list:
-            permission_object = Permission.objects.get(codename=perm)
-            user.user_permissions.add(permission_object)
+        add_permissions(user, permissions_list)
         user.save()
-
         client = Client()
         client.login(username=user.email, password=password)
         return client
@@ -2250,8 +2243,7 @@ class AccountAgencyTest(TestCase):
             'archived': False
         })
 
-        user.user_permissions.add(Permission.objects.get(codename='can_set_account_sales_representative'))
-        user.save()
+        add_permissions(user, ['can_set_account_sales_representative'])
 
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
@@ -2267,8 +2259,7 @@ class AccountAgencyTest(TestCase):
             'archived': False,
         })
 
-        user.user_permissions.add(Permission.objects.get(codename='can_modify_allowed_sources'))
-        user.save()
+        add_permissions(user, ['can_modify_allowed_sources'])
 
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
@@ -2285,8 +2276,7 @@ class AccountAgencyTest(TestCase):
             'archived': False,
         })
 
-        user.user_permissions.add(Permission.objects.get(codename='can_modify_account_type'))
-        user.save()
+        add_permissions(user, ['can_modify_account_type'])
 
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1000}),
@@ -2321,15 +2311,13 @@ class AccountAgencyTest(TestCase):
 
     def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions(['account_agency_view'])
-
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1}),
             follow=True
-        )
+        ).json()
 
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-        self.assertDictEqual(content['data']['settings'], {
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
             'name': 'test account 1',
             'default_sales_representative': '3',
             'default_account_manager': '2',
