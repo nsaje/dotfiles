@@ -647,7 +647,7 @@ class AccountTestCase(TestCase):
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(u)
 
-        self.assertEqual(oldcount+ 1, qs.count())
+        self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
