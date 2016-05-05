@@ -2314,7 +2314,6 @@ class AccountAgencyTest(TestCase):
         response, content = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
 
-
     def test_put_as_agency_manager_sales_rep(self):
         client = self._get_client_with_permissions(['can_manage_agency'])
         user = User.objects.get(pk=2)
@@ -2333,9 +2332,32 @@ class AccountAgencyTest(TestCase):
 
         add_permissions(User.objects.get(pk=3), ['campaign_settings_sales_rep'])
         response, _ = self._put_account_agency(client, basic_settings, 1000)
-        self.assertEqual(response.status_code, 401, 'user cannot set sales rep. without permission')
+        self.assertEqual(response.status_code, 401, 'agency manager cannot set sales rep. without permission')
 
         add_permissions(user, ['can_set_account_sales_representative'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+    def test_put_as_agency_manager_sources(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'allowed_sources': {
+                '1': {'allowed': True},
+            },
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401, msg='Agency manager doesn''t have permission for changing allowed sources')
+
+        add_permissions(user, ['can_modify_allowed_sources'])
+
         response, _ = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
 
