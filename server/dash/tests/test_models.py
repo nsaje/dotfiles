@@ -710,7 +710,7 @@ class CreditLineItemTestCase(TestCase):
         )
 
         with self.assertRaises(ValidationError):
-           credit.save()
+            credit.save()
 
     def test_create_credit_with_acc_and_ag(self):
         acc = models.Account.objects.get(pk=1)
@@ -731,4 +731,4 @@ class CreditLineItemTestCase(TestCase):
         )
 
         with self.assertRaises(ValidationError):
-           credit.save()
+            credit.save()
