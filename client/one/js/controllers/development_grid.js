@@ -1,7 +1,5 @@
 /* globals oneApp */
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', function ($scope) {
-
-    // TODO: bindings with zem-grid and zem-data-source
-
+oneApp.controller('DevelopmentGridCtrl', ['$scope', 'zemDataSourceService', function ($scope, zemDataSourceService) {
+    $scope.dataSource = zemDataSourceService.createInstance();
 }]);

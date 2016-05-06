@@ -1,26 +1,27 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridCell', ['config', function (config) {
+oneApp.directive('zemGridCell', [function () {
 
     return {
         restrict: 'E',
         replace: true,
-        scope: true,
+        scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            options: '=',
+            position: '=',
             cell: '=',
-            columnsWidths: '@',
+            row: '=',
+            grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: ['$scope', function ($scope) {
-            $scope.getCellStyle = function (index) {
-                var width = 'auto';
-                if ($scope.columnsWidths[index]) {
-                    width = $scope.columnsWidths[index] + 'px';
-                }
-                return {'min-width': width};
+        controller: ['zemGridService', function (zemGridService) {
+            this.toggleCollapse = function () {
+                zemGridService.toggleCollapse(this.grid, this.row);
+            };
+
+            this.getCellStyle = function () {
+                return zemGridService.getCellStyle(this.grid, this.position);
             };
         }],
     };

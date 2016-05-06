@@ -1,26 +1,34 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGridDebug', ['config', function (config) {
+oneApp.directive('zemGridDebug', [function () {
 
     return {
         restrict: 'E',
-        replace: true,
-        scope: true,
+        require: ['zemGridDebug'], replace: true,
+        scope: {},
         controllerAs: 'ctrl',
         bindToController: {
+            grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
-        controller: ['$scope', function ($scope) {
-            $scope.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
-            $scope.DEBUG_APPLY_BREAKDOWN = function () {
+        controller: ['zemGridService', function (zemGridService) {
+            this.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
+
+            this.applyBreakdown = function () {
                 var breakdowns = [];
-                angular.forEach($scope.DEBUG_BREAKDOWNS, function (value, key) {
+                angular.forEach(this.DEBUG_BREAKDOWNS, function (value, key) {
                     if (value) breakdowns.push(key);
                 });
-                $scope.dataSource.breakdowns = breakdowns;
-                $scope.dataSource.defaultPagination = [2, 3, 5, 7];
-                $scope.load();
+                this.grid.meta.source.breakdowns = breakdowns;
+                this.grid.meta.source.defaultPagination = [2, 3, 5, 7];
+                zemGridService.load(this.grid.meta.source).then(function (grid) {
+                    this.grid = grid;
+                }.bind(this));
+            };
+
+            this.toggleCollapseLevel = function (level) {
+                zemGridService.toggleCollapseLevel(this.gridCtrl.grid, level);
             };
         }],
     };
