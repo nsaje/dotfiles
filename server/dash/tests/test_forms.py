@@ -188,6 +188,11 @@ class AdGroupSettingsFormTest(TestCase):
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
+    def test_max_cpc_setting_max_value(self):
+        self.data['cpc_cc'] = 4.01
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
+        self.assertFalse(form.is_valid())
+
     def test_max_cpc_setting_lower_min_source_value(self):
         source = models.Source.objects.get(pk=1)
         source.maintenance = False
