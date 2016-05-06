@@ -93,8 +93,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
             return 'main.accounts.sources';
         }
-        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.account_agency_view')) {
-            return 'main.accounts.agency';
+        if ($state.includes('**.history') && $scope.hasPermission('zemauth.account_agency_view')) {
+            return 'main.accounts.history';
         }
 
         // otherwise get default state
@@ -104,8 +104,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($scope.hasPermission('zemauth.account_sources_view')) {
             return 'main.accounts.sources';
         }
-        if ($scope.hasPermission('zemauth.account_agency_view')) {
-            return 'main.accounts.agency';
+        if ($scope.hasPermission('zemauth.account_account_view')) {
+            return 'main.accounts.settings';
         }
 
         // no permissions
