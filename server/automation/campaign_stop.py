@@ -22,7 +22,7 @@ import reports.api_contentads
 import reports.budget_helpers
 import reports.models
 
-from utils import dates_helper, email_helper, url_helper
+from utils import dates_helper, email_helper, url_helper, pagerduty_helper
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,18 @@ def is_current_time_valid_for_amount_editing(campaign):
     return not (utc_now.hour < 12 and any_source_after_midnight)
 
 
-def update_campaigns_in_landing(campaigns):
+def _trigger_pagerduty(campaign):
+    pagerduty_helper.trigger(
+        event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
+        incident_key='campaign_stop_update_failed',
+        description='Campaign stop update failed',
+        details={
+            'campaign_id': campaign.id,
+        }
+    )
+
+
+def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
     for campaign in campaigns:
         logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
@@ -141,6 +152,8 @@ def update_campaigns_in_landing(campaigns):
                 campaign=campaign,
                 notes='Failed to update landing campaign.'
             )
+            if pagerduty_on_fail:
+                _trigger_pagerduty(campaign)
             continue
 
         zwei_actions.send(actions)
