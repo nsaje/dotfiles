@@ -934,7 +934,7 @@ class AccountHistory(api_common.BaseApiView):
         return ', '.join(change_strings)
 
 
-class AccountAgency(api_common.BaseApiView):
+class AccountSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
@@ -962,7 +962,7 @@ class AccountAgency(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
 
-        form = forms.AccountAgencyAgencyForm(resource.get('settings', {}))
+        form = forms.AccountSettingsForm(resource.get('settings', {}))
 
         settings = self.save_settings(request, account, form)
 

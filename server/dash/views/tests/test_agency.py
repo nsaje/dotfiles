@@ -2249,12 +2249,12 @@ class AccountHistoryTest(TestCase):
             self.assertEqual(changes_string, expected_changes_strings[i])
 
 
-class AccountAgencyTest(TestCase):
+class AccountSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
     @classmethod
     def setUpClass(cls):
-        super(AccountAgencyTest, cls).setUpClass()
+        super(AccountSettingsTest, cls).setUpClass()
         user = User.objects.get(pk=1)
         add_permissions(user, ['campaign_settings_sales_rep'])
 
@@ -2276,13 +2276,13 @@ class AccountAgencyTest(TestCase):
         return client
 
     def _get_form_with_allowed_sources_dict(self, allowed_sources_dict):
-        form = forms.AccountAgencyAgencyForm()
+        form = forms.AccountSettingsForm()
         form.cleaned_data = {'allowed_sources': allowed_sources_dict}
         return form
 
     def _put_account_agency(self, client, settings, account_id):
         response = client.put(
-            reverse('account_agency', kwargs={'account_id': account_id}),
+            reverse('account_settings', kwargs={'account_id': account_id}),
             json.dumps({
                 'settings': settings,
             }),
@@ -2291,7 +2291,7 @@ class AccountAgencyTest(TestCase):
         return response, response.json()
 
     def test_permissions(self):
-        url = reverse('account_agency', kwargs={'account_id': 0})
+        url = reverse('account_settings', kwargs={'account_id': 0})
         client = self._get_client_with_permissions([])
 
         response = client.get(url)
@@ -2304,7 +2304,7 @@ class AccountAgencyTest(TestCase):
         client = self._get_client_with_permissions(['can_manage_agency', 'can_modify_account_type'])
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             follow=True
         )
 
@@ -2325,7 +2325,7 @@ class AccountAgencyTest(TestCase):
         agency.users.add(user)
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1000}),
+            reverse('account_settings', kwargs={'account_id': 1000}),
             follow=True
         ).json()
 
@@ -2340,7 +2340,7 @@ class AccountAgencyTest(TestCase):
         add_permissions(user, ['can_set_account_sales_representative'])
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1000}),
+            reverse('account_settings', kwargs={'account_id': 1000}),
             follow=True
         ).json()
 
@@ -2356,7 +2356,7 @@ class AccountAgencyTest(TestCase):
         add_permissions(user, ['can_modify_allowed_sources'])
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1000}),
+            reverse('account_settings', kwargs={'account_id': 1000}),
             follow=True
         ).json()
 
@@ -2373,7 +2373,7 @@ class AccountAgencyTest(TestCase):
         add_permissions(user, ['can_modify_account_type'])
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1000}),
+            reverse('account_settings', kwargs={'account_id': 1000}),
             follow=True
         ).json()
 
@@ -2458,7 +2458,7 @@ class AccountAgencyTest(TestCase):
     def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions(['can_manage_agency'])
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             follow=True
         ).json()
 
@@ -2480,7 +2480,7 @@ class AccountAgencyTest(TestCase):
         ])
 
         response = client.put(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             json.dumps({
                 'settings': {
                     'name': 'changed name',
@@ -2527,7 +2527,7 @@ class AccountAgencyTest(TestCase):
         ])
 
         response = client.put(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             json.dumps({
                 'settings': {
                     'name': 'changed name',
@@ -2551,7 +2551,7 @@ class AccountAgencyTest(TestCase):
             'account_agency_view',
         ])
         response = client.put(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             json.dumps({
                 'settings': {
                     'name': 'changed name',
@@ -2569,7 +2569,7 @@ class AccountAgencyTest(TestCase):
 
 
     def test_get_changes_text_for_media_sources(self):
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
 
         sources = list(models.Source.objects.all().order_by('id'))
         self.assertEqual(
@@ -2596,7 +2596,7 @@ class AccountAgencyTest(TestCase):
     def test_set_allowed_sources(self):
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
@@ -2619,7 +2619,7 @@ class AccountAgencyTest(TestCase):
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
         account_settings = account.get_current_settings()
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         view.set_allowed_sources(
             account_settings,
             account,
@@ -2644,7 +2644,7 @@ class AccountAgencyTest(TestCase):
         )
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         view.set_allowed_sources(
             account_settings,
             account,
@@ -2667,7 +2667,7 @@ class AccountAgencyTest(TestCase):
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2, 3])
         )
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         form = self._get_form_with_allowed_sources_dict({
             2: {'allowed': False},
             3: {'allowed': True}
@@ -2692,7 +2692,7 @@ class AccountAgencyTest(TestCase):
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 2])
         )
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict(None))
         self.assertIsNone(account_settings.changes_text)
         self.assertEqual(
@@ -2708,7 +2708,7 @@ class AccountAgencyTest(TestCase):
         ])
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             follow=True
         )
         response = json.loads(response.content)
@@ -2725,7 +2725,7 @@ class AccountAgencyTest(TestCase):
         ])
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1}),
+            reverse('account_settings', kwargs={'account_id': 1}),
             follow=True
         )
         response = json.loads(response.content)
@@ -2735,7 +2735,7 @@ class AccountAgencyTest(TestCase):
         })
 
     def test_add_error_to_account_agency_form(self):
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         form = self._get_form_with_allowed_sources_dict({})
         view.add_error_to_account_agency_form(form, [1, 2])
         self.assertEqual(
@@ -2747,7 +2747,7 @@ class AccountAgencyTest(TestCase):
         )
 
     def test_add_error_to_account_agency_single(self):
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         form = self._get_form_with_allowed_sources_dict({})
         view.add_error_to_account_agency_form(form, [1])
         self.assertEqual(
@@ -2760,22 +2760,22 @@ class AccountAgencyTest(TestCase):
 
     def test_get_non_removable_sources_empty(self):
         account = models.Account.objects.get(pk=111)
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         self.assertEqual(view.get_non_removable_sources(account, []), [])
 
     def test_get_non_removable_sources_source_not_added(self):
         account = models.Account.objects.get(pk=111)
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         self.assertEqual(view.get_non_removable_sources(account, [1]), [])
 
     def test_get_non_removable_sources_source_not_running(self):
         account = models.Account.objects.get(pk=111)
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         self.assertEqual(view.get_non_removable_sources(account, [3]), [])
 
     def test_get_non_removable_sources_source_running(self):
         account = models.Account.objects.get(pk=111)
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
 
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
@@ -2797,7 +2797,7 @@ class AccountAgencyTest(TestCase):
         mock_request = Mock()
         mock_request.user = user
 
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         account = models.Account.objects.get(pk=111)
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
@@ -2811,7 +2811,7 @@ class AccountAgencyTest(TestCase):
         ad_group.save(mock_request)
 
     def test_get_non_removable_sources_archived_campaign(self):
-        view = agency.AccountAgency()
+        view = agency.AccountSettings()
         account = models.Account.objects.get(pk=111)
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
