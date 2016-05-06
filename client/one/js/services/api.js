@@ -1266,6 +1266,58 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function AccountHistory () {
+        function convertHistoryFromApi (history) {
+            return history.map(function (item) {
+                return {
+                    changedBy: item.changed_by,
+                    changesText: item.changes_text,
+                    settings: item.settings.map(function (setting) {
+                        var value = setting.value,
+                            oldValue = setting.old_value;
+
+                        // insert zero-width space in emails for nice word wrapping
+                        if (typeof value === 'string') {
+                            value = value.replace('@', '&#8203;@');
+                        }
+
+                        if (typeof oldValue === 'string') {
+                            oldValue = oldValue.replace('@', '&#8203;@');
+                        }
+
+                        return {
+                            name: setting.name,
+                            value: value,
+                            oldValue: oldValue
+                        };
+                    }),
+                    datetime: item.datetime,
+                    showOldSettings: item.show_old_settings
+                };
+            });
+        }
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/history/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        history: convertHistoryFromApi(data.data.history),
+                    });
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AccountAgency () {
         function convertSettingsFromApi (settings) {
             return {
@@ -1301,36 +1353,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             };
         }
 
-        function convertHistoryFromApi (history) {
-            return history.map(function (item) {
-                return {
-                    changedBy: item.changed_by,
-                    changesText: item.changes_text,
-                    settings: item.settings.map(function (setting) {
-                        var value = setting.value,
-                            oldValue = setting.old_value;
-
-                        // insert zero-width space in emails for nice word wrapping
-                        if (typeof value === 'string') {
-                            value = value.replace('@', '&#8203;@');
-                        }
-
-                        if (typeof oldValue === 'string') {
-                            oldValue = oldValue.replace('@', '&#8203;@');
-                        }
-
-                        return {
-                            name: setting.name,
-                            value: value,
-                            oldValue: oldValue
-                        };
-                    }),
-                    datetime: item.datetime,
-                    showOldSettings: item.show_old_settings
-                };
-            });
-        }
-
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/agency/';
@@ -1342,7 +1364,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        history: convertHistoryFromApi(data.data.history),
                         accountManagers: data.data.account_managers,
                         salesReps: data.data.sales_reps,
                         canArchive: data.data.can_archive,
@@ -3099,6 +3120,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
+        accountHistory: new AccountHistory(),
         accountAgency: new AccountAgency(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),

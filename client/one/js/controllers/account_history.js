@@ -5,7 +5,7 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
 
     $scope.getSettings = function (discarded) {
         $scope.requestInProgress = true;
-        api.accountAgency.get($state.params.id).then(
+        api.accountHistory.get($state.params.id).then(
             function (data) {
                 $scope.history = data.history;
             },
@@ -21,22 +21,6 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.refreshPage = function () {
         zemNavigationService.reload();
         $scope.getSettings();
-    };
-
-    $scope.archiveAccount = function () {
-        if ($scope.canArchive) {
-            api.accountArchive.archive($scope.account.id).then(function () {
-                $scope.refreshPage();
-            });
-        }
-    };
-
-    $scope.restoreAccount = function () {
-        if ($scope.canRestore) {
-            api.accountArchive.restore($scope.account.id).then(function () {
-                $scope.refreshPage();
-            });
-        }
     };
 
     $scope.getSettings();
