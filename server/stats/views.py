@@ -7,8 +7,8 @@ from utils import exc
 
 class BreakdownsTestData(api_common.BaseApiView):
     def get(self, request):
-        # if not request.user.has_perm('zemauth.can_access_table_breakdowns_development_features'):
-        #     raise exc.MissingDataError()
+        if not request.user.has_perm('zemauth.can_access_table_breakdowns_development_features'):
+            raise exc.MissingDataError()
 
         breakdown_list = request.GET.get('breakdowns').split(',')
         breakdown_range_list = request.GET.get('ranges').split(',')
