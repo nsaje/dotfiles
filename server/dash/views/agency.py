@@ -840,10 +840,12 @@ class AccountAgency(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
+        user_agency = request.user.agency_set.first()
+
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings),
-            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
+            'account_managers': self.get_user_list(account_settings, agency=user_agency),
+            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep', agency=user_agency),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -1178,8 +1180,14 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name=None):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all())
+    def get_user_list(self, settings, perm_name=None, agency=None):
+        users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
+
+        if agency is not None:
+            users = users.filter(pk=agency.users.all()) | \
+                users.filter(account__agency=agency)
+
+        users = list(users)
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:

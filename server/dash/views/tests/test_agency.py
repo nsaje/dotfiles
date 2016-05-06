@@ -2361,6 +2361,46 @@ class AccountAgencyTest(TestCase):
         response, _ = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
 
+    def test_get_as_agency_manager_users(self):
+        client = self._get_client_with_permissions(['can_manage_agency'])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertItemsEqual(response['data']['account_managers'], [
+            {
+                'id': '2',
+                'name': 'user@test.com',
+            }
+        ])
+
+        johnnie = User.objects.get(pk=1)
+        agency_acc = models.Account.objects.get(pk=1000)
+        agency_acc.users.add(johnnie)
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertItemsEqual(response['data']['account_managers'], [
+            {
+                'id': '2',
+                'name': 'user@test.com',
+            },
+            {
+                'id': '1',
+                'name': 'superuser@test.com',
+            }
+        ])
+
     def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions(['account_agency_view'])
         response = client.get(
