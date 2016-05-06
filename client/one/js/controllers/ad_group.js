@@ -63,8 +63,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     };
 
     $scope.isCampaignLanding = function () {
-        return $scope.adGroup && $scope.adGroup.state === constants.adGroupSettingsState.ACTIVE &&
-            $scope.campaign && $scope.campaign.landingMode;
+        return $scope.adGroup && $scope.adGroup.landingMode;
     };
 
     $scope.manageBudget = function () {

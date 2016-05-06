@@ -6,7 +6,7 @@ import decimal
 from itertools import tee, izip_longest
 
 from django.db import transaction
-from django.db.models import Min, Max, Prefetch
+from django.db.models import Min, Max
 
 import pytz
 
@@ -36,53 +36,71 @@ TEMP_EMAILS = [
 
 
 def run_job():
+    not_landing = list(dash.models.Campaign.objects.all().exclude_landing().iterator())
     in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
 
-    switch_low_budget_campaigns_to_landing_mode()
-    update_campaigns_in_landing(in_landing)  # only update those that were already in landing
+    switch_low_budget_campaigns_to_landing_mode(not_landing)
+    update_campaigns_in_landing(in_landing)
 
 
-def switch_low_budget_campaigns_to_landing_mode():
-    settings_qs = dash.models.CampaignSettings.objects.all()\
-                                                      .distinct('campaign_id')\
-                                                      .order_by('campaign_id', '-created_dt')
-    candidate_campaigns = dash.models.Campaign.objects.all().prefetch_related(
-        Prefetch(
-            'settings',
-            queryset=settings_qs,
-            to_attr='_current_settings'
-        )
-    )
-    for campaign in candidate_campaigns:
-        check_and_switch_campaign_to_landing_mode(campaign, campaign._current_settings[0])
+def switch_low_budget_campaigns_to_landing_mode(campaigns):
+    campaign_settings = {
+        sett.campaign_id: sett
+        for sett in dash.models.CampaignSettings.objects.filter(campaign__in=campaigns).group_current_settings()
+    }
+    actions = []
+    for campaign in campaigns:
+        _, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
+        actions.extend(new_actions)
+    zwei_actions.send(actions)
 
 
-def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
+def perform_landing_mode_check(campaign, campaign_settings):
+    switched_to_landing, actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings)
+    if switched_to_landing:
+        zwei_actions.send(actions)
+        return True
+
+    resumed, actions = _check_and_resume_campaign(campaign, campaign_settings)
+    if resumed:
+        zwei_actions.send(actions)
+        return True
+
+    return False
+
+
+def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
-        return False
+        return False, []
+
+    if campaign_settings.landing_mode:
+        return False, []
 
     today = dates_helper.local_today()
     max_daily_budget = _get_max_daily_budget(today, campaign)
+    current_daily_budget = _get_current_daily_budget(campaign)
     remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(campaign, max_daily_budget)
     yesterday_spend = _get_yesterday_budget_spend(campaign)
 
-    should_switch_to_landing = available_tomorrow < max_daily_budget
-    is_near_depleted = available_tomorrow < max_daily_budget * 2
-    is_resumed = False
+    switched_to_landing = available_tomorrow < current_daily_budget
+    is_near_depleted = available_tomorrow < current_daily_budget * 2
     actions = []
+    if switched_to_landing:
+        with transaction.atomic():
+            actions.extend(_switch_campaign_to_landing_mode(campaign))
+        _send_campaign_stop_notification_email(campaign, remaining_today, current_daily_budget, yesterday_spend)
+    elif is_near_depleted:
+        _send_depleting_budget_notification_email(campaign, remaining_today, current_daily_budget, yesterday_spend)
 
-    with transaction.atomic():
-        if not campaign_settings.landing_mode:
-            if should_switch_to_landing:
-                actions = _switch_campaign_to_landing_mode(campaign)
-                _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-            elif is_near_depleted:
-                _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-        elif _can_resume_campaign(campaign):
+    return switched_to_landing, actions
+
+
+def _check_and_resume_campaign(campaign, campaign_settings):
+    if _can_resume_campaign(campaign, campaign_settings):
+        with transaction.atomic():
             actions = _resume_campaign(campaign)
-            is_resumed = True
-    zwei_actions.send(actions)
-    return should_switch_to_landing or is_resumed
+            return True, actions
+    return False, []
 
 
 def get_minimum_budget_amount(budget_item):
@@ -327,8 +345,8 @@ def _combined_active_budget_from_other_items(budget_item):
     )
 
 
-def _can_resume_campaign(campaign):
-    return get_min_budget_increase(campaign) == 0
+def _can_resume_campaign(campaign, campaign_settings):
+    return campaign_settings.landing_mode and get_min_budget_increase(campaign) == 0
 
 
 def _get_minimum_remaining_budget(campaign, max_daily_budget):
@@ -363,7 +381,8 @@ def _update_landing_campaign(campaign):
     so it's not an issue.
     """
     actions = []
-    if _can_resume_campaign(campaign):
+    campaign_settings = campaign.get_current_settings()
+    if _can_resume_campaign(campaign, campaign_settings):
         return _resume_campaign(campaign)
 
     if not campaign.adgroup_set.all().filter_active().count() > 0:
@@ -990,6 +1009,28 @@ def _get_ag_settings_dict(date, ad_groups):
         ret[ag_sett.ad_group_id].append(ag_sett)
 
     return ret
+
+
+def _get_current_daily_budget_per_ags(campaign):
+    ags_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group_id__campaign=campaign
+    ).group_current_settings().select_related('ad_group_source__source')
+
+    ret = {}
+    for ags_settings in ags_settings:
+        if ags_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
+            continue
+
+        current_daily_budget = ags_settings.ad_group_source.source.default_daily_budget_cc
+        if ags_settings.daily_budget_cc:
+            current_daily_budget = ags_settings.daily_budget_cc
+
+        ret[ags_settings.ad_group_source_id] = current_daily_budget
+    return ret
+
+
+def _get_current_daily_budget(campaign):
+    return sum(_get_current_daily_budget_per_ags(campaign).values())
 
 
 def _get_user_daily_budget_per_ags(campaign):

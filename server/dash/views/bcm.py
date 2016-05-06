@@ -219,8 +219,7 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save()
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
-                                                                campaign.get_current_settings())
+        campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
 
@@ -355,7 +354,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.save()
-        state_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
+        state_changed = campaign_stop.perform_landing_mode_check(
             campaign,
             campaign.get_current_settings()
         )
@@ -373,8 +372,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             item.delete()
         except AssertionError:
             raise exc.ValidationError('Budget item is not pending')
-        campaign_stop.check_and_switch_campaign_to_landing_mode(campaign,
-                                                                campaign.get_current_settings())
+        campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
         return self.create_api_response(True)
 
     def _validate_amount(self, data, item):
