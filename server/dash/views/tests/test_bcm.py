@@ -315,7 +315,6 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
 
 class CampaignBudgetViewTest(BCMViewTestCase):
-
     def setUp(self):
         super(CampaignBudgetViewTest, self).setUp()
 
@@ -470,7 +469,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 },
                 {
                     'available': u'100000.0000',
-                    'comment': u'Test case',
+                    'comment': u'Agency credit',
                     'end_date': u'2015-11-30',
                     'start_date': u'2015-10-01',
                     'is_available': False,
@@ -907,7 +906,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(json.loads(response.content)['data'], {
+        self.assertDictEqual(response.json()['data'], {
             "active": [
                 {
                     "available": "0.0000",
@@ -917,7 +916,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "allocated": "10000.0000",
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "comment": None,
@@ -928,8 +927,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 },
                 {
                     "available": "0.0000",
-                    "end_date":
-                    "2015-11-30",
+                    "end_date": "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -943,7 +941,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                         {"amount": 100000, "id": 1}
                     ],
                     "start_date": "2015-10-01"
-                }
+                },
             ],
             "past": [],
             "totals": {
@@ -965,7 +963,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "comment": None,
                     "allocated": "4994.0000",
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "budgets": [
@@ -1010,7 +1008,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "allocated": "4950.0000",
                     "comment": None,
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "budgets": [

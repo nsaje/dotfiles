@@ -55,13 +55,13 @@
 -   fields:
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
-        created_by: 1
+        created_by: 1000
         agency: 1
         start_date: '2015-10-01'
         end_date: '2015-11-30'
         amount: 100000
         license_fee: 0.2
         status: 2
-        comment: 'Test case'
+        comment: 'Agency credit'
     model: dash.creditlineitem
     pk: 1000
