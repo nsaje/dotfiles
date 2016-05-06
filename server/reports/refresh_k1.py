@@ -1,7 +1,7 @@
 import logging
 import os.path
 import io
-import csv
+import unicodecsv as csv
 import boto
 import boto.s3
 

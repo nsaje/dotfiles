@@ -134,7 +134,7 @@ class Publishers(object):
     """
 
     def table_name(self):
-        return 'publishers'
+        return 'publishers_1'
 
     def _stats_breakdown(self, date):
         return Breakdown(
@@ -146,8 +146,9 @@ class Publishers(object):
 
     def _stats_outbrain_publishers(self, date):
         fields = ['ad_group_id', 'publisher_id', 'publisher_name', 'clicks']
-        query = "select {fields} where date = '{date}'".format(
+        query = "select {fields} from {table} where date = '{date}'".format(
             fields=', '.join(fields),
+            table='outbrainpublisherstats',
             date=date.isoformat()
         )
         return _query_rows(query)
@@ -238,7 +239,7 @@ class Publishers(object):
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
-        for row in self._stats_outbrain_publishers(date).rows():
+        for row in self._stats_outbrain_publishers(date):
             ad_group_id = row[0]
             ad_group = ad_groups_map.get(ad_group_id)
             if ad_group is None:
