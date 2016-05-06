@@ -240,6 +240,9 @@ class Agency(models.Model):
     def __str__(self):
         return self.name
 
+    def __unicode__(self):
+        return self.name
+
     class Meta:
         verbose_name_plural = 'Agencies'
         ordering = ('-created_dt',)
@@ -2388,7 +2391,8 @@ class PublisherBlacklist(models.Model):
 
 
 class CreditLineItem(FootprintModel):
-    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
+    agency = models.ForeignKey(Agency, related_name='agencies', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
 
@@ -2477,8 +2481,9 @@ class CreditLineItem(FootprintModel):
         )
 
     def __unicode__(self):
+        parent = self.agency or self.account
         return u'{} - {} - ${} - from {} to {}'.format(
-            self.account.id, unicode(self.account), self.amount,
+            parent.id, unicode(parent), self.amount,
             self.start_date, self.end_date)
 
     def is_editable(self):
@@ -2495,6 +2500,18 @@ class CreditLineItem(FootprintModel):
             and (self.effective_amount() - self.get_allocated_amount()) > 0
 
     def clean(self):
+        if self.account is not None and self.agency is not None:
+            raise ValidationError({
+                'account': ['Only one of either account or agency must be set.'],
+                'agency': ['Only one of either account or agency must be set.'],
+            })
+
+        if self.account is None and self.agency is None:
+            raise ValidationError({
+                'account': ['One of either account or agency must be set.'],
+                'agency': ['One of either account or agency must be set.'],
+            })
+
         has_changed = any((
             self.has_changed('start_date'),
             self.has_changed('license_fee'),
