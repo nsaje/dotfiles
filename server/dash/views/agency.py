@@ -845,7 +845,7 @@ class AccountAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(request, account_settings, account),
             'account_managers': self.get_user_list(account_settings, agency=user_agency),
-            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep', agency=user_agency),
+            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
