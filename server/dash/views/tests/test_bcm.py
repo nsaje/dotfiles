@@ -15,7 +15,7 @@ from reports.models import BudgetDailyStatement
 
 
 class BCMViewTestCase(TestCase):
-    fixtures = ['test_bcm.yaml']
+    fixtures = ['test_bcm.yaml', 'test_agency.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -315,6 +315,9 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
 class CampaignBudgetViewTest(BCMViewTestCase):
 
+    def setUp(self):
+        super(CampaignBudgetViewTest, self).setUp()
+
     def test_get(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
@@ -419,6 +422,31 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 }
             }
         })
+
+    def test_get_as_agency_manager(self):
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content)['data']
+
+        self.assertItemsEqual(data['credits'], [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01"
+                }
+            ]
+        )
+
 
     @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
     def test_put(self, mock_lmode):
