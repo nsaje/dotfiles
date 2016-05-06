@@ -659,6 +659,42 @@ class AccountTestCase(TestCase):
 class CreditLineItemTestCase(TestCase):
     fixtures = ['test_api', 'test_agency']
 
+    def test_create_acc_credit(self):
+        acc = models.Account.objects.get(pk=1)
+        user = User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+
+        credit = models.CreditLineItem(
+            account=acc,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        credit.save()
+        self.assertGreater(models.CreditLineItem.objects.filter(pk=credit.id).count(), 0)
+
+    def test_create_ag_credit(self):
+        user = User.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+
+        credit = models.CreditLineItem(
+            agency=agency,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        credit.save()
+        self.assertGreater(models.CreditLineItem.objects.filter(pk=credit.id).count(), 0)
+
     def test_create_credit_without_acc_and_ag(self):
         user = User.objects.get(pk=1)
 
