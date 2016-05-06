@@ -166,8 +166,8 @@ class Publishers(object):
         query = "select sum(spend), sum(clicks) from stats where media_source='outbrain' and date='{date}'".format(
             date=date.isoformat()
         )
-        data = _query_rows(query)[0]
-        return float(data[0])/data[1]
+        data = _query_rows(query).next()
+        return Decimal(data[0])/data[1]
 
     def _get_post_click_data(self, ad_group_id, post_click_list):
         if not post_click_list:
@@ -262,7 +262,7 @@ class Publishers(object):
                 continue
 
             clicks = row[3]
-            cost = cpc * clicks
+            cost = _decimal_to_int(cpc * clicks)
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
@@ -271,7 +271,7 @@ class Publishers(object):
             media_source = source.tracking_slug
             publisher = row[2]
             post_click = self._get_post_click_data(
-                ad_group_id, content_ad_postclick.get((ad_group_id, media_source, publisher)))
+                ad_group_id, content_ad_postclick.get((ad_group_id, media_source, row[1])))
 
             yield (
                 date,
@@ -283,7 +283,7 @@ class Publishers(object):
                 clicks,
                 0,
 
-                _decimal_to_int(cost * MICRO_TO_NANO),
+                cost * MICRO_TO_NANO,
                 data_cost * MICRO_TO_NANO,
 
                 _decimal_to_int(effective_cost * MICRO_TO_NANO),
