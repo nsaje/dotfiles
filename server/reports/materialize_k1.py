@@ -162,6 +162,13 @@ class Publishers(object):
              ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
         )
 
+    def _outbrain_cpc(self, date):
+        query = "select sum(spend), sum(clicks) from stats where media_source='outbrain' and date='{date}'".format(
+            date=date.isoformat()
+        )
+        data = _query_rows(query)[0]
+        return float(data[0])/data[1]
+
     def _get_post_click_data(self, ad_group_id, post_click_list):
         if not post_click_list:
             return {}
@@ -246,6 +253,7 @@ class Publishers(object):
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
+        cpc = self._outbrain_cpc(date)
         for row in self._stats_outbrain_publishers(date):
             ad_group_id = row[0]
             ad_group = ad_groups_map.get(ad_group_id)
@@ -253,7 +261,8 @@ class Publishers(object):
                 logger.error("Got spend for invalid adgroup: %s", ad_group_id)
                 continue
 
-            cost = 0
+            clicks = row[3]
+            cost = cpc * clicks
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
@@ -271,10 +280,10 @@ class Publishers(object):
                 publisher,
                 row[1],
 
-                row[3],  # clicks
-                0,  # impressions
+                clicks,
+                0,
 
-                cost * MICRO_TO_NANO,
+                _decimal_to_int(cost * MICRO_TO_NANO),
                 data_cost * MICRO_TO_NANO,
 
                 _decimal_to_int(effective_cost * MICRO_TO_NANO),
