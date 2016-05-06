@@ -93,6 +93,19 @@ def format_csv_content(content):
     return formatted_content
 
 
+class DisableAutoNowAdd(object):
+    def __init__(self, cls, field_name):
+        self.cls = cls
+        self.field = cls._meta.get_field_by_name(field_name)[0]
+        self.prev_auto_now_add = self.field.auto_now_add
+
+    def __enter__(self):
+        self.field.auto_now_add = False
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.field.auto_now_add = self.prev_auto_now_add
+
+
 @unittest.skipUnless(settings.RUN_REDSHIFT_UNITTESTS, 'Only run when redshift tests are enabled')
 class RedshiftTestCase(TestCase):
     """

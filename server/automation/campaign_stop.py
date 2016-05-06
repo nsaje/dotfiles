@@ -3,9 +3,12 @@ from collections import defaultdict
 import datetime
 import logging
 import decimal
+from itertools import tee, izip_longest
 
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Min, Max, Prefetch
+
+import pytz
 
 import actionlog.api
 from actionlog import zwei_actions
@@ -134,6 +137,10 @@ def update_campaigns_in_landing(campaigns):
                 actions.extend(_update_landing_campaign(campaign))
         except:
             logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Failed to update landing campaign.'
+            )
             continue
 
         zwei_actions.send(actions)
@@ -908,15 +915,79 @@ def _get_budgets_active_on_date(date, campaign):
     ).select_related('credit')
 
 
-def _get_ags_settings_dict(date, ad_group_sources):
-    settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__in=ad_group_sources,
-        created_dt__lt=date + datetime.timedelta(days=1),
-    ).select_related('ad_group_source__source').order_by('-created_dt')
+def _get_sources_by_tz(ad_group_sources):
+    sources_by_tz = defaultdict(list)
+    for ad_group_source in ad_group_sources:
+        sources_by_tz[ad_group_source.source.source_type.budgets_tz].append(ad_group_source)
+    return sources_by_tz
+
+
+def _get_sources_settings_dict(date, ad_group_sources):
+    sources_by_tz = _get_sources_by_tz(ad_group_sources)
 
     ret = defaultdict(list)
-    for ags_sett in settings_on_date.iterator():
-        ret[ags_sett.ad_group_source_id].append(ags_sett)
+    for budgets_tz, tz_sources in sources_by_tz.items():
+        dt_tz = budgets_tz.localize(datetime.datetime(date.year, date.month, date.day)).astimezone(pytz.utc)
+        latest_settings_before = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=tz_sources,
+            created_dt__lt=dt_tz,
+        ).select_related('ad_group_source__source').group_current_settings()
+
+        settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=tz_sources,
+            created_dt__gte=dt_tz,
+            created_dt__lt=dt_tz + datetime.timedelta(days=1),
+        ).select_related('ad_group_source__source').order_by('created_dt')
+
+        for ags_sett in latest_settings_before.iterator():
+            ret[ags_sett.ad_group_source_id].append(ags_sett)
+
+        for ags_sett in settings_on_date.iterator():
+            ret[ags_sett.ad_group_source_id].append(ags_sett)
+
+    return ret
+
+
+def _get_ad_groups_min_max_tzs(ad_groups):
+    min_max_tzs = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups)\
+                                                   .aggregate(min_tz=Min('source__source_type__budgets_tz'),
+                                                              max_tz=Max('source__source_type__budgets_tz'))
+
+    min_tz = min_max_tzs['min_tz']
+    if min_tz is None:
+        min_tz = pytz.utc
+
+    max_tz = min_max_tzs['max_tz']
+    if max_tz is None:
+        max_tz = pytz.utc
+
+    return min_tz, max_tz
+
+
+def _get_ag_settings_dict(date, ad_groups):
+    min_tz, max_tz = _get_ad_groups_min_max_tzs(ad_groups)
+
+    dt_min_tz = min_tz.localize(datetime.datetime(date.year, date.month, date.day)).astimezone(pytz.utc)
+    dt_max_tz = max_tz.localize(datetime.datetime(date.year, date.month, date.day)).astimezone(pytz.utc)
+
+    # this is true only for min_tz - last setting before date has to be found for sources with other tzs
+    latest_settings_before = dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups,
+        created_dt__lt=dt_min_tz,
+    ).select_related('ad_group').group_current_settings()
+
+    settings_on_date = dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups,
+        created_dt__gte=dt_min_tz,
+        created_dt__lt=dt_max_tz + datetime.timedelta(days=1),
+    ).select_related('ad_group').order_by('created_dt')
+
+    ret = defaultdict(list)
+    for ag_sett in latest_settings_before.iterator():
+        ret[ag_sett.ad_group_id].append(ag_sett)
+
+    for ag_sett in settings_on_date.iterator():
+        ret[ag_sett.ad_group_id].append(ag_sett)
 
     return ret
 
@@ -947,15 +1018,22 @@ def _get_user_daily_budget_per_ags(campaign):
 
 
 def _get_max_daily_budget_per_ags(date, campaign):
-    ad_groups = _get_ad_groups_running_on_date(date, campaign.adgroup_set.all())
+    ad_groups = campaign.adgroup_set.all()
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups,
     ).select_related('source__source_type')
-    ad_group_sources_settings = _get_ags_settings_dict(date, ad_group_sources)
+
+    ad_group_settings = _get_ag_settings_dict(date, ad_groups)
+    ad_group_sources_settings = _get_sources_settings_dict(date, ad_group_sources)
 
     max_daily_budget = {}
     for ags in ad_group_sources:
-        max_daily_budget[ags.id] = _get_source_max_daily_budget(date, ags, ad_group_sources_settings[ags.id])
+        max_daily_budget[ags.id] = _get_source_max_daily_budget(
+            date,
+            ags,
+            ad_group_settings[ags.ad_group_id],
+            ad_group_sources_settings[ags.id],
+        )
 
     return max_daily_budget
 
@@ -964,35 +1042,73 @@ def _get_max_daily_budget(date, campaign):
     return sum(_get_max_daily_budget_per_ags(date, campaign).values())
 
 
-def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings):
-    ags_max_daily_budget = 0
-    reached_day_before = False
-    for sett in ad_group_source_settings:
-        if reached_day_before:
-            break
+def _get_effective_daily_budget(date, ad_group_source, ag_settings, ags_settings):
+    if ag_settings.state != dash.constants.AdGroupSettingsState.ACTIVE or\
+       ags_settings.state != dash.constants.AdGroupSourceSettingsState.ACTIVE or\
+       (ag_settings.end_date and ag_settings.end_date < date):
+        return 0
 
-        tz = ad_group_source.source.source_type.budgets_tz
-        if dates_helper.utc_to_tz_datetime(sett.created_dt, tz).date() < date:
-            reached_day_before = True
+    daily_budget_cc = ad_group_source.source.default_daily_budget_cc
+    if ags_settings.daily_budget_cc:
+        daily_budget_cc = ags_settings.daily_budget_cc
 
-        if sett.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    return daily_budget_cc
+
+
+def _get_lookahead_iter(iterable):
+    """
+    Returns iterable over [(el_1, el_2), (el_2, el_3), ..., (el_n, None)]
+    """
+    it1, it2 = tee(iterable)
+    next(it2, None)
+    return izip_longest(it1, it2)
+
+
+def _get_valid_ad_group_settings(date, ad_group_source, ad_group_settings):
+    """
+    Prepare ad group settings array so it contains at most one setting from the
+    previous day taking the ad group source timezone into account.
+    """
+    budgets_tz = ad_group_source.source.source_type.budgets_tz
+
+    ag_settings_iter = _get_lookahead_iter(ad_group_settings)
+    for i, (ag_settings, next_ag_settings) in enumerate(ag_settings_iter):
+        if not next_ag_settings or\
+           dates_helper.utc_to_tz_datetime(next_ag_settings.created_dt, budgets_tz).date() == date:
+            return ad_group_settings[i:]
+
+
+def _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings):
+    """
+    Return pairs of ad group and ad group source settings that were active at the same time.
+    Inputs are expected to be sorted.
+    """
+    ag_settings_iter = _get_lookahead_iter(ad_group_settings)
+    ag_settings, next_ag_settings = next(ag_settings_iter)
+
+    pairs = []
+    for ags_settings, next_ags_settings in _get_lookahead_iter(ad_group_source_settings):
+        pairs.append((ag_settings, ags_settings))
+        if not next_ags_settings and next_ag_settings:
+            pairs.append((next_ag_settings, ags_settings))
             continue
 
-        daily_budget_cc = sett.ad_group_source.source.default_daily_budget_cc
-        if sett.daily_budget_cc:
-            daily_budget_cc = sett.daily_budget_cc
+        if next_ag_settings and next_ags_settings.created_dt > next_ag_settings.created_dt:
+            pairs.append((next_ag_settings, ags_settings))
+            ag_settings, next_ag_settings = next(ag_settings_iter)
 
-        ags_max_daily_budget = max(ags_max_daily_budget, daily_budget_cc)
-
-    return ags_max_daily_budget
+    return pairs
 
 
-def _get_ad_groups_user_end_dates(ad_groups):
-    ag_settings = dash.models.AdGroupSettings.objects.filter(
-        ad_group__in=ad_groups,
-        landing_mode=False
-    ).group_current_settings().values('ad_group_id', 'end_date')
-    return {sett['ad_group_id']: sett['end_date'] for sett in ag_settings}
+def _get_source_max_daily_budget(date, ad_group_source, ad_group_settings, ad_group_source_settings):
+    if not ad_group_settings or not ad_group_source_settings:
+        return 0
+
+    ad_group_settings = _get_valid_ad_group_settings(date, ad_group_source, ad_group_settings)
+    pairs = _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings)
+    max_daily_budget = max(_get_effective_daily_budget(date, ad_group_source, pair[0], pair[1]) for pair in pairs)
+
+    return max_daily_budget
 
 
 def _get_ad_groups_latest_end_dates(ad_groups):
@@ -1023,11 +1139,8 @@ def _get_ag_ids_active_on_date(date, ad_groups):
     return ag_ids_active_on_date
 
 
-def _get_ad_groups_running_on_date(date, ad_groups, user_end_dates=False):
-    if user_end_dates:
-        ad_group_end_dates = _get_ad_groups_user_end_dates(ad_groups)
-    else:
-        ad_group_end_dates = _get_ad_groups_latest_end_dates(ad_groups)
+def _get_ad_groups_running_on_date(date, ad_groups):
+    ad_group_end_dates = _get_ad_groups_latest_end_dates(ad_groups)
     ag_ids_active_on_date = _get_ag_ids_active_on_date(date, ad_groups)
 
     running_ad_groups = set()
