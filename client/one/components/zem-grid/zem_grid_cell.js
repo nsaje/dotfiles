@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridCell', ['config', function (config) {
+oneApp.directive('zemGridCell', [function () {
 
     return {
         restrict: 'E',
@@ -15,17 +15,13 @@ oneApp.directive('zemGridCell', ['config', function (config) {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: ['zemGridService', function (zemGridUtil) {
+        controller: ['zemGridService', function (zemGridService) {
             this.toggleCollapse = function () {
-                zemGridUtil.toggleCollapse(this.grid, this.row);
+                zemGridService.toggleCollapse(this.grid, this.row);
             };
 
             this.getCellStyle = function () {
-                var width = 'auto';
-                if (this.grid.ui.columnWidths[this.position]) {
-                    width = this.grid.ui.columnWidths[this.position] + 'px';
-                }
-                return {'min-width': width};
+                return zemGridService.getCellStyle(this.grid, this.position);
             };
         }],
     };

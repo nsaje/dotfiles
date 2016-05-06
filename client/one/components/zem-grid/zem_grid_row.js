@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridRow', ['config', function (config) {
+oneApp.directive('zemGridRow', [function () {
 
     return {
         restrict: 'E',
@@ -13,22 +13,17 @@ oneApp.directive('zemGridRow', ['config', function (config) {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridService', function ($scope, zemGridConstants, zemGridUtil) {
-            $scope.constants = zemGridConstants;
+        controller: ['$scope', 'zemGridConstants', 'zemGridService',
+            function ($scope, zemGridConstants, zemGridService) {
+                $scope.constants = zemGridConstants;
 
-            this.loadMore = function () {
-                zemGridUtil.loadMore(this.grid, this.row, 5);
-            };
+                this.loadMore = function () {
+                    zemGridService.loadMore(this.grid, this.row, 5);
+                };
 
-            this.getRowClass = function () {
-                var classes = [];
-                classes.push('level-' + this.row.level);
-
-                if (this.row.level === this.grid.meta.levels) {
-                    classes.push('level-last');
-                }
-                return classes;
-            };
-        }],
+                this.getRowClass = function () {
+                    return zemGridService.getRowClass(this.grid, this.row);
+                };
+            }],
     };
 }]);

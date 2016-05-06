@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGridDebug', ['config', function (config) {
+oneApp.directive('zemGridDebug', [function () {
 
     return {
         restrict: 'E',
@@ -10,8 +10,6 @@ oneApp.directive('zemGridDebug', ['config', function (config) {
         controllerAs: 'ctrl',
         bindToController: {
             grid: '=',
-        },
-        link: function (scope, element, attributes) {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
         controller: ['zemGridService', function (zemGridService) {

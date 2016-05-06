@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) {
+oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
     var EVENTS = {
         PRE_GET_DATA: 'pre-get-data',
@@ -88,7 +88,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 var breakdown = data.data[0];
                 applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
-                notifyListeners(DataSource.EVENTS.POST_GET_DATA, breakdown);
+                notifyListeners(EVENTS.POST_GET_DATA, breakdown);
             }).error(function (data) {
                 deferred.reject(data);
             });

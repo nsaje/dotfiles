@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', function (config, zemGridConstants, zemGridService) {
+oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', function (config, zemGridConstants, zemGridService) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -14,6 +14,7 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', fun
         controller: ['$scope', 'zemGridPubSub', function ($scope, zemGridPubSub) {
 
             var ctrl = this;
+            ctrl.grid = null;
             ctrl.pubsub = zemGridPubSub.createInstance($scope);
 
             activate();

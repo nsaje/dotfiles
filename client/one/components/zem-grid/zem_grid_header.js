@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', function ($timeout, config, zemGridConstants) {
+oneApp.directive('zemGridHeader', ['$timeout', function ($timeout) {
 
     return {
         restrict: 'E',
@@ -42,13 +42,9 @@ oneApp.directive('zemGridHeader', ['$timeout', 'config', 'zemGridConstants', fun
                 });
             });
         },
-        controller: [function () {
+        controller: ['zemGridService', function (zemGridService) {
             this.getCellStyle = function (index) {
-                var width = 'auto';
-                if (this.grid.ui.columnWidths[index]) {
-                    width = this.grid.ui.columnWidths[index] + 'px';
-                }
-                return {'min-width': width};
+                return zemGridService.getCellStyle(this.grid, index);
             };
         }],
     };

@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridObject', ['$rootScope', function ($rootScope) {
+oneApp.factory('zemGridObject', [function () {
 
     function Grid () {
         this.header = {};
@@ -13,15 +13,6 @@ oneApp.factory('zemGridObject', ['$rootScope', function ($rootScope) {
             source: null,
             breakdowns: null,
             levels: null,
-        };
-
-        this.registerListener = function (event, listener) {
-            // FIXME: Replace AngularJS PubSub with better solution (observables)
-            return $rootScope.$on(event, listener);
-        };
-
-        this.notifyListeners = function (event, data) {
-            $rootScope.$emit(event, data);
         };
     }
 

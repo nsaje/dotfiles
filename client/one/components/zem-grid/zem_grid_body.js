@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridBody', ['$timeout', 'config', 'zemGridConstants', function ($timeout, config, zemGridConstants) {
+oneApp.directive('zemGridBody', ['$timeout', function ($timeout) {
 
     return {
         restrict: 'E',

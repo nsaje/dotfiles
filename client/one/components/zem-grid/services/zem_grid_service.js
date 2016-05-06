@@ -68,13 +68,35 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         }
     }
 
+    function getRowClass (grid, row) {
+        var classes = [];
+        classes.push('level-' + row.level);
+
+        if (row.level === grid.meta.levels) {
+            classes.push('level-last');
+        }
+        return classes;
+    }
+
+    function getCellStyle (grid, cellIndex) {
+        var width = 'auto';
+        if (grid.ui.columnWidths[cellIndex]) {
+            width = grid.ui.columnWidths[cellIndex] + 'px';
+        }
+        return {'min-width': width};
+    }
+
 
     return {
         load: load,
         loadMore: loadMore,
 
-        // TODO: Move to separate service (toggle service)
+        // TODO: Move to separate service (interaction service)
         toggleCollapse: toggleCollapse,
         toggleCollapseLevel: toggleCollapseLevel,
+
+        // TODO: Move to separate service (style service)
+        getRowClass: getRowClass,
+        getCellStyle: getCellStyle,
     };
 }]);
