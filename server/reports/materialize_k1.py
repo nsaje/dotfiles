@@ -197,6 +197,15 @@ class Publishers(object):
 
         for row in self._stats_breakdown(date).rows():
             ad_group_id = row[0]
+            media_source = row[2]
+            publisher = row[3]
+
+            if media_source == 'outbrain':
+                continue
+
+            if not publisher:
+                continue
+
             ad_group = ad_groups_map.get(ad_group_id)
             if ad_group is None:
                 logger.error("Got spend for invalid adgroup: %s", ad_group_id)
@@ -208,8 +217,6 @@ class Publishers(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            media_source = row[2]
-            publisher = row[3]
             post_click = self._get_post_click_data(
                 ad_group_id, content_ad_postclick.get((ad_group_id, media_source, publisher)))
 
