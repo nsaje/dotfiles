@@ -970,7 +970,6 @@ class AccountAgency(api_common.BaseApiView):
                                             account=account)
         response = {
             'settings': self.get_dict(request, settings, account),
-            'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
