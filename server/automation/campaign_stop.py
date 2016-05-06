@@ -28,7 +28,15 @@ TEMP_EMAILS = [
     'urska.kosec@zemanta.com',
     'ana.dejanovic@zemanta.com',
     'tadej.pavlic@zemanta.com',
+    'ziga.stopinsek@zemanta.com',
 ]
+
+
+def run_job():
+    in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
+
+    switch_low_budget_campaigns_to_landing_mode()
+    update_campaigns_in_landing(in_landing)  # only update those that were already in landing
 
 
 def switch_low_budget_campaigns_to_landing_mode():
@@ -46,7 +54,6 @@ def switch_low_budget_campaigns_to_landing_mode():
         check_and_switch_campaign_to_landing_mode(campaign, campaign._current_settings[0])
 
 
-@transaction.atomic
 def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
         return False
@@ -60,15 +67,17 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     is_near_depleted = available_tomorrow < max_daily_budget * 2
     is_resumed = False
     actions = []
-    if not campaign_settings.landing_mode:
-        if should_switch_to_landing:
-            actions = _switch_campaign_to_landing_mode(campaign)
-            _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-        elif is_near_depleted:
-            _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
-    elif _can_resume_campaign(campaign):
-        actions = _resume_campaign(campaign)
-        is_resumed = True
+
+    with transaction.atomic():
+        if not campaign_settings.landing_mode:
+            if should_switch_to_landing:
+                actions = _switch_campaign_to_landing_mode(campaign)
+                _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+            elif is_near_depleted:
+                _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend)
+        elif _can_resume_campaign(campaign):
+            actions = _resume_campaign(campaign)
+            is_resumed = True
     zwei_actions.send(actions)
     return should_switch_to_landing or is_resumed
 
@@ -78,12 +87,7 @@ def get_minimum_budget_amount(budget_item):
         return None
     today = dates_helper.local_today()
 
-    other_active_budgets = dash.models.BudgetLineItem.objects.filter(
-        campaign=budget_item.campaign
-    ).filter_active().exclude(pk=budget_item.pk)
-    covered_amount = decimal.Decimal('0')
-    for b in other_active_budgets:
-        covered_amount += b.get_available_amount()
+    covered_amount = _combined_active_budget_from_other_items(budget_item)
 
     spend = budget_item.get_spend_data(use_decimal=True)['total']
     max_daily_budget = _get_max_daily_budget(today, budget_item.campaign)
@@ -121,8 +125,8 @@ def is_current_time_valid_for_amount_editing(campaign):
     return not (utc_now.hour < 12 and any_source_after_midnight)
 
 
-def update_campaigns_in_landing():
-    for campaign in dash.models.Campaign.objects.all().filter_landing().iterator():
+def update_campaigns_in_landing(campaigns):
+    for campaign in campaigns:
         logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
         try:
@@ -135,21 +139,157 @@ def update_campaigns_in_landing():
         zwei_actions.send(actions)
 
 
-def get_max_settable_daily_budget(ad_group_source):
+def can_enable_ad_group(ad_group, campaign, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return True
+
+    if campaign_settings.landing_mode:
+        return False
+
+    ad_groups = [ad_group]
+    return _can_enable_ad_groups(ad_groups, campaign)
+
+
+def can_enable_ad_groups(campaign, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return defaultdict(lambda: True)
+
+    if campaign_settings.landing_mode:
+        return defaultdict(lambda: False)
+
+    ad_groups = campaign.adgroup_set.all().exclude_archived()
+    return _can_enable_ad_groups(ad_groups, campaign)
+
+
+def can_enable_media_source(ad_group_source, campaign, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return True
+
+    if campaign_settings.landing_mode:
+        return False
+
+    ad_group_sources = [ad_group_source]
+    return _can_enable_media_sources(ad_group_sources, campaign)
+
+
+def can_enable_media_sources(ad_group, campaign, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return defaultdict(lambda: True)
+
+    if campaign_settings.landing_mode:
+        return defaultdict(lambda: False)
+
+    ad_group_sources = ad_group.adgroupsource_set.all()
+    return _can_enable_media_sources(ad_group_sources, campaign)
+
+
+def get_max_settable_source_budget(ad_group_source, new_daily_budget, campaign,
+                                   ad_group_source_settings, ad_group_settings, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return None
+
+    if campaign_settings.landing_mode:
+        return 0
+
     today = dates_helper.local_today()
-    max_daily_budget_per_ags = _get_max_daily_budget_per_ags(today, ad_group_source.ad_group.campaign)
+    max_daily_budget_per_ags = _get_max_daily_budget_per_ags(today, campaign)
     remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
-        ad_group_source.ad_group.campaign, sum(max_daily_budget_per_ags.values()))
+        campaign, sum(max_daily_budget_per_ags.values()))
+
+    max_ags_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, 0)
+    if new_daily_budget <= max_ags_daily_budget:
+        return max_ags_daily_budget
 
     ags_max_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, 0)
     other_sources_max_sum = sum(max_daily_budget_per_ags.values()) - ags_max_daily_budget
 
-    max_today = decimal.Decimal(remaining_today + ags_max_daily_budget)\
+    max_today = decimal.Decimal(ags_max_daily_budget + remaining_today)\
                        .to_integral_exact(rounding=decimal.ROUND_CEILING)
     max_tomorrow = decimal.Decimal(available_tomorrow - other_sources_max_sum)\
                           .to_integral_exact(rounding=decimal.ROUND_CEILING)
 
     return max(min(max_today, max_tomorrow), 0)
+
+
+def _can_enable_media_sources(ad_group_sources, campaign):
+    current_ags_settings = {}
+    for ags_settings in dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__in=ad_group_sources,
+    ).group_current_settings().select_related('ad_group_source__source'):
+        current_ags_settings[ags_settings.ad_group_source] = ags_settings
+
+    today = dates_helper.local_today()
+    max_daily_budget_per_ags = _get_max_daily_budget_per_ags(today, campaign)
+    remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
+        campaign, sum(max_daily_budget_per_ags.values()))
+
+    ret = {}
+    for ad_group_source, ags_settings in current_ags_settings.iteritems():
+        if ags_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            ret[ad_group_source.id] = True
+            continue
+
+        daily_budget_cc = ags_settings.ad_group_source.source.default_daily_budget_cc
+        if ags_settings.daily_budget_cc:
+            daily_budget_cc = ags_settings.daily_budget_cc
+
+        daily_budget_added = daily_budget_cc - max_daily_budget_per_ags.get(ad_group_source.id, 0)
+        can_enable_today = daily_budget_added <= remaining_today
+        can_enable_tomorrow = daily_budget_cc <= available_tomorrow
+
+        ret[ad_group_source.id] = can_enable_today and can_enable_tomorrow
+
+    return ret
+
+
+def _can_enable_ad_groups(ad_groups, campaign):
+    today = dates_helper.local_today()
+    max_daily_budget_per_ags = _get_max_daily_budget_per_ags(today, campaign)
+    remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
+        campaign, sum(max_daily_budget_per_ags.values()))
+
+    current_ag_settings = {}
+    for ag_settings in dash.models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups
+    ).group_current_settings().select_related('ad_group'):
+        current_ag_settings[ag_settings.ad_group] = ag_settings
+
+    current_ags_settings = {}
+    for ags_settings in dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group__in=ad_groups,
+    ).group_current_settings().select_related('ad_group_source__source'):
+        current_ags_settings[ags_settings.ad_group_source] = ags_settings
+
+    ret = {}
+    for ad_group in ad_groups:
+        ret[ad_group.id] = _can_enable_ad_group(ad_group, current_ag_settings[ad_group], current_ags_settings,
+                                                max_daily_budget_per_ags, remaining_today, available_tomorrow)
+    return ret
+
+
+def _can_enable_ad_group(ad_group, ad_group_settings, ad_group_sources_settings_dict,
+                         max_daily_budget_per_ags, remaining_today, available_tomorrow):
+    if ad_group_settings.state == dash.constants.AdGroupSettingsState.ACTIVE:
+        return True
+
+    daily_budget_total = 0
+    daily_budget_added = 0
+    for ad_group_source, ad_group_source_settings in ad_group_sources_settings_dict.iteritems():
+        if ad_group_source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
+            continue
+
+        max_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, 0)
+        current_daily_budget = ad_group_source_settings.ad_group_source.source.default_daily_budget_cc
+        if ad_group_source_settings.daily_budget_cc:
+            current_daily_budget = ad_group_source_settings.daily_budget_cc
+
+        daily_budget_total += current_daily_budget
+        daily_budget_added += max(0, current_daily_budget - max_daily_budget)
+
+    can_enable_today = daily_budget_added <= remaining_today
+    can_enable_tomorrow = daily_budget_total <= available_tomorrow
+
+    return can_enable_today and can_enable_tomorrow
 
 
 def get_min_budget_increase(campaign):
@@ -166,9 +306,18 @@ def get_min_budget_increase(campaign):
 
     _, available_tomorrow, min_needed_today = _get_minimum_remaining_budget(campaign, max_daily_budget)
 
-    user_daily_budget_sum = sum(user_daily_budget_per_ags.itervalues())
+    user_daily_budget_sum = sum(user_db for user_db in user_daily_budget_per_ags.values() if user_db is not None)
     min_needed_tomorrow = user_daily_budget_sum - available_tomorrow
     return max(min_needed_today, min_needed_tomorrow, 0)
+
+
+def _combined_active_budget_from_other_items(budget_item):
+    other_active_budgets = dash.models.BudgetLineItem.objects.filter(
+        campaign=budget_item.campaign
+    ).filter_active().exclude(pk=budget_item.pk)
+    return sum(
+        b.get_available_amount() for b in other_active_budgets
+    )
 
 
 def _can_resume_campaign(campaign):
@@ -207,10 +356,17 @@ def _update_landing_campaign(campaign):
     so it's not an issue.
     """
     actions = []
+    if _can_resume_campaign(campaign):
+        return _resume_campaign(campaign)
+
     if not campaign.adgroup_set.all().filter_active().count() > 0:
         return _wrap_up_landing(campaign)
 
     actions.extend(_stop_non_spending_sources(campaign))
+    if not campaign.adgroup_set.all().filter_active().count() > 0:
+        return actions + _wrap_up_landing(campaign)
+
+    actions.extend(_check_ad_groups_end_date(campaign))
     if not campaign.adgroup_set.all().filter_active().count() > 0:
         return actions + _wrap_up_landing(campaign)
 
@@ -226,9 +382,28 @@ def _update_landing_campaign(campaign):
 
     _persist_new_autopilot_settings(daily_caps)
 
-    actions.extend(_run_autopilot(daily_caps))
+    actions.extend(_run_autopilot(campaign, daily_caps))
     actions.extend(_set_end_date_to_today(campaign))
 
+    return actions
+
+
+def _check_ad_groups_end_date(campaign):
+    today = dates_helper.local_today()
+    actions, finished = [], []
+    for ad_group in campaign.adgroup_set.all().filter_active():
+        user_settings = _get_last_user_ad_group_settings(ad_group)
+        if user_settings.end_date and user_settings.end_date < today:
+            finished.append(ad_group)
+            actions.extend(_stop_ad_group(ad_group))
+
+    if finished:
+        models.CampaignStopLog.objects.create(
+            campaign=campaign,
+            notes='Stopped finished ad groups {}'.format(', '.join(
+                str(ad_group) for ad_group in finished
+            ))
+        )
     return actions
 
 
@@ -278,7 +453,7 @@ def _stop_non_spending_sources(campaign):
 
         if to_stop:
             for ags in to_stop:
-                _stop_ad_group_source(ags)
+                actions.extend(_stop_ad_group_source(ags))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes='Stopping non spending ad group sources on ad group {}. '
@@ -418,7 +593,8 @@ def _switch_campaign_to_landing_mode(campaign):
 def _resume_campaign(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
-        notes='Campaign returned to normal mode.'
+        notes='Campaign returned to normal mode - enough campaign budget '
+              'today and tomorrow to cover daily budgets set before landing mode.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=False)
 
@@ -432,10 +608,12 @@ def _wrap_up_landing(campaign):
 
 
 def _turn_off_landing_mode(campaign, pause_ad_groups=False):
-    new_campaign_settings = campaign.get_current_settings().copy_settings()
+    current_settings = campaign.get_current_settings()
+    new_campaign_settings = current_settings.copy_settings()
     new_campaign_settings.landing_mode = False
     new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_campaign_settings.save(None)
+    if new_campaign_settings.get_setting_changes(current_settings):
+        new_campaign_settings.save(None)
 
     actions = []
     for ad_group in campaign.adgroup_set.all().filter_landing():
@@ -460,11 +638,15 @@ def _set_ad_group_end_date(ad_group, end_date):
     )
 
 
-def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
-    user_settings = dash.models.AdGroupSettings.objects.filter(
+def _get_last_user_ad_group_settings(ad_group):
+    return dash.models.AdGroupSettings.objects.filter(
         ad_group=ad_group,
         landing_mode=False
     ).latest('created_dt')
+
+
+def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
+    user_settings = _get_last_user_ad_group_settings(ad_group)
 
     current_settings = ad_group.get_current_settings()
 
@@ -474,6 +656,7 @@ def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
     new_settings.autopilot_state = user_settings.autopilot_state
     new_settings.autopilot_daily_budget = user_settings.autopilot_daily_budget
     new_settings.landing_mode = False
+    new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
 
     if pause_ad_group:
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
@@ -562,7 +745,9 @@ def _set_end_date_to_today(campaign):
     actions = []
     today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
-        actions.extend(_set_ad_group_end_date(ad_group, today))
+        actions.extend(
+            _set_ad_group_end_date(ad_group, today)
+        )
     models.CampaignStopLog.objects.create(
         campaign=campaign,
         notes='End date set to {}'.format(today)
@@ -593,7 +778,9 @@ def _get_yesterday_source_spends(ad_groups):
 
     yesterday_spends = {}
     for row in rows:
-        yesterday_spends[(row['ad_group'], row['source'])] = row['cost'] + row['data_cost']
+        media_cost = row['cost'] or 0
+        data_cost = row['data_cost'] or 0
+        yesterday_spends[(row['ad_group'], row['source'])] = media_cost + data_cost
 
     return yesterday_spends
 
@@ -694,7 +881,9 @@ def _get_past_7_days_data(campaign):
     date_spend = defaultdict(int)
     source_spend = defaultdict(int)
     for item in data:
-        spend = item['cost'] + item['data_cost']
+        media_cost = item['cost'] or 0
+        data_cost = item['data_cost'] or 0
+        spend = media_cost + data_cost
         date_spend[(item['ad_group'], item['date'])] += spend
         source_spend[(item['ad_group'], item['source'])] += spend
 
@@ -723,7 +912,7 @@ def _get_ags_settings_dict(date, ad_group_sources):
     settings_on_date = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources,
         created_dt__lt=date + datetime.timedelta(days=1),
-    ).order_by('-created_dt')
+    ).select_related('ad_group_source__source').order_by('-created_dt')
 
     ret = defaultdict(list)
     for ags_sett in settings_on_date.iterator():
@@ -740,13 +929,20 @@ def _get_user_daily_budget_per_ags(campaign):
         state=dash.constants.AdGroupSettingsState.ACTIVE,
     ).values_list('ad_group_id', flat=True)
 
+    ags_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group_id__in=active_ag_ids, landing_mode=False
+    ).group_current_settings().select_related('ad_group_source__source')
+
     ret = {}
-    for ags_settings in dash.models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__ad_group_id__in=active_ag_ids, landing_mode=False).group_current_settings():
+    for ags_settings in ags_settings:
         if ags_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
             continue
 
-        ret[ags_settings.ad_group_source_id] = ags_settings.daily_budget_cc
+        current_daily_budget = ags_settings.ad_group_source.source.default_daily_budget_cc
+        if ags_settings.daily_budget_cc:
+            current_daily_budget = ags_settings.daily_budget_cc
+
+        ret[ags_settings.ad_group_source_id] = current_daily_budget
     return ret
 
 
@@ -782,7 +978,11 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings
         if sett.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
 
-        ags_max_daily_budget = max(ags_max_daily_budget, sett.daily_budget_cc)
+        daily_budget_cc = sett.ad_group_source.source.default_daily_budget_cc
+        if sett.daily_budget_cc:
+            daily_budget_cc = sett.daily_budget_cc
+
+        ags_max_daily_budget = max(ags_max_daily_budget, daily_budget_cc)
 
     return ags_max_daily_budget
 
@@ -867,7 +1067,12 @@ Zemanta'''  # noqa
         yesterday_spend=yesterday_spend,
     )
 
-    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
+    account_settings = campaign.account.get_current_settings()
+    emails = TEMP_EMAILS
+    if account_settings.default_account_manager:
+        emails = [account_settings.default_account_manager.email] + emails
+
+    email_helper.send_notification_mail(emails, subject, body)
 
 
 def _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
@@ -898,4 +1103,9 @@ Zemanta'''  # noqa
         yesterday_spend=yesterday_spend,
     )
 
-    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
+    account_settings = campaign.account.get_current_settings()
+    emails = TEMP_EMAILS
+    if account_settings.default_account_manager:
+        emails = [account_settings.default_account_manager.email] + emails
+
+    email_helper.send_notification_mail(emails, subject, body)

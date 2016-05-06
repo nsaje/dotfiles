@@ -22,6 +22,14 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
+    accountTypes: {
+        UNKNOWN: 1,
+        TEST: 2,
+        SANDBOX: 3,
+        PILOT: 4,
+        SELF_MANAGED: 5,
+        MANAGED: 6,
+    },
     infoboxStatus: {
         ACTIVE: 'active',
         INACTIVE: 'inactive',
@@ -577,13 +585,21 @@ var constants = {
 };
 
 var options = {
+    accountTypes: [
+        {name: 'Unknown', id: constants.accountTypes.UNKNOWN},
+        {name: 'Test', id: constants.accountTypes.TEST},
+        {name: 'Sandbox', id: constants.accountTypes.SANDBOX},
+        {name: 'Pilot', id: constants.accountTypes.PILOT},
+        {name: 'Self-managed', id: constants.accountTypes.SELF_MANAGED},
+        {name: 'Managed', id: constants.accountTypes.MANAGED},
+    ],
     adGroupSettingsStates: [
         {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE},
     ],
     adGroupSettingsAutopilotStates: [{
         name: 'Disabled',
-        help: 'Auto-Pilot will not operate on this Ad Group.',
+        help: 'Autopilot will not operate on this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.INACTIVE,
     }, {
         name: 'Optimize Bid CPCs',

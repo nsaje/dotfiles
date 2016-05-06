@@ -485,17 +485,17 @@ def _until_today():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    if campaign:
-        qs = dash.models.BudgetLineItem.objects.filter(
-            campaign__in=campaign
-        )
-    else:
-        qs = dash.models.BudgetLineItem.objects.all()
+    if not campaign:
+        return dash.models.BudgetLineItem.objects.none()
+
+    qs = dash.models.BudgetLineItem.objects.filter(
+        campaign__in=campaign
+    )
+
     return qs.filter_active(date)
 
 
 def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
-    campaign = ad_group_settings.ad_group.campaign
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
@@ -504,17 +504,17 @@ def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
         filter_by_sources(filtered_sources)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
 
-    return get_adgroup_running_status_class(autopilot_state, running_status,
-                                            state, campaign.is_in_landing())
+    return get_adgroup_running_status_class(autopilot_state, running_status, state,
+                                            ad_group_settings.landing_mode)
 
 
 def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
+    if is_in_landing:
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
     if state == dash.constants.AdGroupSettingsState.INACTIVE and\
        running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
         return dash.constants.InfoboxStatus.STOPPED
-
-    if is_in_landing:
-        return dash.constants.InfoboxStatus.LANDING_MODE
 
     if (running_status == dash.constants.AdGroupRunningStatus.INACTIVE and
             state == dash.constants.AdGroupSettingsState.ACTIVE) or\
@@ -529,25 +529,33 @@ def get_adgroup_running_status_class(autopilot_state, running_status, state, is_
     return dash.constants.InfoboxStatus.ACTIVE
 
 
-def get_campaign_running_status(campaign):
-    count_active = dash.models.AdGroup.objects.filter(
+def get_campaign_running_status(campaign, campaign_settings):
+    if campaign_settings.landing_mode:
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
+    running_exists = dash.models.AdGroup.objects.filter(
         campaign=campaign
-    ).filter_running().count()
-    if count_active > 0:
-        if campaign.is_in_landing():
-            return dash.constants.InfoboxStatus.LANDING_MODE
+    ).filter_running().exists()
+    if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
-    return dash.constants.InfoboxStatus.INACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(
+        campaign=campaign
+    ).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
 def get_account_running_status(account):
-    count_active = dash.models.AdGroup.objects.filter(
+    running_exists = dash.models.AdGroup.objects.filter(
         campaign__account=account
-    ).filter_running().count()
-    if count_active > 0:
+    ).filter_running().exists()
+    if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
-    else:
-        return dash.constants.InfoboxStatus.INACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(
+        campaign__account=account
+    ).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
 def _retrieve_active_creditlineitems(account, date):
@@ -560,11 +568,6 @@ def _compute_daily_cap(ad_groups):
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups
     )
-    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_states().values_list('ad_group_source__id', 'state')
-
-    adg_state = dict(ad_group_source_states)
 
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources
@@ -572,11 +575,16 @@ def _compute_daily_cap(ad_groups):
 
     adgs_settings = dict(ad_group_source_settings)
 
+    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_states()
+
     ret = 0
-    for adgsid, state in adg_state.iteritems():
-        if not state or state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    for adgs_state in ad_group_source_states:
+        if not adgs_state.state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
-        ret += adgs_settings.get(adgsid) or 0
+        ret += adgs_settings.get(adgs_state.ad_group_source_id) or adgs_state.daily_budget_cc or 0
+
     return ret
 
 

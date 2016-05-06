@@ -13,6 +13,8 @@ DEBUG = False
 SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK7AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAN3zo4qfYMJ/NkP2AIBEIBNdJszHvK9nhndxS9hIpiLnMWN1vWYUrQbEEudStHg0Q3vl+mKdIvR3rPNcbXj1YLddebdzXlPBxQdVEX1G7ltCC2O333j2N4gU52naF8=').get()
 
 STATS_DB_NAME = 'stats'
+K1_DB_NAME = 'k1'
+K1_VIEWS_DB_NAME = K1_DB_NAME
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -28,9 +30,18 @@ DATABASES = {
             'NAME': 'test_one_%s_%s' % (socket.gethostname(), int(time.time() * 1E6))
         }
     },
-    'stats': {
+    STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'one',
+        'USER': 'eins',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
+        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'HOST': '172.26.4.104',
+        'PORT': 5439
+    },
+    K1_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'k1',
         'USER': 'eins',
         'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
         'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',

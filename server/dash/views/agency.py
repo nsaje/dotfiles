@@ -11,7 +11,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_plus, campaign_stop
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -267,7 +267,9 @@ class AdGroupSettingsState(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         data = json.loads(request.body)
         new_state = data.get('state')
-        self._validate_state(ad_group, new_state)
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        self._validate_state(ad_group, ad_group.campaign, campaign_settings, new_state)
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -282,11 +284,11 @@ class AdGroupSettingsState(api_common.BaseApiView):
             'state': new_settings.state,
         })
 
-    def _validate_state(self, ad_group, state):
+    def _validate_state(self, ad_group, campaign, campaign_settings, state):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        if ad_group.campaign.is_in_landing():
+        if not campaign_stop.can_enable_ad_group(ad_group, campaign, campaign_settings):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSettingsState.ACTIVE and \
@@ -428,9 +430,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         rows = []
@@ -467,9 +466,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
     def post(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         try:
@@ -495,9 +491,6 @@ class ConversionGoal(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
     def delete(self, request, campaign_id, conversion_goal_id):
-        if not request.user.has_perm('zemauth.manage_conversion_goals'):
-            raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
         campaign_goals.delete_conversion_goal(request, conversion_goal_id, campaign)
 
@@ -560,11 +553,6 @@ class CampaignSettings(api_common.BaseApiView):
 
         current_settings = campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
-        if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            # copy properties that can't be set by the user
-            # to pass validation
-            settings_dict['target_devices'] = new_settings.target_devices
-            settings_dict['target_regions'] = new_settings.target_regions
 
         settings_form = forms.CampaignSettingsForm(settings_dict)
         errors = {}
@@ -702,9 +690,8 @@ class CampaignSettings(api_common.BaseApiView):
             'goal_quantity': settings.goal_quantity,
         }
 
-        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            result['target_devices'] = settings.target_devices
-            result['target_regions'] = settings.target_regions
+        result['target_devices'] = settings.target_devices
+        result['target_regions'] = settings.target_regions
 
         return result
 
@@ -712,10 +699,8 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.campaign_goal = resource['campaign_goal']
         settings.goal_quantity = resource['goal_quantity']
-
-        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
-            settings.target_devices = resource['target_devices']
-            settings.target_regions = resource['target_regions']
+        settings.target_devices = resource['target_devices']
+        settings.target_regions = resource['target_regions']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
@@ -734,9 +719,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
         last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
@@ -760,9 +742,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)  # check access to account
 
         try:
@@ -808,9 +787,6 @@ class ConversionPixel(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
-        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
-            raise exc.AuthorizationError()
-
         try:
             conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
         except models.ConversionPixel.DoesNotExist:
@@ -857,7 +833,8 @@ class AccountAgency(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_agency_view'):
+        if not (self._is_valid_agency_manager(account_id, request.user) or
+                request.user.has_perm('zemauth.account_agency_view')):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
@@ -876,25 +853,66 @@ class AccountAgency(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_agency_view'):
+        if not (request.user.has_perm('zemauth.account_agency_view') or
+                self._is_valid_agency_manager(account_id, request.user)):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
-        form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
 
+        form = forms.AccountAgencyAgencyForm(resource.get('settings', {}))
+
+        settings = self.save_settings(request, account, form)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+                                            account=account)
+        response = {
+            'settings': self.get_dict(request, settings, account),
+            'history': self.get_history(account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
+        }
+
+        return self.create_api_response(response)
+
+    def _is_valid_agency_manager(self, account_id, user):
+        if not user.has_perm('zemauth.can_manage_agency'):
+            return False
+
+        agency = user.agency_set.first()
+        account = agency.account_set.filter(id=account_id).first() if agency else None
+
+        if agency is not None and account is not None and account.agency == agency:
+            return True
+
+        return False
+
+    def save_settings(self, request, account, form):
         with transaction.atomic():
             if form.is_valid():
+                if 'default_sales_representative' in form.cleaned_data and\
+                        form.cleaned_data['default_sales_representative'] is not None and not (
+                        request.user.has_perm('zemauth.account_agency_view') or
+                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
+                    raise exc.AuthorizationError()
+
                 self.set_account(account, form.cleaned_data)
 
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
 
-                if 'allowed_sources' in form.cleaned_data \
-                        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None and\
+                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
                     raise exc.AuthorizationError()
 
-                if 'allowed_sources' in form.cleaned_data:
+                if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
+                    if not request.user.has_perm('zemauth.can_modify_account_type'):
+                        raise exc.AuthorizationError()
+                    settings.account_type = form.cleaned_data['account_type']
+
+                if 'allowed_sources' in form.cleaned_data and\
+                        form.cleaned_data['allowed_sources'] is not None:
                     self.set_allowed_sources(
                         settings,
                         account,
@@ -910,16 +928,7 @@ class AccountAgency(api_common.BaseApiView):
             account.save(request)
             settings.save(request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
-                                            account=account)
-        response = {
-            'settings': self.get_dict(request, settings, account),
-            'history': self.get_history(account),
-            'can_archive': account.can_archive(),
-            'can_restore': account.can_restore(),
-        }
-
-        return self.create_api_response(response)
+            return settings
 
     def get_validation_error_data(self, request, account):
         data = {}
@@ -1047,10 +1056,15 @@ class AccountAgency(api_common.BaseApiView):
                 'default_account_manager':
                     str(settings.default_account_manager.id)
                     if settings.default_account_manager is not None else None,
-                'default_sales_representative':
-                    str(settings.default_sales_representative.id)
-                    if settings.default_sales_representative is not None else None,
             }
+
+            if request.user.has_perm('zemauth.account_agency_view') or\
+                    request.user.has_perm('zemauth.can_set_account_sales_representative'):
+                result['default_sales_representative'] =\
+                    str(settings.default_sales_representative.id) if\
+                    settings.default_sales_representative is not None else None
+            if request.user.has_perm('zemauth.can_modify_account_type'):
+                result['account_type'] = settings.account_type
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 result['allowed_sources'] = self.get_allowed_sources(
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
@@ -1103,6 +1117,10 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
+            ('account_type', {
+                'name': 'Account Type',
+                'value': constants.AccountType.get_text(new_settings.account_type)
+            }),
         ])
 
         if old_settings is not None:
@@ -1116,6 +1134,9 @@ class AccountAgency(api_common.BaseApiView):
             if old_settings.default_sales_representative is not None:
                 settings_dict['default_sales_representative']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
+            if old_settings.account_type is not None:
+                settings_dict['account_type']['old_value'] = constants.AccountType.get_text(old_settings.account_type)
 
         return settings_dict
 
@@ -1300,7 +1321,6 @@ class AccountUsers(api_common.BaseApiView):
                 self._raise_validation_error(form.errors)
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
-
             self._add_user_to_groups(user)
             email_helper.send_email_to_new_user(user, request)
 
@@ -1319,6 +1339,12 @@ class AccountUsers(api_common.BaseApiView):
             {'user': self._get_user_dict(user)},
             status_code=201 if created else 200
         )
+
+    def _add_user_to_groups(self, user):
+        perm = authmodels.Permission.objects.get(codename='group_new_user_add')
+        groups = authmodels.Group.objects.filter(permissions=perm)
+        for group in groups:
+            group.user_set.add(user)
 
     def _raise_validation_error(self, errors, message=None):
         raise exc.ValidationError(
@@ -1358,13 +1384,6 @@ class AccountUsers(api_common.BaseApiView):
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
         }
-
-    def _add_user_to_groups(self, user):
-        perm = authmodels.Permission.objects.get(codename='group_new_user_add')
-        groups = authmodels.Group.objects.filter(permissions=perm)
-
-        for group in groups:
-            group.user_set.add(user)
 
 
 class UserActivation(api_common.BaseApiView):

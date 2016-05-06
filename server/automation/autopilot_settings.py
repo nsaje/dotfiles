@@ -4,7 +4,7 @@ from dash.constants import CampaignGoalKPI
 
 # Autopilot General Settings
 SYNC_IS_RECENT_HOURS = 2
-AUTOMATION_AI_NAME = 'Zemanta Auto-Pilot'
+AUTOMATION_AI_NAME = 'Zemanta Autopilot'
 AUTOPILOT_EMAIL = 'help@zemanta.com'
 
 
@@ -33,7 +33,7 @@ CPC_CHANGE_ALLOWED_COMMENTS = [
 
 # Budget Autopilot Settings
 MAX_BUDGET_GAIN = Decimal(1.2)
-MAX_BUDGET_LOSS = Decimal(0.8)
+MAX_BUDGET_LOSS = Decimal(0.7)
 BUDGET_AP_MIN_SOURCE_BUDGET = Decimal(5.0)
 GOALS_COLUMNS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.7], 'spend_perc': Decimal(0.3)},
@@ -52,8 +52,8 @@ GOALS_WORST_VALUE = {
     'percent_new_users': 0.0,
     'conversions': 0
 }
-SPEND_PERC_LOWERING_THRESHOLD = 0.8
-LOW_SPEND_PROB_LOWERING_FACTOR = 0.3
+SPEND_PERC_LOWERING_THRESHOLD = 1.0
+LOW_SPEND_PROB_LOWERING_FACTOR = 0.25
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
 AUTOPILOT_CONVERSION_DATA_LOOKBACK_DAYS = 14
 AUTOPILOT_MIN_SPEND_PERC = Decimal(0.50)

@@ -5,7 +5,7 @@ from mock import patch, ANY
 import datetime
 import decimal
 
-from django.test import TestCase, Client, TransactionTestCase, RequestFactory
+from django.test import TestCase, Client, RequestFactory
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +17,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+from utils import exc
 
 from reports import redshift
 import reports.models
@@ -53,11 +54,12 @@ class UserTest(TestCase):
 
         response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -18000.0
@@ -78,6 +80,7 @@ class UserTest(TestCase):
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -14400.0
@@ -94,11 +97,12 @@ class UserTest(TestCase):
 
         response = self.client.get(reverse('user', kwargs={'user_id': 'current'}))
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'user': {
                     'id': '2',
                     'email': 'user@test.com',
+                    'agency': None,
                     'name': '',
                     'permissions': {},
                     'timezone_offset': -14400.0
@@ -106,6 +110,77 @@ class UserTest(TestCase):
             },
             'success': True
         })
+
+
+class AccountsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def test_put(self):
+        johnny = User.objects.get(pk=2)
+
+        rf = RequestFactory().put('accounts')
+        rf.user = johnny
+        with self.assertRaises(exc.MissingDataError):
+            views.Account().put(rf)
+
+        permission = Permission.objects.get(codename='all_accounts_accounts_add_account')
+        johnny.user_permissions.add(permission)
+        johnny.save()
+
+        johnny = User.objects.get(pk=2)
+        rf.user = johnny
+        response = views.Account().put(rf)
+        response_blob = json.loads(response.content)
+        self.assertTrue(response_blob['success'])
+        self.assertDictEqual(
+            {
+                'name': 'New account',
+                'id': 2,
+            },
+            response_blob['data']
+        )
+
+        acc = models.Account.objects.get(pk=2)
+        self.assertIsNone(acc.agency)
+
+    def test_put_as_agency_manager(self):
+        johnny = User.objects.get(pk=2)
+
+        rf = RequestFactory().put('accounts')
+        rf.user = johnny
+
+        ag = models.Agency(
+            name='6Pack'
+        )
+        ag.save(rf)
+        ag.users.add(johnny)
+        ag.save(rf)
+
+        with self.assertRaises(exc.MissingDataError):
+            views.Account().put(rf)
+
+        permission1 = Permission.objects.get(codename='all_accounts_accounts_add_account')
+        permission2 = Permission.objects.get(codename='can_manage_agency')
+        johnny.user_permissions.add(permission1)
+        johnny.user_permissions.add(permission2)
+        johnny.save()
+
+        johnny = User.objects.get(pk=2)
+        rf.user = johnny
+        response = views.Account().put(rf)
+        response_blob = json.loads(response.content)
+
+        acc = models.Account.objects.all().order_by('-created_dt').first()
+
+        self.assertTrue(response_blob['success'])
+        self.assertDictEqual(
+            {
+                'name': 'New account',
+                'id': acc.id,
+            },
+            response_blob['data']
+        )
+        self.assertIsNotNone(acc.agency)
 
 
 @patch('dash.views.views.helpers.log_useraction_if_necessary')
@@ -255,9 +330,9 @@ class AdGroupSourceSettingsTest(TestCase):
             ad_group=self.ad_group)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
-    @patch('automation.campaign_stop.get_max_settable_daily_budget')
-    def test_daily_budget_over_max_settable(self, mock_max_daily_budget):
-        mock_max_daily_budget.return_value = decimal.Decimal('500')
+    @patch('automation.campaign_stop.get_max_settable_source_budget')
+    def test_daily_budget_over_max_settable(self, mock_max_settable_budget):
+        mock_max_settable_budget.return_value = decimal.Decimal('500')
         self._set_ad_group_end_date(days_delta=3)
         self._set_campaign_automatic_campaign_stop(False)
         response = self.client.put(
@@ -369,6 +444,7 @@ class CampaignAdGroups(TestCase):
 
         self.assertIsNotNone(ad_group_settings.id)
         self.assertIsNotNone(ad_group_settings.changes_text)
+        self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
 
@@ -1363,12 +1439,6 @@ class AdGroupAdsUploadTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
     def test_missing_ad_group(self):
         non_existent_ad_group_id = 0
 
@@ -1532,12 +1602,6 @@ class AdGroupAdsUploadStatusTest(TestCase):
             }
         })
 
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
-
 
 class AdGroupAdsUploadCancelTest(TestCase):
 
@@ -1571,12 +1635,6 @@ class AdGroupAdsUploadCancelTest(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
-
-    def test_permission(self):
-        response = self._get_client(superuser=False).get(
-            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 403)
 
     def test_validation(self):
         batch = models.UploadBatch.objects.get(pk=2)
@@ -2693,7 +2751,7 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertEqual(header['title'], u'test adgroup 1 Čžš')
         self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
@@ -2803,7 +2861,7 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertEqual(header['title'], u'test adgroup 1 Čžš')
         self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\

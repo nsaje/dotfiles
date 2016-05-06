@@ -8,6 +8,8 @@ from django.contrib.auth import models as authmodels
 
 from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
+from django.test.client import RequestFactory
+from unittest import skip
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
@@ -323,7 +325,7 @@ class AdGroupAdsTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
 
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             'clicks': 1500,
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
@@ -1110,14 +1112,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
+        self.assertDictEqual(result['data']['totals'], {
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1314,7 +1309,7 @@ class AdGroupPublishersTableTest(TestCase):
         })
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             u'ctr': 100.0,
             u'cpc': 1.3,
             u'media_cost': 2.4,
@@ -1338,13 +1333,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
         })
 
     """
@@ -1673,7 +1661,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {
+        self.assertDictEqual(result['data']['totals'], {
             u'clicks': 323,
             u'cpc': 1.2,
             u'ctr': 99.0,
@@ -1697,13 +1685,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_3': None,
             u'conversion_goal_4': None,
             u'conversion_goal_5': None,
-            u'avg_cost_for_new_visitor': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
-            u'total_pageviews': 0,
-            u'total_seconds': 0,
-            u'unbounced_visits': 0,
         })
 
     def test_get_reverse_order(self, mock_query, mock_touchpointconversins_query):
@@ -1879,6 +1860,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_5': None,
         })
 
+    @skip('Test is randomly failing in production and it needs to be fixed')
     def test_actual_hidden(self, mock_query, mock_touchpointconversins_query):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password='secret')
@@ -2052,3 +2034,125 @@ class AllAccountsSourcesTableTest(TestCase):
         self.assertTrue(t.has_complete_postclick_metrics(today, today))
 
         self.assertFalse(t.is_sync_in_progress())
+
+
+@patch('reports.redshift.get_cursor')
+@patch('dash.table.reports.api_contentads.query')
+class AccountsAccountsTableTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        date = datetime.date(2015, 2, 22)
+        self.normal_user = User.objects.get(pk=2)
+
+        allaccperm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        r = RequestFactory()
+        r.user = self.normal_user
+
+        acc1 = models.Account.objects.get(pk=1)
+        acc1.users.add(self.normal_user)
+
+        redshift.STATS_DB_NAME = 'default'
+
+        self.mock_stats = {
+            'date': date.isoformat(),
+            'account': 1,
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'impressions': 2000000,
+            'cost': 200,
+            'media_cost': 200,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'billing_cost': 200,
+            'license_fee': 0,
+            'ctr': '15.5000',
+            'content_ad': 2,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
+        }
+
+    def test_get(self, mock_api_query, mock_get_cursor):
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
+
+        t = table.AccountsAccountsTable()
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertNotIn('agency', response['rows'][0])
+
+        # self.assertEqual('N/A', ['agency'])
+
+    def test_get_agency(self, mock_api_query, mock_get_cursor):
+        allaccperm = authmodels.Permission.objects.get(codename="can_view_account_agency_information")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
+
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        agency = models.Agency(
+            name='AdPro',
+        )
+        agency.save(r)
+        agency.users.add(self.normal_user)
+
+        acc = models.Account.objects.all().get(pk=1)
+        acc.agency = agency
+        acc.save(r)
+
+        t = table.AccountsAccountsTable()
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('AdPro', response['rows'][0]['agency'])
+
+    def test_get_account_type(self, mock_api_query, mock_get_cursor):
+        allaccperm = authmodels.Permission.objects.get(codename="can_see_account_type")
+        self.normal_user.user_permissions.add(allaccperm)
+
+        date = datetime.date(2015, 2, 22)
+        mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
+
+        r = HttpRequest()
+        r.user = self.normal_user
+
+        t = table.AccountsAccountsTable()
+
+        start_date = date
+        end_date = date + datetime.timedelta(days=1)
+        order = ''
+        page = 1
+        size = 100
+        show_archived = True
+
+        filtered_sources = None
+        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('Sandbox', response['rows'][0]['account_type'])

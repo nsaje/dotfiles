@@ -73,15 +73,6 @@ describe('AdGroupSourcesCtrlSpec', function () {
     }));
 
     describe('pollSourcesTableUpdates', function () {
-        it('returns early if user doesn\'t have permission', function () {
-            $scope.hasPermission = function () { return false; };
-            spyOn(api, 'adGroupSourcesUpdates');
-
-            $scope.pollSourcesTableUpdates();
-
-            expect(api.adGroupSourcesUpdates).not.toHaveBeenCalled();
-        });
-
         it('returns early if lastChangeTimeout is set', function () {
             spyOn(api, 'adGroupSourcesUpdates');
             $scope.lastChangeTimeout = 123;
@@ -172,8 +163,8 @@ describe('AdGroupSourcesCtrlSpec', function () {
             expect($scope.chartMetric1).toBe('ctr');
             expect($scope.chartMetric2).toBe('cpc');
 
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true});
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true, hidden: true});
         });
 
     });
@@ -202,8 +193,8 @@ describe('AdGroupSourcesCtrlSpec', function () {
         expect($scope.chartMetric1).toBe('clicks');
         expect($scope.chartMetric2).toBe('impressions');
 
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true});
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true, hidden: true});
     });
 
     it('should select conversion goal when one exists', function () {
@@ -230,7 +221,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
         expect($scope.chartMetric1).toBe('clicks');
         expect($scope.chartMetric2).toBe('conversion_goal_2');
 
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true});
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: true, hidden: true});
     });
 });

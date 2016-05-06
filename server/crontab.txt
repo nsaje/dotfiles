@@ -22,9 +22,10 @@
 0 7 * * *           /home/ubuntu/docker-manage-py.sh send_scheduled_export_reports
 */5 * * * *         /home/ubuntu/docker-manage-py.sh refresh_changed_contentadstats
 */5 * * * *         /home/ubuntu/docker-manage-py.sh refresh_changed_daily_statements
-* 6,12,18 * * *     /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
+* 12 * * *     /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 29 6,18 * * *       /home/ubuntu/docker-manage-py.sh schedule_old_data_refresh
 30 6,10,12,14 * * * /home/ubuntu/docker-manage-py.sh refresh_publishers
 40 6,10,12 * * *    /home/ubuntu/docker-manage-py.sh update_content_ad_stats_from_ga_api
 15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
+25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 2

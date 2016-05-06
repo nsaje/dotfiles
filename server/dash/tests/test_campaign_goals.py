@@ -272,8 +272,7 @@ class CampaignGoalsTestCase(TestCase):
 
         stats = {
             'conversion_goal_1': 10,
-            'media_cost': 5,
-            'cost': 5,
+            'e_media_cost': 5,
             'bounce_rate': 10,
             'pv_per_visit': 10,
             'avg_tos': 10,
@@ -316,8 +315,7 @@ class CampaignGoalsTestCase(TestCase):
             'pv_per_visit': 10,
             'avg_tos': 10,
             'cpc': 0.1,
-            'cost': 5,
-            'media_cost': 5,
+            'e_media_cost': 5,
             'percent_new_users': 1.2,
             'conversions': {
                 'ga__123': 20.00,
@@ -394,8 +392,7 @@ class CampaignGoalsTestCase(TestCase):
             'total_pageviews': 10,
             'avg_tos': 10,
             'cpc': 0.1,
-            'media_cost': 5,
-            'cost': 5,
+            'e_media_cost': 5,
             'pv_per_visit': 10,
             'percent_new_users': 1.2,
             'conversions': {

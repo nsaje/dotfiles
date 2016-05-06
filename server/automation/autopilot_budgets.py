@@ -21,10 +21,10 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
     budget_left = daily_budget - sum(new_budgets.values())
 
     # Don't add any budget to sources with insufficient spend
-    active_sources_with_spend = _get_active_sources_with_spend(active_sources, data)
+    active_sources_with_spend = _get_active_sources_with_spend(active_sources, data, new_budgets)
     if len(active_sources_with_spend) < 1:
-        msg = str(ad_group) + ' does not have any active sources with enough spend. Uniformly redistributed budget.'
-        logger.info(msg)
+        logger.info(str(ad_group) +
+                    ' does not have any active sources with enough spend. Uniformly redistributed budget.')
         comments.append(DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND)
         new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
     else:
@@ -39,6 +39,12 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
 
         # Redistribute budgets
         while budget_left >= 1:
+            if len(_get_active_sources_with_spend(active_sources, data, new_budgets)) < 1:
+                new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
+                logger.info(str(ad_group) +
+                            ' used up all smart budget, now uniformly redistributed remaining $'+str(budget_left)+'.')
+                comments.append(DailyBudgetChangeComment.USED_UP_BUDGET_THEN_UNIFORMLY_REDISTRIBUTED)
+                break
             budget_left -= Decimal(1.0)
             s = bandit.get_recommendation()
             if not s:
@@ -50,7 +56,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
                 bandit.remove_source(s)
 
     if sum(new_budgets.values()) != daily_budget:
-        logger.warning('Budget Auto-Pilot tried assigning wrong ammount of total daily budgets - Expected: ' +
+        logger.warning('Budget Autopilot tried assigning wrong ammount of total daily budgets - Expected: ' +
                        str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on AdGroup: ' +
                        str(ad_group) + ' ( ' + str(ad_group.id) + ' )')
         comments = [DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]
@@ -82,10 +88,10 @@ def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets):
     return min_budgets
 
 
-def _get_active_sources_with_spend(active_sources, data):
+def _get_active_sources_with_spend(active_sources, data, current_budgets):
     active_sources_with_spend = []
     for s in active_sources:
-        if data[s].get('spend_perc') >= autopilot_settings.AUTOPILOT_MIN_SPEND_PERC:
+        if data[s].get('yesterdays_spend_cc') / current_budgets.get(s) >= autopilot_settings.AUTOPILOT_MIN_SPEND_PERC:
             active_sources_with_spend.append(s)
     return active_sources_with_spend
 
@@ -160,7 +166,7 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
     if campaign_goal_type == CampaignGoalKPI.CPC:
         return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
                                                                   min_value_of_campaign_goal < float("inf")) else 0.0
-    raise exceptions.NotImplementedError('Budget Auto-Pilot campaign goal is not implemented: ', campaign_goal_type)
+    raise exceptions.NotImplementedError('Budget Autopilot campaign goal is not implemented: ', campaign_goal_type)
 
 
 def get_adgroup_minimum_daily_budget(adgroup=None):

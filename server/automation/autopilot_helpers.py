@@ -96,20 +96,21 @@ def get_campaign_goal_column_importance(campaign_goal):
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
         campaign_manager = camp.get_current_settings().campaign_manager
-        email_address = campaign_manager.email if campaign_manager else\
-            camp.account.get_current_settings().default_account_manager.email
+        account_manager = camp.account.get_current_settings().default_account_manager
+        emails = [account_manager.email] + ([campaign_manager.email] if campaign_manager and
+                                            account_manager.email != campaign_manager.email else [])
         if initialization:
             send_budget_autopilot_initialisation_email(
                 camp.name,
                 camp.id,
                 camp.account.name,
-                [email_address],
+                emails,
                 changes_data)
         else:
             send_autopilot_changes_email(camp.name,
                                          camp.id,
                                          camp.account.name,
-                                         [email_address],
+                                         emails,
                                          changes_data)
 
 
@@ -119,11 +120,12 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
         changesText.append(_get_email_adgroup_text(adgroup))
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
+        changesText.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
 
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
 
-    On the ad groups in campaign {camp}, which are set to auto-pilot, the system made the following changes:{changes}
+    On the ad groups in campaign {camp}, which are set to autopilot, the system made the following changes:{changes}
 
     Please check {camp_url} for details.
 
@@ -138,7 +140,7 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
     )
     try:
         send_mail(
-            u'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
+            u'Campaign Autopilot Changes - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
@@ -148,18 +150,18 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
             fail_silently=False
         )
     except Exception as e:
-        logger.exception(u'Auto-pilot e-mail for campaign %s to %s was not sent' +
+        logger.exception(u'Autopilot e-mail for campaign %s to %s was not sent' +
                          'because an exception was raised:',
                          campaign_name,
-                         u''.join(emails))
+                         u', '.join(emails))
         desc = {
             'campaign_name': campaign_name,
-            'email': ''.join(emails)
+            'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_autopilot_email',
-            description=u'Auto-pilot e-mail for campaign was not sent because an exception was raised: {}'.
+            description=u'Autopilot e-mail for campaign was not sent because an exception was raised: {}'.
                         format(traceback.format_exc(e)),
             details=desc
         )
@@ -175,8 +177,8 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
 
-    Bid CPC and Daily Budgets Optimising Auto-Pilot's settings on Your ad group in campaign {camp} have been changed.
-    Auto-Pilot made the following changes:{changes}
+    Bid CPC and Daily Budgets Optimising Autopilot's settings on Your ad group in campaign {camp} have been changed.
+    Autopilot made the following changes:{changes}
     - all Paused Media Sources\' Daily Budgets have been set to minimum values.
 
     Please check {camp_url} for details.
@@ -192,7 +194,7 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     )
     try:
         send_mail(
-            u'Ad Group put on Bid CPC and Daily Budgets Optimising Auto-Pilot - {account}'.format(
+            u'Ad Group put on Bid CPC and Daily Budgets Optimising Autopilot - {account}'.format(
                 account=account_name
             ),
             body,
@@ -201,18 +203,18 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
             fail_silently=False
         )
     except Exception as e:
-        logger.exception(u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
+        logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign %s to %s was not sent because an exception was raised:',
                          campaign_name,
-                         u''.join(emails))
+                         u', '.join(emails))
         desc = {
             'campaign_name': campaign_name,
-            'email': ''.join(emails)
+            'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_autopilot_budget_initialisation_email',
-            description=u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
+            description=u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign was not sent because an exception was raised: {}'.
                         format(traceback.format_exc(e)),
             details=desc
@@ -241,6 +243,19 @@ def _get_email_source_changes_text(ag_source, changes):
     if cpc_pilot_on:
         text += _get_cpc_changes_text(cpc_changed, changes)
     return text
+
+
+def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
+    suggested_sources = []
+    for ag_source in adgroup_changes:
+        changes = adgroup_changes[ag_source]
+        if all(b in changes for b in ['new_budget', 'old_budget']) and\
+                changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source):
+            suggested_sources.append(ag_source.source.name)
+    if suggested_sources:
+        return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
+               ", ".join(suggested_sources) + '.\n'
+    return ''
 
 
 def _get_budget_changes_text(budget_changed, changes):
