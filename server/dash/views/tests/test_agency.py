@@ -1831,7 +1831,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put(self, mock_send_campaign_notification_email, mock_log_useraction, _):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
         self.add_permissions(['campaign_agency_view'])
 
         response = self.client.put(
@@ -1849,6 +1850,8 @@ class CampaignAgencyTest(AgencyViewTestCase):
 
         content = json.loads(response.content)
         self.assertTrue(content['success'])
+
+        self.assertEqual(mock_k1_ping.call_count, 1)
 
         campaign = models.Campaign.objects.get(pk=1)
         settings = campaign.get_current_settings()
