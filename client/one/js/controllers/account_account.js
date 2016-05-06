@@ -71,6 +71,22 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         usr.action = null;
     };
 
+    $scope.archiveAccount = function () {
+        if ($scope.canArchive) {
+            api.accountArchive.archive($scope.account.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
+    };
+
+    $scope.restoreAccount = function () {
+        if ($scope.canRestore) {
+            api.accountArchive.restore($scope.account.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
+    };
+
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
         $scope.discarded = null;
