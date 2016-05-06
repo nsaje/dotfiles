@@ -83,8 +83,9 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     zwei_actions.send(actions)
 
     if should_switch_to_landing or is_resumed:
-        for ad_group in campaign.adgroup_set.all().filter_active():
-            utils.k1_helper.update_ad_group(ad_group.pk)
+        utils.k1_helper.update_ad_groups(
+            ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()
+        )
         return True
     return False
 
@@ -144,8 +145,10 @@ def update_campaigns_in_landing(campaigns):
             continue
 
         zwei_actions.send(actions)
-        for ad_group in campaign.adgroup_set.all().filter_active():
-            utils.k1_helper.update_ad_group(ad_group.pk)
+        utils.k1_helper.update_ad_groups(
+            ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()
+        )
+            
 
 
 def get_max_settable_daily_budget(ad_group_source):

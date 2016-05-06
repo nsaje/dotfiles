@@ -113,10 +113,21 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         progress_updater.finish()
         progress_updater.join()
 
-    _prepare_batch(ad_group, batch, rows, filename, num_errors, upload_status, actions)
+    _save_batch(ad_group, batch, rows, filename, num_errors, upload_status)
+    _signal_changes(ad_group, batch, actions)
 
 
-def _prepare_batch(ad_group, batch, rows, filename, num_errors, upload_status, actions):
+def _signal_changes(ad_group, batch, actions):
+    if batch.status == constants.UploadBatchStatus.DONE:
+        k1_helper.update_content_ads(
+            ad_group.pk, [ad.pk for ad in batch.contentad_set.all()]
+        )
+
+    if actions:
+        actionlog.zwei_actions.send(actions)
+
+
+def _save_batch(ad_group, batch, rows, filename, num_errors, upload_status):
     # reload upload batch after progress updater finishes using it to keep the inserted values
     batch.refresh_from_db()
     batch.status = upload_status
@@ -124,13 +135,6 @@ def _prepare_batch(ad_group, batch, rows, filename, num_errors, upload_status, a
     if num_errors:
         batch.error_report_key = _save_error_report(rows, filename)
     batch.save()
-    if upload_status == constants.UploadBatchStatus.DONE:
-        k1_helper.update_content_ads(
-            ad_group.pk, [ad.pk for ad in batch.contentad_set.all()]
-        )
-
-    if actions:
-        actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):

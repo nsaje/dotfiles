@@ -7,6 +7,11 @@ from server.celery import app
 logger = logging.getLogger(__name__)
 
 
+def update_ad_groups(ad_group_ids, msg=''):
+    for ag_id in ad_group_ids:
+        update_ad_group(ag_id, msg=msg)
+
+
 def update_ad_group(ad_group_id, msg=''):
     _send_task(settings.K1_CONSISTENCY_PING_AD_GROUP_QUEUE,
                'consistency_ping_ad_group',
