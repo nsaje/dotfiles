@@ -231,7 +231,7 @@ class AccountCampaignsTest(TestCase):
             campaign=campaign
         )
 
-
+@patch('utils.k1_helper.app')
 class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml', ]
 
@@ -247,10 +247,6 @@ class AdGroupSourceSettingsTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
         self.ad_group = models.AdGroup.objects.get(pk=1)
-
-        patcher = patch('dash.api.k1_helper')
-        self.k1_helper_mock = patcher.start()
-        self.addCleanup(patcher.stop)
 
     def _set_ad_group_end_date(self, days_delta=0):
         current_settings = self.ad_group.get_current_settings()

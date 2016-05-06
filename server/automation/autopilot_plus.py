@@ -55,7 +55,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                                                  adg_settings.autopilot_state, campaign_goals.get(adg.campaign))
             changes_data = _get_autopilot_campaign_changes_data(
                 adg, changes_data, cpc_changes, budget_changes)
-            k1_helper.update_ad_group(adg.pk)
+            k1_helper.update_ad_group(adg.pk, 'run_autopilot')
         except Exception as e:
             _report_autopilot_exception(adg, e)
     actionlog.zwei_actions.send(actions)

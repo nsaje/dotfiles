@@ -84,7 +84,8 @@ def check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
 
     if should_switch_to_landing or is_resumed:
         utils.k1_helper.update_ad_groups(
-            ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='campaign_stop.check_and_switch_campaign_to_landing_mode'
         )
         return True
     return False
@@ -146,7 +147,8 @@ def update_campaigns_in_landing(campaigns):
 
         zwei_actions.send(actions)
         utils.k1_helper.update_ad_groups(
-            ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='update_campaigns_in_landing'
         )
             
 
