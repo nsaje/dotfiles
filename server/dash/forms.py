@@ -58,10 +58,12 @@ class AdGroupSettingsForm(forms.Form):
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
+        max_value=4,
         decimal_places=4,
         required=False,
         error_messages={
             'min_value': 'Maximum CPC can\'t be lower than $0.03.',
+            'max_value': 'Maximum CPC can\'t be higher than $4.00.'
         }
     )
     daily_budget_cc = forms.DecimalField(
