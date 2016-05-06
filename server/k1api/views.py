@@ -48,12 +48,11 @@ def get_ad_group_source_ids(request):
         dash.models.AdGroupSource.objects
             .filter(ad_group__in=nonarchived)
             .filter(source_credentials_id=credentials_id)
-            .values(
-                'ad_group_id',
-                'source_campaign_key',
-            )
     )
-    return _response_ok(list(ad_group_sources))
+    res = []
+    for ags in ad_group_sources:
+        res.append({'ad_group_id': ags.ad_group_id, 'source_campaign_key': ags.source_campaign_key})
+    return _response_ok(list(res))
 
 
 @csrf_exempt
@@ -320,6 +319,20 @@ def get_content_ad_ad_group(request):
                    .values('id', 'ad_group_id'))
 
     return _response_ok(list(content_ads))
+
+
+def get_publishers_blacklist_outbrain(request):
+    _validate_signature(request)
+
+    marketer_id = request.GET.get('marketer_id')
+    blacklisted_publishers = (
+        dash.models.PublisherBlacklist.objects
+            .filter(Q(account__outbrain_marketer_id=marketer_id) |
+                    Q(ad_group__isnull=True, campaign__isnull=True, account__isnull=True))
+            .filter(external_id__isnull=False)
+            .values('name', 'external_id')
+    )
+    return _response_ok({'blacklist': list(blacklisted_publishers)})
 
 
 @csrf_exempt
