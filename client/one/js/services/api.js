@@ -1395,7 +1395,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        history: convertHistoryFromApi(data.data.history),
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
                     });

@@ -181,7 +181,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                 user.action = null;
                 $scope.addUserErrors = null;
                 $scope.addUserData = {};
-                $scope.getSettings(); // updates history
+                $scope.getSettings();
             },
             function (data) {
                 $scope.addUserErrors = data;
@@ -202,7 +202,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                     user.saved = false;
                 }
 
-                $scope.getSettings(); // updates history
+                $scope.getSettings();
             }
         ).finally(function () {
             user.requestInProgress = false;
@@ -224,7 +224,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             }
         ).finally(function () {
             user.requestInProgress = false;
-            $scope.getSettings(); // updates history
+            $scope.getSettings();
         });
     };
 
@@ -235,7 +235,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         api.accountUsers.put($state.params.id, {email: user.email}).then(
             function (data) {
                 user.removed = false;
-                $scope.getSettings(); // updates history
+                $scope.getSettings();
             }
         ).finally(function () {
             user.requestInProgress = false;
