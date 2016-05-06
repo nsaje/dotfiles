@@ -12,10 +12,11 @@ from django.test import TestCase
 from zemauth.models import User
 from dash import models, constants
 from reports.models import BudgetDailyStatement
+from utils.test_helper import add_permissions
 
 
 class BCMViewTestCase(TestCase):
-    fixtures = ['test_bcm.yaml']
+    fixtures = ['test_bcm.yaml', 'test_agency.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -314,6 +315,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
 
 
 class CampaignBudgetViewTest(BCMViewTestCase):
+    def setUp(self):
+        super(CampaignBudgetViewTest, self).setUp()
 
     def test_get(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
@@ -419,6 +422,63 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 }
             }
         })
+
+    def test_get_as_agency_manager(self):
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()['data']
+        self.assertItemsEqual(data['credits'], [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01"
+                }
+            ]
+        )
+
+        add_permissions(User.objects.get(pk=1), ['can_manage_agency'])
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(self.user)
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()['data']
+        self.assertItemsEqual(data['credits'], [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01"
+                },
+                {
+                    'available': u'100000.0000',
+                    'comment': u'Agency credit',
+                    'end_date': u'2015-11-30',
+                    'start_date': u'2015-10-01',
+                    'is_available': False,
+                    'license_fee': u'20',
+                    'total': u'100000.0000',
+                    'id': 1000,
+                }
+            ]
+        )
 
     @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
     def test_put(self, mock_lmode):
@@ -846,7 +906,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(json.loads(response.content)['data'], {
+        self.assertDictEqual(response.json()['data'], {
             "active": [
                 {
                     "available": "0.0000",
@@ -856,7 +916,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "allocated": "10000.0000",
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "comment": None,
@@ -867,8 +927,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 },
                 {
                     "available": "0.0000",
-                    "end_date":
-                    "2015-11-30",
+                    "end_date": "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -882,7 +941,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                         {"amount": 100000, "id": 1}
                     ],
                     "start_date": "2015-10-01"
-                }
+                },
             ],
             "past": [],
             "totals": {
@@ -904,7 +963,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "comment": None,
                     "allocated": "4994.0000",
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "budgets": [
@@ -949,7 +1008,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "allocated": "4950.0000",
                     "comment": None,
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "budgets": [

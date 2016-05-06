@@ -6,6 +6,7 @@ import pytz
 from django.db.models.signals import pre_save
 from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
+from django.core.exceptions import ValidationError
 from django.conf import settings
 
 from dash import models, constants
@@ -576,21 +577,41 @@ class ArchiveRestoreTestCase(TestCase):
 
 
 class AdGroupTestCase(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
+
+    def test_filter_by_agency_manager(self):
+        u = User.objects.get(pk=3)
+        qs = models.AdGroup.objects.all().filter_by_user(u)
+        oldcount = qs.count()
+        self.assertGreater(oldcount, 0)
+
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+        qs = models.AdGroup.objects.all().filter_by_user(u)
+        self.assertEqual(oldcount+1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
-
-        self.assertEqual(len(qs), 7)
+        self.assertEqual(len(qs), 8)
 
 
 class CampaignTestCase(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
+
+    def test_filter_by_agency_manager(self):
+        u = User.objects.get(pk=3)
+        qs = models.Campaign.objects.all().filter_by_user(u)
+        oldcount = qs.count()
+        self.assertGreater(oldcount, 0)
+
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+        qs = models.Campaign.objects.all().filter_by_user(u)
+        self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Campaign.objects.all().exclude_archived()
-
-        self.assertEqual(len(qs), 4)
+        self.assertEqual(len(qs), 5)
 
     def test_get_current_settings(self):
         campaign = models.Campaign.objects.get(pk=2)
@@ -616,9 +637,98 @@ class CampaignTestCase(TestCase):
 
 
 class AccountTestCase(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
+
+    def test_filter_by_agency_manager(self):
+        u = User.objects.get(pk=3)
+        qs = models.Account.objects.all().filter_by_user(u)
+        oldcount = qs.count()
+        self.assertGreater(oldcount, 0)
+
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+
+        self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 3)
+        self.assertEqual(len(qs), 4)
+
+
+class CreditLineItemTestCase(TestCase):
+    fixtures = ['test_api', 'test_agency']
+
+    def test_create_acc_credit(self):
+        acc = models.Account.objects.get(pk=1)
+        user = User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+
+        credit = models.CreditLineItem(
+            account=acc,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        credit.save()
+        self.assertGreater(models.CreditLineItem.objects.filter(pk=credit.id).count(), 0)
+
+    def test_create_ag_credit(self):
+        user = User.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+
+        credit = models.CreditLineItem(
+            agency=agency,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        credit.save()
+        self.assertGreater(models.CreditLineItem.objects.filter(pk=credit.id).count(), 0)
+
+    def test_create_credit_without_acc_and_ag(self):
+        user = User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+
+        credit = models.CreditLineItem(
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        with self.assertRaises(ValidationError):
+            credit.save()
+
+    def test_create_credit_with_acc_and_ag(self):
+        acc = models.Account.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+
+        credit = models.CreditLineItem(
+            account=acc,
+            agency=agency,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        with self.assertRaises(ValidationError):
+            credit.save()

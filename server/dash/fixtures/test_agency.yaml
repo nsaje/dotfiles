@@ -1,8 +1,24 @@
 -   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: agency-master@test.com
+        first_name: 'Agency Master'
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1000
+
+-   fields:
         name: Alfa&Omega
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-        modified_by: 1
+        modified_by: 1000
     model: dash.agency
     pk: 1
 
@@ -11,6 +27,41 @@
         agency: 1
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-        modified_by: 1
+        modified_by: 1000
     model: dash.account
+    pk: 1000
+
+-   fields:
+        name: Le chuck
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1000
+        account: 1000
+    model: dash.campaign
+    pk: 1000
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1000
+        campaign: 1000
+        name: 'Mobile'
+    model: dash.adgroup
+    pk: 1000
+
+
+# test creditlineitems
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1000
+        agency: 1
+        start_date: '2015-10-01'
+        end_date: '2015-11-30'
+        amount: 100000
+        license_fee: 0.2
+        status: 2
+        comment: 'Agency credit'
+    model: dash.creditlineitem
     pk: 1000
