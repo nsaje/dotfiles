@@ -249,9 +249,12 @@ if TESTING:
 
     if len(sys.argv) > 1 and '--redshift' not in sys.argv:
         # if not redshift testing
+        DATABASES.pop(K1_DB_NAME, None)
         DATABASES.pop(STATS_DB_NAME, None)
         DATABASES.pop(STATS_E2E_DB_NAME, None)
         STATS_DB_NAME = 'default'
+        K1_DB_NAME = 'default'
+        K1_VIEWS_DB_NAME = 'default'
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
