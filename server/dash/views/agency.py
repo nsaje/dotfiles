@@ -840,7 +840,7 @@ class AccountAgency(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
-        user_agency = request.user.agency_set.first()
+        user_agency = request.user.agency_set.first() if request.user.has_perm('zemauth.can_manage_agency') else None
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
