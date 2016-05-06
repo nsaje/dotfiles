@@ -1112,7 +1112,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
 
         k1_helper.update_ad_group(ad_group.pk,
-                                  msg='AdGroupSourceSettings')
+                                  msg='AdGroupSourceSettings.put')
 
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(

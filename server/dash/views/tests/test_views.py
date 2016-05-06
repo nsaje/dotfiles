@@ -231,7 +231,7 @@ class AccountCampaignsTest(TestCase):
             campaign=campaign
         )
 
-@patch('utils.k1_helper.app')
+
 class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml', ]
 
@@ -285,7 +285,7 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
-        mock_k1_ping.assert_called_with(1)
+        mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     @patch('utils.k1_helper.update_ad_group')
@@ -325,7 +325,7 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
-        mock_k1_ping.assert_called_with(1)
+        mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
@@ -438,7 +438,7 @@ class CampaignAdGroups(TestCase):
         self.assertTrue(mock_zwei_send.called)
 
         response_dict = json.loads(response.content)
-        mock_k1_ping.assert_called_with(response_dict['data']['id'])
+        mock_k1_ping.assert_called_with(response_dict['data']['id'], msg='CampaignAdGroups.put')
         self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
 
         ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
@@ -709,7 +709,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         response = self._post_content_ad_state(ad_group_id, data)
 
-        mock_k1_ping.assert_called_with(1, [1])
+        mock_k1_ping.assert_called_with(1, [1], msg='AdGroupContentAdState.post')
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
@@ -1021,7 +1021,7 @@ class AdGroupContentAdArchive(TestCase):
         }
 
         response = self._post_content_ad_archive(ad_group.id, data)
-        mock_k1_ping.assert_called_with(1, [content_ad_id])
+        mock_k1_ping.assert_called_with(1, [content_ad_id], msg='AdGroupContentAdArchive.post')
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, True)
 
@@ -1204,7 +1204,7 @@ class AdGroupContentAdRestore(TestCase):
         }
 
         response = self._post_content_ad_restore(ad_group.id, data)
-        mock_k1_ping.assert_called_with(1, [2])
+        mock_k1_ping.assert_called_with(1, [2], msg='AdGroupContentAdRestore.post')
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, False)
@@ -2102,7 +2102,7 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
-        mock_k1_ping.assert_called_with(1)
+        mock_k1_ping.assert_called_with(1, msg='PublishersBlacklistStatus.post')
 
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
             action_type=actionlog.constants.ActionType.AUTOMATIC,
@@ -2161,7 +2161,7 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
-        mock_k1_ping.assert_called_with(1)
+        mock_k1_ping.assert_called_with(1, msg='PublishersBlacklistStatus.post')
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
             action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )

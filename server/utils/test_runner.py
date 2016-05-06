@@ -2,6 +2,7 @@ import os
 import logging
 import time
 import operator
+import mock
 
 import unittest
 
@@ -13,6 +14,7 @@ from django.core.management import call_command
 
 
 class SplitTestsRunner(runner.DiscoverRunner):
+
     @classmethod
     def add_arguments(cls, parser):
         super(SplitTestsRunner, cls).add_arguments(parser)

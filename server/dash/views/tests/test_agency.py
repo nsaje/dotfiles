@@ -232,7 +232,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 json.dumps(self.settings_dict),
                 follow=True
             )
-            mock_k1_ping.assert_called_with(1)
+            mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
@@ -724,7 +724,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args), 2)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
-        mock_k1_ping.assert_called_with(2)
+        mock_k1_ping.assert_called_with(2, msg='AdGroupSettingsState.post')
 
     @patch('dash.validation_helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
@@ -798,7 +798,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args[0]), 1)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
-        mock_k1_ping.assert_called_with(1)
+        mock_k1_ping.assert_called_with(1, msg='AdGroupSettingsState.post')
 
     @patch('actionlog.zwei_actions.send')
     def test_inactivate_already_inactivated(self, mock_zwei_send):

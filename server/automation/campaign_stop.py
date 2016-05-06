@@ -150,7 +150,6 @@ def update_campaigns_in_landing(campaigns):
             (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
             msg='update_campaigns_in_landing'
         )
-            
 
 
 def get_max_settable_daily_budget(ad_group_source):

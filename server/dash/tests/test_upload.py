@@ -455,7 +455,7 @@ class ProcessCallbackTest(TestCase):
 
         # Check for pings
         mock_k1_ping.assert_called_with(
-            ad_group_id, [content_ad.id]
+            ad_group_id, [content_ad.id], msg='upload.process_async'
         )
 
         content_ad_source = models.ContentAdSource.objects.get(content_ad_id=content_ad.id)
