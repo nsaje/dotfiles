@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 MATERIALIZED_VIEWS = [
     materialize_k1.ContentAdStats(),
+    materialize_k1.TouchpointConversions(),
 ]
 
 MATERIALIZED_VIEWS_S3_PREFIX = 'materialized_views'

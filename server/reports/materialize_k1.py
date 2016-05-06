@@ -181,6 +181,32 @@ class Publishers(object):
             pass
 
 
+class TouchpointConversions(object):
+    """
+    zuid, slug, date, conversion_id, conversion_timestamp, account_id,
+    campaign_id, ad_group_id, content_ad_id, source_id,
+    touchpoint_id, touchpoint_timestamp, conversion_lag, publisher
+    """
+
+    def table_name(self):
+        return 'touchpointconversions'
+
+    def generate_rows(self, date, campaign_factors):
+        # TODO rewrite to the query insert-select materialization when it's ready
+        query = """
+            select
+                zuid, slug, date, conversion_id, conversion_timestamp, account_id,
+                campaign_id, ad_group_id, content_ad_id, source_id,
+                touchpoint_id, touchpoint_timestamp, conversion_lag, publisher
+            from conversions
+            where date=%s
+        """
+        with connections[settings.K1_DB_NAME].cursor() as c:
+            c.execute(query, [date])
+            for row in c:
+                yield row
+
+
 class Breakdown(object):
 
     def __init__(self, date, table, breakdowns, values):
