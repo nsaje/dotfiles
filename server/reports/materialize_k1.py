@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 CC_TO_MICRO = 100
 MICRO_TO_NANO = 1000
 
+POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
+
 
 class ContentAdStats(object):
     """
@@ -50,9 +52,11 @@ class ContentAdStats(object):
             return {}
 
         if len(post_click_list) > 1:
-            logger.warn("Multiple post click statistics for ad group: %s", ad_group.id)
+            logger.info("Multiple post click statistics for ad group: %s", ad_group.id)
+            post_click_list = sorted(post_click_list, key=lambda x: POST_CLICK_PRIORITY.get(x[1], 100))
 
         post_click = post_click_list[0]
+
         if len(post_click) < 9:
             raise Exception("Invalid post click row")
 
@@ -70,6 +74,9 @@ class ContentAdStats(object):
         for row in self._postclick_stats_breakdown(date).rows():
             content_ad_id = row[0]
             media_source = row[2]
+            if media_source.startswith('b1_'):
+                # TODO fix in k1
+                media_source = media_source[3:]
             content_ad_postclick[(content_ad_id, media_source)].append(row)
 
         ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
@@ -172,6 +179,32 @@ class Publishers(object):
 
         def generate_rows(self, date, campaign_factors):
             pass
+
+
+class TouchpointConversions(object):
+    """
+    zuid, slug, date, conversion_id, conversion_timestamp, account_id,
+    campaign_id, ad_group_id, content_ad_id, source_id,
+    touchpoint_id, touchpoint_timestamp, conversion_lag, publisher
+    """
+
+    def table_name(self):
+        return 'touchpointconversions'
+
+    def generate_rows(self, date, campaign_factors):
+        # TODO rewrite to the query insert-select materialization when it's ready
+        query = """
+            select
+                zuid, slug, date, conversion_id, conversion_timestamp, account_id,
+                campaign_id, ad_group_id, content_ad_id, source_id,
+                touchpoint_id, touchpoint_timestamp, conversion_lag, publisher
+            from conversions
+            where date=%s
+        """
+        with connections[settings.K1_DB_NAME].cursor() as c:
+            c.execute(query, [date])
+            for row in c:
+                yield row
 
 
 class Breakdown(object):
