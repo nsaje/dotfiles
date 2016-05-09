@@ -167,13 +167,19 @@ class Publishers(object):
         )
 
     def _outbrain_cpc(self, date):
-        query = "select sum(spend), sum(clicks) from stats where media_source='outbrain' and date='{date}'".format(
+        query = """
+            select ad_group_id, sum(spend), sum(clicks)
+            from stats
+            where media_source='outbrain' and date='{date}'
+            group by ad_group_id
+        """.format(
             date=date.isoformat()
         )
-        data = _query_rows(query).next()
-        if data[0] is None:
-            return Decimal(0)
-        return Decimal(data[0]) / data[1]
+        cpcs = {}
+        for line in _query_rows(query):
+            cpcs[line[0]] = Decimal(line[1]) / line[2]
+
+        return cpcs
 
     def _get_post_click_data(self, ad_group_id, post_click_list):
         if not post_click_list:
@@ -260,7 +266,7 @@ class Publishers(object):
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
-        cpc = self._outbrain_cpc(date)
+        outbrain_cpcs = self._outbrain_cpc(date)
         for row in self._stats_outbrain_publishers(date):
             ad_group_id = row[0]
             ad_group = ad_groups_map.get(ad_group_id)
@@ -269,7 +275,7 @@ class Publishers(object):
                 continue
 
             clicks = row[3]
-            cost = _decimal_to_int(cpc * clicks)
+            cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
