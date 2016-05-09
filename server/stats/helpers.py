@@ -1,0 +1,1 @@
+# remove colums without permissions
