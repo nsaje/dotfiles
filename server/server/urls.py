@@ -349,6 +349,7 @@ urlpatterns += [
     url(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
+        name='accounts_create',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
@@ -521,6 +522,51 @@ urlpatterns += [
         r'^k1api/get_ga_accounts$',
         k1api.views.get_ga_accounts,
         name='k1api.get_ga_accounts',
+    ),
+    url(
+        r'^k1api/get_sources_by_tracking_slug$',
+        k1api.views.get_sources_by_tracking_slug,
+        name='k1api.get_sources_by_tracking_slug',
+    ),
+    url(
+        r'^k1api/get_accounts_slugs_ad_groups$',
+        k1api.views.get_accounts_slugs_ad_groups,
+        name='k1api.get_accounts_slugs_ad_groups',
+    ),
+    url(
+        r'^k1api/get_publishers_blacklist$',
+        k1api.views.get_publishers_blacklist,
+        name='k1api.get_publishers_blacklist',
+    ),
+    url(
+        r'^k1api/get_publishers_blacklist_outbrain$',
+        k1api.views.get_publishers_blacklist_outbrain,
+        name='k1api.get_publishers_blacklist_outbrain',
+    ),
+    url(
+        r'^k1api/get_ad_groups$',
+        k1api.views.get_ad_groups,
+        name='k1api.get_ad_groups',
+    ),
+    url(
+        r'k1api/get_ad_groups_exchanges$',
+        k1api.views.get_ad_groups_exchanges,
+        name='k1api.get_ad_groups_exchanges',
+    ),
+    url(
+        r'k1api/get_content_ads$',
+        k1api.views.get_content_ads,
+        name='k1api.get_content_ads',
+    ),
+    url(
+        r'k1api/get_content_ads_exchanges$',
+        k1api.views.get_content_ads_exchanges,
+        name='k1api.get_content_ads_exchanges',
+    ),
+    url(
+        r'^k1api/get_content_ad_ad_group$',
+        k1api.views.get_content_ad_ad_group,
+        name='k1api.get_content_ad_ad_group',
     )
 ]
 

@@ -86,8 +86,6 @@ def get_publishers_data_and_conversion_goals(
         show_blacklisted_publishers=None,
         adg_blacklisted_publishers=None):
 
-    report_conversion_goals = []
-    touchpoint_conversion_goals = []
     report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
     touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
@@ -262,8 +260,14 @@ def _get_stats_with_conversions(
                              cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
-        conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
-                                                tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
+        try:
+            conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
+                                                     tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
+        except KeyError:
+            # when querying for multiple campaigns, a pixel can get returned when no campaign goal with such pixel is
+            # defined
+            continue
+
         if key in ca_stats_by_breakdown:
             ca_stats_by_breakdown[key][conversion_goal.get_view_key(conversion_goals)] = tp_conv_stat['conversion_count']
             continue

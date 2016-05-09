@@ -212,6 +212,42 @@ class OutbrainAccount(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
 
+class Agency(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    def save(self, request, *args, **kwargs):
+        self.modified_by = request.user
+        super(Agency, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Agencies'
+        ordering = ('-created_dt',)
+
+
 class Account(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -221,6 +257,7 @@ class Account(models.Model):
         blank=False,
         null=False
     )
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, null=True, blank=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
@@ -305,6 +342,13 @@ class Account(models.Model):
             new_settings.archived = False
             new_settings.save(request)
 
+    def admin_link(self):
+        if self.id:
+            return '<a href="/admin/dash/account/%d/">Edit</a>' % self.id
+        else:
+            return 'N/A'
+    admin_link.allow_tags = True
+
     def get_account_url(self, request):
         account_settings_url = request.build_absolute_uri(
             reverse('admin:dash_account_change', args=(self.pk,))
@@ -321,7 +365,8 @@ class Account(models.Model):
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
-                models.Q(groups__user__id=user.id)
+                models.Q(groups__user__id=user.id) |
+                models.Q(agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -466,7 +511,8 @@ class Campaign(models.Model, PermissionMixin):
                 models.Q(users__id=user.id) |
                 models.Q(groups__user__id=user.id) |
                 models.Q(account__users__id=user.id) |
-                models.Q(account__groups__user__id=user.id)
+                models.Q(account__groups__user__id=user.id) |
+                models.Q(account__agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -576,6 +622,7 @@ class AccountSettings(SettingsBase):
         'archived',
         'default_account_manager',
         'default_sales_representative',
+        'account_type',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -597,6 +644,10 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
+    )
+    account_type = models.IntegerField(
+        default=constants.AccountType.UNKNOWN,
+        choices=constants.AccountType.get_choices()
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -1369,7 +1420,8 @@ class AdGroup(models.Model):
                 models.Q(campaign__users__id=user.id) |
                 models.Q(campaign__groups__user__id=user.id) |
                 models.Q(campaign__account__users__id=user.id) |
-                models.Q(campaign__account__groups__user__id=user.id)
+                models.Q(campaign__account__groups__user__id=user.id) |
+                models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
 
         def filter_by_sources(self, sources):
@@ -2300,7 +2352,7 @@ class PublisherBlacklist(models.Model):
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
-    external_id = models.CharField(max_length=127, blank=False, null=True, verbose_name='External ID')
+    external_id = models.CharField(max_length=127, blank=True, null=True, verbose_name='External ID')
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,
@@ -2339,7 +2391,8 @@ class PublisherBlacklist(models.Model):
 
 
 class CreditLineItem(FootprintModel):
-    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
+    agency = models.ForeignKey(Agency, related_name='agencies', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
 
@@ -2428,8 +2481,9 @@ class CreditLineItem(FootprintModel):
         )
 
     def __unicode__(self):
+        parent = self.agency or self.account
         return u'{} - {} - ${} - from {} to {}'.format(
-            self.account.id, unicode(self.account), self.amount,
+            parent.id, unicode(parent), self.amount,
             self.start_date, self.end_date)
 
     def is_editable(self):
@@ -2446,6 +2500,18 @@ class CreditLineItem(FootprintModel):
             and (self.effective_amount() - self.get_allocated_amount()) > 0
 
     def clean(self):
+        if self.account is not None and self.agency is not None:
+            raise ValidationError({
+                'account': ['Only one of either account or agency must be set.'],
+                'agency': ['Only one of either account or agency must be set.'],
+            })
+
+        if self.account is None and self.agency is None:
+            raise ValidationError({
+                'account': ['One of either account or agency must be set.'],
+                'agency': ['One of either account or agency must be set.'],
+            })
+
         has_changed = any((
             self.has_changed('start_date'),
             self.has_changed('license_fee'),

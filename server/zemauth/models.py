@@ -136,6 +136,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
              'Automatic campaign stop on depleted budget applies to campaigns in this group'),
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
+            ('conversion_reports', 'Can see conversions and goals in reports'),
+            ('can_see_account_type', 'Can see account type'),
+            ('can_modify_account_type', 'Can modify account type'),
             ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
             ('can_access_global_publisher_blacklist_status', 'Can view or modify global publishers blacklist status'),
             ('can_access_campaign_account_publisher_blacklist_status',
@@ -162,6 +165,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_include_model_ids_in_reports', 'Can include model ids in reports'),
             ('has_supporthero', 'Has Supporthero snippet'),
             ('can_filter_sources_through_table', 'Can filter sources through sources table'),
+            ('can_view_account_agency_information', 'Can view relations between account and agency'),
+            ('can_manage_agency', 'Can manage agency'),
+            ('can_set_account_sales_representative', 'Can view and set account sales representative on account settings tab.'),
         )
 
     def get_full_name(self):

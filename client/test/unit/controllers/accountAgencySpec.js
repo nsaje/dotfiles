@@ -50,7 +50,7 @@ describe('AccountAgencyCtrl', function () {
                 '2': {name: 'source 2', allowed: true},
                 '3': {name: 'source 3', allowed: false}
             };
-            $scope.selectedMediaSouces = {allowed:[], available:[]};
+            $scope.selectedMediaSources = {allowed:[], available:[]};
         });
 
         it('gets allowed media sources', function () {
@@ -67,17 +67,17 @@ describe('AccountAgencyCtrl', function () {
         });
 
         it('adds to allowed media sources', function () {
-            $scope.selectedMediaSouces.available = ['1'];
+            $scope.selectedMediaSources.available = ['1'];
             $scope.addToAllowedMediaSources();
             expect($scope.settings.allowedSources['1'].allowed).toBe(true);
-            expect($scope.selectedMediaSouces.available).toEqual([]);
+            expect($scope.selectedMediaSources.available).toEqual([]);
         });
 
         it('removes from allowed media sources', function () {
-            $scope.selectedMediaSouces.allowed = ['2'];
+            $scope.selectedMediaSources.allowed = ['2'];
             $scope.removeFromAllowedMediaSources();
             expect($scope.settings.allowedSources['2'].allowed).toBe(false);
-            expect($scope.selectedMediaSouces.allowed).toEqual([]);
+            expect($scope.selectedMediaSources.allowed).toEqual([]);
         });
     });
 });

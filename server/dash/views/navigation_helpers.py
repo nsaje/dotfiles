@@ -39,7 +39,6 @@ def get_campaign_dict(campaign, campaign_settings):
         'id': campaign.id,
         'name': campaign.name,
         'landingMode': campaign_settings.landing_mode if campaign_settings else False,
-        'landingMode': campaign.is_in_landing(),
         'archived': campaign_settings.archived if campaign_settings else False,
     }
     return campaign_dict

@@ -23,6 +23,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 1'
+        outbrain_marketer_id: 'abcde'
     model: dash.account
     pk: 1
 
@@ -31,6 +32,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 2'
+        outbrain_marketer_id: 'edcba'
     model: dash.account
     pk: 2
 
@@ -77,6 +79,24 @@
     model: dash.campaign
     pk: 2
 
+# test campaign settings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        name: 'test campaign 1'
+        campaign: 1
+        iab_category: IAB24
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        name: 'test campaign 2'
+        campaign: 2
+        iab_category: IAB25
+    model: dash.campaignsettings
+    pk: 2
+
 # source types
 
 -   fields:
@@ -118,6 +138,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         tracking_slug: 'adblade'
+        bidder_slug: 'adblade'
         source_type: 1
         maintenance: False
     model: dash.source
@@ -128,6 +149,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         tracking_slug: 'gravity'
+        bidder_slug: 'gravity'
         source_type: 2
         maintenance: False
     model: dash.source
@@ -138,6 +160,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         tracking_slug: 'outbrain'
+        bidder_slug: 'outbrain'
         source_type: 3
         maintenance: False
     model: dash.source
@@ -148,6 +171,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
         tracking_slug: 'taboola'
+        bidder_slug: 'taboola'
         source_type: 4
         maintenance: False
     model: dash.source
@@ -158,6 +182,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
         tracking_slug: 'yahoo'
+        bidder_slug: 'yahoo'
         source_type: 5
         maintenance: False
     model: dash.source
@@ -168,11 +193,36 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Adiant
         tracking_slug: 'adiant'
+        bidder_slug: 'b1_adiant'
         source_type: 6
         content_ad_submission_type: 2
         maintenance: False
     model: dash.source
     pk: 6
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Google
+        tracking_slug: 'google'
+        bidder_slug: 'b1_google'
+        source_type: 6
+        content_ad_submission_type: 2
+        maintenance: False
+    model: dash.source
+    pk: 7
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Facebook
+        tracking_slug: 'facebook'
+        bidder_slug: 'b1_facebook'
+        source_type: 6
+        content_ad_submission_type: 2
+        maintenance: False
+    model: dash.source
+    pk: 8
 
 # test source credentials
 -   fields:
@@ -268,32 +318,52 @@
 -   fields:
         ad_group: 1
         created_dt: '2014-06-04T00:00:00'
+        start_date: '2014-06-04'
         enable_ga_tracking: true
         ga_tracking_type: 2
+        state: 1
+        brand_name: 'brand1'
+        display_url: 'brand1.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 1
 
 -   fields:
         ad_group: 2
         created_dt: '2014-01-02T00:00:00'
+        start_date: '2014-06-04'
         enable_ga_tracking: true
         ga_tracking_type: 2
+        state: 1
+        brand_name: 'brand2'
+        display_url: 'brand2.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 2
 
 -   fields:
         ad_group: 3
         created_dt: '2014-01-01T00:00:00'
+        start_date: '2014-06-04'
         enable_ga_tracking: true
         ga_tracking_type: 2
+        state: 1
+        brand_name: 'brand3'
+        display_url: 'brand3.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 3
 
 -   fields:
         ad_group: 3
         created_dt: '2014-01-02T00:00:00'
+        start_date: '2014-06-04'
         enable_ga_tracking: false
         ga_tracking_type: 1
+        state: 2
+        brand_name: 'brand4'
+        display_url: 'brand4.com'
+        tracking_code: '?tracking1&tracking2'
     model: dash.adgroupsettings
     pk: 4
 
@@ -365,6 +435,22 @@
     model: dash.adgroupsource
     pk: 8
 
+-   fields:
+        source: 7
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 9
+
+-   fields:
+        source: 8
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 6
+    model: dash.adgroupsource
+    pk: 10
+
 # test adgroupsourcestate
 
 -   fields:
@@ -375,6 +461,15 @@
         state: 1
     model: dash.adgroupsourcestate
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcestate
+    pk: 2
 
 # test adgroupsourcesettings
 
@@ -395,6 +490,51 @@
         state: 2
     model: dash.adgroupsourcesettings
     pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: null
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 7
+        cpc_cc: '0.12'
+        daily_budget_cc: null
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 6
+        cpc_cc: '0.12'
+        daily_budget_cc: '1.5'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 9
+        cpc_cc: '0.13'
+        daily_budget_cc: '1.6'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 6
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 10
+        cpc_cc: '0.14'
+        daily_budget_cc: '1.7'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 7
 
 
 # test uploadbatch
@@ -506,3 +646,109 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 4
+
+
+# test conversionpixel
+
+-   fields:
+        account: 1
+        slug: 'testslug1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 1
+
+
+-   fields:
+        account: 2
+        slug: 'testslug2'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 2
+
+# test publisherblacklist
+
+-   fields:
+        name: 'pub1.com'
+        ad_group: 1
+        source: 1
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 1
+
+-   fields:
+        name: 'pub2.com'
+        ad_group: 1
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 2
+
+-   fields:
+        name: 'pub3.com'
+        ad_group: 2
+        source: 2
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 3
+
+-   fields:
+        name: ''
+        ad_group: 3
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 4
+
+-   fields:
+        name: 'pub5.com'
+        account: 1
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 5
+
+-   fields:
+        name: 'pub6.com'
+        campaign: 1
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 6
+
+-   fields:
+        name: 'global'
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 7
+
+-   fields:
+        name: 'not_global'
+        account: 2
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 8
+
+-   fields:
+        name: 'not_global_either'
+        campaign: 2
+        external_id: ''
+        status: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 9

@@ -192,7 +192,14 @@ oneApp.config(['$provide', function ($provide) {
                 settings = defaults.newAdGroupSettings(zemDemoCacheService.generateId('adgroup')),
                 campaign = angular.extend({}, {
                     actionIsWaiting: false,
-                    settings: settings
+                    settings: settings,
+                    defaultSettings: {
+                        targetDevices: [
+                            {value: 'desktop', checked: false},
+                            {value: 'mobile', checked: false},
+                        ],
+                        targetRegions: [],
+                    },
                 });
             settings.startDate = moment(
                 today.getFullYear() + '-' +
@@ -283,12 +290,19 @@ oneApp.config(['$provide', function ($provide) {
                 agency = oldSettings || {
                     actionIsWaiting: false,
                     settings: settings,
+                    defaultSettings: {
+                        targetDevices: [
+                            {value: 'desktop', checked: false},
+                            {value: 'mobile', checked: false},
+                        ],
+                        targetRegions: [],
+                    },
                     history: [
                         {changedBy: 'test.account@zemanta.si',
                           changesText: 'Created settings',
                           showOldSettings: false,
-                          datetime: (new Date()).toISOString()}
-                    ]
+                          datetime: (new Date()).toISOString()},
+                    ],
                 };
             zemDemoCacheService.update(cacheId, 'settings', settings);
             if (oldSettings) {

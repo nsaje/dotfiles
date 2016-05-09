@@ -23,6 +23,7 @@ FIELDNAMES = {
     'ad_group_id': 'Ad Group Id',
     'content_ad_id': 'Content Ad Id',
     'account': 'Account',
+    'account_type': 'Account Type',
     'ad_group': 'Ad Group',
     'avg_tos': 'Avg. ToS',
     'bounce_rate': 'Bounce Rate',
@@ -92,8 +93,8 @@ FORMAT_EMPTY_TO_0 = [
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
-                   conversion_goals, include_settings=False, include_budgets=False, include_flat_fees=False,
-                   include_projections=False, **constraints):
+                   conversion_goals, include_settings=False, include_account_settings=False, include_budgets=False,
+                   include_flat_fees=False, include_projections=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -103,7 +104,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-    prefetched_data, budgets, projections, flat_fees, statuses, settings = _prefetch_rows_data(
+    prefetched_data, budgets, projections, flat_fees, statuses, settings, account_settings = _prefetch_rows_data(
         user,
         dimensions,
         constraints,
@@ -111,6 +112,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         start_date,
         end_date,
         include_settings=include_settings,
+        include_account_settings=include_account_settings,
         include_budgets=include_budgets,
         include_flat_fees=include_flat_fees,
         include_projections=include_projections)
@@ -125,13 +127,15 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     for stat in stats:
         _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
                        source_names=source_names, user=user, prefetched_data=prefetched_data, budgets=budgets,
-                       projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings)
+                       projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings,
+                       account_settings=account_settings)
 
     return sort_results(stats, [ordering])
 
 
 def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_date, include_settings=False,
-                        include_budgets=False, include_flat_fees=False, include_projections=False):
+                        include_account_settings=False, include_budgets=False, include_flat_fees=False,
+                        include_projections=False):
     data = None
     budgets = None
     projections = None
@@ -140,6 +144,7 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
     by_source = ('source' in dimensions)
     level = None
     settings = None
+    account_settings = None
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
     elif 'ad_group' in dimensions:
@@ -154,6 +159,9 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
                         .filter(ad_group__in=distinct_ad_groups) \
                         .group_current_settings()
             settings = {s.ad_group_id: s for s in settings_qs}
+
+        if include_account_settings:
+            account_settings = _prefetch_account_settings(stats)
     elif 'campaign' in dimensions:
         level = 'campaign'
         distinct_campaigns = set(stat['campaign'] for stat in stats)
@@ -167,9 +175,13 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
                 .group_current_settings() \
                 .select_related('campaign_manager')
             settings = {s.campaign_id: s for s in settings_qs}
+
+        if include_account_settings:
+            account_settings = _prefetch_account_settings(stats)
     elif 'account' in dimensions:
         level = 'account'
         distinct_accounts = set(stat['account'] for stat in stats)
+        include_settings = include_settings or include_account_settings
 
         accounts_qs = models.Account.objects.filter(id__in=distinct_accounts)
         data = {a.id: a for a in accounts_qs}
@@ -197,7 +209,16 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
         projections = None if not include_projections \
             else _prefetch_projections(data, level, start_date, end_date)
 
-    return data, budgets, projections, flat_fees, statuses, settings
+    return data, budgets, projections, flat_fees, statuses, settings, account_settings
+
+
+def _prefetch_account_settings(stats):
+    distinct_accounts = set(stat['account'] for stat in stats)
+    account_settings_qs = models.AccountSettings.objects \
+        .filter(account__in=distinct_accounts) \
+        .group_current_settings()
+    account_settings = {s.account_id: s for s in account_settings_qs}
+    return account_settings
 
 
 def _prefetch_flat_fees(data, level, start_date, end_date):
@@ -301,7 +322,8 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
 
 
 def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None, user=None,
-                   prefetched_data=None, budgets=None, projections=None, flat_fees=None, statuses=None, settings=None):
+                   prefetched_data=None, budgets=None, projections=None, flat_fees=None, statuses=None, settings=None,
+                   account_settings=None):
     stat['start_date'] = start_date
     stat['end_date'] = end_date
 
@@ -309,7 +331,8 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
         _populate_source_stat(stat, user=user, source_names=source_names)
     else:
         _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data,
-                             projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings)
+                             projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings,
+                             account_settings=account_settings)
 
     if 'source' in stat:
         stat['source'] = source_names[stat['source']]
@@ -334,17 +357,17 @@ def _populate_source_stat(stat, user=None, source_names=None):
 
 
 def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
-                         projections=None, flat_fees=None, statuses=None, settings=None):
+                         projections=None, flat_fees=None, statuses=None, settings=None, account_settings=None):
     model = None
     if 'content_ad' in dimensions:
         model = prefetched_data[stat['content_ad']]
         stat = _populate_content_ad_stat(stat, model)
     elif 'ad_group' in dimensions:
         model = prefetched_data[stat['ad_group']]
-        stat = _populate_ad_group_stat(stat, model, statuses, settings=settings)
+        stat = _populate_ad_group_stat(stat, model, statuses, settings=settings, account_settings=account_settings)
     elif 'campaign' in dimensions:
         model = prefetched_data[stat['campaign']]
-        stat = _populate_campaign_stat(stat, model, statuses, settings=settings)
+        stat = _populate_campaign_stat(stat, model, statuses, settings=settings, account_settings=account_settings)
     elif 'account' in dimensions:
         model = prefetched_data[stat['account']]
         stat = _populate_account_stat(stat, model, statuses, settings=settings, projections=projections,
@@ -369,9 +392,12 @@ def _populate_content_ad_stat(stat, content_ad):
     return stat
 
 
-def _populate_ad_group_stat(stat, ad_group, statuses, settings=None):
+def _populate_ad_group_stat(stat, ad_group, statuses, settings=None, account_settings=None):
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
+    if account_settings and ad_group.campaign.account.id in account_settings:
+        account_setting = account_settings[ad_group.campaign.account.id]
+        stat['account_type'] = constants.AccountType.get_text(account_setting.account_type)
     stat['status'] = statuses[ad_group.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
@@ -381,9 +407,12 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None):
     return stat
 
 
-def _populate_campaign_stat(stat, campaign, statuses, settings=None):
+def _populate_campaign_stat(stat, campaign, statuses, settings=None, account_settings=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
+    if account_settings and campaign.account.id in account_settings:
+        account_setting = account_settings[campaign.account.id]
+        stat['account_type'] = constants.AccountType.get_text(account_setting.account_type)
     if settings and campaign.id in settings:
         setting = settings[campaign.id]
         stat['campaign_manager'] = helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
@@ -402,6 +431,7 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
             helpers.get_user_full_name_or_email(setting.default_account_manager, default_value=None)
         stat['default_sales_representative'] = \
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
+        stat['account_type'] = constants.AccountType.get_text(setting.account_type)
         stat['archived'] = setting.archived
     if flat_fees is not None:
         stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
@@ -622,11 +652,18 @@ class AllAccountsExport(object):
         order = _adjust_ordering(order, dimensions)
 
         supported_settings_fields = ['default_account_manager', 'default_sales_representative']
-        include_settings = breakdown == 'account' and \
-                                        any(field in additional_fields for field in supported_settings_fields)
-        if not include_settings:
+        include_account_settings = breakdown == 'account' and \
+                                                any(field in additional_fields for field in supported_settings_fields)
+        if not include_account_settings:
             exclude_fields.extend(supported_settings_fields)
 
+        # Only include account type field in reports for the following breakdowns: account, campaign, ad group
+        if breakdown and 'account_type' in additional_fields:
+            include_account_settings = True
+        else:
+            exclude_fields.extend(['account_type'])
+
+        include_settings = False
         if 'status' in required_fields:
             # Settings are needed to get archived status
             include_settings = True
@@ -649,6 +686,7 @@ class AllAccountsExport(object):
             False,
             [],
             include_settings=include_settings,
+            include_account_settings=include_account_settings,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
             account=accounts,
@@ -794,6 +832,7 @@ def filter_allowed_fields(request, fields):
     can_see_projections = request.user.has_perm('zemauth.can_see_projections')
     can_see_managers_in_accounts_table = request.user.has_perm('zemauth.can_see_managers_in_accounts_table')
     can_see_managers_in_campaigns_table = request.user.has_perm('zemauth.can_see_managers_in_campaigns_table')
+    can_see_account_type = request.user.has_perm('zemauth.can_see_account_type')
     can_view_budgets = request.user.has_perm('zemauth.all_accounts_budget_view')
 
     for f in fields:
@@ -812,6 +851,8 @@ def filter_allowed_fields(request, fields):
         if f in ('default_account_manager', 'default_sales_representative') and not can_see_managers_in_accounts_table:
             continue
         if f in ('campaign_manager',) and not can_see_managers_in_campaigns_table:
+            continue
+        if f in ('account_type',) and not can_see_account_type:
             continue
         allowed_fields.append(f)
     return allowed_fields

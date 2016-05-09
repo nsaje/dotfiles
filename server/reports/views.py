@@ -8,8 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 import newrelic.agent
 
 from utils import request_signer
-import reports.api_contentads
 import dash.models
+import reports.api_contentads
+import reports.refresh_k1
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,19 @@ def crossvalidation(request):
     }
 
     return JsonResponse(response_data)
+
+
+@csrf_exempt
+def generate_reports(request):
+    # TODO AUTH
+    # TODO celery task
+
+    try:
+        reports.refresh_k1.refresh_k1_reports()
+    except Exception as e:
+        logger.exception("Refresh k1 reports error")
+        return _error_response({"error": str(e)}, status=500)
+    return JsonResponse({})
 
 
 def _format_stat(stat, bidder_slugs):

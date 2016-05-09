@@ -6,6 +6,7 @@ import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 
 import dash.constants
 import dash.models
@@ -36,7 +37,10 @@ class K1ApiTest(TestCase):
             'k1api.get_accounts',
             'k1api.get_source_credentials_for_reports_sync',
             'k1api.get_content_ad_source_mapping',
-            'k1api.get_ga_accounts'
+            'k1api.get_ga_accounts',
+            'k1api.get_publishers_blacklist',
+            'k1api.get_ad_groups',
+            'k1api.get_ad_groups_exchanges',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -117,6 +121,7 @@ class K1ApiTest(TestCase):
             self.assertEqual(content_ad_source['ad_group_id'], db_cas.content_ad.ad_group_id)
             self.assertEqual(content_ad_source['source_id'], db_cas.source_id)
             self.assertEqual(content_ad_source['source_name'], db_cas.source.name)
+            self.assertEqual(content_ad_source['slug'], db_cas.source.bidder_slug)
 
         contentadsources = dash.models.ContentAdSource.objects
         if source_content_ad_ids:
@@ -179,7 +184,8 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         expected = dash.models.AdGroupSource.objects.filter(
-            source__source_type__type='adblade', source_credentials_id=1).values(u'ad_group_id', u'source_campaign_key')
+            source__source_type__type='adblade', source_credentials_id=1)
+        expected = [{u'ad_group_id': e.ad_group_id, u'source_campaign_key': e.source_campaign_key} for e in expected]
         self.assertEqual(data, list(expected))
 
     @patch('utils.request_signer.verify_wsgi_request')
@@ -209,6 +215,8 @@ class K1ApiTest(TestCase):
             u'end_date',
             u'target_devices',
             u'target_regions',
+            u'tracking_code',
+            u'tracking_slug',
         }
 
         db_ags = dash.models.AdGroupSource.objects.get(
@@ -217,6 +225,16 @@ class K1ApiTest(TestCase):
         self.assertEqual(data['ad_group_source_id'], db_ags.id)
         self.assertEqual(data['source_campaign_key'], db_ags.source_campaign_key)
         self.assertLessEqual(required_fields, set(data.keys()))
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_group_source_nonexisting(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_group_source'),
+            {'source_type': 'nonexistingsource',
+             'ad_group_id': 1},
+        )
+        self.assertEqual(response.status_code, 404)
 
     def _test_get_content_ad_sources_for_ad_group(self, mock_verify_wsgi_request, ad_group_id, content_ad_id):
         response = self.client.get(
@@ -231,6 +249,7 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         required_fields = {
+            u'content_ad_source_id',
             u'credentials',
             u'source_campaign_key',
             u'ad_group_id',
@@ -269,3 +288,313 @@ class K1ApiTest(TestCase):
         ]
         for ad_group_id, content_ad_id in test_cases:
             self._test_get_content_ad_sources_for_ad_group(mock_verify_wsgi_request, ad_group_id, content_ad_id)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_sources_by_tracking_slug(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_sources_by_tracking_slug')
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertGreater(len(data), 0)
+        for source in data.values():
+            self.assertIn('id', source)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_accounts_slugs_ad_groups(self, mock_verify_wsgi_request):
+        accounts = (1, 2)
+        response = self.client.get(
+            reverse('k1api.get_accounts_slugs_ad_groups'),
+            {'account': accounts},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        for account_id, account_data in data.items():
+            self.assertIn(int(account_id), accounts)
+
+            self.assertIn('ad_groups', account_data)
+            self.assertIn('slugs', account_data)
+
+            self.assertGreater(len(account_data['ad_groups']), 0)
+            for ad_group in account_data['ad_groups'].values():
+                self.assertIn('campaign_id', ad_group)
+
+            self.assertGreater(len(account_data['slugs']), 0)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_outbrain(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist_outbrain'),
+            {'marketer_id': 'abcde'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected = (
+            dash.models.PublisherBlacklist.objects
+                .filter(Q(account__outbrain_marketer_id='abcde') |
+                        Q(ad_group__isnull=True, campaign__isnull=True, account__isnull=True))
+                .filter(external_id__isnull=False)
+                .values(u'name', u'external_id')
+        )
+        self.assertEqual(data, {u'blacklist': list(expected)})
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['blacklist']), 8)
+
+        sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status'], b['domain']))
+        self.assertDictEqual(sorted_blacklist[0], {
+            'ad_group_id': None,
+            'domain': 'global',
+            'exchange': None,
+            'status': 1,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[1], {
+            'ad_group_id': 1,
+            'domain': 'pub1.com',
+            'exchange': 'adblade',
+            'status': 1,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[2], {
+            'ad_group_id': 1,
+            'domain': 'pub2.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[3], {
+            'ad_group_id': 1,
+            'domain': 'pub5.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[4], {
+            'ad_group_id': 1,
+            'domain': 'pub6.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[5], {
+            'ad_group_id': 2,
+            'domain': 'pub3.com',
+            'exchange': 'gravity',
+            'status': 1,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[6], {
+            'ad_group_id': 2,
+            'domain': 'pub5.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[7], {
+            'ad_group_id': 2,
+            'domain': 'pub6.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_with_ad_group_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist'),
+            {'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data['blacklist']), 4)
+
+        sorted_blacklist = sorted(data['blacklist'], key=lambda b: b['domain'])
+        self.assertDictEqual(sorted_blacklist[0], {
+            'ad_group_id': 1,
+            'domain': 'pub1.com',
+            'exchange': 'adblade',
+            'status': 1,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[1], {
+            'ad_group_id': 1,
+            'domain': 'pub2.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[2], {
+            'ad_group_id': 1,
+            'domain': 'pub5.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[3], {
+            'ad_group_id': 1,
+            'domain': 'pub6.com',
+            'exchange': 'gravity',
+            'status': 2,
+            'external_id': '',
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_with_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups'),
+            {'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(data[0], {
+            u'id': 1,
+            u'name': u'test adgroup 1',
+            u'start_date': u'2014-06-04',
+            u'end_date': None,
+            u'time_zone': u'America/New_York',
+            u'brand_name': u'brand1',
+            u'display_url': u'brand1.com',
+            u'tracking_codes': u'tracking1&tracking2',
+            u'device_targeting': [],
+            u'iab_category': u'IAB24',
+            u'target_regions': [],
+            u'retargeting_ad_groups': [],
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 3)
+
+        required_fields = {
+            u'id',
+            u'name',
+            u'start_date',
+            u'end_date',
+            u'time_zone',
+            u'brand_name',
+            u'display_url',
+            u'tracking_codes',
+            u'device_targeting',
+            u'iab_category',
+            u'target_regions',
+            u'retargeting_ad_groups',
+        }
+
+        for item in data:
+            self.assertEqual(required_fields, set(item.keys()))
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_exchanges(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups_exchanges'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data['1']), 1)
+        self.assertEqual(len(data['2']), 2)
+
+        self.assertDictEqual(data['1'][0], {
+            u'exchange': 'b1_adiant',
+            u'status': 1,
+            u'cpc_cc': '0.1200',
+            u'daily_budget_cc': '1.5000',
+        })
+
+        sorted_exchanges = sorted(data['2'], key=lambda b: b['exchange'])
+        self.assertDictEqual(sorted_exchanges[0], {
+            u'exchange': u'b1_facebook',
+            u'status': 1,
+            u'cpc_cc': u'0.1400',
+            u'daily_budget_cc': u'1.7000',
+        })
+        self.assertDictEqual(sorted_exchanges[1], {
+            u'exchange': u'b1_google',
+            u'status': 1,
+            u'cpc_cc': u'0.1300',
+            u'daily_budget_cc': u'1.6000',
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_exchanges_with_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_groups_exchanges'),
+            {'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(data['1'][0], {
+            u'exchange': 'b1_adiant',
+            u'status': 1,
+            u'cpc_cc': '0.1200',
+            u'daily_budget_cc': '1.5000',
+        })
+
+    def test_get_content_ads(self):
+        # TODO matijav 03.05.2016
+        pass
+
+    def test_get_content_ads_exchanges(self):
+        # TODO matijav 03.05.2016
+        pass

@@ -48,6 +48,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'asc'
         },
         {
+            name: 'Agency',
+            field: 'agency',
+            unselectable: true,
+            checked: true,
+            type: 'text',
+            totalRow: false,
+            help: 'Agency to which this account belongs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_account_agency_information'),
+            shown: $scope.hasPermission('zemauth.can_view_account_agency_information')
+        },
+        {
             name: 'Status',
             field: 'status',
             unselectable: true,
@@ -83,6 +96,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
             shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
+        },
+        {
+            name: 'Account Type',
+            field: 'account_type',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Type of account.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_account_type'),
+            shown: $scope.hasPermission('zemauth.can_see_account_type')
         },
         {
             name: 'Total Credit',
@@ -313,7 +338,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Management',
             'fields': [
-                'default_account_manager', 'default_sales_representative'
+                'default_account_manager', 'default_sales_representative', 'account_type'
             ]
         },
         {
@@ -351,7 +376,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     'campaigns': [],
                 });
 
-                $state.go('main.accounts.agency', {id: data.id});
+                if ($scope.hasPermission('zemauth.can_manage_agency') && $scope.hasAgency()) {
+                    $state.go('main.accounts.settings', {id: data.id});
+                } else {
+                    $state.go('main.accounts.agency', {id: data.id});
+                }
             },
             function (data) {
                 // error

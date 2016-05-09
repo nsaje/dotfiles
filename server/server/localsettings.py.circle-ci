@@ -17,6 +17,9 @@ else:
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 STATS_DB_NAME = 'stats'
+K1_DB_NAME = 'k1'
+K1_VIEWS_DB_NAME = K1_DB_NAME
+
 STATS_E2E_DB_NAME = 'stats_e2e'
 
 DATABASES = {
@@ -33,6 +36,14 @@ DATABASES = {
         'PASSWORD': ''
     },
     STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439,
+    },
+    K1_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
@@ -181,8 +192,6 @@ R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
 R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
-
-BIDDER_API_SIGN_KEY = ''
 
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
