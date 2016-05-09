@@ -1170,6 +1170,7 @@ class CreditLineItemResource(resources.ModelResource):
 class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'account',
+        'agency',
         'start_date',
         'end_date',
         'amount',
@@ -1182,7 +1183,7 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ('status', 'license_fee', 'created_by', )
     readonly_fields = ('created_dt', 'created_by',)
-    search_fields = ('account__name', 'amount')
+    search_fields = ('account__name', 'agency__name', 'amount')
     form = dash_forms.CreditLineItemAdminForm
 
     resource_class = CreditLineItemResource
@@ -1302,6 +1303,7 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_dt',
         'everywhere',
+        'external_id',
         'ad_group_id',
         'campaign_id',
         'account_id',

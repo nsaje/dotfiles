@@ -213,6 +213,8 @@ class K1ApiTest(TestCase):
             u'end_date',
             u'target_devices',
             u'target_regions',
+            u'tracking_code',
+            u'tracking_slug',
         }
 
         db_ags = dash.models.AdGroupSource.objects.get(
@@ -245,6 +247,7 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         required_fields = {
+            u'content_ad_source_id',
             u'credentials',
             u'source_campaign_key',
             u'ad_group_id',
@@ -563,3 +566,11 @@ class K1ApiTest(TestCase):
             u'cpc_cc': '0.1200',
             u'daily_budget_cc': '1.5000',
         })
+
+    def test_get_content_ads(self):
+        # TODO matijav 03.05.2016
+        pass
+
+    def test_get_content_ads_exchanges(self):
+        # TODO matijav 03.05.2016
+        pass

@@ -58,10 +58,12 @@ class AdGroupSettingsForm(forms.Form):
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
+        max_value=4,
         decimal_places=4,
         required=False,
         error_messages={
             'min_value': 'Maximum CPC can\'t be lower than $0.03.',
+            'max_value': 'Maximum CPC can\'t be higher than $4.00.'
         }
     )
     daily_budget_cc = forms.DecimalField(
@@ -261,6 +263,9 @@ class AccountAgencyAgencyForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
+    account_type = forms.IntegerField(
+        required=False
+    )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
 
@@ -303,10 +308,24 @@ class AccountAgencyAgencyForm(forms.Form):
 
         return sales_representative
 
+    def clean_account_type(self):
+        account_type = self.cleaned_data.get('account_type')
+
+        if account_type is None:
+            return None
+
+        if account_type not in constants.AccountType.get_all():
+            raise forms.ValidationError('Invalid account type.')
+
+        return account_type
+
     def clean_allowed_sources(self):
         err = forms.ValidationError('Invalid allowed source.')
 
         allowed_sources_dict = self.cleaned_data['allowed_sources']
+
+        if allowed_sources_dict is None:
+            return None
 
         if not isinstance(allowed_sources_dict, dict):
             raise err
@@ -904,9 +923,12 @@ class CreditLineItemAdminForm(forms.ModelForm):
             pk__in=not_archived
         ).order_by('id')
 
+        self.fields['agency'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['agency'].queryset = models.Agency.objects.all().order_by('id')
+
     class Meta:
         model = models.CreditLineItem
-        fields = ['account', 'start_date', 'end_date', 'amount',
+        fields = ['account', 'agency', 'start_date', 'end_date', 'amount',
                   'flat_fee_cc', 'flat_fee_start_date', 'flat_fee_end_date',
                   'license_fee', 'status', 'comment']
 

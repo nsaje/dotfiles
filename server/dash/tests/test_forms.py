@@ -49,6 +49,15 @@ class AccountAgencyAgencyFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_account_manager'))
 
+    def test_invalid_account_type(self):
+        form = forms.AccountAgencyAgencyForm({
+            'id': 1,
+            'name': 'Name',
+            'account_type': 'invalid'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('account_type'))
+
     def test_allowed_sources(self):
         form = forms.AccountAgencyAgencyForm({
             'id': 1,
@@ -209,9 +218,14 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_max_cpc_setting_high_value(self):
-        self.data['cpc_cc'] = 100
+        self.data['cpc_cc'] = 4
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
+
+    def test_max_cpc_setting_value_too_high(self):
+        self.data['cpc_cc'] = 4.01
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
+        self.assertFalse(form.is_valid())
 
     def test_default_value_enable_ga_tracking(self):
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)

@@ -2,7 +2,6 @@ import datetime
 import httplib
 import operator
 
-import codecs
 import mock
 import unittest
 
@@ -11,6 +10,15 @@ from django.db import DEFAULT_DB_ALIAS
 from django.db import transaction
 from django.conf import settings
 from django.core.management import call_command
+from django.contrib.auth.models import Permission
+
+
+def add_permissions(user, permissions):
+    ''' utility intended to be used in unit tests only '''
+    for permission in permissions:
+        user.user_permissions.add(
+            Permission.objects.get(codename=permission)
+        )
 
 
 class MockDateTime(datetime.datetime):
@@ -83,6 +91,19 @@ def format_csv_content(content):
 
     formatted_content = '\r\n'.join(lines_formatted) + '\r\n'
     return formatted_content
+
+
+class DisableAutoNowAdd(object):
+    def __init__(self, cls, field_name):
+        self.cls = cls
+        self.field = cls._meta.get_field_by_name(field_name)[0]
+        self.prev_auto_now_add = self.field.auto_now_add
+
+    def __enter__(self):
+        self.field.auto_now_add = False
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.field.auto_now_add = self.prev_auto_now_add
 
 
 @unittest.skipUnless(settings.RUN_REDSHIFT_UNITTESTS, 'Only run when redshift tests are enabled')

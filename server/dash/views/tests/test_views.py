@@ -332,9 +332,9 @@ class AdGroupSourceSettingsTest(TestCase):
             ad_group=self.ad_group)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
-    @patch('automation.campaign_stop.get_max_settable_daily_budget')
-    def test_daily_budget_over_max_settable(self, mock_max_daily_budget):
-        mock_max_daily_budget.return_value = decimal.Decimal('500')
+    @patch('automation.campaign_stop.get_max_settable_source_budget')
+    def test_daily_budget_over_max_settable(self, mock_max_settable_budget):
+        mock_max_settable_budget.return_value = decimal.Decimal('500')
         self._set_ad_group_end_date(days_delta=3)
         self._set_campaign_automatic_campaign_stop(False)
         response = self.client.put(

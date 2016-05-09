@@ -546,8 +546,23 @@ urlpatterns += [
     url(
         r'k1api/get_ad_groups_exchanges$',
         k1api.views.get_ad_groups_exchanges,
-        name='k1api.get_ad_groups_exchanges'
+        name='k1api.get_ad_groups_exchanges',
     ),
+    url(
+        r'k1api/get_content_ads$',
+        k1api.views.get_content_ads,
+        name='k1api.get_content_ads',
+    ),
+    url(
+        r'k1api/get_content_ads_exchanges$',
+        k1api.views.get_content_ads_exchanges,
+        name='k1api.get_content_ads_exchanges',
+    ),
+    url(
+        r'^k1api/get_content_ad_ad_group$',
+        k1api.views.get_content_ad_ad_group,
+        name='k1api.get_content_ad_ad_group',
+    )
 ]
 
 # Crossvalidation Api
