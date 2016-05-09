@@ -177,7 +177,8 @@ class Publishers(object):
         )
         cpcs = {}
         for line in _query_rows(query):
-            cpcs[line[0]] = Decimal(line[1]) / line[2]
+            if line[1] != 0 and line[2] != 0:
+                cpcs[line[0]] = Decimal(line[1]) / line[2]
 
         return cpcs
 
