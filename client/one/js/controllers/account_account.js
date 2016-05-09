@@ -17,6 +17,8 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.addUserRequestInProgress = false;
     $scope.addUserData = {};
     $scope.addUserErrors = null;
+    $scope.canArchive = false;
+    $scope.canRestore = true;
 
     $scope.getAllowedMediaSources = function () {
         var list = [];
@@ -95,6 +97,8 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         api.accountAgency.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 if (discarded) {
                     $scope.discarded = true;
                 } else {
@@ -120,6 +124,8 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
                 $scope.saved = true;
             },

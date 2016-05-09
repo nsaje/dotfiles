@@ -105,7 +105,7 @@
 
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
+        <button ng-if="hasPermission('zemauth.archive_restore_entity')" type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
         <div class="loader" ng-show="requestInProgress"></div>
         <span ng-show="saved" class="success feedback-text">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error feedback-text">An error occurred while saving. Please correct the marked fields and save again.</span>
@@ -179,5 +179,5 @@
     <p>
         <strong>This account is archived.</strong>
     </p>
-    <button type="button" class="btn btn-default" ng-click="restoreAccount()">Restore account</button>
+    <button ng-if="hasPermission('zemauth.archive_restore_entity')" type="button" class="btn btn-default" ng-click="restoreAccount()">Restore account</button>
 </div>
