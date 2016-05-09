@@ -171,7 +171,9 @@ class Publishers(object):
             date=date.isoformat()
         )
         data = _query_rows(query).next()
-        return Decimal(data[0])/data[1]
+        if data[0] is None:
+            return Decimal(0)
+        return Decimal(data[0]) / data[1]
 
     def _get_post_click_data(self, ad_group_id, post_click_list):
         if not post_click_list:
