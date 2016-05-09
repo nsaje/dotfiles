@@ -98,7 +98,8 @@ class ContentAdStats(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            post_click = self._get_post_click_data(ad_group, content_ad_postclick.get((row[1], row[3])))
+            raw_postclick = content_ad_postclick.pop((row[1], row[3]))
+            post_click = self._get_post_click_data(ad_group, raw_postclick)
 
             yield (
                 date,
@@ -125,6 +126,8 @@ class ContentAdStats(object):
                 _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
                 _decimal_to_int(license_fee * MICRO_TO_NANO),
             )
+
+            logger.info('Couldn\'t join the following post click stats: %s', post_click.keys())
 
 
 class Publishers(object):
