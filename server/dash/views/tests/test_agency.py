@@ -2153,6 +2153,7 @@ class CampaignSettingsTest(TestCase):
             content['data']['goals'][0]['conversion_goal'],
         )
 
+
 class AccountHistoryTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
@@ -2566,7 +2567,6 @@ class AccountSettingsTest(TestCase):
 
         content = json.loads(response.content)
         self.assertFalse(content['success'])
-
 
     def test_get_changes_text_for_media_sources(self):
         view = agency.AccountSettings()

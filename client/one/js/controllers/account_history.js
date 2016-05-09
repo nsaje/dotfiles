@@ -1,9 +1,9 @@
-/* globals oneApp, options */
+/* globals oneApp */
 oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.history = [];
     $scope.requestInProgress = false;
 
-    $scope.getSettings = function (discarded) {
+    $scope.getSettings = function () {
         $scope.requestInProgress = true;
         api.accountHistory.get($state.params.id).then(
             function (data) {
