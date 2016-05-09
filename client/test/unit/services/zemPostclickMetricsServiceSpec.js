@@ -54,7 +54,7 @@ describe('zemPostclickMetricsServiceSpec', function () {
             }, {
                 value: 'conversion_goal_2',
                 name: 'Default name 2',
-                shown: false 
+                shown: false
             }]);
         });
 
