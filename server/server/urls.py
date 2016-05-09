@@ -458,11 +458,6 @@ urlpatterns += [
         login_required(dash.views.export.AllAccountsExport.as_view())
     ),
     url(
-        r'^api/stats/testdata/',
-        stats.views.BreakdownsTestData.as_view(),
-        name='stats_breakdowns_test_data'
-    ),
-    url(
         r'^api\/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))\/(?P<id_>\d+)\/breakdown(?P<breakdown>(?:/\w+)+)$',
         login_required(dash.views.breakdowns.BreakdownView.as_view()),
         name='breakdown_view'
