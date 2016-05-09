@@ -435,7 +435,8 @@ def get_ad_groups(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id)
+    source_type = request.GET.get('source_type')
+    ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id, source_type)
 
     ad_groups = []
     for ad_group_settings in ad_groups_settings:
@@ -459,13 +460,23 @@ def get_ad_groups(request):
     return _response_ok(ad_groups)
 
 
-def _get_ad_groups_and_campaigns_settings(ad_group_id):
+def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
     if ad_group_id:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id=ad_group_id)
                               .group_current_settings()
                               .select_related('ad_group', 'ad_group__campaign'))
         ad_group_ids = [ad_group_id]
+    elif source_type:
+        nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
+        ad_group_ids = (dash.models.AdGroupSource.objects
+                        .filter(ad_group__in=nonarchived)
+                        .filter(source__source_type__type=source_type)
+                        .values('ad_group_id'))
+        ad_groups_settings = (dash.models.AdGroupSettings.objects
+                              .filter(ad_group__id__in=ad_group_ids)
+                              .group_current_settings()
+                              .select_related('ad_group', 'ad_group__campaign'))
     else:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .all()
