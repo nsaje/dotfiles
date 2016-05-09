@@ -24,7 +24,7 @@ class QuerySetMatcher():
         self.obj = obj
 
     def __eq__(self, other):
-        return list(self.obj) == list(other)
+        return sorted(list(self.obj)) == sorted(list(other))
 
 
 class ListMatcher():
