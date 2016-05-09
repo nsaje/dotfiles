@@ -44,7 +44,7 @@ class ContentAdStats(object):
             'postclickstats',
             ['content_ad_id', 'type', 'source'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
         )
 
     def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
@@ -169,7 +169,7 @@ class Publishers(object):
             'postclickstats',
             ['ad_group_id', 'type', 'source', 'lower(publisher)'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
         )
 
     def _outbrain_cpc(self, date):
