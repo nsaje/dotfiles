@@ -1579,22 +1579,48 @@ ul.icon-list li {
     }
 }
 
+
+.settings-archive-container {
+ 
+    display: inline-block;
+    position: relative;
+    float: right;
+
+     zem-internal-feature .internal {
+        &:before {
+            content: " ";
+            width: 0;
+            height: 0;
+            display: block;
+            border-top: 7px solid @internal-color;
+            border-right: 7px solid transparent;
+            float: left;
+            position: absolute;
+        }
+    }
+}
+
+.settings-restore-container {
+ 
+    display: inline-block;
+    position: relative;
+
+     zem-internal-feature .internal {
+        &:before {
+            content: " ";
+            position: absolute;
+            display: block;
+            border-top: 7px solid @internal-color;
+            border-right: 7px solid transparent;
+            top: 0px;
+        }
+    }
+}
+
+
 .table-container {
     width: 100%;
     overflow: auto;
-}
-
-.page-account-agency,
-.form-group,
-.profile-container .dropdown-menu {
-    .internal {
-        position: absolute;
-        border-top: 7px solid @internal-color;
-        border-right: 7px solid transparent;
-        z-index: 1;
-        top: 5px;
-        left: 5px;
-    }
 }
 
 .button-bar .button-bar-item .internal {
