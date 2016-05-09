@@ -738,7 +738,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                 zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, true);
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);

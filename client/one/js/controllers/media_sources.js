@@ -535,7 +535,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.selectRows();
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, true);
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
                 if ($scope.level === constants.level.CAMPAIGNS) {
                     $scope.campaignGoals = data.campaign_goals;
                     zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);

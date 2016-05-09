@@ -592,7 +592,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.order = data.order;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, true);
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.id = x.ad_group;

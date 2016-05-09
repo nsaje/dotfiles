@@ -580,7 +580,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.campaignGoals = data.campaign_goals;
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, true);
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
                 zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
                 // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
