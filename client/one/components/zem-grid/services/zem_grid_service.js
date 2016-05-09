@@ -3,25 +3,18 @@
 
 oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridObject', function ($q, zemGridConstants, zemGridParser, zemGridObject) { // eslint-disable-line max-len
 
-    /** DEBUG DATA **/
-    var columns = ['Name', 'Short stat', 'Looooogner stat', 'Realy looooooooooong stat',
-        'A', 'B', 'C', 'AA', 'BB', 'CC', 'AAA', 'BBB', 'CCC', 'AAAA', 'BBBB',
-        'CCCC', 'AAAAA', 'BBBBB', 'CCCCC', 'ZZZZZ'];
-    var breakdowns = ['ad_group', 'age', 'date'];
-    var columnsWidths = [];
-    for (var i = 0; i < columns.length; ++i) columnsWidths.push(0);
-    /** END DEBUG DATA **/
+    var columnWidths = getInitialColumnWidths();
 
     function load (dataSource) {
         var deferred = $q.defer();
         dataSource.getData().then(
             function (data) {
                 var grid = new zemGridObject.createInstance();
-                grid.header.columns = columns;
-                grid.meta.breakdowns = breakdowns;
-                grid.meta.levels = breakdowns.length;
+                grid.header.columns = data.meta.columns;
                 grid.meta.source = dataSource;
-                grid.ui.columnWidths = columnsWidths;
+                grid.meta.breakdowns = dataSource.breakdowns;
+                grid.meta.levels = dataSource.breakdowns.length;
+                grid.ui.columnWidths = columnWidths;
 
                 zemGridParser.parse(grid, data);
                 deferred.resolve(grid);
@@ -84,6 +77,14 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
             width = grid.ui.columnWidths[cellIndex] + 'px';
         }
         return {'min-width': width};
+    }
+
+    function getInitialColumnWidths (grid) {
+        // FIXME: if columnWidth ref changes, it does not work anymore when grid is reloaded (ie. submit new breakdown)
+        // ==> it is not possible to generate this array when grid is loading -- load()
+        var columnsWidths = [];
+        for (var i = 0; i < 50; ++i) columnsWidths.push(20);
+        return columnsWidths;
     }
 
 

@@ -1,9 +1,9 @@
 <div class="zem-grid-footer">
     <div class="zem-grid-row">
         <div class="zem-grid-cell"
-             ng-repeat="col in ctrl.grid.footer.data.stats track by $index"
+             ng-repeat="col in ctrl.grid.header.columns track by $index"
              ng-style="ctrl.getCellStyle($index)">
-            <span class="col-title">{{ col }}</span>
+            <span class="col-title">{{ ctrl.grid.footer.data.stats[col.field] }}</span>
         </div>
     </div>
 </div>
