@@ -78,7 +78,17 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             current.pagination.size += breakdown.pagination.size;
         }
 
-        function getMetaData () { /* TODO */
+        function getMetaData () {
+            var config = prepareBreakdownConfig(null, 0);
+            var deferred = $q.defer();
+            $http.get(ds.endpoint, config).success(function (data) {
+                var breakdown = data.data[0];
+                deferred.resolve(breakdown.meta);
+            }).error(function (data) {
+                deferred.reject(data);
+            });
+
+            return deferred.promise;
         }
 
         function getData (breakdown, size) { // level, page

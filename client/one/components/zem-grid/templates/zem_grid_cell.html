@@ -1,9 +1,9 @@
 <div class="zem-grid-cell" ng-style="ctrl.getCellStyle()">
-   <span ng-if="::ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.levels">
+   <span ng-if="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.levels">
         <a ng-click="ctrl.toggleCollapse()" class="action">
             {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}
         </a>
     </span>
-    <span>{{ctrl.cell}}</span>
+    <span>{{ctrl.row.data.stats[ctrl.field]}}</span>
 </div>
 
