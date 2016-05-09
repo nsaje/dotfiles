@@ -47,7 +47,8 @@ class ContentAdStats(object):
              ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
         )
 
-    def _get_post_click_data(self, ad_group, post_click_list):
+    def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
+        post_click_list = content_ad_postclick.pop((content_ad_id, media_source), None)
         if not post_click_list:
             return {}
 
@@ -83,13 +84,16 @@ class ContentAdStats(object):
         media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
 
         for row in self._stats_breakdown(date).rows():
+            content_ad_id = row[1]
+            media_source_slug = row[3]
+
             ad_group = ad_groups_map.get(row[0])
             if ad_group is None:
                 logger.error("Got spend for invalid adgroup: %s", row[0])
                 continue
-            media_source = media_sources_map.get(row[3])
+            media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
-                logger.error("Got spend for invalid media_source: %s", row[3])
+                logger.error("Got spend for invalid media_source: %s", media_source_slug)
                 continue
 
             cost = row[6] or 0
@@ -98,12 +102,11 @@ class ContentAdStats(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            raw_postclick = content_ad_postclick.pop((row[1], row[3]), None)
-            post_click = self._get_post_click_data(ad_group, raw_postclick)
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
 
             yield (
                 date,
-                row[1],  # content_ad_id
+                content_ad_id,
                 ad_group.id,
                 media_source.id,
 
@@ -127,7 +130,7 @@ class ContentAdStats(object):
                 _decimal_to_int(license_fee * MICRO_TO_NANO),
             )
 
-            logger.info('Couldn\'t join the following post click stats: %s', post_click.keys())
+        logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class Publishers(object):
@@ -186,7 +189,7 @@ class Publishers(object):
         return cpcs
 
     def _get_post_click_data(self, content_ad_postclick, ad_group_id, media_source, publisher):
-        post_click_list = content_ad_postclick.get((ad_group_id, media_source, publisher.lower()))
+        post_click_list = content_ad_postclick.pop((ad_group_id, media_source, publisher.lower()), None)
         if not post_click_list:
             return {}
 
@@ -313,6 +316,8 @@ class Publishers(object):
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
             )
+
+        logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class TouchpointConversions(object):
