@@ -65,7 +65,7 @@ def get_stats_end_date(end_time):
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
 
-    if not user.has_perm('zemauth.filter_sources') or not sources_filter:
+    if not sources_filter:
         return filtered_sources
 
     filtered_ids = []
@@ -203,9 +203,6 @@ def get_active_ad_group_sources(modelcls, modelobjects):
 
 
 def join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync):
-    if not user.has_perm('zemauth.conversion_reports'):
-        return last_success_actions
-
     last_success_actions_joined = {}
     for id_, last_sync_time in last_success_actions.items():
         if last_sync_time is None or last_pixel_sync is None:

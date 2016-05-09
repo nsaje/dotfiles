@@ -1463,9 +1463,6 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.get_content_ad_csv'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         try:
             ad_group = helpers.get_ad_group(request.user, ad_group_id)
         except exc.MissingDataError, e:
@@ -2191,11 +2188,19 @@ def sharethrough_approval(request):
     sig = request.GET.get('sig')
     if not sig:
         logger.debug('Sharethrough approval postback without signature. crid: %s', data['crid'])
+        calculated = None
     else:
         calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
                                                        msg=str(data['crid']),
                                                        digestmod=hashlib.sha256)).digest()
 
+        if sig != calculated:
+            logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
+
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
+                                                           source=models.Source.objects.get(name='Sharethrough'))
+
+    if data['status'] == 0:
         if sig != calculated:
             logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
 
