@@ -50,11 +50,11 @@ describe('zemPostclickMetricsServiceSpec', function () {
             expect(options).toEqual([{
                 value: 'conversion_goal_1',
                 name: 'Goal name 1',
-                shown: false
+                shown: true
             }, {
                 value: 'conversion_goal_2',
                 name: 'Default name 2',
-                shown: false
+                shown: false 
             }]);
         });
 
