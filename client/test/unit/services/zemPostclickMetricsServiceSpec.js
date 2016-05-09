@@ -20,7 +20,7 @@ describe('zemPostclickMetricsServiceSpec', function () {
                 shown: false
             }];
 
-            postclickMetricsService.setConversionGoalChartOptions(options, [], false);
+            postclickMetricsService.setConversionGoalChartOptions(options, []);
 
             expect(options).toEqual([{
                 value: 'conversion_goal_1',
@@ -45,7 +45,7 @@ describe('zemPostclickMetricsServiceSpec', function () {
             }];
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
 
-            postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, false);
+            postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals);
 
             expect(options).toEqual([{
                 value: 'conversion_goal_1',
@@ -70,7 +70,7 @@ describe('zemPostclickMetricsServiceSpec', function () {
             }];
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
 
-            postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, true);
+            postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals);
 
             expect(options).toEqual([{
                 value: 'conversion_goal_1',

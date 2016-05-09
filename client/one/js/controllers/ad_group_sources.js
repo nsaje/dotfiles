@@ -630,8 +630,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals,
-            true
+            conversionGoals
         );
     };
 

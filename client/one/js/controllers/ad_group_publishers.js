@@ -787,8 +787,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals,
-            true
+            conversionGoals
         );
     };
 

@@ -1016,8 +1016,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals,
-            true
+            conversionGoals
         );
     };
 
