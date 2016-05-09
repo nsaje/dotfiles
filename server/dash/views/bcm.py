@@ -21,7 +21,7 @@ class AccountCreditView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
 
-        account = helpers.get_account(request.user, account_id)
+        helpers.get_account(request.user, account_id)
         request_data = json.loads(request.body)
         response_data = {'canceled': []}
         account_credits_to_cancel = models.CreditLineItem.objects.filter(
@@ -84,7 +84,7 @@ class AccountCreditView(api_common.BaseApiView):
 
     def _get_response(self, account_id):
         credit_items = models.CreditLineItem.objects.filter(
-            account_id=account_id,
+            account_id=account_id
         ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
@@ -201,7 +201,7 @@ class CampaignBudgetView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        return self._get_response(campaign)
+        return self._get_response(request.user, campaign)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
@@ -241,7 +241,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'comment': item.comment,
         }
 
-    def _get_response(self, campaign):
+    def _get_response(self, user, campaign):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt')
@@ -250,14 +250,22 @@ class CampaignBudgetView(api_common.BaseApiView):
             'active': active_budget,
             'past': self._get_past_budget(budget_items),
             'totals': self._get_budget_totals(campaign, active_budget),
-            'credits': self._get_available_credit_items(campaign),
+            'credits': self._get_available_credit_items(user, campaign),
             'min_amount': campaign_stop.get_min_budget_increase(campaign),
         })
 
-    def _get_available_credit_items(self, campaign):
+    def _get_available_credit_items(self, user, campaign):
         available_credits = models.CreditLineItem.objects.filter(
             account=campaign.account
         )
+
+        if user.has_perm('zemauth.can_manage_agency'):
+            agency = user.agency_set.first()
+            if agency:
+                available_credits |= models.CreditLineItem.objects.filter(
+                    agency=agency
+                )
+
         return [
             {
                 'id': credit.pk,

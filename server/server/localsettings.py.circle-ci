@@ -17,6 +17,9 @@ else:
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 STATS_DB_NAME = 'stats'
+K1_DB_NAME = 'k1'
+K1_VIEWS_DB_NAME = K1_DB_NAME
+
 STATS_E2E_DB_NAME = 'stats_e2e'
 
 DATABASES = {
@@ -33,6 +36,14 @@ DATABASES = {
         'PASSWORD': ''
     },
     STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439,
+    },
+    K1_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
