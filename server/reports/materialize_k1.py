@@ -161,7 +161,7 @@ class Publishers(object):
         return Breakdown(
             date,
             'postclickstats',
-            ['ad_group_id', 'type', 'source', 'publisher'],
+            ['ad_group_id', 'type', 'source', 'lower(publisher)'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
              ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
         )
@@ -182,7 +182,8 @@ class Publishers(object):
 
         return cpcs
 
-    def _get_post_click_data(self, ad_group_id, post_click_list):
+    def _get_post_click_data(self, content_ad_postclick, ad_group_id, media_source, publisher):
+        post_click_list = content_ad_postclick.get((ad_group_id, media_source, publisher.lower()))
         if not post_click_list:
             return {}
 
@@ -238,8 +239,7 @@ class Publishers(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            post_click = self._get_post_click_data(
-                ad_group_id, content_ad_postclick.get((ad_group_id, media_source, publisher)))
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
 
             yield (
                 date,
@@ -284,8 +284,7 @@ class Publishers(object):
 
             media_source = source.tracking_slug
             publisher = row[2]
-            post_click = self._get_post_click_data(
-                ad_group_id, content_ad_postclick.get((ad_group_id, media_source, row[1])))
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, row[1])
 
             yield (
                 date,
