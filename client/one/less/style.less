@@ -1579,23 +1579,38 @@ ul.icon-list li {
     }
 }
 
-
 .settings-archive-container {
  
     display: inline-block;
     position: relative;
     float: right;
 
-     zem-internal-feature .internal {
+
+    zem-internal-feature .internal {
         &:before {
             content: " ";
             width: 0;
             height: 0;
             display: block;
-            border-top: 7px solid @internal-color;
-            border-right: 7px solid transparent;
+            border-top: 9px solid @internal-color;
+            border-right: 9px solid transparent;
             float: left;
             position: absolute;
+        }
+    }
+}
+
+.page-account-account,
+.form-group,
+.profile-container .dropdown-menu {
+    .settings-archive-container {
+        .internal {
+            position: initial;
+            border-top: initial;
+            border-right: initial;
+            z-index: initial;
+            top: initial;
+            left: initial;
         }
     }
 }
@@ -1605,7 +1620,7 @@ ul.icon-list li {
     display: inline-block;
     position: relative;
 
-     zem-internal-feature .internal {
+    zem-internal-feature .internal {
         &:before {
             content: " ";
             position: absolute;
@@ -2364,6 +2379,19 @@ ul.icon-list li {
 .page-account-account {
     form#form-account-agency {
         margin-bottom: 45px;
+    }
+}
+
+.page-account-account,
+.form-group,
+.profile-container .dropdown-menu {
+    .internal {
+        position: absolute;
+        border-top: 7px solid @internal-color;
+        border-right: 7px solid transparent;
+        z-index: 1;
+        top: 5px;
+        left: 5px;
     }
 }
 
