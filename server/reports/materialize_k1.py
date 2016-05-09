@@ -98,7 +98,7 @@ class ContentAdStats(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            raw_postclick = content_ad_postclick.pop((row[1], row[3]))
+            raw_postclick = content_ad_postclick.pop((row[1], row[3]), None)
             post_click = self._get_post_click_data(ad_group, raw_postclick)
 
             yield (
