@@ -153,11 +153,19 @@ class Model(object):
     def select_columns(cls, subset=None, group=None):
         if subset:
             columns = []
+            unknown = []
 
             for alias in subset:
                 alias = helpers.clean_alias(alias)
                 if alias in cls.__COLUMNS_DICT__:
                     columns.append(cls.__COLUMNS_DICT__[alias])
+                else:
+                    unknown.append(alias)
+
+            # TODO add test
+            if unknown:
+                raise BackToSQLException('Unknown columns in subset {}'.format(unknown))
+
         else:
             columns = cls.get_columns()
 

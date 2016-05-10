@@ -13,7 +13,7 @@ class Q(object):
     def __init__(self, model, *args, **kwargs):
         self.negate = False
         self.join_operator = self.AND
-        self.children = list(args) + list(kwargs.iteritems())
+        self.children = list(args) + sorted(list(kwargs.iteritems()))
         self.model = model
 
         # cache, used to preserve the order of params
@@ -24,7 +24,7 @@ class Q(object):
         self.prefix = None
 
     def _combine(self, other, join_operator):
-        parent = type(self)(*[self, other])
+        parent = type(self)(self.model, *[self, other])
         parent.join_operator = join_operator
         return parent
 
@@ -42,13 +42,9 @@ class Q(object):
         if self.prefix is not None and self.prefix is not prefix:
             raise Exception("Only 1 prefix per Q")
 
-
-        if self.query:
-            return self.query, self.params
-
         self.query, self.params = self._g(prefix)
 
-        self.prefix = prefix or ''
+        self.prefix = prefix
 
         return self.query
 
@@ -64,7 +60,7 @@ class Q(object):
 
         for child in self.children:
             if isinstance(child, type(self)):
-                child_parts, child_params = child.g(prefix)
+                child_parts, child_params = child._g(prefix)
             else:
                 child_parts, child_params = self._generate_sql(child, prefix)
 
