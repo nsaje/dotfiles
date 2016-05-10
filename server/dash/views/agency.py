@@ -1049,32 +1049,32 @@ class AccountAgency(api_common.BaseApiView):
         return allowed_sources_dict
 
     def get_dict(self, request, settings, account):
-        result = {}
-        if settings:
-            result = {
-                'id': str(account.pk),
-                'archived': settings.archived,
-            }
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_modify_account_name'):
-                result['name'] = account.name
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_modify_account_manager'):
-                result['default_account_manager'] = str(settings.default_account_manager.id) \
-                    if settings.default_account_manager is not None else None
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_set_account_sales_representative'):
-                result['default_sales_representative'] =\
-                    str(settings.default_sales_representative.id) if\
-                    settings.default_sales_representative is not None else None
-            if request.user.has_perm('zemauth.can_modify_account_type'):
-                result['account_type'] = settings.account_type
-            if request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                result['allowed_sources'] = self.get_allowed_sources(
-                    request.user.has_perm('zemauth.can_see_all_available_sources'),
-                    [source.id for source in account.allowed_sources.all()]
-                )
+        if not settings:
+            return {}
 
+        result = {
+            'id': str(account.pk),
+            'archived': settings.archived,
+        }
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_modify_account_name'):
+            result['name'] = account.name
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_modify_account_manager'):
+            result['default_account_manager'] = str(settings.default_account_manager.id) \
+                if settings.default_account_manager is not None else None
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_set_account_sales_representative'):
+            result['default_sales_representative'] =\
+                str(settings.default_sales_representative.id) if\
+                settings.default_sales_representative is not None else None
+        if request.user.has_perm('zemauth.can_modify_account_type'):
+            result['account_type'] = settings.account_type
+        if request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            result['allowed_sources'] = self.get_allowed_sources(
+                request.user.has_perm('zemauth.can_see_all_available_sources'),
+                [source.id for source in account.allowed_sources.all()]
+            )
         return result
 
     def get_history(self, account):
