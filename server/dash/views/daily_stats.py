@@ -106,8 +106,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         result = {}
-        can_see_conversion_goals = user.has_perm('zemauth.conversion_reports')
-        if can_see_conversion_goals and conversion_goals is not None:
+        if conversion_goals is not None:
             result['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name} for cg in conversion_goals]
 
         can_see_campaign_goals = user.has_perm('zemauth.campaign_goal_performance')

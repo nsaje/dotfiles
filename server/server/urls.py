@@ -544,6 +544,11 @@ urlpatterns += [
         name='k1api.get_publishers_blacklist',
     ),
     url(
+        r'^k1api/get_publishers_blacklist_outbrain$',
+        k1api.views.get_publishers_blacklist_outbrain,
+        name='k1api.get_publishers_blacklist_outbrain',
+    ),
+    url(
         r'^k1api/get_ad_groups$',
         k1api.views.get_ad_groups,
         name='k1api.get_ad_groups',

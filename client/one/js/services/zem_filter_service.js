@@ -12,12 +12,10 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     var blacklistedPublisherFilter = null;
 
     function init (user) {
-        if ('zemauth.filter_sources' in user.permissions) {
-            var filteredSourcesLocation = $location.search().filtered_sources;
-            if (filteredSourcesLocation) {
-            // replace the array in place
-                Array.prototype.splice.apply(filteredSources, [0, filteredSources.length].concat(filteredSourcesLocation.split(',')));
-            }
+        var filteredSourcesLocation = $location.search().filtered_sources;
+        if (filteredSourcesLocation) {
+        // replace the array in place
+            Array.prototype.splice.apply(filteredSources, [0, filteredSources.length].concat(filteredSourcesLocation.split(',')));
         }
 
         showArchived = $location.search().show_archived || false;

@@ -64,13 +64,6 @@ class NavigationAllAccountsDataViewTest(TestCase):
             'accounts_count': 0
         })
 
-        # has no filter_sources permission
-        response = self._get(2, [3])
-        self.assertDictEqual(response, {
-            'accounts_count': 1,
-            'default_account_id': 2
-        })
-
 
 class NavigationDataViewTest(TestCase):
     fixtures = ['test_navigation.yaml']

@@ -44,10 +44,11 @@ class ContentAdStats(object):
             'postclickstats',
             ['content_ad_id', 'type', 'source'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
         )
 
-    def _get_post_click_data(self, ad_group, post_click_list):
+    def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
+        post_click_list = content_ad_postclick.pop((content_ad_id, media_source), None)
         if not post_click_list:
             return {}
 
@@ -83,13 +84,16 @@ class ContentAdStats(object):
         media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
 
         for row in self._stats_breakdown(date).rows():
+            content_ad_id = row[1]
+            media_source_slug = row[3]
+
             ad_group = ad_groups_map.get(row[0])
             if ad_group is None:
                 logger.error("Got spend for invalid adgroup: %s", row[0])
                 continue
-            media_source = media_sources_map.get(row[3])
+            media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
-                logger.error("Got spend for invalid media_source: %s", row[3])
+                logger.error("Got spend for invalid media_source: %s", media_source_slug)
                 continue
 
             cost = row[6] or 0
@@ -98,11 +102,11 @@ class ContentAdStats(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            post_click = self._get_post_click_data(ad_group, content_ad_postclick.get((row[1], row[3])))
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
 
             yield (
                 date,
-                row[1],  # content_ad_id
+                content_ad_id,
                 ad_group.id,
                 media_source.id,
 
@@ -126,59 +130,194 @@ class ContentAdStats(object):
                 _decimal_to_int(license_fee * MICRO_TO_NANO),
             )
 
+        logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
+
 
 class Publishers(object):
-        """
-        date, adgroup_id, exchange,
-        domain, external_id,
-        clicks, impressions,
-        cost_nano, data_cost_nano,
-        effective_cost_nano, effective_data_cost_nano, license_fee_nano
-        visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions
-        """
+    """
+    date, adgroup_id, exchange,
+    domain, external_id,
+    clicks, impressions,
+    cost_nano, data_cost_nano,
+    effective_cost_nano, effective_data_cost_nano, license_fee_nano
+    visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions
+    """
 
-        def table_name(self):
-            return 'publishers'
+    def table_name(self):
+        return 'publishers_1'
 
-        def _stats_breakdown(self, date):
-            return Breakdown(
+    def _stats_breakdown(self, date):
+        return Breakdown(
+            date,
+            'stats',
+            ['ad_group_id', 'media_source_type', 'media_source', 'publisher'],
+            [('impressions', 'sum'), ('clicks', 'sum'), ('spend', 'sum'), ('data_spend', 'sum')],
+        )
+
+    def _stats_outbrain_publishers(self, date):
+        fields = ['ad_group_id', 'publisher_id', 'publisher_name', 'clicks']
+        query = "select {fields} from {table} where date = '{date}'".format(
+            fields=', '.join(fields),
+            table='outbrainpublisherstats',
+            date=date.isoformat()
+        )
+        return _query_rows(query)
+
+    def _postclick_stats_breakdown(self, date):
+        return Breakdown(
+            date,
+            'postclickstats',
+            ['ad_group_id', 'type', 'source', 'lower(publisher)'],
+            [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
+        )
+
+    def _outbrain_cpc(self, date):
+        query = """
+            select ad_group_id, sum(spend), sum(clicks)
+            from stats
+            where media_source='outbrain' and date='{date}'
+            group by ad_group_id
+        """.format(
+            date=date.isoformat()
+        )
+        cpcs = {}
+        for line in _query_rows(query):
+            if line[1] != 0 and line[2] != 0:
+                cpcs[line[0]] = Decimal(line[1]) / line[2]
+
+        return cpcs
+
+    def _get_post_click_data(self, content_ad_postclick, ad_group_id, media_source, publisher):
+        post_click_list = content_ad_postclick.pop((ad_group_id, media_source, publisher.lower()), None)
+        if not post_click_list:
+            return {}
+
+        if len(post_click_list) > 1:
+            logger.info("Multiple post click statistics for ad group: %s", ad_group_id)
+            post_click_list = sorted(post_click_list, key=lambda x: POST_CLICK_PRIORITY.get(x[1], 100))
+
+        post_click = post_click_list[0]
+        if len(post_click) < 10:
+            raise Exception("Invalid post click row")
+
+        return {
+            "visits": post_click[4],
+            "new_visits": post_click[5],
+            "bounced_visits": post_click[6],
+            "pageviews": post_click[7],
+            "time_on_site": post_click[8],
+            "conversions": json.dumps(_sum_conversion(post_click[9])),
+        }
+
+    def generate_rows(self, date, campaign_factors):
+        content_ad_postclick = defaultdict(list)
+        for row in self._postclick_stats_breakdown(date).rows():
+            ad_group_id = row[0]
+            media_source = row[2]
+            publisher = row[3]
+            if media_source.startswith('b1_'):
+                # TODO fix in k1
+                media_source = media_source[3:]
+            content_ad_postclick[(ad_group_id, media_source, publisher)].append(row)
+
+        ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
+
+        for row in self._stats_breakdown(date).rows():
+            ad_group_id = row[0]
+            media_source = row[2]
+            publisher = row[3]
+
+            if media_source == 'outbrain':
+                continue
+
+            if not publisher:
+                continue
+
+            ad_group = ad_groups_map.get(ad_group_id)
+            if ad_group is None:
+                logger.error("Got spend for invalid adgroup: %s", ad_group_id)
+                continue
+
+            cost = row[6] or 0
+            data_cost = row[7] or 0
+
+            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+                    cost, data_cost, campaign_factors[ad_group.campaign])
+
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
+
+            yield (
                 date,
-                'stats',
-                ['ad_group_id', 'media_source_type', 'media_source_type', 'media_source', 'publisher'],
-                [('impressions', 'sum'), ('clicks', 'sum'), ('spend', 'sum'), ('data_spend', 'sum')],
+                ad_group_id,
+                media_source,
+                publisher,
+                '',
+
+                row[5],  # clicks
+                row[4],  # impressions
+
+                cost * MICRO_TO_NANO,
+                data_cost * MICRO_TO_NANO,
+
+                _decimal_to_int(effective_cost * MICRO_TO_NANO),
+                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
+                _decimal_to_int(license_fee * MICRO_TO_NANO),
+
+                post_click.get('visits'),
+                post_click.get('new_visits'),
+                post_click.get('bounced_visits'),
+                post_click.get('pageviews'),
+                post_click.get('time_on_site'),
+                post_click.get('conversions'),
             )
 
-        def _postclick_stats_breakdown(self, date):
-            return Breakdown(
+        source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
+        outbrain_cpcs = self._outbrain_cpc(date)
+        for row in self._stats_outbrain_publishers(date):
+            ad_group_id = row[0]
+            ad_group = ad_groups_map.get(ad_group_id)
+            if ad_group is None:
+                logger.error("Got spend for invalid adgroup: %s", ad_group_id)
+                continue
+
+            clicks = row[3]
+            cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
+            data_cost = 0
+
+            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+                    cost, data_cost, campaign_factors[ad_group.campaign])
+
+            media_source = source.tracking_slug
+            publisher = row[2]
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, row[1])
+
+            yield (
                 date,
-                'postclickstats',
-                ['content_ad_id', 'type', 'source', 'publisher'],
-                [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-                 ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+                ad_group_id,
+                media_source,
+                publisher,
+                row[1],
+
+                clicks,
+                0,
+
+                cost * MICRO_TO_NANO,
+                data_cost * MICRO_TO_NANO,
+
+                _decimal_to_int(effective_cost * MICRO_TO_NANO),
+                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
+                _decimal_to_int(license_fee * MICRO_TO_NANO),
+
+                post_click.get('visits'),
+                post_click.get('new_visits'),
+                post_click.get('bounced_visits'),
+                post_click.get('pageviews'),
+                post_click.get('time_on_site'),
+                post_click.get('conversions'),
             )
 
-        def _get_post_click_data(self, ad_group, post_click_list):
-            if not post_click_list:
-                return {}
-
-            if len(post_click_list) > 1:
-                logger.warn("Multiple post click statistics for ad group: %s", ad_group.id)
-
-            post_click = post_click_list[0]
-            if len(post_click) < 10:
-                raise Exception("Invalid post click row")
-
-            return {
-                "visits": post_click[4],
-                "new_visits": post_click[5],
-                "bounced_visits": post_click[6],
-                "pageviews": post_click[7],
-                "time_on_site": post_click[8],
-                "conversions": json.dumps(_sum_conversion(post_click[9])),
-            }
-
-        def generate_rows(self, date, campaign_factors):
-            pass
+        logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class TouchpointConversions(object):
@@ -218,10 +357,7 @@ class Breakdown(object):
     def rows(self):
         query = self._get_materialize_query()
         logger.info("Breakdown query: %s", query)
-        with connections[settings.K1_DB_NAME].cursor() as c:
-            c.execute(query)
-            for row in c:
-                yield row
+        return _query_rows(query)
 
     def _get_materialize_query(self):
         aggr_values = []
@@ -247,6 +383,13 @@ class Breakdown(object):
         if self.table == 'stats':
             return daily_statements_k1._get_redshift_date_query(self.date)
         return "date = '{date}'".format(date=self.date.isoformat())
+
+
+def _query_rows(query):
+    with connections[settings.K1_DB_NAME].cursor() as c:
+        c.execute(query)
+        for row in c:
+            yield row
 
 
 def _calculate_effective_cost(cost, data_cost, factors):

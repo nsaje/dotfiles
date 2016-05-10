@@ -7,11 +7,21 @@ from server.celery import app
 logger = logging.getLogger(__name__)
 
 
+def update_ad_groups(ad_group_ids, msg=''):
+    for ag_id in ad_group_ids:
+        update_ad_group(ag_id, msg=msg)
+
+
 def update_ad_group(ad_group_id, msg=''):
     _send_task(settings.K1_CONSISTENCY_PING_AD_GROUP_QUEUE,
                'consistency_ping_ad_group',
                ad_group_id=ad_group_id,
                msg=msg)
+
+
+def update_content_ads(ad_group_id, content_ad_ids, msg=''):
+    for ad_id in content_ad_ids:
+        update_content_ad(ad_group_id, ad_id, msg=msg)
 
 
 def update_content_ad(ad_group_id, content_ad_id, msg=''):
@@ -35,7 +45,7 @@ def _send_task(queue_name, task_name, **kwargs):
 
     try:
         app.send_task(task_name, queue=queue_name, kwargs=kwargs)
-    except Exception as e:
+    except:
         logger.exception("Error sending ping to k1. Task: %s", task_name, extra={
             'data': kwargs,
         })

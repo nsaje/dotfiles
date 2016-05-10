@@ -27,6 +27,7 @@ from utils import api_common
 from utils import statsd_helper
 from utils import exc
 from utils import email_helper
+from utils import k1_helper
 
 from zemauth.models import User as ZemUser
 
@@ -83,6 +84,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
+        k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
@@ -161,7 +163,6 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group.name = resource['name']
 
     def set_settings(self, ad_group, settings, resource, user):
-        settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.daily_budget_cc = resource['daily_budget_cc']
@@ -199,11 +200,6 @@ class AdGroupSettings(api_common.BaseApiView):
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
             )
-
-            if current_settings.state != new_settings.state:
-                actionlogs_to_send.extend(
-                    actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=False)
-                )
 
         zwei_actions.send(actionlogs_to_send)
 
@@ -278,6 +274,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
             new_settings.state = new_state
             new_settings.save(request)
             actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
+            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
         return self.create_api_response({
             'id': str(ad_group.pk),
@@ -944,9 +941,11 @@ class AccountSettings(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
+        user_agency = request.user.agency_set.first() if request.user.has_perm('zemauth.can_manage_agency') else None
+
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings),
+            'account_managers': self.get_user_list(account_settings, agency=user_agency),
             'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -1176,8 +1175,14 @@ class AccountSettings(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name=None):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all())
+    def get_user_list(self, settings, perm_name=None, agency=None):
+        users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
+
+        if agency is not None:
+            users = users.filter(pk=agency.users.all()) | \
+                users.filter(account__agency=agency)
+
+        users = list(users.distinct())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:
