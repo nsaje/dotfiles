@@ -28,7 +28,6 @@ class AdGroupSettingsTest(TestCase):
     def setUp(self):
         self.settings_dict = {
             'settings': {
-                'state': 1,
                 'start_date': '2015-05-01',
                 'end_date': str(datetime.date.today()),
                 'cpc_cc': '0.3000',
@@ -239,7 +238,7 @@ class AdGroupSettingsTest(TestCase):
                         'id': '1',
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
-                        'state': 1,
+                        'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
@@ -267,18 +266,10 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.description, 'Example description')
             self.assertEqual(new_settings.call_to_action, 'Call to action')
 
-            # this checks if updates to other settings happen before
-            # changing the state of the campaign. This fixes a bug where
-            # setting state to enabled and changing end date from past date
-            # to a future date at the same time would cause a failed ActionLog
-            # on Yahoo because enabling campaign is not possible when
-            # end date is in the past.
             mock_manager.assert_has_calls([
                 call.mock_order_ad_group_settings_update(
                     ad_group, old_settings, new_settings, ANY, send=False),
                 ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
-                call.mock_actionlog_api.init_set_ad_group_state(ad_group, constants.AdGroupSettingsState.ACTIVE,
-                                                                ANY, send=False)
             ])
             mock_log_useraction.assert_called_with(
                 response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
@@ -414,7 +405,7 @@ class AdGroupSettingsTest(TestCase):
                         'id': '10',
                         'name': 'Test ad group name',
                         'start_date': '2015-05-01',
-                        'state': 1,
+                        'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
@@ -437,12 +428,6 @@ class AdGroupSettingsTest(TestCase):
 
             new_settings = ad_group.get_current_settings()
             self.assertIsNotNone(new_settings.pk)
-
-            mock_actionlog_api.init_set_ad_group_state.assert_called_with(
-                ad_group,
-                constants.AdGroupSettingsState.ACTIVE,
-                ANY,
-                send=False)
 
             # uses 'ANY' instead of 'current_settings' because before settings are created, the
             # 'get_current_settings' returns a new AdGroupSettings instance each time
@@ -537,6 +522,9 @@ class AdGroupSettingsTest(TestCase):
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
+            new_settings = ad_group.get_current_settings().copy_settings()
+            new_settings.state = constants.AdGroupSettingsState.ACTIVE
+            new_settings.save(None)
 
             mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
@@ -552,26 +540,6 @@ class AdGroupSettingsTest(TestCase):
             response_dict = json.loads(response.content)
             self.assertFalse(response_dict['success'])
             self.assertIn('end_date', response_dict['data']['errors'])
-
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_enable_without_budget(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=2)
-
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-
-        self.settings_dict['settings']['id'] = 2
-
-        add_permissions(self.user, ['settings_view'])
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
-
-        response_dict = json.loads(response.content)
-        self.assertFalse(response_dict['success'])
-        self.assertIn('state', response_dict['data']['errors'])
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')

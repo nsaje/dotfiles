@@ -849,7 +849,7 @@ class GetMaximumDailyBudgetTestCase(TestCase):
         })  # end date not moved yet
 
         # move end date
-        with test_helper.DisableAutoNowAdd(dash.models.AdGroupSettings, 'created_dt'):
+        with test_helper.disable_auto_now_add(dash.models.AdGroupSettings, 'created_dt'):
             for ag in c.adgroup_set.all().filter_active():
                 new_settings = ag.get_current_settings().copy_settings()
                 new_settings.end_date = date

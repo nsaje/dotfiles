@@ -161,7 +161,6 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group.name = resource['name']
 
     def set_settings(self, ad_group, settings, resource, user):
-        settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.daily_budget_cc = resource['daily_budget_cc']
@@ -199,11 +198,6 @@ class AdGroupSettings(api_common.BaseApiView):
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
             )
-
-            if current_settings.state != new_settings.state:
-                actionlogs_to_send.extend(
-                    actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=False)
-                )
 
         zwei_actions.send(actionlogs_to_send)
 
