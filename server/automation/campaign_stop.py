@@ -23,8 +23,7 @@ import reports.budget_helpers
 import reports.models
 
 import utils.k1_helper
-
-from utils import dates_helper, email_helper, url_helper
+from utils import dates_helper, email_helper, url_helper, pagerduty_helper
 
 logger = logging.getLogger(__name__)
 
@@ -42,18 +41,28 @@ def run_job():
     not_landing = list(dash.models.Campaign.objects.all().exclude_landing().iterator())
     in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
 
-    switch_low_budget_campaigns_to_landing_mode(not_landing)
-    update_campaigns_in_landing(in_landing)
+    switch_low_budget_campaigns_to_landing_mode(not_landing, pagerduty_on_fail=True)
+    update_campaigns_in_landing(in_landing, pagerduty_on_fail=True)
 
 
-def switch_low_budget_campaigns_to_landing_mode(campaigns):
+def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=False):
     campaign_settings = {
         sett.campaign_id: sett
         for sett in dash.models.CampaignSettings.objects.filter(campaign__in=campaigns).group_current_settings()
     }
     actions = []
     for campaign in campaigns:
-        changed, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
+        try:
+            changed, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
+        except:
+            logger.exception('Campaign stop check for campaign with id %s not successful', campaign.id)
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Failed to update landing campaign.'
+            )
+            if pagerduty_on_fail:
+                _trigger_check_pagerduty(campaign)
+            continue
         actions.extend(new_actions)
         if changed:
             utils.k1_helper.update_ad_groups(
@@ -172,7 +181,7 @@ def is_current_time_valid_for_amount_editing(campaign):
     return not (utc_now.hour < 12 and any_source_after_midnight)
 
 
-def update_campaigns_in_landing(campaigns):
+def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
     for campaign in campaigns:
         logger.info('updating in landing campaign with id %s', campaign.id)
         actions = []
@@ -185,6 +194,8 @@ def update_campaigns_in_landing(campaigns):
                 campaign=campaign,
                 notes='Failed to update landing campaign.'
             )
+            if pagerduty_on_fail:
+                _trigger_update_pagerduty(campaign)
             continue
 
         zwei_actions.send(actions)
@@ -1232,6 +1243,29 @@ def _get_ad_groups_running_on_date(date, ad_groups):
             running_ad_groups.add(ad_group)
 
     return running_ad_groups
+
+
+def _trigger_update_pagerduty(campaign):
+    incident_key = 'campaign_stop_update_failed'
+    description = 'Campaign stop update failed'
+    _trigger_pagerduty(campaign, incident_key, description)
+
+
+def _trigger_check_pagerduty(campaign):
+    incident_key = 'campaign_stop_check_failed'
+    description = 'Campaign stop check failed'
+    _trigger_pagerduty(campaign, incident_key, description)
+
+
+def _trigger_pagerduty(campaign, incident_key, description):
+    pagerduty_helper.trigger(
+        event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
+        incident_key=incident_key,
+        description=description,
+        details={
+            'campaign_id': campaign.id,
+        }
+    )
 
 
 def _send_campaign_stop_notification_email(campaign, available_tomorrow, max_daily_budget, yesterday_spend):
