@@ -127,7 +127,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             }
         ).finally(function () {
             $scope.requestInProgress = false;
-            $scope.refreshPage();
         });
     };
 
