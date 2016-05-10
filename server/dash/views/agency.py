@@ -898,6 +898,21 @@ class AccountAgency(api_common.BaseApiView):
                         request.user.has_perm('zemauth.can_set_account_sales_representative')):
                     raise exc.AuthorizationError()
 
+
+                if 'name' in form.cleaned_data and\
+                        form.cleaned_data['name'] is not None and not (
+                            request.user.has_perm('zemauth.account_agency_view') or
+                            request.user.has_perm('zemauth.can_modify_account_name')
+                        ):
+                    raise exc.AuthorizationError()
+
+                if 'default_account_manager' in form.cleaned_data and \
+                        form.cleaned_data['default_account_manager'] is not None and not (
+                            request.user.has_perm('zemauth.account_agency_view') or\
+                            request.user.has_perm('zemauth.can_modify_account_manager')
+                        ):
+                    raise exc.AuthorizationError()
+
                 self.set_account(account, form.cleaned_data)
 
                 settings = models.AccountSettings()
@@ -1053,13 +1068,15 @@ class AccountAgency(api_common.BaseApiView):
         if settings:
             result = {
                 'id': str(account.pk),
-                'name': account.name,
                 'archived': settings.archived,
-                'default_account_manager':
-                    str(settings.default_account_manager.id)
-                    if settings.default_account_manager is not None else None,
             }
-
+            if request.user.has_perm('zemauth.account_agency_view') or\
+                    request.user.has_perm('zemauth.can_modify_account_name'):
+                result['name'] = account.name
+            if request.user.has_perm('zemauth.account_agency_view') or\
+                    request.user.has_perm('zemauth.can_modify_account_manager'):
+                result['default_account_manager'] = str(settings.default_account_manager.id) \
+                    if settings.default_account_manager is not None else None
             if request.user.has_perm('zemauth.account_agency_view') or\
                     request.user.has_perm('zemauth.can_set_account_sales_representative'):
                 result['default_sales_representative'] =\

@@ -2206,7 +2206,11 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
-        client = self._get_client_with_permissions(['account_agency_view', 'can_modify_account_type'])
+        client = self._get_client_with_permissions([
+            'account_agency_view',
+            'can_modify_account_name',
+            'can_modify_account_manager',
+            'can_modify_account_type'])
 
         response = client.get(
             reverse('account_agency', kwargs={'account_id': 1}),
@@ -2225,7 +2229,11 @@ class AccountAgencyTest(TestCase):
         })
 
     def test_get_as_agency_manager(self):
-        client = self._get_client_with_permissions(['can_manage_agency'])
+        client = self._get_client_with_permissions([
+            'can_manage_agency',
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
@@ -2295,7 +2303,10 @@ class AccountAgencyTest(TestCase):
         })
 
     def test_put_as_agency_manager(self):
-        client = self._get_client_with_permissions([])
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
@@ -2315,7 +2326,11 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_put_as_agency_manager_sales_rep(self):
-        client = self._get_client_with_permissions(['can_manage_agency'])
+        client = self._get_client_with_permissions([
+            'can_manage_agency',
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
@@ -2339,7 +2354,11 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_put_as_agency_manager_sources(self):
-        client = self._get_client_with_permissions(['can_manage_agency'])
+        client = self._get_client_with_permissions([
+            'can_manage_agency',
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
