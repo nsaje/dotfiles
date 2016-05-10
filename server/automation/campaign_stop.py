@@ -79,7 +79,7 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     today = dates_helper.local_today()
     max_daily_budget = _get_max_daily_budget(today, campaign)
     current_daily_budget = _get_current_daily_budget(campaign)
-    remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(campaign, max_daily_budget)
+    _, available_tomorrow, _ = _get_minimum_remaining_budget(campaign, max_daily_budget)
     yesterday_spend = _get_yesterday_budget_spend(campaign)
 
     switched_to_landing = available_tomorrow < current_daily_budget
@@ -88,9 +88,9 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if switched_to_landing:
         with transaction.atomic():
             actions.extend(_switch_campaign_to_landing_mode(campaign))
-        _send_campaign_stop_notification_email(campaign, remaining_today, current_daily_budget, yesterday_spend)
+        _send_campaign_stop_notification_email(campaign, available_tomorrow, current_daily_budget, yesterday_spend)
     elif is_near_depleted:
-        _send_depleting_budget_notification_email(campaign, remaining_today, current_daily_budget, yesterday_spend)
+        _send_depleting_budget_notification_email(campaign, available_tomorrow, current_daily_budget, yesterday_spend)
 
     return switched_to_landing, actions
 
@@ -1012,8 +1012,15 @@ def _get_ag_settings_dict(date, ad_groups):
 
 
 def _get_current_daily_budget_per_ags(campaign):
+    ag_settings = dash.models.AdGroupSettings.objects.filter(
+        ad_group__campaign=campaign, landing_mode=False).group_current_settings().values_list('id', flat=True)
+    active_ag_ids = dash.models.AdGroupSettings.objects.filter(
+        id__in=ag_settings,
+        state=dash.constants.AdGroupSettingsState.ACTIVE,
+    ).values_list('ad_group_id', flat=True)
+
     ags_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group_id__campaign=campaign
+        ad_group_source__ad_group_id__in=active_ag_ids
     ).group_current_settings().select_related('ad_group_source__source')
 
     ret = {}
@@ -1105,13 +1112,15 @@ def _get_lookahead_iter(iterable):
     return izip_longest(it1, it2)
 
 
-def _get_valid_ad_group_settings(date, ad_group_source, ad_group_settings):
+def _prepare_valid_ad_group_settings(date, ad_group_source, ad_group_settings):
     """
     Prepare ad group settings array so it contains at most one setting from the
     previous day taking the ad group source timezone into account.
     """
-    budgets_tz = ad_group_source.source.source_type.budgets_tz
+    if not ad_group_settings:
+        return []
 
+    budgets_tz = ad_group_source.source.source_type.budgets_tz
     ag_settings_iter = _get_lookahead_iter(ad_group_settings)
     for i, (ag_settings, next_ag_settings) in enumerate(ag_settings_iter):
         if not next_ag_settings or\
@@ -1124,6 +1133,9 @@ def _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings):
     Return pairs of ad group and ad group source settings that were active at the same time.
     Inputs are expected to be sorted.
     """
+    if not ad_group_settings or not ad_group_source_settings:
+        return []
+
     ag_settings_iter = _get_lookahead_iter(ad_group_settings)
     ag_settings, next_ag_settings = next(ag_settings_iter)
 
@@ -1142,13 +1154,12 @@ def _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings):
 
 
 def _get_source_max_daily_budget(date, ad_group_source, ad_group_settings, ad_group_source_settings):
-    if not ad_group_settings or not ad_group_source_settings:
+    ad_group_settings = _prepare_valid_ad_group_settings(date, ad_group_source, ad_group_settings)
+    pairs = _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings)
+    if not pairs:
         return 0
 
-    ad_group_settings = _get_valid_ad_group_settings(date, ad_group_source, ad_group_settings)
-    pairs = _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings)
     max_daily_budget = max(_get_effective_daily_budget(date, ad_group_source, pair[0], pair[1]) for pair in pairs)
-
     return max_daily_budget
 
 
@@ -1193,13 +1204,13 @@ def _get_ad_groups_running_on_date(date, ad_groups):
     return running_ad_groups
 
 
-def _send_campaign_stop_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
+def _send_campaign_stop_notification_email(campaign, available_tomorrow, max_daily_budget, yesterday_spend):
     subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is switching to landing mode'
     body = u'''Hi, campaign manager,
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
 
-The available media budget remaining today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
 Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode.
 
@@ -1216,7 +1227,7 @@ Zemanta'''  # noqa
         campaign_name=campaign.name,
         account_name=campaign.account.name,
         campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
-        remaining_today=remaining_today,
+        available_tomorrow=available_tomorrow,
         max_daily_budget=max_daily_budget,
         yesterday_spend=yesterday_spend,
     )
@@ -1229,13 +1240,13 @@ Zemanta'''  # noqa
     email_helper.send_notification_mail(emails, subject, body)
 
 
-def _send_depleting_budget_notification_email(campaign, remaining_today, max_daily_budget, yesterday_spend):
+def _send_depleting_budget_notification_email(campaign, available_tomorrow, max_daily_budget, yesterday_spend):
     subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is running out of budget'
     body = u'''Hi, campaign manager,
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
 
-The remaining media budget today is ${remaining_today:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
 
 Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
@@ -1252,7 +1263,7 @@ Zemanta'''  # noqa
         campaign_name=campaign.name,
         account_name=campaign.account.name,
         campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
-        remaining_today=remaining_today,
+        available_tomorrow=available_tomorrow,
         max_daily_budget=max_daily_budget,
         yesterday_spend=yesterday_spend,
     )
