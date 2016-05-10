@@ -2200,10 +2200,10 @@ class AccountAgencyTest(TestCase):
         client = self._get_client_with_permissions([])
 
         response = client.get(url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
 
         response = client.put(url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
 
     def test_get(self):
         client = self._get_client_with_permissions([
@@ -2242,7 +2242,6 @@ class AccountAgencyTest(TestCase):
             reverse('account_agency', kwargs={'account_id': 1000}),
             follow=True
         ).json()
-
         self.assertTrue(response['success'])
         self.assertDictEqual(response['data']['settings'], {
             'name': 'Chuck ads',
@@ -2318,11 +2317,6 @@ class AccountAgencyTest(TestCase):
         }
 
         response, content = self._put_account_agency(client, basic_settings, 1000)
-        self.assertEqual(response.status_code, 401)
-
-        add_permissions(user, ['can_manage_agency'])
-
-        response, content = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
 
     def test_put_as_agency_manager_sales_rep(self):
@@ -2381,7 +2375,10 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_as_agency_manager_users(self):
-        client = self._get_client_with_permissions(['can_manage_agency'])
+        client = self._get_client_with_permissions([
+            'can_manage_agency',
+            'can_modify_account_manager'
+        ])
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
