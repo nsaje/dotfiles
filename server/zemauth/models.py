@@ -165,11 +165,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('has_supporthero', 'Has Supporthero snippet'),
             ('can_filter_sources_through_table', 'Can filter sources through sources table'),
             ('can_view_account_agency_information', 'Can view relations between account and agency'),
-            ('can_manage_agency', 'Can manage agency'),
             ('can_set_account_sales_representative', 'Can view and set account sales representative on account settings tab.'),
             ('can_modify_account_name', 'Can see and modify account name on account settings tab.'),
             ('can_modify_account_manager', 'Can view and set account manager on account settings tab.'),
-
         )
 
     def get_full_name(self):

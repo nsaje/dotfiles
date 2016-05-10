@@ -241,9 +241,12 @@ class AccountSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
+        required=False,
         error_messages={'required': 'Please specify account name.'}
     )
-    default_account_manager = forms.IntegerField()
+    default_account_manager = forms.IntegerField(
+        required=False
+    )
     default_sales_representative = forms.IntegerField(
         required=False
     )
@@ -256,6 +259,9 @@ class AccountSettingsForm(forms.Form):
     def clean_name(self):
         name = self.cleaned_data.get('name')
 
+        if not name:
+            return None
+
         account_id = self.cleaned_data.get('id')
 
         if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
@@ -266,8 +272,10 @@ class AccountSettingsForm(forms.Form):
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
 
-        err_msg = 'Invalid account manager.'
+        if not account_manager_id:
+            return None
 
+        err_msg = 'Invalid account manager.'
         try:
             account_manager = ZemUser.objects.get(pk=account_manager_id)
         except ZemUser.DoesNotExist:

@@ -446,7 +446,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ]
         )
 
-        add_permissions(User.objects.get(pk=1), ['can_manage_agency'])
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(self.user)
 
