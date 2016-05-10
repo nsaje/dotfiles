@@ -205,13 +205,13 @@ def can_enable_ad_group(ad_group, campaign, campaign_settings):
 
 
 def can_enable_ad_groups(campaign, campaign_settings):
+    ad_groups = campaign.adgroup_set.all().exclude_archived()
     if not campaign_settings.automatic_campaign_stop:
-        return defaultdict(lambda: True)
+        return {ag.id: True for ag in ad_groups}
 
     if campaign_settings.landing_mode:
-        return defaultdict(lambda: False)
+        return {ag.id: False for ag in ad_groups}
 
-    ad_groups = campaign.adgroup_set.all().exclude_archived()
     return _can_enable_ad_groups(ad_groups, campaign)
 
 
@@ -227,13 +227,13 @@ def can_enable_media_source(ad_group_source, campaign, campaign_settings):
 
 
 def can_enable_media_sources(ad_group, campaign, campaign_settings):
+    ad_group_sources = ad_group.adgroupsource_set.all()
     if not campaign_settings.automatic_campaign_stop:
-        return defaultdict(lambda: True)
+        return {ags.id: True for ags in ad_group_sources}
 
     if campaign_settings.landing_mode:
-        return defaultdict(lambda: False)
+        return {ags.id: False for ags in ad_group_sources}
 
-    ad_group_sources = ad_group.adgroupsource_set.all()
     return _can_enable_media_sources(ad_group_sources, campaign)
 
 
