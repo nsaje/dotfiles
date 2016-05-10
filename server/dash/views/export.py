@@ -474,9 +474,12 @@ class ScheduledReports(api_common.BaseApiView):
     def get_account_scheduled_reports(self, user, account):
         reports = models.ScheduledExportReport.objects.select_related('report').filter(
             ~Q(state=constants.ScheduledReportState.REMOVED),
-            Q(created_by=user),
             (Q(report__account=account) | Q(report__campaign__account=account) | Q(report__ad_group__campaign__account=account))
         )
+
+        if account.get_current_settings().default_account_manager != user:
+            reports = reports.filter(created_by=user)
+
         return reports
 
     def get_all_accounts_scheduled_reports(self, user):
