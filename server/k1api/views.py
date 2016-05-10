@@ -618,3 +618,32 @@ def get_content_ads_exchanges(request):
         content_ad_exchanges.setdefault(content_ad_source.content_ad.id, []).append(exchange)
 
     return _response_ok(content_ad_exchanges)
+
+
+@csrf_exempt
+def update_content_ad_status(request):
+    _validate_signature(request)
+
+    data = json.loads(request.body)
+
+    content_ad_source = dash.models.ContentAdSource.objects \
+        .filter(content_ad__id=data['content_ad_id']) \
+        .filter(source__bidder_slug=data['source_slug'])
+
+    if not content_ad_source:
+        logger.exception(
+            'update_content_ad_status: content_ad_source does not exist. content ad id: %d, source slug: %s',
+            data['content_ad_id'],
+            data['source_slug']
+        )
+        raise Http404
+
+    content_ad_source = content_ad_source[0]
+    if content_ad_source.source_state != data['submission_status'] or \
+            content_ad_source.source_content_ad_id != data['external_id']:
+        content_ad_source.source_state = data['submission_status']
+        content_ad_source.source_content_ad_id = data['external_id']
+        content_ad_source.save()
+
+        # ping
+    return _response_ok(data)
