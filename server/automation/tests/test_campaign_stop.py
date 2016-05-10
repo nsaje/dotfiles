@@ -1041,7 +1041,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
             row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.id in non_spending_ags_ids:
-                row['cost'] = Decimal(0)
+                row['cost'] = Decimal('0.5')
             mock_get_yesterday_spends.return_value.append(row)
 
         current_ags_settings = {
@@ -1073,7 +1073,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
             row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.ad_group_id in non_spending_ag_ids:
-                row['cost'] = Decimal(0)
+                row['cost'] = Decimal('0.5')
             mock_get_yesterday_spends.return_value.append(row)
 
         campaign_stop._stop_non_spending_sources(campaign)

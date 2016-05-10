@@ -28,6 +28,7 @@ from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
 
+NON_SPENDING_SOURCE_THRESHOLD_DOLLARS = decimal.Decimal('1')
 TEMP_EMAILS = [
     'luka.silovinac@zemanta.com',
     'urska.kosec@zemanta.com',
@@ -489,7 +490,7 @@ def _stop_non_spending_sources(campaign):
 
         to_stop = set()
         for ags in active_ad_group_sources:
-            if yesterday_spends.get((ags.ad_group_id, ags.source_id), 0) == 0:
+            if yesterday_spends.get((ags.ad_group_id, ags.source_id), 0) < NON_SPENDING_SOURCE_THRESHOLD_DOLLARS:
                 to_stop.add(ags)
 
         if len(to_stop) == len(active_ad_group_sources):
