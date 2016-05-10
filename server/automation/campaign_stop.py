@@ -56,10 +56,6 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=Fal
             changed, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
         except:
             logger.exception('Campaign stop check for campaign with id %s not successful', campaign.id)
-            models.CampaignStopLog.objects.create(
-                campaign=campaign,
-                notes='Failed to update landing campaign.'
-            )
             if pagerduty_on_fail:
                 _trigger_check_pagerduty(campaign)
             continue
