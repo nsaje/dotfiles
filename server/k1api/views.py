@@ -1,13 +1,16 @@
 import json
 import logging
+
 from django.conf import settings
 from django.db.models import F, Q
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
+
 import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
 from utils import url_helper, request_signer
+from utils import k1_helper
 
 
 logger = logging.getLogger(__name__)
@@ -651,5 +654,6 @@ def update_content_ad_status(request):
         content_ad_source.source_content_ad_id = data['external_id']
         content_ad_source.save()
 
-        # ping
+        k1_helper.update_content_ad(data['ad_group_id'], data['content_ad_id'])
+
     return _response_ok(data)
