@@ -97,7 +97,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
                 }
-                $scope.isAnySettingSettable();
             },
             function (data) {
                 // error
