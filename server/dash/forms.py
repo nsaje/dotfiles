@@ -272,6 +272,9 @@ class AccountAgencyAgencyForm(forms.Form):
     def clean_name(self):
         name = self.cleaned_data.get('name')
 
+        if not name:
+            return None
+
         account_id = self.cleaned_data.get('id')
 
         if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
@@ -282,8 +285,10 @@ class AccountAgencyAgencyForm(forms.Form):
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
 
-        err_msg = 'Invalid account manager.'
+        if not account_manager_id:
+            return None
 
+        err_msg = 'Invalid account manager.'
         try:
             account_manager = ZemUser.objects.get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
