@@ -235,8 +235,10 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('actionlog.zwei_actions.send')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
+    @patch('automation.campaign_stop._get_current_daily_budget')
+    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_current, mock_get_mrb, mock_send_email, mock_send_action):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
+        mock_get_current.return_value = Decimal('101')
 
         campaign = dash.models.Campaign.objects.get(id=1)
         in_30_days = dates_helper.local_today() + datetime.timedelta(days=30)
