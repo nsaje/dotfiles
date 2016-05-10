@@ -889,7 +889,7 @@ class AccountAgency(api_common.BaseApiView):
 
                 if 'default_account_manager' in form.cleaned_data and \
                         form.cleaned_data['default_account_manager'] is not None and not (
-                            request.user.has_perm('zemauth.account_agency_view') or\
+                            request.user.has_perm('zemauth.account_agency_view') or
                             request.user.has_perm('zemauth.can_modify_account_manager')
                         ):
                     raise exc.AuthorizationError()
