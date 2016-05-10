@@ -509,7 +509,7 @@ def _stop_non_spending_sources(campaign):
                     '\n'.join(['{}: ${}'.format(
                         ags.source.name,
                         yesterday_spends.get((ags.ad_group_id, ags.source_id), 0)
-                    ) for ags in active_ad_group_sources])
+                    ) for ags in sorted(active_ad_group_sources, key=lambda x: x.source.name)])
                 )
             )
             continue
@@ -522,10 +522,10 @@ def _stop_non_spending_sources(campaign):
                 notes='Stopping non spending ad group sources on ad group {}. '
                       'Yesterday spend per source was:\n{}'.format(
                           ad_group.id,
-                          '\n'.join(['{}: Yesterday spend was ${}'.format(
+                          '\n'.join(['{}: ${}'.format(
                               ags.source.name,
                               yesterday_spends.get((ags.ad_group_id, ags.source_id), 0)
-                          ) for ags in to_stop])
+                          ) for ags in sorted(to_stop, key=lambda x: x.source.name)])
                       )
             )
     return actions
@@ -555,8 +555,8 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
             actions.extend(_stop_ad_group(ad_group))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Stopping ad group {} - lowering minimum autopilot budget not possible. '
-                      'Minimum autopilot budget: {}, Daily cap: {}.'.format(
+                notes='Stopping ad group {} - lowering minimum autopilot budget not possible.\n'
+                      'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           _get_min_ap_budget(ad_group_sources),
                           ag_daily_cap,
@@ -569,10 +569,10 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
                 actions.extend(_stop_ad_group_source(ags))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes='Stopping sources {} on ad group {} - lowering minimum autopilot budget not possible. '
-                      'Minimum autopilot budget: {}, Daily cap: {}.'.format(
-                          ', '.join([ags.source.name for ags in to_stop]),
+                notes='Stopping sources on ad group {}:\n\n{}\nLowering minimum autopilot budget not possible.\n'
+                      'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
+                          '\n'.join([ags.source.name for ags in sorted(to_stop, key=lambda x: x.source.name)]),
                           _get_min_ap_budget(ad_group_sources),
                           ag_daily_cap,
                       )
@@ -607,13 +607,13 @@ def _run_autopilot(campaign, daily_caps):
             campaign=campaign,
             notes='Applying autopilot recommendations for ad group {}:\n{}'.format(
                 ad_group.id,
-                '\n'.join(['{}: Daily budget from ${} to ${}, CPC from ${} to ${}'.format(
+                '\n'.join(['{}: Daily budget: ${:.2f} to ${:.2f}, CPC: ${:.2f} to ${:.2f}'.format(
                     ags.source.name,
                     budget_changes.get(ags, {}).get('old_budget', -1),
                     budget_changes.get(ags, {}).get('new_budget', -1),
                     cpc_changes.get(ags, {}).get('old_cpc_cc', -1),
                     cpc_changes.get(ags, {}).get('new_cpc_cc', -1),
-                ) for ags in sorted(set(budget_changes.keys() + cpc_changes.keys()))])
+                ) for ags in sorted(set(budget_changes.keys() + cpc_changes.keys()), key=lambda x: x.source.name)])
             )
         )
         actions.extend(
@@ -874,12 +874,12 @@ def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_to
     notes = 'Calculated ad group daily caps to:\n'
     for ad_group in ad_groups:
         notes += 'Ad group: {}, Daily cap: ${}\n'.format(ad_group.id, daily_caps[ad_group.id])
-    notes += '\nRemaining budget today: {}\n\n'.format(remaining_today)
+    notes += '\nRemaining budget today: {:.2f}\n\n'.format(remaining_today)
     notes += 'Past spends:\n'
     for ad_group in ad_groups:
         per_date_ag_spend = [amount for key, amount in per_date_spend.iteritems() if key[0] == ad_group.id]
-        notes += 'Ad group: {}, Past 7 day spend: {}, Avg: {} (was running for {} days), '\
-                 'Calculated ratio: {}\n'.format(
+        notes += 'Ad group: {}, Past 7 day spend: {:.2f}, Avg: {:.2f} (was running for {} days), '\
+                 'Calculated ratio: {:.2f}\n'.format(
                      ad_group.id,
                      sum(per_date_ag_spend),
                      sum(per_date_ag_spend) / len(per_date_ag_spend) if len(per_date_ag_spend) > 0 else 0,
