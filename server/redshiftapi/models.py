@@ -50,7 +50,7 @@ class RSContentAdStats(backtosql.Model, models_helpers.RSBreakdownMixin):
     avg_tos = models_helpers.SumDivColumn('total_time_on_site', 'visits')
 
     @classmethod
-    def get_best_view(cls, breakdown, constraints):
+    def get_best_view(cls, breakdown):
         return 'contentadstats'
 
     @classmethod

@@ -6,7 +6,7 @@ from redshiftapi.constants import ColumnGroup
 class RSBreakdownMixin(object):
 
     @classmethod
-    def get_best_view(cls, breakdown, constraints):
+    def get_best_view(cls, breakdown):
         # returns SQL view that best fits the breakdown
         raise NotImplementedError()
 
@@ -15,21 +15,12 @@ class RSBreakdownMixin(object):
         raise NotImplementedError()
 
     @classmethod
-    def get_default_context(cls, breakdown, constraints, order, page):
-        # TODO this could be a different API, constraints separately
-        # also view might be separate from defautl
-        constraints = cls.get_constraints(constraints)
-        return {
-            'model': cls,
-            'view': cls.get_best_view(breakdown, constraints),
-            'constraints': constraints,
-            'breakdown': cls.select_columns(subset=breakdown),
-            'aggregates': cls.select_columns(group=ColumnGroup.AGGREGATES),
-            'order': cls.select_order(order),
-            'offset': page[0],
-            'limit': page[1],
-            'params': constraints.get_params() + list(page),
-        }
+    def get_breakdown(cls, breakdown):
+        return cls.select_columns(subset=breakdown)
+
+    @classmethod
+    def get_aggregates(cls):
+        return cls.select_columns(group=ColumnGroup.AGGREGATES)
 
 
 # column definition shortcuts
