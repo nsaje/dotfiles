@@ -876,10 +876,11 @@ def _persist_new_daily_caps_to_log(campaign, daily_caps, ad_groups, remaining_to
         notes += 'Ad group: {}, Daily cap: ${}\n'.format(ad_group.id, daily_caps[ad_group.id])
     notes += '\nRemaining budget today: {:.2f}\n\n'.format(remaining_today)
     notes += 'Past spends:\n'
-    for ad_group in ad_groups:
+    for ad_group in sorted(ad_groups, key=lambda ag: ag.name):
         per_date_ag_spend = [amount for key, amount in per_date_spend.iteritems() if key[0] == ad_group.id]
-        notes += 'Ad group: {}, Past 7 day spend: {:.2f}, Avg: {:.2f} (was running for {} days), '\
+        notes += 'Ad group: {} ({}), Past 7 day spend: {:.2f}, Avg: {:.2f} (was running for {} days), '\
                  'Calculated ratio: {:.2f}\n'.format(
+                     ad_group.name,
                      ad_group.id,
                      sum(per_date_ag_spend),
                      sum(per_date_ag_spend) / len(per_date_ag_spend) if len(per_date_ag_spend) > 0 else 0,
