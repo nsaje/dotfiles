@@ -833,10 +833,6 @@ class AccountAgency(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
-        if not (self._is_valid_agency_manager(account_id, request.user) or
-                request.user.has_perm('zemauth.account_agency_view')):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
@@ -844,21 +840,22 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings, agency=user_agency),
-            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
 
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_modify_account_manager'):
+            response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
+
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_set_account_sales_representative'):
+            response['sales_reps'] = self.get_user_list(account_settings, 'campaign_settings_sales_rep')
         return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
-        if not (request.user.has_perm('zemauth.account_agency_view') or
-                self._is_valid_agency_manager(account_id, request.user)):
-            raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
 
@@ -915,7 +912,7 @@ class AccountAgency(api_common.BaseApiView):
 
                 self.set_account(account, form.cleaned_data)
 
-                settings = models.AccountSettings()
+                settings = account.get_current_settings().copy_settings()
                 self.set_settings(settings, account, form.cleaned_data)
 
                 if 'allowed_sources' in form.cleaned_data and\
@@ -959,7 +956,8 @@ class AccountAgency(api_common.BaseApiView):
         return data
 
     def set_account(self, account, resource):
-        account.name = resource['name']
+        if resource['name']:
+            account.name = resource['name']
 
     def get_non_removable_sources(self, account, sources_to_be_removed):
         non_removable_source_ids_list = []
@@ -1040,9 +1038,12 @@ class AccountAgency(api_common.BaseApiView):
 
     def set_settings(self, settings, account, resource):
         settings.account = account
-        settings.name = resource['name']
-        settings.default_account_manager = resource['default_account_manager']
-        settings.default_sales_representative = resource['default_sales_representative']
+        if resource['name']:
+            settings.name = resource['name']
+        if resource['default_account_manager']:
+            settings.default_account_manager = resource['default_account_manager']
+        if resource['default_sales_representative']:
+            settings.default_sales_representative = resource['default_sales_representative']
 
     def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
@@ -1064,7 +1065,6 @@ class AccountAgency(api_common.BaseApiView):
 
     def get_dict(self, request, settings, account):
         result = {}
-
         if settings:
             result = {
                 'id': str(account.pk),

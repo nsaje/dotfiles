@@ -1,6 +1,6 @@
 <div class="page page-account-account" ng-if="!account.archived">
 
-    <form ng-if="hasPermission('zemauth.can_manage_agency')" id="form-account-agency" class="form-horizontal">
+    <form ng-if="isAnySettingSettable()" id="form-account-agency" class="form-horizontal">
         <div ng-if="hasPermission('zemauth.can_modify_account_name')" class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="name-input" class="col-xs-2 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_account_name')" popover-placement="bottom"></zem-internal-feature>
@@ -111,10 +111,10 @@
         <span ng-show="discarded" class="success feedback-text">Your updates have been discarded.</span>
     </form>
 
-    <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.can_manage_agency') && hasPermission('zemauth.account_agency_access_permissions')">
+    <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
         <div class="form-group">
             <label for="first-name-input" class="col-xs-2 control-label">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency') || isPermissionInternal('zemauth.account_agency_access_permissions')" popover-placement="bottom"></zem-internal-feature>
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_agency_access_permissions')" popover-placement="bottom"></zem-internal-feature>
                 Access Permissions
                 <zem-help-popover content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>

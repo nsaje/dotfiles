@@ -18,6 +18,18 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.addUserData = {};
     $scope.addUserErrors = null;
 
+    $scope.isAnySettingSettable = function () {
+        if ($scope.hasPermission('zemauth.can_modify_allowed_sources') ||
+            $scope.hasPermission('zemauth.can_modify_account_name') ||   
+            $scope.hasPermission('zemauth.can_modify_account_type') ||
+            $scope.hasPermission('zemauth.can_set_account_sales_representative') ||
+            $scope.hasPermission('zemauth.can_modify_account_manager')) {
+            return true;
+
+        }
+        return false;
+    };
+
     $scope.getAllowedMediaSources = function () {
         var list = [];
         angular.forEach($scope.settings.allowedSources, function (value, key) {
@@ -85,6 +97,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
                 }
+                $scope.isAnySettingSettable();
             },
             function (data) {
                 // error
@@ -114,6 +127,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             }
         ).finally(function () {
             $scope.requestInProgress = false;
+            $scope.refreshPage();
         });
     };
 

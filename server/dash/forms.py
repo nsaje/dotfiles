@@ -257,9 +257,12 @@ class AccountAgencyAgencyForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
+        required=False,
         error_messages={'required': 'Please specify account name.'}
     )
-    default_account_manager = forms.IntegerField()
+    default_account_manager = forms.IntegerField(
+        required=False
+    )
     default_sales_representative = forms.IntegerField(
         required=False
     )
