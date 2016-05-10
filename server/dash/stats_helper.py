@@ -29,8 +29,7 @@ def get_stats_with_conversions(
         constraints=None,
         filter_by_permissions=True):
     can_see_redshift_stats = not filter_by_permissions or user.has_perm('zemauth.can_see_redshift_postclick_statistics')
-    can_see_conversions = not filter_by_permissions or\
-        (can_see_redshift_stats and user.has_perm('zemauth.conversion_reports'))
+    can_see_conversions = not filter_by_permissions or can_see_redshift_stats
 
     return _get_stats_with_conversions(
         user,
@@ -58,7 +57,7 @@ def get_content_ad_stats_with_conversions(
         constraints=None):
     # a workaround for content ads tab where all users can see redshift stats
     can_see_redshift_stats = True
-    can_see_conversions = can_see_redshift_stats and user.has_perm('zemauth.conversion_reports')
+    can_see_conversions = True
 
     return _get_stats_with_conversions(
         user,

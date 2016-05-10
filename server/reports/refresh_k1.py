@@ -1,7 +1,7 @@
 import logging
 import os.path
 import io
-import csv
+import unicodecsv as csv
 import boto
 import boto.s3
 
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 MATERIALIZED_VIEWS = [
     materialize_k1.ContentAdStats(),
+    materialize_k1.Publishers(),
     materialize_k1.TouchpointConversions(),
 ]
 

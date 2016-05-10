@@ -13,7 +13,6 @@
     - [all_accounts_accounts_view, zemauth, user]
     - [all_accounts_sources_view, zemauth, user]
     - [campaign_ad_groups_detailed_report, zemauth, user]
-    - [filter_sources, zemauth, user]
     - [supply_dash_link_view, zemauth, user]
     - [unspent_budget_view, zemauth, user]
   model: auth.group
@@ -48,9 +47,7 @@
     - [campaign_budget_management_view, zemauth, user]
     - [campaign_settings_sales_rep, zemauth, user]
     - [content_ads_postclick_acquisition, zemauth, user]
-    - [content_ads_postclick_engagement, zemauth, user]
     - [data_status_column, zemauth, user]
-    - [filter_sources, zemauth, user]
     - [supply_dash_link_view, zemauth, user]
     - [switch_to_demo_mode, zemauth, user]
   model: auth.group
@@ -61,7 +58,6 @@
     - [settings_view, dash, adgroupsettings]
     - [account_campaigns_view, zemauth, user]
     - [account_sources_view, zemauth, user]
-    - [filter_sources, zemauth, user]
   model: auth.group
   pk: 5
 - fields:
@@ -105,7 +101,5 @@
     - [aggregate_postclick_engagement, zemauth, user]
     - [campaign_budget_management_view, zemauth, user]
     - [content_ads_postclick_acquisition, zemauth, user]
-    - [content_ads_postclick_engagement, zemauth, user]
-    - [content_ads_bulk_actions, zemauth, user]
   model: auth.group
   pk: 10

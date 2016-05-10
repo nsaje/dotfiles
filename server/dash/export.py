@@ -580,9 +580,7 @@ def _get_fieldnames(required_fields, additional_fields, exclude=[]):
 
 
 def _get_conversion_goals(user, campaign):
-    if user.has_perm('zemauth.conversion_reports'):
-        return campaign.conversiongoal_set.all()
-    return []
+    return campaign.conversiongoal_set.all()
 
 
 def get_granularity_from_type(export_type):

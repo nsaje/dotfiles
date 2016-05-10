@@ -15,6 +15,7 @@ import actionlog.zwei_actions
 
 from utils import redirector_helper
 from utils import s3helpers
+from utils import k1_helper
 from utils import email_helper
 
 from dash import models
@@ -112,6 +113,22 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         progress_updater.finish()
         progress_updater.join()
 
+    _save_batch(batch, rows, filename, num_errors, upload_status)
+    _signal_changes(ad_group, batch, actions)
+
+
+def _signal_changes(ad_group, batch, actions):
+    if batch.status == constants.UploadBatchStatus.DONE:
+        k1_helper.update_content_ads(
+            ad_group.pk, [ad.pk for ad in batch.contentad_set.all()],
+            msg='upload.process_async'
+        )
+
+    if actions:
+        actionlog.zwei_actions.send(actions)
+
+
+def _save_batch(batch, rows, filename, num_errors, upload_status):
     # reload upload batch after progress updater finishes using it to keep the inserted values
     batch.refresh_from_db()
     batch.status = upload_status
@@ -119,9 +136,6 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
     if num_errors:
         batch.error_report_key = _save_error_report(rows, filename)
     batch.save()
-
-    if actions:
-        actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):
@@ -227,7 +241,7 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
                 elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
                     data[key] = _clean_inherited_csv_field(key, row.get(key), upload_form_cleaned_fields[key])
                 else:
-                    raise Exception("Unknown key: {0}".format(key))	# should never happen, guards against coding errors
+                    raise Exception("Unknown key: {0}".format(key))  # should never happen, guards against coding errors
             except ValidationError as e:
                 errors.extend(e.messages)
 
@@ -239,7 +253,8 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
         raise
 
 
-# This function cleans the fields that are, when column is not present or the value is empty, inherited from form submission
+# This function cleans the fields that are, when column is not present or
+# the value is empty, inherited from form submission
 def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
     field = AdGroupAdsUploadForm.base_fields[field_name]
 
@@ -250,7 +265,8 @@ def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_fo
         return cleaned_value_from_form
 
     # this currently can never happen as the form values are still mandatory
-    raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
+    raise ValidationError(
+        "{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
 
 
 def _clean_url(url, ad_group):

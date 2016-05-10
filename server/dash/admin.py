@@ -24,6 +24,8 @@ from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
 
+import utils.k1_helper
+
 import actionlog.api_contentads
 import actionlog.zwei_actions
 
@@ -1127,6 +1129,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
         content_ad_source.save()
+        utils.k1_helper.update_content_ad(content_ad_source.content_ad.ad_group_id,
+                                          content_ad_source.content_ad_id)
 
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
