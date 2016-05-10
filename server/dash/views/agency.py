@@ -833,7 +833,7 @@ class AccountAgency(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
-        user_agency = request.user.agency_set.first() if request.user.has_perm('zemauth.can_manage_agency') else None
+        user_agency = request.user.agency_set.first()
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
@@ -871,18 +871,6 @@ class AccountAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _is_valid_agency_manager(self, account_id, user):
-        if not user.has_perm('zemauth.can_manage_agency'):
-            return False
-
-        agency = user.agency_set.first()
-        account = agency.account_set.filter(id=account_id).first() if agency else None
-
-        if agency is not None and account is not None and account.agency == agency:
-            return True
-
-        return False
-
     def save_settings(self, request, account, form):
         with transaction.atomic():
             if form.is_valid():
@@ -891,7 +879,6 @@ class AccountAgency(api_common.BaseApiView):
                         request.user.has_perm('zemauth.account_agency_view') or
                         request.user.has_perm('zemauth.can_set_account_sales_representative')):
                     raise exc.AuthorizationError()
-
 
                 if 'name' in form.cleaned_data and\
                         form.cleaned_data['name'] is not None and not (

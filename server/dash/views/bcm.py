@@ -259,12 +259,11 @@ class CampaignBudgetView(api_common.BaseApiView):
             account=campaign.account
         )
 
-        if user.has_perm('zemauth.can_manage_agency'):
-            agency = user.agency_set.first()
-            if agency:
-                available_credits |= models.CreditLineItem.objects.filter(
-                    agency=agency
-                )
+        agency = user.agency_set.first()
+        if agency:
+            available_credits |= models.CreditLineItem.objects.filter(
+                agency=agency
+            )
 
         return [
             {

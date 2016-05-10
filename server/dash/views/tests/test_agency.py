@@ -2214,7 +2214,6 @@ class AccountAgencyTest(TestCase):
 
     def test_get_as_agency_manager(self):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
             'can_modify_account_name',
             'can_modify_account_manager',
         ])
@@ -2305,7 +2304,6 @@ class AccountAgencyTest(TestCase):
 
     def test_put_as_agency_manager_sales_rep(self):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
             'can_modify_account_name',
             'can_modify_account_manager',
         ])
@@ -2333,7 +2331,6 @@ class AccountAgencyTest(TestCase):
 
     def test_put_as_agency_manager_sources(self):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
             'can_modify_account_name',
             'can_modify_account_manager',
         ])
@@ -2360,7 +2357,6 @@ class AccountAgencyTest(TestCase):
 
     def test_get_as_agency_manager_users(self):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
             'can_modify_account_manager'
         ])
         user = User.objects.get(pk=2)
