@@ -1,9 +1,9 @@
 <div class="page page-account-account" ng-if="!account.archived">
 
     <form ng-if="hasPermission('zemauth.can_manage_agency')" id="form-account-agency" class="form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.name}">
+        <div ng-if="hasPermission('zemauth.can_modify_account_name')" class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="name-input" class="col-xs-2 control-label">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency')" popover-placement="bottom"></zem-internal-feature>
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_account_name')" popover-placement="bottom"></zem-internal-feature>
                 Name
                 <zem-help-popover content="Name of the account." placement="top"></zem-help-popover>
             </label>
@@ -14,9 +14,9 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
+        <div ng-if="hasPermission('zemauth.can_modify_account_manager')" class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
             <label for="account-manager-select" class="col-xs-2 control-label">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency')" popover-placement="bottom"></zem-internal-feature>
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_account_manager')" popover-placement="bottom"></zem-internal-feature>
                 Account Manager
                 <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
