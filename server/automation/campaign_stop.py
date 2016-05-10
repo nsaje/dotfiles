@@ -1126,7 +1126,7 @@ def _get_effective_daily_budget(date, ad_group_source, ag_settings, ags_settings
         return 0
 
     daily_budget_cc = ags_settings.daily_budget_cc
-    if daily_budget_cc:
+    if not daily_budget_cc:
         daily_budget_cc = ad_group_source.source.default_daily_budget_cc
 
     return daily_budget_cc
