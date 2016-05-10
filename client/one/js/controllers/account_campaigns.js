@@ -219,6 +219,54 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Media budgets',
+            field: 'allocated_budgets',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'Pacing',
+            field: 'pacing',
+            checked: false,
+            type: 'percent',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'Spend Projection',
+            field: 'spend_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'License Fee Projection',
+            field: 'license_fee_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -295,6 +343,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 'cost', 'data_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee',
+            ],
+        },
+        {
+            'name': 'Projections',
+            fields: [
+                'spend_projection', 'pacing', 'allocated_budgets', 'license_fee_projection',
             ],
         },
         {
