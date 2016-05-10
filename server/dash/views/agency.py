@@ -946,12 +946,10 @@ class AccountSettings(api_common.BaseApiView):
             'can_restore': account.can_restore(),
         }
 
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_modify_account_manager'):
+        if request.user.has_perm('zemauth.can_modify_account_manager'):
             response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
 
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_set_account_sales_representative'):
+        if request.user.has_perm('zemauth.can_set_account_sales_representative'):
             response['sales_reps'] = self.get_user_list(account_settings, 'campaign_settings_sales_rep')
         return self.create_api_response(response)
 
@@ -1157,15 +1155,12 @@ class AccountSettings(api_common.BaseApiView):
                 'id': str(account.pk),
                 'archived': settings.archived,
             }
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_modify_account_name'):
+            if request.user.has_perm('zemauth.can_modify_account_name'):
                 result['name'] = account.name
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_modify_account_manager'):
+            if request.user.has_perm('zemauth.can_modify_account_manager'):
                 result['default_account_manager'] = str(settings.default_account_manager.id) \
                     if settings.default_account_manager is not None else None
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_set_account_sales_representative'):
+            if request.user.has_perm('zemauth.can_set_account_sales_representative'):
                 result['default_sales_representative'] =\
                     str(settings.default_sales_representative.id) if\
                     settings.default_sales_representative is not None else None

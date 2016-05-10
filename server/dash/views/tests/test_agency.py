@@ -2290,7 +2290,8 @@ class AccountSettingsTest(TestCase):
             'account_agency_view',
             'can_modify_account_name',
             'can_modify_account_manager',
-            'can_modify_account_type'])
+            'can_modify_account_type'
+        ])
 
         response = client.get(
             reverse('account_settings', kwargs={'account_id': 1}),
