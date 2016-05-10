@@ -2493,7 +2493,7 @@ class AccountSettingsTest(TestCase):
         ])
 
     def test_get_no_permission_can_modify_account_type(self):
-        client = self._get_client_with_permissions(['can_manage_agency'])
+        client = self._get_client_with_permissions([])
         response = client.get(
             reverse('account_settings', kwargs={'account_id': 1}),
             follow=True
@@ -2501,8 +2501,6 @@ class AccountSettingsTest(TestCase):
 
         self.assertTrue(response['success'])
         self.assertDictEqual(response['data']['settings'], {
-            'name': 'test account 1',
-            'default_account_manager': '2',
             'id': '1',
             'archived': False
         })
@@ -2510,7 +2508,8 @@ class AccountSettingsTest(TestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
+            'can_modify_account_name',
+            'can_modify_account_manager',
             'can_modify_account_type',
             'can_modify_allowed_sources',
             'can_set_account_sales_representative',
@@ -2738,7 +2737,6 @@ class AccountSettingsTest(TestCase):
 
     def test_get_allowed_sources(self):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
             'can_modify_allowed_sources',
             'can_see_all_available_sources'
         ])
@@ -2756,7 +2754,6 @@ class AccountSettingsTest(TestCase):
 
     def test_get_allowed_sources_no_released(self):
         client = self._get_client_with_permissions([
-            'can_manage_agency',
             'can_modify_allowed_sources',
         ])
 
