@@ -1,7 +1,7 @@
 /* globals oneApp,constants */
 oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', function ($scope, $state, $location, zemNavigationService, campaignData) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
-    $scope.isCampaignLanding = false;
+    $scope.isInLanding = false;
 
     $scope.getTabs = function () {
         return [
@@ -76,7 +76,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         );
     };
 
-    $scope.isCampaignLanding = function () {
+    $scope.isInLanding = function () {
         return !!$scope.campaign.landingMode;
     };
 
