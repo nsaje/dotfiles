@@ -654,6 +654,4 @@ def update_content_ad_status(request):
         content_ad_source.source_content_ad_id = data['external_id']
         content_ad_source.save()
 
-        k1_helper.update_content_ad(data['ad_group_id'], data['content_ad_id'])
-
     return _response_ok(data)
