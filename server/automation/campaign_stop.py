@@ -28,6 +28,7 @@ from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
 
+
 def run_job():
     not_landing = list(dash.models.Campaign.objects.all().exclude_landing().iterator())
     in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
