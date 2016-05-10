@@ -23,6 +23,7 @@ from dash import api
 from utils import exc
 from utils import statsd_helper
 from utils import email_helper
+from utils import k1_helper
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -1088,6 +1089,9 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
                     iab_update=True
                 )
             )
+
+    k1_helper.update_ad_group((ad_group.pk for ad_group in campaign_ad_groups),
+                              msg='views.helpers.save_campaign_settings_and_propagate')
 
     actionlog.zwei_actions.send(actions)
 

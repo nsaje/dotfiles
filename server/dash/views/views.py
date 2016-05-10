@@ -38,6 +38,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers
+from utils import k1_helper
 from utils import email_helper
 
 from automation import autopilot_plus
@@ -495,6 +496,9 @@ class CampaignAdGroups(api_common.BaseApiView):
             if request.user.has_perm('zemauth.add_media_sources_automatically'):
                 media_sources_actions = self._add_media_sources(ad_group, ad_group_settings, request)
                 actions.extend(media_sources_actions)
+
+        k1_helper.update_ad_group(ad_group.pk,
+                                  msg='CampaignAdGroups.put')
 
         return ad_group, ad_group_settings, actions
 
@@ -1132,6 +1136,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
 
+        k1_helper.update_ad_group(ad_group.pk,
+                                  msg='AdGroupSourceSettings.put')
+
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group,
@@ -1362,6 +1369,8 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ads = content_ads.all()
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=True)
+        k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads],
+                                     msg='AdGroupContentAdArchive.post')
 
         response['archived_count'] = content_ads.count()
         response['rows'] = {
@@ -1403,6 +1412,8 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         )
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=False)
+        k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads],
+                                     msg='AdGroupContentAdRestore.post')
 
         return self.create_api_response({
             'rows': {content_ad.id: {
@@ -1444,6 +1455,10 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CONTENT_AD_STATE,
                                                 ad_group=ad_group)
+            k1_helper.update_content_ads(
+                ad_group.pk, [ad.pk for ad in content_ads],
+                msg='AdGroupContentAdState.post'
+            )
 
         return self.create_api_response()
 
@@ -1599,6 +1614,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 publishers_selected,
                 publishers_not_selected
             )
+
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            k1_helper.update_blacklist(ad_group.pk, msg='PublishersBlacklistStatus.post')
 
         response = {
             "success": True,
