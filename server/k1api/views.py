@@ -100,17 +100,23 @@ def get_ad_group_source(request):
     ad_group_source_settings = ad_group_source.get_current_settings()
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
+    if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
+            ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+        source_state = constants.AdGroupSettingsState.ACTIVE
+    else:
+        source_state = constants.AdGroupSettingsState.INACTIVE
+
     data = {
         'ad_group_source_id': ad_group_source.id,
         'ad_group_id': ad_group_source.ad_group_id,
         'credentials': ad_group_source.source_credentials.credentials,
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'state': ad_group_source_settings.state,
+        'state': source_state,
         'cpc_cc': ad_group_source_settings.cpc_cc,
         'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
         'name': ad_group_source.get_external_name(),
         'start_date': ad_group_settings.start_date,
-        'end_date': ad_group_settings.start_date,
+        'end_date': ad_group_settings.end_date,
         'target_devices': ad_group_settings.target_devices,
         'target_regions': ad_group_settings.target_regions,
         'tracking_code': ad_group_settings.tracking_code,
