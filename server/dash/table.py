@@ -208,10 +208,7 @@ class AllAccountsSourcesTable(object):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
 
     def get_data_status(self, user):
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
-
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
         return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
@@ -269,10 +266,7 @@ class AccountSourcesTable(object):
         return actionlog.api.is_sync_in_progress(accounts=[self.account], sources=self.filtered_sources)
 
     def get_data_status(self, user):
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
-
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
         return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
@@ -338,9 +332,7 @@ class CampaignSourcesTable(object):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign], sources=self.filtered_sources)
 
     def get_data_status(self, user):
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
 
         return helpers.get_data_status(
             self.get_sources(),
@@ -420,9 +412,7 @@ class AdGroupSourcesTable(object):
             self.ad_group_sources_states,
         )
 
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
 
         return helpers.get_data_status(
             self.get_sources(),
@@ -616,7 +606,7 @@ class SourcesTable(object):
         }
 
         conversion_goals_lst = []
-        if user.has_perm('zemauth.conversion_reports') and hasattr(level_sources_table, 'conversion_goals'):
+        if hasattr(level_sources_table, 'conversion_goals'):
             conversion_goals_lst = [
                 {'id': cg.get_view_key(level_sources_table.conversion_goals), 'name': cg.name}
                 for cg in level_sources_table.conversion_goals
@@ -991,9 +981,7 @@ class AccountsAccountsTable(object):
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
 
         return helpers.get_data_status(
             accounts,
@@ -1186,13 +1174,11 @@ class AdGroupAdsTable(object):
             user
         )
 
-        batches = []
-        if user.has_perm('zemauth.content_ads_bulk_actions'):
-            batch_ids = set([row['batch_id'] for row in rows])
-            batches = models.UploadBatch.objects.filter(
-                id__in=tuple(batch_ids),
-                status=constants.UploadBatchStatus.DONE,
-            ).order_by('-created_dt')
+        batch_ids = set([row['batch_id'] for row in rows])
+        batches = models.UploadBatch.objects.filter(
+            id__in=tuple(batch_ids),
+            status=constants.UploadBatchStatus.DONE,
+        ).order_by('-created_dt')
 
         if 'status_setting' in order:
             rows = sort_rows_by_order_and_archived(rows, order)
@@ -1229,8 +1215,7 @@ class AdGroupAdsTable(object):
                 end_date,
                 [ad_group],
                 filtered_sources,
-            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
+            ) if user.has_perm('zemauth.content_ads_postclick_acquisition') else False
 
         total_row = self._get_total_row(user, total_stats)
 
@@ -1260,12 +1245,9 @@ class AdGroupAdsTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
-        conversion_goals_lst = []
-        if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                    for cg in conversion_goals]
-
-            response['conversion_goals'] = conversion_goals_lst
+        conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                for cg in conversion_goals]
+        response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
@@ -1488,13 +1470,10 @@ class CampaignAdGroupsTable(object):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         }
 
-        conversion_goals_lst = []
-        if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = campaign.conversiongoal_set.all()
-            conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                    for cg in conversion_goals]
-
-            response['conversion_goals'] = conversion_goals_lst
+        conversion_goals = campaign.conversiongoal_set.all()
+        conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                for cg in conversion_goals]
+        response['conversion_goals'] = conversion_goals_lst
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
@@ -1535,10 +1514,7 @@ class CampaignAdGroupsTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
-
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
         return helpers.get_data_status(
             ad_groups,
             helpers.get_last_sync_messages(ad_groups, last_success_actions),
@@ -1746,10 +1722,7 @@ class AccountCampaignsTable(object):
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
-        last_pixel_sync_message = None
-        if user.has_perm('zemauth.conversion_reports'):
-            last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
-
+        last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
         return helpers.get_data_status(
             campaigns,
             helpers.get_last_sync_messages(campaigns, last_success_actions),

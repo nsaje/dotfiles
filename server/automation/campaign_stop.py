@@ -22,6 +22,8 @@ import reports.api_contentads
 import reports.budget_helpers
 import reports.models
 
+import utils.k1_helper
+
 from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
@@ -50,8 +52,13 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns):
     }
     actions = []
     for campaign in campaigns:
-        _, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
+        changed, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
         actions.extend(new_actions)
+        if changed:
+            utils.k1_helper.update_ad_groups(
+                (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+                msg='campaign_stop.switch_low_budget_campaign'
+            )
     zwei_actions.send(actions)
 
 
@@ -59,11 +66,19 @@ def perform_landing_mode_check(campaign, campaign_settings):
     switched_to_landing, actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings)
     if switched_to_landing:
         zwei_actions.send(actions)
+        utils.k1_helper.update_ad_groups(
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='campaign_stop.perform_landing_mode_check_switch'
+        )
         return True
 
     resumed, actions = _check_and_resume_campaign(campaign, campaign_settings)
     if resumed:
         zwei_actions.send(actions)
+        utils.k1_helper.update_ad_groups(
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='campaign_stop.perform_landing_mode_check_resume'
+        )
         return True
 
     return False
@@ -92,6 +107,12 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     elif is_near_depleted:
         _send_depleting_budget_notification_email(campaign, available_tomorrow, current_daily_budget, yesterday_spend)
 
+    if switched_to_landing:
+        utils.k1_helper.update_ad_groups(
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='campaign_stop.check_and_switch_campaign_to_landing_mode'
+        )
+
     return switched_to_landing, actions
 
 
@@ -100,6 +121,10 @@ def _check_and_resume_campaign(campaign, campaign_settings):
         with transaction.atomic():
             actions = _resume_campaign(campaign)
             return True, actions
+        utils.k1_helper.update_ad_groups(
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='campaign_stop.check_and_resume_campaign'
+        )
     return False, []
 
 
@@ -162,6 +187,10 @@ def update_campaigns_in_landing(campaigns):
             continue
 
         zwei_actions.send(actions)
+        utils.k1_helper.update_ad_groups(
+            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
+            msg='update_campaigns_in_landing'
+        )
 
 
 def can_enable_ad_group(ad_group, campaign, campaign_settings):

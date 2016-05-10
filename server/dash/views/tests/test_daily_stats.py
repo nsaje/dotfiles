@@ -57,8 +57,10 @@ class BaseDailyStatsTest(TestCase):
 
         return params
 
-    def _assert_response(self, response, selected_id, selected_name):
-        self.assertEqual(json.loads(response.content), {
+    def _assert_response(self, response, selected_id, selected_name, with_conversion_goals=True):
+        json_blob = json.loads(response.content)
+        self.maxDiff = None
+        expected_response = {
             'data': {
                 'chart_data': [{
                     'id': selected_id,
@@ -82,10 +84,22 @@ class BaseDailyStatsTest(TestCase):
                             [self.date.isoformat(), '0.0100']
                         ]
                     }
-                }]
+                }],
             },
             'success': True
-        })
+        }
+
+        if with_conversion_goals:
+            expected_response['data']['conversion_goals'] = [
+                    {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
+                ]
+
+        self.assertDictEqual(expected_response, json_blob)
+
         """
             'campaign_goals': {
                 'reports': [],
@@ -140,7 +154,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         )
 
         source = models.Source.objects.get(pk=source_id)
-        self._assert_response(response, source_id, source.name)
+        self._assert_response(response, source_id, source.name, with_conversion_goals=False)
 
 
 class AccountDailyStatsTest(BaseDailyStatsTest):
@@ -177,7 +191,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         )
 
         source = models.Source.objects.get(pk=source_id)
-        self._assert_response(response, source_id, source.name)
+        self._assert_response(response, source_id, source.name, with_conversion_goals=False)
 
     def test_get_by_campaign(self):
         campaign_id = 1
@@ -212,7 +226,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         )
 
         campaign = models.Campaign.objects.get(pk=campaign_id)
-        self._assert_response(response, campaign_id, campaign.name)
+        self._assert_response(response, campaign_id, campaign.name, with_conversion_goals=False)
 
 
 class CampaignDailyStatsTest(BaseDailyStatsTest):

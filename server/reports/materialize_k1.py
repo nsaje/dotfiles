@@ -44,10 +44,11 @@ class ContentAdStats(object):
             'postclickstats',
             ['content_ad_id', 'type', 'source'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
         )
 
-    def _get_post_click_data(self, ad_group, post_click_list):
+    def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
+        post_click_list = content_ad_postclick.pop((content_ad_id, media_source), None)
         if not post_click_list:
             return {}
 
@@ -83,13 +84,16 @@ class ContentAdStats(object):
         media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
 
         for row in self._stats_breakdown(date).rows():
+            content_ad_id = row[1]
+            media_source_slug = row[3]
+
             ad_group = ad_groups_map.get(row[0])
             if ad_group is None:
                 logger.error("Got spend for invalid adgroup: %s", row[0])
                 continue
-            media_source = media_sources_map.get(row[3])
+            media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
-                logger.error("Got spend for invalid media_source: %s", row[3])
+                logger.error("Got spend for invalid media_source: %s", media_source_slug)
                 continue
 
             cost = row[6] or 0
@@ -98,11 +102,11 @@ class ContentAdStats(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            post_click = self._get_post_click_data(ad_group, content_ad_postclick.get((row[1], row[3])))
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
 
             yield (
                 date,
-                row[1],  # content_ad_id
+                content_ad_id,
                 ad_group.id,
                 media_source.id,
 
@@ -125,6 +129,8 @@ class ContentAdStats(object):
                 _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
                 _decimal_to_int(license_fee * MICRO_TO_NANO),
             )
+
+        logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class Publishers(object):
@@ -161,19 +167,29 @@ class Publishers(object):
         return Breakdown(
             date,
             'postclickstats',
-            ['ad_group_id', 'type', 'source', 'publisher'],
+            ['ad_group_id', 'type', 'source', 'lower(publisher)'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'avg'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
         )
 
     def _outbrain_cpc(self, date):
-        query = "select sum(spend), sum(clicks) from stats where media_source='outbrain' and date='{date}'".format(
+        query = """
+            select ad_group_id, sum(spend), sum(clicks)
+            from stats
+            where media_source='outbrain' and date='{date}'
+            group by ad_group_id
+        """.format(
             date=date.isoformat()
         )
-        data = _query_rows(query).next()
-        return Decimal(data[0])/data[1]
+        cpcs = {}
+        for line in _query_rows(query):
+            if line[1] != 0 and line[2] != 0:
+                cpcs[line[0]] = Decimal(line[1]) / line[2]
 
-    def _get_post_click_data(self, ad_group_id, post_click_list):
+        return cpcs
+
+    def _get_post_click_data(self, content_ad_postclick, ad_group_id, media_source, publisher):
+        post_click_list = content_ad_postclick.pop((ad_group_id, media_source, publisher.lower()), None)
         if not post_click_list:
             return {}
 
@@ -229,8 +245,7 @@ class Publishers(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
-            post_click = self._get_post_click_data(
-                ad_group_id, content_ad_postclick.get((ad_group_id, media_source, publisher)))
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
 
             yield (
                 date,
@@ -258,7 +273,7 @@ class Publishers(object):
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
-        cpc = self._outbrain_cpc(date)
+        outbrain_cpcs = self._outbrain_cpc(date)
         for row in self._stats_outbrain_publishers(date):
             ad_group_id = row[0]
             ad_group = ad_groups_map.get(ad_group_id)
@@ -267,7 +282,7 @@ class Publishers(object):
                 continue
 
             clicks = row[3]
-            cost = _decimal_to_int(cpc * clicks)
+            cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
@@ -275,8 +290,7 @@ class Publishers(object):
 
             media_source = source.tracking_slug
             publisher = row[2]
-            post_click = self._get_post_click_data(
-                ad_group_id, content_ad_postclick.get((ad_group_id, media_source, row[1])))
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, row[1])
 
             yield (
                 date,
@@ -302,6 +316,8 @@ class Publishers(object):
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
             )
+
+        logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class TouchpointConversions(object):
