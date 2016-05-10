@@ -2459,7 +2459,7 @@ class AccountSettingsTest(TestCase):
         agency.users.add(user)
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1000}),
+            reverse('account_settings', kwargs={'account_id': 1000}),
             follow=True
         ).json()
 
@@ -2476,7 +2476,7 @@ class AccountSettingsTest(TestCase):
         agency_acc.users.add(johnnie)
 
         response = client.get(
-            reverse('account_agency', kwargs={'account_id': 1000}),
+            reverse('account_settings', kwargs={'account_id': 1000}),
             follow=True
         ).json()
 
