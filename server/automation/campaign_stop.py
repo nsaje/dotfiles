@@ -607,7 +607,7 @@ def _run_autopilot(campaign, daily_caps):
             campaign=campaign,
             notes='Applying autopilot recommendations for ad group {}:\n{}'.format(
                 ad_group.id,
-                '\n'.join(['{}: Daily budget: ${:.2f} to ${:.2f}, CPC: ${:.2f} to ${:.2f}'.format(
+                '\n'.join(['{}: Daily budget: ${:.0f} to ${:.0f}, CPC: ${:.3f} to ${:.3f}'.format(
                     ags.source.name,
                     budget_changes.get(ags, {}).get('old_budget', -1),
                     budget_changes.get(ags, {}).get('new_budget', -1),
