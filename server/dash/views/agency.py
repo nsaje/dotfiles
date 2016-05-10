@@ -27,6 +27,7 @@ from utils import api_common
 from utils import statsd_helper
 from utils import exc
 from utils import email_helper
+from utils import k1_helper
 
 from zemauth.models import User as ZemUser
 
@@ -83,6 +84,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
+        k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
@@ -272,6 +274,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
             new_settings.state = new_state
             new_settings.save(request)
             actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
+            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
         return self.create_api_response({
             'id': str(ad_group.pk),

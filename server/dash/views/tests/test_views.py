@@ -248,10 +248,6 @@ class AdGroupSourceSettingsTest(TestCase):
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
         self.ad_group = models.AdGroup.objects.get(pk=1)
 
-        patcher = patch('dash.api.k1_helper')
-        self.k1_helper_mock = patcher.start()
-        self.addCleanup(patcher.stop)
-
     def _set_ad_group_end_date(self, days_delta=0):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -281,22 +277,26 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
-    def test_end_date_future(self):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_end_date_future(self, mock_k1_ping):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
+        mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
-    def test_set_state_landing_mode(self):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_set_state_landing_mode(self, mock_k1_ping):
         self._set_campaign_landing_mode()
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'state': 1})
         )
         self.assertEqual(response.status_code, 400)
+        self.assertFalse(mock_k1_ping.called)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     def test_set_cpc_landing_mode(self):
@@ -317,13 +317,15 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_logs_user_action(self, mock_log_useraction):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_logs_user_action(self, mock_k1_ping, mock_log_useraction):
         self._set_ad_group_end_date(days_delta=0)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
+        mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
@@ -424,7 +426,8 @@ class CampaignAdGroups(TestCase):
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('actionlog.zwei_actions.send')
-    def test_put(self, mock_insert_adgroup, mock_zwei_send):
+    @patch('utils.k1_helper.update_ad_group')
+    def test_put(self, mock_k1_ping, mock_insert_adgroup, mock_zwei_send):
         campaign = models.Campaign.objects.get(pk=1)
 
         response = self.client.put(
@@ -435,6 +438,7 @@ class CampaignAdGroups(TestCase):
         self.assertTrue(mock_zwei_send.called)
 
         response_dict = json.loads(response.content)
+        mock_k1_ping.assert_called_with(response_dict['data']['id'], msg='CampaignAdGroups.put')
         self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
 
         ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
@@ -690,7 +694,8 @@ class AdGroupContentAdStateTest(TestCase):
         )
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_post(self, mock_log_useraction):
+    @patch('utils.k1_helper.update_content_ads')
+    def test_post(self, mock_k1_ping, mock_log_useraction):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
@@ -703,6 +708,8 @@ class AdGroupContentAdStateTest(TestCase):
         }
 
         response = self._post_content_ad_state(ad_group_id, data)
+
+        mock_k1_ping.assert_called_with(1, [1], msg='AdGroupContentAdState.post')
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
@@ -1004,7 +1011,8 @@ class AdGroupContentAdArchive(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
-    def test_post(self, mock_send_mail, mock_log_useraction):
+    @patch('utils.k1_helper.update_content_ads')
+    def test_post(self, mock_k1_ping, mock_send_mail, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -1013,7 +1021,7 @@ class AdGroupContentAdArchive(TestCase):
         }
 
         response = self._post_content_ad_archive(ad_group.id, data)
-
+        mock_k1_ping.assert_called_with(1, [content_ad_id], msg='AdGroupContentAdArchive.post')
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, True)
 
@@ -1182,7 +1190,8 @@ class AdGroupContentAdRestore(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
-    def test_post(self, mock_send_mail, mock_log_useraction):
+    @patch('utils.k1_helper.update_content_ads')
+    def test_post(self, mock_k1_ping, mock_send_mail, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -1195,6 +1204,7 @@ class AdGroupContentAdRestore(TestCase):
         }
 
         response = self._post_content_ad_restore(ad_group.id, data)
+        mock_k1_ping.assert_called_with(1, [2], msg='AdGroupContentAdRestore.post')
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, False)
@@ -2067,7 +2077,8 @@ class PublishersBlacklistStatusTest(TestCase):
                 self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
 
     @patch('reports.redshift.get_cursor')
-    def test_post_blacklist(self, cursor):
+    @patch('utils.k1_helper.update_blacklist')
+    def test_post_blacklist(self, mock_k1_ping, cursor):
         cursor().dictfetchall.return_value = [
             {
                 'domain': u'掌上留园－6park',  # an actual domain from production
@@ -2091,6 +2102,7 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
+        mock_k1_ping.assert_called_with(1, msg='PublishersBlacklistStatus.post')
 
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
             action_type=actionlog.constants.ActionType.AUTOMATIC,
@@ -2119,7 +2131,8 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(u'掌上留园－6park', publisher_blacklist.name)
 
     @patch('reports.redshift.get_cursor')
-    def test_post_enable(self, cursor):
+    @patch('utils.k1_helper.update_blacklist')
+    def test_post_enable(self, mock_k1_ping, cursor):
 
         # blacklist must first exist in order to be deleted
         models.PublisherBlacklist.objects.create(
@@ -2148,6 +2161,7 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
+        mock_k1_ping.assert_called_with(1, msg='PublishersBlacklistStatus.post')
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
             action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
