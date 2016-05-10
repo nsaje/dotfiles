@@ -168,7 +168,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_account_sales_representative', 'Can view and set account sales representative on account settings tab.'),
             ('can_modify_account_name', 'Can see and modify account name on account settings tab.'),
             ('can_modify_account_manager', 'Can view and set account manager on account settings tab.'),
-
         )
 
     def get_full_name(self):
