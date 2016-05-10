@@ -77,17 +77,10 @@ class CleanTestCase(TestCase):
         })
 
         params = breakdowns_helpers.clean_breakdown_page(request, breakdown)
-        self.assertDictEqual(params, {
-            1: {
-                6: test_helper.ListMatcher(['501', '502']),
-                7: test_helper.ListMatcher(['501', '522']),
-            },
-            2: {
-                33: test_helper.ListMatcher(['502']),
-                2: test_helper.ListMatcher(['650', '677', '23']),
-            },
-            3: [],
-        })
-
-
-
+        self.assertItemsEqual(params, [
+            {'account': 1, 'campaign': 6, 'dma': ['501', '502']},
+            {'account': 1, 'campaign': 7, 'dma': ['501', '522']},
+            {'account': 2, 'campaign': 33, 'dma': ['502']},
+            {'account': 2, 'campaign': 2, 'dma': ['650', '677', '23']},
+            {'account': 3, 'campaign': []},
+        ])

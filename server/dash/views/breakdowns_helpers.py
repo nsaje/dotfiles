@@ -10,7 +10,6 @@ STRUCTURE_IDS = ['account', 'campaign', 'ad_group', 'content_ad', 'source']
 
 def clean_default_params(request):
     # TODO use a form for this?
-    # TODO validate data is correct
     request_data = request.GET
     if request.method == "POST":
         request_data = request.POST
@@ -29,10 +28,7 @@ def clean_default_params(request):
 
 
 def clean_breakdown(request, base_view, breakdown):
-    # TODO check:
-    # is valid order
-    # is valid breakdown (correct selectors)
-    # check level -> base -> structure
+    # TODO valid order, selectors, by level correct relations (campaign->ad group)
     if len(breakdown) > 4:
         raise exc.InvalidBreakdownError('More than 4 dimensions')
 
@@ -59,9 +55,33 @@ def clean_breakdown_page(request, breakdown):
     breakdown_page = None
     if len(breakdown) > 1:
         breakdown_page = json.loads(request_data.get('breakdown_page'))
+
         breakdown_page = _clean_breakdown_page(breakdown_page, breakdown, 0)
 
+        # TODO this is a Q but it can't be translated into one here, so create
+        # a list of dicts that have AND in the dict
+        breakdown_page = _create_and_branches(breakdown_page, breakdown, 0)
+
     return breakdown_page
+
+
+def _create_and_branches(page, breakdown, dimension_idx):
+    dimension = breakdown[dimension_idx]
+
+    if isinstance(page, dict):
+        branches = []
+        for k, subpage in page.items():
+            subbranches = _create_and_branches(subpage, breakdown, dimension_idx + 1)
+            for branch in subbranches:
+                branch.update({
+                    dimension: k,
+                })
+            branches.extend(subbranches)
+        return branches
+
+    return [{
+        dimension: page
+    }]
 
 
 def _clean_breakdown_page(page, breakdown, dimension_idx):
