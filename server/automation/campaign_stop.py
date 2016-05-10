@@ -28,15 +28,6 @@ from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
 
-TEMP_EMAILS = [
-    'luka.silovinac@zemanta.com',
-    'urska.kosec@zemanta.com',
-    'ana.dejanovic@zemanta.com',
-    'tadej.pavlic@zemanta.com',
-    'ziga.stopinsek@zemanta.com',
-]
-
-
 def run_job():
     not_landing = list(dash.models.Campaign.objects.all().exclude_landing().iterator())
     in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
@@ -103,9 +94,11 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     if switched_to_landing:
         with transaction.atomic():
             actions.extend(_switch_campaign_to_landing_mode(campaign))
-        _send_campaign_stop_notification_email(campaign, available_tomorrow, current_daily_budget, yesterday_spend)
+        _send_campaign_stop_notification_email(
+            campaign, campaign_settings, available_tomorrow, current_daily_budget, yesterday_spend)
     elif is_near_depleted:
-        _send_depleting_budget_notification_email(campaign, available_tomorrow, current_daily_budget, yesterday_spend)
+        _send_depleting_budget_notification_email(
+            campaign, campaign_settings, available_tomorrow, current_daily_budget, yesterday_spend)
 
     if switched_to_landing:
         utils.k1_helper.update_ad_groups(
@@ -1233,8 +1226,9 @@ def _get_ad_groups_running_on_date(date, ad_groups):
     return running_ad_groups
 
 
-def _send_campaign_stop_notification_email(campaign, available_tomorrow, max_daily_budget, yesterday_spend):
-    subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is switching to landing mode'
+def _send_campaign_stop_notification_email(campaign, campaign_settings, available_tomorrow,
+                                           max_daily_budget, yesterday_spend):
+    subject = 'Campaign is switching to landing mode'
     body = u'''Hi, campaign manager,
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
@@ -1262,15 +1256,18 @@ Zemanta'''  # noqa
     )
 
     account_settings = campaign.account.get_current_settings()
-    emails = TEMP_EMAILS
+    emails = []
     if account_settings.default_account_manager:
-        emails = [account_settings.default_account_manager.email] + emails
+        emails.append(account_settings.default_account_manager.email)
+    if campaign_settings.campaign_manager:
+        emails.append(campaign_settings.campaign_manager.email)
 
     email_helper.send_notification_mail(emails, subject, body)
 
 
-def _send_depleting_budget_notification_email(campaign, available_tomorrow, max_daily_budget, yesterday_spend):
-    subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is running out of budget'
+def _send_depleting_budget_notification_email(campaign, campaign_settings, available_tomorrow,
+                                              max_daily_budget, yesterday_spend):
+    subject = 'Campaign is running out of budget'
     body = u'''Hi, campaign manager,
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
@@ -1298,8 +1295,10 @@ Zemanta'''  # noqa
     )
 
     account_settings = campaign.account.get_current_settings()
-    emails = TEMP_EMAILS
+    emails = []
     if account_settings.default_account_manager:
-        emails = [account_settings.default_account_manager.email] + emails
+        emails.append(account_settings.default_account_manager.email)
+    if campaign_settings.campaign_manager:
+        emails.append(campaign_settings.campaign_manager.email)
 
     email_helper.send_notification_mail(emails, subject, body)
