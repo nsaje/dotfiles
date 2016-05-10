@@ -283,9 +283,9 @@ def _can_enable_media_sources(ad_group_sources, campaign):
             ret[ad_group_source.id] = True
             continue
 
-        daily_budget_cc = ags_settings.ad_group_source.source.default_daily_budget_cc
-        if ags_settings.daily_budget_cc:
-            daily_budget_cc = ags_settings.daily_budget_cc
+        daily_budget_cc = ags_settings.daily_budget_cc
+        if not daily_budget_cc:
+            daily_budget_cc = ad_group_source.source.default_daily_budget_cc
 
         daily_budget_added = daily_budget_cc - max_daily_budget_per_ags.get(ad_group_source.id, 0)
         can_enable_today = daily_budget_added <= remaining_today
@@ -333,9 +333,9 @@ def _can_enable_ad_group(ad_group, ad_group_settings, ad_group_sources_settings_
             continue
 
         max_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, 0)
-        current_daily_budget = ad_group_source_settings.ad_group_source.source.default_daily_budget_cc
-        if ad_group_source_settings.daily_budget_cc:
-            current_daily_budget = ad_group_source_settings.daily_budget_cc
+        current_daily_budget = ad_group_source_settings.daily_budget_cc
+        if not current_daily_budget:
+            current_daily_budget = ad_group_source_settings.ad_group_source.source.default_daily_budget_cc
 
         daily_budget_total += current_daily_budget
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
@@ -1057,9 +1057,9 @@ def _get_current_daily_budget_per_ags(campaign):
         if ags_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
             continue
 
-        current_daily_budget = ags_settings.ad_group_source.source.default_daily_budget_cc
-        if ags_settings.daily_budget_cc:
-            current_daily_budget = ags_settings.daily_budget_cc
+        current_daily_budget = ags_settings.daily_budget_cc
+        if not current_daily_budget:
+            current_daily_budget = ags_settings.ad_group_source.source.default_daily_budget_cc
 
         ret[ags_settings.ad_group_source_id] = current_daily_budget
     return ret
@@ -1086,9 +1086,9 @@ def _get_user_daily_budget_per_ags(campaign):
         if ags_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
             continue
 
-        current_daily_budget = ags_settings.ad_group_source.source.default_daily_budget_cc
-        if ags_settings.daily_budget_cc:
-            current_daily_budget = ags_settings.daily_budget_cc
+        current_daily_budget = ags_settings.daily_budget_cc
+        if not current_daily_budget:
+            current_daily_budget = ags_settings.ad_group_source.source.default_daily_budget_cc
 
         ret[ags_settings.ad_group_source_id] = current_daily_budget
     return ret
@@ -1125,9 +1125,9 @@ def _get_effective_daily_budget(date, ad_group_source, ag_settings, ags_settings
        (ag_settings.end_date and ag_settings.end_date < date):
         return 0
 
-    daily_budget_cc = ad_group_source.source.default_daily_budget_cc
-    if ags_settings.daily_budget_cc:
-        daily_budget_cc = ags_settings.daily_budget_cc
+    daily_budget_cc = ags_settings.daily_budget_cc
+    if daily_budget_cc:
+        daily_budget_cc = ad_group_source.source.default_daily_budget_cc
 
     return daily_budget_cc
 
