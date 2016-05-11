@@ -629,18 +629,25 @@ def _switch_campaign_to_landing_mode(campaign):
     new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
     new_campaign_settings.save(None)
 
+    actions = []
+    today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
-        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
-        new_ad_group_settings.landing_mode = True
-        new_ad_group_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-        new_ad_group_settings.save(None)
+        new_ag_settings = ad_group.get_current_settings().copy_settings()
+
+        new_ag_settings.landing_mode = True
+        new_ag_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
+        new_ag_settings.save(None)
+
+        if new_ag_settings.end_date and new_ag_settings.end_date < today:
+            actions.extend(_stop_ad_group(ad_group))
+        else:
+            actions.extend(_set_ad_group_end_date(ad_group, today))
 
         for ad_group_source in ad_group.adgroupsource_set.all().filter_active():
             new_ags_settings = ad_group_source.get_current_settings().copy_settings()
             new_ags_settings.landing_mode = True
             new_ags_settings.save(None)
 
-    actions = _set_end_date_to_today(campaign)
     models.CampaignStopLog.objects.create(
         campaign=campaign,
         notes='Switched to landing mode.'
@@ -678,22 +685,6 @@ def _turn_off_landing_mode(campaign, pause_ad_groups=False):
         actions.extend(_restore_user_ad_group_settings(ad_group, pause_ad_group=pause_ad_groups))
 
     return actions
-
-
-def _set_ad_group_end_date(ad_group, end_date):
-    current_ag_settings = ad_group.get_current_settings()
-    new_ag_settings = current_ag_settings.copy_settings()
-    new_ag_settings.end_date = end_date
-    new_ag_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-    new_ag_settings.save(None)
-
-    return dash.api.order_ad_group_settings_update(
-        ad_group,
-        current_ag_settings,
-        new_ag_settings,
-        request=None,
-        send=False,
-    )
 
 
 def _get_last_user_ad_group_settings(ad_group):
@@ -811,6 +802,22 @@ def _set_end_date_to_today(campaign):
         notes='End date set to {}'.format(today)
     )
     return actions
+
+
+def _set_ad_group_end_date(ad_group, end_date):
+    current_ag_settings = ad_group.get_current_settings()
+    new_ag_settings = current_ag_settings.copy_settings()
+    new_ag_settings.end_date = end_date
+    new_ag_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
+    new_ag_settings.save(None)
+
+    return dash.api.order_ad_group_settings_update(
+        ad_group,
+        current_ag_settings,
+        new_ag_settings,
+        request=None,
+        send=False,
+    )
 
 
 def _stop_ad_group_source(ad_group_source):

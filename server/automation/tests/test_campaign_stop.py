@@ -984,6 +984,29 @@ class SwitchCampaignToLandingModeTestCase(TestCase):
             else:
                 self.assertFalse(ad_group.get_current_settings().landing_mode)
 
+    def test_existing_end_dates_in_the_past(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+
+        yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
+
+        active_before = list(campaign.adgroup_set.all().filter_active())
+        self.assertTrue(active_before)
+        for ad_group in active_before:
+            new_ag_settings = ad_group.get_current_settings().copy_settings()
+            new_ag_settings.end_date = yesterday
+            new_ag_settings.save(None)
+
+        campaign_stop._switch_campaign_to_landing_mode(campaign)
+        self.assertFalse(campaign.adgroup_set.all().filter_active().exists())
+        for ad_group in campaign.adgroup_set.all():
+            current_settings = ad_group.get_current_settings()
+            if ad_group in active_before:
+                self.assertTrue(current_settings.landing_mode)
+                self.assertEqual(current_settings.end_date, yesterday)
+                self.assertEqual(current_settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
+            else:
+                self.assertFalse(current_settings.landing_mode)
+
 
 class SetAdGroupEndDateTestCase(TestCase):
 
