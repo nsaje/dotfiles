@@ -598,3 +598,7 @@ class K1ApiTest(TestCase):
     def test_get_content_ads_exchanges(self):
         # TODO matijav 03.05.2016
         pass
+
+    def update_content_ad_status(self):
+        # TODO maticz, 10.5.2016
+        pass

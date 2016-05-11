@@ -160,9 +160,7 @@ class AccountsTest(TestCase):
             views.Account().put(rf)
 
         permission1 = Permission.objects.get(codename='all_accounts_accounts_add_account')
-        permission2 = Permission.objects.get(codename='can_manage_agency')
         johnny.user_permissions.add(permission1)
-        johnny.user_permissions.add(permission2)
         johnny.save()
 
         johnny = User.objects.get(pk=2)

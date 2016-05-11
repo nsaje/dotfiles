@@ -18,6 +18,14 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.addUserData = {};
     $scope.addUserErrors = null;
 
+    $scope.isAnySettingSettable = function () {
+        return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
+            $scope.hasPermission('zemauth.can_modify_account_name') ||
+            $scope.hasPermission('zemauth.can_modify_account_type') ||
+            $scope.hasPermission('zemauth.can_set_account_sales_representative') ||
+            $scope.hasPermission('zemauth.can_modify_account_manager');
+    };
+
     $scope.getAllowedMediaSources = function () {
         var list = [];
         angular.forEach($scope.settings.allowedSources, function (value, key) {
