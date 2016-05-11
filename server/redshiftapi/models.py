@@ -11,14 +11,14 @@ class RSContentAdStats(backtosql.Model, models_helpers.RSBreakdownMixin):
     # 'contentadstats' table. The model definition is based
     # on that table for now.
 
-    dt = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'dt'},
+    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'},
                                   constants.ColumnGroup.BREAKDOWN)
 
-    account_id = backtosql.Column('account_id', constants.ColumnGroup.BREAKDOWN)
-    campaign_id = backtosql.Column('campaign_id', constants.ColumnGroup.BREAKDOWN)
-    ad_group_id = backtosql.Column('adgroup_id', constants.ColumnGroup.BREAKDOWN)
-    content_ad_id = backtosql.Column('content_ad_id', constants.ColumnGroup.BREAKDOWN)
-    source_id = backtosql.Column('source_id', constants.ColumnGroup.BREAKDOWN)
+    account = backtosql.Column('account_id', constants.ColumnGroup.BREAKDOWN)
+    campaign = backtosql.Column('campaign_id', constants.ColumnGroup.BREAKDOWN)
+    ad_group = backtosql.Column('adgroup_id', constants.ColumnGroup.BREAKDOWN)
+    content_ad = backtosql.Column('content_ad_id', constants.ColumnGroup.BREAKDOWN)
+    source = backtosql.Column('source_id', constants.ColumnGroup.BREAKDOWN)
 
     clicks = models_helpers.SumColumn('clicks')
     impressions = models_helpers.SumColumn('impressions')
@@ -56,5 +56,7 @@ class RSContentAdStats(backtosql.Model, models_helpers.RSBreakdownMixin):
     @classmethod
     def get_best_query_template(cls, breakdown, constraints):
         if len(breakdown) == 2:
-            return 'q_2_breakdowns.sql'
-        return 'q_simple_breakdown.sql'
+            return 'breakdown_lvl1.sql'
+        elif len(breakdown) == 3:
+            return 'breakdown_lvl2.sql'
+        raise NotImplementedError()
