@@ -21,15 +21,11 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.canRestore = true;
 
     $scope.isAnySettingSettable = function () {
-        if ($scope.hasPermission('zemauth.can_modify_allowed_sources') ||
-            $scope.hasPermission('zemauth.can_modify_account_name') ||   
+        return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
+            $scope.hasPermission('zemauth.can_modify_account_name') ||
             $scope.hasPermission('zemauth.can_modify_account_type') ||
             $scope.hasPermission('zemauth.can_set_account_sales_representative') ||
-            $scope.hasPermission('zemauth.can_modify_account_manager')) {
-            return true;
-
-        }
-        return false;
+            $scope.hasPermission('zemauth.can_modify_account_manager');
     };
 
     $scope.getAllowedMediaSources = function () {
@@ -117,7 +113,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
                 }
-                $scope.isAnySettingSettable();
             },
             function (data) {
                 // error

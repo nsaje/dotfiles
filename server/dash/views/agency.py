@@ -974,60 +974,61 @@ class AccountSettings(api_common.BaseApiView):
 
     def save_settings(self, request, account, form):
         with transaction.atomic():
-            if form.is_valid():
-                if 'default_sales_representative' in form.cleaned_data and\
-                        form.cleaned_data['default_sales_representative'] is not None and not (
-                        request.user.has_perm('zemauth.account_agency_view') or
-                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
-                    raise exc.AuthorizationError()
-
-                if 'name' in form.cleaned_data and\
-                        form.cleaned_data['name'] is not None and not (
-                            request.user.has_perm('zemauth.account_agency_view') or
-                            request.user.has_perm('zemauth.can_modify_account_name')
-                        ):
-                    raise exc.AuthorizationError()
-
-                if 'default_account_manager' in form.cleaned_data and \
-                        form.cleaned_data['default_account_manager'] is not None and not (
-                            request.user.has_perm('zemauth.account_agency_view') or\
-                            request.user.has_perm('zemauth.can_modify_account_manager')
-                        ):
-                    raise exc.AuthorizationError()
-
-                self.set_account(account, form.cleaned_data)
-
-                settings = account.get_current_settings().copy_settings()
-                self.set_settings(settings, account, form.cleaned_data)
-
-                if 'allowed_sources' in form.cleaned_data and\
-                        form.cleaned_data['allowed_sources'] is not None and\
-                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                    raise exc.AuthorizationError()
-
-                if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
-                    if not request.user.has_perm('zemauth.can_modify_account_type'):
-                        raise exc.AuthorizationError()
-                    settings.account_type = form.cleaned_data['account_type']
-
-                if 'allowed_sources' in form.cleaned_data and\
-                        form.cleaned_data['allowed_sources'] is not None:
-                    self.set_allowed_sources(
-                        settings,
-                        account,
-                        request.user.has_perm('zemauth.can_see_all_available_sources'),
-                        form
-                    )
-
             # Form is additionally validated in self.set_allowed_sources method
             if not form.is_valid():
                 data = self.get_validation_error_data(request, account)
                 raise exc.ValidationError(errors=dict(form.errors), data=data)
 
+            self._validate_essential_account_settings(request.user, form)
+
+            self.set_account(account, form.cleaned_data)
+
+            settings = account.get_current_settings().copy_settings()
+            self.set_settings(settings, account, form.cleaned_data)
+
+            if 'allowed_sources' in form.cleaned_data and\
+                    form.cleaned_data['allowed_sources'] is not None and\
+                    not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                raise exc.AuthorizationError()
+
+            if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
+                if not request.user.has_perm('zemauth.can_modify_account_type'):
+                    raise exc.AuthorizationError()
+                settings.account_type = form.cleaned_data['account_type']
+
+            if 'allowed_sources' in form.cleaned_data and\
+                    form.cleaned_data['allowed_sources'] is not None:
+                self.set_allowed_sources(
+                    settings,
+                    account,
+                    request.user.has_perm('zemauth.can_see_all_available_sources'),
+                    form
+                )
+
             account.save(request)
             settings.save(request)
-
             return settings
+
+    def _validate_essential_account_settings(self, user, form):
+        if 'default_sales_representative' in form.cleaned_data and\
+                form.cleaned_data['default_sales_representative'] is not None and not (
+                user.has_perm('zemauth.account_agency_view') or
+                user.has_perm('zemauth.can_set_account_sales_representative')):
+            raise exc.AuthorizationError()
+
+        if 'name' in form.cleaned_data and\
+                form.cleaned_data['name'] is not None and not (
+                    user.has_perm('zemauth.account_agency_view') or
+                    user.has_perm('zemauth.can_modify_account_name')
+                ):
+            raise exc.AuthorizationError()
+
+        if 'default_account_manager' in form.cleaned_data and \
+                form.cleaned_data['default_account_manager'] is not None and not (
+                    user.has_perm('zemauth.account_agency_view') or
+                    user.has_perm('zemauth.can_modify_account_manager')
+                ):
+            raise exc.AuthorizationError()
 
     def get_validation_error_data(self, request, account):
         data = {}
@@ -1149,29 +1150,32 @@ class AccountSettings(api_common.BaseApiView):
         return allowed_sources_dict
 
     def get_dict(self, request, settings, account):
-        result = {}
-        if settings:
-            result = {
-                'id': str(account.pk),
-                'archived': settings.archived,
-            }
-            if request.user.has_perm('zemauth.can_modify_account_name'):
-                result['name'] = account.name
-            if request.user.has_perm('zemauth.can_modify_account_manager'):
-                result['default_account_manager'] = str(settings.default_account_manager.id) \
-                    if settings.default_account_manager is not None else None
-            if request.user.has_perm('zemauth.can_set_account_sales_representative'):
-                result['default_sales_representative'] =\
-                    str(settings.default_sales_representative.id) if\
-                    settings.default_sales_representative is not None else None
-            if request.user.has_perm('zemauth.can_modify_account_type'):
-                result['account_type'] = settings.account_type
-            if request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                result['allowed_sources'] = self.get_allowed_sources(
-                    request.user.has_perm('zemauth.can_see_all_available_sources'),
-                    [source.id for source in account.allowed_sources.all()]
-                )
+        if not settings:
+            return {}
 
+        result = {
+            'id': str(account.pk),
+            'archived': settings.archived,
+        }
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_modify_account_name'):
+            result['name'] = account.name
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_modify_account_manager'):
+            result['default_account_manager'] = str(settings.default_account_manager.id) \
+                if settings.default_account_manager is not None else None
+        if request.user.has_perm('zemauth.account_agency_view') or\
+                request.user.has_perm('zemauth.can_set_account_sales_representative'):
+            result['default_sales_representative'] =\
+                str(settings.default_sales_representative.id) if\
+                settings.default_sales_representative is not None else None
+        if request.user.has_perm('zemauth.can_modify_account_type'):
+            result['account_type'] = settings.account_type
+        if request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            result['allowed_sources'] = self.get_allowed_sources(
+                request.user.has_perm('zemauth.can_see_all_available_sources'),
+                [source.id for source in account.allowed_sources.all()]
+            )
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):

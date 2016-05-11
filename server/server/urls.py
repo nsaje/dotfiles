@@ -572,6 +572,11 @@ urlpatterns += [
         r'^k1api/get_content_ad_ad_group$',
         k1api.views.get_content_ad_ad_group,
         name='k1api.get_content_ad_ad_group',
+    ),
+    url(
+        r'^k1api/update_content_ad_status$',
+        k1api.views.update_content_ad_status,
+        name='k1api.update_content_ad_status',
     )
 ]
 

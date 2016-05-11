@@ -479,7 +479,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ]
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put(self, mock_lmode):
         mock_lmode.return_value = False
         data = {
@@ -550,7 +550,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             }
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_post(self, mock_lmode):
         data = {}
         mock_lmode.return_value = False
@@ -606,7 +606,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             {'id': 1, 'state_changed': True}
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_unactive(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -637,7 +637,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_valid_time.called)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -669,7 +669,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_valid_time.called)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active_too_low(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -706,7 +706,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             ['Budget exceeds the minimum budget amount by $5000.00.']
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active_invalid_time(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -742,7 +742,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             ['You cannot lower the amount on an active budget line item at this time.']
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_delete(self, mock_lmode):
         mock_lmode.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
