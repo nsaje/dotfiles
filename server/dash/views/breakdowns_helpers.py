@@ -20,15 +20,18 @@ def clean_default_params(request):
     show_archived = request_data.get('show_archived') == 'true'
 
     return {
-        'start_date': start_date,
-        'end_date': end_date,
-        'filtered_sources': filtered_sources,
+        'date__gte': start_date,
+        'date__lte': end_date,
+        'source': filtered_sources,
         'show_archived': show_archived,
     }
 
 
-def clean_breakdown(request, base_view, breakdown):
+def clean_breakdown(breakdown):
+    assert isinstance(breakdown, unicode)
     # TODO valid order, selectors, by level correct relations (campaign->ad group)
+
+    breakdown = [x for x in breakdown.split('/') if x]
     if len(breakdown) > 4:
         raise exc.InvalidBreakdownError('More than 4 dimensions')
 
@@ -41,8 +44,8 @@ def clean_page_params(request):
     if request.method == "POST":
         request_data = request.POST
 
-    page = int(request_data.get('page'))  # 1, 2, 3, ...
-    page_size = int(request_data.get('page_size'))  # for the shown level 5, 10, 20, 60 ...
+    page = int(request_data.get('page')) if request_data.get('page') else 1 # 1, 2, 3, ...
+    page_size = int(request_data.get('page_size')) if request_data.get('page_size') else 10 # for the shown level 5, 10, 20, 60 ...
 
     return page, page_size
 
@@ -53,7 +56,9 @@ def clean_breakdown_page(request, breakdown):
         request_data = request.POST
 
     breakdown_page = None
-    if len(breakdown) > 1:
+    # TODO required
+    # if len(breakdown) > 1:
+    if request_data.get('breakdown_page'):
         breakdown_page = json.loads(request_data.get('breakdown_page'))
 
         breakdown_page = _clean_breakdown_page(breakdown_page, breakdown, 0)

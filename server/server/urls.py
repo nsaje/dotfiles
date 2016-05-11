@@ -16,7 +16,6 @@ import actionlog.views
 import convapi.views
 import reports.views
 import zemauth.views
-import stats.views
 
 import dash.views.daily_stats
 import dash.views.bcm
@@ -458,9 +457,24 @@ urlpatterns += [
         login_required(dash.views.export.AllAccountsExport.as_view())
     ),
     url(
-        r'^api\/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))\/(?P<id_>\d+)\/breakdown(?P<breakdown>(?:/\w+)+)$',
-        login_required(dash.views.breakdowns.BreakdownView.as_view()),
-        name='breakdown_view'
+        r'^api\/all_accounts\/breakdown(?P<breakdown>(?:/\w+)+)$',
+        login_required(dash.views.breakdowns.AllAccountsBreakdown.as_view()),
+        name='breakdown_view_all_accounts'
+    ),
+    url(
+        r'^api\/accounts\/(?P<account_id>\d+)\/breakdown(?P<breakdown>(?:/\w+)+)$',
+        login_required(dash.views.breakdowns.AccountBreakdown.as_view()),
+        name='breakdown_view_accounts'
+    ),
+    url(
+        r'^api\/campaigns\/(?P<campaign_id>\d+)\/breakdown(?P<breakdown>(?:/\w+)+)$',
+        login_required(dash.views.breakdowns.CampaignBreakdown.as_view()),
+        name='breakdown_view_campaigns'
+    ),
+    url(
+        r'^api\/ad_groups\/(?P<ad_group_id>\d+)\/breakdown(?P<breakdown>(?:/\w+)+)$',
+        login_required(dash.views.breakdowns.AdGroupBreakdown.as_view()),
+        name='breakdown_view_ad_groups'
     ),
 ]
 
