@@ -134,14 +134,16 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('automation.campaign_stop._get_max_daily_budget')
+    @patch('automation.campaign_stop._get_current_daily_budget')
     @patch('automation.campaign_stop._switch_campaign_to_landing_mode')
     @patch('utils.k1_helper.update_ad_group')
-    def test_depleting_budget(self, mock_k1_ping, mock_switch, mock_max_daily_budget,
+    def test_depleting_budget(self, mock_k1_ping, mock_switch, mock_current_daily_budget, mock_max_daily_budget,
                               mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('200'), Decimal('150'), Decimal('0')
         mock_max_daily_budget.return_value = Decimal('100')
+        mock_current_daily_budget.return_value = Decimal('100')
 
-        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode(dash.models.Campaign.objects.all().exclude_landing())
         self.assertTrue(mock_send_email.called)
         self.assertFalse(mock_switch.called)
         self.assertEqual(mock_k1_ping.call_count, 0)
@@ -149,12 +151,14 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('actionlog.zwei_actions.send')
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_max_daily_budget')
+    @patch('automation.campaign_stop._get_current_daily_budget')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('utils.k1_helper.update_ad_group')
-    def test_switch_to_landing_mode(self, mock_k1_ping, mock_get_mrb, mock_max_daily_budget,
+    def test_switch_to_landing_mode(self, mock_k1_ping, mock_get_mrb, mock_current_daily_budget, mock_max_daily_budget,
                                     mock_send_email, mock_send_actions):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
         mock_max_daily_budget.return_value = Decimal('150')
+        mock_current_daily_budget.return_value = Decimal('150')
 
         in_30_days = dates_helper.local_today() + datetime.timedelta(days=30)
         campaign = dash.models.Campaign.objects.get(id=1)
@@ -164,7 +168,7 @@ class SwitchToLandingModeTestCase(TestCase):
             new_settings.end_date = in_30_days
             new_settings.save(None)
 
-        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode(dash.models.Campaign.objects.all().exclude_landing())
         self.assertTrue(mock_send_email.called)
         self.assertEqual(mock_k1_ping.call_count, 4)
 
@@ -199,7 +203,7 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.automatic_campaign_stop = False
         new_campaign_settings.save(None)
 
-        has_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
+        has_changed = campaign_stop.perform_landing_mode_check(
             campaign,
             campaign.get_current_settings()
         )
@@ -220,11 +224,10 @@ class SwitchToLandingModeTestCase(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        has_changed = campaign_stop.check_and_switch_campaign_to_landing_mode(
+        campaign_stop.perform_landing_mode_check(
             campaign,
             campaign.get_current_settings()
         )
-        self.assertTrue(has_changed)
         self.assertTrue(mock_get_mrb.called)
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
@@ -232,8 +235,11 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('actionlog.zwei_actions.send')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_mrb, mock_send_email, mock_send_action):
+    @patch('automation.campaign_stop._get_current_daily_budget')
+    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_current, mock_get_mrb, mock_send_email,
+                                                      mock_send_action):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
+        mock_get_current.return_value = Decimal('101')
 
         campaign = dash.models.Campaign.objects.get(id=1)
         in_30_days = dates_helper.local_today() + datetime.timedelta(days=30)
@@ -244,7 +250,7 @@ class SwitchToLandingModeTestCase(TestCase):
             new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
             new_settings.save(None)
 
-        campaign_stop.switch_low_budget_campaigns_to_landing_mode()
+        campaign_stop.switch_low_budget_campaigns_to_landing_mode(dash.models.Campaign.objects.all().exclude_landing())
         self.assertTrue(mock_send_email.called)
 
         current_campaign_settings = campaign.get_current_settings()
@@ -1035,7 +1041,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
             row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.id in non_spending_ags_ids:
-                row['cost'] = Decimal(0)
+                row['cost'] = Decimal('0.5')
             mock_get_yesterday_spends.return_value.append(row)
 
         current_ags_settings = {
@@ -1067,7 +1073,7 @@ class StopNonSpendingSourcesTestCase(TestCase):
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
             row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.ad_group_id in non_spending_ag_ids:
-                row['cost'] = Decimal(0)
+                row['cost'] = Decimal('0.5')
             mock_get_yesterday_spends.return_value.append(row)
 
         campaign_stop._stop_non_spending_sources(campaign)
