@@ -1,5 +1,6 @@
 import datetime
 import collections
+import calendar
 
 from decimal import Decimal
 
@@ -10,7 +11,7 @@ import reports.models
 import utils.dates_helper
 
 
-class BudgetProjections:
+class BudgetProjections(object):
     PRECISION = 2
     CONFIDENCE_OFFSET_DAYS = 7
     BREAKDOWN_PREFIX = {
@@ -40,8 +41,8 @@ class BudgetProjections:
         self._calculate_totals()
 
     def row(self, breakdown_value, field=None):
-        row = self.projections[breakdown_value]
-        return field and row.get(field) or row
+        row = self.projections.get(breakdown_value, {})
+        return row.get(field) if field else row
 
     def total(self, breakdown_value):
         return self.totals[breakdown_value]
@@ -75,12 +76,15 @@ class BudgetProjections:
             self.calculation_groups.setdefault(self._breakdown_field(budget), []).append(budget)
 
     def _calculate_totals(self):
-        self.totals = collections.defaultdict(int)
-        rows = self.projections.values()
-        for row in rows:
+        self.totals = collections.defaultdict(Decimal)
+        for row in self.projections.values():
             for key, value in row.iteritems():
-                self.totals[key] += value or Decimal(0)
-        self.totals['pacing'] = self.totals['pacing'] / Decimal(len(rows))
+                self.totals[key] += (value or Decimal(0))
+
+        self.totals['pacing'] = None
+        if self.totals['ideal_media_spend']:
+            self.totals['pacing'] = self.totals['attributed_media_spend'] / \
+                self.totals['ideal_media_spend'] * Decimal(100)
 
     def _calculate_rows(self):
         for key, budgets in self.calculation_groups.iteritems():
@@ -134,7 +138,7 @@ class BudgetProjections:
 
         row['pacing'] = None
         if row['ideal_media_spend']:
-            row['pacing'] = row['attributed_media_spend'] / row['ideal_media_spend']
+            row['pacing'] = row['attributed_media_spend'] / row['ideal_media_spend'] * Decimal(100)
 
     def _calculate_media_spend_projection(self, row, budgets, statements_on_date,
                                           num_of_positive_statements):
@@ -197,3 +201,17 @@ class BudgetProjections:
         assert 'license_fee_projection' in row
         assert 'flat_fee' in row
         row['total_fee_projection'] = row['license_fee_projection'] + row['flat_fee']
+
+
+class CurrentMonthBudgetProjections(BudgetProjections):
+
+    def __init__(self, breakdown, **constraints):
+        today = datetime.date.today()
+        _, end = calendar.monthrange(today.year, today.month)
+        super(CurrentMonthBudgetProjections, self).__init__(
+            datetime.date(today.year, today.month, 1),
+            datetime.date(today.year, today.month, end),
+            breakdown,
+            projection_date=today,
+            **constraints
+        )

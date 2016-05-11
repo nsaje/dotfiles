@@ -1,6 +1,6 @@
 import datetime
 import pytz
-from decimal import Decimal
+
 from django.conf import settings
 from django.db.models import Q
 
@@ -26,6 +26,7 @@ import reports.api_touchpointconversions
 import reports.api_publishers
 import reports.constants
 import reports.models
+from reports.projections import BudgetProjections
 import actionlog.sync
 
 
@@ -880,19 +881,21 @@ class AccountsAccountsTable(object):
 
         account_budget, account_total_spend = self.get_budgets(accounts)
 
-        projections = {}
+        projections = BudgetProjections(
+            start_date, end_date, 'account',
+            campaign_id__in=models.Campaign.objects.filter(account__in=accounts)
+        )
         if user.has_perm('zemauth.can_see_projections'):
-            projections = bcm_helpers.get_projections(accounts, start_date, end_date)
-            totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
-            totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
+            totals_data['pacing'] = projections.total('pacing')
+            totals_data['allocated_budgets'] = projections.total('allocated_media_budget')
+            totals_data['spend_projection'] = projections.total('media_spend_projection')
+            totals_data['license_fee_projection'] = projections.total('license_fee_projection')
 
-        flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
-            flat_fees = self.get_flat_fees(start_date, end_date, accounts)
-            totals_data['flat_fee'] = flat_fees and sum(
-                fee for fee in flat_fees.itervalues()
-            ) or Decimal('0.0')
-            totals_data['total_fee'] = Decimal(totals_data.get('license_fee') or 0) + totals_data['flat_fee']
+            totals_data['flat_fee'] = projections.total('flat_fee')
+            totals_data['total_fee'] = projections.total('total_fee')
+            if user.has_perm('zemauth.can_see_projections'):
+                totals_data['total_fee_projection'] = projections.total('total_fee_projection')
 
         last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
@@ -917,7 +920,6 @@ class AccountsAccountsTable(object):
             account_total_spend,
             show_archived,
             has_view_managers_permission,
-            flat_fees,
             order=order,
         )
 
@@ -989,17 +991,6 @@ class AccountsAccountsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_flat_fees(self, start_date, end_date, accounts):
-        account_flat_fees = {}
-        for credit in models.CreditLineItem.objects.filter(account__in=accounts):
-            if not credit.flat_fee_cc:
-                continue
-            if credit.account_id not in account_flat_fees:
-                account_flat_fees[credit.account_id] = Decimal('0.0')
-            account_flat_fees[credit.account_id] += credit.get_flat_fee_on_date_range(start_date,
-                                                                                      end_date)
-        return account_flat_fees
-
     def get_budgets(self, accounts):
         account_budget, account_total_spend = bcm_helpers.get_account_media_budget_data(
             set(acc.pk for acc in accounts)
@@ -1011,7 +1002,7 @@ class AccountsAccountsTable(object):
 
     def get_rows(self, user, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend,
-                 show_archived, has_view_managers_permission, flat_fees, order=None):
+                 show_archived, has_view_managers_permission, order=None):
         rows = []
 
         # map settings for quicker access
@@ -1066,13 +1057,17 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
-            if projections:
-                row['credit_projection'] = projections['credit_projection'][aid]
-                row['spend_projection'] = projections['spend_projection'][aid]
+            if user.has_perm('zemauth.can_see_projections'):
+                row['pacing'] = projections.row(account.id, 'pacing')
+                row['allocated_budgets'] = projections.row(account.id, 'allocated_media_budget')
+                row['spend_projection'] = projections.row(account.id, 'media_spend_projection')
+                row['license_fee_projection'] = projections.row(account.id, 'license_fee_projection')
 
-            if flat_fees:
-                row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
-                row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
+            if user.has_perm('zemauth.can_view_flat_fees'):
+                row['flat_fee'] = projections.row(account.id, 'flat_fee')
+                row['total_fee'] = projections.row(account.id, 'total_fee')
+                if user.has_perm('zemauth.can_see_projections'):
+                    row['total_fee_projection'] = projections.row(account.id, 'total_fee_projection')
 
             rows.append(row)
 
@@ -1666,6 +1661,16 @@ class AccountCampaignsTable(object):
 
         set_rows_goals_performance(user, stats, start_date, end_date, campaigns)
 
+        projections = BudgetProjections(
+            start_date, end_date, 'campaign',
+            campaign_id__in=campaigns
+        )
+        if user.has_perm('zemauth.can_see_projections'):
+            totals_stats['pacing'] = projections.total('pacing')
+            totals_stats['allocated_budgets'] = projections.total('allocated_media_budget')
+            totals_stats['spend_projection'] = projections.total('media_spend_projection')
+            totals_stats['license_fee_projection'] = projections.total('license_fee_projection')
+
         response = {
             'rows': self.get_rows(
                 user,
@@ -1679,7 +1684,8 @@ class AccountCampaignsTable(object):
                 has_view_managers_permission,
                 show_archived,
                 campaign_budget,
-                campaign_spend
+                campaign_spend,
+                projections
             ),
             'totals': totals_stats,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
@@ -1731,7 +1737,7 @@ class AccountCampaignsTable(object):
 
     def get_rows(self, user, account, campaigns, campaigns_settings, campaign_status_dict, stats,
                  last_actions, order, has_view_managers_permission, show_archived,
-                 campaign_budget, campaign_spend):
+                 campaign_budget, campaign_spend, projections):
         rows = []
 
         # map settings for quicker access
@@ -1777,6 +1783,12 @@ class AccountCampaignsTable(object):
             row['last_sync'] = last_sync
 
             row.update(campaign_stat)
+
+            if user.has_perm('zemauth.can_see_projections'):
+                row['pacing'] = projections.row(campaign.pk, 'pacing')
+                row['allocated_budgets'] = projections.row(campaign.pk, 'allocated_media_budget')
+                row['spend_projection'] = projections.row(campaign.pk, 'media_spend_projection')
+                row['license_fee_projection'] = projections.row(campaign.pk, 'license_fee_projection')
 
             rows.append(row)
 

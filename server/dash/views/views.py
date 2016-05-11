@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import calendar
 import datetime
 import json
 import decimal
@@ -62,6 +61,7 @@ from dash import publisher_helpers
 
 import reports.api_publishers
 import reports.api
+import reports.projections
 
 logger = logging.getLogger(__name__)
 
@@ -403,9 +403,6 @@ class AdGroupOverview(api_common.BaseApiView):
     def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
                               daily_cap, async_query):
         settings = []
-        common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
-            user, ad_group.campaign
-        )
 
         async_query.join()
         yesterday_cost = async_query.yesterday_cost
@@ -414,7 +411,17 @@ class AdGroupOverview(api_common.BaseApiView):
             yesterday_cost,
             daily_cap
         ).as_dict())
-        settings.extend(common_settings)
+
+        monthly_proj = reports.projections.CurrentMonthBudgetProjections(
+            'campaign',
+            campaign=ad_group.campaign
+        )
+        is_delivering = monthly_proj.total('pacing') >= decimal.Decimal('100')
+        settings.append(infobox_helpers.OverviewSetting(
+            'Campaign pacing:',
+            lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
+            description='{:.2f}% on plan'.format(monthly_proj.total('pacing')),
+        ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_campaign_goal_list(user, {'ad_group': ad_group},
@@ -672,10 +679,16 @@ class CampaignOverview(api_common.BaseApiView):
             daily_cap_cc
         ).as_dict())
 
-        common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
-            user, campaign
+        monthly_proj = reports.projections.CurrentMonthBudgetProjections(
+            'campaign',
+            campaign=campaign
         )
-        settings.extend(common_settings)
+        is_delivering = monthly_proj.total('pacing') >= decimal.Decimal('100')
+        settings.append(infobox_helpers.OverviewSetting(
+            'Campaign pacing:',
+            lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
+            description='{:.2f}% on plan'.format(monthly_proj.total('pacing')),
+        ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_campaign_goal_list(user, {'campaign': campaign},
@@ -2025,6 +2038,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
     def _basic_settings(self, start_date, end_date):
         settings = []
+        daterange_proj = reports.projections.BudgetProjections(start_date, end_date, 'account')
+        month_proj = reports.projections.CurrentMonthBudgetProjections('account')
 
         count_active_accounts = infobox_helpers.count_active_accounts()
         settings.append(infobox_helpers.OverviewSetting(
@@ -2080,26 +2095,16 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip='Month-to-date media spend',
         ))
 
-        today = datetime.datetime.utcnow()
-        start, end = calendar.monthrange(today.year, today.month)
-        start_date = start_date or datetime.datetime(today.year, today.month, 1).date()
-        end_date = end_date or datetime.datetime(today.year, today.month, end).date()
-
-        total_budget = infobox_helpers.calculate_all_accounts_total_budget(
-            start_date,
-            end_date
-        )
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
-            lc_helper.default_currency(total_budget),
+            lc_helper.default_currency(daterange_proj.total('allocated_total_budget')),
             section_start=True,
             tooltip='Sum of total budgets in selected date range'
         ))
 
-        monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
-            lc_helper.default_currency(monthly_budget),
+            lc_helper.default_currency(month_proj.total('allocated_total_budget')),
             tooltip='Sum of total budgets for current month'
         ))
 

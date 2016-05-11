@@ -299,21 +299,6 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
-    @mock.patch('reports.api_contentads.query')
-    def test_goals_and_spend_settings(self, mock_query):
-        mock_query.return_value = {
-            'bounce_rate': 0.01,
-            'new_visits': 100,
-            'avg_tos': 5,
-            'pv_per_visit': 10,
-        }
-
-        campaign = dash.models.Campaign.objects.get(pk=1)
-        user = zemauth.models.User.objects.get(pk=1)
-        settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
-
-        self.assertEqual(1, len(settings))
-
     @mock.patch('reports.redshift.get_cursor')
     def test_get_yesterday_adgroup_spend(self, cursor):
         user = zemauth.models.User.objects.get(pk=1)
@@ -357,8 +342,8 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         _, days_of_month = calendar.monthrange(today.year, today.month)
 
-        start_date = today - datetime.timedelta(days=days_of_month-1)
-        end_date = today + datetime.timedelta(days=days_of_month-1)
+        start_date = today - datetime.timedelta(days=days_of_month - 1)
+        end_date = today + datetime.timedelta(days=days_of_month - 1)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
@@ -444,94 +429,6 @@ class InfoBoxAccountHelpersTest(TestCase):
             )
 
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
-
-    def test_calculate_all_accounts_total_budget(self):
-        today = datetime.datetime.utcnow().date()
-        day_budget_span = (self.budget.end_date - self.budget.start_date).days
-
-        self.assertEqual(
-            100 * (Decimal(1) / day_budget_span),
-            dash.infobox_helpers.calculate_all_accounts_total_budget(
-                today,
-                today + datetime.timedelta(days=1)
-            )
-        )
-        self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
-            today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)
-        ))
-        # make a past budget and check if total holds
-        user = zemauth.models.User.objects.get(pk=1)
-        campaign = dash.models.Campaign.objects.get(pk=1)
-
-        _, days_of_month = calendar.monthrange(today.year, today.month)
-        today = datetime.datetime.today().date()
-        start_date_1 = today - datetime.timedelta(days=days_of_month-1)
-        end_date_1 = today + datetime.timedelta(days=(days_of_month-1)/2)
-        dash.models.BudgetLineItem.objects.create(
-            campaign=campaign,
-            credit=self.credit,
-            amount=100,
-            start_date=start_date_1,
-            end_date=end_date_1,
-            created_by=user,
-        )
-
-        total_duration = days_of_month-1 + (days_of_month-1)/2
-
-        self.assertEqual(
-            (Decimal(50) + Decimal((days_of_month-1) / float(total_duration) * 100)).quantize(Decimal('.01')),
-            dash.infobox_helpers.calculate_all_accounts_total_budget(
-                today - datetime.timedelta(days=60),
-                today
-            ).quantize(Decimal('.01'))
-        )
-
-        # test with date after end of budget
-        self.assertEqual(
-            0,
-            dash.infobox_helpers.calculate_all_accounts_total_budget(
-                today + datetime.timedelta(days=365),
-                today + datetime.timedelta(days=364)
-            )
-        )
-
-        # test with date before start of budget
-        self.assertEqual(
-            0,
-            dash.infobox_helpers.calculate_all_accounts_total_budget(
-                today - datetime.timedelta(days=365),
-                today - datetime.timedelta(days=364)
-            )
-        )
-
-    def test_calculate_all_accounts_monthly_budget(self):
-        today = datetime.datetime.utcnow()
-        self.assertEqual(
-            Decimal(50.0),
-            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today).quantize(Decimal('.01'))
-        )
-
-        user = zemauth.models.User.objects.get(pk=1)
-        campaign = dash.models.Campaign.objects.get(pk=1)
-
-        today = datetime.date.today()
-        first_of = datetime.date(today.year, today.month, 1)
-
-        start_date_1 = first_of
-        end_date_1 = today
-        dash.models.BudgetLineItem.objects.create(
-            campaign=campaign,
-            credit=self.credit,
-            amount=50,
-            start_date=start_date_1,
-            end_date=end_date_1,
-            created_by=user,
-        )
-
-        self.assertEqual(
-            Decimal(100.0),
-            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today)
-        )
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(
