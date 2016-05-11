@@ -107,7 +107,7 @@ class Q(object):
         elif operator == "eq":
             if helpers.is_collection(value):
                 if value:
-                    return '{} IN %s'.format(column.g(prefix)), [value]
+                    return '{}=ANY(%s)'.format(column.g(prefix)), [value]
                 else:
                     return 'FALSE', []
             else:
@@ -115,7 +115,7 @@ class Q(object):
         elif operator == "neq":
             if helpers.is_collection(value):
                 if value:
-                    return '{} NOT IN ({})'.format(column.g(prefix), ','.join(["%s"] * len(value))), value
+                    return '{}!=ANY(%s)'.format(column.g(prefix)), value
                 else:
                     return 'TRUE', []
             else:
