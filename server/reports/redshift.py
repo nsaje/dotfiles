@@ -37,7 +37,7 @@ def _execute(query, params):
 
 
 def get_cursor(read_only=False):
-    db_name = settings.K1_STATS_DB_NAME if read_only else settings.STATS_DB_NAME
+    db_name = settings.STATS_READ_DB_NAME if read_only else settings.STATS_DB_NAME
     return MyCursor(connections[db_name].cursor())
 
 
