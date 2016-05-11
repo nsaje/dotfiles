@@ -1,5 +1,6 @@
 import json
 import logging
+from collections import defaultdict
 
 from django.conf import settings
 from django.db.models import F, Q
@@ -618,15 +619,15 @@ def get_content_ads_exchanges(request):
     else:
         return _response_error("Must provide content ad id or ad group id.")
 
-    content_ad_exchanges = {}
+    content_ad_exchanges = defaultdict(list)
     for content_ad_source in content_ad_sources:
         exchange = {
             'exchange': content_ad_source['source__bidder_slug'],
-            'source_content_ad_id': content_ad_source['content_ad_id'],
+            'source_content_ad_id': content_ad_source['source_content_ad_id'],
             'submission_status': content_ad_source['submission_status'],
             'state': content_ad_source['state'],
         }
-        content_ad_exchanges.setdefault(content_ad_source['source_content_ad_id'], []).append(exchange)
+        content_ad_exchanges[content_ad_source['content_ad_id']].append(exchange)
 
     return _response_ok(content_ad_exchanges)
 
