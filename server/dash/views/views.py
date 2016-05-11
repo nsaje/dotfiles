@@ -416,11 +416,12 @@ class AdGroupOverview(api_common.BaseApiView):
             'campaign',
             campaign=ad_group.campaign
         )
-        is_delivering = monthly_proj.total('pacing') >= decimal.Decimal('100')
+        pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
+        is_delivering = pacing and pacing >= decimal.Decimal('100')
         settings.append(infobox_helpers.OverviewSetting(
             'Campaign pacing:',
             lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
-            description='{:.2f}% on plan'.format(monthly_proj.total('pacing')),
+            description='{:.2f}% on plan'.format(pacing),
         ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
@@ -683,11 +684,13 @@ class CampaignOverview(api_common.BaseApiView):
             'campaign',
             campaign=campaign
         )
-        is_delivering = monthly_proj.total('pacing') >= decimal.Decimal('100')
+
+        pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
+        is_delivering = pacing and pacing >= decimal.Decimal('100')
         settings.append(infobox_helpers.OverviewSetting(
             'Campaign pacing:',
             lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
-            description='{:.2f}% on plan'.format(monthly_proj.total('pacing')),
+            description='{:.2f}% on plan'.format(pacing),
         ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
