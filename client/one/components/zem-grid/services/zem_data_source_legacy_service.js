@@ -4,12 +4,7 @@
 oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
     var EVENTS = {
-        PRE_GET_DATA: 'pre-get-data',
-        POST_GET_DATA: 'post-get-data',
-        PRE_GET_META_DATA: 'pre-get-meta-data',
-        POST_GET_META_DATA: 'post-get-meta-data',
-        PRE_UPDATE: 'pre-update',
-        POST_UPDATE: 'post-update',
+        ON_LOAD: 'zem-data-source-on-load',
     };
 
     function DataSource () {
@@ -19,20 +14,22 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
 
         var ds = this;
 
-        this.EVENTS = EVENTS;
         this.data = null;
 
-        this.setApi = setApi;
+        this.setEndpoint = setEndpoint;
         this.setColumns = setColumns;
         this.setDateRange = setDateRange;
         this.getData = getData;
+
+        // Events
+        this.onLoad = onLoad;
 
         function setColumns (columns) {
             ds.columns = columns;
         }
 
-        function setApi (api) {
-            ds.api = api;
+        function setEndpoint (endpoint) {
+            ds.endpoint = endpoint;
         }
 
         function setDateRange (startDate, endDate) {
@@ -42,12 +39,13 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
 
         function getData (breakdown, size) {
             var deferred = $q.defer();
-            ds.api.accountAccountsTable.get(0, 10, ds.startDate, ds.endDate, '-cost').then(function (data) {
+            ds.endpoint.get(0, 10, ds.startDate, ds.endDate, '-cost').then(function (data) {
+
+                notifyListeners(EVENTS.ON_LOAD, data);
 
                 breakdown = parseLegacyData(data);
                 applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
-                notifyListeners(EVENTS.POST_GET_DATA, breakdown);
 
                 // TODO: meta data - sync status, data status, postclick metrics
                 // TODO: Notify ctrl (rows mapping - e.g. links)
@@ -83,6 +81,9 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
             var breakdown = {
                 rows: [totals],
                 level: 0,
+                meta: {
+                    columns: ds.columns,
+                },
             };
 
             return breakdown;
@@ -103,6 +104,10 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.to = breakdown.pagination.to;
             current.pagination.size += breakdown.pagination.size;
+        }
+
+        function onLoad (scope, callback) {
+            registerListener(EVENTS.ON_LOAD, scope, callback);
         }
 
         function registerListener (event, scope, callback) {

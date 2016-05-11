@@ -224,7 +224,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.development.grid', {
             url: '/grid',
             templateUrl: '/partials/development_grid.html',
-            controller: 'DevelopmentGridCtrl'
+            controller: 'DevelopmentGridLegacyCtrl'
         });
 }]);
 
