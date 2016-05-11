@@ -1,8 +1,8 @@
 <div class="zem-grid-row" ng-class="ctrl.getRowClass()">
-    <zem-grid-cell ng-repeat="col in ctrl.row.data.stats track by $index"
+    <zem-grid-cell ng-repeat="col in ctrl.grid.header.columns track by $index"
                    ng-if="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
                    position="$index"
-                   cell="col"
+                   field="col.field"
                    row="ctrl.row"
                    grid="ctrl.grid"
     ></zem-grid-cell>

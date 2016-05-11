@@ -26,7 +26,10 @@ def generate_random_breakdowns(breakdowns, level):
     top_level_row = _generate_random_breakdown(breakdowns, level=1, position=(0,))
     top_level_breakdown = {
         'rows': [top_level_row],
-        'level': 0
+        'level': 0,
+        'meta': {
+            'columns': _generate_columns_data()
+        }
     }
     return _get_breakdowns_for_level(top_level_breakdown, level)
 
@@ -66,10 +69,26 @@ def _generate_random_breakdown(breakdowns, level=1, position=(0,), key='Total'):
     return row
 
 
+def _generate_columns_data():
+    columns = []
+    for idx in range(TEST_COLUMNS):
+        columns.append({
+            'name': 'Field '+str(idx),
+            'field': 'field'+str(idx)
+        })
+    return columns
+
+
 def _generate_random_stats(key):
-    if key == 'Total':
-        return [key] + [('%.2f' % (random.uniform(10000, 1000000))) for _ in range(TEST_COLUMNS-1)]
-    return [key] + [('%.2f' % (random.uniform(100, 1000))) for _ in range(TEST_COLUMNS-1)]
+    stats = {
+        'field0': key
+    }
+    for idx in range(1,TEST_COLUMNS):
+        val = ('%.2f' % (random.uniform(100, 1000)))
+        if key == 'Total':
+            val = ('%.2f' % (random.uniform(10000, 100000)))
+        stats['field'+str(idx)] = val
+    return stats
 
 
 def _get_breakdown_keys(breakdown):

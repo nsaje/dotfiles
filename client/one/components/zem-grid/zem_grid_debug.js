@@ -28,7 +28,7 @@ oneApp.directive('zemGridDebug', [function () {
             };
 
             this.toggleCollapseLevel = function (level) {
-                zemGridService.toggleCollapseLevel(this.gridCtrl.grid, level);
+                zemGridService.toggleCollapseLevel(this.grid, level);
             };
         }],
     };
