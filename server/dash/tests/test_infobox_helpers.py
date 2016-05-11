@@ -12,6 +12,8 @@ import dash.constants
 import dash.models
 import dash.infobox_helpers
 
+from django.test.client import RequestFactory
+
 
 class InfoBoxHelpersTest(TestCase):
     fixtures = ['test_models.yaml']
@@ -770,6 +772,65 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         end_date = start_date + datetime.timedelta(days=99)
         credit = dash.models.CreditLineItem.objects.create(
             account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(40, allocated_credit)
+        self.assertEqual(60, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=60,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, allocated_credit)
+        self.assertEqual(00, available_credit)
+
+    def test_calculate_allocated_and_available_agency_credit(self):
+        user = zemauth.models.User.objects.get(pk=1)
+        r = RequestFactory().get('')
+        r.user = user
+
+        agency = dash.models.Agency(
+            name='SOVA'
+        )
+        agency.save(r)
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(r)
+
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(0, available_credit)
+        self.assertEqual(0, allocated_credit)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create(
+            agency=agency,
             start_date=start_date,
             end_date=end_date,
             amount=100,
