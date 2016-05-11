@@ -727,7 +727,7 @@ class CampaignSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
 
-    automatic_campaign_stop = models.BooleanField(default=False)
+    automatic_campaign_stop = models.BooleanField(default=True)
     landing_mode = models.BooleanField(default=False)
 
     archived = models.BooleanField(default=False)
