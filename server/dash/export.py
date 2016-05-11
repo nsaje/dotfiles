@@ -323,8 +323,8 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
 def _adjust_breakdown_by_day(start_date, stat):
     if stat['date'] == start_date or stat['date'].day == 1:
         return
-    for field in ('allocated_media_budget', 'flat_fee', 'total_fee',
-                  'media_spend_projection', 'pacing', 'license_fee_projection',
+    for field in ('allocated_budgets', 'flat_fee', 'total_fee',
+                  'spend_projection', 'pacing', 'license_fee_projection',
                   'total_fee_projection'):
         if field in stat:
             stat[field] = Decimal(0.0)
