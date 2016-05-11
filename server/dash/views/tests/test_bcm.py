@@ -13,6 +13,7 @@ from zemauth.models import User
 from dash import models, constants
 from reports.models import BudgetDailyStatement
 from utils.test_helper import add_permissions
+from django.test.client import RequestFactory
 
 
 class BCMViewTestCase(TestCase):
@@ -484,8 +485,12 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ]
         )
 
-        agency = models.Agency.objects.get(pk=1)
-        agency.users.add(self.user)
+        r = RequestFactory().get('')
+        r.user = User.objects.get(pk=1)
+
+        account = models.Account.objects.get(pk=1)
+        account.agency = models.Agency.objects.get(pk=1)
+        account.save(r)
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)
