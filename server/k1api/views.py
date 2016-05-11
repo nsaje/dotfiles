@@ -92,9 +92,7 @@ def get_ad_group_source(request):
     try:
         ad_group_source = (
             dash.models.AdGroupSource.objects
-                .get(ad_group_id=ad_group_id,
-                     source__source_type__type=source_type,
-            )
+                .get(ad_group_id=ad_group_id, source__source_type__type=source_type)
         )
     except dash.models.AdGroupSource.DoesNotExist:
         return _response_error("The ad group %s is not present on source %s" %
@@ -211,9 +209,9 @@ def get_accounts(request):
             .all()
             .exclude_archived()
             .values(
-            'id',
-            'outbrain_marketer_id',
-        )
+                'id',
+                'outbrain_marketer_id',
+            )
     )
 
     return _response_ok({'accounts': list(accounts_list)})
@@ -230,13 +228,13 @@ def get_source_credentials_for_reports_sync(request):
             .filter(sync_reports=True)
             .filter(source__source_type__type__in=source_types)
             .annotate(
-            source_type=F('source__source_type__type'),
-        )
+                source_type=F('source__source_type__type'),
+            )
             .values(
-            'id',
-            'credentials',
-            'source_type',
-        )
+                'id',
+                'credentials',
+                'source_type',
+            )
     )
 
     return _response_ok({'source_credentials_list': list(source_credentials_list)})
@@ -256,17 +254,17 @@ def get_content_ad_source_mapping(request):
         dash.models.ContentAdSource.objects
             .filter(source_content_ad_id__in=source_content_ad_ids)
             .annotate(
-            ad_group_id=F('content_ad__ad_group_id'),
-            source_name=F('source__name'),
-            slug=F('source__bidder_slug'),
-        )
+                ad_group_id=F('content_ad__ad_group_id'),
+                source_name=F('source__name'),
+                slug=F('source__bidder_slug'),
+            )
             .values(
-            'source_content_ad_id',
-            'content_ad_id',
-            'ad_group_id',
-            'source_name',
-            'slug',
-        )
+                'source_content_ad_id',
+                'content_ad_id',
+                'ad_group_id',
+                'source_name',
+                'slug',
+            )
     )
     source_types = request.GET.getlist('source_type')
     if source_types:
@@ -384,7 +382,7 @@ def get_publishers_blacklist(request):
                             Q(account__in=running_accounts))
         blacklisted = (dash.models.PublisherBlacklist.objects
                        .filter(blacklist_filter)
-                       .select_related('source', 'ad_group',  'campaign', 'account', 'account')
+                       .select_related('source', 'ad_group', 'campaign', 'account', 'account')
                        .prefetch_related('campaign__adgroup_set',
                                          'account__campaign_set',
                                          'account__campaign_set__adgroup_set'))
@@ -606,25 +604,29 @@ def get_content_ads_exchanges(request):
     content_ad_id = request.GET.get('content_ad_id')
     ad_group_id = request.GET.get('ad_group_id')
     if content_ad_id:
-        content_ad_sources = (dash.models.ContentAdSource.objects
-                              .filter(content_ad__id=content_ad_id, source__source_type__type='b1')
-                              .select_related('content_ad', 'source'))
+        content_ad_sources = (
+            dash.models.ContentAdSource.objects
+            .filter(content_ad__id=content_ad_id, source__source_type__type='b1')
+            .values('content_ad_id', 'source__bidder_slug', 'source_content_ad_id', 'submission_status', 'state')
+        )
     elif ad_group_id:
-        content_ad_sources = (dash.models.ContentAdSource.objects
-                              .filter(content_ad__ad_group__id=ad_group_id, source__source_type__type='b1')
-                              .select_related('content_ad', 'source'))
+        content_ad_sources = (
+            dash.models.ContentAdSource.objects
+            .filter(content_ad__ad_group__id=ad_group_id, source__source_type__type='b1')
+            .values('content_ad_id', 'source__bidder_slug', 'source_content_ad_id', 'submission_status', 'state')
+        )
     else:
         return _response_error("Must provide content ad id or ad group id.")
 
     content_ad_exchanges = {}
     for content_ad_source in content_ad_sources:
         exchange = {
-            'exchange': content_ad_source.source.bidder_slug,
-            'source_content_ad_id': content_ad_source.source_content_ad_id,
-            'submission_status': content_ad_source.submission_status,
-            'state': content_ad_source.state,
+            'exchange': content_ad_source['source__bidder_slug'],
+            'source_content_ad_id': content_ad_source['content_ad_id'],
+            'submission_status': content_ad_source['submission_status'],
+            'state': content_ad_source['state'],
         }
-        content_ad_exchanges.setdefault(content_ad_source.content_ad.id, []).append(exchange)
+        content_ad_exchanges.setdefault(content_ad_source['source_content_ad_id'], []).append(exchange)
 
     return _response_ok(content_ad_exchanges)
 
