@@ -264,8 +264,8 @@ class CampaignBudgetView(api_common.BaseApiView):
             account=campaign.account
         )
 
-        agency = user.agency_set.first()
-        if agency:
+        agency = campaign.account.agency
+        if agency is not None:
             available_credits |= models.CreditLineItem.objects.filter(
                 agency=agency
             )
@@ -312,8 +312,8 @@ class CampaignBudgetView(api_common.BaseApiView):
         }
         credits = models.CreditLineItem.objects.filter(account=campaign.account)
 
-        agency = user.agency_set.first()
-        if agency and campaign.account.agency == agency:
+        agency = campaign.account.agency
+        if agency is not None:
             credits |= models.CreditLineItem.objects.filter(agency=campaign.account.agency)
 
         for item in credits:
