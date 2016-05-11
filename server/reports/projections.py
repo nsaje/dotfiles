@@ -175,7 +175,6 @@ class BudgetProjections(object):
 
         # when we have agency credits with flat fee each account of that agency
         # gets a share
-        from pudb import set_trace; set_trace()
         agencies = set([budget.campaign.account.agency.id for budget in budgets\
                         if budget.campaign.account.agency is not None])
         agency_account_count = dash.models.Account.objects.filter(agency__in=agencies).count()
