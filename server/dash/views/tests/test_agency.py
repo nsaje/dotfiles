@@ -1783,7 +1783,7 @@ class CampaignAgencyTest(TestCase):
                 {'name': 'Archived', 'value': 'False'},
                 {'name': 'Device targeting', 'value': 'Mobile'},
                 {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
-                {'name': 'Automatic Campaign Stop', 'value': 'False'},
+                {'name': 'Automatic Campaign Stop', 'value': 'True'},
                 {'name': 'Landing Mode', 'value': 'False'},
             ],
             'show_old_settings': False,

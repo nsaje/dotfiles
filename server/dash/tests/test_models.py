@@ -290,7 +290,7 @@ class CampaignSettingsTest(TestCase):
             'target_regions': [u'CA', u'501'],
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00'),
-            'automatic_campaign_stop': False,
+            'automatic_campaign_stop': True,
             'landing_mode': False,
         }
 
