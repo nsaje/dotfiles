@@ -51,7 +51,6 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
                 level = 1;
                 page = (breakdown.pagination.to) / size + 1;
             }
-
             ds.endpoint.get(page, size, ds.startDate, ds.endDate, '-cost').then(function (data) {
 
                 notifyListeners(EVENTS.ON_LOAD, data);
