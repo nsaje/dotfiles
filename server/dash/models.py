@@ -2296,6 +2296,7 @@ class ConversionGoal(models.Model):
 
     class Meta:
         unique_together = (('campaign', 'name'), ('campaign', 'type', 'goal_id'))
+        ordering = ['pk']
 
     def get_stats_key(self):
         # map conversion goal to the key under which they are stored in stats database

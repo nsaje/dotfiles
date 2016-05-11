@@ -91,11 +91,11 @@ class BaseDailyStatsTest(TestCase):
 
         if with_conversion_goals:
             expected_response['data']['conversion_goals'] = [
-                    {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'},
-                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
-                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
-                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
                     {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'},
                 ]
 
         self.assertDictEqual(expected_response, json_blob)
