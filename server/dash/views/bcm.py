@@ -5,6 +5,7 @@ from dash import models, constants, forms
 from utils import statsd_helper, api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
+from django.db.models import Q
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -253,7 +254,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response({
             'active': active_budget,
             'past': self._get_past_budget(budget_items),
-            'totals': self._get_budget_totals(campaign, active_budget),
+            'totals': self._get_budget_totals(user, campaign, active_budget),
             'credits': self._get_available_credit_items(user, campaign),
             'min_amount': campaign_stop.get_min_budget_increase(campaign),
         })
@@ -295,7 +296,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.INACTIVE,
         )]
 
-    def _get_budget_totals(self, campaign, active_budget):
+    def _get_budget_totals(self, user, campaign, active_budget):
         data = {
             'current': {
                 'available': sum([x['available'] for x in active_budget]),
@@ -309,7 +310,13 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'license_fee': Decimal('0.0000'),
             }
         }
-        for item in models.CreditLineItem.objects.filter(account=campaign.account):
+        credits = models.CreditLineItem.objects.filter(account=campaign.account)
+
+        agency = user.agency_set.first()
+        if agency and campaign.account.agency == agency:
+            credits |= models.CreditLineItem.objects.filter(agency=campaign.account.agency)
+
+        for item in credits:
             if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue
             data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - item.get_allocated_amount())
