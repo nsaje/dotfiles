@@ -102,7 +102,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
             ('account_campaigns_view', "Can view accounts's campaigns tab."),
-            ('account_agency_view', "Can view accounts's agency tab."),
             ('account_credit_view', "Can view accounts's credit tab."),
             ('ad_group_sources_add_source', "Can add media sources."),
             ('account_sources_view', 'Can view account sources view.'),
