@@ -450,9 +450,10 @@ class CampaignAdmin(admin.ModelAdmin):
         with transaction.atomic():
             automatic_campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
             new_settings = obj.get_current_settings().copy_settings()
-            new_settings.automatic_campaign_stop = automatic_campaign_stop
+            if new_settings.automatic_campaign_stop != automatic_campaign_stop:
+                new_settings.automatic_campaign_stop = automatic_campaign_stop
+                new_settings.save(request)
             obj.save(request)
-            new_settings.save(request)
         threads.EscapeTransactionThread(
             partial(campaign_stop.perform_landing_mode_check, obj, new_settings)
         ).start()
