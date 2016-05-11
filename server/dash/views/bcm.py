@@ -14,7 +14,7 @@ class AccountCreditView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
-        return self._get_response(account.id)
+        return self._get_response(account.id, account.agency)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_delete')
     def post(self, request, account_id):
@@ -82,10 +82,15 @@ class AccountCreditView(api_common.BaseApiView):
             'available': item.effective_amount() - allocated,
         }
 
-    def _get_response(self, account_id):
+    def _get_response(self, account_id, agency):
         credit_items = models.CreditLineItem.objects.filter(
             account_id=account_id
         ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
+
+        if agency is not None:
+            credit_items |= models.CreditLineItem.objects.filter(
+                agency=agency
+            ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
             'active': self._get_active_credit(account_id, credit_items),

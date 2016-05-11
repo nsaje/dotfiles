@@ -123,6 +123,44 @@ class AccountCreditViewTest(BCMViewTestCase):
             }
         })
 
+    def test_get_as_agency(self):
+        url = reverse('accounts_credit', kwargs={'account_id': 1000})
+        self.add_permission('account_credit_view')
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+
+        self.maxDiff = None
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['data'], {
+            "active": [
+                {
+                    "available": "100000.0000",
+                    "end_date": "2015-11-30",
+                    "created_on": "2014-06-04",
+                    "created_by": "agency-master@test.com",
+                    "license_fee": "20%",
+                    "allocated": "0",
+                    "total": "100000.0000",
+                    "comment": "Agency credit",
+                    "id": 1000,
+                    "is_signed": False,
+                    "is_canceled": False,
+                    "budgets": [],
+                    "start_date": "2015-10-01"
+                }
+            ],
+            "past": [],
+            "totals": {
+                "available": "100000.0000",
+                "allocated": "0",
+                "total": "100000.0000",
+                "past": "0",
+            }
+        })
+
+
     def test_post(self):
         url = reverse('accounts_credit', kwargs={'account_id': 1})
 
