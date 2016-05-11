@@ -1290,13 +1290,7 @@ Zemanta'''  # noqa
     )
 
     account_settings = campaign.account.get_current_settings()
-    emails = []
-    if account_settings.default_account_manager:
-        emails.append(account_settings.default_account_manager.email)
-    if campaign_settings.campaign_manager:
-        emails.append(campaign_settings.campaign_manager.email)
-
-    email_helper.send_notification_mail(emails, subject, body)
+    _send_notification_email(subject, body, campaign_settings, account_settings)
 
 
 def _send_depleting_budget_notification_email(campaign, campaign_settings, available_tomorrow,
@@ -1329,6 +1323,10 @@ Zemanta'''  # noqa
     )
 
     account_settings = campaign.account.get_current_settings()
+    _send_notification_email(subject, body, campaign_settings, account_settings)
+
+
+def _send_notification_email(subject, body, campaign_settings, account_settings):
     emails = []
     if account_settings.default_account_manager:
         emails.append(account_settings.default_account_manager.email)
@@ -1336,3 +1334,4 @@ Zemanta'''  # noqa
         emails.append(campaign_settings.campaign_manager.email)
 
     email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_notification_mail(['luka.silovinac@zemanta.com'], subject, body)
