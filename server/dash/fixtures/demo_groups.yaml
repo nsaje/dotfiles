@@ -2,7 +2,6 @@
     name: alpha
     permissions:
     - [account_agency_access_permissions, zemauth, user]
-    - [account_agency_view, zemauth, user]
     - [account_campaigns_add_campaign, zemauth, user]
     - [account_campaigns_view, zemauth, user]
     - [account_sources_view, zemauth, user]
@@ -29,7 +28,6 @@
     - [group_account_automatically_add, dash, account]
     - [settings_view, dash, adgroupsettings]
     - [account_agency_access_permissions, zemauth, user]
-    - [account_agency_view, zemauth, user]
     - [account_budget_view, zemauth, user]
     - [account_campaigns_add_campaign, zemauth, user]
     - [account_campaigns_view, zemauth, user]

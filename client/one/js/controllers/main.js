@@ -93,7 +93,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
             return 'main.accounts.sources';
         }
-        if ($state.includes('**.history') && $scope.hasPermission('zemauth.account_agency_view')) {
+        if ($state.includes('**.history') && $scope.hasPermission('zemauth.account_history_view')) {
             return 'main.accounts.history';
         }
 

@@ -2287,7 +2287,6 @@ class AccountSettingsTest(TestCase):
 
     def test_get(self):
         client = self._get_client_with_permissions([
-            'account_agency_view',
             'can_modify_account_name',
             'can_modify_account_manager',
             'can_modify_account_type'
@@ -2559,7 +2558,6 @@ class AccountSettingsTest(TestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_no_permission_can_modify_account_type(self, mock_log_useraction):
         client = self._get_client_with_permissions([
-            'account_agency_view',
             'can_modify_allowed_sources'
         ])
 
@@ -2584,9 +2582,7 @@ class AccountSettingsTest(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_no_permission_can_modify_allowed_sources(self, mock_log_useraction):
-        client = self._get_client_with_permissions([
-            'account_agency_view',
-        ])
+        client = self._get_client_with_permissions([ ])
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
             json.dumps({
