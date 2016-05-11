@@ -12,6 +12,7 @@ from dash import stats_helper
 from dash import constants
 from dash import bcm_helpers
 from dash.views import helpers
+from reports.projections import BudgetProjections
 
 from utils import exc
 
@@ -53,11 +54,14 @@ FIELDNAMES = {
     'license_fee': 'License Fee',
     'total_fee': 'Total Fee',
     'flat_fee': 'Recognized Flat Fee',
-    'spend_projection': 'Spend projection',
-    'credit_projection': 'Total credit',
     'default_account_manager': 'Account Manager',
     'default_sales_representative': 'Sales Representative',
     'campaign_manager': 'Campaign Manager',
+    'allocated_budgets': 'Media Budgets',
+    'spend_projection': 'Spend Projection',
+    'pacing': 'Pacing',
+    'license_fee_projection': 'License Fee Projection',
+    'total_fee_projection': 'Total Fee Projection',
 }
 
 FIELDNAMES_ID_MAPPING = {'account': 'account_id',
@@ -78,7 +82,9 @@ FORMAT_1_DECIMAL = ['avg_tos']
 FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
                      'billing_cost',
-                     'license_fee', 'total_fee', 'flat_fee', ]
+                     'license_fee', 'total_fee', 'flat_fee',
+                     'allocated_budgets', 'spend_projection', 'pacing',
+                     'license_fee_projection', 'total_fee_projection']
 
 FORMAT_3_DECIMALS = ['cpc']
 
@@ -104,7 +110,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-    prefetched_data, budgets, projections, flat_fees, statuses, settings, account_settings = _prefetch_rows_data(
+    prefetched_data, budgets, projections, statuses, settings, account_settings = _prefetch_rows_data(
         user,
         dimensions,
         constraints,
@@ -126,9 +132,10 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     for stat in stats:
         _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
-                       source_names=source_names, user=user, prefetched_data=prefetched_data, budgets=budgets,
-                       projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings,
-                       account_settings=account_settings)
+                       source_names=source_names, user=user, prefetched_data=prefetched_data,
+                       budgets=budgets, projections=projections,
+                       include_projections=include_projections, include_flat_fees=include_flat_fees,
+                       statuses=statuses, settings=settings, account_settings=account_settings)
 
     return sort_results(stats, [ordering])
 
@@ -140,7 +147,6 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
     budgets = None
     projections = None
     statuses = None
-    flat_fees = None
     by_source = ('source' in dimensions)
     level = None
     settings = None
@@ -156,8 +162,8 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
 
         if include_settings:
             settings_qs = models.AdGroupSettings.objects \
-                        .filter(ad_group__in=distinct_ad_groups) \
-                        .group_current_settings()
+                .filter(ad_group__in=distinct_ad_groups) \
+                .group_current_settings()
             settings = {s.ad_group_id: s for s in settings_qs}
 
         if include_account_settings:
@@ -204,12 +210,12 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
         budgets = None if not include_budgets \
             else _prefetch_budgets(data, level)
 
-    if level in ['all_accounts', 'account']:
-        flat_fees = _prefetch_flat_fees(data, level, start_date, end_date)
-        projections = None if not include_projections \
-            else _prefetch_projections(data, level, start_date, end_date)
+    projections = None
+    if level in ['all_accounts', 'account', 'campaign']:
+        projections = BudgetProjections(start_date, end_date,
+                                        level != 'all_accounts' and level or 'account')
 
-    return data, budgets, projections, flat_fees, statuses, settings, account_settings
+    return data, budgets, projections, statuses, settings, account_settings
 
 
 def _prefetch_account_settings(stats):
@@ -219,23 +225,6 @@ def _prefetch_account_settings(stats):
         .group_current_settings()
     account_settings = {s.account_id: s for s in account_settings_qs}
     return account_settings
-
-
-def _prefetch_flat_fees(data, level, start_date, end_date):
-    account_flat_fees = {}
-    for credit in models.CreditLineItem.objects.filter(account__in=data.values()):
-        if not credit.flat_fee_cc:
-            continue
-        if credit.account_id not in account_flat_fees:
-            account_flat_fees[credit.account_id] = Decimal('0.0')
-        account_flat_fees[credit.account_id] += credit.get_flat_fee_on_date_range(start_date,
-                                                                                  end_date)
-    result = None
-    if level == 'all_accounts':
-        result = sum(account_flat_fees.values())
-    elif level == 'account':
-        result = account_flat_fees
-    return result
 
 
 def _prefetch_account_budgets(accounts):
@@ -256,19 +245,6 @@ def _prefetch_campaign_budgets(campaigns):
             'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
         } for camp in campaigns.values()
     }
-
-
-def _prefetch_projections(data, level, start_date, end_date):
-    result = None
-    if level == 'all_accounts':
-        account_projections = bcm_helpers.get_projections(data.values(), start_date, end_date)
-        result = {
-            'spend_projection': sum(sp for sp in account_projections['spend_projection'].values()),
-            'credit_projection': sum(cp for cp in account_projections['credit_projection'].values())
-        }
-    if level == 'account':
-        result = bcm_helpers.get_projections(data.values(), start_date, end_date)
-    return result
 
 
 def _prefetch_budgets(data, level):
@@ -321,9 +297,11 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
         ad_groups, ad_groups_settings, ad_group_sources_settings, constraints)
 
 
-def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None, user=None,
-                   prefetched_data=None, budgets=None, projections=None, flat_fees=None, statuses=None, settings=None,
-                   account_settings=None):
+def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None,
+                   user=None, prefetched_data=None, budgets=None, projections=None,
+                   include_flat_fees=False, include_projections=False, statuses=None,
+                   settings=None, account_settings=None):
+
     stat['start_date'] = start_date
     stat['end_date'] = end_date
 
@@ -331,8 +309,9 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
         _populate_source_stat(stat, user=user, source_names=source_names)
     else:
         _populate_model_stat(stat, dimensions=dimensions, prefetched_data=prefetched_data,
-                             projections=projections, flat_fees=flat_fees, statuses=statuses, settings=settings,
-                             account_settings=account_settings)
+                             projections=projections, include_projections=include_projections,
+                             include_flat_fees=include_flat_fees, statuses=statuses,
+                             settings=settings, account_settings=account_settings)
 
     if 'source' in stat:
         stat['source'] = source_names[stat['source']]
@@ -344,7 +323,9 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
 def _adjust_breakdown_by_day(start_date, stat):
     if stat['date'] == start_date or stat['date'].day == 1:
         return
-    for field in ('credit_projection', 'flat_fee', 'total_fee', 'spend_projection'):
+    for field in ('allocated_budgets', 'flat_fee', 'total_fee',
+                  'spend_projection', 'pacing', 'license_fee_projection',
+                  'total_fee_projection'):
         if field in stat:
             stat[field] = Decimal(0.0)
 
@@ -357,23 +338,31 @@ def _populate_source_stat(stat, user=None, source_names=None):
 
 
 def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
-                         projections=None, flat_fees=None, statuses=None, settings=None, account_settings=None):
+                         projections=None, include_flat_fees=False, include_projections=False,
+                         statuses=None, settings=None, account_settings=None):
     model = None
     if 'content_ad' in dimensions:
         model = prefetched_data[stat['content_ad']]
         stat = _populate_content_ad_stat(stat, model)
     elif 'ad_group' in dimensions:
         model = prefetched_data[stat['ad_group']]
-        stat = _populate_ad_group_stat(stat, model, statuses, settings=settings, account_settings=account_settings)
+        stat = _populate_ad_group_stat(stat, model, statuses, settings=settings,
+                                       account_settings=account_settings)
     elif 'campaign' in dimensions:
         model = prefetched_data[stat['campaign']]
-        stat = _populate_campaign_stat(stat, model, statuses, settings=settings, account_settings=account_settings)
+        stat = _populate_campaign_stat(stat, model, statuses, settings=settings,
+                                       include_projections=include_projections,
+                                       projections=projections, account_settings=account_settings)
     elif 'account' in dimensions:
         model = prefetched_data[stat['account']]
-        stat = _populate_account_stat(stat, model, statuses, settings=settings, projections=projections,
-                                      flat_fees=flat_fees)
+        stat = _populate_account_stat(stat, model, statuses, settings=settings,
+                                      projections=projections,
+                                      include_projections=include_projections,
+                                      include_flat_fees=include_flat_fees)
     elif not dimensions:
-        stat = _populate_all_accounts_stat(stat, projections=projections, flat_fees=flat_fees)
+        stat = _populate_all_accounts_stat(stat, projections=projections,
+                                           include_projections=include_projections,
+                                           include_flat_fees=include_flat_fees)
 
     if model:
         _populate_model_ids(stat, model)
@@ -407,7 +396,8 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None, account_set
     return stat
 
 
-def _populate_campaign_stat(stat, campaign, statuses, settings=None, account_settings=None):
+def _populate_campaign_stat(stat, campaign, statuses, projections=None, include_projections=False,
+                            settings=None, account_settings=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
     if account_settings and campaign.account.id in account_settings:
@@ -420,11 +410,16 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, account_set
     stat['status'] = statuses[campaign.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
+    if include_projections:
+        stat['allocated_budgets'] = projections.row(campaign.pk, 'allocated_media_budget')
+        stat['pacing'] = projections.row(campaign.pk, 'pacing')
+        stat['spend_projection'] = projections.row(campaign.pk, 'media_spend_projection')
+        stat['license_fee_projection'] = projections.row(campaign.pk, 'license_fee_projection')
     return stat
 
 
 def _populate_account_stat(stat, account, statuses, settings=None, projections=None,
-                           flat_fees=None):
+                           include_flat_fees=False, include_projections=False):
     if settings and account.id in settings:
         setting = settings[account.id]
         stat['default_account_manager'] = \
@@ -433,12 +428,16 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
         stat['account_type'] = constants.AccountType.get_text(setting.account_type)
         stat['archived'] = setting.archived
-    if flat_fees is not None:
-        stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
-        stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee') or 0)
-    if projections:
-        stat['credit_projection'] = projections['credit_projection'].get(stat['account'], Decimal('0.0'))
-        stat['spend_projection'] = projections['spend_projection'].get(stat['account'], Decimal('0.0'))
+    if include_projections:
+        stat['allocated_budgets'] = projections.row(account.pk, 'allocated_media_budget')
+        stat['pacing'] = projections.row(account.pk, 'pacing')
+        stat['spend_projection'] = projections.row(account.pk, 'media_spend_projection')
+        stat['license_fee_projection'] = projections.row(account.pk, 'license_fee_projection')
+    if include_flat_fees:
+        stat['flat_fee'] = projections.row(account.pk, 'flat_fee')
+        stat['total_fee'] = projections.row(account.pk, 'total_fee')
+        if include_projections:
+            stat['total_fee_projection'] = projections.row(account.pk, 'total_fee_projection')
 
     stat['status'] = statuses[stat['account']]
     if 'source' in stat:
@@ -447,13 +446,18 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
     return stat
 
 
-def _populate_all_accounts_stat(stat, projections=None, flat_fees=None):
-    if projections:
-        stat['credit_projection'] = projections.get('credit_projection', Decimal('0.0'))
-        stat['credit_projection'] = projections.get('spend_projection', Decimal('0.0'))
-    if flat_fees is not None:
-        stat['flat_fee'] = flat_fees
-        stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee') or 0)
+def _populate_all_accounts_stat(stat, projections=None, include_projections=False,
+                                include_flat_fees=None):
+    if include_projections:
+        stat['allocated_budgets'] = projections.total('allocated_media_budget')
+        stat['pacing'] = projections.total('pacing')
+        stat['spend_projection'] = projections.total('media_spend_projection')
+        stat['license_fee_projection'] = projections.total('license_fee_projection')
+    if include_flat_fees:
+        stat['flat_fee'] = projections.total('flat_fee')
+        stat['total_fee'] = projections.total('total_fee')
+        if include_projections:
+            stat['total_fee_projection'] = projections.total('total_fee_projection')
     return stat
 
 
@@ -669,11 +673,13 @@ class AllAccountsExport(object):
             include_settings = True
 
         include_flat_fees = (
-            'total_fee' in additional_fields or 'flat_fee' in additional_fields
+            'total_fee' in additional_fields or 'flat_fee' in additional_fields or
+            'total_fee_projection' in additional_fields
         )
-        include_projections = (
-            'spend_projection' in additional_fields or 'credit_projection' in additional_fields
-        )
+        include_projections = bool(set([
+            'pacing', 'spend_projection', 'allocated_budgets', 'total_fee_projection',
+            'license_fee_projection'
+        ]) & set(additional_fields))
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
@@ -727,6 +733,11 @@ class AccountExport(object):
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
+        include_projections = bool(set([
+            'pacing', 'spend_projection', 'allocated_budgets',
+            'license_fee_projection'
+        ]) & set(additional_fields))
+
         results = _generate_rows(
             dimensions,
             start_date,
@@ -736,6 +747,7 @@ class AccountExport(object):
             breakdown == 'content_ad',
             [],
             include_settings=True,
+            include_projections=include_projections,
             account=account,
             source=filtered_sources)
 
@@ -844,9 +856,10 @@ def filter_allowed_fields(request, fields):
             continue
         if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
             continue
-        if f in ('total_fee', 'flat_fee', ) and not can_view_flat_fees:
+        if f in ('total_fee', 'flat_fee', 'total_fee_projection') and not can_view_flat_fees:
             continue
-        if f in ('credit_projection', 'spend_projection') and not can_see_projections:
+        if f in ('allocated_budget', 'spend_projection', 'pacing', 'license_fee_projection',
+                 'total_fee_projection') and not can_see_projections:
             continue
         if f in ('default_account_manager', 'default_sales_representative') and not can_see_managers_in_accounts_table:
             continue
