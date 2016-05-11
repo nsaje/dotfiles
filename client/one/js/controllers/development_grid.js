@@ -34,9 +34,14 @@ oneApp.controller('DevelopmentGridLegacyCtrl', ['$scope', '$controller', '$q', '
 
     function createCachedEndpoint () {
         return {
-            get: function () {
+            get: function (page, size, startDate, endDate, order) {
                 var deferred = $q.defer();
                 var data = JSON.parse(cache.allaccounts);
+                data.pagination.currentPage = page;
+                data.pagination.size = size;
+                data.pagination.startIndex = page * size + 1;
+                data.pagination.endIndex = (page + 1) * size;
+                data.rows = data.rows.slice(0, size);
                 deferred.resolve(data);
                 return deferred.promise;
             }

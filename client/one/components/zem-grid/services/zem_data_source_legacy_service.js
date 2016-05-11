@@ -39,11 +39,23 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
 
         function getData (breakdown, size) {
             var deferred = $q.defer();
-            ds.endpoint.get(0, 10, ds.startDate, ds.endDate, '-cost').then(function (data) {
+
+            var level = 0;
+            var page = 1;
+
+            if (!size) {
+                size = 10;
+            }
+
+            if (breakdown) {
+                level = 1;
+                page = (breakdown.pagination.to) / size + 1;
+            }
+
+            ds.endpoint.get(page, size, ds.startDate, ds.endDate, '-cost').then(function (data) {
 
                 notifyListeners(EVENTS.ON_LOAD, data);
-
-                breakdown = parseLegacyData(data);
+                breakdown = parseLegacyData(data, level);
                 applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
 
@@ -58,14 +70,14 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
             return deferred.promise;
         }
 
-        function parseLegacyData (data) {
+        function parseLegacyData (data, level) {
             var totals = {
                 breakdown: {
-                    position: [0],
+                    position: [data.pagination.startIndex + 1],
                     pagination: {
                         count: data.pagination.count,
-                        to: data.pagination.startIndex,
-                        from: data.pagination.endIndex,
+                        from: data.pagination.startIndex,
+                        to: data.pagination.endIndex,
                         size: data.pagination.size,
                     },
                     rows: data.rows.map(function (row) {
@@ -86,6 +98,8 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
                 },
             };
 
+            if (level === 1)
+                return breakdown.rows[0].breakdown;
             return breakdown;
         }
 
