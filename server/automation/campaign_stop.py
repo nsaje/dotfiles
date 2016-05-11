@@ -378,7 +378,13 @@ def _combined_active_budget_from_other_items(budget_item):
 
 
 def _can_resume_campaign(campaign, campaign_settings):
-    return campaign_settings.landing_mode and get_min_budget_increase(campaign) == 0
+    if not campaign_settings.landing_mode:
+        return False
+
+    if not campaign_settings.automatic_campaign_stop:
+        return True
+
+    return get_min_budget_increase(campaign) == 0
 
 
 def _get_minimum_remaining_budget(campaign, max_daily_budget):
