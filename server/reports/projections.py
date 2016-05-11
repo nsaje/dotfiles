@@ -172,6 +172,20 @@ class BudgetProjections(object):
             credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
             for credit in set(budget.credit for budget in budgets)
         )
+
+        # when we have agency credits with flat fee each account of that agency
+        # gets a share
+        from pudb import set_trace; set_trace()
+        agencies = set([budget.campaign.account.agency.id for budget in budgets\
+                        if budget.campaign.account.agency is not None])
+        agency_account_count = dash.models.Account.objects.filter(agency__in=agencies).count()
+        if agencies > 0 and agency_account_count > 0:
+            agency_flat_fee_share = Decimal(sum(
+                credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
+                for credit in dash.models.CreditLineItem.objects.filter(agency__in=agencies)
+            )) / Decimal(agency_account_count)
+            row['flat_fee'] = row['flat_fee'] + agency_flat_fee_share
+
         row['total_fee'] = row['attributed_license_fee'] + row['flat_fee']
 
     def _calculate_license_fee_projection(self, row, budgets, statements_on_date,

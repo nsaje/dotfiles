@@ -9,6 +9,9 @@ import reports.models
 import reports.projections
 import utils.dates_helper
 
+from django.test.client import RequestFactory
+from zemauth.models import User
+
 
 class ProjectionsTestCase(test.TestCase):
     fixtures = ['test_projections']
@@ -77,6 +80,45 @@ class ProjectionsTestCase(test.TestCase):
             'allocated_total_budget': Decimal('10000.00000000000000000000000'),
             'license_fee_projection': Decimal('2000.0010')}
         )
+
+
+    def test_running_half_month_agency_flat_fee(self):
+        rf = RequestFactory()
+        r = rf.get('')
+        r.user = User.objects.get(pk=1)
+        agency = dash.models.Agency(
+            name="test agency"
+        )
+        agency.save(r)
+
+        start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 30)
+
+        credit = dash.models.CreditLineItem(
+            agency=agency,
+            start_date=start_date,
+            end_date=end_date,
+            amount=10000,
+            flat_fee_cc=5000 * 1e4,
+            flat_fee_start_date=start_date,
+            flat_fee_end_date=end_date,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=r.user,
+        )
+        credit.save()
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(r)
+
+        self._create_batch_statements(
+            dash.models.BudgetLineItem.objects.all(),
+            start_date
+        )
+        stats = reports.projections.BudgetProjections(start_date, end_date, 'account',
+                                                      projection_date=self.today)
+
+        self.assertEqual(stats.row(1)['flat_fee'], 5000)
+        self.assertFalse('flat_fee' in stats.row(2))
 
     def test_running_five_days(self):
         start_date, end_date = datetime.date(2015, 11, 10), datetime.date(2015, 11, 30)
