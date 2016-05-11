@@ -161,7 +161,6 @@ class AccountCreditViewTest(BCMViewTestCase):
             }
         })
 
-
     def test_post(self):
         url = reverse('accounts_credit', kwargs={'account_id': 1})
 
