@@ -13,6 +13,8 @@ from django.conf import settings
 from django.core.management import call_command
 from django.contrib.auth.models import Permission
 
+from django.test.client import RequestFactory
+
 
 def add_permissions(user, permissions):
     ''' utility intended to be used in unit tests only '''
@@ -20,6 +22,12 @@ def add_permissions(user, permissions):
         user.user_permissions.add(
             Permission.objects.get(codename=permission)
         )
+
+def fake_request(user, url=''):
+    rf = RequestFactory()
+    r = rf.get(url)
+    r.user = user
+    return r
 
 
 class MockDateTime(datetime.datetime):

@@ -12,7 +12,7 @@ from django.test import TestCase
 from zemauth.models import User
 from dash import models, constants
 from reports.models import BudgetDailyStatement
-from utils.test_helper import add_permissions
+from utils.test_helper import add_permissions, fake_request
 from django.test.client import RequestFactory
 
 
@@ -350,6 +350,127 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(item.amount, 1000)
         self.assertEqual(json.loads(response.content)['data'], "2")
+
+    def test_get_agency(self):
+        agency = models.Agency.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(fake_request(User.objects.get(pk=1)))
+
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.account = None
+        credit.agency = agency
+        credit.save()
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 1,
+            'credit_id': 1,
+        })
+
+        self.add_permission('account_credit_view')
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+
+        response_item = response.json()['data']
+        self.assertEqual(response_item, {
+            "comment": u"Test case",
+            "account_id": 1,
+            "start_date": "2015-10-01",
+            "end_date": "2015-11-30",
+            "created_on": "2014-06-04",
+            "created_by": "ziga.stopinsek@zemanta.com",
+            "license_fee": "20%",
+            "id": 1,
+            "is_signed": False,
+            "is_canceled": False,
+            "amount": 100000,
+            "budgets": [
+                {
+                    "campaign": "test campaign 1",
+                    "end_date": "2015-11-30",
+                    "spend": "0.0000",
+                    "id": 1,
+                    "total": "100000.0000",
+                    "comment": "Test case",
+                    "start_date": "2015-10-01"
+                }
+            ]
+        })
+
+    def test_delete_agency(self):
+        agency = models.Agency.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(fake_request(User.objects.get(pk=1)))
+
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.account = None
+        credit.agency = agency
+        credit.save()
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 3,
+            'credit_id': 2,
+        })
+
+        self.assertEqual(1, len(models.CreditLineItem.objects.filter(pk=2)))
+
+        self.add_permission('account_credit_view')
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 3,
+            'credit_id': 2,
+        })
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, len(models.CreditLineItem.objects.filter(pk=2)))
+
+    def test_post_agency(self):
+        agency = models.Agency.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(fake_request(User.objects.get(pk=1)))
+
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.account = None
+        credit.agency = agency
+        credit.save()
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 3,
+            'credit_id': 2,
+        })
+
+        data = {}
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 401)
+
+        self.add_permission('account_credit_view')
+
+        item = models.CreditLineItem.objects.get(pk=2)
+        self.assertEqual(item.amount, 100000)
+
+        data = {
+            'start_date': '2015-12-01',
+            'end_date': '2015-12-01',
+            'amount': '1000',
+            'license_fee': '30%',
+            'comment': 'no comment',
+            'account': 3,
+        }
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.post(url, json.dumps(data), content_type='application/json')
+
+        item = models.CreditLineItem.objects.get(pk=2)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(item.amount, 1000)
+        self.assertEqual(json.loads(response.content)['data'], "2")
+
 
 
 class CampaignBudgetViewTest(BCMViewTestCase):

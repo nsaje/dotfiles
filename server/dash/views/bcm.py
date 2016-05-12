@@ -133,8 +133,10 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
-        return self._get_response(item)
+        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
+        if item is None:
+            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
+        return self._get_response(account.id, item)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_delete')
     def delete(self, request, account_id, credit_id):
@@ -143,7 +145,9 @@ class AccountCreditItemView(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
+        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
+        if item is None:
+            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         item.delete()
         return self.create_api_response()
 
@@ -153,7 +157,9 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
+        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
+        if item is None:
+            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         request_data = json.loads(request.body)
 
         data = {}
@@ -174,7 +180,7 @@ class AccountCreditItemView(api_common.BaseApiView):
         item_form.save()
         return self.create_api_response(credit_id)
 
-    def _get_response(self, item):
+    def _get_response(self, account_id, item):
         return self.create_api_response({
             'id': item.pk,
             'created_by': str(item.created_by or 'Zemanta One'),
@@ -185,7 +191,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'amount': item.amount,
-            'account_id': item.account_id,
+            'account_id': account_id,
             'comment': item.comment,
             'budgets': [
                 {
