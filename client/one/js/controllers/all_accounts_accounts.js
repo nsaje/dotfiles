@@ -110,30 +110,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_see_account_type')
         },
         {
-            name: 'Total Credit',
-            field: 'credit_projection',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
-            shown: $scope.hasPermission('zemauth.can_see_projections')
-        },
-        {
-            name: 'Spend Projection',
-            field: 'spend_projection',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
-            shown: $scope.hasPermission('zemauth.can_see_projections')
-        },
-        {
             name: 'Spend',
             field: 'cost',
             checked: true,
@@ -241,6 +217,66 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Media budgets',
+            field: 'allocated_budgets',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'Pacing',
+            field: 'pacing',
+            checked: false,
+            type: 'percent',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'Spend Projection',
+            field: 'spend_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'License Fee Projection',
+            field: 'license_fee_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'Total Fee Projection',
+            field: 'total_fee_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections') && $scope.hasPermission('zemauth.can_view_flat_fees')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -318,7 +354,13 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 'media_cost', 'e_media_cost', 'e_data_cost',
                 'license_fee', 'total_fee', 'flat_fee',
                 'billing_cost',
-                'credit_projection', 'spend_projection',
+            ],
+        },
+        {
+            'name': 'Projections',
+            fields: [
+                'total_fee_projection', 'license_fee_projection', 'spend_projection',
+                'pacing', 'allocated_budgets',
             ],
         },
         {
@@ -376,7 +418,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                     'campaigns': [],
                 });
 
-                if ($scope.hasPermission('zemauth.can_manage_agency') && $scope.hasAgency()) {
+                if ($scope.hasAgency()) {
                     $state.go('main.accounts.settings', {id: data.id});
                 } else {
                     $state.go('main.accounts.agency', {id: data.id});

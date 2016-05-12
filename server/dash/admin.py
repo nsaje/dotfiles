@@ -1,6 +1,7 @@
 import json
 import logging
 import urllib
+from functools import partial
 
 from django.contrib import admin
 from django.contrib import messages
@@ -24,8 +25,12 @@ from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
 
+import utils.k1_helper
+
 import actionlog.api_contentads
 import actionlog.zwei_actions
+
+from automation import campaign_stop
 
 logger = logging.getLogger(__name__)
 
@@ -443,11 +448,15 @@ class CampaignAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         with transaction.atomic():
-            campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+            automatic_campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
             new_settings = obj.get_current_settings().copy_settings()
-            new_settings.automatic_campaign_stop = campaign_stop
+            if new_settings.automatic_campaign_stop != automatic_campaign_stop:
+                new_settings.automatic_campaign_stop = automatic_campaign_stop
+                new_settings.save(request)
             obj.save(request)
-            new_settings.save(request)
+        threads.EscapeTransactionThread(
+            partial(campaign_stop.perform_landing_mode_check, obj, new_settings)
+        ).start()
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -727,7 +736,7 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         else:
             formset.save()
 
-        threads.SendActionLogsThread(actions).start()
+        threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 
 
 def approve_ad_group_sources(modeladmin, request, queryset):
@@ -741,7 +750,7 @@ def approve_ad_group_sources(modeladmin, request, queryset):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         ad_group_source.save()
         actions.extend(api.update_content_ads_submission_status(ad_group_source))
-    threads.SendActionLogsThread(actions).start()
+    threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 approve_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as APPROVED'
 
 
@@ -756,7 +765,7 @@ def reject_ad_group_sources(modeladmin, request, queryset):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         ad_group_source.save()
         actions.extend(api.update_content_ads_submission_status(ad_group_source))
-    threads.SendActionLogsThread(actions).start()
+    threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
@@ -1127,6 +1136,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
         content_ad_source.save()
+        utils.k1_helper.update_content_ad(content_ad_source.content_ad.ad_group_id,
+                                          content_ad_source.content_ad_id)
 
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:

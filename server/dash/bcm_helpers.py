@@ -71,57 +71,6 @@ def get_account_media_budget_data(account_ids):
     return account_budget, account_spend
 
 
-def get_projections(accounts, start_date, end_date):
-    yesterday = datetime.date.today() - datetime.timedelta(1)
-    projections = {
-        'spend_projection': {
-            acc.pk: Decimal('0.0') for acc in accounts
-        },
-        'credit_projection': {
-            acc.pk: Decimal('0.0') for acc in accounts
-        },
-    }
-    account_credits = dash.models.CreditLineItem.objects.filter(
-        account__in=accounts,
-        status=dash.constants.CreditLineItemStatus.SIGNED,
-    ).exclude(
-        Q(end_date__lt=start_date) | Q(start_date__gt=end_date)
-    ).select_related('account')
-    for credit in account_credits:
-        budgets = credit.budgets.all()
-        credit_days = 0
-        if budgets:
-            e_start_date = min(b.start_date for b in budgets)
-            e_end_date = max(b.end_date for b in budgets)
-            credit_days = (e_end_date - e_start_date).days + 1
-
-        total = credit.get_allocated_amount()
-        overlap = credit.get_overlap(start_date, end_date)
-        overlap_days = ((overlap[1] - overlap[0]).days + 1)
-        credit_projection = ((total / credit_days) * overlap_days) if credit_days else 0
-        projections['credit_projection'][credit.account.pk] += credit_projection
-
-    reports.models.BudgetDailyStatement.objects.filter(budget__credit__in=account_credits)
-    days = (end_date - start_date).days + 1
-    spend_data = reports.models.BudgetDailyStatement.objects.filter(
-        budget__credit__account__in=accounts,
-        date__lte=min(end_date, yesterday),
-        date__gte=min(end_date, yesterday) - datetime.timedelta(2)
-    ).values('budget__credit__account_id').order_by().annotate(
-        media_nano=Sum('media_spend_nano'),
-        data_nano=Sum('data_spend_nano'),
-        fee_nano=Sum('license_fee_nano'),
-    )
-    for spend in spend_data:
-        account_id = spend['budget__credit__account_id']
-        total_nano = spend['media_nano'] + spend['data_nano'] + spend['fee_nano']
-        projections['spend_projection'][account_id] = min(
-            (dash.models.nano_to_dec(total_nano) / Decimal(SPEND_PROJECTION_DAYS)) * days,
-            projections['credit_projection'][account_id]
-        )
-    return projections
-
-
 def clean_credit_input(account=None, valid_from=None, valid_to=None,
                        amount=None, license_fee=None, total_license_fee=None, notes=None):
     if account:

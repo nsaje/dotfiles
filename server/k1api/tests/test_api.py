@@ -6,6 +6,7 @@ import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 
 import dash.constants
 import dash.models
@@ -183,7 +184,8 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         expected = dash.models.AdGroupSource.objects.filter(
-            source__source_type__type='adblade', source_credentials_id=1).values(u'ad_group_id', u'source_campaign_key')
+            source__source_type__type='adblade', source_credentials_id=1)
+        expected = [{u'ad_group_id': e.ad_group_id, u'source_campaign_key': e.source_campaign_key} for e in expected]
         self.assertEqual(data, list(expected))
 
     @patch('utils.request_signer.verify_wsgi_request')
@@ -328,6 +330,28 @@ class K1ApiTest(TestCase):
                 self.assertIn('campaign_id', ad_group)
 
             self.assertGreater(len(account_data['slugs']), 0)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_outbrain(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist_outbrain'),
+            {'marketer_id': 'abcde'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected = (
+            dash.models.PublisherBlacklist.objects
+                .filter(Q(account__outbrain_marketer_id='abcde') |
+                        Q(ad_group__isnull=True, campaign__isnull=True, account__isnull=True))
+                .filter(external_id__isnull=False)
+                .values(u'name', u'external_id')
+        )
+        self.assertEqual(data, {u'blacklist': list(expected)})
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
@@ -573,4 +597,8 @@ class K1ApiTest(TestCase):
 
     def test_get_content_ads_exchanges(self):
         # TODO matijav 03.05.2016
+        pass
+
+    def update_content_ad_status(self):
+        # TODO maticz, 10.5.2016
         pass

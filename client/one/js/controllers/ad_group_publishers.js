@@ -743,11 +743,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
                 $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
                 $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults(
-                    $scope.columns,
-                    data.conversionGoals,
-                    true
-                );
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
             },
             function (data) {
                 // error
@@ -787,8 +783,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals,
-            true
+            conversionGoals
         );
     };
 

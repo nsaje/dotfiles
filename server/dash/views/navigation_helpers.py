@@ -30,6 +30,7 @@ def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings, cam
         'autopilot_state': autopilot_state,
         'active': infobox_helpers.get_adgroup_running_status_class(autopilot_state, running_status,
                                                                    state, is_in_landing),
+        'landingMode': ad_group_settings.landing_mode if ad_group_settings else False,
     }
     return ad_group_dict
 

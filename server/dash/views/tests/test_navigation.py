@@ -64,13 +64,6 @@ class NavigationAllAccountsDataViewTest(TestCase):
             'accounts_count': 0
         })
 
-        # has no filter_sources permission
-        response = self._get(2, [3])
-        self.assertDictEqual(response, {
-            'accounts_count': 1,
-            'default_account_id': 2
-        })
-
 
 class NavigationDataViewTest(TestCase):
     fixtures = ['test_navigation.yaml']
@@ -200,6 +193,7 @@ class NavigationDataViewTest(TestCase):
                 'status': 1,
                 'autopilot_state': 2,
                 'active': 'active',
+                'landingMode': False,
             }
         })
 
@@ -228,6 +222,7 @@ class NavigationDataViewTest(TestCase):
                 'status': 2,
                 'autopilot_state': 2,
                 'active': 'stopped',
+                'landingMode': False,
             }
         })
 
@@ -275,6 +270,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 1,
                     "autopilot_state": 2,
                     "active": "active",
+                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 2,
@@ -283,6 +279,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,  # past dates
                     "autopilot_state": 2,
                     "active": "inactive",
+                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 3,
@@ -291,6 +288,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,
                     "autopilot_state": 2,
                     "active": "stopped",
+                    "landingMode": False,
                 }],
                 "archived": False,
                 "id": 1,
@@ -317,6 +315,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,  # source paused
                     "autopilot_state": 2,
                     "active": "inactive",
+                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 2,
@@ -325,6 +324,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,
                     "autopilot_state": 2,
                     "active": "inactive",
+                    "landingMode": False,
                 }, {
                     "archived": False,
                     "id": 3,
@@ -333,6 +333,7 @@ class NavigationTreeViewTest(TestCase):
                     "status": 2,  # source paused
                     "autopilot_state": 2,
                     "active": "stopped",
+                    "landingMode": False,
                 }],
                 "landingMode": False,
                 "archived": False,
@@ -359,6 +360,7 @@ class NavigationTreeViewTest(TestCase):
                         "status": 2,
                         "autopilot_state": 2,
                         "active": "stopped",
+                        "landingMode": False,
                     }
                 ],
                 "id": 2,

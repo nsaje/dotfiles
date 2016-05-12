@@ -6,6 +6,7 @@ import StringIO
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Permission
+from mock import patch
 
 from dash import forms
 from dash import models
@@ -126,6 +127,7 @@ class AdGroupSettingsFormTest(TestCase):
 
     def setUp(self):
         self.ad_group = models.AdGroup.objects.get(pk=1)
+
         self.user = User.objects.get(pk=1)
         self.data = {
             'cpc_cc': '1.00',
@@ -134,7 +136,6 @@ class AdGroupSettingsFormTest(TestCase):
             'id': '248',
             'name': 'Test ad group',
             'start_date': '2014-12-11',
-            'state': 2,
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
@@ -144,7 +145,9 @@ class AdGroupSettingsFormTest(TestCase):
             'autopilot_daily_budget': '100.00'
         }
 
-    def test_form(self):
+    @patch('utils.dates_helper.local_today')
+    def test_form(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertTrue(form.is_valid())
@@ -155,7 +158,6 @@ class AdGroupSettingsFormTest(TestCase):
             'id': 248,
             'name': 'Test ad group',
             'start_date': datetime.date(2014, 12, 11),
-            'state': 2,
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
@@ -167,7 +169,9 @@ class AdGroupSettingsFormTest(TestCase):
             'autopilot_daily_budget': Decimal('100.00')
         })
 
-    def test_no_non_propagated_fields(self):
+    @patch('utils.dates_helper.local_today')
+    def test_no_non_propagated_fields(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = None
         self.data['daily_budget_cc'] = None
         self.data['autopilot_state'] = None
@@ -182,7 +186,9 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data.get('autopilot_state'), None)
         self.assertEqual(form.cleaned_data.get('autopilot_daily_budget'), None)
 
-    def test_errors_on_non_propagated_fields(self):
+    @patch('utils.dates_helper.local_today')
+    def test_errors_on_non_propagated_fields(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = 0.01
         self.data['daily_budget_cc'] = 1
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
@@ -207,27 +213,37 @@ class AdGroupSettingsFormTest(TestCase):
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
-    def test_max_cpc_setting_lower_min_deprecated_source(self):
+    @patch('utils.dates_helper.local_today')
+    def test_max_cpc_setting_lower_min_deprecated_source(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = 0.1
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
-    def test_max_cpc_setting_equal_min_source_value(self):
+    @patch('utils.dates_helper.local_today')
+    def test_max_cpc_setting_equal_min_source_value(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = 0.12
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
-    def test_max_cpc_setting_high_value(self):
+    @patch('utils.dates_helper.local_today')
+    def test_max_cpc_setting_high_value(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = 4
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
-    def test_max_cpc_setting_value_too_high(self):
+    @patch('utils.dates_helper.local_today')
+    def test_max_cpc_setting_value_too_high(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = 4.01
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
-    def test_default_value_enable_ga_tracking(self):
+    @patch('utils.dates_helper.local_today')
+    def test_default_value_enable_ga_tracking(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
@@ -248,7 +264,9 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
 
-    def test_default_value_enable_adobe_tracking(self):
+    @patch('utils.dates_helper.local_today')
+    def test_default_value_enable_adobe_tracking(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         # should be False if not set
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
@@ -277,7 +295,9 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'retargeting_ad_groups': ['Invalid ad group selection.']})
 
-    def test_retargeting_ad_groups_no_access(self):
+    @patch('utils.dates_helper.local_today')
+    def test_retargeting_ad_groups_no_access(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
         user = User.objects.create(email='testuser@test.com')
         form = forms.AdGroupSettingsForm(self.ad_group, user, self.data)
 
@@ -759,7 +779,7 @@ class CampaignAdminFormTest(TestCase):
         form = forms.CampaignAdminForm(
             instance=campaign
         )
-        self.assertFalse(form.initial['automatic_campaign_stop'])
+        self.assertTrue(form.initial['automatic_campaign_stop'])
 
     def test_instance_with_settings(self):
         campaign = models.Campaign(
