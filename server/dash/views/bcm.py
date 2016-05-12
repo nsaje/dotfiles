@@ -22,12 +22,17 @@ class AccountCreditView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
 
-        helpers.get_account(request.user, account_id)
+        account = helpers.get_account(request.user, account_id)
         request_data = json.loads(request.body)
         response_data = {'canceled': []}
         account_credits_to_cancel = models.CreditLineItem.objects.filter(
             account_id=account_id, pk__in=request_data['cancel']
         )
+        if account.agency is not None:
+            account_credits_to_cancel |= models.CreditLineItem.objects.filter(
+                agency=account.agency, pk__in=request_data['cancel']
+            )
+
         for credit in account_credits_to_cancel:
             credit.cancel()
             response_data['canceled'].append(credit.pk)
