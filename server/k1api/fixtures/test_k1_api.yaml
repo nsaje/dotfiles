@@ -752,3 +752,13 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.publisherblacklist
     pk: 9
+
+-   fields:
+        name: 'pub7.com'
+        account: 1
+        source: 3
+        external_id: 'outbrain-pub-id'
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 10

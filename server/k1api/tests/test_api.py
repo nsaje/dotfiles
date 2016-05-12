@@ -346,8 +346,8 @@ class K1ApiTest(TestCase):
 
         expected = (
             dash.models.PublisherBlacklist.objects
-                .filter(Q(account__outbrain_marketer_id='abcde') |
-                        Q(ad_group__isnull=True, campaign__isnull=True, account__isnull=True))
+                .filter(account__outbrain_marketer_id='abcde')
+                .filter(source__source_type__type='outbrain')
                 .filter(external_id__isnull=False)
                 .values(u'name', u'external_id')
         )
@@ -365,7 +365,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 8)
+        self.assertEqual(len(data['blacklist']), 10)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status'], b['domain']))
         self.assertDictEqual(sorted_blacklist[0], {
@@ -404,20 +404,27 @@ class K1ApiTest(TestCase):
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[5], {
+            'ad_group_id': 1,
+            'domain': 'pub7.com',
+            'exchange': 'outbrain',
+            'status': 2,
+            'external_id': 'outbrain-pub-id',
+        })
+        self.assertDictEqual(sorted_blacklist[6], {
             'ad_group_id': 2,
             'domain': 'pub3.com',
             'exchange': 'gravity',
             'status': 1,
             'external_id': '',
         })
-        self.assertDictEqual(sorted_blacklist[6], {
+        self.assertDictEqual(sorted_blacklist[7], {
             'ad_group_id': 2,
             'domain': 'pub5.com',
             'exchange': 'gravity',
             'status': 2,
             'external_id': '',
         })
-        self.assertDictEqual(sorted_blacklist[7], {
+        self.assertDictEqual(sorted_blacklist[8], {
             'ad_group_id': 2,
             'domain': 'pub6.com',
             'exchange': 'gravity',
@@ -438,7 +445,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 4)
+        self.assertEqual(len(data['blacklist']), 5)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: b['domain'])
         self.assertDictEqual(sorted_blacklist[0], {

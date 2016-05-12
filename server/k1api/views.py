@@ -108,6 +108,11 @@ def get_ad_group_source(request):
     else:
         source_state = constants.AdGroupSettingsState.INACTIVE
 
+    tracking_code = url_helper.combine_tracking_codes(
+        ad_group_settings.get_tracking_codes(),
+        ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
+    ),
+
     data = {
         'ad_group_source_id': ad_group_source.id,
         'ad_group_id': ad_group_source.ad_group_id,
@@ -121,7 +126,7 @@ def get_ad_group_source(request):
         'end_date': ad_group_settings.end_date,
         'target_devices': ad_group_settings.target_devices,
         'target_regions': ad_group_settings.target_regions,
-        'tracking_code': ad_group_settings.tracking_code,
+        'tracking_code': tracking_code,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
     return _response_ok(data)
@@ -352,9 +357,8 @@ def get_publishers_blacklist_outbrain(request):
     marketer_id = request.GET.get('marketer_id')
     blacklisted_publishers = (
         dash.models.PublisherBlacklist.objects
-            .filter(Q(account__outbrain_marketer_id=marketer_id) |
-                    Q(ad_group__isnull=True, campaign__isnull=True, account__isnull=True))
-            .filter(external_id__isnull=False)
+            .filter(account__outbrain_marketer_id=marketer_id)
+            .filter(source__source_type__type='outbrain')
             .values('name', 'external_id')
     )
     return _response_ok({'blacklist': list(blacklisted_publishers)})
