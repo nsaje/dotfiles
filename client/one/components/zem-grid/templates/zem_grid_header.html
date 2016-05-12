@@ -3,7 +3,21 @@
         <div class="zem-grid-cell"
              ng-repeat="col in ctrl.grid.header.columns track by $index"
              ng-style="ctrl.getCellStyle($index)">
-            <span class="col-title">{{ col.name }}</span>
+
+            <!--<span ng-if="col.hasPermission && col.selectionMenuConfig">-->
+                <!--<zem-selection-menu config="col.selectionMenuConfig" />-->
+            <!--</span>-->
+            <span ng-if="!col.selectionMenuConfig">
+
+                <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
+
+                <span ng-switch="col.order">
+                    <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass" ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
+                    <span ng-switch-default class="col-title" ng-class="col.nameCssClass">{{ col.name }}</span>
+                </span>
+                <zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
+            </span>
+
         </div>
     </div>
 </div>
