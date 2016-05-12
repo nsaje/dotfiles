@@ -4,7 +4,7 @@ from dash.views import breakdowns_helpers
 from utils import exc
 from utils import api_common
 
-import stats.api
+import stats.api_breakdowns
 
 """
 SPEC:
@@ -69,13 +69,11 @@ class AccountBreakdown(api_common.BaseApiView):
 
     def post(self, request, account_id, breakdown):
 
-        print account_id, breakdown
-
-
         account = helpers.get_account(request.user, account_id)
 
         constraints = breakdowns_helpers.clean_default_params(request)
         constraints['account'] = account
+
         breakdown = breakdowns_helpers.clean_breakdown(breakdown)
         breakdown_constraints = breakdowns_helpers.clean_breakdown_page(request, breakdown)
 
@@ -95,7 +93,7 @@ class AccountBreakdown(api_common.BaseApiView):
                 'page_size': page_size,
             })
 
-        report = stats.api.query_breakdown(
+        report = stats.api_breakdowns.query(
             request.user,
             breakdown,
             constraints,

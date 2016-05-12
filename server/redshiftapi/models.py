@@ -2,6 +2,8 @@ import backtosql
 
 from dash import breakdown_helpers
 
+from redshiftapi import helpers
+
 
 BREAKDOWN = 1
 AGGREGATES = 2
@@ -37,17 +39,12 @@ class RSBreakdownMixin(object):
         Returns a copy of the dict.
         """
 
-        if not dict_:
-            return dict_
-
-        return {cls.MISCONCEPTION_DICT.get(k, k): v for k, v in dict_.items()}
+        return helpers.translate_dict(cls.MISCONCEPTION_DICT, dict_)
 
     @classmethod
     def translate_dicts(cls, list_of_dicts):
-        if not list_of_dicts:
-            return list_of_dicts
+        return helpers.translate_dicts(cls.MISCONCEPTION_DICT, list_of_dicts)
 
-        return [cls.translate_dict(x) for x in list_of_dicts]
 
     @classmethod
     def translate_breakdown(cls, breakdown):
@@ -56,7 +53,7 @@ class RSBreakdownMixin(object):
         Returns a copy of the dict.
         """
 
-        return [cls.MISCONCEPTION_DICT.get(x, x) for x in breakdown]
+        return helpers.translate_list(cls.MISCONCEPTION_DICT, breakdown)
 
 
 class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
