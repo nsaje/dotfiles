@@ -378,7 +378,13 @@ def _combined_active_budget_from_other_items(budget_item):
 
 
 def _can_resume_campaign(campaign, campaign_settings):
-    return campaign_settings.landing_mode and get_min_budget_increase(campaign) == 0
+    if not campaign_settings.landing_mode:
+        return False
+
+    if not campaign_settings.automatic_campaign_stop:
+        return True
+
+    return get_min_budget_increase(campaign) == 0
 
 
 def _get_minimum_remaining_budget(campaign, max_daily_budget):
@@ -1290,13 +1296,7 @@ Zemanta'''  # noqa
     )
 
     account_settings = campaign.account.get_current_settings()
-    emails = []
-    if account_settings.default_account_manager:
-        emails.append(account_settings.default_account_manager.email)
-    if campaign_settings.campaign_manager:
-        emails.append(campaign_settings.campaign_manager.email)
-
-    email_helper.send_notification_mail(emails, subject, body)
+    _send_notification_email(subject, body, campaign_settings, account_settings)
 
 
 def _send_depleting_budget_notification_email(campaign, campaign_settings, available_tomorrow,
@@ -1329,6 +1329,10 @@ Zemanta'''  # noqa
     )
 
     account_settings = campaign.account.get_current_settings()
+    _send_notification_email(subject, body, campaign_settings, account_settings)
+
+
+def _send_notification_email(subject, body, campaign_settings, account_settings):
     emails = []
     if account_settings.default_account_manager:
         emails.append(account_settings.default_account_manager.email)
@@ -1336,3 +1340,4 @@ Zemanta'''  # noqa
         emails.append(campaign_settings.campaign_manager.email)
 
     email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_notification_mail(['luka.silovinac@zemanta.com'], subject, body)

@@ -354,7 +354,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 'media_cost', 'e_media_cost', 'e_data_cost',
                 'license_fee', 'total_fee', 'flat_fee',
                 'billing_cost',
-                'credit_projection', 'spend_projection',
             ],
         },
         {

@@ -779,7 +779,7 @@ class CampaignAdminFormTest(TestCase):
         form = forms.CampaignAdminForm(
             instance=campaign
         )
-        self.assertFalse(form.initial['automatic_campaign_stop'])
+        self.assertTrue(form.initial['automatic_campaign_stop'])
 
     def test_instance_with_settings(self):
         campaign = models.Campaign(
