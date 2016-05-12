@@ -1,7 +1,5 @@
-import calendar
 import copy
 import datetime
-import exceptions
 import utils.lc_helper
 
 import reports.api_helpers
@@ -494,9 +492,14 @@ def get_account_running_status(account):
 
 
 def _retrieve_active_creditlineitems(account, date):
-    return dash.models.CreditLineItem.objects.filter(
+    ret = dash.models.CreditLineItem.objects.filter(
         account=account
-    ).filter_active()
+    )
+    if account.agency is not None:
+        ret |= dash.models.CreditLineItem.objects.filter(
+            agency=account.agency
+        )
+    return ret.filter_active()
 
 
 def _compute_daily_cap(ad_groups):
