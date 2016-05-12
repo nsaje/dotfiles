@@ -523,43 +523,50 @@ def get_ad_groups_exchanges(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    ad_group_sources_settings = _get_ad_group_sources_settings(ad_group_id)
+
+    ad_groups_query = dash.models.AdGroup.objects
+    if ad_group_id is not None:
+        ad_groups_query = ad_groups_query.filter(id=ad_group_id)
+
+    ad_groups = (
+        ad_groups_query
+        .prefetch_related(
+            'adgroupsource_set',
+            'adgroupsource_set__source',
+            'adgroupsource_set__source__source_type',
+        )
+        .all()
+        .exclude_archived()
+    )
 
     ad_group_sources = {}
-    for ad_group_source_setting in ad_group_sources_settings:
-        ad_group_id = ad_group_source_setting.ad_group_source.ad_group.id
-        source = {
-            'exchange': ad_group_source_setting.ad_group_source.source.bidder_slug,
-            'status': ad_group_source_setting.state,
-            'cpc_cc': ad_group_source_setting.cpc_cc,
-            'daily_budget_cc': ad_group_source_setting.daily_budget_cc,
-        }
-        ad_group_sources.setdefault(ad_group_id, []).append(source)
+
+    for ad_group in ad_groups:
+        ad_group_settings = ad_group.get_current_settings()
+
+        ad_group_sources = ad_group.sources.filter(
+            source__source_type__type='b1',
+            source__deprecated=False,
+        )
+
+        for ad_group_source in ad_group_sources:
+            ad_group_source_settings = ad_group_source.get_current_settings()
+
+            if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
+                    ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+                source_state = constants.AdGroupSettingsState.ACTIVE
+            else:
+                source_state = constants.AdGroupSettingsState.INACTIVE
+
+            source = {
+                'exchange': ad_group_source_settings.ad_group_source.source.bidder_slug,
+                'status': source_state,
+                'cpc_cc': ad_group_source_settings.cpc_cc,
+                'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
+            }
+            ad_group_sources.setdefault(ad_group_id, []).append(source)
 
     return _response_ok(ad_group_sources)
-
-
-def _get_ad_group_sources_settings(ad_group_id):
-    if ad_group_id:
-        ad_group_ids = [ad_group_id]
-    else:
-        ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .all()
-                              .group_current_settings()
-                              .select_related('ad_group'))
-        ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
-                        not ad_group_settings.archived]
-
-    ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                 .filter(ad_group_source__ad_group__id__in=ad_group_ids,
-                                         ad_group_source__source__source_type__type='b1',
-                                         ad_group_source__source__deprecated=False)
-                                 .group_current_settings()
-                                 .select_related('ad_group_source',
-                                                 'ad_group_source__source',
-                                                 'ad_group_source__ad_group'))
-
-    return ad_group_sources_settings
 
 
 @csrf_exempt
