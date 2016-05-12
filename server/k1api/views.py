@@ -111,7 +111,7 @@ def get_ad_group_source(request):
     tracking_code = url_helper.combine_tracking_codes(
         ad_group_settings.get_tracking_codes(),
         ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
-    ),
+    )
 
     data = {
         'ad_group_source_id': ad_group_source.id,
