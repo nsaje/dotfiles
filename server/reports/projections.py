@@ -171,6 +171,7 @@ class BudgetProjections(object):
         row['flat_fee'] = sum(
             credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
             for credit in set(budget.credit for budget in budgets)
+            if credit.agency is None
         )
 
         # when we have agency credits with flat fee each account of that agency
