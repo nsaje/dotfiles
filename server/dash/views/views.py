@@ -972,9 +972,8 @@ class AdGroupSources(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN,
                                             ad_group=ad_group)
 
-        if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_settings(
-                request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+        helpers.set_ad_group_source_settings(
+            request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
 
         return self.create_api_response(None)
 
