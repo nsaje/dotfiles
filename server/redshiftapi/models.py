@@ -1,62 +1,101 @@
 import backtosql
 
-from redshiftapi import constants
-from redshiftapi import models_helpers
+from dash import breakdown_helpers
 
-class RSContentAdStats(backtosql.Model, models_helpers.RSBreakdownMixin):
-    # this model defines the basic materialized view that has
-    # all the fields available
 
-    # TODO: until K1 data is not available use the existing
-    # 'contentadstats' table. The model definition is based
-    # on that table for now.
+BREAKDOWN = 1
+AGGREGATES = 2
 
-    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'},
-                                  constants.ColumnGroup.BREAKDOWN)
 
-    account = backtosql.Column('account_id', constants.ColumnGroup.BREAKDOWN)
-    campaign = backtosql.Column('campaign_id', constants.ColumnGroup.BREAKDOWN)
-    ad_group = backtosql.Column('adgroup_id', constants.ColumnGroup.BREAKDOWN)
-    content_ad = backtosql.Column('content_ad_id', constants.ColumnGroup.BREAKDOWN)
-    source = backtosql.Column('source_id', constants.ColumnGroup.BREAKDOWN)
-
-    clicks = models_helpers.SumColumn('clicks')
-    impressions = models_helpers.SumColumn('impressions')
-    cost = models_helpers.SumCCColumn('cost_cc')
-    data_cost = models_helpers.SumCCColumn('data_cost_cc')
-
-    # BCM
-    media_cost = models_helpers.SumCCColumn('cost_cc')
-    e_media_cost = models_helpers.SumNanoColumn('effective_cost_nano')
-    e_data_cost = models_helpers.SumNanoColumn('effective_data_cost_nano')
-    license_fee = models_helpers.SumNanoColumn('license_fee_nano')
-    billing_cost = models_helpers.AggregateColumn(column_name=None, template_name='part_billing_cost.sql')
-    total_cost = models_helpers.AggregateColumn(column_name=None, template_name='part_total_cost.sql')
-
-    # Derivates
-    ctr = models_helpers.SumDivPercColumn('clicks', 'impressions')
-    cpc = models_helpers.SumDivCCColumn('cost_cc', 'clicks')
-
-    # Postclick acquisition fields
-    visits = models_helpers.SumColumn('visits')
-    click_discrepancy = models_helpers.AggregateColumn(column_name=None, template_name='part_click_discrepancy.sql')
-    pageviews = models_helpers.SumColumn('pageviews')
-
-    # Postclick engagement fields
-    new_visits = models_helpers.SumColumn('new_visits')
-    percent_new_users = models_helpers.SumDivPercColumn('new_visits', 'visits')
-    bounce_rate = models_helpers.SumDivPercColumn('bounced_visits', 'visits')
-    pv_per_visit = models_helpers.SumDivColumn('pageviews', 'visits')
-    avg_tos = models_helpers.SumDivColumn('total_time_on_site', 'visits')
+class RSBreakdownMixin(object):
+    """
+    Mixin that defines breakdowns specific model features.
+    """
 
     @classmethod
     def get_best_view(cls, breakdown):
-        return 'contentadstats'
+        """ Returns the SQL view that best fits the breakdown """
+        raise NotImplementedError()
 
     @classmethod
-    def get_best_query_template(cls, breakdown, constraints):
-        if len(breakdown) == 2:
-            return 'breakdown_lvl1.sql'
-        elif len(breakdown) == 3:
-            return 'breakdown_lvl2.sql'
-        raise NotImplementedError()
+    def get_breakdown(cls, breakdown):
+        """ Selects breakdown subset of columns """
+        return cls.select_columns(subset=breakdown)
+
+    @classmethod
+    def get_aggregates(cls):
+        """ Returns all the aggregate columns """
+        return cls.select_columns(group=AGGREGATES)
+
+
+class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
+    """
+    Defines all the fields that are provided by this breakdown model.
+    Materialized sub-views are a part of it.
+    """
+
+    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+
+    account = backtosql.Column('account_id', BREAKDOWN)
+    campaign = backtosql.Column('campaign_id', BREAKDOWN)
+    ad_group = backtosql.Column('adgroup_id', BREAKDOWN)
+    content_ad = backtosql.Column('content_ad_id', BREAKDOWN)
+    source = backtosql.Column('source_id', BREAKDOWN)
+
+    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
+    impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
+    cost = backtosql.TemplateColumn('part_sum_cc.sql', {'column_name': 'cost_cc'}, AGGREGATES)
+    data_cost = backtosql.TemplateColumn('part_sum_cc.sql', {'column_name': 'data_cost_cc'}, AGGREGATES)
+
+    # BCM
+    media_cost = backtosql.TemplateColumn('part_sum_cc.sql', {'column_name': 'cost_cc'}, AGGREGATES)
+    e_media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'}, AGGREGATES)
+    e_data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_data_cost_nano'}, AGGREGATES)
+    license_fee = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'license_fee_nano'}, AGGREGATES)
+    billing_cost = backtosql.TemplateColumn('part_billing_cost.sql', None, AGGREGATES)
+    total_cost = backtosql.TemplateColumn('part_total_cost.sql', None, AGGREGATES)
+
+    # Derivates
+    ctr = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'clicks', 'divisor': 'impressions'}, AGGREGATES)
+    cpc = backtosql.TemplateColumn('part_sumdiv_cc.sql', {'expr': 'cost_cc', 'divisor': 'clicks'}, AGGREGATES)
+
+    # Postclick acquisition fields
+    visits = backtosql.TemplateColumn('part_sum.sql', {'column_name':'visits'}, AGGREGATES)
+    click_discrepancy = backtosql.TemplateColumn('part_click_discrepancy.sql', None, AGGREGATES)
+    pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name':'pageviews'}, AGGREGATES)
+
+    # Postclick engagement fields
+    new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name':'new_visits'}, AGGREGATES)
+    percent_new_users = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'new_visits', 'divisor': 'visits'}, AGGREGATES)
+    bounce_rate = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'bounced_visits', 'divisor': 'visits'}, AGGREGATES)
+    pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor':'visits'}, AGGREGATES)
+    avg_tos = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'total_time_on_site', 'divisor':'visits'}, AGGREGATES)
+
+    @classmethod
+    def get_best_view(cls, breakdown):
+        # NOTE: best view selection is separated from template preparation
+        # as it follows a different kind of logics (does not matter if
+        # 'other' row is involved or not, group limits etc.)
+
+        if True:
+            return 'contentadstats'
+
+        # TODO the real code for view selection will be like this:
+        base = breakdown_helpers.get_base(breakdown)
+        structure = breakdown_helpers.get_structure(breakdown)
+        delivery = breakdown_helpers.get_delivery(breakdown)
+        time = breakdown_helpers.get_time(breakdown)
+        l = len(breakdown)
+
+        if base == 'account':
+            if l == 1:
+                return 'mv_by_acc'
+
+            if structure == 'campaign':
+                return 'mv_by_acc_camp' if l == 2 else 'mv_by_acc_camp_ext'
+            elif structure == 'source':
+                return 'mv_by_acc_sour' if l == 2 else 'mv_by_acc_sour_ext'
+            elif structure is None:
+                return 'mv_by_acc_ext'
+            else:
+                raise Exception('Should have all cases covered explicitly')

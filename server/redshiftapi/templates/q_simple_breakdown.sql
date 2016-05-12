@@ -8,15 +8,16 @@ FROM
     {{ view }} a
 WHERE
     {{ constraints|g:"a" }}
+GROUP BY {{ breakdown|g_alias:"a" }}
 {% if order %}
 ORDER BY {{ order|g_alias:"a" }}
 {% endif %}
 
-{% if offset %}
-OFFSET {{ offset }}
-{% endif %}
 {% if limit %}
 LIMIT {{ limit }}
+{% endif %}
+{% if offset %}
+OFFSET {{ offset }}
 {% endif %}
 ;
 

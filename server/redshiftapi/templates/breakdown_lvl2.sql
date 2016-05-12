@@ -15,6 +15,8 @@ SELECT
 FROM (
     SELECT
         {{ breakdown.0|g_w_alias:"b" }},
+        -- could this be rewritten in 1 SELECT as it
+        -- already selects the appropriate rows in this case?
         CASE WHEN {{ breakdown_constraints|g:"b" }} THEN {{ breakdown.1|g:"b" }} ELSE -1 END AS {{ breakdown.1|g_alias}},
         {{ breakdown.2|g_w_alias:"b" }},
         SUM(b.clicks) clicks,

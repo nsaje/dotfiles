@@ -2,15 +2,17 @@
 {% autoescape off%}
 
 SELECT
-    {{ breakdown.0|g_alias }},
-    CASE WHEN
-    {% if offset %}
-    r >= {{ offset }} AND
-    {% endif %}
-    {% if limit %}
-    r <= {{ limit }}
-    {% endif %} THEN {{ breakdown.1|g_alias }} ELSE -1 END AS {{ breakdown.1|g_alias }},
-    {{ aggregates|g_w_alias }}
+    ---- get name of column with a reference to another table and alias
+    {{ breakdown.0|g_alias:"a" }},
+    CASE WHEN -- selects X items from a breakdown and collects others in a joint row
+            {% if offset %}
+              r >= {{ offset }} AND
+            {% endif %}
+            r <= {{ limit }}
+          THEN {{ breakdown.1|g_alias:"a" }}
+        ELSE -1
+    END AS {{ breakdown.1|g_alias }},
+    {{ aggregates|g_w_alias:"a" }}
 FROM (
     SELECT
         {{ breakdown|g_w_alias:"b" }},
@@ -31,7 +33,9 @@ FROM (
         {{ view }} b
     WHERE
         {{ constraints|g:"b"}}
-    GROUP BY 1, 2
+    GROUP BY
+        --- get name of column by alias
+        {{ breakdown|g_alias }}
 ) a
 GROUP BY 1, 2
 {% endautoescape %}
