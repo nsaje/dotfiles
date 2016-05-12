@@ -1,12 +1,10 @@
-import calendar
 import copy
 import datetime
-import exceptions
 import utils.lc_helper
 
 import reports.api_helpers
 from django.db import models
-from django.db.models import Sum, F, ExpressionWrapper, Q
+from django.db.models import Sum, F, ExpressionWrapper
 
 import dash.constants
 import dash.models
