@@ -487,7 +487,7 @@ class K1ApiTest(TestCase):
 
         self.assertDictEqual(data[0], {
             u'id': 1,
-            u'name': u'test adgroup 1',
+            u'name': u'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
             u'start_date': u'2014-06-04',
             u'end_date': None,
             u'time_zone': u'America/New_York',

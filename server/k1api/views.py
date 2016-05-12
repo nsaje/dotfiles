@@ -466,7 +466,7 @@ def get_ad_groups(request):
     for ad_group_settings in ad_groups_settings:
         ad_group = {
             'id': ad_group_settings.ad_group.id,
-            'name': ad_group_settings.ad_group.name,
+            'name': ad_group_settings.ad_group.get_external_name(),
             'start_date': ad_group_settings.start_date,
             'end_date': ad_group_settings.end_date,
             'time_zone': settings.DEFAULT_TIME_ZONE,
@@ -552,7 +552,8 @@ def _get_ad_group_sources_settings(ad_group_id):
 
     ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
                                  .filter(ad_group_source__ad_group__id__in=ad_group_ids,
-                                         ad_group_source__source__source_type__type='b1')
+                                         ad_group_source__source__source_type__type='b1',
+                                         ad_group_source__source__deprecated=False)
                                  .group_current_settings()
                                  .select_related('ad_group_source',
                                                  'ad_group_source__source',

@@ -117,7 +117,7 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
 
     constraints = extract_obj_ids(constraints)
 
-    cursor = redshift.get_cursor()
+    cursor = redshift.get_cursor(read_only=True)
 
     returned_fields = RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP[:]
     for label in conversion_goals:
@@ -214,7 +214,7 @@ def has_complete_postclick_metrics(start_date, end_date, level_constraints, sour
     specified date range. All objects that don't have this data at all are ignored.
     """
 
-    cursor = redshift.get_cursor()
+    cursor = redshift.get_cursor(read_only=True)
 
     level_constraints_ids = extract_obj_ids(copy.copy(level_constraints))
     source_ids = extract_obj_ids(sources)
