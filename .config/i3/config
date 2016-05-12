@@ -64,7 +64,7 @@ bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-f
 set $Locker bash ~/.local/bin/fuzzy_lock.sh && sleep 1
 
 #exec --no-startup-id xautolock -time 1 -locker "~/.local/bin/fuzzy_lock.sh" &
-exec --no-startup-id xautolock -time 1 -locker "bash ~/.local/bin/fuzzy_lock.sh" &
+exec --no-startup-id xautolock -time 3 -locker "bash ~/.local/bin/fuzzy_lock.sh" &
 
 set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
 mode "$mode_system" {
