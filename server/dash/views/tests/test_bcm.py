@@ -472,8 +472,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(json.loads(response.content)['data'], "2")
 
 
-
 class CampaignBudgetViewTest(BCMViewTestCase):
+
     def setUp(self):
         super(CampaignBudgetViewTest, self).setUp()
 

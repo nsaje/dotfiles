@@ -23,6 +23,7 @@ def add_permissions(user, permissions):
             Permission.objects.get(codename=permission)
         )
 
+
 def fake_request(user, url=''):
     rf = RequestFactory()
     r = rf.get(url)
