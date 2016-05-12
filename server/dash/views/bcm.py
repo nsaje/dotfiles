@@ -5,6 +5,7 @@ from dash import models, constants, forms
 from utils import statsd_helper, api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
+from django.db.models import Q
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -14,19 +15,24 @@ class AccountCreditView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
-        return self._get_response(account.id)
+        return self._get_response(account.id, account.agency)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_delete')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
 
-        helpers.get_account(request.user, account_id)
+        account = helpers.get_account(request.user, account_id)
         request_data = json.loads(request.body)
         response_data = {'canceled': []}
         account_credits_to_cancel = models.CreditLineItem.objects.filter(
             account_id=account_id, pk__in=request_data['cancel']
         )
+        if account.agency is not None:
+            account_credits_to_cancel |= models.CreditLineItem.objects.filter(
+                agency=account.agency, pk__in=request_data['cancel']
+            )
+
         for credit in account_credits_to_cancel:
             credit.cancel()
             response_data['canceled'].append(credit.pk)
@@ -82,10 +88,15 @@ class AccountCreditView(api_common.BaseApiView):
             'available': item.effective_amount() - allocated,
         }
 
-    def _get_response(self, account_id):
+    def _get_response(self, account_id, agency):
         credit_items = models.CreditLineItem.objects.filter(
             account_id=account_id
         ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
+
+        if agency is not None:
+            credit_items |= models.CreditLineItem.objects.filter(
+                agency=agency
+            ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
             'active': self._get_active_credit(account_id, credit_items),
@@ -127,8 +138,10 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
-        return self._get_response(item)
+        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
+        if item is None:
+            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
+        return self._get_response(account.id, item)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_delete')
     def delete(self, request, account_id, credit_id):
@@ -137,7 +150,9 @@ class AccountCreditItemView(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
+        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
+        if item is None:
+            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         item.delete()
         return self.create_api_response()
 
@@ -147,7 +162,9 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
+        item = models.CreditLineItem.objects.filter(account_id=account.id, pk=credit_id).first()
+        if item is None:
+            item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         request_data = json.loads(request.body)
 
         data = {}
@@ -168,7 +185,7 @@ class AccountCreditItemView(api_common.BaseApiView):
         item_form.save()
         return self.create_api_response(credit_id)
 
-    def _get_response(self, item):
+    def _get_response(self, account_id, item):
         return self.create_api_response({
             'id': item.pk,
             'created_by': str(item.created_by or 'Zemanta One'),
@@ -179,7 +196,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'amount': item.amount,
-            'account_id': item.account_id,
+            'account_id': account_id,
             'comment': item.comment,
             'budgets': [
                 {
@@ -248,7 +265,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response({
             'active': active_budget,
             'past': self._get_past_budget(budget_items),
-            'totals': self._get_budget_totals(campaign, active_budget),
+            'totals': self._get_budget_totals(user, campaign, active_budget),
             'credits': self._get_available_credit_items(user, campaign),
             'min_amount': campaign_stop.get_min_budget_increase(campaign),
         })
@@ -258,8 +275,8 @@ class CampaignBudgetView(api_common.BaseApiView):
             account=campaign.account
         )
 
-        agency = user.agency_set.first()
-        if agency:
+        agency = campaign.account.agency
+        if agency is not None:
             available_credits |= models.CreditLineItem.objects.filter(
                 agency=agency
             )
@@ -290,7 +307,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.INACTIVE,
         )]
 
-    def _get_budget_totals(self, campaign, active_budget):
+    def _get_budget_totals(self, user, campaign, active_budget):
         data = {
             'current': {
                 'available': sum([x['available'] for x in active_budget]),
@@ -304,7 +321,13 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'license_fee': Decimal('0.0000'),
             }
         }
-        for item in models.CreditLineItem.objects.filter(account=campaign.account):
+        credits = models.CreditLineItem.objects.filter(account=campaign.account)
+
+        agency = campaign.account.agency
+        if agency is not None:
+            credits |= models.CreditLineItem.objects.filter(agency=campaign.account.agency)
+
+        for item in credits:
             if item.status != constants.CreditLineItemStatus.SIGNED or item.is_past():
                 continue
             data['current']['unallocated'] += Decimal(item.amount - item.flat_fee() - item.get_allocated_amount())
