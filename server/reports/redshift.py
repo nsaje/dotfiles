@@ -36,8 +36,9 @@ def _execute(query, params):
         cursor.execute(query, params)
 
 
-def get_cursor():
-    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
+def get_cursor(read_only=False):
+    db_name = settings.STATS_READ_DB_NAME if read_only else settings.STATS_DB_NAME
+    return MyCursor(connections[db_name].cursor())
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstatsdiff')
@@ -132,7 +133,7 @@ def sum_of_stats(with_diffs=False):
         query += ' WHERE content_ad_id != %s'
         params.append(REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID)
 
-    cursor = get_cursor()
+    cursor = get_cursor(read_only=True)
     cursor.execute(query, params)
 
     result = cursor.dictfetchall()
@@ -151,7 +152,7 @@ def get_pixels_last_verified_dt(account_id=None):
 
     query += ' GROUP BY slug, account_id'
 
-    cursor = get_cursor()
+    cursor = get_cursor(read_only=True)
     cursor.execute(query, params)
 
     result = cursor.fetchall()
@@ -465,29 +466,29 @@ class RSModel(object):
         from_params = []
         if subquery:
             from_table, from_params, from_json_fields = self._prepare_select_query(
-                    returned_fields=subquery['returned_fields'],
-                    breakdown_fields=subquery.get('breakdown_fields', []),
-                    order_fields=subquery.get('order_fields', []),
-                    offset=subquery.get('offset'),
-                    limit=subquery.get('limit'),
-                    constraints=subquery.get('constraints', {}),
-                    constraints_list=subquery.get('constraints_list', []),
-                    having_constraints=subquery.get('having_constraints'),
-                    subquery=subquery.get('subquery')
+                returned_fields=subquery['returned_fields'],
+                breakdown_fields=subquery.get('breakdown_fields', []),
+                order_fields=subquery.get('order_fields', []),
+                offset=subquery.get('offset'),
+                limit=subquery.get('limit'),
+                constraints=subquery.get('constraints', {}),
+                constraints_list=subquery.get('constraints_list', []),
+                having_constraints=subquery.get('having_constraints'),
+                subquery=subquery.get('subquery')
             )
             from_table = '(' + from_table + ')'
             json_fields.extend(from_json_fields)
 
         params = returned_params + from_params + constraint_params
         statement = self._form_select_query(
-                from_table,
-                breakdown_fields + returned_fields,
-                constraint_str,
-                breakdown_fields=breakdown_fields,
-                order_fields=order_fields,
-                limit=limit,
-                offset=offset,
-                having_constraints=having_constraints
+            from_table,
+            breakdown_fields + returned_fields,
+            constraint_str,
+            breakdown_fields=breakdown_fields,
+            order_fields=order_fields,
+            limit=limit,
+            offset=offset,
+            having_constraints=having_constraints
         )
 
         return (statement, params, json_fields)
@@ -554,15 +555,15 @@ class RSModel(object):
                              constraints_list=None, having_constraints=None, subquery=None):
 
         (statement, params, json_fields) = self._prepare_select_query(
-                returned_fields=returned_fields,
-                breakdown_fields=breakdown_fields,
-                order_fields=order_fields,
-                offset=offset,
-                limit=limit,
-                constraints=constraints,
-                constraints_list=constraints_list if constraints_list else [],
-                having_constraints=having_constraints,
-                subquery=subquery)
+            returned_fields=returned_fields,
+            breakdown_fields=breakdown_fields,
+            order_fields=order_fields,
+            offset=offset,
+            limit=limit,
+            constraints=constraints,
+            constraints_list=constraints_list if constraints_list else [],
+            having_constraints=having_constraints,
+            subquery=subquery)
 
         cursor.execute(statement, params)
         results = cursor.dictfetchall()

@@ -50,7 +50,7 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
 
     constraints = db_raw_helpers.extract_obj_ids(constraints)
 
-    cursor = redshift.get_cursor()
+    cursor = redshift.get_cursor(read_only=True)
 
     if conversion_goals:
         results = []
