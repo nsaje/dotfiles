@@ -12,6 +12,9 @@ class RSBreakdownMixin(object):
     Mixin that defines breakdowns specific model features.
     """
 
+    # TODO rename this
+    MISCONCEPTION_DICT = {}
+
     @classmethod
     def get_best_view(cls, breakdown):
         """ Returns the SQL view that best fits the breakdown """
@@ -27,6 +30,34 @@ class RSBreakdownMixin(object):
         """ Returns all the aggregate columns """
         return cls.select_columns(group=AGGREGATES)
 
+    @classmethod
+    def translate_dict(cls, dict_):
+        """
+        Translates dict keys into keys our model understands.
+        Returns a copy of the dict.
+        """
+
+        if not dict_:
+            return dict_
+
+        return {cls.MISCONCEPTION_DICT.get(k, k): v for k, v in dict_.items()}
+
+    @classmethod
+    def translate_dicts(cls, list_of_dicts):
+        if not list_of_dicts:
+            return list_of_dicts
+
+        return [cls.translate_dict(x) for x in list_of_dicts]
+
+    @classmethod
+    def translate_breakdown(cls, breakdown):
+        """
+        Translates breakdown array items into keys our model understands.
+        Returns a copy of the dict.
+        """
+
+        return [cls.MISCONCEPTION_DICT.get(x, x) for x in breakdown]
+
 
 class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
     """
@@ -34,13 +65,21 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
     Materialized sub-views are a part of it.
     """
 
+    MISCONCEPTION_DICT = {
+        'account': 'account_id',
+        'campaign': 'campaign_id',
+        'ad_group': 'ad_group_id',
+        'content_ad': 'content_ad_id',
+        'source': 'source_id',
+    }
+
     date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
 
-    account = backtosql.Column('account_id', BREAKDOWN)
-    campaign = backtosql.Column('campaign_id', BREAKDOWN)
-    ad_group = backtosql.Column('adgroup_id', BREAKDOWN)
-    content_ad = backtosql.Column('content_ad_id', BREAKDOWN)
-    source = backtosql.Column('source_id', BREAKDOWN)
+    account_id = backtosql.Column('account_id', BREAKDOWN)
+    campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
+    ad_group_id= backtosql.Column('adgroup_id', BREAKDOWN)
+    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
+    source_id = backtosql.Column('source_id', BREAKDOWN)
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)

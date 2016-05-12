@@ -14,10 +14,14 @@ def query(breakdown, constraints, breakdown_constraints, order, page, page_size)
 
     assert len(order) == 1
 
-    # prepare the query
-    query, params = _prepare_query(
-        models.RSContentAdStats,
-        breakdown, constraints, breakdown_constraints, order, page, page_size)
+    model = models.RSContentAdStats
+
+    # first translate fields into what our code understands
+    breakdown = model.translate_breakdown(breakdown)
+    constraints = model.translate_dict(constraints)
+    breakdown_constraints = model.translate_dicts(breakdown_constraints)
+
+    query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints, order, page, page_size)
 
     # execute the query
     with db.get_stats_cursor() as cursor:
