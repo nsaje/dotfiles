@@ -826,7 +826,112 @@ class ConversionPixel(api_common.BaseApiView):
         })
 
 
-class AccountAgency(api_common.BaseApiView):
+class AccountHistory(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_history_get')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_history_view'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+        response = {
+            'history': self.get_history(account),
+        }
+        return self.create_api_response(response)
+
+    def get_history(self, account):
+        settings = models.AccountSettings.objects.\
+            filter(account=account).\
+            order_by('created_dt')
+
+        history = []
+        for i in range(0, len(settings)):
+            old_settings = settings[i - 1] if i > 0 else None
+            new_settings = settings[i]
+
+            settings_dict = self.convert_settings_to_dict(new_settings, old_settings)
+            changes_text = self.get_changes_text(new_settings, old_settings)
+
+            if not changes_text:
+                continue
+
+            history.append({
+                'datetime': new_settings.created_dt,
+                'changed_by': new_settings.created_by.email,
+                'changes_text': changes_text,
+                'settings': settings_dict.values(),
+                'show_old_settings': old_settings is not None
+            })
+
+        return history
+
+    def convert_settings_to_dict(self, new_settings, old_settings):
+        settings_dict = OrderedDict([
+            ('name', {
+                'name': 'Name',
+                'value': new_settings.name.encode('utf-8')
+            }),
+            ('archived', {
+                'name': 'Archived',
+                'value': str(new_settings.archived)
+            }),
+            ('default_account_manager', {
+                'name': 'Account Manager',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
+            }),
+            ('default_sales_representative', {
+                'name': 'Sales Representative',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
+            }),
+            ('account_type', {
+                'name': 'Account Type',
+                'value': constants.AccountType.get_text(new_settings.account_type)
+            }),
+        ])
+
+        if old_settings is not None:
+            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+            settings_dict['archived']['old_value'] = str(old_settings.archived)
+
+            if old_settings.default_account_manager is not None:
+                settings_dict['default_account_manager']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_account_manager)
+
+            if old_settings.default_sales_representative is not None:
+                settings_dict['default_sales_representative']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
+            if old_settings.account_type is not None:
+                settings_dict['account_type']['old_value'] = constants.AccountType.get_text(old_settings.account_type)
+
+        return settings_dict
+
+    def get_changes_text(self, new_settings, old_settings):
+        if not old_settings:
+            return 'Created settings'
+
+        changes_text = ', '.join(filter(None, [
+            self.get_changes_text_for_settings(new_settings, old_settings),
+            new_settings.changes_text.encode('utf-8') if new_settings.changes_text is not None else ''
+        ]))
+
+        return changes_text
+
+    def get_changes_text_for_settings(self, new_settings, old_settings):
+        change_strings = []
+        changes = old_settings.get_setting_changes(new_settings)
+        settings_dict = self.convert_settings_to_dict(new_settings, None)
+
+        for key in changes:
+            setting = settings_dict[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
+
+        return ', '.join(change_strings)
+
+
+class AccountSettings(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
@@ -837,17 +942,14 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
-            'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
 
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_modify_account_manager'):
+        if request.user.has_perm('zemauth.can_modify_account_manager'):
             response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
 
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_set_account_sales_representative'):
+        if request.user.has_perm('zemauth.can_set_account_sales_representative'):
             response['sales_reps'] = self.get_user_list(account_settings, 'campaign_settings_sales_rep')
         return self.create_api_response(response)
 
@@ -856,7 +958,7 @@ class AccountAgency(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
 
-        form = forms.AccountAgencyAgencyForm(resource.get('settings', {}))
+        form = forms.AccountSettingsForm(resource.get('settings', {}))
 
         settings = self.save_settings(request, account, form)
 
@@ -864,7 +966,6 @@ class AccountAgency(api_common.BaseApiView):
                                             account=account)
         response = {
             'settings': self.get_dict(request, settings, account),
-            'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
         }
@@ -910,23 +1011,18 @@ class AccountAgency(api_common.BaseApiView):
 
     def _validate_essential_account_settings(self, user, form):
         if 'default_sales_representative' in form.cleaned_data and\
-                form.cleaned_data['default_sales_representative'] is not None and not (
-                user.has_perm('zemauth.account_agency_view') or
-                user.has_perm('zemauth.can_set_account_sales_representative')):
+                form.cleaned_data['default_sales_representative'] is not None and\
+                not user.has_perm('zemauth.can_set_account_sales_representative'):
             raise exc.AuthorizationError()
 
         if 'name' in form.cleaned_data and\
-                form.cleaned_data['name'] is not None and not (
-                    user.has_perm('zemauth.account_agency_view') or
-                    user.has_perm('zemauth.can_modify_account_name')
-                ):
+                form.cleaned_data['name'] is not None and\
+                not user.has_perm('zemauth.can_modify_account_name'):
             raise exc.AuthorizationError()
 
         if 'default_account_manager' in form.cleaned_data and \
-                form.cleaned_data['default_account_manager'] is not None and not (
-                    user.has_perm('zemauth.account_agency_view') or
-                    user.has_perm('zemauth.can_modify_account_manager')
-                ):
+                form.cleaned_data['default_account_manager'] is not None and\
+                not user.has_perm('zemauth.can_modify_account_manager'):
             raise exc.AuthorizationError()
 
     def get_validation_error_data(self, request, account):
@@ -1056,15 +1152,12 @@ class AccountAgency(api_common.BaseApiView):
             'id': str(account.pk),
             'archived': settings.archived,
         }
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_modify_account_name'):
+        if request.user.has_perm('zemauth.can_modify_account_name'):
             result['name'] = account.name
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_modify_account_manager'):
+        if request.user.has_perm('zemauth.can_modify_account_manager'):
             result['default_account_manager'] = str(settings.default_account_manager.id) \
                 if settings.default_account_manager is not None else None
-        if request.user.has_perm('zemauth.account_agency_view') or\
-                request.user.has_perm('zemauth.can_set_account_sales_representative'):
+        if request.user.has_perm('zemauth.can_set_account_sales_representative'):
             result['default_sales_representative'] =\
                 str(settings.default_sales_representative.id) if\
                 settings.default_sales_representative is not None else None
@@ -1076,97 +1169,6 @@ class AccountAgency(api_common.BaseApiView):
                 [source.id for source in account.allowed_sources.all()]
             )
         return result
-
-    def get_history(self, account):
-        settings = models.AccountSettings.objects.\
-            filter(account=account).\
-            order_by('created_dt')
-
-        history = []
-        for i in range(0, len(settings)):
-            old_settings = settings[i - 1] if i > 0 else None
-            new_settings = settings[i]
-
-            settings_dict = self.convert_settings_to_dict(new_settings, old_settings)
-            changes_text = self.get_changes_text(new_settings, old_settings)
-
-            if not changes_text:
-                continue
-
-            history.append({
-                'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
-                'changes_text': changes_text,
-                'settings': settings_dict.values(),
-                'show_old_settings': old_settings is not None
-            })
-
-        return history
-
-    def convert_settings_to_dict(self, new_settings, old_settings):
-        settings_dict = OrderedDict([
-            ('name', {
-                'name': 'Name',
-                'value': new_settings.name.encode('utf-8')
-            }),
-            ('archived', {
-                'name': 'Archived',
-                'value': str(new_settings.archived)
-            }),
-            ('default_account_manager', {
-                'name': 'Account Manager',
-                'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
-            }),
-            ('default_sales_representative', {
-                'name': 'Sales Representative',
-                'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
-            }),
-            ('account_type', {
-                'name': 'Account Type',
-                'value': constants.AccountType.get_text(new_settings.account_type)
-            }),
-        ])
-
-        if old_settings is not None:
-            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
-            settings_dict['archived']['old_value'] = str(old_settings.archived)
-
-            if old_settings.default_account_manager is not None:
-                settings_dict['default_account_manager']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.default_account_manager)
-
-            if old_settings.default_sales_representative is not None:
-                settings_dict['default_sales_representative']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
-
-            if old_settings.account_type is not None:
-                settings_dict['account_type']['old_value'] = constants.AccountType.get_text(old_settings.account_type)
-
-        return settings_dict
-
-    def get_changes_text(self, new_settings, old_settings):
-        if not old_settings:
-            return 'Created settings'
-
-        changes_text = ', '.join(filter(None, [
-            self.get_changes_text_for_settings(new_settings, old_settings),
-            new_settings.changes_text.encode('utf-8') if new_settings.changes_text is not None else ''
-        ]))
-
-        return changes_text
-
-    def get_changes_text_for_settings(self, new_settings, old_settings):
-        change_strings = []
-        changes = old_settings.get_setting_changes(new_settings)
-        settings_dict = self.convert_settings_to_dict(new_settings, None)
-
-        for key in changes:
-            setting = settings_dict[key]
-            change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
-            )
-
-        return ', '.join(change_strings)
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
         sources_text_list = []

@@ -109,10 +109,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl'
         })
-        .state('main.accounts.agency', {
-            url: '/agency',
-            templateUrl: '/partials/account_agency.html',
-            controller: 'AccountAgencyCtrl'
+        .state('main.accounts.history', {
+            url: '/history',
+            templateUrl: '/partials/account_history.html',
+            controller: 'AccountHistoryCtrl'
         })
         .state('main.accounts.settings', {
             url: '/settings',

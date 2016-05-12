@@ -13,19 +13,19 @@ from dash import models
 from zemauth.models import User
 
 
-class AccountAgencyAgencyFormTest(TestCase):
+class AccountSettingsFormTest(TestCase):
     fixtures = ['test_views.yaml']
 
     @classmethod
     def setUpClass(cls):
-        super(AccountAgencyAgencyFormTest, cls).setUpClass()  # loads fixtures
+        super(AccountSettingsFormTest, cls).setUpClass()  # loads fixtures
         permission = Permission.objects.get(codename='campaign_settings_sales_rep')
         user = User.objects.get(pk=2)
         user.user_permissions.add(permission)
         user.save()
 
     def test_invalid_sales_rep(self):
-        form = forms.AccountAgencyAgencyForm({
+        form = forms.AccountSettingsForm({
             'id': 1,
             'name': 'Name',
             'default_account_manager': 2,
@@ -40,7 +40,7 @@ class AccountAgencyAgencyFormTest(TestCase):
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(pk=account_manager_id)
 
-        form = forms.AccountAgencyAgencyForm({
+        form = forms.AccountSettingsForm({
             'id': 1,
             'name': 'Name',
             'default_account_manager': account_manager_id,
@@ -51,7 +51,7 @@ class AccountAgencyAgencyFormTest(TestCase):
         self.assertTrue(form.has_error('default_account_manager'))
 
     def test_invalid_account_type(self):
-        form = forms.AccountAgencyAgencyForm({
+        form = forms.AccountSettingsForm({
             'id': 1,
             'name': 'Name',
             'account_type': 'invalid'
@@ -60,7 +60,7 @@ class AccountAgencyAgencyFormTest(TestCase):
         self.assertTrue(form.has_error('account_type'))
 
     def test_allowed_sources(self):
-        form = forms.AccountAgencyAgencyForm({
+        form = forms.AccountSettingsForm({
             'id': 1,
             'name': 'Name',
             'default_account_manager': 3,
@@ -73,7 +73,7 @@ class AccountAgencyAgencyFormTest(TestCase):
                          )
 
     def _gen_allowed_sources_form(self, allowed_sources_dict):
-        return forms.AccountAgencyAgencyForm({
+        return forms.AccountSettingsForm({
             'id': 1,
             'name': 'Name',
             'default_account_manager': 3,
@@ -102,7 +102,7 @@ class AccountAgencyAgencyFormTest(TestCase):
         self.assertTrue(form.has_error('allowed_sources'))
 
     def test_duplicated_account_name(self):
-        form = forms.AccountAgencyAgencyForm({
+        form = forms.AccountSettingsForm({
             'id': 1,
             'name': 'test account 1',
             'default_account_manager': 3,
@@ -111,7 +111,7 @@ class AccountAgencyAgencyFormTest(TestCase):
             })
         self.assertTrue(form.is_valid(), "Form should be valid as the account id is the same")
 
-        form = forms.AccountAgencyAgencyForm({
+        form = forms.AccountSettingsForm({
             'id': 2,
             'name': 'test account 1',
             'default_account_manager': 3,
