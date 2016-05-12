@@ -75,6 +75,18 @@ def should_filter_by_sources(sources):
     return Source.objects.exclude(id__in=[s.id for s in sources]).exists()
 
 
+def shorten_name(name):
+    # if the first word is too long, cut it
+    words = name.split()
+    if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
+        return name[:SHORT_NAME_MAX_LENGTH]
+
+    while len(name) > SHORT_NAME_MAX_LENGTH:
+        name = name.rsplit(None, 1)[0]
+
+    return name
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -1381,13 +1393,13 @@ class AdGroup(models.Model):
         account_name = self.campaign.account.name
         campaign_name = self.campaign.name
         if new_adgroup_name is None:
-            ad_group_name = self.ad_group.name
+            ad_group_name = self.name
         else:
             ad_group_name = new_adgroup_name
         return u'ONE: {} / {} / {} / {}'.format(
-            self._shorten_name(account_name),
-            self._shorten_name(campaign_name),
-            self._shorten_name(ad_group_name),
+            shorten_name(account_name),
+            shorten_name(campaign_name),
+            shorten_name(ad_group_name),
             self.id
         )
 
@@ -1598,9 +1610,9 @@ class AdGroupSource(models.Model):
         ad_group_id = self.ad_group.id
         source_name = self.source.name
         return u'ONE: {} / {} / {} / {} / {}'.format(
-            self._shorten_name(account_name),
-            self._shorten_name(campaign_name),
-            self._shorten_name(ad_group_name),
+            shorten_name(account_name),
+            shorten_name(campaign_name),
+            shorten_name(ad_group_name),
             ad_group_id,
             source_name
         )
@@ -1623,17 +1635,6 @@ class AdGroupSource(models.Model):
             ).latest()
         except AdGroupSourceState.DoesNotExist:
             return None
-
-    def _shorten_name(self, name):
-        # if the first word is too long, cut it
-        words = name.split()
-        if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
-            return name[:SHORT_NAME_MAX_LENGTH]
-
-        while len(name) > SHORT_NAME_MAX_LENGTH:
-            name = name.rsplit(None, 1)[0]
-
-        return name
 
     def get_current_settings(self):
         current_settings = self.get_current_settings_or_none()
