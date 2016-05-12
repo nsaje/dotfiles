@@ -1017,7 +1017,7 @@ class AccountSettings(api_common.BaseApiView):
 
         if 'name' in form.cleaned_data and\
                 form.cleaned_data['name'] is not None and\
-                not user.has_perm('zemauth.can_modify_account_name') :
+                not user.has_perm('zemauth.can_modify_account_name'):
             raise exc.AuthorizationError()
 
         if 'default_account_manager' in form.cleaned_data and \

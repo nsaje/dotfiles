@@ -2582,7 +2582,7 @@ class AccountSettingsTest(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_no_permission_can_modify_allowed_sources(self, mock_log_useraction):
-        client = self._get_client_with_permissions([ ])
+        client = self._get_client_with_permissions([])
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
             json.dumps({
