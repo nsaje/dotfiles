@@ -81,7 +81,6 @@ class ProjectionsTestCase(test.TestCase):
             'license_fee_projection': Decimal('2000.0010')}
         )
 
-
     def test_running_half_month_agency_flat_fee(self):
         rf = RequestFactory()
         r = rf.get('')
@@ -165,7 +164,6 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.row(1)['flat_fee'], 1000)
         self.assertFalse('flat_fee' in stats.row(2))
-
 
     def test_running_five_days(self):
         start_date, end_date = datetime.date(2015, 11, 10), datetime.date(2015, 11, 30)

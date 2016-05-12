@@ -176,7 +176,7 @@ class BudgetProjections(object):
 
         # when we have agency credits with flat fee each account of that agency
         # gets a share
-        agencies = set([budget.campaign.account.agency.id for budget in budgets\
+        agencies = set([budget.campaign.account.agency.id for budget in budgets
                         if budget.campaign.account.agency is not None])
         agency_account_count = dash.models.Account.objects.filter(agency__in=agencies).count()
         if agencies > 0 and agency_account_count > 0:
