@@ -539,17 +539,17 @@ def get_ad_groups_exchanges(request):
         .exclude_archived()
     )
 
-    ad_group_sources = {}
+    ad_group_sources = defaultdict(list)
 
     for ad_group in ad_groups:
         ad_group_settings = ad_group.get_current_settings()
 
-        ad_group_sources = ad_group.sources.filter(
+        ad_group_sources_query = ad_group.adgroupsource_set.filter(
             source__source_type__type='b1',
             source__deprecated=False,
         )
 
-        for ad_group_source in ad_group_sources:
+        for ad_group_source in ad_group_sources_query:
             ad_group_source_settings = ad_group_source.get_current_settings()
 
             if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
@@ -564,7 +564,7 @@ def get_ad_groups_exchanges(request):
                 'cpc_cc': ad_group_source_settings.cpc_cc,
                 'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
             }
-            ad_group_sources.setdefault(ad_group_id, []).append(source)
+            ad_group_sources[ad_group.id].append(source)
 
     return _response_ok(ad_group_sources)
 
