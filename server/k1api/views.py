@@ -442,7 +442,7 @@ def get_ad_groups(request):
     for ad_group_settings in ad_groups_settings:
         ad_group = {
             'id': ad_group_settings.ad_group.id,
-            'name': ad_group_settings.ad_group.name,
+            'name': ad_group_settings.ad_group.get_external_name(),
             'start_date': ad_group_settings.start_date,
             'end_date': ad_group_settings.end_date,
             'time_zone': settings.DEFAULT_TIME_ZONE,

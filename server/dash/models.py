@@ -1377,6 +1377,20 @@ class AdGroup(models.Model):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
 
+    def get_external_name(self, new_adgroup_name=None):
+        account_name = self.campaign.account.name
+        campaign_name = self.campaign.name
+        if new_adgroup_name is None:
+            ad_group_name = self.ad_group.name
+        else:
+            ad_group_name = new_adgroup_name
+        return u'ONE: {} / {} / {} / {}'.format(
+            self._shorten_name(account_name),
+            self._shorten_name(campaign_name),
+            self._shorten_name(ad_group_name),
+            self.id
+        )
+
     @classmethod
     def is_ad_group_active(cls, ad_group_settings):
         if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
