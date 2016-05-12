@@ -552,7 +552,8 @@ def _get_ad_group_sources_settings(ad_group_id):
 
     ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
                                  .filter(ad_group_source__ad_group__id__in=ad_group_ids,
-                                         ad_group_source__source__source_type__type='b1')
+                                         ad_group_source__source__source_type__type='b1',
+                                         ad_group_source__source__deprecated=False)
                                  .group_current_settings()
                                  .select_related('ad_group_source',
                                                  'ad_group_source__source',
