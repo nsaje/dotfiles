@@ -882,7 +882,7 @@ class AccountsAccountsTable(object):
         account_budget, account_total_spend = self.get_budgets(accounts)
 
         projections = BudgetProjections(
-            start_date, end_date, 'account',
+            start_date, end_date, 'account', accounts=accounts,
             campaign_id__in=models.Campaign.objects.filter(account__in=accounts)
         )
         if user.has_perm('zemauth.can_see_projections'):
