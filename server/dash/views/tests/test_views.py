@@ -1840,11 +1840,6 @@ class AdGroupSourcesTest(TestCase):
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
 
-        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
-        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__ad_group=ad_group, source=source)
-        self.assertFalse(content_ad_sources.exists())
-        self.assertTrue(content_ads.exists())
-
     @override_settings(K1_CONSISTENCY_SYNC=True)
     def test_put_add_content_ad_sources(self):
         response = self.client.put(
