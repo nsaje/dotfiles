@@ -72,6 +72,10 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
 
     date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
 
+    day = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+    week = backtosql.TemplateColumn('part_trunc_week.sql', {'column_name': 'date'}, BREAKDOWN)
+    month = backtosql.TemplateColumn('part_trunc_month.sql', {'column_name': 'date'}, BREAKDOWN)
+
     account_id = backtosql.Column('account_id', BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
     ad_group_id= backtosql.Column('adgroup_id', BREAKDOWN)
