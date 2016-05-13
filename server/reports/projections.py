@@ -184,7 +184,7 @@ class BudgetProjections(object):
         if not account or not account.agency:
             return 0
 
-        agency_account_count =account.agency.account_set.all().filter_with_spend().count()
+        agency_account_count = account.agency.account_set.all().filter_with_spend().count()
         if agency_account_count == 0:
             return 0
 
@@ -193,7 +193,6 @@ class BudgetProjections(object):
             for credit in account.agency.credits.all()
         )) / Decimal(agency_account_count)
         return agency_flat_fee_share
-
 
     def _calculate_license_fee_projection(self, row, budgets, statements_on_date,
                                           num_of_positive_statements):
