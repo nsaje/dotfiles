@@ -4,35 +4,28 @@
 oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
     var EVENTS = {
-        PRE_GET_DATA: 'pre-get-data',
-        POST_GET_DATA: 'post-get-data',
-        PRE_GET_META_DATA: 'pre-get-meta-data',
-        POST_GET_META_DATA: 'post-get-meta-data',
-        PRE_UPDATE: 'pre-update',
-        POST_UPDATE: 'post-update',
+        ON_LOAD : 'zem-data-source-on-load'
     };
 
-    function DataSource () {
+    function DataSource (endpoint) {
         var ds = this;
 
-        this.EVENTS = EVENTS;
-        this.breakdowns = ['ad_group', 'age', 'date'];
-        this.endpoint = '/api/stats/testdata/';
-        this.defaultPagination = [2, 3, 5];
+        this.defaultPagination = [2, 3, 5, 7];
         this.data = null;
+        this.endpoint = endpoint;
+        this.breakdowns = endpoint.breakdowns;
 
         this.getData = getData;
         this.getMetaData = getMetaData;
-        this.updateData = updateData;
-        this.registerListener = registerListener;
 
+        this.onLoad = onLoad;
 
         function prepareBreakdownConfig (breakdown, size) {
             var level = 0;
             if (breakdown) level = breakdown.level;
 
             var ranges = [];
-            for (var i = 1; i <= ds.breakdowns.length; ++i) {
+            for (var i = 1; i <= ds.endpoint.breakdowns.length; ++i) {
                 var from = 0;
                 var to = ds.defaultPagination[i - 1];
                 if (breakdown) {
@@ -53,8 +46,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             }
 
             return {
+                breakdown: breakdown,
+                size: size,
                 params: {
-                    breakdowns: ds.breakdowns.join(','),
+                    breakdowns: ds.endpoint.breakdowns.join(','),
                     ranges: ranges.join(','),
                     level: level,
                 },
@@ -78,25 +73,27 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             current.pagination.size += breakdown.pagination.size;
         }
 
-        function getMetaData () { /* TODO */
+        function getMetaData () {
+            var config = prepareBreakdownConfig();
+            return ds.endpoint.getMetaData(config);
         }
 
         function getData (breakdown, size) { // level, page
             var config = prepareBreakdownConfig(breakdown, size);
             var deferred = $q.defer();
-            $http.get(ds.endpoint, config).success(function (data) {
-                var breakdown = data.data[0];
+            ds.endpoint.getData(config).then(function (breakdown) {
+                notifyListeners(EVENTS.ON_LOAD, breakdown);
                 applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
-                notifyListeners(EVENTS.POST_GET_DATA, breakdown);
-            }).error(function (data) {
-                deferred.reject(data);
+            }, function (error) {
+                deferred.reject(error);
             });
 
             return deferred.promise;
         }
 
-        function updateData () { /* TODO */
+        function onLoad (scope, callback) {
+            registerListener(EVENTS.ON_LOAD, scope, callback);
         }
 
         function registerListener (event, scope, callback) {
@@ -110,8 +107,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
     }
 
     return {
-        createInstance: function () {
-            return new DataSource();
+        createInstance: function (endpoint) {
+            return new DataSource(endpoint);
         },
     };
 }]);
