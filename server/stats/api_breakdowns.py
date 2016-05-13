@@ -1,6 +1,7 @@
 import copy
 
 from stats import helpers
+from dash import breakdown_helpers
 
 import redshiftapi.api_breakdowns
 
@@ -23,7 +24,11 @@ def query(user, breakdown, constraints, breakdown_constraints, order=DEFAULT_ORD
         page,
         page_size)
 
-    helpers.augment(stats_rows)
+    # the last dimension that needs to be augmented
+    # ones before
+    # TODO should this be passed by frontend?
+    target_dimension = breakdown_helpers.get_target_dimension(breakdown)
+    helpers.augment(stats_rows, target_dimension)
     _secure(stats_rows)
 
     return stats_rows
