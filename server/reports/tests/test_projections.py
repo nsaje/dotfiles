@@ -28,8 +28,8 @@ class ProjectionsTestCase(test.TestCase):
             license_fee_nano=fee * dash.models.TO_NANO_MULTIPLIER,
         )
 
-    def _create_batch_statements(self, budgets, start_date):
-        for date in utils.dates_helper.date_range(start_date, self.today):
+    def _create_batch_statements(self, budgets, start_date, end_date=None):
+        for date in utils.dates_helper.date_range(start_date, end_date or self.today):
             for budget in budgets:
                 if budget.state(date) != dash.constants.BudgetLineItemState.ACTIVE:
                     continue
@@ -234,3 +234,30 @@ class ProjectionsTestCase(test.TestCase):
                          Decimal('21960.78431372549019607843137'))
         self.assertEqual(stats.total('license_fee_projection'),
                          Decimal('4000.0020'))
+
+    def test_empty_projections(self):
+        self._create_batch_statements(
+            dash.models.BudgetLineItem.objects.all(),
+            self.today - datetime.timedelta(3),
+            self.today + datetime.timedelta(3)
+        )
+        stats = reports.projections.BudgetProjections(
+            self.today + datetime.timedelta(1),
+            self.today + datetime.timedelta(3),
+            'account',
+            projection_date=self.today
+        )
+
+        self.assertEqual(stats.row(1), {})
+        self.assertEqual(dict(stats.totals), {
+            'allocated_media_budget': None,
+            'allocated_total_budget': None,
+            'attributed_license_fee': None,
+            'attributed_media_spend': None,
+            'flat_fee': None,
+            'ideal_media_spend': None,
+            'license_fee_projection': None,
+            'pacing': None,
+            'total_fee': None,
+            'total_fee_projection': None
+        })

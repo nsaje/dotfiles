@@ -76,6 +76,9 @@ class BudgetProjections(object):
             self.calculation_groups.setdefault(self._breakdown_field(budget), []).append(budget)
 
     def _calculate_totals(self):
+        if self.past_days <= 0:
+            self.totals = self._blank_projections()
+            return
         self.totals = collections.defaultdict(Decimal)
         for row in self.projections.values():
             for key, value in row.iteritems():
@@ -88,8 +91,11 @@ class BudgetProjections(object):
 
     def _calculate_rows(self):
         for key, budgets in self.calculation_groups.iteritems():
-            row = {}
-            statements_on_date = {}
+            if self.past_days <= 0:
+                row = self._blank_projections()
+                self._calculate_recognized_fees(row, budgets)
+                continue
+            statements_on_date, row = {}, {}
             for budget in budgets:
                 for statement in budget.statements.all():
                     statements_on_date.setdefault(statement.date, []).append(statement)
@@ -105,10 +111,25 @@ class BudgetProjections(object):
                                                    num_of_positive_statements)
             self._calculate_license_fee_projection(row, budgets, statements_on_date,
                                                    num_of_positive_statements)
-            if self.breakdown == 'account':
-                self._calculate_recognized_fees(row, budgets)
-                self._calculate_total_license_fee_projection(row, budgets)
+            self._calculate_recognized_fees(row, budgets)
+            self._calculate_total_license_fee_projection(row, budgets)
             self.projections[key] = row
+
+    def _blank_projections(self):
+        row = {
+            'allocated_total_budget': None,
+            'allocated_media_budget': None,
+            'ideal_media_spend': None,
+            'pacing': None,
+            'attributed_media_spend': None,
+            'attributed_license_fee': None,
+            'license_fee_projection': None,
+        }
+        if self.breakdown == 'account':
+            row['flat_fee'] = None
+            row['total_fee'] = None
+            row['total_fee_projection'] = None
+        return row
 
     def _calculate_allocated_budgets(self, row, budgets):
         row['allocated_total_budget'] = Decimal('0')
@@ -126,6 +147,7 @@ class BudgetProjections(object):
 
     def _calculate_pacing(self, row, budgets):
         assert 'allocated_media_budget' in row
+
         row['ideal_media_spend'] = row['allocated_media_budget'] / Decimal(self.forecast_days) \
             * Decimal(self.past_days)
 
@@ -162,6 +184,8 @@ class BudgetProjections(object):
         )
 
     def _calculate_recognized_fees(self, row, budgets):
+        if self.breakdown != 'account':
+            return
         row['attributed_license_fee'] = sum(
             dash.models.nano_to_dec(statement.license_fee_nano)
             for budget in budgets
@@ -212,6 +236,8 @@ class BudgetProjections(object):
         )
 
     def _calculate_total_license_fee_projection(self, row, budgets):
+        if self.breakdown != 'account':
+            return
         assert 'license_fee_projection' in row
         assert 'flat_fee' in row
         row['total_fee_projection'] = row['license_fee_projection'] + row['flat_fee']
