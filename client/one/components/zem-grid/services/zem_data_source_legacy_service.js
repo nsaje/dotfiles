@@ -20,6 +20,7 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
         this.setColumns = setColumns;
         this.setDateRange = setDateRange;
         this.getData = getData;
+        this.getMetaData = getMetaData;
 
         // Events
         this.onLoad = onLoad;
@@ -35,6 +36,14 @@ oneApp.factory('zemDataSourceLegacyService', ['$rootScope', '$http', '$q', 'zemG
         function setDateRange (startDate, endDate) {
             ds.startDate = startDate;
             ds.endDate = endDate;
+        }
+
+        function getMetaData () {
+            var deferred = $q.defer();
+            deferred.resolve({
+                columns: ds.columns
+            });
+            return deferred.promise;
         }
 
         function getData (breakdown, size) {

@@ -6,7 +6,7 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', 'zemDataSourceService', func
     $scope.dataSource.defaultPagination = [2, 3, 5, 7];
 }]);
 
-oneApp.controller('DevelopmentGridLegacyCtrl', ['$scope', '$controller', '$q', 'zemDataSourceLegacyService', 'api', function ($scope, $controller, $q, zemDataSourceService, api) {
+oneApp.controller('DevelopmentGridLegacyCtrl', ['$scope', '$controller', '$q', '$timeout', 'zemDataSourceLegacyService', 'api', function ($scope, $controller, $q, $timeout, zemDataSourceService, api) {
     $scope.dataSource = zemDataSourceService.createInstance();
     $scope.dataSource.breakdowns = ['account'];
     $scope.dataSource.setColumns(initControllerColumns());
@@ -36,13 +36,15 @@ oneApp.controller('DevelopmentGridLegacyCtrl', ['$scope', '$controller', '$q', '
         return {
             get: function (page, size, startDate, endDate, order) {
                 var deferred = $q.defer();
-                var data = JSON.parse(cache.allaccounts);
-                data.pagination.currentPage = page;
-                data.pagination.size = size;
-                data.pagination.startIndex = (page - 1) * size + 1;
-                data.pagination.endIndex = page * size;
-                data.rows = data.rows.slice(0, size);
-                deferred.resolve(data);
+                $timeout(function(){
+                    var data = JSON.parse(cache.allaccounts);
+                    data.pagination.currentPage = page;
+                    data.pagination.size = size;
+                    data.pagination.startIndex = (page - 1) * size + 1;
+                    data.pagination.endIndex = page * size;
+                    data.rows = data.rows.slice(0, size);
+                    deferred.resolve(data);
+                }, 1000);
                 return deferred.promise;
             }
             ,
