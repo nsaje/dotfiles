@@ -1,35 +1,50 @@
+
 import backtosql
+import datetime
+from dateutil import rrule, relativedelta
+from dash import breakdown_helpers
 
 
-def prepare_generic_lvl1(model, breakdown, constraints, breakdown_constraints,
-                         order, page, page_size):
+def prepare_lvl1_top_rows(model, breakdown, constraints, breakdown_constraints,
+                          order, page, page_size):
 
     context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, page, page_size)
 
-    sql = backtosql.generate_sql('breakdown_lvl1.sql', context)
+    sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', context)
 
     params = context['constraints'].get_params()
 
     return sql, params
 
 
-def prepare_generic_lvl2(model, breakdown, constraints, breakdown_constraints,
-                         order, page, page_size):
+def prepare_lvl2_top_rows(model, breakdown, constraints, breakdown_constraints,
+                          order, page, page_size):
     context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, page, page_size)
 
-    sql = backtosql.generate_sql('breakdown_lvl2.sql', context)
+    sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', context)
 
     # this is template specific - based on what comes first
-    params = context['breakdown_constraints'].get_params()
-    params.extend(context['constraints'].get_params())
+    params = context['constraints'].get_params()
+    params.extend(context['breakdown_constraints'].get_params())
 
     return sql, params
 
 
-def prepare_generic_lvl3(model, breakdown, constraints, breakdown_constraints,
-                         order, page, page_size):
-    # the last one is always time
-    pass
+def prepare_time_top_rows(model, time_dimension, breakdown, constraints, breakdown_constraints,
+                          order, page, page_size):
+
+    _prepare_time_constraints(time_dimension, constraints, page, page_size)
+    context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, page, page_size)
+
+    sql = backtosql.generate_sql('breakdown_simple_select.sql', context)
+
+    params = context['constraints'].get_params()
+    if context['breakdown_constraints']:
+        params.extend(context['breakdown_constraints'].get_params())
+
+    print 'CONTEXT', context
+
+    return sql, params
 
 
 def _get_default_context(model, breakdown, constraints, breakdown_constraints,
@@ -71,3 +86,22 @@ def _prepare_breakdown_constraints(breakdown_constraints):
         bq |= backtosql.Q(model, **branch)
 
     return bq
+
+def _prepare_time_constraints(time_dimension, constraints, page, page_size):
+
+    # TODO there is no limit on max date span here, just another page
+    start_date = constraints['date__gte']
+
+    start_idx = (page - 1) * page_size
+    if time_dimension == breakdown_helpers.TimeDimension.WEEK:
+        start_date = start_date + datetime.timedelta(days=7*start_idx)
+        end_date = start_date + datetime.timedelta(days=7*page_size)
+    elif time_dimension == breakdown_helpers.TimeDimension.MONTH:
+        start_date = start_date + relativedelta.relativedelta(months=+start_idx)
+        end_date = start_date + relativedelta.relativedelta(months=page_size)
+    else:
+        start_date = start_date + datetime.timedelta(days=start_idx)
+        end_date = start_date + datetime.timedelta(days=page_size)
+
+    constraints['date__gte'] = start_date
+    constraints['date__lte'] = min(end_date, constraints['date__lte'])

@@ -33,27 +33,27 @@ class RSBreakdownMixin(object):
         return cls.select_columns(group=AGGREGATES)
 
     @classmethod
-    def translate_dict(cls, dict_):
+    def copy_and_translate_dict(cls, dict_):
         """
         Translates dict keys into keys our model understands.
         Returns a copy of the dict.
         """
 
-        return helpers.translate_dict(cls.MISCONCEPTION_DICT, dict_)
+        return helpers.copy_and_translate_dict(cls.MISCONCEPTION_DICT, dict_)
 
     @classmethod
-    def translate_dicts(cls, list_of_dicts):
-        return helpers.translate_dicts(cls.MISCONCEPTION_DICT, list_of_dicts)
+    def copy_and_translate_dicts(cls, list_of_dicts):
+        return helpers.copy_and_translate_dicts(cls.MISCONCEPTION_DICT, list_of_dicts)
 
 
     @classmethod
-    def translate_breakdown(cls, breakdown):
+    def copy_and_translate_breakdown(cls, breakdown):
         """
         Translates breakdown array items into keys our model understands.
         Returns a copy of the dict.
         """
 
-        return helpers.translate_list(cls.MISCONCEPTION_DICT, breakdown)
+        return helpers.copy_and_translate_list(cls.MISCONCEPTION_DICT, breakdown)
 
 
 class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
