@@ -618,13 +618,21 @@ def get_content_ads_exchanges(request):
     if content_ad_id:
         content_ad_sources = (
             dash.models.ContentAdSource.objects
-            .filter(content_ad__id=content_ad_id, source__source_type__type='b1')
+            .filter(
+                content_ad__id=content_ad_id,
+                source__source_type__type='b1',
+                source__deprecated=False,
+            )
             .values('content_ad_id', 'source__bidder_slug', 'source_content_ad_id', 'submission_status', 'state')
         )
     elif ad_group_id:
         content_ad_sources = (
             dash.models.ContentAdSource.objects
-            .filter(content_ad__ad_group__id=ad_group_id, source__source_type__type='b1')
+            .filter(
+                content_ad__ad_group__id=ad_group_id,
+                source__source_type__type='b1',
+                source__deprecated=False,
+            )
             .values('content_ad_id', 'source__bidder_slug', 'source_content_ad_id', 'submission_status', 'state')
         )
     else:
