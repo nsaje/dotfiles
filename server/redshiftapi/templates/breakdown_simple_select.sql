@@ -8,9 +8,12 @@ FROM
     {{ view }} a
 WHERE
     {{ constraints|g:"a" }}
-GROUP BY {{ breakdown|g_alias:"a" }}
+    {% if breakdown_constraints %}
+       AND {{ breakdown_constraints|g:"a" }}
+    {% endif %}
+GROUP BY {{ breakdown|g_alias }}
 {% if order %}
-ORDER BY {{ order|g_alias:"a" }}
+ORDER BY {{ order|g_alias }}
 {% endif %}
 
 {% if limit %}
@@ -20,5 +23,4 @@ LIMIT {{ limit }}
 OFFSET {{ offset }}
 {% endif %}
 ;
-
 {% endautoescape %}

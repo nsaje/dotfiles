@@ -2,23 +2,11 @@
 {% autoescape off%}
 
 SELECT
-    {{ breakdown.0|g_alias }},
-    {{ breakdown.1|g_alias }},
-    CASE WHEN
-    {% if offset %}
-    r >= {{ offset }} AND
-    {% endif %}
-    {% if limit %}
-    r <= {{ limit }}
-    {% endif %} THEN {{ breakdown.2|g_alias }} ELSE -1 END AS {{ breakdown.2|g_alias }},
+    {{ breakdown|g_alias }},
     {{ aggregates|g_w_alias }}
 FROM (
     SELECT
-        {{ breakdown.0|g_w_alias:"b" }},
-        -- could this be rewritten in 1 SELECT as it
-        -- already selects the appropriate rows in this case?
-        CASE WHEN {{ breakdown_constraints|g:"b" }} THEN {{ breakdown.1|g:"b" }} ELSE -1 END AS {{ breakdown.1|g_alias}},
-        {{ breakdown.2|g_w_alias:"b" }},
+        {{ breakdown|g_w_alias:"b" }},
         SUM(b.clicks) clicks,
         SUM(b.impressions) impressions,
         SUM(b.cost_cc) cost_cc,
@@ -35,8 +23,13 @@ FROM (
     FROM
         {{ view }} b
     WHERE
-        {{ constraints|g:"b"}}
+        -- only select necessary rows
+        {{ constraints|g:"b"}} AND {{ breakdown_constraints|g:"b" }}
     GROUP BY 1, 2, 3
 ) a
+WHERE
+-- limit which page we are querying
+{% if offset %} r >= {{ offset }} AND {% endif %}
+{% if limit %} r <= {{ limit }} {% endif %}
 GROUP BY 1, 2, 3
 {% endautoescape %}

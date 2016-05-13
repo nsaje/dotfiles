@@ -2,16 +2,7 @@
 {% autoescape off%}
 
 SELECT
-    ---- get name of column with a reference to another table and alias
-    {{ breakdown.0|g_alias:"a" }},
-    CASE WHEN -- selects X items from a breakdown and collects others in a joint row
-            {% if offset %}
-              r >= {{ offset }} AND
-            {% endif %}
-            r <= {{ limit }}
-          THEN {{ breakdown.1|g_alias:"a" }}
-        ELSE -1
-    END AS {{ breakdown.1|g_alias }},
+    {{ breakdown|g_alias:"a" }},
     {{ aggregates|g_w_alias:"a" }}
 FROM (
     SELECT
@@ -28,6 +19,7 @@ FROM (
         SUM(b.bounced_visits) bounced_visits,
         SUM(b.pageviews) pageviews,
         SUM(b.total_time_on_site) total_time_on_site,
+        -- get best rows for current dimension
         ROW_NUMBER() OVER (PARTITION BY {{ breakdown.0|g:"b" }} ORDER BY {{ order|g:"b" }}) AS r
     FROM
         {{ view }} b
@@ -37,5 +29,9 @@ FROM (
         --- get name of column by alias
         {{ breakdown|g_alias }}
 ) a
+WHERE
+-- limit which page we are querying
+{% if offset %} r >= {{ offset }} AND {% endif %}
+{% if limit %} r <= {{ limit }} {% endif %}
 GROUP BY 1, 2
 {% endautoescape %}
