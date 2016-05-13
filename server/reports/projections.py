@@ -177,12 +177,17 @@ class BudgetProjections(object):
             for credit in set(budget.credit for budget in budgets)
             if credit.agency is None
         )
+        account = self.accounts.get(row_id)
+        if len(budgets) == 0:
+            row['flat_fee'] = sum(
+                credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
+                for credit in dash.models.CreditLineItem.objects.filter(account_id=row_id)
+            )
 
         # when we have agency credits with flat fee each account of that agency
         # gets a share
         agencies = set([budget.campaign.account.agency.id for budget in budgets
                         if budget.campaign.account.agency is not None])
-        account = self.accounts.get(row_id)
         if account is not None and account.agency is not None:
             agencies.add(account.agency)
         agency_account_count = dash.models.Account.objects.filter(
