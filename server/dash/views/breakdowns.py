@@ -58,8 +58,30 @@ page = 1
 
 
 class AllAccountsBreakdown(api_common.BaseApiView):
+    # all data that is seen by user is broken down by accounts and further down
     def get(self, request, breakdown):
-        return self.create_api_response({})
+        return self.post(request, breakdown)
+
+    def post(self, request, breakdown):
+        constraints = breakdowns_helpers.clean_default_params(request)
+
+        breakdown = breakdowns_helpers.clean_breakdown(breakdown)
+        breakdown_constraints = breakdowns_helpers.clean_breakdown_page(request, breakdown)
+
+        page, page_size = breakdowns_helpers.clean_page_params(request)
+        order = breakdowns_helpers.clean_order(request)
+
+        report = stats.api_breakdowns.query(
+            request.user,
+            breakdown,
+            constraints,
+            breakdown_constraints,
+            order,
+            page,
+            page_size
+        )
+
+        return self.create_api_response(report)
 
 
 class AccountBreakdown(api_common.BaseApiView):
@@ -108,9 +130,73 @@ class AccountBreakdown(api_common.BaseApiView):
 
 class CampaignBreakdown(api_common.BaseApiView):
     def get(self, request, campaign_id, breakdown):
-        return self.create_api_response({})
+        return self.post(request, campaign_id, breakdown)
+
+    def post(self, request, campaign_id, breakdown):
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        constraints = breakdowns_helpers.clean_default_params(request)
+        constraints['campaign'] = campaign
+
+        breakdown = breakdowns_helpers.clean_breakdown(breakdown)
+        breakdown_constraints = breakdowns_helpers.clean_breakdown_page(request, breakdown)
+
+        page, page_size = breakdowns_helpers.clean_page_params(request)
+        order = breakdowns_helpers.clean_order(request)
+
+        if False:
+            return self.create_api_response({
+                'breakdown': breakdown,
+                'page': page,
+                'page_size': page_size,
+            })
+
+        report = stats.api_breakdowns.query(
+            request.user,
+            breakdown,
+            constraints,
+            breakdown_constraints,
+            order,
+            page,
+            page_size
+        )
+
+        return self.create_api_response(report)
 
 
 class AdGroupBreakdown(api_common.BaseApiView):
     def get(self, request, ad_group_id, breakdown):
-        return self.create_api_response({})
+        return self.post(request, ad_group_id, breakdown)
+
+    def post(self, request, ad_group_id, breakdown):
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        constraints = breakdowns_helpers.clean_default_params(request)
+        constraints['ad_group'] = ad_group
+
+        breakdown = breakdowns_helpers.clean_breakdown(breakdown)
+        breakdown_constraints = breakdowns_helpers.clean_breakdown_page(request, breakdown)
+
+        page, page_size = breakdowns_helpers.clean_page_params(request)
+        order = breakdowns_helpers.clean_order(request)
+
+        if False:
+            return self.create_api_response({
+                'breakdown': breakdown,
+                'page': page,
+                'page_size': page_size,
+            })
+
+        report = stats.api_breakdowns.query(
+            request.user,
+            breakdown,
+            constraints,
+            breakdown_constraints,
+            order,
+            page,
+            page_size
+        )
+
+        return self.create_api_response(report)
