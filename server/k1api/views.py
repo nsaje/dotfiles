@@ -688,7 +688,7 @@ def set_source_campaign_key(request):
     source_campaign_key = data['source_campaign_key']
     try:
         ad_group_source = dash.models.AdGroupSource.objects.get(pk=ad_group_source_id)
-    except:
+    except dash.models.AdGroupSource.DoesNotExist:
         logger.exception(
             'set_source_campaign_key: ad_group_source does not exist. ad_group_source id: %d',
             ad_group_source_id,
