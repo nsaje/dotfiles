@@ -675,3 +675,26 @@ def update_content_ad_status(request):
         content_ad_source.save()
 
     return _response_ok(data)
+
+
+@csrf_exempt
+def set_source_campaign_key(request):
+    _validate_signature(request)
+
+    data = json.loads(request.body)
+
+    ad_group_source_id = data['ad_group_source_id']
+    source_campaign_key = data['source_campaign_key']
+    try:
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=ad_group_source_id)
+    except dash.models.AdGroupSource.DoesNotExist:
+        logger.exception(
+            'set_source_campaign_key: ad_group_source does not exist. ad_group_source id: %d',
+            ad_group_source_id,
+        )
+        raise Http404
+
+    ad_group_source.source_campaign_key = source_campaign_key
+    ad_group_source.save()
+
+    return _response_ok(data)

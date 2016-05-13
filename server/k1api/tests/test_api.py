@@ -609,3 +609,20 @@ class K1ApiTest(TestCase):
     def update_content_ad_status(self):
         # TODO maticz, 10.5.2016
         pass
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_set_source_campaign_key(self, mock_verify_wsgi_request):
+        response = self.client.post(
+            reverse('k1api.set_source_campaign_key'),
+            json.dumps({'ad_group_source_id': 1, 'source_campaign_key': ['abc']}),
+            'application/json',
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        ags = dash.models.AdGroupSource.objects.get(pk=1)
+        # self.assertEqual(1, 2)
+        self.assertEqual(ags.source_campaign_key, ['abc'])
