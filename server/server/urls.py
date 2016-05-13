@@ -577,7 +577,12 @@ urlpatterns += [
         r'^k1api/update_content_ad_status$',
         k1api.views.update_content_ad_status,
         name='k1api.update_content_ad_status',
-    )
+    ),
+    url(
+        r'^k1api/set_source_campaign_key$',
+        k1api.views.set_source_campaign_key,
+        name='k1api.set_source_campaign_key',
+    ),
 ]
 
 # Crossvalidation Api
