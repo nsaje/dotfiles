@@ -625,7 +625,12 @@ def get_content_ads_exchanges(request):
                 source__source_type__type='b1',
                 source__deprecated=False,
             )
-            .values('content_ad_id', 'source__bidder_slug', 'source_content_ad_id', 'submission_status', 'state')
+            .values('content_ad_id',
+                    'source__bidder_slug',
+                    'source__tracking_slug',
+                    'source_content_ad_id',
+                    'submission_status',
+                    'state')
         )
     elif ad_group_id:
         content_ad_sources = (
@@ -635,7 +640,12 @@ def get_content_ads_exchanges(request):
                 source__source_type__type='b1',
                 source__deprecated=False,
             )
-            .values('content_ad_id', 'source__bidder_slug', 'source_content_ad_id', 'submission_status', 'state')
+            .values('content_ad_id',
+                    'source__bidder_slug',
+                    'source__tracking_slug',
+                    'source_content_ad_id',
+                    'submission_status',
+                    'state')
         )
     else:
         return _response_error("Must provide content ad id or ad group id.")
@@ -644,6 +654,7 @@ def get_content_ads_exchanges(request):
     for content_ad_source in content_ad_sources:
         exchange = {
             'exchange': content_ad_source['source__bidder_slug'],
+            'tracking_slug': content_ad_source['source__tracking_slug'],
             'source_content_ad_id': content_ad_source['source_content_ad_id'],
             'submission_status': content_ad_source['submission_status'],
             'state': content_ad_source['state'],
