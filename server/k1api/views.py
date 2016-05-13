@@ -493,7 +493,7 @@ def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id=ad_group_id)
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
         ad_group_ids = [ad_group_id]
     elif source_type:
         nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
@@ -504,12 +504,12 @@ def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id__in=ad_group_ids)
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
     else:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .all()
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
         ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
                         not ad_group_settings.archived]
 
