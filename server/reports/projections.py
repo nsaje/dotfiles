@@ -185,11 +185,13 @@ class BudgetProjections(object):
         account = self.accounts.get(row_id)
         if account is not None and account.agency is not None:
             agencies.add(account.agency)
-        agency_account_count = dash.models.Account.objects.filter(agency__in=agencies).count()
+        agency_account_count = dash.models.Account.objects.filter(
+            agency__in=agencies).filter_with_spend().count()
         if agencies > 0 and agency_account_count > 0:
+            agency_credits = dash.models.CreditLineItem.objects.filter(agency__in=agencies)
             agency_flat_fee_share = Decimal(sum(
                 credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
-                for credit in dash.models.CreditLineItem.objects.filter(agency__in=agencies)
+                for credit in agency_credits
             )) / Decimal(agency_account_count)
             row['flat_fee'] = row['flat_fee'] + agency_flat_fee_share
 

@@ -404,6 +404,17 @@ class Account(models.Model):
             )
             return self.exclude(pk__in=archived_accounts)
 
+        def filter_with_spend(self):
+            return self.filter(
+                pk__in=reports.models.BudgetDailyStatement.objects.filter(
+                    budget__credit__account_id__in=self
+                ).filter(
+                    media_spend_nano__gt=0
+                ).values_list(
+                    'budget__credit__account_id'
+                )
+            )
+
 
 class Campaign(models.Model, PermissionMixin):
     id = models.AutoField(primary_key=True)
