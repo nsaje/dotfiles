@@ -171,7 +171,6 @@ class ProjectionsTestCase(test.TestCase):
         self.assertEqual(stats.row(1)['flat_fee'], 5000)
         self.assertFalse('flat_fee' in stats.row(2))
 
-
         for i in range(4):
             credit = dash.models.CreditLineItem(
                 account=accounts[i],
@@ -213,7 +212,6 @@ class ProjectionsTestCase(test.TestCase):
         # spend
         for i in range(1, 6):
             self.assertEqual(stats.row(i)['flat_fee'], 1000)
-
 
     def test_running_five_days(self):
         start_date, end_date = datetime.date(2015, 11, 10), datetime.date(2015, 11, 30)
