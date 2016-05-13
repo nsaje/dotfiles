@@ -976,6 +976,9 @@ class AdGroupSources(api_common.BaseApiView):
             helpers.set_ad_group_source_settings(
                 request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
 
+        if settings.K1_CONSISTENCY_SYNC:
+            api.add_content_ad_sources(ad_group_source)
+
         return self.create_api_response(None)
 
     def _add_to_history(self, ad_group_source, request):
