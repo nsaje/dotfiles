@@ -110,12 +110,40 @@ class ProjectionsTestCase(test.TestCase):
         account.agency = agency
         account.save(r)
 
+        cam = dash.models.Campaign(
+            name='test campaign',
+            account=account
+        )
+        cam.save(fake_request(User.objects.get(pk=1)))
+
+        bud = dash.models.BudgetLineItem.objects.create(
+            campaign=cam,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=User.objects.get(pk=1),
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=bud,
+            date=start_date + datetime.timedelta(days=2),
+            media_spend_nano=100,
+            data_spend_nano=100,
+            license_fee_nano=100
+        )
+
         self._create_batch_statements(
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'account',
-                                                      projection_date=self.today)
+        stats = reports.projections.BudgetProjections(
+            start_date,
+            end_date,
+            'account',
+            accounts=dash.models.Account.objects.filter(pk=1),
+            projection_date=self.today
+        )
 
         self.assertEqual(stats.row(1)['flat_fee'], 5000)
         self.assertFalse('flat_fee' in stats.row(2))
@@ -163,8 +191,13 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'account',
-                                                      projection_date=self.today)
+        stats = reports.projections.BudgetProjections(
+            start_date,
+            end_date,
+            'account',
+            accounts=dash.models.Account.objects.filter(pk=1),
+            projection_date=self.today
+        )
 
         # agency level flat fee is distributed among all agency accounts with
         # spend
@@ -205,8 +238,13 @@ class ProjectionsTestCase(test.TestCase):
                 license_fee_nano=100
             )
 
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'account',
-                                                      projection_date=self.today)
+        stats = reports.projections.BudgetProjections(
+            start_date,
+            end_date,
+            'account',
+            accounts=dash.models.Account.objects.all(),
+            projection_date=self.today
+        )
 
         # agency level flat fee is distributed among all agency accounts with
         # spend
