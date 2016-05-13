@@ -10,9 +10,10 @@ oneApp.directive('zemGridDebug', [function () {
         controllerAs: 'ctrl',
         bindToController: {
             grid: '=',
+            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
-        controller: ['zemGridService', function (zemGridService) {
+        controller: ['$scope', 'zemGridService', function ($scope, zemGridService) {
             this.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
 
             this.applyBreakdown = function () {
@@ -24,11 +25,13 @@ oneApp.directive('zemGridDebug', [function () {
                 this.grid.meta.source.defaultPagination = [2, 3, 5, 7];
                 zemGridService.load(this.grid.meta.source).then(function (grid) {
                     this.grid = grid;
+                    $scope.ctrl.pubsub.notify($scope.ctrl.pubsub.EVENTS.ROWS_UPDATED);
                 }.bind(this));
             };
 
             this.toggleCollapseLevel = function (level) {
                 zemGridService.toggleCollapseLevel(this.grid, level);
+                $scope.ctrl.pubsub.notify($scope.ctrl.pubsub.EVENTS.ROWS_UPDATED);
             };
         }],
     };

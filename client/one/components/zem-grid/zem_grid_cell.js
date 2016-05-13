@@ -13,11 +13,13 @@ oneApp.directive('zemGridCell', [function () {
             field: '=',
             row: '=',
             grid: '=',
+            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: ['zemGridService', function (zemGridService) {
+        controller: ['$scope', 'zemGridService', function ($scope, zemGridService) {
             this.toggleCollapse = function () {
                 zemGridService.toggleCollapse(this.grid, this.row);
+                $scope.ctrl.pubsub.notify($scope.ctrl.pubsub.EVENTS.ROWS_UPDATED);
             };
 
             this.getCellStyle = function () {
