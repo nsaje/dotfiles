@@ -374,6 +374,7 @@ def get_publishers_blacklist(request):
         blacklist_filter = Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
         blacklisted = (dash.models.PublisherBlacklist.objects
                        .filter(blacklist_filter)
+                       .filter(Q(source__isnull=True) | Q(source__source_type__type='b1'))
                        .select_related('source', 'ad_group'))
     else:
         running_ad_groups = dash.models.AdGroup.objects.all().filter_running().select_related('campaign',
@@ -387,6 +388,7 @@ def get_publishers_blacklist(request):
                             Q(account__in=running_accounts))
         blacklisted = (dash.models.PublisherBlacklist.objects
                        .filter(blacklist_filter)
+                       .filter(Q(source__isnull=True) | Q(source__source_type__type='b1'))
                        .select_related('source', 'ad_group', 'campaign', 'account', 'account')
                        .prefetch_related('campaign__adgroup_set',
                                          'account__campaign_set',
