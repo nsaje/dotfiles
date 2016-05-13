@@ -1,5 +1,3 @@
-import codecs
-
 import unicodecsv
 import StringIO
 import slugify
@@ -13,8 +11,6 @@ from dash import constants
 from dash import bcm_helpers
 from dash.views import helpers
 from reports.projections import BudgetProjections
-
-from utils import exc
 
 from utils.sort_helper import sort_results
 
@@ -212,8 +208,15 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
 
     projections = None
     if level in ['all_accounts', 'account', 'campaign']:
-        projections = BudgetProjections(start_date, end_date,
-                                        level != 'all_accounts' and level or 'account')
+        projections_accounts = []
+        if not dimensions:
+            projections_accounts = models.Account.objects.all().filter_by_user(user)
+        projections = BudgetProjections(
+            start_date,
+            end_date,
+            level != 'all_accounts' and level or 'account',
+            accounts=projections_accounts,
+        )
 
     return data, budgets, projections, statuses, settings, account_settings
 
@@ -845,7 +848,6 @@ def filter_allowed_fields(request, fields):
     can_see_managers_in_accounts_table = request.user.has_perm('zemauth.can_see_managers_in_accounts_table')
     can_see_managers_in_campaigns_table = request.user.has_perm('zemauth.can_see_managers_in_campaigns_table')
     can_see_account_type = request.user.has_perm('zemauth.can_see_account_type')
-    can_view_budgets = request.user.has_perm('zemauth.all_accounts_budget_view')
 
     for f in fields:
         if f in ('e_data_cost', 'e_media_cost',

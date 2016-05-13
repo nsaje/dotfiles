@@ -18,7 +18,7 @@ class BudgetProjections(object):
         'account': 'campaign__'
     }
 
-    def __init__(self, start_date, end_date, breakdown, projection_date=None, **constraints):
+    def __init__(self, start_date, end_date, breakdown, projection_date=None, accounts=[], **constraints):
         assert breakdown in ('account', 'campaign', )
 
         self.breakdown = breakdown
@@ -35,6 +35,7 @@ class BudgetProjections(object):
 
         self.calculation_groups = {}
         self.projections = {}
+        self.accounts = {acc.id: acc for acc in accounts}
 
         self._prepare_data_by_breakdown()
         self._calculate_rows()
@@ -74,6 +75,9 @@ class BudgetProjections(object):
     def _prepare_data_by_breakdown(self):
         for budget in self.budgets:
             self.calculation_groups.setdefault(self._breakdown_field(budget), []).append(budget)
+        if self.breakdown == 'account':
+            for account_id in self.accounts:
+                self.calculation_groups.setdefault(account_id, [])
 
     def _calculate_totals(self):
         self.totals = collections.defaultdict(Decimal)
@@ -106,7 +110,7 @@ class BudgetProjections(object):
             self._calculate_license_fee_projection(row, budgets, statements_on_date,
                                                    num_of_positive_statements)
             if self.breakdown == 'account':
-                self._calculate_recognized_fees(row, budgets)
+                self._calculate_recognized_fees(key, row, budgets)
                 self._calculate_total_license_fee_projection(row, budgets)
             self.projections[key] = row
 
@@ -161,7 +165,7 @@ class BudgetProjections(object):
             row['allocated_media_budget']
         )
 
-    def _calculate_recognized_fees(self, row, budgets):
+    def _calculate_recognized_fees(self, account_id, row, budgets):
         row['attributed_license_fee'] = sum(
             dash.models.nano_to_dec(statement.license_fee_nano)
             for budget in budgets
@@ -170,23 +174,25 @@ class BudgetProjections(object):
         )
         row['flat_fee'] = sum(
             credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
-            for credit in set(budget.credit for budget in budgets)
-            if credit.agency is None
+            for credit in dash.models.CreditLineItem.objects.filter(account_id=account_id)
+        ) + self._calculate_agency_credit_flat_fee_share(
+            self.accounts.get(account_id)
         )
-
-        # when we have agency credits with flat fee each account of that agency
-        # gets a share
-        agencies = set([budget.campaign.account.agency.id for budget in budgets
-                        if budget.campaign.account.agency is not None])
-        agency_account_count = dash.models.Account.objects.filter(agency__in=agencies).count()
-        if agencies > 0 and agency_account_count > 0:
-            agency_flat_fee_share = Decimal(sum(
-                credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
-                for credit in dash.models.CreditLineItem.objects.filter(agency__in=agencies)
-            )) / Decimal(agency_account_count)
-            row['flat_fee'] = row['flat_fee'] + agency_flat_fee_share
-
         row['total_fee'] = row['attributed_license_fee'] + row['flat_fee']
+
+    def _calculate_agency_credit_flat_fee_share(self, account):
+        if not account or not account.agency:
+            return 0
+
+        agency_account_count = account.agency.account_set.all().filter_with_spend().count()
+        if agency_account_count == 0:
+            return 0
+
+        agency_flat_fee_share = Decimal(sum(
+            credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
+            for credit in account.agency.credits.all()
+        )) / Decimal(agency_account_count)
+        return agency_flat_fee_share
 
     def _calculate_license_fee_projection(self, row, budgets, statements_on_date,
                                           num_of_positive_statements):
