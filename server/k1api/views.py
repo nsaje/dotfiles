@@ -551,7 +551,7 @@ def get_ad_groups_exchanges(request):
         ad_group_sources_query = ad_group.adgroupsource_set.filter(
             source__source_type__type='b1',
             source__deprecated=False,
-        )
+        ).prefetch_related('source')
 
         for ad_group_source in ad_group_sources_query:
             ad_group_source_settings = ad_group_source.get_current_settings()
@@ -563,7 +563,7 @@ def get_ad_groups_exchanges(request):
                 source_state = constants.AdGroupSettingsState.INACTIVE
 
             source = {
-                'exchange': ad_group_source_settings.ad_group_source.source.bidder_slug,
+                'exchange': ad_group_source.source.bidder_slug,
                 'status': source_state,
                 'cpc_cc': ad_group_source_settings.cpc_cc,
                 'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
@@ -592,7 +592,6 @@ def get_content_ads(request):
             'id': item.id,
             'ad_group_id': item.ad_group.id,
             'title': item.title,
-            # TODO matijav 03.05.2016 not sure about the url --> check: api_contentads._get_content_ad_dict
             'url': item.url,
             'redirect_id': item.redirect_id,
             'image_id': item.image_id,
