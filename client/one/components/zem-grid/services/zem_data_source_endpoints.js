@@ -7,17 +7,17 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         var url = '/api/stats/testdata/';
         this.breakdowns = ['ad_group', 'age', 'date'],
 
-        this.getMetaData = function (config) {
-            var deferred = $q.defer();
-            $http.get(url, config).success(function (data) {
-                var breakdown = data.data[0];
-                deferred.resolve(breakdown.meta);
-            }).error(function (data) {
-                deferred.reject(data);
-            });
+            this.getMetaData = function (config) {
+                var deferred = $q.defer();
+                $http.get(url, config).success(function (data) {
+                    var breakdown = data.data[0];
+                    deferred.resolve(breakdown.meta);
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
 
-            return deferred.promise;
-        };
+                return deferred.promise;
+            };
 
         this.getData = function (config) {
             var deferred = $q.defer();
@@ -37,18 +37,17 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         this.tableApi = tableApi;
         this.breakdowns = ['account'],
 
-        this.getMetaData = function () {
-            var deferred = $q.defer();
-            deferred.resolve({
-                columns: columns
-            });
-            return deferred.promise;
-        }
+            this.getMetaData = function () {
+                var deferred = $q.defer();
+                deferred.resolve({
+                    columns: columns
+                });
+                return deferred.promise;
+            }
 
         this.getData = function (config) {
             var deferred = $q.defer();
 
-            var level = 0;
             var page = 1;
             var size = 10;
 
@@ -57,12 +56,20 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             }
 
             if (config && config.breakdown) {
-                level = 1;
-                page = (config.breakdown.pagination.to) / size + 1;
+                // Find optimal page size to capture desired range (from-to)
+                // Additional rows are sliced when parsing data
+                var to = config.breakdown.pagination.to + size;
+                while (true) {
+                    page = Math.floor(config.breakdown.pagination.to / size) + 1;
+                    if (page * size >= to) {
+                        break;
+                    }
+                    size++;
+                }
             }
 
             this.tableApi.get(page, size, null, null, '-cost').then(function (data) {
-                var breakdown = this.parseLegacyData(data, level);
+                var breakdown = this.parseLegacyData(config, data);
                 deferred.resolve(breakdown);
             }.bind(this), function (error) {
                 deferred.reject(error);
@@ -70,37 +77,56 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-        this.parseLegacyData = function (data, level) {
-            var totals = {
-                breakdown: {
-                    position: [data.pagination.startIndex + 1],
-                    pagination: {
-                        count: data.pagination.count,
-                        from: data.pagination.startIndex,
-                        to: data.pagination.endIndex,
-                        size: data.pagination.size,
-                    },
-                    rows: data.rows.map(function (row) {
-                        return {
-                            stats: row,
-                        };
-                    }),
-                    level: 1,
+        this.parseLegacyData = function (config, data) {
+            var breakdownL1 = {
+                position: [data.pagination.startIndex + 1],
+                pagination: {
+                    count: data.pagination.count,
+                    from: data.pagination.startIndex,
+                    to: data.pagination.endIndex,
+                    size: data.pagination.size,
                 },
-                stats: data.totals,
+                rows: data.rows.map(function (row) {
+                    return {
+                        stats: row,
+                    };
+                }),
+                level: 1,
             };
 
-            var breakdown = {
-                rows: [totals],
+            if (config && config.breakdown) {
+                // Slice additional rows if any
+                var from = config.breakdown.pagination.to + 1;
+                var to = config.size + from - 1;
+                if (breakdownL1.pagination.from < from)
+                {
+                    var diff = from - breakdownL1.pagination.from;
+                    breakdownL1.pagination.from = from;
+                    breakdownL1.pagination.size -= diff;
+                    breakdownL1.rows = breakdownL1.rows.slice(diff);
+                }
+                if (breakdownL1.pagination.to > to)
+                {
+                    var diff = breakdownL1.pagination.from - to;
+                    breakdownL1.pagination.to = to;
+                    breakdownL1.pagination.size -= diff;
+                    breakdownL1.rows = breakdownL1.rows.slice(0,config.size);
+                }
+
+                return breakdownL1;
+            }
+
+            var breakdownL0 = {
+                rows: [{
+                    breakdown: breakdownL1,
+                    stats: data.totals,
+                }],
                 level: 0,
                 meta: {
                     columns: this.columns,
                 },
             };
-
-            if (level === 1)
-                return breakdown.rows[0].breakdown;
-            return breakdown;
+            return breakdownL0;
         }
     }
 
