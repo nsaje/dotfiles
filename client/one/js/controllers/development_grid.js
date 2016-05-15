@@ -7,7 +7,6 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http','$q', 'zemDataSource
 }]);
 
 oneApp.controller('DevelopmentGridLegacyCtrl', ['$scope', '$controller', '$q', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $controller, $q, $timeout, zemDataSourceService, zemDataSourceEndpoints) {
-    //$scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createAllAccountsCachedEndpoint());
     $scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createAllAccountsEndpoint());
     $scope.dataSource.breakdowns = ['account'];
 

@@ -12,7 +12,7 @@ oneApp.directive('zemGridDebug', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
-        controller: ['zemGridService', function (zemGridService) {
+        controller: ['zemGridService', 'zemDataSourceService', 'zemDataSourceEndpoints', function (zemGridService, zemDataSourceService, zemDataSourceEndpoints) {
             this.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
 
             this.applyBreakdown = function () {
@@ -20,10 +20,13 @@ oneApp.directive('zemGridDebug', [function () {
                 angular.forEach(this.DEBUG_BREAKDOWNS, function (value, key) {
                     if (value) breakdowns.push(key);
                 });
-                this.grid.meta.source.breakdowns = breakdowns;
-                this.grid.meta.source.defaultPagination = [2, 3, 5, 7];
-                zemGridService.load(this.grid.meta.source).then(function (grid) {
+
+                var endpoint = zemDataSourceEndpoints.createMockEndpoint();
+                endpoint.breakdowns = breakdowns;
+                var dataSource = zemDataSourceService.createInstance(endpoint);
+                zemGridService.loadGrid(dataSource).then(function (grid) {
                     this.grid = grid;
+                    zemGridService.loadData(this.grid);
                 }.bind(this));
             };
 
