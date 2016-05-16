@@ -670,7 +670,7 @@
 -   fields:
         name: 'pub1.com'
         ad_group: 1
-        source: 1
+        source: 6
         external_id: ''
         status: 1
         created_dt: '2015-02-23T00:00:00'
@@ -680,7 +680,7 @@
 -   fields:
         name: 'pub2.com'
         ad_group: 1
-        source: 2
+        source: 7
         external_id: ''
         status: 2
         created_dt: '2015-02-23T00:00:00'
@@ -690,7 +690,7 @@
 -   fields:
         name: 'pub3.com'
         ad_group: 2
-        source: 2
+        source: 7
         external_id: ''
         status: 1
         created_dt: '2015-02-23T00:00:00'
@@ -700,7 +700,7 @@
 -   fields:
         name: ''
         ad_group: 3
-        source: 2
+        source: 7
         external_id: ''
         status: 2
         created_dt: '2015-02-23T00:00:00'
@@ -710,7 +710,7 @@
 -   fields:
         name: 'pub5.com'
         account: 1
-        source: 2
+        source: 7
         external_id: ''
         status: 2
         created_dt: '2015-02-23T00:00:00'
@@ -720,7 +720,7 @@
 -   fields:
         name: 'pub6.com'
         campaign: 1
-        source: 2
+        source: 7
         external_id: ''
         status: 2
         created_dt: '2015-02-23T00:00:00'
@@ -756,7 +756,7 @@
 -   fields:
         name: 'pub7.com'
         account: 1
-        source: 3
+        source: 8
         external_id: 'outbrain-pub-id'
         status: 2
         created_dt: '2015-02-23T00:00:00'
