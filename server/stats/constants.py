@@ -37,22 +37,31 @@ class TimeLimits:
     MONTH = 12
 
 
-def get_delivery(breakdown):
+IntegerDimensions = [
+    StructureDimension.ACCOUNT,
+    StructureDimension.CAMPAIGN,
+    StructureDimension.AD_GROUP,
+    StructureDimension.CONTENT_AD,
+    StructureDimension.SOURCE,
+    DeliveryDimension.DEVICE,
+]
+
+
+def get_delivery_dimension(breakdown):
     dimension = set(breakdown) & set(DeliveryDimension._ALL)
     if len(dimension) == 0:
         return None
     return dimension.pop()
 
 
-def get_time(breakdown):
+def get_time_dimension(breakdown):
     dimension = set(breakdown) & set(TimeDimension._ALL)
     if len(dimension) == 0:
         return None
     return dimension.pop()
 
 
-def get_structure(breakdown):
-    # TODO return 2nd structure
+def get_structure_dimension(breakdown):
     breakdown = breakdown[1:]
     dimension = set(breakdown) & set(StructureDimension._ALL)
     if len(dimension) == 0:
@@ -64,5 +73,5 @@ def get_target_dimension(breakdown):
     return breakdown[-1]
 
 
-def get_base(breakdown):
+def get_base_dimension(breakdown):
     return breakdown[0]
