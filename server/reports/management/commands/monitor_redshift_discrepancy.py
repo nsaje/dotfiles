@@ -45,14 +45,14 @@ class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
 
-        cad_stats = reports.models.ContentAdStats.objects.aggregate(
+        cad_stats = reports.models.ContentAdStats.objects.exclude(content_ad__ad_group__campaign__account_id=50).aggregate(
             impressions=Sum('impressions'),
             clicks=Sum('clicks'),
             cost_cc=Sum('cost_cc'),
             data_cost_cc=Sum('data_cost_cc')
         )
 
-        cad_post_stats = reports.models.ContentAdPostclickStats.objects.aggregate(
+        cad_post_stats = reports.models.ContentAdPostclickStats.objects.exclude(content_ad__ad_group__campaign__account_id=50).aggregate(
             visits=Sum('visits'),
             new_visits=Sum('new_visits'),
             bounced_visits=Sum('bounced_visits'),
@@ -60,7 +60,7 @@ class Command(ExceptionCommand):
             total_time_on_site=Sum('total_time_on_site'),
         )
 
-        ag_stats = reports.models.AdGroupStats.objects.aggregate(
+        ag_stats = reports.models.AdGroupStats.objects.exclude(ad_group__campaign__account_id=50).aggregate(
             impressions=Sum('impressions'),
             clicks=Sum('clicks'),
             cost_cc=Sum('cost_cc'),
