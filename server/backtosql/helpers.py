@@ -28,8 +28,17 @@ def clean_prefix(prefix=None):
     return prefix or ''
 
 
-def printsql(sql):
-    print(clean_sql(sql))
+def printsql(sql, params=None, cursor=None):
+    if cursor:
+        sql = cursor.mogrify(sql, params)
+    sql = sqlparse.format(sql,
+                          reindent=True,
+                          indent_tabs=False,
+                          indent_width=1,
+                          keyword_case='upper',
+                          identifier_case='lower',
+                          strip_comments=True).strip()
+    print('\033[92m' + sql + '\033[0m')
 
 
 def is_collection(value):
