@@ -43,11 +43,23 @@ class MyCursor(object):
     def __init__(self, cursor):
         self.cursor = cursor
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def execute(self, statement, params):
         self.cursor.execute(statement, params)
+
+    def fetchall(self):
+        return self.cursor.fetchall()
 
     def dictfetchall(self):
         return dictfetchall(self.cursor)
 
     def close(self):
         self.cursor.close()
+
+    def mogrify(self, *args, **kwargs):
+        return self.cursor.mogrify(*args, **kwargs)
