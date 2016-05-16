@@ -12,22 +12,22 @@ oneApp.directive('zemGridDebug', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
-        controller: ['zemGridService', 'zemDataSourceService', 'zemDataSourceEndpoints', function (zemGridService, zemDataSourceService, zemDataSourceEndpoints) {
-            this.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
+        controller: ['zemGridService', function (zemGridService) {
+
+            this.source = this.grid.meta.source;
+            this.availableBreakdowns = {};
+            this.source.availableBreakdowns.forEach(function (breakdown) {
+                this.availableBreakdowns[breakdown] = this.source.selectedBreakdown.indexOf(breakdown) > -1;
+            }.bind(this));
 
             this.applyBreakdown = function () {
-                var breakdowns = [];
-                angular.forEach(this.DEBUG_BREAKDOWNS, function (value, key) {
-                    if (value) breakdowns.push(key);
+                var selectedBreakdown = [];
+                angular.forEach(this.availableBreakdowns, function (value, key) {
+                    if (value) selectedBreakdown.push(key);
                 });
 
-                var endpoint = zemDataSourceEndpoints.createMockEndpoint();
-                endpoint.breakdowns = breakdowns;
-                var dataSource = zemDataSourceService.createInstance(endpoint);
-                zemGridService.loadGrid(dataSource).then(function (grid) {
-                    this.grid = grid;
-                    zemGridService.loadData(this.grid);
-                }.bind(this));
+                this.grid.meta.source.selectedBreakdown = selectedBreakdown;
+                zemGridService.loadData(this.grid);
             };
 
             this.toggleCollapseLevel = function (level) {

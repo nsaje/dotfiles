@@ -12,7 +12,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         this.data = null;
         this.endpoint = endpoint;
-        this.breakdowns = endpoint.breakdowns;
+        this.availableBreakdowns = endpoint.availableBreakdowns;
+        this.selectedBreakdown = endpoint.defaultBreakdown;
 
         this.getData = getData;
         this.getMetaData = getMetaData;
@@ -37,11 +38,15 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         }
 
         function getMetaData () {
-            return ds.endpoint.getMetaData();
+            var config = {
+                selectedBreakdown: ds.selectedBreakdown,
+            };
+            return ds.endpoint.getMetaData(config);
         }
 
         function getData (breakdown, size) { // level, page
             var config = {
+                selectedBreakdown: ds.selectedBreakdown,
                 breakdown: breakdown,
                 size: size,
             };

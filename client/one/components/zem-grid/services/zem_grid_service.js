@@ -12,8 +12,6 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
                 var grid = new zemGridObject.createInstance();
                 grid.header.columns = data.columns;
                 grid.meta.source = dataSource;
-                grid.meta.breakdowns = dataSource.breakdowns;
-                grid.meta.levels = dataSource.breakdowns.length;
                 grid.ui.columnWidths = columnWidths;
                 deferred.resolve(grid);
             }
@@ -71,7 +69,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         var classes = [];
         classes.push('level-' + row.level);
 
-        if (row.level === grid.meta.levels) {
+        if (row.level === grid.meta.source.selectedBreakdown.length) {
             classes.push('level-last');
         }
         return classes;

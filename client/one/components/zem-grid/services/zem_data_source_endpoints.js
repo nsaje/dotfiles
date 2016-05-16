@@ -5,12 +5,13 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
     function MockEndpoint () {
         var url = '/api/stats/testdata/';
-        this.breakdowns = ['ad_group', 'age', 'date'],
-            this.defaultPagination = [2, 3, 5, 7];
+        this.availableBreakdowns = ['ad_group', 'age', 'sex', 'date'];
+        this.defaultBreakdown = ['ad_group', 'age', 'date'];
+        this.defaultPagination = [2, 3, 5, 7];
 
-        this.getMetaData = function () {
+        this.getMetaData = function (config) {
             var deferred = $q.defer();
-            $http.get(url, this.createQueryParams({})).success(function (data) {
+            $http.get(url, this.createQueryParams(config)).success(function (data) {
                 var breakdown = data.data[0];
                 deferred.resolve(breakdown.meta);
             }).error(function (data) {
@@ -38,7 +39,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             if (breakdown) level = breakdown.level;
 
             var ranges = [];
-            for (var i = 1; i <= this.breakdowns.length; ++i) {
+            for (var i = 1; i <= config.selectedBreakdown.length; ++i) {
                 var from = 0;
                 var to = this.defaultPagination[i - 1];
                 if (breakdown) {
@@ -60,7 +61,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
             return {
                 params: {
-                    breakdowns: this.breakdowns.join(','),
+                    breakdowns: config.selectedBreakdown.join(','),
                     ranges: ranges.join(','),
                     level: level,
                 },
@@ -71,15 +72,17 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
     function LegacyEndpoint (tableApi, columns) {
         this.columns = columns;
         this.tableApi = tableApi;
-        this.breakdowns = ['account'],
+        this.availableBreakdowns = ['campaign', 'source', 'device', 'week'];
+        this.defaultBreakdown = [];
+        this.defaultPagination = [2, 3, 5, 7];
 
-            this.getMetaData = function () {
-                var deferred = $q.defer();
-                deferred.resolve({
-                    columns: columns,
-                });
-                return deferred.promise;
-            };
+        this.getMetaData = function () {
+            var deferred = $q.defer();
+            deferred.resolve({
+                columns: columns,
+            });
+            return deferred.promise;
+        };
 
         this.getData = function (config) {
             var deferred = $q.defer();
