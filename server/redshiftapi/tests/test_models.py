@@ -2,7 +2,7 @@ import backtosql
 from django.test import TestCase
 
 from redshiftapi import models
-from redshiftapi import constants
+
 
 class RSContentAdStatsTest(TestCase):
 
@@ -11,13 +11,10 @@ class RSContentAdStatsTest(TestCase):
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 26)
+        self.assertEquals(len(columns), 29)
 
-        # TODO assert this print matches expected
-        print [(x.group, x.alias, x.template_name) for x in self.model.get_columns()]
-
-        columns = self.model.select_columns(group=constants.ColumnGroup.BREAKDOWN)
-        self.assertEquals(len(columns), 6)
+        columns = self.model.select_columns(group=models.BREAKDOWN)
+        self.assertEquals(len(columns), 9)
 
     # TODO these are more mixin tests
     def test_get_breakdown(self):

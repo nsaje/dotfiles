@@ -1,6 +1,6 @@
 import backtosql
 
-from dash import breakdown_helpers
+from stats import constants
 
 from redshiftapi import helpers
 
@@ -121,10 +121,10 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
             return 'contentadstats'
 
         # TODO the real code for view selection will be like this:
-        base = breakdown_helpers.get_base(breakdown)
-        structure = breakdown_helpers.get_structure(breakdown)
-        delivery = breakdown_helpers.get_delivery(breakdown)
-        time = breakdown_helpers.get_time(breakdown)
+        base = constants.get_base_dimension(breakdown)
+        structure = constants.get_structure_dimension(breakdown)
+        delivery = constants.get_delivery_dimension(breakdown)
+        time = constants.get_time_dimension(breakdown)
         l = len(breakdown)
 
         if base == 'account':

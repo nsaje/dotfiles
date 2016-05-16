@@ -13,6 +13,7 @@ def prepare_lvl1_top_rows(model, breakdown, constraints, breakdown_constraints,
     sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', context)
 
     params = context['constraints'].get_params()
+    params.extend(context['breakdown_constraints'].get_params())
 
     return sql, params
 
@@ -23,7 +24,6 @@ def prepare_lvl2_top_rows(model, breakdown, constraints, breakdown_constraints,
 
     sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', context)
 
-    # this is template specific - based on what comes first
     params = context['constraints'].get_params()
     params.extend(context['breakdown_constraints'].get_params())
 
@@ -42,8 +42,6 @@ def prepare_time_top_rows(model, time_dimension, breakdown, constraints, breakdo
     if context['breakdown_constraints']:
         params.extend(context['breakdown_constraints'].get_params())
 
-    print 'CONTEXT', context
-
     return sql, params
 
 
@@ -54,7 +52,7 @@ def _get_default_context(model, breakdown, constraints, breakdown_constraints,
     """
 
     constraints = backtosql.Q(model, **constraints)
-    breakdown_constraints = _prepare_breakdown_constraints(breakdown_constraints)
+    breakdown_constraints = _prepare_breakdown_constraints(model, breakdown_constraints)
 
     context = {
         'view': model.get_best_view(breakdown),
@@ -62,7 +60,6 @@ def _get_default_context(model, breakdown, constraints, breakdown_constraints,
         'constraints': constraints,
         'breakdown_constraints': breakdown_constraints,
         'aggregates': model.get_aggregates(),
-        # TODO order is 1 column name, not a list
         'order': model.select_order([order]),
         'offset': (page - 1) * page_size,
         'limit': page * page_size,
@@ -71,7 +68,7 @@ def _get_default_context(model, breakdown, constraints, breakdown_constraints,
     return context
 
 
-def _prepare_breakdown_constraints(breakdown_constraints):
+def _prepare_breakdown_constraints(model, breakdown_constraints):
     """
     Create OR separated AND statements based on breakdown_constraints.
     Eg.:

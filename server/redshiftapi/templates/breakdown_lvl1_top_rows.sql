@@ -24,7 +24,8 @@ FROM (
     FROM
         {{ view }} b
     WHERE
-        {{ constraints|g:"b"}}
+        {{ constraints|g:"b"}} AND
+        {{ breakdown_constraints|g:"b" }}
     GROUP BY
         --- get name of column by alias
         {{ breakdown|g_alias }}

@@ -5,49 +5,69 @@ import backtosql.helpers
 from django.test import TestCase
 
 from redshiftapi import api_breakdowns
+from redshiftapi import queries
 from redshiftapi import models
 
 
 def _stripWhitespace(q):
-    return re.sub(r"\s+", '', q)
+    return re.sub(r"[\n\r\s]+", '', q)
 
 
 class APIBreakdownsTest(TestCase):
 
     def assertSQLQueriesEqual(self, q1, q2):
-        q1 = _stripWhitespace(q1)
-        q2 = _stripWhitespace(q2)
+        backtosql.helpers.printsql(q1)
+        q1 = _stripWhitespace(q1).upper()
+        q2 = _stripWhitespace(q2).upper()
         self.assertEqual(q1, q2)
 
-    def test_prepare_constraints(self):
+    def test_get_default_context_constraints(self):
 
         constraints = {
             'account_id': 123,
             'campaign_id': 223,
         }
         breakdown_constraints = [
-            {'content_ad_id': 132, 'source_id': 1},
-            {'content_ad_id': 133, 'source_id': [2, 3]},
+            {'content_ad_id': 32, 'source_id': 1},
+            {'content_ad_id': 33, 'source_id': [2, 3]},
         ]
-        q = api_breakdowns._prepare_constraints(models.RSContentAdStats, constraints, breakdown_constraints)
+        context = queries._get_default_context(
+            models.RSContentAdStats,
+            ['account_id', 'source_id'],
+            constraints,
+            breakdown_constraints,
+            '-clicks',
+            2,
+            33
+        )
+        q = context['constraints']
         self.assertEqual(
             q.g('A'),
-            "((A.account_id=%s AND A.campaign_id=%s) AND ((A.content_ad_id=%s AND A.source_id=%s) OR (A.content_ad_id=%s AND A.source_id IN %s)))")
-        self.assertEqual(q.get_params(), [123, 223, 132, 1, 133, [2, 3]])
+            "(A.account_id=%s AND A.campaign_id=%s)")
+        self.assertEqual(q.get_params(), [123, 223])
+
+        q = context['breakdown_constraints']
+        self.assertEqual(
+            q.g('A'),
+            "((A.content_ad_id=%s AND A.source_id=%s) OR (A.content_ad_id=%s AND A.source_id=ANY(%s)))")
+        self.assertEqual(q.get_params(), [32, 1, 33, [2, 3]])
+
+        self.assertEqual(context['offset'], 33)
+        self.assertEqual(context['limit'], 66)
 
 
     def test_prepare_query(self):
-        breakdown = ['ad_group_id']
+        breakdown = ['ad_group_id', 'content_ad_id']
         constraints = {
-            'dt__gte': datetime.date(2016, 1, 1),
-            'dt__lte': datetime.date(2016, 1, 31),
+            'date__gte': datetime.date(2016, 1, 1),
+            'date__lte': datetime.date(2016, 1, 31),
             'account_id': [1, 2, 3],
             'campaign_id': 22,
         }
         breakdown_constraints = [
-            {'content_ad_id': 112, 'source_id': [1, 2, 4]}
+            {'content_ad_id': 112}
         ]
-        order = ['-campaign_id']
+        order = '-campaign_id'
 
         page = 1
         page_size = 50
@@ -57,58 +77,80 @@ class APIBreakdownsTest(TestCase):
             breakdown, constraints, breakdown_constraints, order, page, page_size)
 
         self.assertEquals(params,
-                          [[1, 2, 3], 22, datetime.date(2016, 1, 1), datetime.date(2016, 1, 31), 112, [1, 2, 4]])
+                          [[1, 2, 3], 22, datetime.date(2016, 1, 1), datetime.date(2016, 1, 31), 112])
 
-        self.assertSQLQueriesEqual(query, """SELECT a.adgroup_id AS ad_group_id,
+        self.assertSQLQueriesEqual(query, """
+        SELECT a.ad_group_id,
+            a.content_ad_id,
             (CASE
-                    WHEN SUM(a.visits) <> 0 THEN SUM(CAST(a.total_time_on_site AS FLOAT)) / SUM(a.visits)
+                    WHEN sum(a.visits) <> 0 THEN sum(cast(a.total_time_on_site AS FLOAT)) / sum(a.visits)
                     ELSE NULL
                 END) avg_tos,
-            (SUM(a.effective_cost_nano)+SUM(a.effective_data_cost_nano)+SUM(a.license_fee_nano))/1000000000.0 billing_cost,
+            (sum(a.effective_cost_nano)+sum(a.effective_data_cost_nano)+sum(a.license_fee_nano))/1000000000.0 billing_cost,
             (CASE
-                    WHEN SUM(a.visits) <> 0 THEN SUM(CAST(a.bounced_visits AS FLOAT)) / SUM(a.visits)
+                    WHEN sum(a.visits) <> 0 THEN sum(cast(a.bounced_visits AS FLOAT)) / sum(a.visits)
                     ELSE NULL
                 END)*100.0 bounce_rate,
             (CASE
-                    WHEN SUM(a.clicks) = 0 THEN NULL
-                    WHEN SUM(a.visits) = 0 THEN 1
-                    WHEN SUM(a.clicks) < SUM(a.visits) THEN 0
-                    ELSE (SUM(CAST(a.clicks AS FLOAT)) - SUM(a.visits)) / SUM(a.clicks)
+                    WHEN sum(a.clicks) = 0 THEN NULL
+                    WHEN sum(a.visits) = 0 THEN 1
+                    WHEN sum(a.clicks) < sum(a.visits) THEN 0
+                    ELSE (sum(cast(a.clicks AS FLOAT)) - sum(a.visits)) / sum(a.clicks)
                 END)*100.0 click_discrepancy,
-            SUM(a.clicks) clicks,
-            SUM(a.cost_cc)/10000.0 cost,
+            sum(a.clicks) clicks,
+            sum(a.cost_cc)/10000.0 cost,
             (CASE
-                    WHEN SUM(a.clicks) <> 0 THEN SUM(CAST(a.cost_cc AS FLOAT)) / SUM(a.clicks)
+                    WHEN sum(a.clicks) <> 0 THEN sum(cast(a.cost_cc AS FLOAT)) / sum(a.clicks)
                     ELSE NULL
                 END)/10000.0 cpc,
             (CASE
-                    WHEN SUM(a.impressions) <> 0 THEN SUM(CAST(a.clicks AS FLOAT)) / SUM(a.impressions)
+                    WHEN sum(a.impressions) <> 0 THEN sum(cast(a.clicks AS FLOAT)) / sum(a.impressions)
                     ELSE NULL
                 END)*100.0 ctr,
-            SUM(a.data_cost_cc)/10000.0 data_cost,
-            SUM(a.effective_data_cost_nano)/1000000000.0 e_data_cost,
-            SUM(a.effective_cost_nano)/1000000000.0 e_media_cost,
-            SUM(a.impressions) impressions,
-            SUM(a.license_fee_nano)/1000000000.0 license_fee,
-            SUM(a.cost_cc)/10000.0 media_cost,
-            SUM(a.new_visits) new_visits,
-            SUM(a.pageviews) pageviews,
+            sum(a.data_cost_cc)/10000.0 data_cost,
+            sum(a.effective_data_cost_nano)/1000000000.0 e_data_cost,
+            sum(a.effective_cost_nano)/1000000000.0 e_media_cost,
+            sum(a.impressions) impressions,
+            sum(a.license_fee_nano)/1000000000.0 license_fee,
+            sum(a.cost_cc)/10000.0 media_cost,
+            sum(a.new_visits) new_visits,
+            sum(a.pageviews) pageviews,
             (CASE
-                    WHEN SUM(a.visits) <> 0 THEN SUM(CAST(a.new_visits AS FLOAT)) / SUM(a.visits)
+                    WHEN sum(a.visits) <> 0 THEN sum(cast(a.new_visits AS FLOAT)) / sum(a.visits)
                     ELSE NULL
                 END)*100.0 percent_new_users,
             (CASE
-                    WHEN SUM(a.visits) <> 0 THEN SUM(CAST(a.pageviews AS FLOAT)) / SUM(a.visits)
+                    WHEN sum(a.visits) <> 0 THEN sum(cast(a.pageviews AS FLOAT)) / sum(a.visits)
                     ELSE NULL
                 END) pv_per_visit,
-            (SUM(a.license_fee_nano)+SUM(a.cost_cc)*100000+SUM(a.data_cost_cc)*100000)/1000000000.0 total_cost,
-            SUM(a.visits) visits
-        FROM contentadstats a
-        WHERE ((a.account_id IN %s
-                AND a.campaign_id=%s
-                AND TRUNC(a.dt)>=%s
-                AND TRUNC(a.dt)<=%s)
-            AND (a.content_ad_id=%s
-                    AND a.source_id IN %s))
-        ORDER BY a.campaign_id DESC LIMIT 50 ;
+            (sum(a.license_fee_nano)+sum(a.cost_cc)*100000+sum(a.data_cost_cc)*100000)/1000000000.0 total_cost,
+            sum(a.visits) visits
+        FROM
+        (SELECT b.adgroup_id AS ad_group_id,
+                                b.content_ad_id AS content_ad_id,
+                                                    sum(b.clicks) clicks,
+                                                    sum(b.impressions) impressions,
+                                                    sum(b.cost_cc) cost_cc,
+                                                    sum(b.data_cost_cc) data_cost_cc,
+                                                    sum(b.effective_cost_nano) effective_cost_nano,
+                                                    sum(b.effective_data_cost_nano) effective_data_cost_nano,
+                                                    sum(b.license_fee_nano) license_fee_nano,
+                                                    sum(b.visits) visits,
+                                                    sum(b.new_visits) new_visits,
+                                                    sum(b.bounced_visits) bounced_visits,
+                                                    sum(b.pageviews) pageviews,
+                                                    sum(b.total_time_on_site) total_time_on_site,
+                                                    row_number() over (partition BY b.adgroup_id
+                                                                    ORDER BY b.campaign_id DESC) AS r
+        FROM contentadstats b
+        WHERE (b.account_id=any(%s)
+                AND b.campaign_id=%s
+                AND trunc(b.date)>=%s
+                AND trunc(b.date)<=%s)
+        AND (b.content_ad_id=%s)
+        GROUP BY ad_group_id,
+                content_ad_id) a
+        WHERE r <= 50
+        GROUP BY 1,
+                2
         """)
