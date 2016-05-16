@@ -314,8 +314,11 @@ class AgencyFormAdmin(forms.ModelForm):
                 first_name=''
             ).exclude(
                 last_name=''
+            ).order_by(
+                'first_name',
+                'last_name',
             )
-        self.fields['sales_representative'].label_from_instance = lambda obj: "%s" % obj.get_full_name()
+        self.fields['sales_representative'].label_from_instance = lambda obj: "%s <%s>" % (obj.get_full_name(), obj.email or '')
 
 
 class AgencyAdmin(admin.ModelAdmin):
