@@ -66,7 +66,7 @@ FIELDNAMES_ID_MAPPING = [('account', 'account_id'),
                          ('campaign', 'campaign_id'),
                          ('ad_group', 'ad_group_id'),
                          ('content_ad', 'content_ad_id'),
-                         ('account', 'agency_id'),]
+                         ('agency', 'agency_id'),]
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'submission_status', 'titleLink', 'bid_cpc',
@@ -650,6 +650,8 @@ class AllAccountsExport(object):
 
         if breakdown == 'account':
             required_fields.extend(['account'])
+            if user.has_perm('zemauth.can_view_account_agency_information'):
+                required_fields.append('agency')
             dimensions.extend(['account'])
         elif breakdown == 'campaign':
             required_fields.extend(['account', 'campaign'])
