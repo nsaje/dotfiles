@@ -19,8 +19,6 @@ def query(breakdown, constraints, breakdown_constraints, order, page, page_size)
     # returns a collection of rows that are dicts
     # TODO supported order len == 1 -> breakdown levels 1 and 2 don't go without it
 
-    assert len(order) == 1
-
     model = models.RSContentAdStats
 
     # first translate fields into what our code understands
