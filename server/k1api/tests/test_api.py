@@ -627,7 +627,6 @@ class K1ApiTest(TestCase):
         # self.assertEqual(1, 2)
         self.assertEqual(ags.source_campaign_key, ['abc'])
 
-
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_get_outbrain_marketer_id(self, mock_verify_wsgi_request):
