@@ -2,7 +2,8 @@ import copy
 import collections
 
 from dash import models
-from dash import breakdown_helpers
+
+from stats import constants
 
 
 def extract_stats_constraints(constraints):
@@ -24,22 +25,22 @@ def get_rows_by_obj_ids(stats_rows, target_dimension):
     # collect objects that need to be augmented
     for row in stats_rows:
 
-        if target_dimension == breakdown_helpers.StructureDimension.ACCOUNT and 'account_id' in row:
+        if target_dimension == constants.StructureDimension.ACCOUNT and 'account_id' in row:
             rows_by_obj_ids['account_id'][row['account_id']].append(row)
 
-        if target_dimension == breakdown_helpers.StructureDimension.CAMPAIGN and 'campaign_id' in row:
+        if target_dimension == constants.StructureDimension.CAMPAIGN and 'campaign_id' in row:
             rows_by_obj_ids['campaign_id'][row['campaign_id']].append(row)
 
-        if target_dimension == breakdown_helpers.StructureDimension.AD_GROUP and 'ad_group_id' in row:
+        if target_dimension == constants.StructureDimension.AD_GROUP and 'ad_group_id' in row:
             rows_by_obj_ids['ad_group_id'][row['ad_group_id']].append(row)
 
-        if target_dimension == breakdown_helpers.StructureDimension.CONTENT_AD and 'content_ad_id' in row:
+        if target_dimension == constants.StructureDimension.CONTENT_AD and 'content_ad_id' in row:
             rows_by_obj_ids['content_ad_id'][row['content_ad_id']].append(row)
 
-        if target_dimension == breakdown_helpers.StructureDimension.SOURCE and 'source_id' in row:
+        if target_dimension == constants.StructureDimension.SOURCE and 'source_id' in row:
             rows_by_obj_ids['source_id'][row['source_id']].append(row)
 
-        if target_dimension == breakdown_helpers.StructureDimension.PUBLISHER and 'publisher' in row:
+        if target_dimension == constants.StructureDimension.PUBLISHER and 'publisher' in row:
             rows_by_obj_ids['publisher'][row['publisher']].append(row)
 
     return rows_by_obj_ids

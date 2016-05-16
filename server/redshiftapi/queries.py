@@ -1,8 +1,8 @@
-
 import backtosql
 import datetime
 from dateutil import rrule, relativedelta
-from dash import breakdown_helpers
+
+from stats import constants
 
 
 def prepare_lvl1_top_rows(model, breakdown, constraints, breakdown_constraints,
@@ -86,15 +86,14 @@ def _prepare_breakdown_constraints(model, breakdown_constraints):
     return bq
 
 def _prepare_time_constraints(time_dimension, constraints, page, page_size):
-
     # TODO there is no limit on max date span here, just another page
     start_date = constraints['date__gte']
 
     start_idx = (page - 1) * page_size
-    if time_dimension == breakdown_helpers.TimeDimension.WEEK:
+    if time_dimension == constants.TimeDimension.WEEK:
         start_date = start_date + datetime.timedelta(days=7*start_idx)
         end_date = start_date + datetime.timedelta(days=7*page_size)
-    elif time_dimension == breakdown_helpers.TimeDimension.MONTH:
+    elif time_dimension == constants.TimeDimension.MONTH:
         start_date = start_date + relativedelta.relativedelta(months=+start_idx)
         end_date = start_date + relativedelta.relativedelta(months=page_size)
     else:
