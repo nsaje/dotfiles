@@ -62,7 +62,8 @@ def _get_default_context(model, breakdown, constraints, breakdown_constraints,
         'constraints': constraints,
         'breakdown_constraints': breakdown_constraints,
         'aggregates': model.get_aggregates(),
-        'order': model.select_order(order),
+        # TODO order is 1 column name, not a list
+        'order': model.select_order([order]),
         'offset': (page - 1) * page_size,
         'limit': page * page_size,
     }

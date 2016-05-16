@@ -9,6 +9,7 @@ def extract_stats_constraints(constraints):
     """
     Remove any constraints that are not part of the stats query.
     """
+
     constraints = copy.copy(constraints)
 
     del constraints['show_archived']
@@ -22,10 +23,6 @@ def get_rows_by_obj_ids(stats_rows, target_dimension):
 
     # collect objects that need to be augmented
     for row in stats_rows:
-
-        # TODO could this sorting be a memory bottleneck?
-        # should rows be indexed and only indices stored?
-        # but if references are stored than it should be no problem
 
         if target_dimension == breakdown_helpers.StructureDimension.ACCOUNT and 'account_id' in row:
             rows_by_obj_ids['account_id'][row['account_id']].append(row)
@@ -90,8 +87,6 @@ def get_needed_objs(rows_by_obj_ids):
 
 def augment(stats_rows, target_dimension):
     # TODO constants for other dimensions (age?), unknown
-    # TODO can data between dimensions be shared? I think not - as
-    # upper dimension needs a superset
 
     rows_by_obj_ids = get_rows_by_obj_ids(stats_rows, target_dimension)
     objs_by_id = get_needed_objs(rows_by_obj_ids)

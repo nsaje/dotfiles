@@ -1,7 +1,7 @@
 import datetime
 from mock import patch
 
-from django.test import TestCase, RequestFactory, Client
+from django.test import TestCase, Client
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 
