@@ -102,7 +102,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
-        api.accountAgency.get($state.params.id).then(
+        api.accountSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.canArchive = data.canArchive;
@@ -128,7 +128,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         $scope.discarded = null;
         $scope.requestInProgress = true;
 
-        api.accountAgency.save($scope.settings).then(
+        api.accountSettings.save($scope.settings).then(
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
