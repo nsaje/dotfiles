@@ -6,7 +6,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = zemMoment();
+    $scope.maxDate = zemMoment().endOf('month');
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
