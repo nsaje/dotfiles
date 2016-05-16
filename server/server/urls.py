@@ -279,7 +279,7 @@ urlpatterns += [
         name='account_history'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/agency/',
+        r'^api/accounts/(?P<account_id>\d+)/settings/',
         login_required(dash.views.agency.AccountSettings.as_view()),
         name='account_settings'
     ),
