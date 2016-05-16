@@ -530,47 +530,41 @@ def get_ad_groups_exchanges(request):
 
     ad_group_id = request.GET.get('ad_group_id')
 
-    ad_groups_query = dash.models.AdGroup.objects
-    if ad_group_id is not None:
-        ad_groups_query = ad_groups_query.filter(id=ad_group_id)
+    ad_groups_settings_query = dash.models.AdGroupSettings.objects
+    if ad_group_id:
+        ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id=ad_group_id)
+    else:
+        ad_groups_settings_query = ad_groups_settings_query.all()
 
-    ad_groups = (
-        ad_groups_query
-        .prefetch_related(
-            'adgroupsource_set',
-            'adgroupsource_set__source',
-            'adgroupsource_set__source__source_type',
-        )
-        .all()
-        .exclude_archived()
-    )
+    ad_groups_settings = ad_groups_settings_query.group_current_settings().select_related('ad_group')
+    ad_group_settings_map = {ags.ad_group: ags for ags in ad_groups_settings if ad_group_id or not ags.archived}
+
+    ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
+                                 .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
+                                 .filter(ad_group_source__source__source_type__type='b1')
+                                 .filter(ad_group_source__source__deprecated=False)
+                                 .group_current_settings()
+                                 .select_related('ad_group_source',
+                                                 'ad_group_source__ad_group',
+                                                 'ad_group_source__source'))
 
     ad_group_sources = defaultdict(list)
 
-    for ad_group in ad_groups:
-        ad_group_settings = ad_group.get_current_settings()
+    for ad_group_source_settings in ad_group_sources_settings:
+        ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group]
+        if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
+                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+            source_state = constants.AdGroupSettingsState.ACTIVE
+        else:
+            source_state = constants.AdGroupSettingsState.INACTIVE
 
-        ad_group_sources_query = ad_group.adgroupsource_set.filter(
-            source__source_type__type='b1',
-            source__deprecated=False,
-        ).prefetch_related('source')
-
-        for ad_group_source in ad_group_sources_query:
-            ad_group_source_settings = ad_group_source.get_current_settings()
-
-            if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
-                    ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
-                source_state = constants.AdGroupSettingsState.ACTIVE
-            else:
-                source_state = constants.AdGroupSettingsState.INACTIVE
-
-            source = {
-                'exchange': ad_group_source.source.bidder_slug,
-                'status': source_state,
-                'cpc_cc': ad_group_source_settings.cpc_cc,
-                'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
-            }
-            ad_group_sources[ad_group.id].append(source)
+        source = {
+            'exchange': ad_group_source_settings.ad_group_source.source.bidder_slug,
+            'status': source_state,
+            'cpc_cc': ad_group_source_settings.cpc_cc,
+            'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
+        }
+        ad_group_sources[ad_group_settings.ad_group.id].append(source)
 
     return _response_ok(ad_group_sources)
 
