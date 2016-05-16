@@ -165,6 +165,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var currentMonthStart = null;
         var currentMonthEnd = null;
 
+        result['Current Month'] = [
+            zemMoment().startOf('month'),
+            zemMoment().endOf('month'),
+        ];
+
         result.Yesterday = [
             zemMoment().subtract(1, 'days').startOf('day'),
             zemMoment().subtract(1, 'days').endOf('day'),
