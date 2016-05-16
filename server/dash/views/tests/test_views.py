@@ -6,6 +6,7 @@ import datetime
 import decimal
 
 from django.test import TestCase, Client, RequestFactory
+from django.test.utils import override_settings
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -1838,6 +1839,27 @@ class AdGroupSourcesTest(TestCase):
                            in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
+
+    @override_settings(K1_CONSISTENCY_SYNC=True)
+    def test_put_add_content_ad_sources(self):
+        response = self.client.put(
+            reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+            data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        source = models.Source.objects.get(pk=9)
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertIn(source, ad_group_sources)
+        self.assertNotIn(source, waiting_sources)
+
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__ad_group=ad_group, source=source)
+        self.assertTrue(content_ad_sources.exists())
+        self.assertEqual(len(content_ads), len(content_ad_sources))
 
     def test_put_with_retargeting(self):
         ad_group = models.AdGroup.objects.get(pk=1)
