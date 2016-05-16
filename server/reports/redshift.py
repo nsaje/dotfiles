@@ -8,10 +8,7 @@ import influx
 from utils.statsd_helper import statsd_timer
 
 from reports import exc
-from reports.db_raw_helpers import is_collection
-
-from redshiftapi.db import get_cursor
-
+from reports.db_raw_helpers import MyCursor, is_collection
 
 JSON_KEY_DELIMITER = '--'
 S3_FILE_URI = 's3://{bucket_name}/{key}'
@@ -37,6 +34,10 @@ def delete_contentadstats(date, campaign_id):
 def _execute(query, params):
     with get_cursor() as cursor:
         cursor.execute(query, params)
+
+
+def get_cursor():
+    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstatsdiff')
