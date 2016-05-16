@@ -1,28 +1,28 @@
-/* globals oneApp */
+/* globals oneApp,angular */
 'use strict';
 
 oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'api', function ($rootScope, $controller, $http, $q, $timeout, api) { // eslint-disable-line max-len
 
-    function MockEndpoint() {
+    function MockEndpoint () {
         var url = '/api/stats/testdata/';
         this.breakdowns = ['ad_group', 'age', 'date'],
+            this.defaultPagination = [2, 3, 5, 7];
 
-            this.getMetaData = function (config) {
-                var deferred = $q.defer();
-                $http.get(url, config).success(function (data) {
-                    var breakdown = data.data[0];
-                    deferred.resolve(breakdown.meta);
-                }).error(function (data) {
-                    deferred.reject(data);
-                });
+        this.getMetaData = function () {
+            var deferred = $q.defer();
+            $http.get(url, this.createQueryParams({})).success(function (data) {
+                var breakdown = data.data[0];
+                deferred.resolve(breakdown.meta);
+            }).error(function (data) {
+                deferred.reject(data);
+            });
 
-                return deferred.promise;
-            };
+            return deferred.promise;
+        };
 
         this.getData = function (config) {
             var deferred = $q.defer();
-            $http.get(url, config).success(function (data) {
-                var breakdown = data.data[0];
+            $http.get(url, this.createQueryParams(config)).success(function (data) {
                 deferred.resolve(data.data[0]);
             }).error(function (data) {
                 deferred.reject(data);
@@ -30,9 +30,45 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
             return deferred.promise;
         };
+
+        this.createQueryParams = function (config) {
+            var breakdown = config.breakdown;
+            var size = config.size;
+            var level = 0;
+            if (breakdown) level = breakdown.level;
+
+            var ranges = [];
+            for (var i = 1; i <= this.breakdowns.length; ++i) {
+                var from = 0;
+                var to = this.defaultPagination[i - 1];
+                if (breakdown) {
+                    if (i < breakdown.level) {
+                        from = breakdown.position[i];
+                        to = from + 1;
+                    } else if (breakdown.level === i) {
+                        from = breakdown.pagination.to;
+                        if (size) {
+                            if (size > 0) to = from + size;
+                            else to = -1;
+                        } else {
+                            to = from + this.defaultPagination[i - 1];
+                        }
+                    }
+                }
+                ranges.push([from, to].join('|'));
+            }
+
+            return {
+                params: {
+                    breakdowns: this.breakdowns.join(','),
+                    ranges: ranges.join(','),
+                    level: level,
+                },
+            };
+        };
     }
 
-    function LegacyEndpoint(tableApi, columns) {
+    function LegacyEndpoint (tableApi, columns) {
         this.columns = columns;
         this.tableApi = tableApi;
         this.breakdowns = ['account'],
@@ -40,10 +76,10 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             this.getMetaData = function () {
                 var deferred = $q.defer();
                 deferred.resolve({
-                    columns: columns
+                    columns: columns,
                 });
                 return deferred.promise;
-            }
+            };
 
         this.getData = function (config) {
             var deferred = $q.defer();
@@ -96,21 +132,20 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
             if (config && config.breakdown) {
                 // Slice additional rows if any
+                var diff;
                 var from = config.breakdown.pagination.to + 1;
                 var to = config.size + from - 1;
-                if (breakdownL1.pagination.from < from)
-                {
-                    var diff = from - breakdownL1.pagination.from;
+                if (breakdownL1.pagination.from < from) {
+                    diff = from - breakdownL1.pagination.from;
                     breakdownL1.pagination.from = from;
                     breakdownL1.pagination.size -= diff;
                     breakdownL1.rows = breakdownL1.rows.slice(diff);
                 }
-                if (breakdownL1.pagination.to > to)
-                {
-                    var diff = breakdownL1.pagination.from - to;
+                if (breakdownL1.pagination.to > to) {
+                    diff = breakdownL1.pagination.from - to;
                     breakdownL1.pagination.to = to;
                     breakdownL1.pagination.size -= diff;
-                    breakdownL1.rows = breakdownL1.rows.slice(0,config.size);
+                    breakdownL1.rows = breakdownL1.rows.slice(0, config.size);
                 }
 
                 return breakdownL1;
@@ -127,10 +162,10 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                 },
             };
             return breakdownL0;
-        }
+        };
     }
 
-    function createCachedLegacyApi(cache) {
+    function createCachedLegacyApi (cache) {
         return {
             get: function (page, size, startDate, endDate, order) {
                 var deferred = $q.defer();
@@ -148,13 +183,14 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         };
     }
 
-    function getLegacyColumns(ctrl) {
-        // HACK (legacy support): access columns variable from coresponded controller
-        var mainScope = angular.element(document.querySelectorAll("[ui-view]")).scope();
+    function getLegacyColumns (ctrl) {
+        // HACK (legacy support): access columns variable from corresponded controller
+        var mainScope = angular.element(document.querySelectorAll('[ui-view]')).scope();
         var scope = mainScope.$new();
         try {
             $controller(ctrl, {$scope: scope});
         } catch (e) {
+            // just ignore exception - only scope.columns is needed
         }
         return scope.columns;
     }
@@ -164,10 +200,12 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             return new MockEndpoint();
         },
         createAllAccountsEndpoint: function () {
-            return new LegacyEndpoint(api.accountAccountsTable, getLegacyColumns('AllAccountsAccountsCtrl'));
+            var columns = getLegacyColumns('AllAccountsAccountsCtrl');
+            return new LegacyEndpoint(api.accountAccountsTable, columns);
         },
         createAllAccountsCachedEndpoint: function () {
-            return new LegacyEndpoint(createCachedLegacyApi(cache.allaccounts), getLegacyColumns('AllAccountsAccountsCtrl'));
+            var columns = getLegacyColumns('AllAccountsAccountsCtrl');
+            return new LegacyEndpoint(createCachedLegacyApi(cache.allaccounts), columns);
         },
     };
 }]);

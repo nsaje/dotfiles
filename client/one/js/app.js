@@ -219,12 +219,22 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.development', {
             url: 'development',
             template: '<div ui-view></div>',
-            controller: 'DevelopmentCtrl'
+            controller: 'DevelopmentCtrl',
         })
         .state('main.development.grid', {
             url: '/grid',
             templateUrl: '/partials/development_grid.html',
-            controller: 'DevelopmentGridCtrl'
+            controller: 'DevelopmentGridCtrl',
+        })
+        .state('main.development.grid-legacy', {
+            url: '/grid-legacy',
+            templateUrl: '/partials/development_grid.html',
+            controller: 'DevelopmentAllAccountsCtrl',
+        })
+        .state('main.allAccounts.accounts_tablebreakdowns', {
+            url: '/accounts-tablebreakdowns',
+            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
+            controller: 'DevelopmentAllAccountsCtrl',
         });
 }]);
 

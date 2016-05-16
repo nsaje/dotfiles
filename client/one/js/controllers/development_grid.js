@@ -1,18 +1,18 @@
 /* globals oneApp */
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http','$q', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $http, $q, zemDataSourceService, zemDataSourceEndpoints) {
+oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http', '$q', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $http, $q, zemDataSourceService, zemDataSourceEndpoints) {
 
     $scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createMockEndpoint());
 
 }]);
 
-oneApp.controller('DevelopmentGridLegacyCtrl', ['$scope', '$controller', '$q', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $controller, $q, $timeout, zemDataSourceService, zemDataSourceEndpoints) {
-    $scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createAllAccountsEndpoint());
+oneApp.controller('DevelopmentAllAccountsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) {
+    var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint();
+    $scope.dataSource = zemDataSourceService.createInstance(endpoint);
     $scope.dataSource.breakdowns = ['account'];
-
     $scope.dataSource.onLoad($scope, function (event, data) {
         var rows = data.rows;
-        if (data.level === 0){
+        if (data.level === 0) {
             rows = data.rows[0].breakdown.rows;
         }
 
