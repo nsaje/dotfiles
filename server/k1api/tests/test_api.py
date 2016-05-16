@@ -626,3 +626,18 @@ class K1ApiTest(TestCase):
         ags = dash.models.AdGroupSource.objects.get(pk=1)
         # self.assertEqual(1, 2)
         self.assertEqual(ags.source_campaign_key, ['abc'])
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_outbrain_marketer_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_outbrain_marketer_id'),
+            {'ad_group_id': '1'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        ag = dash.models.AdGroup.objects.get(pk=1)
+        self.assertEqual(ag.campaign.account.outbrain_marketer_id, 'abcde')

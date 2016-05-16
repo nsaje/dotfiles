@@ -583,6 +583,11 @@ urlpatterns += [
         k1api.views.set_source_campaign_key,
         name='k1api.set_source_campaign_key',
     ),
+    url(
+        r'^k1api/get_outbrain_marketer_id$',
+        k1api.views.get_outbrain_marketer_id,
+        name='k1api.get_outbrain_marketer_id',
+    ),
 ]
 
 # Crossvalidation Api

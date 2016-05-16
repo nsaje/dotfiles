@@ -719,3 +719,17 @@ def set_source_campaign_key(request):
     ad_group_source.save()
 
     return _response_ok(data)
+
+
+@csrf_exempt
+def get_outbrain_marketer_id(request):
+    _validate_signature(request)
+    ad_group_id = request.GET.get('ad_group_id')
+    try:
+        ad_group = dash.models.AdGroup.objects.select_related('campaign__account').get(pk=ad_group_id)
+    except dash.models.AdGroup.DoesNotExist:
+        logger.exception('get_outbrain_marketer_id: ad group %s does not exist' % ad_group_id)
+        raise Http404
+    if ad_group.campaign.account.outbrain_marketer_id:
+        return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
+    # TODO(nsaje): implement logic for assigning new Outbrain account (server/actionlog/api.py#L840)
