@@ -156,7 +156,7 @@ def send_account_pixel_notification(account, request):
 
     subject = u'Conversion pixel added - account {}'.format(account.name)
 
-    link_url = request.build_absolute_uri('/accounts/{}/agency'.format(account.pk))
+    link_url = request.build_absolute_uri('/accounts/{}/settings'.format(account.pk))
     link_url = link_url.replace('http://', 'https://')
 
     body = u'''Hi default account manager of {account.name},

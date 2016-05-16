@@ -99,7 +99,7 @@ class AgencyUserForm(AbstractUserForm):
         ).first()
         if agency is not None and agency != self.cleaned_data.get('agency'):
             raise ValidationError('User {} is already part of another agency'.format(
-                self.cleaned_data['user'].get_full_name()
+                self.cleaned_data['user'].get_full_name().encode('utf-8')
             ))
 
 

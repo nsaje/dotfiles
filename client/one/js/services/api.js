@@ -1318,7 +1318,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AccountAgency () {
+    function AccountSettings () {
         function convertSettingsFromApi (settings) {
             return {
                 id: settings.id,
@@ -1355,7 +1355,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.get = function (id) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/agency/';
+            var url = '/api/accounts/' + id + '/settings/';
 
             $http.get(url).
                 success(function (data, status) {
@@ -1379,7 +1379,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.save = function (settings) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + settings.id + '/agency/';
+            var url = '/api/accounts/' + settings.id + '/settings/';
             var config = {
                 params: {}
             };
@@ -3120,7 +3120,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
         accountHistory: new AccountHistory(),
-        accountAgency: new AccountAgency(),
+        accountSettings: new AccountSettings(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
