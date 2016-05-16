@@ -28,14 +28,14 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
             function (data) {
                 if (breakdown) {
                     zemGridParser.parseInplace(grid, row, data);
-                }
-                else {
+                } else {
                     zemGridParser.parse(grid, data);
                 }
                 deferred.resolve();
-                grid.ui.loading = false;
             }
-        );
+        ).finally(function () {
+            grid.ui.loading = false;
+        });
         return deferred.promise;
     }
 

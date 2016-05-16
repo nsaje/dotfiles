@@ -9,7 +9,6 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http', '$q', 'zemDataSourc
 oneApp.controller('DevelopmentAllAccountsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) {
     var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint();
     $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-    $scope.dataSource.breakdowns = ['account'];
     $scope.dataSource.onLoad($scope, function (event, data) {
         var rows = data.rows;
         if (data.level === 0) {

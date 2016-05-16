@@ -4,6 +4,7 @@
              ng-repeat="col in ctrl.grid.header.columns track by $index"
              ng-style="ctrl.getCellStyle($index)">
 
+            <!-- Basic styling - TODO: refactor and fully support current Table styles -->
             <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
             <span ng-switch="col.order">
                 <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass"
