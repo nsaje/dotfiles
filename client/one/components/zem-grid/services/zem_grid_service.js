@@ -5,33 +5,37 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
 
     var columnWidths = getInitialColumnWidths();
 
-    function load (dataSource) {
+    function loadGrid (dataSource) {
         var deferred = $q.defer();
-        dataSource.getData().then(
+        dataSource.getMetaData().then(
             function (data) {
                 var grid = new zemGridObject.createInstance();
-                grid.header.columns = data.meta.columns;
+                grid.header.columns = data.columns;
                 grid.meta.source = dataSource;
-                grid.meta.breakdowns = dataSource.breakdowns;
-                grid.meta.levels = dataSource.breakdowns.length;
                 grid.ui.columnWidths = columnWidths;
-
-                zemGridParser.parse(grid, data);
                 deferred.resolve(grid);
             }
         );
-
         return deferred.promise;
     }
 
-    function loadMore (grid, row, size) {
+    function loadData (grid, row, size) {
+        var breakdown = null;
+        if (row) breakdown = row.data;
         var deferred = $q.defer();
-        grid.meta.source.getData(row.data, size).then(
+        grid.ui.loading = true;
+        grid.meta.source.getData(breakdown, size).then(
             function (data) {
-                zemGridParser.parseInplace(grid, row, data);
+                if (breakdown) {
+                    zemGridParser.parseInplace(grid, row, data);
+                } else {
+                    zemGridParser.parse(grid, data);
+                }
                 deferred.resolve();
             }
-        );
+        ).finally(function () {
+            grid.ui.loading = false;
+        });
         return deferred.promise;
     }
 
@@ -65,7 +69,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         var classes = [];
         classes.push('level-' + row.level);
 
-        if (row.level === grid.meta.levels) {
+        if (row.level === grid.meta.source.selectedBreakdown.length) {
             classes.push('level-last');
         }
         return classes;
@@ -89,8 +93,8 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
 
 
     return {
-        load: load,
-        loadMore: loadMore,
+        loadGrid: loadGrid,
+        loadData: loadData,
 
         // TODO: Move to separate service (interaction service)
         toggleCollapse: toggleCollapse,

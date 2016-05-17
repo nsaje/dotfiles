@@ -17,8 +17,12 @@ oneApp.directive('zemGridRow', [function () {
             function ($scope, zemGridConstants, zemGridService) {
                 $scope.constants = zemGridConstants;
 
-                this.loadMore = function () {
-                    zemGridService.loadMore(this.grid, this.row, 5);
+                this.loadMore = function (size) {
+                    if (!size)
+                    {
+                        size = this.row.data.pagination.count - this.row.data.pagination.to;
+                    }
+                    zemGridService.loadData(this.grid, this.row, size);
                 };
 
                 this.getRowClass = function () {

@@ -10,7 +10,8 @@ oneApp.directive('zemGridCell', [function () {
         controllerAs: 'ctrl',
         bindToController: {
             position: '=',
-            field: '=',
+            col: '=',
+            value: '=',
             row: '=',
             grid: '=',
         },
