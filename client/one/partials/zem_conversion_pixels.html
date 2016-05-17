@@ -13,6 +13,7 @@
                         <a href class="order" ng-click="orderField = 'slug'; orderReverse = !orderReverse">Slug</a>
                         <zem-help-popover content="Conversion pixel's unique identifier" placement="top"></zem-help-popover>
                     </th>
+                    <!--
                     <th class="arrow" ng-class="{ordered: orderField === 'status' && !orderReverse, 'ordered-reverse': orderField === 'status' && orderReverse}">
                         <a href class="order" ng-click="orderField = 'status'; orderReverse = !orderReverse">Status</a>
                         <zem-help-popover content="<em>Active</em> if conversion has been recorded in the past 7 days, <em>Inactive</em> otherwise, and <em>No activity yet</em> if the conversion pixel has not been triggered yet." placement="top"></zem-help-popover>
@@ -21,6 +22,7 @@
                         <a href class="order" ng-click="orderField = 'lastVerifiedDt'; orderReverse = !orderReverse">Last verified</a>
                         <zem-help-popover content="The last time when the conversion pixel was triggered." placement="top"></zem-help-popover>
                     </th>
+                    -->
                     <th></th>
                     <th></th>
                 </tr>
@@ -31,8 +33,8 @@
                         {{ item.slug }}
                         <span class="loader" ng-if="item.requestInProgress"></span>
                     </td>
-                    <td class="pixel-status">{{ item.status }}</td>
-                    <td class="no-wrap pixel-last-verified">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                    <!-- <td class="pixel-status">{{ item.status }}</td> -->
+                    <!-- <td class="no-wrap pixel-last-verified">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td> -->
                     <td>
                         <div class="dropdown" dropdown aria-haspopup="true">
                             <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>

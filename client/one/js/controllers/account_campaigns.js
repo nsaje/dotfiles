@@ -329,7 +329,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            shown: true,
+            shown: false,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'

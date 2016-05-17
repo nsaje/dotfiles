@@ -478,7 +478,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            shown: true,
+            shown: false,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             totalRow: false,
             order: true,
