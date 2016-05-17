@@ -13,6 +13,7 @@ class BreakdownsTestData(api_common.BaseApiView):
         breakdown_list = request.GET.get('breakdowns').split(',')
         breakdown_range_list = request.GET.get('ranges').split(',')
         level = int(request.GET.get('level', '0'))
+        flat = bool(request.GET.get('flat', 'false'))
 
         if len(breakdown_list) != len(breakdown_range_list):
             raise ValidationError('')
@@ -23,5 +24,5 @@ class BreakdownsTestData(api_common.BaseApiView):
             range_array.append(range_array[0] + 1) if len(range_array) == 1 else None
             breakdowns.append({'name': breakdown, 'range': range_array})
 
-        data = mock_data.generate_random_breakdowns(breakdowns, level)
+        data = mock_data.generate_random_breakdowns(breakdowns, level, flat)
         return self.create_api_response(data)

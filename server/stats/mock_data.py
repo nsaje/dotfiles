@@ -22,7 +22,7 @@ TEST_BREAKDOWNS_SEX = ['man', 'woman']
 # level 0 -> wrapper for total row and it's breakdown
 # level 1 -> first level breakdown - original rows  with potential breakdown
 # level 2-n -> breakdowns
-def generate_random_breakdowns(breakdowns, level):
+def generate_random_breakdowns(breakdowns, level, flat):
     top_level_row = _generate_random_breakdown(breakdowns, level=1, position=(0,))
     top_level_breakdown = {
         'rows': [top_level_row],
@@ -31,10 +31,11 @@ def generate_random_breakdowns(breakdowns, level):
             'columns': _generate_columns_data()
         }
     }
-    return _get_breakdowns_for_level(top_level_breakdown, level)
+
+    return _get_breakdowns_for_level(top_level_breakdown, level, flat)
 
 
-def _get_breakdowns_for_level(breakdown, level):
+def _get_breakdowns_for_level(breakdown, level, flat):
     breakdowns = [breakdown]
     for _ in range(0, level):
         nested_breakdowns = []
@@ -42,6 +43,12 @@ def _get_breakdowns_for_level(breakdown, level):
             for row in b['rows']:
                 nested_breakdowns += [row['breakdown']]
         breakdowns = nested_breakdowns
+
+    if flat:
+        for breakdown in breakdowns:
+            for row in breakdown['rows']:
+                row['position'] = row['breakdown']['position']
+                del row['breakdown']
     return breakdowns
 
 
