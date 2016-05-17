@@ -15,7 +15,7 @@ def is_column(value):
 @register.filter
 def only_column(value, prefix=None):
     if is_column(value):
-        value.only_column(prefix=prefix)
+        return value.only_column(prefix=prefix)
 
     # else its a collection
     return ", ".join([x.only_column(prefix=prefix) for x in value])
@@ -24,7 +24,7 @@ def only_column(value, prefix=None):
 @register.filter
 def only_alias(value, prefix=None):
     if is_column(value):
-        value.only_alias(prefix=prefix)
+        return value.only_alias(prefix=prefix)
 
     # else its a collection
     return ", ".join([x.only_alias(prefix=prefix) for x in value])
@@ -33,7 +33,7 @@ def only_alias(value, prefix=None):
 @register.filter
 def column_as_alias(value, prefix=None):
     if is_column(value):
-        value.column_as_alias(prefix=prefix)
+        return value.column_as_alias(prefix=prefix)
 
     # else its a collection
     return ", ".join([x.column_as_alias(prefix=prefix) for x in value])
@@ -41,7 +41,7 @@ def column_as_alias(value, prefix=None):
 
 @register.filter
 def generate(q, prefix=None):
-    q.generate(prefix=prefix)
+    return q.generate(prefix=prefix)
 
 
 @register.filter
