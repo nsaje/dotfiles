@@ -11,11 +11,6 @@ def is_column(value):
         return True
     return False
 
-def _generate(func_name, columns, prefix):
-    if getattr(columns, func_name, None) and callable(getattr(columns, func_name, None)):
-        return getattr(columns, func_name)(prefix=prefix)
-    return ", ".join([getattr(x, func_name)(prefix=prefix) for x in columns])
-
 
 @register.filter
 def only_column(value, prefix=None):
@@ -33,7 +28,6 @@ def only_alias(value, prefix=None):
 
     # else its a collection
     return ", ".join([x.only_alias(prefix=prefix) for x in value])
-
 
 
 @register.filter
