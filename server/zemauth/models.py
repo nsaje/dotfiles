@@ -168,6 +168,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_account_name', 'Can see and modify account name on account settings tab.'),
             ('can_modify_account_manager', 'Can view and set account manager on account settings tab.'),
             ('account_history_view', 'Can view account''s history tab.'),
+            ('can_see_table_breakdowns', 'Can see table breakdowns functionality.'),
         )
 
     def get_full_name(self):
