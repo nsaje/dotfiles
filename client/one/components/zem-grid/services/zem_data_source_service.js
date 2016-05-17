@@ -7,10 +7,44 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         ON_LOAD: 'zem-data-source-on-load',
     };
 
+    //
+    // DataRow
+    //   --> Data (dict - key:value)
+    //   --> Breakdown (optional)
+    //      --> breakdown_id (request id)
+    //      --> pagination (offset, size, count)
+    //      --> rows [DataRow]
+    //
+
+    // this.data = DataRow
+    //   --> Data (totals)
+    //   --> Breakdown (L0/Base breakdown)
+    //      --> breakdown_id = None
+    //      --> pagination
+    //      --> rows [DataRow]
+    //
+
+    //
+    // ApiRow
+    //   --> pagination
+    //   --> breakdown_id
+    //   --> rows [Data, ...]
+    //
+    //
+
+    //
+    // ApiRow -> DataRow
+    //   Data -> DataRow (Data) w/ empty breakdown (breakdown_id, pagination = None/?)
+    //
+
+    // request by ids (level)
+
     function DataSource (endpoint) {
         var ds = this;
 
+        this.dataRows =
         this.data = null;
+
         this.endpoint = endpoint;
         this.availableBreakdowns = endpoint.availableBreakdowns;
         this.selectedBreakdown = endpoint.defaultBreakdown;
@@ -60,6 +94,24 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             });
 
             return deferred.promise;
+        }
+
+        // request base
+        // breakdowns -> request more/initial
+
+        function getData2 (level) {
+            if (level > 0) {
+                // traverse whole tree and retrieve level ids
+            }
+            var config = {
+                level: level,
+                breakdown: ds.selectedBreakdown.slice(0, level + 1),
+                positions: [[1, 1], [1, 2]],
+            };
+        }
+
+        function getElements (level) {
+
         }
 
         function onLoad (scope, callback) {
