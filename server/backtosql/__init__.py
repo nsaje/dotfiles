@@ -42,7 +42,7 @@ class TemplateColumn(object):
             raise BackToSQLException("Alias is not defined")
         return alias
 
-    def g(self, prefix=None):
+    def only_column(self, prefix=None):
         context = self._get_default_context(prefix)
 
         if self.context:
@@ -50,10 +50,10 @@ class TemplateColumn(object):
 
         return generate_sql(self.template_name, context)
 
-    def g_alias(self, prefix=None):
+    def only_alias(self, prefix=None):
         return "{}{}".format(helpers.clean_prefix(prefix), self._get_alias())
 
-    def g_w_alias(self, prefix=None):
+    def column_as_alias(self, prefix=None):
         context = self._get_default_context(prefix)
         context['alias'] = self._get_alias()
         if self.context:
@@ -86,9 +86,9 @@ class OrderColumn(TemplateColumn):
             'direction': helpers.get_order(direction_hint)
         }
 
-    def g(self, prefix=None):
+    def only_column(self, prefix=None):
         context = {
-            'column_render': self.column.g(prefix),
+            'column_render': self.column.only_column(prefix),
         }
 
         if self.context:
@@ -96,9 +96,9 @@ class OrderColumn(TemplateColumn):
 
         return generate_sql(self.template_name, context)
 
-    def g_alias(self, prefix=None):
+    def only_alias(self, prefix=None):
         context = {
-            'column_render': self.column.g_alias(prefix),
+            'column_render': self.column.only_alias(prefix),
         }
 
         if self.context:
@@ -106,8 +106,8 @@ class OrderColumn(TemplateColumn):
 
         return generate_sql(self.template_name, context)
 
-    def g_w_alias(self, prefix=None):
-        raise BackToSQLException('SQL syntax error')
+    def column_as_alias(self, prefix=None):
+        raise BackToSQLException('SQL syntax error, "column AS alias" does not make sense for order')
 
     def as_order(self, *args, **kwargs):
         raise BackToSQLException('Already OrderColumn')
@@ -119,6 +119,9 @@ class ModelMeta(type):
     """
     def __new__(cls, name, parents, dct):
         model_class = super(ModelMeta, cls).__new__(cls, name, parents, dct)
+
+        # Important: this initializes alias names from python attribute names
+        # This is the main functionality of the model
         model_class._init_columns()
         return model_class
 

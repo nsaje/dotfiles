@@ -38,11 +38,11 @@ class Q(object):
         self.negate = not self.negate
         return self
 
-    def g(self, prefix=None):
+    def generate(self, prefix=None):
         if self.prefix is not None and self.prefix is not prefix:
             raise Exception("Only 1 prefix per Q")
 
-        self.query, self.params = self._g(prefix)
+        self.query, self.params = self._generate(prefix)
 
         self.prefix = prefix
 
@@ -50,17 +50,17 @@ class Q(object):
 
     def get_params(self):
         # TODO wont work if taken different order
-        _, params = self._g()
+        _, params = self._generate()
         return params
 
-    def _g(self, prefix=None):
+    def _generate(self, prefix=None):
         # BUG: This code will overflow the stack in case there are too many WHERE conditions
         parts = []
         params = []
 
         for child in self.children:
             if isinstance(child, type(self)):
-                child_parts, child_params = child._g(prefix)
+                child_parts, child_params = child._generate(prefix)
             else:
                 child_parts, child_params = self._generate_sql(child, prefix)
 
@@ -97,28 +97,28 @@ class Q(object):
     def _generate_sql(self, constraint, prefix):
         column, operator, value = self._prepare_constraint(constraint)
         if operator == "lte":
-            return '{}<=%s'.format(column.g(prefix)), [value]
+            return '{}<=%s'.format(column.only_column(prefix)), [value]
         elif operator == "lt":
-            return '{}<%s'.format(column.g(prefix)), [value]
+            return '{}<%s'.format(column.only_column(prefix)), [value]
         elif operator == "gte":
-            return '{}>=%s'.format(column.g(prefix)), [value]
+            return '{}>=%s'.format(column.only_column(prefix)), [value]
         elif operator == "gt":
-            return '{}>%s'.format(column.g(prefix)), [value]
+            return '{}>%s'.format(column.only_column(prefix)), [value]
         elif operator == "eq":
             if helpers.is_collection(value):
                 if value:
-                    return '{}=ANY(%s)'.format(column.g(prefix)), [value]
+                    return '{}=ANY(%s)'.format(column.only_column(prefix)), [value]
                 else:
                     return 'FALSE', []
             else:
-                return '{}=%s'.format(column.g(prefix)), [value]
+                return '{}=%s'.format(column.only_column(prefix)), [value]
         elif operator == "neq":
             if helpers.is_collection(value):
                 if value:
-                    return '{}!=ANY(%s)'.format(column.g(prefix)), value
+                    return '{}!=ANY(%s)'.format(column.only_column(prefix)), value
                 else:
                     return 'TRUE', []
             else:
-                return '{}!=%s'.format(column.g(prefix)), [value]
+                return '{}!=%s'.format(column.only_column(prefix)), [value]
         else:
             raise Exception("Unknown constraint type: {}".format(operator))

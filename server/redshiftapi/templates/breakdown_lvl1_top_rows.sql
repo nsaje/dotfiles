@@ -2,11 +2,11 @@
 {% autoescape off%}
 
 SELECT
-    {{ breakdown|g_alias:"a" }},
-    {{ aggregates|g_w_alias:"a" }}
+    {{ breakdown|only_alias:"a" }},
+    {{ aggregates|column_as_alias:"a" }}
 FROM (
     SELECT
-        {{ breakdown|g_w_alias:"b" }},
+        {{ breakdown|column_as_alias:"b" }},
         SUM(b.clicks) clicks,
         SUM(b.impressions) impressions,
         SUM(b.cost_cc) cost_cc,
@@ -20,15 +20,15 @@ FROM (
         SUM(b.pageviews) pageviews,
         SUM(b.total_time_on_site) total_time_on_site,
         -- get best rows for current dimension
-        ROW_NUMBER() OVER (PARTITION BY {{ breakdown.0|g:"b" }} ORDER BY {{ order|g:"b" }}) AS r
+        ROW_NUMBER() OVER (PARTITION BY {{ breakdown.0|only_column:"b" }} ORDER BY {{ order|only_column:"b" }}) AS r
     FROM
         {{ view }} b
     WHERE
-        {{ constraints|g:"b"}} AND
-        {{ breakdown_constraints|g:"b" }}
+        {{ constraints|generate:"b"}} AND
+        {{ breakdown_constraints|generate:"b" }}
     GROUP BY
         --- get name of column by alias
-        {{ breakdown|g_alias }}
+        {{ breakdown|only_alias }}
 ) a
 WHERE
 -- limit which page we are querying

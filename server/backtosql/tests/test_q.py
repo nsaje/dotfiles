@@ -19,11 +19,11 @@ class QTestCase(TestCase):
         }
 
         c = self.ModelA.get_constraints(constraints_dict)
-        constraints = c.g()
+        constraints = c.generate()
         self.assertEquals(constraints, "(bar=%s AND foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
         c = self.ModelA.get_constraints(constraints_dict)
-        constraints = c.g("v")
+        constraints = c.generate(prefix="v")
         self.assertEquals(constraints, "(v.bar=%s AND v.foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])

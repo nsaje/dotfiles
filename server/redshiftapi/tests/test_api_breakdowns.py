@@ -42,13 +42,13 @@ class APIBreakdownsTest(TestCase):
         )
         q = context['constraints']
         self.assertEqual(
-            q.g('A'),
+            q.generate('A'),
             "(A.account_id=%s AND A.campaign_id=%s)")
         self.assertEqual(q.get_params(), [123, 223])
 
         q = context['breakdown_constraints']
         self.assertEqual(
-            q.g('A'),
+            q.generate('A'),
             "((A.content_ad_id=%s AND A.source_id=%s) OR (A.content_ad_id=%s AND A.source_id=ANY(%s)))")
         self.assertEqual(q.get_params(), [32, 1, 33, [2, 3]])
 

@@ -2,18 +2,18 @@
 {% autoescape off %}
 
 SELECT
-    {{ breakdown|g_w_alias:"a" }},
-    {{ aggregates|g_w_alias:"a" }}
+    {{ breakdown|column_as_alias:"a" }},
+    {{ aggregates|column_as_alias:"a" }}
 FROM
     {{ view }} a
 WHERE
-    {{ constraints|g:"a" }}
+    {{ constraints|generate:"a" }}
     {% if breakdown_constraints %}
-       AND {{ breakdown_constraints|g:"a" }}
+       AND {{ breakdown_constraints|generate:"a" }}
     {% endif %}
-GROUP BY {{ breakdown|g_alias }}
+GROUP BY {{ breakdown|only_alias }}
 {% if order %}
-ORDER BY {{ order|g_alias }}
+ORDER BY {{ order|only_alias }}
 {% endif %}
 
 {% if limit %}

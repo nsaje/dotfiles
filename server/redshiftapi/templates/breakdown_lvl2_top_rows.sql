@@ -2,11 +2,11 @@
 {% autoescape off%}
 
 SELECT
-    {{ breakdown|g_alias }},
-    {{ aggregates|g_w_alias }}
+    {{ breakdown|only_alias }},
+    {{ aggregates|column_as_alias }}
 FROM (
     SELECT
-        {{ breakdown|g_w_alias:"b" }},
+        {{ breakdown|columnt_as_alias:"b" }},
         SUM(b.clicks) clicks,
         SUM(b.impressions) impressions,
         SUM(b.cost_cc) cost_cc,
@@ -19,12 +19,12 @@ FROM (
         SUM(b.bounced_visits) bounced_visits,
         SUM(b.pageviews) pageviews,
         SUM(b.total_time_on_site) total_time_on_site,
-        ROW_NUMBER() OVER (PARTITION BY {{ breakdown.0|g_alias }}, {{ breakdown.1|g_alias }} ORDER BY {{ order|g:"b" }}) AS r
+        ROW_NUMBER() OVER (PARTITION BY {{ breakdown.0|only_alias }}, {{ breakdown.1|only_alias }} ORDER BY {{ order|only_column:"b" }}) AS r
     FROM
         {{ view }} b
     WHERE
         -- only select necessary rows
-        {{ constraints|g:"b"}} AND {{ breakdown_constraints|g:"b" }}
+        {{ constraints|generate:"b"}} AND {{ breakdown_constraints|generate:"b" }}
     GROUP BY 1, 2, 3
 ) a
 WHERE
