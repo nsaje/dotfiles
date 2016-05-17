@@ -467,7 +467,8 @@ def get_ad_groups(request):
     ad_group_id = request.GET.get('ad_group_id')
     source_type = request.GET.get('source_type')
     ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id, source_type)
-
+    campaign_goal_types = _get_campaign_goal_types(campaigns_settings_map.keys())
+    
     ad_groups = []
     for ad_group_settings in ad_groups_settings:
         ad_group = {
@@ -483,12 +484,27 @@ def get_ad_groups(request):
             'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
             'target_regions': ad_group_settings.target_regions,
             'retargeting_ad_groups': ad_group_settings.retargeting_ad_groups,
+            'campaign_id': ad_group_settings.ad_group.campaign.id,
+            'account_id': ad_group_settings.ad_group.campaign.account.id,
+            'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
         }
 
         ad_groups.append(ad_group)
 
     return _response_ok(ad_groups)
 
+
+def _get_campaign_goal_types(campaign_ids):
+    '''
+    returns a map campaign_id:[goal_type,...]
+    the first element in the list is the type of the primary goal
+    '''
+    campaign_goals = {cid:[] for cid in campaign_ids}
+    for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids):
+        campaign_goals[goal.campaign.id].append((goal.primary, goal.type))
+    for cid in campaign_goals.keys():
+        campaign_goals[cid] = [tup[1] for tup in sorted(campaign_goals[cid], reverse=True)]
+    return campaign_goals
 
 def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
     if ad_group_id:
