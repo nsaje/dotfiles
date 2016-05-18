@@ -96,7 +96,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return breakdownsRanges;
     }
 
-    function getBreakdownsForLevel (breakdown, level) {
+    function getBreakdownsForLevel (breakdown, level, flat) {
         var breakdowns = [breakdown];
         for (var i = 0; i < level; ++i) {
             var nestedBreakdowns = [];
@@ -107,8 +107,17 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             });
             breakdowns = nestedBreakdowns;
         }
+        if (flat) {
+            breakdowns.forEach(function (breakdown) {
+                breakdown.rows.forEach(function (row) {
+                    row.position = row.breakdown.position;
+                    delete row.breakdown;
+                });
+            });
+        }
         return breakdowns;
     }
+
 
     function generateRandomBreakdown (breakdowns, level, position, key) {
         if (!level) level = 1;
