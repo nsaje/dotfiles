@@ -14,9 +14,6 @@ class RSBreakdownMixin(object):
     Mixin that defines breakdowns specific model features.
     """
 
-    # TODO rename this
-    MISCONCEPTION_DICT = {}
-
     @classmethod
     def get_best_view(cls, breakdown):
         """ Returns the SQL view that best fits the breakdown """
@@ -32,43 +29,12 @@ class RSBreakdownMixin(object):
         """ Returns all the aggregate columns """
         return cls.select_columns(group=AGGREGATES)
 
-    @classmethod
-    def copy_and_translate_dict(cls, dict_):
-        """
-        Translates dict keys into keys our model understands.
-        Returns a copy of the dict.
-        """
-
-        return helpers.copy_and_translate_dict(cls.MISCONCEPTION_DICT, dict_)
-
-    @classmethod
-    def copy_and_translate_dicts(cls, list_of_dicts):
-        return helpers.copy_and_translate_dicts(cls.MISCONCEPTION_DICT, list_of_dicts)
-
-
-    @classmethod
-    def copy_and_translate_breakdown(cls, breakdown):
-        """
-        Translates breakdown array items into keys our model understands.
-        Returns a copy of the dict.
-        """
-
-        return helpers.copy_and_translate_list(cls.MISCONCEPTION_DICT, breakdown)
-
 
 class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
     """
     Defines all the fields that are provided by this breakdown model.
     Materialized sub-views are a part of it.
     """
-
-    MISCONCEPTION_DICT = {
-        'account': 'account_id',
-        'campaign': 'campaign_id',
-        'ad_group': 'ad_group_id',
-        'content_ad': 'content_ad_id',
-        'source': 'source_id',
-    }
 
     date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
 
