@@ -468,7 +468,7 @@ def get_ad_groups(request):
     source_type = request.GET.get('source_type')
     ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id, source_type)
     campaign_goal_types = _get_campaign_goal_types(campaigns_settings_map.keys())
-    
+
     ad_groups = []
     for ad_group_settings in ad_groups_settings:
         ad_group = {
