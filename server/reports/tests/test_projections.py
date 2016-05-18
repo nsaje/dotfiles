@@ -342,6 +342,7 @@ class ProjectionsTestCase(test.TestCase):
             'attributed_media_spend': None,
             'flat_fee': None,
             'ideal_media_spend': None,
+            'media_spend_projection': None,
             'license_fee_projection': None,
             'pacing': None,
             'total_fee': None,
