@@ -12,6 +12,7 @@ import redshiftapi.api_breakdowns
 # TODO level specific api (different columns, order)
 # TODO which columns should be queried/returned (what exists per level, permissions)
 # TODO if sort is in dash than this should be sorted by dash data (fetch before)
+# TODO use constants for other dimensions like age, gender etc
 
 
 def query(user, breakdown, constraints, breakdown_page,
@@ -22,13 +23,13 @@ def query(user, breakdown, constraints, breakdown_page,
     stats_rows = redshiftapi.api_breakdowns.query(
         helpers.extract_stats_breakdown(breakdown),
         helpers.extract_stats_constraints(constraints),
-        helpers.extract_breakdown_constraints(breakdown_page),
+        helpers.extract_stats_breakdown_constraints(breakdown, breakdown_page),
         order,
         offset,
         limit)
 
     target_dimension = constants.get_target_dimension(breakdown)
-    augmenter.augment(stats_rows, target_dimension)
+    augmenter.augment(breakdown, stats_rows, target_dimension)
 
     return stats_rows
 
