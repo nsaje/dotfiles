@@ -15,10 +15,6 @@ class AutopilotHelpersTestCase(test.TestCase):
     def setUp(self):
         refresh.refresh_adgroup_stats()
 
-        patcher = patch('dash.api.k1_helper')
-        self.k1_helper_mock = patcher.start()
-        self.addCleanup(patcher.stop)
-
     @patch('dash.models.AdGroup.get_running_status')
     def test_get_active_ad_groups_on_autopilot(self, mock_running_status):
         mock_running_status.return_value = AdGroupRunningStatus.ACTIVE

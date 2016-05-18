@@ -1,4 +1,5 @@
 .zem-grid-debug-container {
+  overflow: auto;
 
   .debug-panel {
     float:left;
@@ -16,6 +17,7 @@
 .zem-grid-container {
   border: solid lightgray 1px;
   width: 100%;
+  padding: 20px;
 
   font-size: 13px;
   color: #454545;
@@ -23,15 +25,22 @@
   .zem-grid {
     width: 100%;
     overflow: hidden;
+    background-color: #f6f6f6;
 
     .zem-grid-header, .zem-grid-footer {
       background-color: #f6f6f6;
       font-weight: 600;
+
+      a {
+        color: #454545;
+      }
     }
 
     .zem-grid-body {
       height: 515px;
       overflow: auto;
+
+      background-color: white;
 
       .zem-grid-table {
         position: relative;

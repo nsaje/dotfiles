@@ -75,6 +75,18 @@ def should_filter_by_sources(sources):
     return Source.objects.exclude(id__in=[s.id for s in sources]).exists()
 
 
+def shorten_name(name):
+    # if the first word is too long, cut it
+    words = name.split()
+    if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
+        return name[:SHORT_NAME_MAX_LENGTH]
+
+    while len(name) > SHORT_NAME_MAX_LENGTH:
+        name = name.rsplit(None, 1)[0]
+
+    return name
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -391,6 +403,17 @@ class Account(models.Model):
                 'account__id', flat=True
             )
             return self.exclude(pk__in=archived_accounts)
+
+        def filter_with_spend(self):
+            return self.filter(
+                pk__in=reports.models.BudgetDailyStatement.objects.filter(
+                    budget__credit__account_id__in=self
+                ).filter(
+                    media_spend_nano__gt=0
+                ).values_list(
+                    'budget__credit__account_id'
+                )
+            )
 
 
 class Campaign(models.Model, PermissionMixin):
@@ -727,7 +750,7 @@ class CampaignSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
 
-    automatic_campaign_stop = models.BooleanField(default=False)
+    automatic_campaign_stop = models.BooleanField(default=True)
     landing_mode = models.BooleanField(default=False)
 
     archived = models.BooleanField(default=False)
@@ -1377,6 +1400,20 @@ class AdGroup(models.Model):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
 
+    def get_external_name(self, new_adgroup_name=None):
+        account_name = self.campaign.account.name
+        campaign_name = self.campaign.name
+        if new_adgroup_name is None:
+            ad_group_name = self.name
+        else:
+            ad_group_name = new_adgroup_name
+        return u'ONE: {} / {} / {} / {}'.format(
+            shorten_name(account_name),
+            shorten_name(campaign_name),
+            shorten_name(ad_group_name),
+            self.id
+        )
+
     @classmethod
     def is_ad_group_active(cls, ad_group_settings):
         if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
@@ -1584,9 +1621,9 @@ class AdGroupSource(models.Model):
         ad_group_id = self.ad_group.id
         source_name = self.source.name
         return u'ONE: {} / {} / {} / {} / {}'.format(
-            self._shorten_name(account_name),
-            self._shorten_name(campaign_name),
-            self._shorten_name(ad_group_name),
+            shorten_name(account_name),
+            shorten_name(campaign_name),
+            shorten_name(ad_group_name),
             ad_group_id,
             source_name
         )
@@ -1609,17 +1646,6 @@ class AdGroupSource(models.Model):
             ).latest()
         except AdGroupSourceState.DoesNotExist:
             return None
-
-    def _shorten_name(self, name):
-        # if the first word is too long, cut it
-        words = name.split()
-        if not len(words) or len(words[0]) > SHORT_NAME_MAX_LENGTH:
-            return name[:SHORT_NAME_MAX_LENGTH]
-
-        while len(name) > SHORT_NAME_MAX_LENGTH:
-            name = name.rsplit(None, 1)[0]
-
-        return name
 
     def get_current_settings(self):
         current_settings = self.get_current_settings_or_none()
@@ -2296,6 +2322,7 @@ class ConversionGoal(models.Model):
 
     class Meta:
         unique_together = (('campaign', 'name'), ('campaign', 'type', 'goal_id'))
+        ordering = ['pk']
 
     def get_stats_key(self):
         # map conversion goal to the key under which they are stored in stats database
@@ -2392,7 +2419,7 @@ class PublisherBlacklist(models.Model):
 
 class CreditLineItem(FootprintModel):
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
-    agency = models.ForeignKey(Agency, related_name='agencies', on_delete=models.PROTECT, blank=True, null=True)
+    agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
 
@@ -2654,6 +2681,9 @@ class BudgetLineItem(FootprintModel):
         if self.db_state() != constants.BudgetLineItemState.PENDING:
             raise AssertionError('Cannot delete nonpending budgets')
         super(BudgetLineItem, self).delete()
+
+    def get_overlap(self, start_date, end_date):
+        return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
 
     def get_available_amount(self, date=None):
         if date is None:
@@ -2925,7 +2955,7 @@ class ExportReport(models.Model):
 
     def get_filtered_sources(self):
         all_sources = Source.objects.all()
-        if not self.created_by.has_perm('zemauth.filter_sources') or len(self.filtered_sources.all()) == 0:
+        if len(self.filtered_sources.all()) == 0:
             return all_sources
         return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
 

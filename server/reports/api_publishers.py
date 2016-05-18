@@ -107,7 +107,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
-    cursor = redshift.get_cursor()
+    cursor = redshift.get_cursor(read_only=True)
 
     returned_fields = rs_pub.DEFAULT_RETURNED_FIELDS_APP[:]
     for label in conversion_goals:
@@ -269,7 +269,7 @@ def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
-    cursor = redshift.get_cursor()
+    cursor = redshift.get_cursor(read_only=True)
     no_returned_fields = []
     results = rs_pub.execute_select_query(
         cursor,

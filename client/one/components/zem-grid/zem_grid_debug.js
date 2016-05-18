@@ -13,20 +13,23 @@ oneApp.directive('zemGridDebug', [function () {
             pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_debug.html',
-        controller: ['$scope', 'zemGridService', function ($scope, zemGridService) {
-            this.DEBUG_BREAKDOWNS = {'ad_group': true, 'age': true, 'sex': false, 'date': true};
+        controller: ['zemGridService', function (zemGridService) {
+
+            this.source = this.grid.meta.source;
+            this.availableBreakdowns = {};
+            this.source.availableBreakdowns.forEach(function (breakdown) {
+                this.availableBreakdowns[breakdown] = this.source.selectedBreakdown.indexOf(breakdown) > -1;
+            }.bind(this));
 
             this.applyBreakdown = function () {
-                var breakdowns = [];
-                angular.forEach(this.DEBUG_BREAKDOWNS, function (value, key) {
-                    if (value) breakdowns.push(key);
+                var selectedBreakdown = [];
+                angular.forEach(this.availableBreakdowns, function (value, key) {
+                    if (value) selectedBreakdown.push(key);
                 });
-                this.grid.meta.source.breakdowns = breakdowns;
-                this.grid.meta.source.defaultPagination = [2, 3, 5, 7];
-                zemGridService.load(this.grid.meta.source).then(function (grid) {
-                    this.grid = grid;
-                    $scope.ctrl.pubsub.notify($scope.ctrl.pubsub.EVENTS.ROWS_UPDATED);
-                }.bind(this));
+                this.grid.meta.source.selectedBreakdown = selectedBreakdown;
+                zemGridService.loadData(this.grid).then(function () {
+                    this.pubsub.notify(this.pubsub.EVENTS.ROWS_UPDATED);
+                }).bind(this);
             };
 
             this.toggleCollapseLevel = function (level) {

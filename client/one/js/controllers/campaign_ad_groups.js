@@ -402,8 +402,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
             $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.conversion_reports'),
-            $scope.isPermissionInternal('zemauth.conversion_reports')
+            true,
+            false
         );
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
@@ -492,8 +492,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals,
-            $scope.hasPermission('zemauth.conversion_reports')
+            conversionGoals
         );
     };
 
@@ -515,13 +514,11 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             );
         }
 
-        if ($scope.hasPermission('zemauth.conversion_reports')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.campaignConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.conversion_reports')
-            );
-        }
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.campaignConversionGoalChartMetrics,
+            false
+        );
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
@@ -595,7 +592,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.order = data.order;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.id = x.ad_group;

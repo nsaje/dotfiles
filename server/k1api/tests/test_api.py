@@ -6,6 +6,7 @@ import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 
 import dash.constants
 import dash.models
@@ -183,7 +184,8 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         expected = dash.models.AdGroupSource.objects.filter(
-            source__source_type__type='adblade', source_credentials_id=1).values(u'ad_group_id', u'source_campaign_key')
+            source__source_type__type='adblade', source_credentials_id=1)
+        expected = [{u'ad_group_id': e.ad_group_id, u'source_campaign_key': e.source_campaign_key} for e in expected]
         self.assertEqual(data, list(expected))
 
     @patch('utils.request_signer.verify_wsgi_request')
@@ -331,6 +333,28 @@ class K1ApiTest(TestCase):
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_outbrain(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_publishers_blacklist_outbrain'),
+            {'marketer_id': 'abcde'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected = (
+            dash.models.PublisherBlacklist.objects
+                .filter(account__outbrain_marketer_id='abcde')
+                .filter(source__source_type__type='outbrain')
+                .filter(external_id__isnull=False)
+                .values(u'name', u'external_id')
+        )
+        self.assertEqual(data, {u'blacklist': list(expected)})
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_get_publishers_blacklist(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_publishers_blacklist'),
@@ -341,7 +365,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 8)
+        self.assertEqual(len(data['blacklist']), 10)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status'], b['domain']))
         self.assertDictEqual(sorted_blacklist[0], {
@@ -354,49 +378,56 @@ class K1ApiTest(TestCase):
         self.assertDictEqual(sorted_blacklist[1], {
             'ad_group_id': 1,
             'domain': 'pub1.com',
-            'exchange': 'adblade',
+            'exchange': 'adiant',
             'status': 1,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
             'domain': 'pub2.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[3], {
             'ad_group_id': 1,
             'domain': 'pub5.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[4], {
             'ad_group_id': 1,
             'domain': 'pub6.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[5], {
-            'ad_group_id': 2,
-            'domain': 'pub3.com',
-            'exchange': 'gravity',
-            'status': 1,
-            'external_id': '',
+            'ad_group_id': 1,
+            'domain': 'pub7.com',
+            'exchange': 'facebook',
+            'status': 2,
+            'external_id': 'outbrain-pub-id',
         })
         self.assertDictEqual(sorted_blacklist[6], {
             'ad_group_id': 2,
-            'domain': 'pub5.com',
-            'exchange': 'gravity',
-            'status': 2,
+            'domain': 'pub3.com',
+            'exchange': 'google',
+            'status': 1,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[7], {
             'ad_group_id': 2,
+            'domain': 'pub5.com',
+            'exchange': 'google',
+            'status': 2,
+            'external_id': '',
+        })
+        self.assertDictEqual(sorted_blacklist[8], {
+            'ad_group_id': 2,
             'domain': 'pub6.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
@@ -414,34 +445,34 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 4)
+        self.assertEqual(len(data['blacklist']), 5)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: b['domain'])
         self.assertDictEqual(sorted_blacklist[0], {
             'ad_group_id': 1,
             'domain': 'pub1.com',
-            'exchange': 'adblade',
+            'exchange': 'adiant',
             'status': 1,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[1], {
             'ad_group_id': 1,
             'domain': 'pub2.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
             'domain': 'pub5.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[3], {
             'ad_group_id': 1,
             'domain': 'pub6.com',
-            'exchange': 'gravity',
+            'exchange': 'google',
             'status': 2,
             'external_id': '',
         })
@@ -463,7 +494,7 @@ class K1ApiTest(TestCase):
 
         self.assertDictEqual(data[0], {
             u'id': 1,
-            u'name': u'test adgroup 1',
+            u'name': u'ONE: test account 1 / test campaign 1 / test adgroup 1 / 1',
             u'start_date': u'2014-06-04',
             u'end_date': None,
             u'time_zone': u'America/New_York',
@@ -574,3 +605,39 @@ class K1ApiTest(TestCase):
     def test_get_content_ads_exchanges(self):
         # TODO matijav 03.05.2016
         pass
+
+    def update_content_ad_status(self):
+        # TODO maticz, 10.5.2016
+        pass
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_set_source_campaign_key(self, mock_verify_wsgi_request):
+        response = self.client.post(
+            reverse('k1api.set_source_campaign_key'),
+            json.dumps({'ad_group_source_id': 1, 'source_campaign_key': ['abc']}),
+            'application/json',
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        ags = dash.models.AdGroupSource.objects.get(pk=1)
+        # self.assertEqual(1, 2)
+        self.assertEqual(ags.source_campaign_key, ['abc'])
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_outbrain_marketer_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_outbrain_marketer_id'),
+            {'ad_group_id': '1'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        ag = dash.models.AdGroup.objects.get(pk=1)
+        self.assertEqual(ag.campaign.account.outbrain_marketer_id, 'abcde')

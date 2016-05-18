@@ -20,8 +20,9 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', fun
             activate();
 
             function activate () {
-                zemGridService.load(ctrl.dataSource).then(function (grid) {
+                zemGridService.loadGrid(ctrl.dataSource).then(function (grid) {
                     ctrl.grid = grid;
+                    zemGridService.loadData(ctrl.grid);
                 });
             }
         }],

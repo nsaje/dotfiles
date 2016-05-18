@@ -23,8 +23,12 @@ oneApp.directive('zemGridRow', [function () {
             function ($scope, zemGridConstants, zemGridService, zemGridUIService) {
                 $scope.constants = zemGridConstants;
 
-                this.loadMore = function () {
-                    zemGridService.loadMore(this.grid, this.row, 5).then(function () {
+                this.loadMore = function (size) {
+                    if (!size)
+                    {
+                        size = this.row.data.pagination.count - this.row.data.pagination.to;
+                    }
+                    zemGridService.loadData(this.grid, this.row, size).then(function () {
                         $scope.ctrl.pubsub.notify($scope.ctrl.pubsub.EVENTS.ROWS_UPDATED);
                     });
                 };

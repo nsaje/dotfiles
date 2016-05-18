@@ -2,7 +2,8 @@
     <zem-grid-cell ng-repeat="col in ctrl.grid.header.columns track by $index"
                    ng-show="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
                    position="$index"
-                   field="col.field"
+                   col = "col"
+                   value = "ctrl.row.data.stats[col.field]"
                    row="ctrl.row"
                    grid="ctrl.grid"
                    pubsub="ctrl.pubsub"
@@ -13,6 +14,8 @@
         </a>
     </div>
     <div class="zem-grid-cell" ng-show="ctrl.row.type==constants.gridRowType.BREAKDOWN">
-        <a ng-click="ctrl.loadMore()"> (show 5 more) </a>
+        <a ng-click="ctrl.loadMore(5)"> (load 5 more) </a>
+        <a ng-click="ctrl.loadMore(20)"> (load 20 more) </a>
+        <a ng-click="ctrl.loadMore()"> (load all) </a>
     </div>
 </div>

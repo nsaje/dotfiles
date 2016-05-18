@@ -28,4 +28,4 @@
 40 6,10,12 * * *    /home/ubuntu/docker-manage-py.sh update_content_ad_stats_from_ga_api
 15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
-25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 2
+25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
