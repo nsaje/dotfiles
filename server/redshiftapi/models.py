@@ -2,8 +2,6 @@ import backtosql
 
 from stats import constants
 
-from redshiftapi import helpers
-
 
 BREAKDOWN = 1
 AGGREGATES = 2

@@ -5,7 +5,6 @@ from backtosql.helpers import printsql
 from redshiftapi import models
 from redshiftapi import db
 from redshiftapi import queries
-from redshiftapi import helpers
 
 from stats import constants
 from utils import exc
