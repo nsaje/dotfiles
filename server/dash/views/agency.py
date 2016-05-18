@@ -1193,7 +1193,7 @@ class AccountSettings(api_common.BaseApiView):
             users = users.filter(pk=agency.users.all()) | \
                 users.filter(account__agency=agency)
 
-        users = list(users.distinct())
+        users = list(users.filter(is_active=True).distinct())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:
