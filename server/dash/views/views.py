@@ -1831,13 +1831,13 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 continue
 
             if existing_entry is not None:
-                existing_entry.status = constants.PublisherStatus.BLACKLISTED
+                existing_entry.status = constants.PublisherStatus.PENDING
                 existing_entry.save()
             else:
                 new_publ = models.PublisherBlacklist(
                     name=publisher['domain'],
                     source=source,
-                    status=constants.PublisherStatus.BLACKLISTED
+                    status=constants.PublisherStatus.PENDING
                 )
                 new_publ.fill_keys(ad_group, level)
                 new_publ.save()
