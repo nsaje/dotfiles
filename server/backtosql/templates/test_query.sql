@@ -1,15 +1,15 @@
 {% load backtosql_tags %}
 
 SELECT
-  {{ breakdown|g_w_alias:"a" }},
-  {{ aggregates|g_w_alias:"a" }}
+  {{ breakdown|column_as_alias:"a" }},
+  {{ aggregates|column_as_alias:"a" }}
 FROM
   {{ table }} a
 WHERE
   a.date_from >= %(date_from)s AND a.date_to <= %(date_to)s
 GROUP BY
-  {{ breakdown|g }},
+  {{ breakdown|only_column }},
 ORDER BY
-  {{ order|g_alias }}
+  {{ order|only_alias }}
 OFFSET %(offset)s
 LIMIT %(limit)s

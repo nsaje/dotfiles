@@ -1,5 +1,8 @@
+from functools import partial
+
 from django.template import loader
 from backtosql import helpers
+from backtosql.q import Q
 
 
 class BackToSQLException(Exception):
@@ -13,12 +16,19 @@ def generate_sql(template_name, context):
 
 class TemplateColumn(object):
 
-    def __init__(self, template_name, context=None, group=None, alias=None):
+    def __init__(self, template_name, context={}, group=None, alias=None):
+        if not context:
+            context = {}
+
         self.template_name = template_name
         self.context = context
 
         self.group = group
         self.alias = alias  # is set automatically through model if defined on a model
+
+    @property
+    def column_name(self):
+        return self.context.get('column_name')
 
     def _get_default_context(self, prefix):
         return {
@@ -32,7 +42,7 @@ class TemplateColumn(object):
             raise BackToSQLException("Alias is not defined")
         return alias
 
-    def g(self, prefix=None):
+    def only_column(self, prefix=None):
         context = self._get_default_context(prefix)
 
         if self.context:
@@ -40,10 +50,10 @@ class TemplateColumn(object):
 
         return generate_sql(self.template_name, context)
 
-    def g_alias(self, prefix=None):
+    def only_alias(self, prefix=None):
         return "{}{}".format(helpers.clean_prefix(prefix), self._get_alias())
 
-    def g_w_alias(self, prefix=None):
+    def column_as_alias(self, prefix=None):
         context = self._get_default_context(prefix)
         context['alias'] = self._get_alias()
         if self.context:
@@ -57,7 +67,7 @@ class TemplateColumn(object):
 
 class Column(TemplateColumn):
 
-    def __init__(self, column_name, alias=None, group=None):
+    def __init__(self, column_name, group=None, alias=None):
         super(Column, self).__init__('column.sql', {'column_name': column_name}, alias=alias, group=group)
 
 
@@ -76,9 +86,9 @@ class OrderColumn(TemplateColumn):
             'direction': helpers.get_order(direction_hint)
         }
 
-    def g(self, prefix=None):
+    def only_column(self, prefix=None):
         context = {
-            'column_render': self.column.g(prefix),
+            'column_render': self.column.only_column(prefix),
         }
 
         if self.context:
@@ -86,9 +96,9 @@ class OrderColumn(TemplateColumn):
 
         return generate_sql(self.template_name, context)
 
-    def g_alias(self, prefix=None):
+    def only_alias(self, prefix=None):
         context = {
-            'column_render': self.column.g_alias(prefix),
+            'column_render': self.column.only_alias(prefix),
         }
 
         if self.context:
@@ -96,8 +106,8 @@ class OrderColumn(TemplateColumn):
 
         return generate_sql(self.template_name, context)
 
-    def g_w_alias(self, prefix=None):
-        raise BackToSQLException('SQL syntax error')
+    def column_as_alias(self, prefix=None):
+        raise BackToSQLException('SQL syntax error, "column AS alias" does not make sense for order')
 
     def as_order(self, *args, **kwargs):
         raise BackToSQLException('Already OrderColumn')
@@ -109,6 +119,9 @@ class ModelMeta(type):
     """
     def __new__(cls, name, parents, dct):
         model_class = super(ModelMeta, cls).__new__(cls, name, parents, dct)
+
+        # Important: this initializes alias names from python attribute names
+        # This is the main functionality of the model
         model_class._init_columns()
         return model_class
 
@@ -123,6 +136,7 @@ class Model(object):
     def _init_columns(cls):
         columns = [(name, getattr(cls, name)) for name in dir(cls)
                    if isinstance(getattr(cls, name), TemplateColumn)]
+
         for name, col in columns:
             if col.alias is None:
                 col.alias = name
@@ -142,11 +156,19 @@ class Model(object):
     def select_columns(cls, subset=None, group=None):
         if subset:
             columns = []
+            unknown = []
 
             for alias in subset:
                 alias = helpers.clean_alias(alias)
                 if alias in cls.__COLUMNS_DICT__:
                     columns.append(cls.__COLUMNS_DICT__[alias])
+                else:
+                    unknown.append(alias)
+
+            # TODO add test
+            if unknown:
+                raise BackToSQLException('Unknown columns in subset {}'.format(unknown))
+
         else:
             columns = cls.get_columns()
 
@@ -154,3 +176,11 @@ class Model(object):
             columns = [x for x in columns if x.group == group]
 
         return columns
+
+    @classmethod
+    def get_constraints(cls, constraints_dict):
+        return Q(cls, **constraints_dict)
+
+    @classmethod
+    def select_order(cls, subset):
+        return [cls.get_column(c).as_order(c) for c in subset]
