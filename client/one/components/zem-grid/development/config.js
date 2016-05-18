@@ -11,11 +11,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/grid',
             template: '<zem-grid data-data-source="dataSource"></zem-grid>',
             controller: 'DevelopmentGridCtrl',
-        })
-        .state('main.development.grid-legacy', {
-            url: '/grid-legacy',
-            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
-            controller: 'DevelopmentGridCachedCtrl',
         });
 }]);
 
