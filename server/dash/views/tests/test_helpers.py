@@ -6,6 +6,7 @@ from django.db import connection
 from django.test import TestCase, RequestFactory
 from django.conf import settings
 from django.http.request import HttpRequest
+from django.core.exceptions import MultipleObjectsReturned
 
 
 import actionlog.sync
@@ -13,6 +14,7 @@ from dash.views import helpers
 from dash import models
 from dash import constants
 from dash import publisher_helpers
+from utils.test_helper import fake_request
 from utils import exc
 from mock import patch
 from zemauth.models import User
@@ -1613,3 +1615,61 @@ class PublisherHelpersTest(TestCase):
         self.assertFalse(publisher_helpers.is_publisher_domain('贝客悦读 • 天涯之家HD'))
         self.assertFalse(publisher_helpers.is_publisher_domain('BS Local (CBS Local)'))
         self.assertFalse(publisher_helpers.is_publisher_domain('CNN Money (Turner U.S.)'))
+
+
+class UtilityHelpers(TestCase):
+    fixtures = ['test_agency.yaml']
+
+    def test_get_user_agency(self):
+        u = User.objects.get(pk=1000)
+        self.assertIsNone(helpers.get_user_agency(u))
+
+        # add user to agency
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(u)
+
+        self.assertEquals(agency, helpers.get_user_agency(u))
+
+        other_agency = models.Agency(
+            name='Random agency'
+        )
+        other_agency.save(fake_request(u))
+        other_agency.users.add(u)
+
+        with self.assertRaises(MultipleObjectsReturned):
+           helpers.get_user_agency(u)
+
+    def test_is_agency_manager(self):
+        acc = models.Account.objects.get(pk=1000)
+        u = User.objects.get(pk=1000)
+
+        acc.agency = None
+        acc.save(fake_request(u))
+
+        self.assertFalse(helpers.is_agency_manager(u, acc))
+
+        agency = models.Agency.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(fake_request(u))
+
+        self.assertFalse(helpers.is_agency_manager(u, acc))
+
+        agency.users.add(u)
+        self.assertTrue(helpers.is_agency_manager(u, acc))
+
+
+    def test_is_agency_manager_fail(self):
+        acc = models.Account.objects.get(pk=1000)
+        u = User.objects.get(pk=1000)
+
+        agency = models.Agency.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(fake_request(u))
+
+        other_agency = models.Agency(
+            name='Random agency'
+        )
+        other_agency.save(fake_request(u))
+        other_agency.users.add(u)
+
+        self.assertFalse(helpers.is_agency_manager(u, acc), msg='account and user agency differ')
