@@ -1640,4 +1640,36 @@ class UtilityHelpers(TestCase):
            helpers.get_user_agency(u)
 
     def test_is_agency_manager(self):
-        pass
+        acc = models.Account.objects.get(pk=1000)
+        u = User.objects.get(pk=1000)
+
+        acc.agency = None
+        acc.save(fake_request(u))
+
+        self.assertFalse(helpers.is_agency_manager(u, acc))
+
+        agency = models.Agency.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(fake_request(u))
+
+        self.assertFalse(helpers.is_agency_manager(u, acc))
+
+        agency.users.add(u)
+        self.assertTrue(helpers.is_agency_manager(u, acc))
+
+
+    def test_is_agency_manager_fail(self):
+        acc = models.Account.objects.get(pk=1000)
+        u = User.objects.get(pk=1000)
+
+        agency = models.Agency.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(fake_request(u))
+
+        other_agency = models.Agency(
+            name='Random agency'
+        )
+        other_agency.save(fake_request(u))
+        other_agency.users.add(u)
+
+        self.assertFalse(helpers.is_agency_manager(u, acc), msg='account and user agency differ')
