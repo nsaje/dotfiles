@@ -1287,7 +1287,14 @@ class AccountUsers(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        users = [self._get_user_dict(u) for u in account.users.all()]
+
+        agency_users = []
+        agency = request.user.agency_set.first()
+        if agency is not None and agency == account.agency:
+            agency_users = agency.users.all()
+
+        users = [self._get_user_dict(u, agency) for u in agency_users] +\
+            [self._get_user_dict(u) for u in account.users.all() if u not in agency_users]
 
         return self.create_api_response({
             'users': users
@@ -1388,13 +1395,14 @@ class AccountUsers(api_common.BaseApiView):
             'user_id': user.id
         })
 
-    def _get_user_dict(self, user):
+    def _get_user_dict(self, user, agency=None):
         return {
             'id': user.id,
             'name': user.get_full_name(),
             'email': user.email,
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
+            'editable': agency is None
         }
 
 

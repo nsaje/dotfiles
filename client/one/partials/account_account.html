@@ -140,7 +140,7 @@
                         <div class="col-xs-2">
                             <div class="loader" ng-show="user.requestInProgress"></div>
 
-                            <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
+                            <div class="dropdown" dropdown ng-show="!user.requestInProgress && user.editable" aria-haspopup="true">
                                 <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></span></a>
                                 <ul class="dropdown-menu dropdown-menu-activation" role="menu">
                                     <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>

@@ -315,6 +315,7 @@ urlpatterns += [
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/',
         login_required(dash.views.agency.AccountUsers.as_view()),
+        name='account_users',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/archive/',
