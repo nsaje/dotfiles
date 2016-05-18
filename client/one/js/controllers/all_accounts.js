@@ -6,7 +6,7 @@ oneApp.controller('AllAccountsCtrl', ['$scope', '$state', function ($scope, $sta
         {heading: 'Accounts', route: 'main.allAccounts.accounts', active: true, hidden: !$scope.hasPermission('zemauth.all_accounts_accounts_view'), internal: $scope.isPermissionInternal('zemauth.all_accounts_accounts_view')},
         {heading: 'Media sources', route: 'main.allAccounts.sources', active: false, hidden: !$scope.hasPermission('zemauth.all_accounts_sources_view'), internal: $scope.isPermissionInternal('zemauth.all_accounts_sources_view')},
         {heading: 'Reports', route: 'main.allAccounts.scheduled_reports', active: false, hidden: false, internal: false},
-        {heading: 'Accounts [TB]', route: 'main.allAccounts.accounts_tablebreakdowns', active: false, hidden: false, internal: true},
+        {heading: 'Accounts [TB]', route: 'main.allAccounts.accounts_breakdowns', active: false, hidden: false, internal: true},
     ];
 
     $scope.tabs.forEach(function (tab) {
