@@ -26,8 +26,7 @@ def extract_constraints(form_data, **kwargs):
 
 class AllAccountsBreakdown(api_common.BaseApiView):
     def post(self, request, breakdown):
-
-        request_body = json.loads(request.body)
+        request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
@@ -49,7 +48,7 @@ class AccountBreakdown(api_common.BaseApiView):
     def post(self, request, account_id, breakdown):
         account = helpers.get_account(request.user, account_id)
 
-        request_body = json.loads(request.body)
+        request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
@@ -71,7 +70,7 @@ class CampaignBreakdown(api_common.BaseApiView):
     def post(self, request, campaign_id, breakdown):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
-        request_body = json.loads(request.body)
+        request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
@@ -93,7 +92,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
     def post(self, request, ad_group_id, breakdown):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        request_body = json.loads(request.body)
+        request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))

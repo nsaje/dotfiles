@@ -96,11 +96,10 @@ class AllAccountsBreakdownTestCase(TestCase):
             reverse('breakdown_all_accounts', kwargs={
                 'breakdown': '/account/campaign/dma/day'
             }),
-            data=json.dumps(params),
+            data=json.dumps({'params': params}),
             content_type='application/json'
         )
 
-        print response
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(
@@ -150,7 +149,7 @@ class AccountBreakdownTestCase(TestCase):
                 'account_id': 1,
                 'breakdown': '/campaign/source/dma/day'
             }),
-            data=json.dumps(params),
+            data=json.dumps({'params': params}),
             content_type='application/json'
         )
 
@@ -204,7 +203,7 @@ class CampaignBreakdownTestCase(TestCase):
                 'campaign_id': 1,
                 'breakdown': '/ad_group/source/dma/day'
             }),
-            data=json.dumps(params),
+            data=json.dumps({'params': params}),
             content_type='application/json'
         )
 
@@ -258,7 +257,7 @@ class AdGroupBreakdownTestCase(TestCase):
                 'ad_group_id': 1,
                 'breakdown': '/content_ad/source/dma/day'
             }),
-            data=json.dumps(params),
+            data=json.dumps({'params': params}),
             content_type='application/json'
         )
 
