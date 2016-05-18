@@ -142,7 +142,7 @@ class User(api_common.BaseApiView):
         if not user:
             return {}
 
-        agency = user.agency_set.first()
+        agency = helpers.get_user_agency(user)
         return {
             'id': str(user.pk),
             'email': user.email,

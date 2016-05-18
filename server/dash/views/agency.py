@@ -938,7 +938,9 @@ class AccountSettings(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
-        user_agency = request.user.agency_set.first()
+        user_agency = None
+        if helpers.is_agency_manager(request.user, account):
+            user_agency = helpers.get_user_agency(request.user)
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
@@ -1289,8 +1291,8 @@ class AccountUsers(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
 
         agency_users = []
-        agency = request.user.agency_set.first()
-        if agency is not None and agency == account.agency:
+        if helpers.is_agency_manager(request.user, account):
+            agency = helpers.get_user_agency(request.user)
             agency_users = agency.users.all()
 
         users = [self._get_user_dict(u, agency) for u in agency_users] +\
