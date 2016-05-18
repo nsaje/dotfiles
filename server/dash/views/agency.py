@@ -938,7 +938,9 @@ class AccountSettings(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
-        user_agency = request.user.agency_set.first()
+        user_agency = None
+        if helpers.is_agency_manager(request.user, account):
+            user_agency = helpers.get_user_agency(request.user)
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
@@ -1287,7 +1289,14 @@ class AccountUsers(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        users = [self._get_user_dict(u) for u in account.users.all()]
+
+        agency_users = []
+        if helpers.is_agency_manager(request.user, account):
+            agency = helpers.get_user_agency(request.user)
+            agency_users = agency.users.all()
+
+        users = [self._get_user_dict(u, editable=False) for u in agency_users] +\
+            [self._get_user_dict(u) for u in account.users.all() if u not in agency_users]
 
         return self.create_api_response({
             'users': users
@@ -1315,6 +1324,7 @@ class AccountUsers(api_common.BaseApiView):
         email = form.cleaned_data.get('email')
 
         try:
+
             user = ZemUser.objects.get(email__iexact=email)
 
             if (first_name == user.first_name and last_name == user.last_name)\
@@ -1388,13 +1398,14 @@ class AccountUsers(api_common.BaseApiView):
             'user_id': user.id
         })
 
-    def _get_user_dict(self, user):
+    def _get_user_dict(self, user, editable=True):
         return {
             'id': user.id,
             'name': user.get_full_name(),
             'email': user.email,
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
+            'editable': editable,
         }
 
 
