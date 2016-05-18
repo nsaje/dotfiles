@@ -41,6 +41,9 @@ def column_as_alias(value, prefix=None):
 
 @register.filter
 def generate(q, prefix=None):
+    if not q:
+        return '1=1'
+
     return q.generate(prefix=prefix)
 
 
