@@ -499,12 +499,13 @@ def _get_campaign_goal_types(campaign_ids):
     returns a map campaign_id:[goal_type,...]
     the first element in the list is the type of the primary goal
     '''
-    campaign_goals = {cid:[] for cid in campaign_ids}
+    campaign_goals = {cid: [] for cid in campaign_ids}
     for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids):
         campaign_goals[goal.campaign.id].append((goal.primary, goal.type))
     for cid in campaign_goals.keys():
         campaign_goals[cid] = [tup[1] for tup in sorted(campaign_goals[cid], reverse=True)]
     return campaign_goals
+
 
 def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
     if ad_group_id:
