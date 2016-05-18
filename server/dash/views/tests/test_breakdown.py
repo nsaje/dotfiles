@@ -14,6 +14,8 @@ from dash.views import breakdown
 
 
 class ExtractConstraintsTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
     def test_extract_constraints(self):
         form_data = {
             'breakdown': ['account', 'source', 'dma', 'day'],
