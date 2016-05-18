@@ -385,6 +385,8 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['uploaded'] = content_ad.created_dt.date()
     stat['status'] = content_ad.state
     stat['archived'] = content_ad.archived
+    if content_ad.ad_group.campaign.account.agency is not None:
+        stat['agency'] = content_ad.ad_group.campaign.account.agency.name
     return stat
 
 
@@ -479,18 +481,12 @@ def _populate_model_ids(stat, model):
     # Add model and all it's parent ids to stat
     if isinstance(model, models.ContentAd):
         stat['content_ad_id'] = model.id
-        if model.ad_group.campaign.account.agency is not None:
-            stat['agency_id'] = model.ad_group.campaign.account.agency.id
         model = model.ad_group
     if isinstance(model, models.AdGroup):
         stat['ad_group_id'] = model.id
-        if model.campaign.account.agency is not None:
-            stat['agency_id'] = model.campaign.account.agency.id
         model = model.campaign
     if isinstance(model, models.Campaign):
         stat['campaign_id'] = model.id
-        if model.account.agency is not None:
-            stat['agency_id'] = model.account.agency.id
         model = model.account
     if isinstance(model, models.Account):
         stat['account_id'] = model.id
@@ -519,7 +515,7 @@ def _prefetch_content_ad_data(constraints):
             fields['ad_group__campaign__account'] = constraints[key]
         else:
             fields[key] = constraints[key]
-    content_ads = models.ContentAd.objects.filter(**fields).select_related('ad_group__campaign__account')
+    content_ads = models.ContentAd.objects.filter(**fields).select_related('ad_group__campaign__account__agency')
     if sources is not None:
         content_ads = content_ads.filter_by_sources(sources)
     return {c.id: c for c in content_ads}
