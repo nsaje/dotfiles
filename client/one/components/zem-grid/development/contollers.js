@@ -1,10 +1,19 @@
 /* globals oneApp */
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http', '$q', 'zemDataSourceService', 'zemDataSourceDebugEndpoints', function ($scope, $http, $q, zemDataSourceService, zemDataSourceEndpoints) {
+oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $state) {
+    $scope.$on('$stateChangeSuccess', function () {
+        if ($state.is('main.development.grid') &&
+            !$scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            $state.go('main');
+        }
+    });
+}]);
+
+oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http', '$q', 'zemDataSourceService', 'zemDataSourceDebugEndpoints', function ($scope, $http, $q, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
     $scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createMockEndpoint());
 }]);
 
-oneApp.controller('DevelopmentGridCachedCtrl', ['$scope', '$q', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $q, $timeout, zemDataSourceService, zemDataSourceEndpoints) {
+oneApp.controller('DevelopmentGridCachedCtrl', ['$scope', '$q', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $q, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
     var legacyApi = createCachedLegacyAPI(cache.allaccounts);
     var endpoint = zemDataSourceEndpoints.createLegacyEndpoint(legacyApi, 'AllAccountsAccountsCtrl');
     $scope.dataSource = zemDataSourceService.createInstance(endpoint);
