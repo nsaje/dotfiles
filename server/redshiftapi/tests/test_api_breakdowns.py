@@ -52,8 +52,8 @@ class APIBreakdownsTest(TestCase):
             "((A.content_ad_id=%s AND A.source_id=%s) OR (A.content_ad_id=%s AND A.source_id=ANY(%s)))")
         self.assertEqual(q.get_params(), [32, 1, 33, [2, 3]])
 
-        self.assertEqual(context['offset'], 33)
-        self.assertEqual(context['limit'], 66)
+        self.assertEqual(context['offset'], 2)
+        self.assertEqual(context['limit'], 33)
 
 
     def test_prepare_query(self):
@@ -69,12 +69,9 @@ class APIBreakdownsTest(TestCase):
         ]
         order = '-campaign_id'
 
-        page = 1
-        page_size = 50
-
         query, params = api_breakdowns._prepare_query(
             models.RSContentAdStats,
-            breakdown, constraints, breakdown_constraints, order, page, page_size)
+            breakdown, constraints, breakdown_constraints, order, 10, 50)
 
         self.assertEquals(params,
                           [[1, 2, 3], 22, datetime.date(2016, 1, 1), datetime.date(2016, 1, 31), 112])
@@ -150,7 +147,7 @@ class APIBreakdownsTest(TestCase):
         AND (b.content_ad_id=%s)
         GROUP BY ad_group_id,
                 content_ad_id) a
-        WHERE r <= 50
+        WHERE r >= 10 AND r <= 50
         GROUP BY 1,
                 2
         """)
