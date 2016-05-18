@@ -17,8 +17,6 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
         daily_budget = budget_changes[ag_source]['new_budget'] if budget_changes else data[ag_source]['old_budget']
         old_cpc_cc = data[ag_source]['old_cpc_cc']
         yesterdays_spend = data[ag_source]['yesterdays_spend_cc']
-        if not autopilot_helpers.ad_group_source_is_synced(ag_source):
-            cpc_change_comments.append(CpcChangeComment.OLD_DATA)
 
         proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
             old_cpc_cc,
