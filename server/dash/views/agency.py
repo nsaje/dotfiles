@@ -1379,6 +1379,9 @@ class AccountUsers(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.AuthorizationError()
 
+        if request.GET.get('editable') == 'false':
+            raise exc.AuthorizationError()
+
         account = helpers.get_account(request.user, account_id)
 
         try:

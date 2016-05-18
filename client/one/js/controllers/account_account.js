@@ -209,7 +209,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         var user = getUser(userId);
         user.requestInProgress = true;
 
-        api.accountUsers.remove($state.params.id, userId).then(
+        api.accountUsers.remove($state.params.id, userId, user.editable).then(
             function (userId) {
                 if (user) {
                     user.removed = true;
