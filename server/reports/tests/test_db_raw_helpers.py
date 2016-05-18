@@ -11,15 +11,6 @@ class DbRawHelpersTest(TestCase):
 
     fixtures = ['test_api_contentads']
 
-    def test_dictfetchall(self):
-        mock_cursor = Mock()
-        mock_cursor.description = ['foo', 'bar']
-        mock_cursor.fetchall.return_value = [['a', 1]]
-
-        result = db_raw_helpers.dictfetchall(mock_cursor)
-
-        self.assertEqual(result, [{'b': 1, 'f': 'a'}])
-
     def test_is_collection(self):
         self.assertTrue(db_raw_helpers.is_collection([]))
         self.assertTrue(db_raw_helpers.is_collection(set()))

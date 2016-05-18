@@ -1,28 +1,50 @@
 from django.template import Library
 
+import backtosql
+
 
 register = Library()
 
 
-def _generate(func_name, columns, prefix):
-    if getattr(columns, func_name, None) and callable(getattr(columns, func_name, None)):
-        return getattr(columns, func_name)(prefix=prefix)
-    return ", ".join([getattr(x, func_name)(prefix=prefix) for x in columns])
+def is_column(value):
+    if isinstance(value, backtosql.TemplateColumn):
+        return True
+    return False
 
 
 @register.filter
-def g(columns, prefix=None):
-    return _generate('g', columns, prefix=prefix)
+def only_column(value, prefix=None):
+    if is_column(value):
+        return value.only_column(prefix=prefix)
+
+    # else its a collection
+    return ", ".join([x.only_column(prefix=prefix) for x in value])
 
 
 @register.filter
-def g_alias(columns, prefix=None):
-    return _generate('g_alias', columns, prefix=prefix)
+def only_alias(value, prefix=None):
+    if is_column(value):
+        return value.only_alias(prefix=prefix)
+
+    # else its a collection
+    return ", ".join([x.only_alias(prefix=prefix) for x in value])
 
 
 @register.filter
-def g_w_alias(columns, prefix=None):
-    return _generate('g_w_alias', columns, prefix=prefix)
+def column_as_alias(value, prefix=None):
+    if is_column(value):
+        return value.column_as_alias(prefix=prefix)
+
+    # else its a collection
+    return ", ".join([x.column_as_alias(prefix=prefix) for x in value])
+
+
+@register.filter
+def generate(q, prefix=None):
+    if not q:
+        return '1=1'
+
+    return q.generate(prefix=prefix)
 
 
 @register.filter
