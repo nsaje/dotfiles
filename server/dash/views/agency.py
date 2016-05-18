@@ -1295,7 +1295,7 @@ class AccountUsers(api_common.BaseApiView):
             agency = helpers.get_user_agency(request.user)
             agency_users = agency.users.all()
 
-        users = [self._get_user_dict(u, agency) for u in agency_users] +\
+        users = [self._get_user_dict(u, editable=False) for u in agency_users] +\
             [self._get_user_dict(u) for u in account.users.all() if u not in agency_users]
 
         return self.create_api_response({
@@ -1324,6 +1324,7 @@ class AccountUsers(api_common.BaseApiView):
         email = form.cleaned_data.get('email')
 
         try:
+
             user = ZemUser.objects.get(email__iexact=email)
 
             if (first_name == user.first_name and last_name == user.last_name)\
@@ -1397,14 +1398,14 @@ class AccountUsers(api_common.BaseApiView):
             'user_id': user.id
         })
 
-    def _get_user_dict(self, user, agency=None):
+    def _get_user_dict(self, user, editable=True):
         return {
             'id': user.id,
             'name': user.get_full_name(),
             'email': user.email,
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
-            'editable': agency is None
+            'editable': editable,
         }
 
 
