@@ -87,7 +87,7 @@
         </div>
 		<div class="row">
 			<p class="col-xs-3"></p>
-			<p ng-if="isCampaignLanding()" class="col-xs-9 text-info">Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.</p>
+			<p ng-if="isInLanding()" class="col-xs-9 text-info">Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.</p>
 		</div>
         <div class="form-group" ng-class="{'has-error': !!errors.comment}">
             <label for="comment-input" class="col-xs-3 control-label">

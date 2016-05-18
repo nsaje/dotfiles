@@ -1390,18 +1390,6 @@ class SetAdGroupSourceTest(TestCase):
 class PixelLastSyncTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
-    def test_join_success_with_pixel_sync_no_permissions(self):
-        u = User.objects.get(id=2)
-        last_success_actions = {
-            1: datetime.datetime(2015, 10, 30, 10),
-            2: datetime.datetime(2015, 10, 29, 22),
-            3: datetime.datetime(2015, 10, 30, 9),
-        }
-
-        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
-        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
-        self.assertEqual(last_success_actions, joined)
-
     def test_join_success_with_pixel_sync(self):
         u = User.objects.get(id=1)
         last_success_actions = {

@@ -16,6 +16,16 @@ logger = logging.getLogger(__name__)
 
 MAX_ACTIONS_IN_BATCH = 200
 
+CONSISTENCY_ACTIONS = [
+    constants.Action.SET_CAMPAIGN_STATE,
+    constants.Action.SET_PUBLISHER_BLACKLIST,
+    constants.Action.CREATE_CAMPAIGN,
+    constants.Action.INSERT_CONTENT_AD,
+    constants.Action.INSERT_CONTENT_AD_BATCH,
+    constants.Action.UPDATE_CONTENT_AD,
+    constants.Action.SUBMIT_AD_GROUP,
+]
+
 
 def _handle_error(action, e):
     msg = traceback.format_exc(e)
@@ -25,6 +35,22 @@ def _handle_error(action, e):
     action.state = constants.ActionState.FAILED
     action.message = msg
     action.save()
+
+
+def _filter_consistency_actions(actions):
+    if not settings.K1_CONSISTENCY_SYNC:
+        return actions
+
+    filtered_actions = []
+    for action in actions:
+        if action.action in CONSISTENCY_ACTIONS:
+            action.state = constants.ActionState.ABORTED
+            action.message = 'K1 sync active'
+            action.save()
+            continue
+        filtered_actions.append(action)
+
+    return filtered_actions
 
 
 def resend(actions):
@@ -54,8 +80,9 @@ def send(actions):
     if not isinstance(actions, list) and not isinstance(actions, tuple):
         actions = [actions]
 
-    credentials_lookup = {}
+    actions = _filter_consistency_actions(actions)
 
+    credentials_lookup = {}
     for i in range(0, len(actions), MAX_ACTIONS_IN_BATCH):
         actions_batch = actions[i:i+MAX_ACTIONS_IN_BATCH]
         try:

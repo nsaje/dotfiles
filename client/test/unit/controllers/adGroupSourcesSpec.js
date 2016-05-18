@@ -163,8 +163,8 @@ describe('AdGroupSourcesCtrlSpec', function () {
             expect($scope.chartMetric1).toBe('ctr');
             expect($scope.chartMetric2).toBe('cpc');
 
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true, hidden: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: false, hidden: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: false, hidden: true});
         });
 
     });
@@ -193,8 +193,8 @@ describe('AdGroupSourcesCtrlSpec', function () {
         expect($scope.chartMetric1).toBe('clicks');
         expect($scope.chartMetric2).toBe('impressions');
 
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: false, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: false, hidden: true});
     });
 
     it('should select conversion goal when one exists', function () {
@@ -221,7 +221,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
         expect($scope.chartMetric1).toBe('clicks');
         expect($scope.chartMetric2).toBe('conversion_goal_2');
 
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: true, hidden: true});
-        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: true, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: false, hidden: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: false, hidden: true});
     });
 });

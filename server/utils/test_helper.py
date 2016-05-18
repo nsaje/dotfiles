@@ -1,6 +1,7 @@
 import datetime
 import httplib
 import operator
+from contextlib import contextmanager
 
 import mock
 import unittest
@@ -12,6 +13,8 @@ from django.conf import settings
 from django.core.management import call_command
 from django.contrib.auth.models import Permission
 
+from django.test.client import RequestFactory
+
 
 def add_permissions(user, permissions):
     ''' utility intended to be used in unit tests only '''
@@ -19,6 +22,13 @@ def add_permissions(user, permissions):
         user.user_permissions.add(
             Permission.objects.get(codename=permission)
         )
+
+
+def fake_request(user, url=''):
+    rf = RequestFactory()
+    r = rf.get(url)
+    r.user = user
+    return r
 
 
 class MockDateTime(datetime.datetime):
@@ -91,6 +101,15 @@ def format_csv_content(content):
 
     formatted_content = '\r\n'.join(lines_formatted) + '\r\n'
     return formatted_content
+
+
+@contextmanager
+def disable_auto_now_add(cls, field_name):
+    field = cls._meta.get_field_by_name(field_name)[0]
+    prev_auto_now_add = field.auto_now_add
+    field.auto_now_add = False
+    yield
+    field.auto_now_add = prev_auto_now_add
 
 
 @unittest.skipUnless(settings.RUN_REDSHIFT_UNITTESTS, 'Only run when redshift tests are enabled')

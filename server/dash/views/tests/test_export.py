@@ -13,6 +13,7 @@ from django.contrib.auth.models import Permission
 from dash.views import export
 import dash.models
 from dash import constants
+from utils.test_helper import add_permissions
 
 from zemauth import models
 from utils import exc
@@ -559,6 +560,50 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = test_helper.format_csv_content(expected_content)
 
         filename = 'ZemantaOne_-_by_ad_group_report_2014-06-30_2014-07-01.csv'
+
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s"' % filename
+        )
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_by_account_with_ids(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'account-csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.GET['include_model_ids'] = 'true'
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
+
+        user = models.User.objects.get(pk=2)
+        add_permissions(user, ['can_include_model_ids_in_reports', 'can_view_account_agency_information'])
+        request.user = user
+
+        agency = dash.models.Agency(
+            name='Test Agency'
+        )
+        agency.save(request)
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(request)
+
+        response = export.AllAccountsExport().get(request)
+
+        expected_content = (
+            'Start Date,End Date,Account Id,Account,Agency Id,Agency,Status (' +
+            time.strftime('%Y-%m-%d') + ')'
+            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
+            '1,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,' + str(agency.id) +
+            ',Test Agency,Inactive,20.230,203,200000\r\n'
+        )
+        expected_content = test_helper.format_csv_content(expected_content)
+
+        filename = 'ZemantaOne_-_by_account_report_2014-06-30_2014-07-01.csv'
 
         self.assertEqual(
             response['Content-Type'],

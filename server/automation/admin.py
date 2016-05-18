@@ -108,7 +108,7 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
 
     def campaign_link(self, obj):
         return format_html(
-            '<a href="{}">{}</a>',
+            u'<a href="{}">{}</a>',
             reverse('admin:dash_campaign_change', args=(obj.campaign_id,)),
             obj.campaign.name
         )
