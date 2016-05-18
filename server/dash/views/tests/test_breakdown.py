@@ -1,3 +1,4 @@
+import json
 import datetime
 from mock import patch
 
@@ -10,6 +11,60 @@ from utils import test_helper
 
 from dash import models
 from dash.views import breakdown
+
+
+class ExtractConstraintsTest(TestCase):
+    def test_extract_constraints(self):
+        form_data = {
+            'breakdown': ['account', 'source', 'dma', 'day'],
+            'start_date': datetime.date(2016, 1, 1),
+            'end_date': datetime.date(2016, 2, 3),
+            'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
+            'show_archived': True,
+            'breakdown_page': ['123', '323'],
+            'offset': 12,
+            'limit': 20,
+            'order': '-clicks',
+        }
+
+        self.assertDictEqual(breakdown.extract_constraints(form_data), {
+            'date__gte': datetime.date(2016, 1, 1),
+            'date__lte': datetime.date(2016, 2, 3),
+            'source': test_helper.QuerySetMatcher(
+                models.Source.objects.filter(pk__in=[1, 3, 4])),
+            'show_archived': True,
+        })
+
+    def test_add_kwargs(self):
+        form_data = {
+            'breakdown': ['account', 'source', 'dma', 'day'],
+            'start_date': datetime.date(2016, 1, 1),
+            'end_date': datetime.date(2016, 2, 3),
+            'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
+            'show_archived': True,
+            'breakdown_page': ['123', '323'],
+            'offset': 12,
+            'limit': 20,
+            'order': '-clicks',
+        }
+
+        self.assertDictEqual(
+            breakdown.extract_constraints(
+                form_data,
+                account=models.Account.objects.get(pk=1),
+                campaign=models.Campaign.objects.get(pk=1)
+            ),
+            {
+                'date__gte': datetime.date(2016, 1, 1),
+                'date__lte': datetime.date(2016, 2, 3),
+                'source': test_helper.QuerySetMatcher(
+                    models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'show_archived': True,
+                'account': models.Account.objects.get(pk=1),
+                'campaign': models.Campaign.objects.get(pk=1),
+            }
+        )
+
 
 
 @patch('stats.api_breakdowns.query')
@@ -27,33 +82,25 @@ class AllAccountsBreakdownTestCase(TestCase):
         mock_query.return_value = {}
 
         params = {
-            'page': 5,
-            'size': 33,
+            'limit': 5,
+            'offset': 33,
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': """{
-                "1": {
-                    "6": ["501","502"],
-                    "7": ["501","522"]
-                },
-                "2": {
-                    "33": ["502"],
-                    "2": ["650","677","23"]
-                },
-                "3": []
-            }""",
+            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
         }
 
         response = self.client.post(
             reverse('breakdown_all_accounts', kwargs={
                 'breakdown': '/account/campaign/dma/day'
             }),
-            data=params,
+            data=json.dumps(params),
+            content_type='application/json'
         )
 
+        print response
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(
@@ -66,16 +113,10 @@ class AllAccountsBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            test_helper.ListMatcher([
-                {'account': 1, 'campaign': 7, 'dma': ['501', '522']},
-                {'account': 1, 'campaign': 6, 'dma': ['501', '502']},
-                {'account': 2, 'campaign': 33, 'dma': ['502']},
-                {'account': 2, 'campaign': 2, 'dma': ['650', '677', '23']},
-                {'account': 3, 'campaign': []},
-            ]),
+            ['1-2-33','1-2-34','1-3-22'],
             '-clicks',
-            5,
-            33
+            33,
+            5
         )
 
 
@@ -94,24 +135,14 @@ class AccountBreakdownTestCase(TestCase):
         mock_query.return_value = {}
 
         params = {
-            'page': 5,
-            'size': 33,
+            'limit': 5,
+            'offset': 33,
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': """{
-                "1": {
-                    "6": ["501","502"],
-                    "7": ["501","522"]
-                },
-                "2": {
-                    "33": ["502"],
-                    "2": ["650","677","23"]
-                },
-                "3": []
-            }""",
+            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
         }
 
         response = self.client.post(
@@ -119,7 +150,8 @@ class AccountBreakdownTestCase(TestCase):
                 'account_id': 1,
                 'breakdown': '/campaign/source/dma/day'
             }),
-            data=params,
+            data=json.dumps(params),
+            content_type='application/json'
         )
 
         self.assertEqual(response.status_code, 200)
@@ -135,16 +167,10 @@ class AccountBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            test_helper.ListMatcher([
-                {'campaign': 1, 'source': 7, 'dma': ['501', '522']},
-                {'campaign': 1, 'source': 6, 'dma': ['501', '502']},
-                {'campaign': 2, 'source': 33, 'dma': ['502']},
-                {'campaign': 2, 'source': 2, 'dma': ['650', '677', '23']},
-                {'campaign': 3, 'source': []},
-            ]),
+            ['1-2-33','1-2-34','1-3-22'],
             '-clicks',
-            5,
-            33
+            33,
+            5
         )
 
 
@@ -163,24 +189,14 @@ class CampaignBreakdownTestCase(TestCase):
         mock_query.return_value = {}
 
         params = {
-            'page': 5,
-            'size': 33,
+            'limit': 5,
+            'offset': 33,
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': """{
-                "1": {
-                    "6": ["501","502"],
-                    "7": ["501","522"]
-                },
-                "2": {
-                    "33": ["502"],
-                    "2": ["650","677","23"]
-                },
-                "3": []
-            }""",
+            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
         }
 
         response = self.client.post(
@@ -188,7 +204,8 @@ class CampaignBreakdownTestCase(TestCase):
                 'campaign_id': 1,
                 'breakdown': '/ad_group/source/dma/day'
             }),
-            data=params,
+            data=json.dumps(params),
+            content_type='application/json'
         )
 
         self.assertEqual(response.status_code, 200)
@@ -204,16 +221,10 @@ class CampaignBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            test_helper.ListMatcher([
-                {'ad_group': 1, 'source': 7, 'dma': ['501', '522']},
-                {'ad_group': 1, 'source': 6, 'dma': ['501', '502']},
-                {'ad_group': 2, 'source': 33, 'dma': ['502']},
-                {'ad_group': 2, 'source': 2, 'dma': ['650', '677', '23']},
-                {'ad_group': 3, 'source': []},
-            ]),
+            ['1-2-33','1-2-34','1-3-22'],
             '-clicks',
-            5,
-            33
+            33,
+            5
         )
 
 
@@ -232,24 +243,14 @@ class AdGroupBreakdownTestCase(TestCase):
         mock_query.return_value = {}
 
         params = {
-            'page': 5,
-            'size': 33,
+            'limit': 5,
+            'offset': 33,
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': """{
-                "1": {
-                    "6": ["501","502"],
-                    "7": ["501","522"]
-                },
-                "2": {
-                    "33": ["502"],
-                    "2": ["650","677","23"]
-                },
-                "3": []
-            }""",
+            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
         }
 
         response = self.client.post(
@@ -257,7 +258,8 @@ class AdGroupBreakdownTestCase(TestCase):
                 'ad_group_id': 1,
                 'breakdown': '/content_ad/source/dma/day'
             }),
-            data=params,
+            data=json.dumps(params),
+            content_type='application/json'
         )
 
         self.assertEqual(response.status_code, 200)
@@ -273,14 +275,8 @@ class AdGroupBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            test_helper.ListMatcher([
-                {'content_ad': 1, 'source': 7, 'dma': ['501', '522']},
-                {'content_ad': 1, 'source': 6, 'dma': ['501', '502']},
-                {'content_ad': 2, 'source': 33, 'dma': ['502']},
-                {'content_ad': 2, 'source': 2, 'dma': ['650', '677', '23']},
-                {'content_ad': 3, 'source': []},
-            ]),
+            ['1-2-33','1-2-34','1-3-22'],
             '-clicks',
-            5,
-            33
+            33,
+            5
         )
