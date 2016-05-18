@@ -55,11 +55,28 @@ def check_tracker_urls(exchange):
         result_dict[account.name] = account_dict
 
     for acc, acc_dict in result_dict.iteritems():
-        print("\nAccount: " + acc)
-        for camp, camp_dict in acc_dict.iteritems():
-            print("Campaign: " + camp)
-            for ag, values in camp_dict.iteritems():
-                print("AG: " + ag + " TRACKED: %s FREE: %s" % (values[0], values[1]))
+        print("\nAccount: " + acc + "\t\t[TRACKED: %s FREE: %s]" % count_for_account(acc_dict))
+        for campaign, campaign_dict in acc_dict.iteritems():
+            print("Campaign: " + campaign + "\t\t[TRACKED: %s FREE: %s]" % count_for_campaign(campaign_dict))
+            for ag, values in campaign_dict.iteritems():
+                print("AdGroup: " + ag + "\t\t[TRACKED: %s FREE: %s]" % (values[0], values[1]))
+
+
+def count_for_account(acc_dict):
+    tracked, free = 0, 0
+    for camp, camp_dict in acc_dict.iteritems():
+        for ag, values in camp_dict.iteritems():
+            tracked += values[0]
+            free += values[1]
+    return tracked, free
+
+
+def count_for_campaign(camp_dict):
+    tracked, free = 0, 0
+    for ag, values in camp_dict.iteritems():
+        tracked += values[0]
+        free += values[1]
+    return tracked, free
 
 
 check_tracker_urls('yahoo')
