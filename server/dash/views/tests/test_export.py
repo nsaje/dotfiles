@@ -600,8 +600,8 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = (
             'Start Date,End Date,Agency Id,Agency,Account Id,Account,Status (' +
             time.strftime('%Y-%m-%d') + ')'
-            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +\
-            str(agency.id) + ',Test Agency,' +\
+            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +
+            str(agency.id) + ',Test Agency,' +
             '1,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
