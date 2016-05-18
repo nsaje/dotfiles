@@ -1,6 +1,6 @@
 /* globals oneApp */
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http', '$q', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $http, $q, zemDataSourceService, zemDataSourceEndpoints) {
+oneApp.controller('DevelopmentGridCtrl', ['$scope', '$http', '$q', 'zemDataSourceService', 'zemDataSourceDebugEndpoints', function ($scope, $http, $q, zemDataSourceService, zemDataSourceEndpoints) {
     $scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createMockEndpoint());
 }]);
 
