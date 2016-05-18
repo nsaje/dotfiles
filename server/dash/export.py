@@ -21,6 +21,8 @@ FIELDNAMES = {
     'content_ad_id': 'Content Ad Id',
     'account': 'Account',
     'account_type': 'Account Type',
+    'agency': 'Agency',
+    'agency_id': 'Agency Id',
     'ad_group': 'Ad Group',
     'avg_tos': 'Avg. ToS',
     'bounce_rate': 'Bounce Rate',
@@ -60,10 +62,12 @@ FIELDNAMES = {
     'total_fee_projection': 'Total Fee Projection',
 }
 
-FIELDNAMES_ID_MAPPING = {'account': 'account_id',
-                         'campaign': 'campaign_id',
-                         'ad_group': 'ad_group_id',
-                         'content_ad': 'content_ad_id'}
+FIELDNAMES_ID_MAPPING = [('account', 'account_id'),
+                         ('campaign', 'campaign_id'),
+                         ('ad_group', 'ad_group_id'),
+                         ('content_ad', 'content_ad_id'),
+                         ('agency', 'agency_id'),
+                         ]
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'submission_status', 'titleLink', 'bid_cpc',
@@ -446,6 +450,9 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
     stat['account'] = account.name
+    # TODO: Optionally filter by permission
+    if account.agency is not None:
+        stat['agency'] = account.agency.name
     return stat
 
 
@@ -477,6 +484,8 @@ def _populate_model_ids(stat, model):
         model = model.account
     if isinstance(model, models.Account):
         stat['account_id'] = model.id
+        if model.agency is not None:
+            stat['agency_id'] = model.agency.id
 
 
 def _get_sources_state(ad_group_sources):
@@ -621,7 +630,7 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 
 
 def _include_model_ids(required_fields):
-    for field, field_id in FIELDNAMES_ID_MAPPING.iteritems():
+    for field, field_id in FIELDNAMES_ID_MAPPING:
         try:
             idx = required_fields.index(field)
             required_fields.insert(idx, field_id)
@@ -642,6 +651,8 @@ class AllAccountsExport(object):
 
         if breakdown == 'account':
             required_fields.extend(['account'])
+            if user.has_perm('zemauth.can_view_account_agency_information'):
+                required_fields.append('agency')
             dimensions.extend(['account'])
         elif breakdown == 'campaign':
             required_fields.extend(['account', 'campaign'])
