@@ -66,7 +66,8 @@ FIELDNAMES_ID_MAPPING = [('account', 'account_id'),
                          ('campaign', 'campaign_id'),
                          ('ad_group', 'ad_group_id'),
                          ('content_ad', 'content_ad_id'),
-                         ('agency', 'agency_id'),]
+                         ('agency', 'agency_id'),
+                         ]
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'submission_status', 'titleLink', 'bid_cpc',
