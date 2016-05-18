@@ -30,7 +30,7 @@ def extract_obj_ids(objects):
     elif is_collection(objects):
         return [get_obj_id(item) for item in objects]
 
-    return get_obj_id(objects)
+    return objects
 
 
 def get_obj_id(obj):

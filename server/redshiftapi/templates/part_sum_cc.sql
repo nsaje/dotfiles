@@ -1,1 +1,0 @@
-SUM({{ p }}{{ column_name }})/10000.0 {{ alias }}

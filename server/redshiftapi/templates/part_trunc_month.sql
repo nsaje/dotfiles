@@ -1,1 +1,0 @@
-DATE_TRUNC('month', {{ p }}{{ column_name }}) {% if alias %} AS {{ alias }} {% endif %}
