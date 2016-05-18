@@ -1386,6 +1386,34 @@ class RunAutopilotTestCase(TestCase):
         ]
         mock_set_changes.assert_has_calls(set_changes_calls, any_order=True)
 
+    @patch('automation.autopilot_plus.prefetch_autopilot_data')
+    @patch('automation.autopilot_budgets.get_autopilot_daily_budget_recommendations')
+    @patch('automation.autopilot_cpc.get_autopilot_cpc_recommendations')
+    @patch('automation.autopilot_plus.set_autopilot_changes')
+    def test_autopilot_data_not_available(self, mock_set_changes, mock_ap_cpc, mock_ap_budget, mock_ap_prefetch):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        daily_caps = {
+            1: 100,
+            2: 200,
+        }
+
+        self.assertEqual(dash.constants.AdGroupSettingsState.ACTIVE, ag1.get_current_settings().state)
+        self.assertEqual(dash.constants.AdGroupSettingsState.ACTIVE, ag2.get_current_settings().state)
+
+        mock_ap_prefetch.return_value = ({}, {
+            campaign: 'Mock campaign goal'
+        })
+
+        campaign_stop._run_autopilot(campaign, daily_caps)
+        self.assertFalse(mock_ap_cpc.called)
+        self.assertFalse(mock_ap_budget.called)
+
+        self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ag1.get_current_settings().state)
+        self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ag2.get_current_settings().state)
+
 
 class UpdateCampaignsInLandingTestCase(TestCase):
 

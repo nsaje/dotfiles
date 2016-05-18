@@ -588,8 +588,18 @@ def _run_autopilot(campaign, daily_caps):
     active_ad_groups = campaign.adgroup_set.all().filter_active()
     per_ad_group_autopilot_data, campaign_goals = autopilot_plus.prefetch_autopilot_data(active_ad_groups)
     for ad_group in active_ad_groups:
-        daily_cap = daily_caps[ad_group.id]
+        if ad_group not in per_ad_group_autopilot_data:
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Stopping ad group {}. Autopilot data not available.'.format(
+                    ad_group.id,
+                )
+            )
+            actions.extend(_stop_ad_group(ad_group))
+            continue
+
         ap_data = per_ad_group_autopilot_data[ad_group]
+        daily_cap = daily_caps[ad_group.id]
         campaign_goal = campaign_goals[ad_group.campaign]
 
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
