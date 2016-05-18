@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($timeout, zemGridConstants) {
+oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) {
 
     return {
         restrict: 'E',
@@ -14,13 +14,12 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
         link: function (scope, element) {
-            var visibleRows;
+            scope.ctrl.grid.body.element = element;
             scope.state = {
                 renderedRows: [],
             };
 
-            // TODO: fill 'load more' rows with fake data
-
+            var visibleRows;
             var pubsub = scope.ctrl.pubsub;
             var requestAnimFrame = (function () {
                 return window.requestAnimationFrame       ||
@@ -40,6 +39,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
                     '-webkit-transform': translateCssProperty,
                     '-ms-transform': translateCssProperty,
                     'transform': translateCssProperty,
+                    'display': 'block',
                 };
             }
 
@@ -79,9 +79,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
                 );
 
                 var delta = currFirstRow - prevFirstRow;
-
-                if (Math.abs(delta) >= zemGridConstants.gridBodyRendering.NUM_OF_RENDERED_ROWS ||
-                    scope.state.renderedRows.length < zemGridConstants.gridBodyRendering.NUM_OF_RENDERED_ROWS) {
+                if (Math.abs(delta) >= zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
                     // Rows can't be reused, reinitialize visible rows
                     initRenderedRows(currFirstRow, true);
                 } else if (delta) {
@@ -95,20 +93,25 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
                     var lastRow, i, row;
                     var renderedRows = [];
                     var availableIndexes = [];
+
                     if (delta > 0) {
                         // Add new rows to the bottom and reuse indexes from the top
                         scope.state.renderedRows.slice(0, delta).forEach(function (row) {
                             availableIndexes.push(row.index);
                         });
                         renderedRows = scope.state.renderedRows.slice(delta);
-                        lastRow = firstRow + zemGridConstants.gridBodyRendering.NUM_OF_RENDERED_ROWS;
+                        if (visibleRows.length <= firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
+                            lastRow = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                        } else {
+                            lastRow = firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                        }
                         for (i = lastRow - delta; i < lastRow; i++) {
                             row = visibleRows[i];
-                            if (row) {
-                                row.index = availableIndexes.shift();
+                            if (!row.isDummy) {
                                 row.style = getTranslateYStyle(i * zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                                renderedRows.push(row);
                             }
+                            row.index = availableIndexes.shift();
+                            renderedRows.push(row);
                         }
                     } else {
                         // Add new rows to the top and reuse indexes from the bottom
@@ -116,14 +119,18 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
                             availableIndexes.push(row.index);
                         });
                         renderedRows = scope.state.renderedRows.slice(0, delta);
-                        lastRow = firstRow + Math.abs(delta) - 1;
+                        if (visibleRows.length <= firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
+                            lastRow = Math.abs(delta) - 1;
+                        } else {
+                            lastRow = firstRow + Math.abs(delta) - 1;
+                        }
                         for (i = lastRow; i >= firstRow; i--) {
                             row = visibleRows[i];
-                            if (row) {
-                                row.index = availableIndexes.shift();
+                            if (!row.isDummy) {
                                 row.style = getTranslateYStyle(i * zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                                renderedRows.unshift(row);
                             }
+                            row.index = availableIndexes.shift();
+                            renderedRows.unshift(row);
                         }
                     }
 
@@ -142,14 +149,20 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
                     var row;
                     var renderedRows = [];
                     var index = 0;
-                    var lastRow = firstRow + zemGridConstants.gridBodyRendering.NUM_OF_RENDERED_ROWS;
+                    var lastRow;
+                    if (visibleRows.length <= firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
+                        lastRow = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                    } else {
+                        lastRow = firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                    }
+
                     for (var i = firstRow; i < lastRow; i++) {
                         row = visibleRows[i];
-                        if (row) {
-                            row.index = index++;
+                        if (!row.isDummy) {
                             row.style = getTranslateYStyle(i * zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                            renderedRows.push(row);
                         }
+                        row.index = index++;
+                        renderedRows.push(row);
                     }
 
                     scope.state.renderedRows = renderedRows;
@@ -162,13 +175,37 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
                 });
             }
 
+            var visibleRowsCount;
             function updateVisibleRows () {
                 visibleRows = [];
+                visibleRowsCount = 0;
                 scope.ctrl.grid.body.rows.forEach(function (row) {
                     if (row.visible) {
                         visibleRows.push(row);
+                        visibleRowsCount++;
                     }
                 });
+
+                var dummyRow = Object.create(visibleRows[0]);
+                dummyRow.isDummy = true;
+                dummyRow.style = {'display': 'none'};
+
+                // Always have at least 'NUM_OF_ROWS_PER_PAGE' rows in visibleRows
+                while (visibleRows.length < zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE) {
+                    visibleRows.push(Object.create(dummyRow));
+                }
+                // Append additional hidden dummy rows so that 'NUM_OF_ROWS_PER_PAGE' + 'NUM_OF_PRERENDERED_ROWS' DOM
+                // elements are always rendered
+                for (var i = 0; i < zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS; i++) {
+                    visibleRows.push(Object.create(dummyRow));
+                }
+            }
+
+            function getTableHeightStyle () {
+                var height = visibleRowsCount * zemGridConstants.gridBodyRendering.ROW_HEIGHT;
+                return {
+                    height: height + 'px',
+                };
             }
 
             pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, function (event, scrollTop) {
@@ -177,29 +214,26 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', function ($time
 
             pubsub.register(pubsub.EVENTS.ROWS_UPDATED, function () {
                 updateVisibleRows();
-                scope.fullTableHeight = {
-                    height: (visibleRows.length * zemGridConstants.gridBodyRendering.ROW_HEIGHT) + 'px',
-                };
+                scope.fullTableHeight = getTableHeightStyle();
                 initRenderedRows(prevFirstRow, true);
+
+                // $timeout(function () {
+                //     scope.ctrl.grid.ui.state.bodyRendered = true;
+                //     scope.ctrl.grid.body.element = element;
+                //     zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+                // }, 0, false);
             });
 
             scope.$watch('ctrl.grid.body.rows', function (rows) {
                 if (rows) {
                     updateVisibleRows();
-                    scope.fullTableHeight = {
-                        height: (visibleRows.length * zemGridConstants.gridBodyRendering.ROW_HEIGHT) + 'px',
-                    };
+                    scope.fullTableHeight = getTableHeightStyle();
                     initRenderedRows(0, true);
 
                     $timeout(function () {
-                        // Calculate columns widths after body rows are rendered
-                        var columns = element.querySelectorAll('.zem-grid-cell');
-                        columns.each(function (index, column) {
-                            var columnWidth = column.offsetWidth;
-                            if (scope.ctrl.grid.ui.columnWidths[index] < columnWidth) {
-                                scope.ctrl.grid.ui.columnWidths[index] = columnWidth;
-                            }
-                        });
+                        scope.ctrl.grid.ui.state.bodyRendered = true;
+                        scope.ctrl.grid.body.element = element;
+                        zemGridUIService.resizeGridColumns(scope.ctrl.grid);
                     }, 0, false);
                 }
             });

@@ -3,8 +3,6 @@
 
 oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridObject', function ($q, zemGridConstants, zemGridParser, zemGridObject) { // eslint-disable-line max-len
 
-    var columnWidths = getInitialColumnWidths();
-
     function load (dataSource) {
         var deferred = $q.defer();
         dataSource.getData().then(
@@ -14,7 +12,6 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
                 grid.meta.source = dataSource;
                 grid.meta.breakdowns = dataSource.breakdowns;
                 grid.meta.levels = dataSource.breakdowns.length;
-                grid.ui.columnWidths = columnWidths;
 
                 zemGridParser.parse(grid, data);
                 deferred.resolve(grid);
@@ -61,33 +58,6 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         }
     }
 
-    function getRowClass (grid, row) {
-        var classes = [];
-        classes.push('level-' + row.level);
-
-        if (row.level === grid.meta.levels) {
-            classes.push('level-last');
-        }
-        return classes;
-    }
-
-    function getCellStyle (grid, cellIndex) {
-        var width = 'auto';
-        if (grid.ui.columnWidths[cellIndex]) {
-            width = grid.ui.columnWidths[cellIndex] + 'px';
-        }
-        return {'min-width': width};
-    }
-
-    function getInitialColumnWidths (grid) {
-        // FIXME: if columnWidth ref changes, it does not work anymore when grid is reloaded (ie. submit new breakdown)
-        // ==> it is not possible to generate this array when grid is loading -- load()
-        var columnsWidths = [];
-        for (var i = 0; i < 50; ++i) columnsWidths.push(20);
-        return columnsWidths;
-    }
-
-
     return {
         load: load,
         loadMore: loadMore,
@@ -95,9 +65,5 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         // TODO: Move to separate service (interaction service)
         toggleCollapse: toggleCollapse,
         toggleCollapseLevel: toggleCollapseLevel,
-
-        // TODO: Move to separate service (style service)
-        getRowClass: getRowClass,
-        getCellStyle: getCellStyle,
     };
 }]);

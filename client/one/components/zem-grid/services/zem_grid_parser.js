@@ -46,6 +46,12 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
             parent: parent,
             visible: true,
         };
+
+        var emptyStats = {};
+        Object.keys(rows[0].data.stats).forEach(function (key) {
+            emptyStats[key] = '';
+        });
+        row.data.stats = emptyStats;
         rows.push(row);
 
         return rows;

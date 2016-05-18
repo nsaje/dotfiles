@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridHeader', ['$timeout', function ($timeout) {
+oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
 
     return {
         restrict: 'E',
@@ -14,22 +14,28 @@ oneApp.directive('zemGridHeader', ['$timeout', function ($timeout) {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function postLink (scope, element) {
+            scope.ctrl.grid.header.element = element;
+
             var pubsub = scope.ctrl.pubsub;
 
             scope.$watch('ctrl.grid.header', function (header) {
                 if (header) {
                     $timeout(function () {
-                        // Calculate columns widths after header is rendered
-                        var columns = element.querySelectorAll('.zem-grid-cell');
-                        columns.each(function (index, column) {
-                            var columnWidth = column.offsetWidth;
-                            if (scope.ctrl.grid.ui.columnWidths[index] < columnWidth) {
-                                scope.ctrl.grid.ui.columnWidths[index] = columnWidth;
-                            }
-                        });
+                        scope.ctrl.grid.ui.state.headerRendered = true;
+                        scope.ctrl.grid.header.element = element;
+
+                        zemGridUIService.resizeGridColumns(scope.ctrl.grid);
                     }, 0, false);
                 }
             });
+
+            // pubsub.register(pubsub.EVENTS.ROWS_UPDATED, function () {
+            //     $timeout(function () {
+            //         scope.ctrl.grid.ui.state.headerRendered = true;
+            //         scope.ctrl.grid.header.element = element;
+            //         zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+            //     }, 0, false);
+            // });
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, value) {
                 var leftOffset = -1 * value;

@@ -19,8 +19,8 @@ oneApp.directive('zemGridRow', [function () {
                 element.css(style);
             });
         },
-        controller: ['$scope', 'zemGridConstants', 'zemGridService',
-            function ($scope, zemGridConstants, zemGridService) {
+        controller: ['$scope', 'zemGridConstants', 'zemGridService', 'zemGridUIService',
+            function ($scope, zemGridConstants, zemGridService, zemGridUIService) {
                 $scope.constants = zemGridConstants;
 
                 this.loadMore = function () {
@@ -30,7 +30,7 @@ oneApp.directive('zemGridRow', [function () {
                 };
 
                 this.getRowClass = function () {
-                    return zemGridService.getRowClass(this.grid, this.row);
+                    return zemGridUIService.getRowClass(this.grid, this.row);
                 };
             }],
     };
