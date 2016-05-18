@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp,angular */
 'use strict';
 
 oneApp.factory('zemOptimisationMetricsService', function () {
@@ -83,7 +83,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             initialOrder: 'desc',
         });
 
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 6; i++) {
             columns.splice(position + i + 6, 0, {
                 name: 'Avg. CPA',
                 field: 'avg_cost_per_conversion_goal_' + i,
@@ -110,7 +110,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             avg_cost_for_new_visitor: true,
             cpa: true,
         };
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 6; i++) {
             categories['avg_cost_per_conversion_goal_' + i] = true;
         }
         return categories;
@@ -156,6 +156,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
     function concatChartOptions (goals, chartOptions, newOptions, isInternal) {
         return chartOptions.concat(newOptions.map(function (option) {
+            option = angular.extend({}, option);
             option.internal = isInternal;
             option.shown = false;
             return option;

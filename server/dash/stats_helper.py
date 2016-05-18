@@ -29,8 +29,7 @@ def get_stats_with_conversions(
         constraints=None,
         filter_by_permissions=True):
     can_see_redshift_stats = not filter_by_permissions or user.has_perm('zemauth.can_see_redshift_postclick_statistics')
-    can_see_conversions = not filter_by_permissions or\
-        (can_see_redshift_stats and user.has_perm('zemauth.conversion_reports'))
+    can_see_conversions = not filter_by_permissions or can_see_redshift_stats
 
     return _get_stats_with_conversions(
         user,
@@ -58,7 +57,7 @@ def get_content_ad_stats_with_conversions(
         constraints=None):
     # a workaround for content ads tab where all users can see redshift stats
     can_see_redshift_stats = True
-    can_see_conversions = can_see_redshift_stats and user.has_perm('zemauth.conversion_reports')
+    can_see_conversions = True
 
     return _get_stats_with_conversions(
         user,
@@ -87,8 +86,6 @@ def get_publishers_data_and_conversion_goals(
         show_blacklisted_publishers=None,
         adg_blacklisted_publishers=None):
 
-    report_conversion_goals = []
-    touchpoint_conversion_goals = []
     report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
     touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
@@ -263,8 +260,14 @@ def _get_stats_with_conversions(
                              cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
-        conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
-                                                tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
+        try:
+            conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'],
+                                                     tp_conv_stat['conversion_window'], tp_conv_stat['campaign'])]
+        except KeyError:
+            # when querying for multiple campaigns, a pixel can get returned when no campaign goal with such pixel is
+            # defined
+            continue
+
         if key in ca_stats_by_breakdown:
             ca_stats_by_breakdown[key][conversion_goal.get_view_key(conversion_goals)] = tp_conv_stat['conversion_count']
             continue

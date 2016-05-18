@@ -5,8 +5,6 @@ postgres:
       - POSTGRES_PASSWORD=devpwd
       - POSTGRES_DB=one
       - POSTGRES_USER=eins
-    expose:
-      - "5432"
     volumes:
       - "./fixtures/:/docker-entrypoint-initdb.d/"
 # If you like to have persistent data store you can uncomment following line
@@ -17,8 +15,6 @@ postgres:
 statsd:
     container_name: statsd
     image: verb/socat
-    expose:
-      - "8125/udp"
     entrypoint: /usr/bin/socat
     command: udp-recv:8125 -
     tty: true
@@ -26,61 +22,9 @@ statsd:
 telegraf:
     container_name: telegraf
     image: verb/socat
-    expose:
-      - "8135/udp"
     entrypoint: /usr/bin/socat
     command: udp-recv:8135 -
     tty: true
 
 memcached:
     image: memcached
-    expose:
-      - "11211"
-
-einsstatic:
-    container_name: einsstatic
-    hostname: einsstatic
-    image: digitallyseamless/nodejs-bower-grunt
-    ports:
-      - "9999:9999"
-    volumes:
-      - "./client/:/data/"
-    entrypoint: /bin/bash
-    command: -c "npm prune && npm install; grunt dev"
-    tty: true
-
-eins:
-    container_name: eins
-    restart: always
-    hostname: eins
-    image: zemanta/z1
-    ports:
-      - "8000:8000"
-    links:
-      - "postgres"
-      - "postgres:db"
-      - "statsd:statsd"
-      - "memcached:memcached"
-      - "einsstatic"
-      - "telegraf"
-    volumes:
-      - "$HOME/docker-vols/eins/logs/:/app/logs/" # this one will create new folder in your home if it doesn't exist
-      - "./server/:/app/zemanta-eins/"
-      - "./server/server/localsettings.py.docker:/app/zemanta-eins/server/localsettings.py"
-      - ".:/src:ro"
-    working_dir: /app/zemanta-eins/
-    entrypoint: /bin/bash
-    command: run-docker-dev.sh
-    tty: true
-    stdin_open: true
-
-
-# proxy:
-#     image: nginx
-#     ports:
-#       - "80:80"
-#     links:
-#       - "eins_static"
-#       - "eins"
-#     volumes:
-#       - "./docker/nginx-dev.conf:/etc/nginx/nginx.conf"

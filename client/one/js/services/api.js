@@ -180,6 +180,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 id: data.id,
                 name: data.name,
                 email: data.email,
+                agency: data.agency,
                 permissions: data.permissions,
                 timezoneOffset: data.timezone_offset,
             };
@@ -1265,38 +1266,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AccountAgency () {
-        function convertSettingsFromApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                defaultAccountManager: settings.default_account_manager,
-                defaultSalesRepresentative: settings.default_sales_representative,
-                allowedSources: settings.allowed_sources
-            };
-        }
-
-        function convertSettingsToApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                default_account_manager: settings.defaultAccountManager,
-                default_sales_representative: settings.defaultSalesRepresentative,
-                allowed_sources: settings.allowedSources
-            };
-        }
-
-        function convertValidationErrorFromApi (data) {
-            return {
-                id: data.errors.id,
-                name: data.errors.name,
-                defaultAccountManager: data.errors.default_account_manager,
-                defaultSalesRepresentative: data.errors.default_sales_representative,
-                allowedSources: data.errors.allowed_sources,
-                allowedSourcesData: data.data.allowed_sources
-            };
-        }
-
+    function AccountHistory () {
         function convertHistoryFromApi (history) {
             return history.map(function (item) {
                 return {
@@ -1329,7 +1299,63 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.get = function (id) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/agency/';
+            var url = '/api/accounts/' + id + '/history/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        history: convertHistoryFromApi(data.data.history),
+                    });
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountSettings () {
+        function convertSettingsFromApi (settings) {
+            return {
+                id: settings.id,
+                name: settings.name,
+                defaultAccountManager: settings.default_account_manager,
+                defaultSalesRepresentative: settings.default_sales_representative,
+                accountType: settings.account_type,
+                allowedSources: settings.allowed_sources
+            };
+        }
+
+        function convertSettingsToApi (settings) {
+            return {
+                id: settings.id,
+                name: settings.name,
+                default_account_manager: settings.defaultAccountManager,
+                default_sales_representative: settings.defaultSalesRepresentative,
+                account_type: settings.accountType,
+                allowed_sources: settings.allowedSources
+            };
+        }
+
+        function convertValidationErrorFromApi (data) {
+            return {
+                id: data.errors.id,
+                name: data.errors.name,
+                defaultAccountManager: data.errors.default_account_manager,
+                defaultSalesRepresentative: data.errors.default_sales_representative,
+                accountType: data.errors.account_type,
+                allowedSources: data.errors.allowed_sources,
+                allowedSourcesData: data.data.allowed_sources
+            };
+        }
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/settings/';
 
             $http.get(url).
                 success(function (data, status) {
@@ -1338,7 +1364,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        history: convertHistoryFromApi(data.data.history),
                         accountManagers: data.data.account_managers,
                         salesReps: data.data.sales_reps,
                         canArchive: data.data.can_archive,
@@ -1354,7 +1379,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.save = function (settings) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + settings.id + '/agency/';
+            var url = '/api/accounts/' + settings.id + '/settings/';
             var config = {
                 params: {}
             };
@@ -1370,7 +1395,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        history: convertHistoryFromApi(data.data.history),
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
                     });
@@ -3000,6 +3024,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                             isAvailable: obj.is_available,
                         };
                     }),
+                    minAmount: data.min_amount,
                 };
             });
         };
@@ -3094,7 +3119,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
-        accountAgency: new AccountAgency(),
+        accountHistory: new AccountHistory(),
+        accountSettings: new AccountSettings(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),

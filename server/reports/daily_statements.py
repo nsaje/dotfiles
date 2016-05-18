@@ -100,7 +100,7 @@ def _get_dates(date, campaign):
             if budget.start_date <= from_date <= budget.end_date and budget.id not in by_date[from_date]:
                 found = True
 
-        if found or from_date == date or from_date == to_date:
+        if found or from_date == date or from_date > to_date:
             break
 
         from_date += datetime.timedelta(days=1)

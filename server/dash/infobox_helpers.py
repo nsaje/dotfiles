@@ -1,7 +1,5 @@
-import calendar
 import copy
 import datetime
-import exceptions
 import utils.lc_helper
 
 import reports.api_helpers
@@ -209,25 +207,6 @@ def get_mtd_all_accounts_spend():
     ).get('media', Decimal(0))
 
 
-def goals_and_spend_settings(user, campaign):
-    settings = []
-
-    total_campaign_spend_to_date, media_campaign_spend_to_date = get_total_and_media_campaign_spend(user, campaign)
-    ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
-    ratio = 0
-    if ideal_campaign_spend_to_date > 0:
-        ratio = total_campaign_spend_to_date / ideal_campaign_spend_to_date
-    campaign_pacing_settings = OverviewSetting(
-        'Campaign pacing:',
-        utils.lc_helper.default_currency(media_campaign_spend_to_date),
-        description='{:.2f}% on plan'.format(ratio * 100),
-    ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
-    settings.append(campaign_pacing_settings.as_dict())
-
-    is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
-    return settings, is_delivering
-
-
 def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
@@ -396,52 +375,6 @@ def format_username(user):
     return user.get_full_name()
 
 
-def calculate_all_accounts_total_budget(start_date, end_date):
-    '''
-    Total budget in date range is amount of all active
-    '''
-
-    all_blis = dash.models.BudgetLineItem.objects.all()
-    all_blis = all_blis.filter(
-        start_date__lte=end_date,
-        end_date__gte=start_date
-    )
-
-    total = Decimal(0)
-    # the math below basically calculates overlap between budget line item
-    # start and end date and specified-by-user start and end date
-    # when budget falls out of the specified period it is linearly scaled
-    # down so it better represents aproximate total budget in this month
-    for bli in all_blis:
-        out_of_range_days = 0
-        start_diff = (bli.start_date - start_date).days
-        end_diff = (end_date - bli.end_date).days
-
-        if start_diff < 0:
-            out_of_range_days += abs(start_diff)
-        if end_diff < 0:
-            out_of_range_days += abs(end_diff)
-
-        # one day budget line items or budget line items that are entirely
-        # contained here fit this condition
-        if out_of_range_days == 0:
-            total += bli.amount
-            continue
-
-        total_budget_duration = (bli.end_date - bli.start_date).days
-        rate_burned_in_range = Decimal(total_budget_duration - out_of_range_days)\
-            / Decimal(total_budget_duration)
-        total += rate_burned_in_range * bli.amount
-    return total
-
-
-def calculate_all_accounts_monthly_budget(today):
-    start, end = calendar.monthrange(today.year, today.month)
-    start_date = datetime.datetime(today.year, today.month, 1)
-    end_date = datetime.datetime(today.year, today.month, end)
-    return calculate_all_accounts_total_budget(start_date.date(), end_date.date())
-
-
 def count_weekly_logged_in_users():
     return zemauth.models.User.objects.filter(
         last_login__gte=_one_week_ago(),
@@ -485,17 +418,17 @@ def _until_today():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    if campaign:
-        qs = dash.models.BudgetLineItem.objects.filter(
-            campaign__in=campaign
-        )
-    else:
-        qs = dash.models.BudgetLineItem.objects.all()
+    if not campaign:
+        return dash.models.BudgetLineItem.objects.none()
+
+    qs = dash.models.BudgetLineItem.objects.filter(
+        campaign__in=campaign
+    )
+
     return qs.filter_active(date)
 
 
 def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
-    campaign = ad_group_settings.ad_group.campaign
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
@@ -504,17 +437,17 @@ def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
         filter_by_sources(filtered_sources)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_groups_sources_settings)
 
-    return get_adgroup_running_status_class(autopilot_state, running_status,
-                                            state, campaign.is_in_landing())
+    return get_adgroup_running_status_class(autopilot_state, running_status, state,
+                                            ad_group_settings.landing_mode)
 
 
 def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
+    if is_in_landing:
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
     if state == dash.constants.AdGroupSettingsState.INACTIVE and\
        running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
         return dash.constants.InfoboxStatus.STOPPED
-
-    if is_in_landing:
-        return dash.constants.InfoboxStatus.LANDING_MODE
 
     if (running_status == dash.constants.AdGroupRunningStatus.INACTIVE and
             state == dash.constants.AdGroupSettingsState.ACTIVE) or\
@@ -529,42 +462,50 @@ def get_adgroup_running_status_class(autopilot_state, running_status, state, is_
     return dash.constants.InfoboxStatus.ACTIVE
 
 
-def get_campaign_running_status(campaign):
-    count_active = dash.models.AdGroup.objects.filter(
+def get_campaign_running_status(campaign, campaign_settings):
+    if campaign_settings.landing_mode:
+        return dash.constants.InfoboxStatus.LANDING_MODE
+
+    running_exists = dash.models.AdGroup.objects.filter(
         campaign=campaign
-    ).filter_running().count()
-    if count_active > 0:
-        if campaign.is_in_landing():
-            return dash.constants.InfoboxStatus.LANDING_MODE
+    ).filter_running().exists()
+    if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
-    return dash.constants.InfoboxStatus.INACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(
+        campaign=campaign
+    ).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
 def get_account_running_status(account):
-    count_active = dash.models.AdGroup.objects.filter(
+    running_exists = dash.models.AdGroup.objects.filter(
         campaign__account=account
-    ).filter_running().count()
-    if count_active > 0:
+    ).filter_running().exists()
+    if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
-    else:
-        return dash.constants.InfoboxStatus.INACTIVE
+
+    active_exists = dash.models.AdGroup.objects.filter(
+        campaign__account=account
+    ).filter_active().exists()
+    return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
 
 
 def _retrieve_active_creditlineitems(account, date):
-    return dash.models.CreditLineItem.objects.filter(
+    ret = dash.models.CreditLineItem.objects.filter(
         account=account
-    ).filter_active()
+    )
+    if account.agency is not None:
+        ret |= dash.models.CreditLineItem.objects.filter(
+            agency=account.agency
+        )
+    return ret.filter_active()
 
 
 def _compute_daily_cap(ad_groups):
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups
     )
-    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_states().values_list('ad_group_source__id', 'state')
-
-    adg_state = dict(ad_group_source_states)
 
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources
@@ -572,11 +513,16 @@ def _compute_daily_cap(ad_groups):
 
     adgs_settings = dict(ad_group_source_settings)
 
+    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_states()
+
     ret = 0
-    for adgsid, state in adg_state.iteritems():
-        if not state or state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    for adgs_state in ad_group_source_states:
+        if not adgs_state.state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
-        ret += adgs_settings.get(adgsid) or 0
+        ret += adgs_settings.get(adgs_state.ad_group_source_id) or adgs_state.daily_budget_cc or 0
+
     return ret
 
 

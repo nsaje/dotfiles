@@ -29,7 +29,8 @@ resend_action.short_description = "Resend failed actions"
 
 def abort_action(modeladmin, request, queryset):
     try:
-        if not all(action.state in (constants.ActionState.FAILED, constants.ActionState.WAITING) for
+        if not all(action.state in (constants.ActionState.FAILED, constants.ActionState.WAITING,
+                                    constants.ActionState.DELAYED) for
                    action in queryset):
             raise AssertionError('Not all selected actions have failed or are in waiting!')
 

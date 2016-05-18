@@ -1,4 +1,4 @@
-create table publishers_3 (
+create table publishers_1 (
   date date not null encode delta,
   adgroup_id integer not null encode lzo,
   exchange varchar(255) encode lzo,

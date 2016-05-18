@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 OB_RAW_PUB_DATA_S3_PREFIX = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/'
 B1_RAW_PUB_DATA_S3_URI = 'b1_publishers_raw/{year}/{month:02d}/{day:02d}/part-00000'
 
-RAW_PUB_POSTCLICK_DATA_S3_URI = 'publishers_postclick_raw/{year}/{month:02d}/{day:02d}/data.json'
+RAW_PUB_POSTCLICK_DATA_S3_PREFIX = 'publishers_postclick_raw/{year}/{month:02d}/{day:02d}/'
 
 LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
 LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
@@ -240,27 +240,17 @@ def put_pub_stats_to_s3(date, rows, key_fmt):
     return s3_key
 
 
-def put_pub_postclick_stats_to_s3(date, entries):
+def put_pub_postclick_stats_to_s3(date, entries, s3_name):
     if not entries:
         return
 
-    s3_key = RAW_PUB_POSTCLICK_DATA_S3_URI.format(
+    s3_key = RAW_PUB_POSTCLICK_DATA_S3_PREFIX.format(
         year=date.year,
         month=date.month,
-        day=date.day
-    )
+        day=date.day,
+    ) + s3_name
 
     data = {}
-    s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-    s3_list = s3.list(s3_key)
-    if not s3_list:
-        return
-
-    if list(s3_list):
-        json_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
-        if json_data:
-            data = json.loads(json_data)
-
     for entry in entries:
         source = entry.source_param.lower()
         if source.startswith("b1_"):
@@ -332,30 +322,31 @@ def _augment_pub_data_with_budgets(rows):
 
 
 def _augment_pub_data_with_postclick_stats(date, rows):
-    s3_key = RAW_PUB_POSTCLICK_DATA_S3_URI.format(
+    s3_prefix = RAW_PUB_POSTCLICK_DATA_S3_PREFIX.format(
         year=date.year,
         month=date.month,
-        day=date.day
+        day=date.day,
     )
 
     s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-    s3_list = s3.list(s3_key)
+    s3_list = s3.list(s3_prefix)
     if not s3_list or not list(s3_list):
         return
 
-    json_data = s3.get(s3_key)
-    if not json_data:
-        return
+    for s3_key in s3_list:
+        json_data = s3.get(s3_key)
+        if not json_data:
+            continue
 
-    postclick_data = json.loads(json_data)
-    for row in rows:
-        key = u"{date}|{ad_group_id}|{publisher}|{source}".format(
-            date=date.isoformat(),
-            ad_group_id=row["adgroup_id"],
-            publisher=row["domain"].lower(),
-            source=row["exchange"].lower()
-        )
-        row.update(postclick_data.get(key, {}))
+        postclick_data = json.loads(json_data)
+        for row in rows:
+            key = u"{date}|{ad_group_id}|{publisher}|{source}".format(
+                date=date.isoformat(),
+                ad_group_id=row["adgroup_id"],
+                publisher=row["domain"].lower(),
+                source=row["exchange"].lower()
+            )
+            row.update(postclick_data.get(key, {}))
 
 
 def _get_raw_b1_pub_data(s3_key):

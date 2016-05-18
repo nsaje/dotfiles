@@ -275,9 +275,14 @@ urlpatterns += [
         name='account_campaigns'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/agency/',
-        login_required(dash.views.agency.AccountAgency.as_view()),
-        name='account_agency'
+        r'^api/accounts/(?P<account_id>\d+)/history/',
+        login_required(dash.views.agency.AccountHistory.as_view()),
+        name='account_history'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/settings/',
+        login_required(dash.views.agency.AccountSettings.as_view()),
+        name='account_settings'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
@@ -350,6 +355,7 @@ urlpatterns += [
     url(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
+        name='accounts_create',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
@@ -509,6 +515,21 @@ urlpatterns += [
 # K1 Api
 urlpatterns += [
     url(
+        r'^k1api/ad_group_source$',
+        k1api.views.get_ad_group_source,
+        name='k1api.get_ad_group_source',
+    ),
+    url(
+        r'^k1api/ad_group_source_ids$',
+        k1api.views.get_ad_group_source_ids,
+        name='k1api.get_ad_group_source_ids',
+    ),
+    url(
+        r'^k1api/content_ad_sources_for_ad_group$',
+        k1api.views.get_content_ad_sources_for_ad_group,
+        name='k1api.get_content_ad_sources_for_ad_group',
+    ),
+    url(
         r'^k1api/get_accounts$',
         k1api.views.get_accounts,
         name='k1api.get_accounts',
@@ -527,7 +548,67 @@ urlpatterns += [
         r'^k1api/get_ga_accounts$',
         k1api.views.get_ga_accounts,
         name='k1api.get_ga_accounts',
-    )
+    ),
+    url(
+        r'^k1api/get_sources_by_tracking_slug$',
+        k1api.views.get_sources_by_tracking_slug,
+        name='k1api.get_sources_by_tracking_slug',
+    ),
+    url(
+        r'^k1api/get_accounts_slugs_ad_groups$',
+        k1api.views.get_accounts_slugs_ad_groups,
+        name='k1api.get_accounts_slugs_ad_groups',
+    ),
+    url(
+        r'^k1api/get_publishers_blacklist$',
+        k1api.views.get_publishers_blacklist,
+        name='k1api.get_publishers_blacklist',
+    ),
+    url(
+        r'^k1api/get_publishers_blacklist_outbrain$',
+        k1api.views.get_publishers_blacklist_outbrain,
+        name='k1api.get_publishers_blacklist_outbrain',
+    ),
+    url(
+        r'^k1api/get_ad_groups$',
+        k1api.views.get_ad_groups,
+        name='k1api.get_ad_groups',
+    ),
+    url(
+        r'k1api/get_ad_groups_exchanges$',
+        k1api.views.get_ad_groups_exchanges,
+        name='k1api.get_ad_groups_exchanges',
+    ),
+    url(
+        r'k1api/get_content_ads$',
+        k1api.views.get_content_ads,
+        name='k1api.get_content_ads',
+    ),
+    url(
+        r'k1api/get_content_ads_exchanges$',
+        k1api.views.get_content_ads_exchanges,
+        name='k1api.get_content_ads_exchanges',
+    ),
+    url(
+        r'^k1api/get_content_ad_ad_group$',
+        k1api.views.get_content_ad_ad_group,
+        name='k1api.get_content_ad_ad_group',
+    ),
+    url(
+        r'^k1api/update_content_ad_status$',
+        k1api.views.update_content_ad_status,
+        name='k1api.update_content_ad_status',
+    ),
+    url(
+        r'^k1api/set_source_campaign_key$',
+        k1api.views.set_source_campaign_key,
+        name='k1api.set_source_campaign_key',
+    ),
+    url(
+        r'^k1api/get_outbrain_marketer_id$',
+        k1api.views.get_outbrain_marketer_id,
+        name='k1api.get_outbrain_marketer_id',
+    ),
 ]
 
 # Crossvalidation Api

@@ -23,6 +23,7 @@ from utils import pagerduty_helper
 from utils.statsd_helper import statsd_timer
 from utils import statsd_helper
 from utils import dates_helper
+from utils import k1_helper
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                                                  adg_settings.autopilot_state, campaign_goals.get(adg.campaign))
             changes_data = _get_autopilot_campaign_changes_data(
                 adg, changes_data, cpc_changes, budget_changes)
+            k1_helper.update_ad_group(adg.pk, 'run_autopilot')
         except Exception as e:
             _report_autopilot_exception(adg, e)
     actionlog.zwei_actions.send(actions)
@@ -271,8 +273,10 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
             break
     for r in yesterday_data:
         if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            cost = r.get('cost')
-            yesterdays_spend_cc = Decimal(cost) if cost else Decimal('0')
+            media_cost = r.get('cost')
+            data_cost = r.get('data_cost')
+            yesterdays_spend_cc = (Decimal(media_cost) if media_cost else Decimal('0')) +\
+                (Decimal(data_cost) if data_cost else Decimal('0'))
             yesterdays_clicks = r.get('clicks')
             break
     return row, yesterdays_spend_cc, yesterdays_clicks

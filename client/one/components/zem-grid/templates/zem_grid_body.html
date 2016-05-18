@@ -1,10 +1,9 @@
 <div class="zem-grid-body">
     <div class="zem-grid-table">
-        <zem-grid-row ng-repeat="row in rows track by $index"
+        <zem-grid-row ng-repeat="row in ctrl.grid.body.rows track by $index"
                       ng-if="row.visible"
                       row="row"
-                      options="ctrl.options"
-                      columns-widths="ctrl.columnsWidths"
+                      grid="ctrl.grid"
         ></zem-grid-row>
     </div>
 </div>

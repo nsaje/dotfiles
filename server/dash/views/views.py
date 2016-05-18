@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import calendar
 import datetime
 import json
 import decimal
@@ -38,6 +37,7 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers
+from utils import k1_helper
 from utils import email_helper
 
 from automation import autopilot_plus
@@ -61,6 +61,7 @@ from dash import publisher_helpers
 
 import reports.api_publishers
 import reports.api
+import reports.projections
 
 logger = logging.getLogger(__name__)
 
@@ -138,19 +139,19 @@ class User(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def get_dict(self, user):
-        result = {}
+        if not user:
+            return {}
 
-        if user:
-            result = {
-                'id': str(user.pk),
-                'email': user.email,
-                'name': user.get_full_name(),
-                'permissions': user.get_all_permissions_with_access_levels(),
-                'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
-                    datetime.datetime.utcnow(), is_dst=True).total_seconds()
-            }
-
-        return result
+        agency = user.agency_set.first()
+        return {
+            'id': str(user.pk),
+            'email': user.email,
+            'name': user.get_full_name(),
+            'agency': agency.id if agency else None,
+            'permissions': user.get_all_permissions_with_access_levels(),
+            'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
+                datetime.datetime.utcnow(), is_dst=True).total_seconds()
+        }
 
 
 @login_required
@@ -262,7 +263,7 @@ class AdGroupOverview(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         header = {
-            'title': ad_group_settings.ad_group_name,
+            'title': ad_group.name,
             'active': infobox_helpers.get_adgroup_running_status(ad_group_settings, filtered_sources),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
@@ -402,9 +403,6 @@ class AdGroupOverview(api_common.BaseApiView):
     def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
                               daily_cap, async_query):
         settings = []
-        common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
-            user, ad_group.campaign
-        )
 
         async_query.join()
         yesterday_cost = async_query.yesterday_cost
@@ -413,7 +411,18 @@ class AdGroupOverview(api_common.BaseApiView):
             yesterday_cost,
             daily_cap
         ).as_dict())
-        settings.extend(common_settings)
+
+        monthly_proj = reports.projections.CurrentMonthBudgetProjections(
+            'campaign',
+            campaign=ad_group.campaign
+        )
+        pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
+        is_delivering = pacing and pacing >= decimal.Decimal('100')
+        settings.append(infobox_helpers.OverviewSetting(
+            'Campaign pacing:',
+            lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
+            description='{:.2f}% on plan'.format(pacing),
+        ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_campaign_goal_list(user, {'ad_group': ad_group},
@@ -496,6 +505,9 @@ class CampaignAdGroups(api_common.BaseApiView):
                 media_sources_actions = self._add_media_sources(ad_group, ad_group_settings, request)
                 actions.extend(media_sources_actions)
 
+        k1_helper.update_ad_group(ad_group.pk,
+                                  msg='CampaignAdGroups.put')
+
         return ad_group, ad_group_settings, actions
 
     def _create_new_settings(self, ad_group, request):
@@ -505,6 +517,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         new_settings.target_devices = campaign_settings.target_devices
         new_settings.target_regions = campaign_settings.target_regions
+        new_settings.ad_group_name = ad_group.name
+
         return new_settings
 
     def _add_media_sources(self, ad_group, ad_group_settings, request):
@@ -554,7 +568,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         header = {
             'title': campaign.name,
-            'active': infobox_helpers.get_campaign_running_status(campaign),
+            'active': infobox_helpers.get_campaign_running_status(campaign, campaign_settings),
             'level': constants.InfoboxLevel.CAMPAIGN,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }
@@ -666,10 +680,18 @@ class CampaignOverview(api_common.BaseApiView):
             daily_cap_cc
         ).as_dict())
 
-        common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
-            user, campaign
+        monthly_proj = reports.projections.CurrentMonthBudgetProjections(
+            'campaign',
+            campaign=campaign
         )
-        settings.extend(common_settings)
+
+        pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
+        is_delivering = pacing and pacing >= decimal.Decimal('100')
+        settings.append(infobox_helpers.OverviewSetting(
+            'Campaign pacing:',
+            lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
+            description='{:.2f}% on plan'.format(pacing),
+        ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
             settings.extend(infobox_helpers.get_campaign_goal_list(user, {'campaign': campaign},
@@ -719,7 +741,7 @@ class AccountOverview(api_common.BaseApiView):
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
-        basic_settings = self._basic_settings(account)
+        basic_settings = self._basic_settings(request.user, account)
 
         performance_settings = self._performance_settings(account, request.user)
         for setting in performance_settings[1:]:
@@ -733,7 +755,7 @@ class AccountOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, account):
+    def _basic_settings(self, user, account):
         settings = []
 
         count_campaigns = infobox_helpers.count_active_campaigns(account)
@@ -757,6 +779,13 @@ class AccountOverview(api_common.BaseApiView):
             tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
+
+        if user.has_perm('zemauth.can_see_account_type'):
+            account_type_setting = infobox_helpers.OverviewSetting(
+                'Account Type:',
+                constants.AccountType.get_text(account_settings.account_type)
+            )
+            settings.append(account_type_setting.as_dict())
 
         all_users = account.users.all()
         if all_users.count() == 0:
@@ -943,9 +972,11 @@ class AdGroupSources(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN,
                                             ad_group=ad_group)
 
-        if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_settings(
-                request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+        helpers.set_ad_group_source_settings(
+            request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+
+        if settings.K1_CONSISTENCY_SYNC:
+            api.add_content_ad_sources(ad_group_source)
 
         return self.create_api_response(None)
 
@@ -966,6 +997,12 @@ class Account(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
+        managed_agency = models.Agency.objects.all().filter(
+            users=request.user
+        ).first()
+        if managed_agency is not None:
+            account.agency = managed_agency
+
         account.save(request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
@@ -1019,9 +1056,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
-        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         resource = json.loads(request.body)
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
@@ -1031,6 +1065,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             raise exc.MissingDataError(message='Requested source not found')
 
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        campaign_settings = ad_group.campaign.get_current_settings()
 
         errors = {}
 
@@ -1046,10 +1083,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
-        if ad_group.campaign.is_in_landing():
-            for key in resource.keys():
-                errors.update({key: 'Not allowed'})
-
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
         if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
@@ -1061,17 +1094,36 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        campaign_settings = ad_group.campaign.get_current_settings()
-        if 'daily_budget_cc' in resource and campaign_settings.automatic_campaign_stop:
-            max_daily_budget = campaign_stop.get_max_settable_daily_budget(ad_group_source)
-            if decimal.Decimal(resource['daily_budget_cc']) > max_daily_budget:
-                errors.update({
-                    'daily_budget_cc': [
-                        'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
-                            max_daily_budget=max_daily_budget
-                        )
-                    ]
-                })
+        if campaign_settings.landing_mode:
+            for key in resource.keys():
+                errors.update({key: 'Not allowed'})
+        elif campaign_settings.automatic_campaign_stop:
+            if 'daily_budget_cc' in resource:
+                new_daily_budget = decimal.Decimal(resource['daily_budget_cc'])
+                max_daily_budget = campaign_stop.get_max_settable_source_budget(
+                    ad_group_source,
+                    new_daily_budget,
+                    ad_group.campaign,
+                    ad_group_source_settings,
+                    ad_group_settings,
+                    campaign_settings
+                )
+                if max_daily_budget is not None and new_daily_budget > max_daily_budget:
+                    errors.update({
+                        'daily_budget_cc': [
+                            'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
+                                max_daily_budget=max_daily_budget
+                            )
+                        ]
+                    })
+
+            if 'state' in resource:
+                can_enable_media_source = campaign_stop.can_enable_media_source(
+                    ad_group_source, ad_group.campaign, campaign_settings)
+                if not can_enable_media_source:
+                    errors.update({
+                        'state': ['Please add additional budget to your campaign to make changes.']
+                    })
 
         if errors:
             raise exc.ValidationError(errors=errors)
@@ -1100,14 +1152,19 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
 
+        k1_helper.update_ad_group(ad_group.pk,
+                                  msg='AdGroupSourceSettings.put')
+
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group,
                 ad_group_source,
                 ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
+                campaign_settings,
                 request.user,
-                allowed_sources
+                allowed_sources,
+                campaign_stop.can_enable_media_source(ad_group_source, ad_group.campaign, campaign_settings)
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text,
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
@@ -1119,9 +1176,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         current_settings = ad_group.get_current_settings()
@@ -1138,9 +1192,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
@@ -1198,9 +1249,6 @@ class AdGroupAdsUploadReport(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1222,9 +1270,6 @@ class AdGroupAdsUploadCancel(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1249,9 +1294,6 @@ class AdGroupAdsUploadStatus(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.upload_content_ads'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         helpers.get_ad_group(request.user, ad_group_id)
 
         try:
@@ -1343,6 +1385,8 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ads = content_ads.all()
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=True)
+        k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads],
+                                     msg='AdGroupContentAdArchive.post')
 
         response['archived_count'] = content_ads.count()
         response['rows'] = {
@@ -1384,6 +1428,8 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         )
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=False)
+        k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads],
+                                     msg='AdGroupContentAdRestore.post')
 
         return self.create_api_response({
             'rows': {content_ad.id: {
@@ -1397,9 +1443,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.set_content_ad_status'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
@@ -1428,6 +1471,10 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CONTENT_AD_STATE,
                                                 ad_group=ad_group)
+            k1_helper.update_content_ads(
+                ad_group.pk, [ad.pk for ad in content_ads],
+                msg='AdGroupContentAdState.post'
+            )
 
         return self.create_api_response()
 
@@ -1447,9 +1494,6 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.get_content_ad_csv'):
-            raise exc.ForbiddenError(message='Not allowed')
-
         try:
             ad_group = helpers.get_ad_group(request.user, ad_group_id)
         except exc.MissingDataError, e:
@@ -1586,6 +1630,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 publishers_selected,
                 publishers_not_selected
             )
+
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            k1_helper.update_blacklist(ad_group.pk, msg='PublishersBlacklistStatus.post')
 
         response = {
             "success": True,
@@ -1996,6 +2043,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
     def _basic_settings(self, start_date, end_date):
         settings = []
+        daterange_proj = reports.projections.BudgetProjections(start_date, end_date, 'account')
+        month_proj = reports.projections.CurrentMonthBudgetProjections('account')
 
         count_active_accounts = infobox_helpers.count_active_accounts()
         settings.append(infobox_helpers.OverviewSetting(
@@ -2051,26 +2100,16 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip='Month-to-date media spend',
         ))
 
-        today = datetime.datetime.utcnow()
-        start, end = calendar.monthrange(today.year, today.month)
-        start_date = start_date or datetime.datetime(today.year, today.month, 1).date()
-        end_date = end_date or datetime.datetime(today.year, today.month, end).date()
-
-        total_budget = infobox_helpers.calculate_all_accounts_total_budget(
-            start_date,
-            end_date
-        )
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
-            lc_helper.default_currency(total_budget),
+            lc_helper.default_currency(daterange_proj.total('allocated_total_budget')),
             section_start=True,
             tooltip='Sum of total budgets in selected date range'
         ))
 
-        monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
-            lc_helper.default_currency(monthly_budget),
+            lc_helper.default_currency(month_proj.total('allocated_total_budget')),
             tooltip='Sum of total budgets for current month'
         ))
 
@@ -2175,11 +2214,19 @@ def sharethrough_approval(request):
     sig = request.GET.get('sig')
     if not sig:
         logger.debug('Sharethrough approval postback without signature. crid: %s', data['crid'])
+        calculated = None
     else:
         calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
                                                        msg=str(data['crid']),
                                                        digestmod=hashlib.sha256)).digest()
 
+        if sig != calculated:
+            logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
+
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
+                                                           source=models.Source.objects.get(name='Sharethrough'))
+
+    if data['status'] == 0:
         if sig != calculated:
             logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
 

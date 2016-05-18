@@ -36,14 +36,16 @@ class AutopilotBudgetsTestCase(test.TestCase):
         sources = [0, 1]
         test_cases = (
             # spends, returned_sources
-            ({0: {'spend_perc': 0.6}, 1: {'spend_perc': 0.6}}, [0, 1]),
-            ({0: {'spend_perc': 0.6}, 1: {'spend_perc': 0.1}}, [0]),
-            ({0: {'spend_perc': 0.1}, 1: {'spend_perc': 0.6}}, [1]),
-            ({0: {'spend_perc': 0.1}, 1: {'spend_perc': 0.1}}, []),
-            ({0: {'spend_perc': 0.2}, 1: {'spend_perc': 0.2}}, [0, 1])
+            ({0: {'yesterdays_spend_cc': 0.6}, 1: {'yesterdays_spend_cc': 0.6}}, [0, 1]),
+            ({0: {'yesterdays_spend_cc': 0.6}, 1: {'yesterdays_spend_cc': 0.1}}, [0]),
+            ({0: {'yesterdays_spend_cc': 0.1}, 1: {'yesterdays_spend_cc': 0.6}}, [1]),
+            ({0: {'yesterdays_spend_cc': 0.1}, 1: {'yesterdays_spend_cc': 0.1}}, []),
+            ({0: {'yesterdays_spend_cc': 0.2}, 1: {'yesterdays_spend_cc': 0.2}}, [0, 1])
         )
+        spends = {0: 1.0, 1: 1.0}
         for test_case in test_cases:
-            self.assertEqual(autopilot_budgets._get_active_sources_with_spend(sources, test_case[0]), test_case[1])
+            self.assertEqual(autopilot_budgets._get_active_sources_with_spend(
+                sources, test_case[0], spends), test_case[1])
 
     @patch('automation.autopilot_budgets._get_minimum_autopilot_budget_constraints')
     @patch('automation.autopilot_budgets._get_optimistic_autopilot_budget_constraints')

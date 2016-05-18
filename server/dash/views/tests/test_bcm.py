@@ -12,10 +12,12 @@ from django.test import TestCase
 from zemauth.models import User
 from dash import models, constants
 from reports.models import BudgetDailyStatement
+from utils.test_helper import add_permissions, fake_request
+from django.test.client import RequestFactory
 
 
 class BCMViewTestCase(TestCase):
-    fixtures = ['test_bcm.yaml']
+    fixtures = ['test_bcm.yaml', 'test_agency.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -119,6 +121,43 @@ class AccountCreditViewTest(BCMViewTestCase):
                 "allocated": "0",
                 "past": "100000.0000",
                 "total": "100000.0000"
+            }
+        })
+
+    def test_get_as_agency(self):
+        url = reverse('accounts_credit', kwargs={'account_id': 1000})
+        self.add_permission('account_credit_view')
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+
+        self.maxDiff = None
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['data'], {
+            "active": [
+                {
+                    "available": "100000.0000",
+                    "end_date": "2015-11-30",
+                    "created_on": "2014-06-04",
+                    "created_by": "agency-master@test.com",
+                    "license_fee": "20%",
+                    "allocated": "0",
+                    "total": "100000.0000",
+                    "comment": "Agency credit",
+                    "id": 1000,
+                    "is_signed": False,
+                    "is_canceled": False,
+                    "budgets": [],
+                    "start_date": "2015-10-01"
+                }
+            ],
+            "past": [],
+            "totals": {
+                "available": "100000.0000",
+                "allocated": "0",
+                "total": "100000.0000",
+                "past": "0",
             }
         })
 
@@ -312,8 +351,131 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(item.amount, 1000)
         self.assertEqual(json.loads(response.content)['data'], "2")
 
+    def test_get_agency(self):
+        agency = models.Agency.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(fake_request(User.objects.get(pk=1)))
+
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.account = None
+        credit.agency = agency
+        credit.save()
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 1,
+            'credit_id': 1,
+        })
+
+        self.add_permission('account_credit_view')
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+
+        response_item = response.json()['data']
+        self.assertEqual(response_item, {
+            "comment": u"Test case",
+            "account_id": 1,
+            "start_date": "2015-10-01",
+            "end_date": "2015-11-30",
+            "created_on": "2014-06-04",
+            "created_by": "ziga.stopinsek@zemanta.com",
+            "license_fee": "20%",
+            "id": 1,
+            "is_signed": False,
+            "is_canceled": False,
+            "amount": 100000,
+            "budgets": [
+                {
+                    "campaign": "test campaign 1",
+                    "end_date": "2015-11-30",
+                    "spend": "0.0000",
+                    "id": 1,
+                    "total": "100000.0000",
+                    "comment": "Test case",
+                    "start_date": "2015-10-01"
+                }
+            ]
+        })
+
+    def test_delete_agency(self):
+        agency = models.Agency.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(fake_request(User.objects.get(pk=1)))
+
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.account = None
+        credit.agency = agency
+        credit.save()
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 3,
+            'credit_id': 2,
+        })
+
+        self.assertEqual(1, len(models.CreditLineItem.objects.filter(pk=2)))
+
+        self.add_permission('account_credit_view')
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 3,
+            'credit_id': 2,
+        })
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, len(models.CreditLineItem.objects.filter(pk=2)))
+
+    def test_post_agency(self):
+        agency = models.Agency.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(fake_request(User.objects.get(pk=1)))
+
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.account = None
+        credit.agency = agency
+        credit.save()
+
+        url = reverse('accounts_credit_item', kwargs={
+            'account_id': 3,
+            'credit_id': 2,
+        })
+
+        data = {}
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 401)
+
+        self.add_permission('account_credit_view')
+
+        item = models.CreditLineItem.objects.get(pk=2)
+        self.assertEqual(item.amount, 100000)
+
+        data = {
+            'start_date': '2015-12-01',
+            'end_date': '2015-12-01',
+            'amount': '1000',
+            'license_fee': '30%',
+            'comment': 'no comment',
+            'account': 3,
+        }
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.post(url, json.dumps(data), content_type='application/json')
+
+        item = models.CreditLineItem.objects.get(pk=2)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(item.amount, 1000)
+        self.assertEqual(json.loads(response.content)['data'], "2")
+
 
 class CampaignBudgetViewTest(BCMViewTestCase):
+
+    def setUp(self):
+        super(CampaignBudgetViewTest, self).setUp()
 
     def test_get(self):
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
@@ -324,6 +486,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)['data']
+
         self.assertEqual(data, {
             "active": [
                 {
@@ -353,6 +516,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "start_date": "2015-10-01"
                 }
             ],
+            u"min_amount": 0,
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -402,6 +566,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "start_date": "2015-10-01"
                 }
             ],
+            "min_amount": 0,
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -417,7 +582,67 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             }
         })
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    def test_get_as_agency_manager(self):
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()['data']
+        self.assertItemsEqual(data['credits'], [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01"
+                }
+            ]
+        )
+
+        r = RequestFactory().get('')
+        r.user = User.objects.get(pk=1)
+
+        account = models.Account.objects.get(pk=1)
+        account.agency = models.Agency.objects.get(pk=1)
+        account.save(r)
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()['data']
+        self.assertItemsEqual(data['credits'], [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01"
+                },
+                {
+                    'available': u'100000.0000',
+                    'comment': u'Agency credit',
+                    'end_date': u'2015-11-30',
+                    'start_date': u'2015-10-01',
+                    'is_available': False,
+                    'license_fee': u'20',
+                    'total': u'100000.0000',
+                    'id': 1000,
+                }
+            ]
+        )
+
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put(self, mock_lmode):
         mock_lmode.return_value = False
         data = {
@@ -488,7 +713,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             }
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_post(self, mock_lmode):
         data = {}
         mock_lmode.return_value = False
@@ -544,7 +769,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             {'id': 1, 'state_changed': True}
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_unactive(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -575,7 +800,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_valid_time.called)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -607,7 +832,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_valid_time.called)
         self.assertEqual(response.status_code, 200)
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active_too_low(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -644,7 +869,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             ['Budget exceeds the minimum budget amount by $5000.00.']
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
     @patch('automation.campaign_stop.get_minimum_budget_amount')
     def test_post_lower_active_invalid_time(self, mock_min_amount, mock_valid_time, mock_lmode):
@@ -680,7 +905,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             ['You cannot lower the amount on an active budget line item at this time.']
         )
 
-    @patch('automation.campaign_stop.check_and_switch_campaign_to_landing_mode')
+    @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_delete(self, mock_lmode):
         mock_lmode.return_value = False
         url = reverse('campaigns_budget_item', kwargs={
@@ -766,6 +991,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"start_date": u"2015-10-01",
                 }
             ],
+            u"min_amount": 0,
             u"past": [],
             u"credits": [
                 {
@@ -842,7 +1068,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(json.loads(response.content)['data'], {
+        self.assertDictEqual(response.json()['data'], {
             "active": [
                 {
                     "available": "0.0000",
@@ -852,7 +1078,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "allocated": "10000.0000",
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "comment": None,
@@ -863,8 +1089,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 },
                 {
                     "available": "0.0000",
-                    "end_date":
-                    "2015-11-30",
+                    "end_date": "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -878,7 +1103,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                         {"amount": 100000, "id": 1}
                     ],
                     "start_date": "2015-10-01"
-                }
+                },
             ],
             "past": [],
             "totals": {
@@ -900,7 +1125,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "comment": None,
                     "allocated": "4994.0000",
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "budgets": [
@@ -945,7 +1170,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "allocated": "4950.0000",
                     "comment": None,
                     "total": "10000.0000",
-                    "id": 3,
+                    "id": 1001,
                     "is_signed": True,
                     "is_canceled": False,
                     "budgets": [

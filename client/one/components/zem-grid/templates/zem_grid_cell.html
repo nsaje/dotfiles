@@ -1,9 +1,50 @@
-<div class="zem-grid-cell" ng-style="getCellStyle($index)">
-   <span ng-if="$index===0 && row.data.breakdown && row.level>0">
-        <a ng-click="toggleCollapse(row)" class="action">
-            {{row.collapsed ? "[ + ]" : "[ - ]"}}
+<div class="zem-grid-cell" ng-style="ctrl.getCellStyle()">
+   <span ng-if="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.source.selectedBreakdown.length">
+        <a ng-click="ctrl.toggleCollapse()" class="action">
+            {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}
         </a>
     </span>
-    <span>{{ctrl.cell}}</span>
+
+    <!-- Basic styling - TODO: refactor and fully support current Table styles -->
+    <span ng-switch="::ctrl.col.type">
+        <span ng-switch-when="linkNav" class="pointer">
+            <a zem-in-link="{{ctrl.value.state}}({id: {{ctrl.value.id}}})">{{ ctrl.value.text }} </a>
+        </span>
+        <span ng-switch-when="currency">
+            <span class="non-editable-currency-field" ng-if="true" ng-class="{'currency-3': ctrl.col.fractionSize === 3}">
+                {{ (ctrl.value | decimalCurrency:"$":ctrl.col.fractionSize:"") || 'N/A' }}
+            </span> </span>
+        <span ng-switch-when="percent">
+            <span ng-switch="ctrl.value">
+                <span ng-switch-when="null">
+                    {{ ctrl.col.defaultValue || 'N/A' }}
+                </span>
+                <span ng-switch-when="undefined">
+                    {{ ctrl.col.defaultValue || 'N/A' }}
+                </span>
+                <span ng-switch-default>
+                    {{ (ctrl.value | number:2) }}%
+                </span>
+            </span>
+        </span>
+        <span ng-switch-when="number">
+            <span ng-switch="!!ctrl.col.fractionSize">
+                <span ng-switch-when="true">
+                    {{ (ctrl.value | number:ctrl.col.fractionSize) || 'N/A' }}
+                </span>
+                <span ng-switch-default>
+                    {{ (ctrl.value | number:0) || 'N/A' }}
+                </span>
+            </span>
+        </span>
+        <span ng-switch-when="datetime">
+            <span class="datetime">
+                {{ (ctrl.value | date:'M/d/yyyy h:mm a') || 'N/A' }}
+            </span>
+        </span>
+        <span ng-switch-default>
+            {{ctrl.value}}
+        </span>
+    </span>
 </div>
 

@@ -109,8 +109,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
-            shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            internal: false,
+            shown: true,
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -221,7 +221,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            settingsField: true,
             initialOrder: 'desc',
             statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
@@ -247,8 +247,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             fractionSize: 3,
             checked: false,
             type: 'currency',
-            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            internal: false,
+            shown: false,
             totalRow: false,
             order: true,
             help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
@@ -264,7 +264,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
+            settingsField: true,
             initialOrder: 'desc',
             statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
@@ -290,8 +290,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             fractionSize: 0,
             type: 'currency',
-            internal: $scope.isPermissionInternal('zemauth.see_current_ad_group_source_state'),
-            shown: $scope.hasPermission('zemauth.see_current_ad_group_source_state'),
+            internal: false,
+            shown: false,
             totalRow: true,
             order: true,
             help: 'Maximum budget per day.',
@@ -542,8 +542,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
             $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.conversion_reports'),
-            $scope.isPermissionInternal('zemauth.conversion_reports')
+            true,
+            false
         );
 
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
@@ -580,7 +580,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.campaignGoals = data.campaign_goals;
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
                 zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
                 zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
                 // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
@@ -630,8 +630,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
         zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals,
-            $scope.hasPermission('zemauth.conversion_reports')
+            conversionGoals
         );
     };
 
@@ -652,14 +651,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             );
         }
 
-        if ($scope.hasPermission('zemauth.conversion_reports')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.adGroupConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.conversion_reports'),
-                true
-            );
-        }
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.adGroupConversionGoalChartMetrics,
+            false,
+            true
+        );
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
@@ -921,8 +918,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     pollSyncStatus();
 
     $scope.pollSourcesTableUpdates = function () {
-        if (!$scope.hasPermission('zemauth.set_ad_group_source_settings') ||
-            $scope.lastChangeTimeout) {
+        if ($scope.lastChangeTimeout) {
             return;
         }
 

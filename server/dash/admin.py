@@ -1,6 +1,7 @@
 import json
 import logging
 import urllib
+from functools import partial
 
 from django.contrib import admin
 from django.contrib import messages
@@ -24,8 +25,12 @@ from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
 
+import utils.k1_helper
+
 import actionlog.api_contentads
 import actionlog.zwei_actions
+
+from automation import campaign_stop
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +80,27 @@ class AbstractUserForm(forms.ModelForm):
             self.fields['last_name'].widget.attrs['disabled'] = 'disabled'
             self.fields['last_name'].required = False
             self.fields["link"].initial = u'<a href="/admin/zemauth/user/%i/">Edit user</a>' % (user.id)
+
+
+class AgencyUserForm(AbstractUserForm):
+    ''' Derived from a more abstract hack with validation '''
+
+    def __init__(self, *args, **kwargs):
+        super(AgencyUserForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        super(AgencyUserForm, self).clean()
+
+        if 'user' not in self.cleaned_data:
+            return
+
+        agency = models.Agency.objects.filter(
+            users=self.cleaned_data['user']
+        ).first()
+        if agency is not None and agency != self.cleaned_data.get('agency'):
+            raise ValidationError('User {} is already part of another agency'.format(
+                self.cleaned_data['user'].get_full_name().encode('utf-8')
+            ))
 
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
@@ -242,6 +268,96 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     credentials_.admin_order_field = 'credentials'
 
 
+# Agency
+
+class AgencyUserInline(admin.TabularInline):
+    model = models.Agency.users.through
+    form = AgencyUserForm
+    extra = 0
+    raw_id_fields = ("user", )
+    verbose_name = "Agency Manager"
+    verbose_name_plural = "Agency Managers"
+
+    def __unicode__(self):
+        return self.name
+
+
+class AgencyAccountInline(admin.TabularInline):
+    model = models.Account
+    fk_name = 'agency'
+    extra = 0
+    can_delete = False
+
+    exclude = (
+        'allowed_sources',
+        'outbrain_marketer_id',
+        'users',
+        'groups',
+        'created_dt',
+        'modified_dt',
+        'modified_by'
+    )
+
+    ordering = ('-created_dt',)
+    readonly_fields = ('admin_link',)
+
+
+class AgencyFormAdmin(forms.ModelForm):
+    class Meta:
+        model = models.Agency
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(AgencyFormAdmin, self).__init__(*args, **kwargs)
+        self.fields['sales_representative'].queryset =\
+            ZemUser.objects.all().exclude(
+                first_name=''
+            ).exclude(
+                last_name=''
+            ).order_by(
+                'first_name',
+                'last_name',
+            )
+        self.fields['sales_representative'].label_from_instance = lambda obj: "%s <%s>" % (obj.get_full_name(), obj.email or '')
+
+
+class AgencyAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    form = AgencyFormAdmin
+    list_display = (
+        'name',
+        'id',
+        '_users',
+        'created_dt',
+        'modified_dt',
+    )
+    exclude = ('users',)
+    readonly_fields = ('id', 'created_dt', 'modified_dt', 'modified_by')
+    inlines = (AgencyAccountInline, AgencyUserInline)
+
+    def __init__(self, model, admin_site):
+        super(AgencyAdmin, self).__init__(model, admin_site)
+        self.form.admin_site = admin_site
+
+    def _users(self, obj):
+        names = []
+        for user in obj.users.all():
+            names.append(user.get_full_name())
+        return ', '.join(names)
+    _users.short_description = 'Agency Managers'
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.Account:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(request)
+        else:
+            formset.save()
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+
 # Account
 
 class AccountUserInline(admin.TabularInline):
@@ -335,11 +451,15 @@ class CampaignAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         with transaction.atomic():
-            campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+            automatic_campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
             new_settings = obj.get_current_settings().copy_settings()
-            new_settings.automatic_campaign_stop = campaign_stop
+            if new_settings.automatic_campaign_stop != automatic_campaign_stop:
+                new_settings.automatic_campaign_stop = automatic_campaign_stop
+                new_settings.save(request)
             obj.save(request)
-            new_settings.save(request)
+        threads.EscapeTransactionThread(
+            partial(campaign_stop.perform_landing_mode_check, obj, new_settings)
+        ).start()
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -619,7 +739,7 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         else:
             formset.save()
 
-        threads.SendActionLogsThread(actions).start()
+        threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 
 
 def approve_ad_group_sources(modeladmin, request, queryset):
@@ -633,7 +753,7 @@ def approve_ad_group_sources(modeladmin, request, queryset):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         ad_group_source.save()
         actions.extend(api.update_content_ads_submission_status(ad_group_source))
-    threads.SendActionLogsThread(actions).start()
+    threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 approve_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as APPROVED'
 
 
@@ -648,7 +768,7 @@ def reject_ad_group_sources(modeladmin, request, queryset):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         ad_group_source.save()
         actions.extend(api.update_content_ads_submission_status(ad_group_source))
-    threads.SendActionLogsThread(actions).start()
+    threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
@@ -1019,6 +1139,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
         content_ad_source.save()
+        utils.k1_helper.update_content_ad(content_ad_source.content_ad.ad_group_id,
+                                          content_ad_source.content_ad_id)
 
         if current_content_ad_source.submission_status != content_ad_source.submission_status and\
            content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
@@ -1058,6 +1180,7 @@ class CreditLineItemResource(resources.ModelResource):
 class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'account',
+        'agency',
         'start_date',
         'end_date',
         'amount',
@@ -1070,7 +1193,7 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ('status', 'license_fee', 'created_by', )
     readonly_fields = ('created_dt', 'created_by',)
-    search_fields = ('account__name', 'amount')
+    search_fields = ('account__name', 'agency__name', 'amount')
     form = dash_forms.CreditLineItemAdminForm
 
     resource_class = CreditLineItemResource
@@ -1190,6 +1313,7 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_dt',
         'everywhere',
+        'external_id',
         'ad_group_id',
         'campaign_id',
         'account_id',
@@ -1305,6 +1429,7 @@ class GAAnalyticsAccount(admin.ModelAdmin):
     pass
 
 
+admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)

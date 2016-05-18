@@ -6,7 +6,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = zemMoment();
+    $scope.maxDate = zemMoment().endOf('month');
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
@@ -33,6 +33,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return permissions.some(function (permission) {
             return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
         });
+    };
+
+    $scope.hasAgency = function () {
+        if ($scope.user.agency) {
+            return true;
+        }
+        return false;
     };
 
     $scope.isPermissionInternal = function (permission) {
@@ -86,8 +93,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
             return 'main.accounts.sources';
         }
-        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.account_agency_view')) {
-            return 'main.accounts.agency';
+        if ($state.includes('**.history') && $scope.hasPermission('zemauth.account_history_view')) {
+            return 'main.accounts.history';
         }
 
         // otherwise get default state
@@ -97,8 +104,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($scope.hasPermission('zemauth.account_sources_view')) {
             return 'main.accounts.sources';
         }
-        if ($scope.hasPermission('zemauth.account_agency_view')) {
-            return 'main.accounts.agency';
+        if ($scope.hasPermission('zemauth.account_account_view')) {
+            return 'main.accounts.settings';
         }
 
         // no permissions
@@ -151,26 +158,26 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getDateRanges = function () {
-        var result = {};
-        var i = 0;
-        var monthsCount = 3;
-        var formatStr = 'MMMM YYYY';
-        var currentMonthStart = null;
-        var currentMonthEnd = null;
+        var result = {},
+            i = 0,
+            monthsCount = 2,
+            formatStr = 'MMMM YYYY',
+            currentMonthStart = null;
 
         result.Yesterday = [
             zemMoment().subtract(1, 'days').startOf('day'),
             zemMoment().subtract(1, 'days').endOf('day'),
         ];
 
+        result['Last 7 Days'] = [zemMoment().subtract(7, 'days'), zemMoment().subtract(1, 'days')];
         result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
 
         if (zemMoment().date() === 1) {
             monthsCount += 1;
         } else {
             currentMonthStart = zemMoment().startOf('month');
-            currentMonthEnd = zemMoment().subtract(1, 'days');
-            result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
+            result['Month to date'] = [currentMonthStart, zemMoment().subtract(1, 'days')];
+            result[currentMonthStart.format(formatStr)] = [currentMonthStart, zemMoment().endOf('month')];
         }
 
         for (i = 0; i < monthsCount; i++) {
@@ -181,7 +188,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract(1, 'days')];
-
         return result;
     };
 

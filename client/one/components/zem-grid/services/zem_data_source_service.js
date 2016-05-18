@@ -1,59 +1,33 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
+oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
-    function DataSource () {
-        this.breakdowns = ['ad_group', 'age', 'date'];
-        this.endpoint = '/api/stats/testdata/';
-        this.defaultPagination = [2, 3, 5];
+    var EVENTS = {
+        ON_LOAD: 'zem-data-source-on-load',
+    };
+
+    function DataSource (endpoint) {
+        var ds = this;
 
         this.data = null;
+        this.endpoint = endpoint;
+        this.availableBreakdowns = endpoint.availableBreakdowns;
+        this.selectedBreakdown = endpoint.defaultBreakdown;
 
-        this.prepareBreakdownConfig = function (breakdown, size) {
-            var level = 0;
-            if (breakdown) level = breakdown.level;
+        this.getData = getData;
+        this.getMetaData = getMetaData;
 
-            var ranges = [];
-            for (var i = 1; i <= this.breakdowns.length; ++i) {
-                var from = 0;
-                var to = this.defaultPagination[i - 1];
-                if (breakdown) {
-                    if (i < breakdown.level) {
-                        from = breakdown.position[i];
-                        to = from + 1;
-                    } else if (breakdown.level === i) {
-                        from = breakdown.pagination.to;
-                        if (size) {
-                            if (size > 0) to = from + size;
-                            else to = -1;
-                        } else {
-                            to = from + this.defaultPagination[i - 1];
-                        }
-                    }
-                }
-                ranges.push([from, to].join('|'));
-            }
+        this.onLoad = onLoad;
 
-            var config = {
-                params: {
-                    breakdowns: this.breakdowns.join(','),
-                    ranges: ranges.join(','),
-                    level: level,
-                },
-            };
-
-            return config;
-        };
-
-        this.applyBreakdown = function (breakdown) {
+        function applyBreakdown (breakdown) {
             if (breakdown.level === 0) {
-                this.data = breakdown.rows[0];
+                ds.data = breakdown.rows[0];
                 return;
             }
 
             var position = breakdown.position;
-            var current = this.data.breakdown;
+            var current = ds.data.breakdown;
             for (var i = 1; i < breakdown.level; ++i) {
                 current = current.rows[position[i]].breakdown;
             }
@@ -61,24 +35,50 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.to = breakdown.pagination.to;
             current.pagination.size += breakdown.pagination.size;
-        };
+        }
 
-        // TODO: move to API
-        this.fetch = function (breakdown, size) {
-            var config = this.prepareBreakdownConfig(breakdown, size);
+        function getMetaData () {
+            var config = {
+                selectedBreakdown: ds.selectedBreakdown,
+            };
+            return ds.endpoint.getMetaData(config);
+        }
+
+        function getData (breakdown, size) { // level, page
+            var config = {
+                selectedBreakdown: ds.selectedBreakdown,
+                breakdown: breakdown,
+                size: size,
+            };
             var deferred = $q.defer();
-            var that = this;
-            $http.get(this.endpoint, config).success(function (data) {
-                var breakdown = data.data[0];
-                that.applyBreakdown(breakdown);
+            ds.endpoint.getData(config).then(function (breakdown) {
+                notifyListeners(EVENTS.ON_LOAD, breakdown);
+                applyBreakdown(breakdown);
                 deferred.resolve(breakdown);
-            }).error(function (data) {
-                deferred.reject(data);
+            }, function (error) {
+                deferred.reject(error);
             });
 
             return deferred.promise;
-        };
+        }
+
+        function onLoad (scope, callback) {
+            registerListener(EVENTS.ON_LOAD, scope, callback);
+        }
+
+        function registerListener (event, scope, callback) {
+            var handler = $rootScope.$on(event, callback);
+            scope.$on('$destroy', handler);
+        }
+
+        function notifyListeners (event, data) {
+            $rootScope.$emit(event, data);
+        }
     }
 
-    return DataSource;
+    return {
+        createInstance: function (endpoint) {
+            return new DataSource(endpoint);
+        },
+    };
 }]);

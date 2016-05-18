@@ -615,23 +615,39 @@ Segment: All Visits (No Segment),,,,,,,,,,
 
     def test_acceptable_deviation(self):
         report = parse_v2.OmnitureReport('')
-        # no exeption should be raised
+        # no exeption should be raised, equal numbers
+        report.entries = {1: MagicMock(visits=100)}
+        report._check_session_counts({'Visits': '100'})
+
+        # no exeption should be raised, inside acceptable absolute and relative deviation
         report.entries = {1: MagicMock(visits=101)}
         report._check_session_counts({'Visits': '100'})
 
-        # no exeption should be raised, inside acceptable deviation
-        report.entries = {1: MagicMock(visits=103)}
+        # no exeption should be raised, inside acceptable absolute deviation
+        report.entries = {1: MagicMock(visits=105)}
         report._check_session_counts({'Visits': '100'})
 
-        # outside of acceptable deviation
-        report.entries = {1: MagicMock(visits=104)}
+        # no exeption should be raised, inside acceptable absolute deviation
+        report.entries = {1: MagicMock(visits=110)}
+        report._check_session_counts({'Visits': '100'})
+
+        # no exeption should be raised, inside acceptable relative deviation
+        report.entries = {1: MagicMock(visits=1020)}
+        report._check_session_counts({'Visits': '1000'})
+
+        # no exeption should be raised, inside acceptable relative deviation
+        report.entries = {1: MagicMock(visits=1030)}
+        report._check_session_counts({'Visits': '1000'})
+
+        # outside of acceptable deviation (relative and absolute)
+        report.entries = {1: MagicMock(visits=1040)}
         with self.assertRaisesRegexp(exc.IncompleteReportException, r'Number of total sessions'):
-            report._check_session_counts({'Visits': '100'})
+            report._check_session_counts({'Visits': '1000'})
 
         # always raise an exception if sum is less than total
-        report.entries = {1: MagicMock(visits=100)}
+        report.entries = {1: MagicMock(visits=1000)}
         with self.assertRaisesRegexp(exc.IncompleteReportException, r'Number of total sessions'):
-            report._check_session_counts({'Visits': '101'})
+            report._check_session_counts({'Visits': '1010'})
 
     def test_clean_goals(self):
         omniture_row_dict = {'Bounces': '123', 'Unique Visits': '12', 'Carts': '22', 'Visits': '11', 'Revenue': '31', 'Random': '1'}
