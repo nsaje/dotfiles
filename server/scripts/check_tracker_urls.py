@@ -7,6 +7,12 @@ django.setup()
 # django has to be started before the models are imported
 from dash.models import Campaign, AdGroup, ContentAdSource, Account  # noqa
 
+'''
+This script check how many ContentAds doesn't have a tracker_urls set. ContentAds are filtered by specified exchange.
+It goes through all accounts, campaign, adgroups and contentads and filters all archived out. Then it prints the results
+per account per campaign per adgroup.
+'''
+
 
 def check_tracker_urls(exchange):
     content_ad_sources = (ContentAdSource.objects
