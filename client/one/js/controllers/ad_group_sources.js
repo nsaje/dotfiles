@@ -466,7 +466,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             nameCssClass: 'data-status-icon',
             type: 'dataStatus',
             internal: $scope.isPermissionInternal('zemauth.data_status_column'),
-            shown: $scope.hasPermission('zemauth.data_status_column'),
+            shown: false,
             checked: true,
             totalRow: false,
             unselectable: true,
