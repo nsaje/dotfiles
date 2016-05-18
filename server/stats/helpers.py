@@ -1,123 +1,73 @@
 import copy
-import collections
-
-from dash import models
 
 from stats import constants
+from reports.db_raw_helpers import extract_obj_ids
 
 
 def extract_stats_constraints(constraints):
     """
-    Remove any constraints that are not part of the stats query.
+    Copy constraints and remove all that are not part of the stats query.
     """
 
-    constraints = copy.copy(constraints)
+    new_constraints = copy.copy(constraints)
 
-    del constraints['show_archived']
+    del new_constraints['show_archived']
 
-    return constraints
+    # replace 'account' with 'account_id' etc
+    for k, v in constraints.items():
+        if k in constants.SpecialDimensionIdentificators:
+            new_constraints[constants.get_dimension_identifier(k)] = extract_obj_ids(v)
+            del new_constraints[k]
 
-
-def get_rows_by_obj_ids(stats_rows, target_dimension):
-
-    rows_by_obj_ids = collections.defaultdict(lambda: collections.defaultdict(list))
-
-    # collect objects that need to be augmented
-    for row in stats_rows:
-
-        if target_dimension == constants.StructureDimension.ACCOUNT and 'account_id' in row:
-            rows_by_obj_ids['account_id'][row['account_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.CAMPAIGN and 'campaign_id' in row:
-            rows_by_obj_ids['campaign_id'][row['campaign_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.AD_GROUP and 'ad_group_id' in row:
-            rows_by_obj_ids['ad_group_id'][row['ad_group_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.CONTENT_AD and 'content_ad_id' in row:
-            rows_by_obj_ids['content_ad_id'][row['content_ad_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.SOURCE and 'source_id' in row:
-            rows_by_obj_ids['source_id'][row['source_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.PUBLISHER and 'publisher' in row:
-            rows_by_obj_ids['publisher'][row['publisher']].append(row)
-
-    return rows_by_obj_ids
+    return new_constraints
 
 
-def get_needed_objs(rows_by_obj_ids):
+def extract_stats_breakdown_constraints(breakdown, breakdown_page):
+    """
+    Returns a list of parsed breakdown_ids or None.
+    """
 
-    objects_dict = collections.defaultdict(set)
+    if not breakdown_page:
+        return None
 
-    accounts = None
-    campaigns = None
-    ad_groups = None
-    content_ads = None
-    sources = None
-
-    if 'account_id' in rows_by_obj_ids:
-        ids = rows_by_obj_ids['account_id']
-        accounts = models.Account.objects.filter(pk__in=ids)
-        objects_dict['account_id'] = {x.id: x for x in accounts}
-
-    if 'campaign_id' in rows_by_obj_ids:
-        ids = rows_by_obj_ids['campaign_id']
-        campaigns = models.Campaign.objects.filter(pk__in=ids)
-        objects_dict['campaign_id'] = {x.id: x for x in campaigns}
-
-    if 'ad_group_id' in rows_by_obj_ids:
-        ids = rows_by_obj_ids['ad_group_id']
-        ad_groups = models.AdGroup.objects.filter(pk__in=ids)
-        objects_dict['ad_group_id'] = {x.id: x for x in ad_groups}
-
-    if 'content_ad_id' in rows_by_obj_ids:
-        ids = rows_by_obj_ids['content_ad_id']
-        content_ads = models.ContentAd.objects.filter(pk__in=ids)
-        objects_dict['content_ad_id'] = {x.id: x for x in content_ads}
-
-    if 'source_id' in rows_by_obj_ids:
-        ids = rows_by_obj_ids['source_id']
-        sources = models.Source.objects.filter(pk__in=ids)
-        objects_dict['source_id'] = {x.id: x for x in sources}
-
-    # TODO data for status and running status
-
-    return objects_dict
+    return [extract_breakdown_id(breakdown, breakdown_id_str) for breakdown_id_str in breakdown_page]
 
 
-def augment(stats_rows, target_dimension):
-    # TODO constants for other dimensions (age?), unknown
+def extract_stats_breakdown(breakdown):
+    return [constants.get_dimension_identifier(dimension) for dimension in breakdown]
 
-    rows_by_obj_ids = get_rows_by_obj_ids(stats_rows, target_dimension)
-    objs_by_id = get_needed_objs(rows_by_obj_ids)
 
-    def rows(dimension):
-        for obj_id, rows in rows_by_obj_ids[dimension].iteritems():
-            for row in rows:
-                yield row, objs_by_id[dimension][obj_id], obj_id
+# TODO breakdown_id might need different delimiter
+def extract_breakdown_id(breakdown, breakdown_id_str):
+    """
+    Creates a dict with constraints for a breakdown page.
 
-    if 'account_id' in rows_by_obj_ids:
-        for row, account, _ in rows('account_id'):
-            row['account_name'] = account.name if account else 'Unknown'
+    Example:
+    breakdown = [account, campaign, dma, day]
+    breakdown_id_str = '1-2-500'
 
-    if 'campaign_id' in rows_by_obj_ids:
-        for row, campaign, _ in rows('campaign_id'):
-            row['campaign_name'] = campaign.name if campaign else 'Unknown'
+    Returns: {account_id: 1, campaign_id: 2, dma: '500'}
+    """
 
-    if 'ad_group_id' in rows_by_obj_ids:
-        for row, ad_group, _ in rows('ad_group_id'):
-            row['ad_group_name'] = ad_group.name if ad_group else 'Unknown'
+    d = {}
+    ids = breakdown_id_str.split("-")
+    for i, dimension in enumerate(breakdown[:len(ids)]):
+        str_id = ids[i]
+        str_id = int(str_id) if dimension in constants.IntegerDimensions else str_id
 
-    if 'content_ad_id' in rows_by_obj_ids:
-        for row, content_ad, _ in rows('content_ad_id'):
-            row['content_ad_title'] = content_ad.title if content_ad else 'Unknown'
+        d[constants.get_dimension_identifier(dimension)] = str_id
 
-    if 'source_id' in rows_by_obj_ids:
-        for row, source, _ in rows('source_id'):
-            row['source_name'] = source.name if source else 'Unknown'
+    return d
 
-    # fill the default field with unknown if necessary
-    for row in stats_rows:
-        if row[target_dimension] is None:
-            row[target_dimension] = 'Unknown'
+
+def create_breakdown_id(breakdown, row):
+    """
+    Creates a breakdown id - string of consecutive ids separated by delimiter.
+
+    Example:
+    breakdown = [account, campaign, dma, day]
+    row = {account_id: 1, campaign_id: 2, dma: '500', clicks: 123, ...}
+
+    Returns: '1-2-500'
+    """
+    return "-".join(str(row[constants.get_dimension_identifier(dimension)]) for dimension in breakdown)

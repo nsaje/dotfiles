@@ -4,32 +4,31 @@ from utils import exc
 
 from stats import helpers
 from stats import constants
+from stats import augmenter
 
 import redshiftapi.api_breakdowns
 
 # TODO handle 'other' rows
 # TODO level specific api (different columns, order)
 # TODO which columns should be queried/returned (what exists per level, permissions)
+# TODO if sort is in dash than this should be sorted by dash data (fetch before)
 
-DEFAULT_ORDER = '-clicks'  # this is level specific
 
-
-def query(user, breakdown, constraints, breakdown_constraints,
-          order=DEFAULT_ORDER, page=1, page_size=10):
-    # TODO if sort is in dash than this should be sorted by dash data (fetch before)
+def query(user, breakdown, constraints, breakdown_page,
+          order, offset, limit):
 
     validate_breakdown(breakdown)
 
     stats_rows = redshiftapi.api_breakdowns.query(
-        breakdown,
+        helpers.extract_stats_breakdown(breakdown),
         helpers.extract_stats_constraints(constraints),
-        breakdown_constraints,
-        order or DEFAULT_ORDER,
-        page,
-        page_size)
+        helpers.extract_breakdown_constraints(breakdown_page),
+        order,
+        offset,
+        limit)
 
     target_dimension = constants.get_target_dimension(breakdown)
-    helpers.augment(stats_rows, target_dimension)
+    augmenter.augment(stats_rows, target_dimension)
 
     return stats_rows
 

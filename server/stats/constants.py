@@ -47,6 +47,21 @@ IntegerDimensions = [
 ]
 
 
+SpecialDimensionIdentificators = {
+    StructureDimension.ACCOUNT: 'account_id',
+    StructureDimension.CAMPAIGN: 'campaign_id',
+    StructureDimension.AD_GROUP: 'ad_group_id',
+    StructureDimension.CONTENT_AD: 'content_ad_id',
+    StructureDimension.SOURCE: 'source_id',
+}
+
+
+def get_dimension_identifier(dimension):
+    if dimension in SpecialDimensionIdentificators:
+        return SpecialDimensionIdentificators[dimension]
+    return dimension
+
+
 def get_delivery_dimension(breakdown):
     dimension = set(breakdown) & set(DeliveryDimension._ALL)
     if len(dimension) == 0:
