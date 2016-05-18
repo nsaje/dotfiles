@@ -39,6 +39,7 @@ def augment(breakdown, stats_rows, target_dimension):
 
     for row in stats_rows:
         row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
+        row['parent_breakdown_id'] = helpers.create_breakdown_id(breakdown[:-1], row) if breakdown else None
 
 def _get_rows_by_obj_ids(stats_rows, target_dimension):
     """

@@ -24,6 +24,28 @@ def extract_constraints(form_data, **kwargs):
     return constraints
 
 
+def format_breakdown_response(report_rows, offset, limit):
+    blocks = {}
+
+    for row in report_rows:
+        if not row['parent_breakdown_id'] in blocks:
+            blocks[row['parent_breakdown_id']] = {
+                'breakdown_id': row['parent_breakdown_id'],
+                'rows': [],
+                'totals': {},
+                'pagination': {
+                    'offset': offset,
+                    'limit': limit,
+                    'count': -1,  # TODO count
+                },
+            }
+
+        block = blocks[row['parent_breakdown_id']]
+        block['rows'].append(row)
+
+    return blocks.values()
+
+
 class AllAccountsBreakdown(api_common.BaseApiView):
     def post(self, request, breakdown):
         request_body = json.loads(request.body).get('params')
@@ -31,16 +53,20 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
+        limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data),
             form.cleaned_data.get('breakdown_page', None),
             form.cleaned_data.get('order', None),
-            form.cleaned_data.get('offset', DEFAULT_OFFSET),
-            form.cleaned_data.get('limit', DEFAULT_LIMIT)
+            offset,
+            limit,
         )
 
+        report = format_breakdown_response(report, offset, limit)
         return self.create_api_response(report)
 
 
@@ -53,16 +79,20 @@ class AccountBreakdown(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
+        limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data, account=account),
             form.cleaned_data.get('breakdown_page', None),
             form.cleaned_data.get('order', None),
-            form.cleaned_data.get('offset', DEFAULT_OFFSET),
-            form.cleaned_data.get('limit', DEFAULT_LIMIT)
+            offset,
+            limit,
         )
 
+        report = format_breakdown_response(report, offset, limit)
         return self.create_api_response(report)
 
 
@@ -75,16 +105,20 @@ class CampaignBreakdown(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
+        limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data, campaign=campaign),
             form.cleaned_data.get('breakdown_page', None),
             form.cleaned_data.get('order', None),
-            form.cleaned_data.get('offset', DEFAULT_OFFSET),
-            form.cleaned_data.get('limit', DEFAULT_LIMIT)
+            offset,
+            limit,
         )
 
+        report = format_breakdown_response(report, offset, limit)
         return self.create_api_response(report)
 
 
@@ -97,15 +131,19 @@ class AdGroupBreakdown(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
+        limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data, ad_group=ad_group),
             form.cleaned_data.get('breakdown_page', None),
             form.cleaned_data.get('order', None),
-            form.cleaned_data.get('offset', DEFAULT_OFFSET),
-            form.cleaned_data.get('limit', DEFAULT_LIMIT)
+            offset,
+            limit,
         )
 
+        report = format_breakdown_response(report, offset, limit)
         return self.create_api_response(report)
 
