@@ -105,21 +105,24 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsExport().get(request, self.ad_group_id)
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,'
+            'Start Date,End Date,Agency,Account,Campaign,Ad Group,Title,Image URL,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
             'Visits\r\n2014-06-30,2014-07-01,'
+            ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
             'http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,'
+            ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article with no content_ad_sources 1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
             'http://testurl.com,Inactive,20.230,203,30\r\n2014-06-30,2014-07-01,'
+            ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -595,11 +598,11 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
-            'Start Date,End Date,Account Id,Account,Agency Id,Agency,Status (' +
+            'Start Date,End Date,Agency Id,Agency,Account Id,Account,Status (' +
             time.strftime('%Y-%m-%d') + ')'
-            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
-            '1,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,' + str(agency.id) +
-            ',Test Agency,Inactive,20.230,203,200000\r\n'
+            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +
+            str(agency.id) + ',Test Agency,' +
+            '1,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
