@@ -2170,16 +2170,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.remove = function (accountId, userId, editable) {
+        this.remove = function (accountId, userId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
-            var config = {
-                params: {
-                    editable: editable,
-                },
-            };
 
-            $http.delete(url, config).
+            $http.delete(url).
                 success(function (data) {
                     var resource;
                     if (data && data.data) {
