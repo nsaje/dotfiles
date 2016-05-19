@@ -2895,7 +2895,7 @@ class AccountUsersTest(TestCase):
                     u'editable': True,
                     u'is_active': True,
                     u'id': 1,
-                    u'last_login': u'2016-05-18',
+                    u'last_login': datetime.date.today().strftime('%Y-%m-%d'),
                     u'email': u'superuser@test.com'
                 }
             ],
@@ -2923,7 +2923,7 @@ class AccountUsersTest(TestCase):
                     u'editable': False,
                     u'is_active': True,
                     u'id': 1,
-                    u'last_login': u'2016-05-18',
+                    u'last_login': datetime.date.today().strftime('%Y-%m-%d'),
                     u'email': u'superuser@test.com'
                 },
                 {
