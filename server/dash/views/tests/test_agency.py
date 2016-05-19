@@ -2873,6 +2873,7 @@ class AccountUsersTest(TestCase):
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
+        user = User.objects.get(pk=1)
         self.assertItemsEqual([
                 {
                     u'name': u'',
@@ -2895,7 +2896,7 @@ class AccountUsersTest(TestCase):
                     u'editable': True,
                     u'is_active': True,
                     u'id': 1,
-                    u'last_login': u'2016-05-18',
+                    u'last_login': user.last_login.date().isoformat(),
                     u'email': u'superuser@test.com'
                 }
             ],
@@ -2912,6 +2913,7 @@ class AccountUsersTest(TestCase):
         acc.agency = agency
         acc.save(fake_request(User.objects.get(pk=1)))
 
+        user = User.objects.get(pk=1)
         agency.users.add(User.objects.get(pk=1))
 
         response = client.get(
@@ -2923,7 +2925,7 @@ class AccountUsersTest(TestCase):
                     u'editable': False,
                     u'is_active': True,
                     u'id': 1,
-                    u'last_login': u'2016-05-18',
+                    u'last_login': user.last_login.date().isoformat(),
                     u'email': u'superuser@test.com'
                 },
                 {

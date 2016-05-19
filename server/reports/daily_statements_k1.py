@@ -27,7 +27,7 @@ def _generate_statements(date, campaign, campaign_spend):
                                                         start_date__lte=date,
                                                         end_date__gte=date)
 
-    existing_statements = reports.models.BudgetDailyStatementK1.objects.filter(
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(
         date__lte=date,
         budget__campaign_id=campaign.id)
     existing_statements.filter(date=date).delete()
@@ -77,7 +77,7 @@ def _generate_statements(date, campaign, campaign_spend):
 
         total_media_nano -= attributed_media_nano
         total_data_nano -= attributed_data_nano
-        reports.models.BudgetDailyStatementK1.objects.create(
+        reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
             media_spend_nano=attributed_media_nano,
@@ -92,7 +92,7 @@ def _generate_statements(date, campaign, campaign_spend):
 
 def _get_dates(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
-    existing_statements = reports.models.BudgetDailyStatementK1.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
     if budgets.count() == 0:
         return []
@@ -123,7 +123,7 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend):
     if campaign_spend is None:
         return 0, 0
 
-    attributed_spends = reports.models.BudgetDailyStatementK1.objects.\
+    attributed_spends = reports.models.BudgetDailyStatement.objects.\
         filter(budget__campaign=campaign, date=date).\
         aggregate(
             media_nano=Sum('media_spend_nano'),
