@@ -169,7 +169,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             function (data) {
                 $scope.users = data.users;
                 $scope.agencyManagers = data.agency_managers;
-                console.log($scope.agencyManagers);
                 $scope.users.forEach(function (user, index) {
                     user.action = null;
                     user.emailResent = false;

@@ -1291,7 +1291,7 @@ class AccountUsers(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         agency_users = account.agency.users.all() if account.agency else []
 
-        users = [self._get_user_dict(u) for u in account.users.all() if u not in agency_users]
+        users = [self._get_user_dict(u) for u in account.users.all()]
         agency_managers = [self._get_user_dict(u) for u in agency_users]
 
         return self.create_api_response({
