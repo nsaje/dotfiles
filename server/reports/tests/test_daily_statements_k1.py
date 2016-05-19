@@ -48,7 +48,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
 
-        statements = reports.models.BudgetDailyStatementK1.objects.filter(budget__campaign=self.campaign1).all()
+        statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign=self.campaign1).all()
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
@@ -64,7 +64,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
 
-        statements = reports.models.BudgetDailyStatementK1.objects.filter(budget__campaign=self.campaign1).all()
+        statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign=self.campaign1).all()
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
@@ -87,7 +87,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
         statements = (
-            reports.models.BudgetDailyStatementK1.objects.
+            reports.models.BudgetDailyStatement.objects.
             filter(budget__campaign=self.campaign1).
             all().
             order_by('date', 'budget_id')
@@ -130,7 +130,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
         statements = (
-            reports.models.BudgetDailyStatementK1.objects.
+            reports.models.BudgetDailyStatement.objects.
             filter(budget__campaign=self.campaign1).
             all().
             order_by('date', 'budget_id')
@@ -157,7 +157,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
         statements = (
-            reports.models.BudgetDailyStatementK1.objects.
+            reports.models.BudgetDailyStatement.objects.
             filter(budget__campaign=self.campaign2).
             all().
             order_by('date', 'budget_id')
@@ -195,7 +195,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 1)
         daily_statements.reprocess_daily_statements(update_from)
         statements = (
-            reports.models.BudgetDailyStatementK1.objects.
+            reports.models.BudgetDailyStatement.objects.
             filter(budget__campaign=self.campaign1).
             all().
             order_by('date', 'budget_id')
@@ -249,7 +249,7 @@ class DailyStatementsK1TestCase(TestCase):
         for date in [datetime.date(2015, 11, 1) + datetime.timedelta(days=i) for i in range(30)]:
             for budget in dash.models.BudgetLineItem.objects.filter(campaign_id=self.campaign1.id):
                 if budget.start_date <= date and budget.end_date >= date:
-                    reports.models.BudgetDailyStatementK1.objects.create(
+                    reports.models.BudgetDailyStatement.objects.create(
                         budget_id=budget.id,
                         date=date,
                         media_spend_nano=0,
@@ -278,7 +278,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         ca_spends = reports.models.AdGroupStats.objects.filter(ad_group__campaign_id=1, datetime=date).\
             aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
 
-        reports.models.BudgetDailyStatementK1.objects.create(
+        reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
             media_spend_nano=ca_spends['media_cc'] * 100000,
@@ -302,7 +302,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         attributed_data_spend_nano = (ca_spends['data_cc'] * 100000) * Decimal('0.8')
         license_fee_nano = (attributed_media_spend_nano + attributed_data_spend_nano) * budget.credit.license_fee
 
-        reports.models.BudgetDailyStatementK1.objects.create(
+        reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
             media_spend_nano=attributed_media_spend_nano,
@@ -326,7 +326,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         attributed_media_spend_nano = (ca_spends['media_cc'] * 100000) * Decimal('0.5')
         attributed_data_spend_nano = (ca_spends['data_cc'] * 100000) * Decimal('0.5')
 
-        reports.models.BudgetDailyStatementK1.objects.create(
+        reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget1.id,
             date=date,
             media_spend_nano=attributed_media_spend_nano,
@@ -334,7 +334,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget1.credit.license_fee
         )
 
-        reports.models.BudgetDailyStatementK1.objects.create(
+        reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget2.id,
             date=date,
             media_spend_nano=attributed_media_spend_nano,
@@ -353,7 +353,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
 
         reports.models.AdGroupStats.objects.all().delete()
 
-        reports.models.BudgetDailyStatementK1.objects.create(
+        reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
             media_spend_nano=40000000000,

@@ -2873,7 +2873,10 @@ class AccountUsersTest(TestCase):
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin
         user = User.objects.get(pk=1)
         self.assertItemsEqual([
                 {
@@ -2917,6 +2920,7 @@ class AccountUsersTest(TestCase):
         acc.agency = agency
         acc.save(fake_request(User.objects.get(pk=1)))
 
+        user = User.objects.get(pk=1)
         agency.users.add(User.objects.get(pk=1))
 
         user = User.objects.get(pk=1)
