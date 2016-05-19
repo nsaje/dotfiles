@@ -697,14 +697,21 @@ def update_content_ad_status(request):
     content_ad_source = content_ad_source[0]
     if 'submission_status' in data and content_ad_source.submission_status != data['submission_status']:
         content_ad_source.submission_status = data['submission_status']
+        if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+            content_ad_source.submission_errors = None
         modified = True
 
     if 'submission_errors' in data and content_ad_source.submission_errors != data['submission_errors']:
         content_ad_source.submission_errors = data['submission_errors']
         modified = True
 
+    # TODO(nsaje): remove after K1 uses source_content_ad_id
     if 'external_id' in data and content_ad_source.source_content_ad_id != data['external_id']:
         content_ad_source.source_content_ad_id = data['external_id']
+        modified = True
+
+    if 'source_content_ad_id' in data and content_ad_source.source_content_ad_id != data['source_content_ad_id']:
+        content_ad_source.source_content_ad_id = data['source_content_ad_id']
         modified = True
 
     if modified:

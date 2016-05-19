@@ -620,7 +620,7 @@ class K1ApiTest(TestCase):
             reverse('k1api.update_content_ad_status'),
             json.dumps({'content_ad_id': 1, 'source_slug': 'adblade',
                         'submission_status': 2, 'submission_errors': 'my-errors',
-                        'external_id': 123}),
+                        'source_content_ad_id': 123}),
             'application/json',
         )
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
@@ -637,7 +637,7 @@ class K1ApiTest(TestCase):
             reverse('k1api.update_content_ad_status'),
             json.dumps({'content_ad_id': 1000, 'source_slug': 'adblade',
                         'submission_status': 2, 'submission_errors': 'my-errors',
-                        'external_id': 123}),
+                        'source_content_ad_id': 123}),
             'application/json',
         )
         self.assertEqual(response.status_code, 404)
