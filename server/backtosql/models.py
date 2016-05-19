@@ -67,9 +67,5 @@ class Model(object):
         return columns
 
     @classmethod
-    def get_constraints(cls, constraints_dict):
-        return q.Q(cls, **constraints_dict)
-
-    @classmethod
     def select_order(cls, subset):
         return [cls.get_column(c).as_order(c) for c in subset]
