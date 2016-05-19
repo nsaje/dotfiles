@@ -1,25 +1,31 @@
 import datetime
 import logging
+from decimal import Decimal
 
 import pytz
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.db import connections
 
 import dash.models
 import reports.models
 import reports.api
+from reports import daily_statements_k1
 import utils.email_helper
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
+DOLLAR_TO_MICRO = int(1e6)
+
+
 class Command(ExceptionCommand):
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
         today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-        today = datetime.datetime(today.year, today.month, today.day)
+        # today = datetime.datetime(today.year, today.month, today.day)
+        today = datetime.datetime(2016, 5, 2)
         yesterday = today - datetime.timedelta(days=1)
 
         recipients = reports.models.SupplyReportRecipient.objects.all()
@@ -27,11 +33,21 @@ class Command(ExceptionCommand):
             logger.info('No recipients.')
             return
 
-        source_ids = [recipient.source.pk for recipient in recipients]
-        ad_groups = dash.models.AdGroup.objects.filter(is_demo=False)
-        stats = reports.api.query(yesterday, yesterday, ['source'], source=source_ids, ad_group=ad_groups)
+        source_stats = {}
 
-        source_stats = {stat['source']: {'impressions': stat['impressions'], 'cost': stat['cost']} for stat in stats}
+        query = """
+            select media_source, sum(impressions), sum(spend)
+            from stats
+            where {date_query}
+            group by media_source
+        """.format(date_query=daily_statements_k1._get_redshift_date_query(yesterday.date()))
+
+        with connections[settings.K1_DB_NAME].cursor() as c:
+            c.execute(query)
+
+            for media_source, impressions, spend in c:
+                source = dash.models.Source.objects.get(bidder_slug=media_source)
+                source_stats[source.pk] = {'impressions': impressions, 'cost': Decimal(spend) / DOLLAR_TO_MICRO}
 
         for recipient in recipients:
             impressions = 0
