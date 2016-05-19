@@ -3,12 +3,9 @@ import helpers
 
 class TemplateColumn(object):
 
-    def __init__(self, template_name, context={}, group=None, alias=None):
-        if not context:
-            context = {}
-
+    def __init__(self, template_name, context=None, group=None, alias=None):
         self.template_name = template_name
-        self.context = context
+        self.context = context or {}
 
         self.group = group
         self.alias = alias  # is set automatically through model if defined on a model
@@ -43,6 +40,7 @@ class TemplateColumn(object):
     def column_as_alias(self, prefix=None):
         context = self._get_default_context(prefix)
         context['alias'] = self._get_alias()
+
         if self.context:
             context.update(self.context)
 
