@@ -695,8 +695,12 @@ def update_content_ad_status(request):
 
     modified = False
     content_ad_source = content_ad_source[0]
-    if 'submission_status' in data and content_ad_source.source_state != data['submission_status']:
-        content_ad_source.source_state = data['submission_status']
+    if 'submission_status' in data and content_ad_source.submission_status != data['submission_status']:
+        content_ad_source.submission_status = data['submission_status']
+        modified = True
+
+    if 'submission_errors' in data and content_ad_source.submission_errors != data['submission_errors']:
+        content_ad_source.submission_errors = data['submission_errors']
         modified = True
 
     if 'external_id' in data and content_ad_source.source_content_ad_id != data['external_id']:
