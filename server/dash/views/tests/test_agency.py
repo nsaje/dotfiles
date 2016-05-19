@@ -2873,11 +2873,14 @@ class AccountUsersTest(TestCase):
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
+
+        user = User.objects.get(pk=1)
         self.assertItemsEqual([
                 {
                     u'name': u'',
                     u'editable': True,
                     u'is_active': False,
+                    u'suffix': None,
                     u'id': 2,
                     u'last_login': u'2014-06-16',
                     u'email': u'user@test.com'
@@ -2886,6 +2889,7 @@ class AccountUsersTest(TestCase):
                     u'name': u'',
                     u'editable': True,
                     u'is_active': False,
+                    u'suffix': None,
                     u'id': 3,
                     u'last_login': u'2014-06-16',
                     u'email': u'john@test.com'
@@ -2894,8 +2898,9 @@ class AccountUsersTest(TestCase):
                     u'name': u'',
                     u'editable': True,
                     u'is_active': True,
+                    u'suffix': None,
                     u'id': 1,
-                    u'last_login': u'2016-05-18',
+                    u'last_login': user.last_login.date().isoformat(),
                     u'email': u'superuser@test.com'
                 }
             ],
@@ -2914,6 +2919,8 @@ class AccountUsersTest(TestCase):
 
         agency.users.add(User.objects.get(pk=1))
 
+        user = User.objects.get(pk=1)
+        self.maxDiff = None
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
@@ -2922,14 +2929,16 @@ class AccountUsersTest(TestCase):
                     u'name': u'',
                     u'editable': False,
                     u'is_active': True,
+                    u'suffix': 'Agency Manager',
                     u'id': 1,
-                    u'last_login': u'2016-05-18',
+                    u'last_login': user.last_login.date().isoformat(),
                     u'email': u'superuser@test.com'
                 },
                 {
                     u'name': u'',
                     u'editable': True,
                     u'is_active': False,
+                    u'suffix': None,
                     u'id': 2,
                     u'last_login': u'2014-06-16',
                     u'email': u'user@test.com'
@@ -2938,6 +2947,7 @@ class AccountUsersTest(TestCase):
                     u'name': u'',
                     u'editable': True,
                     u'is_active': False,
+                    u'suffix': None,
                     u'id': 3,
                     u'last_login': u'2014-06-16',
                     u'email': u'john@test.com'
