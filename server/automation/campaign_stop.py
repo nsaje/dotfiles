@@ -1296,6 +1296,8 @@ Please visit {campaign_budgets_url} and assign additional budget, if you don’t
 
 While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.
 
+Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode
+
 Yours truly,
 Zemanta'''  # noqa
 
@@ -1328,6 +1330,8 @@ The available media budget remaining tomorrow is ${available_tomorrow:.2f}, curr
 Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
 If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes.
+
+Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode
 
 Yours truly,
 Zemanta'''  # noqa
