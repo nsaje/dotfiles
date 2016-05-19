@@ -132,7 +132,7 @@
                     </div>
                     <div ng-if="!user.removed">
                         <div class="col-xs-6 user-name-col">
-                            <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
+                            <p class="control-label"><b>{{user.name}} </b>({{user.email}})<span ng-if="user.suffix"> - {{ user.suffix }}</span></p> 
                             <span ng-show="user.saved && !user.emailSent && !user.emailResent" class="success">This user can now access this account. Since this is an existing user, no activation email was sent.</span>
                             <span ng-show="user.saved && user.emailSent && !user.emailResent" class="success">An introductory email was sent to this user.</span>
                             <span ng-show="user.saved && user.emailResent" class="success">New activation email sent.</span>
