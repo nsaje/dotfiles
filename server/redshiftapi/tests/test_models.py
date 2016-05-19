@@ -4,7 +4,7 @@ from django.test import TestCase
 from redshiftapi import models
 
 
-class RSContentAdStatsTest(TestCase):
+class RSModelTest(TestCase):
 
     def setUp(self):
         self.model = models.RSContentAdStats
@@ -16,7 +16,6 @@ class RSContentAdStatsTest(TestCase):
         columns = self.model.select_columns(group=models.BREAKDOWN)
         self.assertEquals(len(columns), 9)
 
-    # TODO these are more mixin tests
     def test_get_breakdown(self):
         self.assertEquals(
             self.model.get_breakdown(['account_id', 'campaign_id']),
