@@ -2145,7 +2145,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual(u'掌上留园－6park', publisher_blacklist.name)
@@ -2204,7 +2204,7 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
@@ -2250,7 +2250,7 @@ class PublishersBlacklistStatusTest(TestCase):
         publisher_blacklist = models.PublisherBlacklist.objects.first()
 
         self.assertTrue(publisher_blacklist.everywhere)
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertIsNone(publisher_blacklist.ad_group)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
@@ -2304,7 +2304,7 @@ class PublishersBlacklistStatusTest(TestCase):
         publisher_blacklist = models.PublisherBlacklist.objects.first()
 
         self.assertTrue(publisher_blacklist.everywhere)
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertIsNone(publisher_blacklist.ad_group)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
@@ -2483,7 +2483,7 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertIsNone(publisher_blacklist.ad_group)
         self.assertEqual(1, publisher_blacklist.campaign.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
@@ -2631,7 +2631,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.account.id)
         self.assertEqual('outbrain', publisher_blacklist.source.tracking_slug)
         self.assertEqual(u'Test', publisher_blacklist.name)

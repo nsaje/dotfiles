@@ -857,7 +857,7 @@ class PublisherBlacklistForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super(PublisherBlacklistForm, self).save(commit=False)
 
-        instance.status = constants.PublisherStatus.PENDING
+        instance.status = constants.PublisherStatus.BLACKLISTED
         instance.everywhere = True
 
         self._reenable_global(instance.name)
