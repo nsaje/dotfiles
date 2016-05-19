@@ -12,15 +12,10 @@ WHERE
        AND {{ breakdown_constraints|generate:"a" }}
     {% endif %}
 GROUP BY {{ breakdown|only_alias }}
-{% if order %}
-ORDER BY {{ order|only_alias }}
-{% endif %}
 
-{% if limit %}
-LIMIT {{ limit }}
-{% endif %}
-{% if offset %}
-OFFSET {{ offset }}
-{% endif %}
+{% if order %} ORDER BY {{ order|only_alias }} {% endif %}
+{% if limit %} LIMIT {{ limit }} {% endif %}
+{% if offset %} OFFSET {{ offset }} {% endif %}
 ;
+
 {% endautoescape %}
