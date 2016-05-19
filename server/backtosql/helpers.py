@@ -16,7 +16,7 @@ def generate_sql(template_name, context):
 
 def clean_alias(alias):
     # remove order
-    return alias.lstrip('+-').strip() if alias else ''
+    return alias.strip().lstrip('+-') if alias else ''
 
 
 def get_order(alias):
