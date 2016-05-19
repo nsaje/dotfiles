@@ -44,7 +44,6 @@ class HelpersTest(TestCase):
                 'dma': '502',
                 'state': 'US-FL',
             },
-            "Should convert all keys into real identifiers"
         )
 
         self.assertEqual(constraints, initial_constraints, 'Input Constraints should not be modified')
