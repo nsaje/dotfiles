@@ -246,16 +246,16 @@ describe('Media sources and ads', function () {
             selectCell(page, 2, 3).getText()
         ).toBe('Outbrain');
 
-        expect(
-            selectCell(page, 2, 4).getText()
-        ).toBe('Active');
+        // expect(
+        //     selectCell(page, 2, 4).getText()
+        // ).toBe('Active');
 
         expect(
-            selectCell(page, 2, 5).getText()
+            selectCell(page, 2, 4).getText()
         ).toBe('$0.18');
 
         expect(
-            selectCell(page, 2, 6).getText()
+            selectCell(page, 2, 5).getText()
         ).toBe('$2,500');
 
         uploadAds();
@@ -265,34 +265,34 @@ describe('Media sources and ads', function () {
         element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector button')).click();
         element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector ul li:nth-child(3) a')).click();
 
-        expect(
-            selectCell(page, 2, 4).getText()
-        ).toBe('Paused');
+        //expect(
+        //    selectCell(page, 2, 4).getText()
+        //).toBe('Paused');
 
         checkSourcesForAds(4, 1);
         tabs.adGroup.sources.click();
 
-        selectCell(page, 3, 5, '.edit-field').click();
-        selectCell(page, 3, 5, 'input').clear().sendKeys('0.5').then(function () {
-            selectCell(page, 3, 5, '.btn-primary').click();
+        selectCell(page, 3, 4, '.edit-field').click();
+        selectCell(page, 3, 4, 'input').clear().sendKeys('0.5').then(function () {
+            selectCell(page, 3, 4, '.btn-primary').click();
             expect(
-                selectCell(page, 3, 5).getText()
+                selectCell(page, 3, 4).getText()
             ).toBe('$0.50');
         });
 
-        selectCell(page, 3, 6, '.edit-field').click();
-        selectCell(page, 3, 6, 'input').clear().sendKeys('5555').then(function () {
-            selectCell(page, 3, 6, '.btn-primary').click();
+        selectCell(page, 3, 5, '.edit-field').click();
+        selectCell(page, 3, 5, 'input').clear().sendKeys('5555').then(function () {
+            selectCell(page, 3, 5, '.btn-primary').click();
             expect(
-                selectCell(page, 3, 6).getText()
+                selectCell(page, 3, 5).getText()
             ).toBe('$5,555');
         });
 
-        selectCell(page, 3, 6, '.edit-field').click();
-        selectCell(page, 3, 6, 'input').clear().sendKeys('6666').then(function () {
-            selectCell(page, 3, 6, '.btn-default').click();
+        selectCell(page, 3, 5, '.edit-field').click();
+        selectCell(page, 3, 5, 'input').clear().sendKeys('6666').then(function () {
+            selectCell(page, 3, 5, '.btn-default').click();
             expect(
-                selectCell(page, 3, 6).getText()
+                selectCell(page, 3, 5).getText()
             ).toBe('$5,555');
         });
     });
@@ -317,16 +317,16 @@ describe('Media sources and ads', function () {
             selectCell('.page-ad-group-sources', 4, 3).getText()
         ).toBe('Yahoo');
 
-        expect(
-            selectCell('.page-ad-group-sources', 7, 4).getText()
-        ).toBe('Paused');
+        // expect(
+        //    selectCell('.page-ad-group-sources', 7, 4).getText()
+        //).toBe('Paused');
 
         element(by.css('.table tbody tr:nth-child(7) td .zem-state-selector button')).click();
         element(by.css('.table tbody tr:nth-child(7) td .zem-state-selector ul li:nth-child(1) a')).click();
 
-        expect(
-            selectCell('.page-ad-group-sources', 7, 4).getText()
-        ).toBe('Active');
+        //expect(
+        //    selectCell('.page-ad-group-sources', 7, 4).getText()
+        //).toBe('Active');
 
     });
 
