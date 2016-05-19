@@ -7,9 +7,7 @@ register = Library()
 
 
 def is_column(value):
-    if isinstance(value, backtosql.TemplateColumn):
-        return True
-    return False
+    return isinstance(value, backtosql.TemplateColumn)
 
 
 @register.filter
