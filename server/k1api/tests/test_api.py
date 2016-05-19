@@ -505,6 +505,9 @@ class K1ApiTest(TestCase):
             u'iab_category': u'IAB24',
             u'target_regions': [],
             u'retargeting_ad_groups': [],
+            u'campaign_id': 1,
+            u'account_id': 1,
+            u'goal_types': [2, 5],
         })
 
     @patch('utils.request_signer.verify_wsgi_request')
@@ -534,6 +537,9 @@ class K1ApiTest(TestCase):
             u'iab_category',
             u'target_regions',
             u'retargeting_ad_groups',
+            u'campaign_id',
+            u'account_id',
+            u'goal_types',
         }
 
         for item in data:

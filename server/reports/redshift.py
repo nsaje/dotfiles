@@ -130,8 +130,10 @@ def sum_of_stats(with_diffs=False):
 
     params = []
     if not with_diffs:
-        query += ' WHERE content_ad_id != %s'
+        query += ' WHERE content_ad_id != %s AND account_id != 50'
         params.append(REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID)
+    else:
+        query += ' WHERE account_id != 50'
 
     cursor = get_cursor(read_only=True)
     cursor.execute(query, params)

@@ -327,7 +327,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             nameCssClass: 'data-status-icon',
             type: 'dataStatus',
             internal: $scope.isPermissionInternal('zemauth.data_status_column'),
-            shown: $scope.hasPermission('zemauth.data_status_column'),
+            shown: false,
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -339,7 +339,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'last_sync',
             checked: false,
             type: 'datetime',
-            shown: true,
+            shown: false,
             help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
             order: true,
             initialOrder: 'desc'

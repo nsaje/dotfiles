@@ -142,7 +142,7 @@ class User(api_common.BaseApiView):
         if not user:
             return {}
 
-        agency = user.agency_set.first()
+        agency = helpers.get_user_agency(user)
         return {
             'id': str(user.pk),
             'email': user.email,
@@ -974,6 +974,9 @@ class AdGroupSources(api_common.BaseApiView):
 
         helpers.set_ad_group_source_settings(
             request, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+
+        if settings.K1_CONSISTENCY_SYNC:
+            api.add_content_ad_sources(ad_group_source)
 
         return self.create_api_response(None)
 

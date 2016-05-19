@@ -13,6 +13,7 @@ from django.contrib.auth.models import Permission
 from dash.views import export
 import dash.models
 from dash import constants
+from utils.test_helper import add_permissions
 
 from zemauth import models
 from utils import exc
@@ -104,21 +105,24 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsExport().get(request, self.ad_group_id)
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,'
+            'Start Date,End Date,Agency,Account,Campaign,Ad Group,Title,Image URL,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
             'Visits\r\n2014-06-30,2014-07-01,'
+            ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
             'http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,'
+            ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article with no content_ad_sources 1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
             'http://testurl.com,Inactive,20.230,203,30\r\n2014-06-30,2014-07-01,'
+            ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -559,6 +563,50 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = test_helper.format_csv_content(expected_content)
 
         filename = 'ZemantaOne_-_by_ad_group_report_2014-06-30_2014-07-01.csv'
+
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s"' % filename
+        )
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_by_account_with_ids(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'account-csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.GET['include_model_ids'] = 'true'
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
+
+        user = models.User.objects.get(pk=2)
+        add_permissions(user, ['can_include_model_ids_in_reports', 'can_view_account_agency_information'])
+        request.user = user
+
+        agency = dash.models.Agency(
+            name='Test Agency'
+        )
+        agency.save(request)
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(request)
+
+        response = export.AllAccountsExport().get(request)
+
+        expected_content = (
+            'Start Date,End Date,Agency Id,Agency,Account Id,Account,Status (' +
+            time.strftime('%Y-%m-%d') + ')'
+            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +
+            str(agency.id) + ',Test Agency,' +
+            '1,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.230,203,200000\r\n'
+        )
+        expected_content = test_helper.format_csv_content(expected_content)
+
+        filename = 'ZemantaOne_-_by_account_report_2014-06-30_2014-07-01.csv'
 
         self.assertEqual(
             response['Content-Type'],

@@ -79,6 +79,24 @@
     model: dash.campaign
     pk: 2
 
+# test campaign goal
+
+-   fields:
+        campaign: 1
+        type: 5
+        primary: false
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaigngoal
+    pk: 1
+
+-   fields:
+        campaign: 1
+        type: 2
+        primary: true
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaigngoal
+    pk: 2
+
 # test campaign settings
 
 -   fields:

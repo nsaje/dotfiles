@@ -128,6 +128,7 @@ class BudgetProjections(object):
             'pacing': None,
             'attributed_media_spend': None,
             'attributed_license_fee': None,
+            'media_spend_projection': None,
             'license_fee_projection': None,
         }
         if self.breakdown == 'account':

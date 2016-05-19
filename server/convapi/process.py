@@ -26,6 +26,13 @@ MOVED_PIXIES = {  # (new-account-id, slug) : (old-account-id, slug)
     (247, 'centurylinklandingpages'): (119, 'centurylinklandingpages'),
     (249, 'perforceconversionpixel'): (119, 'perforceconversionpixel'),
     (249, 'perforcelandingpages'): (119, 'perforcelandingpages'),
+
+    (304, 'mcacalendar'): (116, 'mcacalendar'),
+    (304, 'mcaexhibitions'): (116, 'mcaexhibitions'),
+    (304, 'mcalandingpage'): (116, 'mcalandingpage'),
+    (304, 'mcatest'): (116, 'mcatest'),
+    (304, 'mcatotal'): (116, 'mcatotal'),
+    (304, 'mcavisit'): (116, 'mcavisit'),
 }
 MOVED_PIXIES_INVERTED = {v: k for k, v in MOVED_PIXIES.iteritems()}
 

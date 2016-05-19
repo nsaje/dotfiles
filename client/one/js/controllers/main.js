@@ -6,7 +6,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = zemMoment();
+    $scope.maxDate = zemMoment().endOf('month');
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
@@ -158,31 +158,26 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getDateRanges = function () {
-        var result = {};
-        var i = 0;
-        var monthsCount = 3;
-        var formatStr = 'MMMM YYYY';
-        var currentMonthStart = null;
-        var currentMonthEnd = null;
-
-        result['Current Month'] = [
-            zemMoment().startOf('month'),
-            zemMoment().endOf('month'),
-        ];
+        var result = {},
+            i = 0,
+            monthsCount = 2,
+            formatStr = 'MMMM YYYY',
+            currentMonthStart = null;
 
         result.Yesterday = [
             zemMoment().subtract(1, 'days').startOf('day'),
             zemMoment().subtract(1, 'days').endOf('day'),
         ];
 
+        result['Last 7 Days'] = [zemMoment().subtract(7, 'days'), zemMoment().subtract(1, 'days')];
         result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
 
         if (zemMoment().date() === 1) {
             monthsCount += 1;
         } else {
             currentMonthStart = zemMoment().startOf('month');
-            currentMonthEnd = zemMoment().subtract(1, 'days');
-            result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
+            result['Month to date'] = [currentMonthStart, zemMoment().subtract(1, 'days')];
+            result[currentMonthStart.format(formatStr)] = [currentMonthStart, zemMoment().endOf('month')];
         }
 
         for (i = 0; i < monthsCount; i++) {
@@ -193,7 +188,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract(1, 'days')];
-
         return result;
     };
 

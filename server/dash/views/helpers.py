@@ -132,6 +132,21 @@ def get_campaign(user, campaign_id, sources=None):
         raise exc.MissingDataError('Campaign does not exist')
 
 
+def get_user_agency(user):
+    try:
+        return user.agency_set.get()
+    except models.Agency.DoesNotExist:
+        pass
+    return None
+
+
+def is_agency_manager(user, account):
+    if account.agency is None:
+        return False
+
+    return get_user_agency(user) == account.agency
+
+
 def get_last_sync(sync_times):
     if not len(sync_times) or None in sync_times:
         return None

@@ -21,6 +21,8 @@ FIELDNAMES = {
     'content_ad_id': 'Content Ad Id',
     'account': 'Account',
     'account_type': 'Account Type',
+    'agency': 'Agency',
+    'agency_id': 'Agency Id',
     'ad_group': 'Ad Group',
     'avg_tos': 'Avg. ToS',
     'bounce_rate': 'Bounce Rate',
@@ -60,10 +62,12 @@ FIELDNAMES = {
     'total_fee_projection': 'Total Fee Projection',
 }
 
-FIELDNAMES_ID_MAPPING = {'account': 'account_id',
-                         'campaign': 'campaign_id',
-                         'ad_group': 'ad_group_id',
-                         'content_ad': 'content_ad_id'}
+FIELDNAMES_ID_MAPPING = [('account', 'account_id'),
+                         ('campaign', 'campaign_id'),
+                         ('ad_group', 'ad_group_id'),
+                         ('content_ad', 'content_ad_id'),
+                         ('agency', 'agency_id'),
+                         ]
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'submission_status', 'titleLink', 'bid_cpc',
@@ -381,6 +385,8 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['uploaded'] = content_ad.created_dt.date()
     stat['status'] = content_ad.state
     stat['archived'] = content_ad.archived
+    if content_ad.ad_group.campaign.account.agency is not None:
+        stat['agency'] = content_ad.ad_group.campaign.account.agency.name
     return stat
 
 
@@ -396,6 +402,8 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None, account_set
     if settings and ad_group.id in settings:
         stat['archived'] = settings[ad_group.id].archived
     stat['ad_group'] = ad_group.name
+    if ad_group.campaign.account.agency is not None:
+        stat['agency'] = ad_group.campaign.account.agency.name
     return stat
 
 
@@ -418,6 +426,8 @@ def _populate_campaign_stat(stat, campaign, statuses, projections=None, include_
         stat['pacing'] = projections.row(campaign.pk, 'pacing')
         stat['spend_projection'] = projections.row(campaign.pk, 'media_spend_projection')
         stat['license_fee_projection'] = projections.row(campaign.pk, 'license_fee_projection')
+    if campaign.account.agency is not None:
+        stat['agency'] = campaign.account.agency.name
     return stat
 
 
@@ -446,6 +456,9 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
     stat['account'] = account.name
+    # TODO: Optionally filter by permission
+    if account.agency is not None:
+        stat['agency'] = account.agency.name
     return stat
 
 
@@ -477,6 +490,8 @@ def _populate_model_ids(stat, model):
         model = model.account
     if isinstance(model, models.Account):
         stat['account_id'] = model.id
+        if model.agency is not None:
+            stat['agency_id'] = model.agency.id
 
 
 def _get_sources_state(ad_group_sources):
@@ -500,7 +515,7 @@ def _prefetch_content_ad_data(constraints):
             fields['ad_group__campaign__account'] = constraints[key]
         else:
             fields[key] = constraints[key]
-    content_ads = models.ContentAd.objects.filter(**fields).select_related('ad_group__campaign__account')
+    content_ads = models.ContentAd.objects.filter(**fields).select_related('ad_group__campaign__account__agency')
     if sources is not None:
         content_ads = content_ads.filter_by_sources(sources)
     return {c.id: c for c in content_ads}
@@ -621,7 +636,7 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 
 
 def _include_model_ids(required_fields):
-    for field, field_id in FIELDNAMES_ID_MAPPING.iteritems():
+    for field, field_id in FIELDNAMES_ID_MAPPING:
         try:
             idx = required_fields.index(field)
             required_fields.insert(idx, field_id)
@@ -637,6 +652,8 @@ class AllAccountsExport(object):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
 
         required_fields = ['start_date', 'end_date']
+        if user.has_perm('zemauth.can_view_account_agency_information'):
+            required_fields.append('agency')
         dimensions = []
         exclude_fields = []
 
@@ -712,6 +729,8 @@ class AccountExport(object):
 
         dimensions = ['account']
         required_fields = ['start_date', 'end_date', 'account']
+        if user.has_perm('zemauth.can_view_account_agency_information'):
+            required_fields.insert(2, 'agency')
         exclude_fields = []
         if breakdown == 'campaign':
             required_fields.extend(['campaign'])
@@ -766,6 +785,9 @@ class CampaignExport(object):
         dimensions = ['campaign']
         required_fields = ['start_date', 'end_date', 'account', 'campaign']
 
+        if user.has_perm('zemauth.can_view_account_agency_information'):
+            required_fields.insert(2, 'agency')
+
         if breakdown == 'ad_group':
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
@@ -806,6 +828,8 @@ class AdGroupAdsExport(object):
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
+        if user.has_perm('zemauth.can_view_account_agency_information'):
+            required_fields.insert(2, 'agency')
         dimensions = []
 
         if breakdown == 'ad_group':
