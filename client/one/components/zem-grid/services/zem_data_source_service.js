@@ -49,7 +49,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         this.availableBreakdowns = endpoint.availableBreakdowns;
         this.selectedBreakdown = endpoint.defaultBreakdown;
 
-        this.getData = getData2;
+        this.getData = getData;
         this.getMetaData = getMetaData;
 
         this.onLoad = onLoad;
@@ -79,27 +79,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         }
 
         function getData (breakdown, size) { // level, page
-            var config = {
-                selectedBreakdown: ds.selectedBreakdown,
-                breakdown: breakdown,
-                size: size,
-            };
-            var deferred = $q.defer();
-            ds.endpoint.getData(config).then(function (breakdown) {
-                notifyListeners(EVENTS.ON_LOAD, breakdown);
-                applyBreakdown(breakdown);
-                deferred.resolve(breakdown);
-            }, function (error) {
-                deferred.reject(error);
-            });
-
-            return deferred.promise;
+            var offset, limit, breakdowns;
+            var level = 1;
+            if (breakdown) {
+                level = breakdown.level;
+                offset = breakdown.pagination.to + 1;
+                limit = size;
+                breakdowns = [breakdown];
+            }
+            return getDataByLevel(level, breakdowns, offset, limit);
         }
 
-        // request base
-        // breakdowns -> request more/initial
-
-        function getData2 (level, breakdowns, offset, limit) {
+        function getDataByLevel (level, breakdowns, offset, limit) {
             if (!level) level = 1;
             var config = {
                 breakdown: ds.selectedBreakdown.slice(0, level),
@@ -132,7 +123,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
                 // Chain calls to the last level
                 if (level < ds.selectedBreakdown.length) {
-                    return getData2(level + 1, childBreakdowns);
+                    return getDataByLevel(level + 1, childBreakdowns);
                 }
                 else {
                     return ds.data;

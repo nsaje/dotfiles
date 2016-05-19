@@ -20,18 +20,14 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
     }
 
     function loadData (grid, row, size) {
-        var offset, limit, breakdowns;
-        var level = 1;
+        var breakdown;
         if (row) {
-            level = row.data.level;
-            breakdowns = [row.data];
-            offset = row.data.pagination.to + 1;
-            limit = size;
+            breakdown = row.data;
         }
 
         var deferred = $q.defer();
         grid.ui.loading = true;
-        grid.meta.source.getData(level, breakdowns, offset, limit).then(
+        grid.meta.source.getData(breakdown, size).then(
             function (data) {
                 //if (row) {
                 //    zemGridParser.parseInplace(grid, row, data);

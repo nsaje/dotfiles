@@ -228,7 +228,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         var pagination = {
             from: keysFrom,
             to: keysTo,
-            size: keysTo - keysFrom,
+            size: keysTo - keysFrom + 1,
             count: keysCount,
         };
 
