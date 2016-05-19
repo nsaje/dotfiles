@@ -503,25 +503,27 @@ def _retrieve_active_creditlineitems(account, date):
 
 
 def _compute_daily_cap(ad_groups):
-    ad_group_sources = dash.models.AdGroupSource.objects.filter(
-        ad_group__in=ad_groups
-    )
-
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_settings().values_list('ad_group_source__id', 'daily_budget_cc')
+        ad_group_source__ad_group__in=ad_groups
+    ).group_current_settings().values('ad_group_source__source_id', 'ad_group_source__ad_group_id', 'daily_budget_cc', 'state')
 
-    adgs_settings = dict(ad_group_source_settings)
-
-    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_states()
+    ad_group_settings = {
+        ags.ad_group.id: ags for ags in
+        dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()
+    }
 
     ret = 0
-    for adgs_state in ad_group_source_states:
-        if not adgs_state.state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    for agss in ad_group_source_settings:
+        if agss['state'] != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            print agss
             continue
-        ret += adgs_settings.get(adgs_state.ad_group_source_id) or adgs_state.daily_budget_cc or 0
+
+        ags = ad_group_settings[agss['ad_group_source__ad_group_id']]
+
+        if ags.state != dash.constants.AdGroupSettingsState.ACTIVE:
+            continue
+
+        ret += agss['daily_budget_cc'] or 0
 
     return ret
 
