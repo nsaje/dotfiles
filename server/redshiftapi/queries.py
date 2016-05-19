@@ -6,14 +6,15 @@ from stats import constants
 
 
 def prepare_lvl1_top_rows(model, breakdown, constraints, breakdown_constraints,
-                          order, offset, limit):
+                         order, offset, limit):
 
     context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, offset, limit)
 
     sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', context)
 
     params = context['constraints'].get_params()
-    # TODO requires breakdown_constraints
+
+    # TODO this query requires breakdown_constraints to work correctly
     if context['breakdown_constraints']:
         params.extend(context['breakdown_constraints'].get_params())
 
@@ -27,7 +28,8 @@ def prepare_lvl2_top_rows(model, breakdown, constraints, breakdown_constraints,
     sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', context)
 
     params = context['constraints'].get_params()
-    # TODO requires breakdown_constraints
+
+    # TODO this query requires breakdown_constraints to work correctly
     if context['breakdown_constraints']:
         params.extend(context['breakdown_constraints'].get_params())
 
@@ -79,20 +81,28 @@ def _prepare_breakdown_constraints(model, breakdown_constraints):
 
     (a AND b) OR (c AND d)
     """
+
     if not breakdown_constraints:
         return None
 
     bq = backtosql.Q(model, **breakdown_constraints[0])
 
+    # TODO it would be better if this would be a list, not nested queries
     for branch in breakdown_constraints[1:]:
         bq |= backtosql.Q(model, **branch)
 
     return bq
 
+
 def _prepare_time_constraints(time_dimension, constraints, offset, limit):
-    # TODO there is no limit on max date span here, just another page
-    # TODO this doesn';t work
+    """
+    Sets time constraints so that they fit offset and limit. Instead of
+    using SQL offset and limit just adjust the dates so the scan space
+    is smaller.
+    """
+
     if True:
+        # TODO this code does not work correctly yet
         return
 
     start_date = constraints['date__gte']

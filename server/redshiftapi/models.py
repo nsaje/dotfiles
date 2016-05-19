@@ -77,14 +77,16 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
 
     @classmethod
     def get_best_view(cls, breakdown):
-        # NOTE: best view selection is separated from template preparation
-        # as it follows a different kind of logics (does not matter if
-        # 'other' row is involved or not, group limits etc.)
+        """
+        Selects the most suitable materialized view for the selected breakdown.
+        """
 
         if True:
+            # TODO: no materialized views yet, contentadstats
+            # is treated as one of the materialized views.
             return 'contentadstats'
 
-        # TODO the real code for view selection will be like this:
+        # FIXME: The real code for view selection will be like this:
         base = constants.get_base_dimension(breakdown)
         structure = constants.get_structure_dimension(breakdown)
         delivery = constants.get_delivery_dimension(breakdown)
