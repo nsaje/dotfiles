@@ -48,6 +48,9 @@ def format_breakdown_response(report_rows, offset, limit):
 
 class AllAccountsBreakdown(api_common.BaseApiView):
     def post(self, request, breakdown):
+        if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
+            raise exc.AuthorizationError()
+
         request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
         if not form.is_valid():
@@ -72,6 +75,9 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
 class AccountBreakdown(api_common.BaseApiView):
     def post(self, request, account_id, breakdown):
+        if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
+            raise exc.AuthorizationError()
+
         account = helpers.get_account(request.user, account_id)
 
         request_body = json.loads(request.body).get('params')
@@ -98,6 +104,9 @@ class AccountBreakdown(api_common.BaseApiView):
 
 class CampaignBreakdown(api_common.BaseApiView):
     def post(self, request, campaign_id, breakdown):
+        if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
+            raise exc.AuthorizationError()
+
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         request_body = json.loads(request.body).get('params')
@@ -124,6 +133,9 @@ class CampaignBreakdown(api_common.BaseApiView):
 
 class AdGroupBreakdown(api_common.BaseApiView):
     def post(self, request, ad_group_id, breakdown):
+        if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
+            raise exc.AuthorizationError()
+
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         request_body = json.loads(request.body).get('params')
@@ -146,4 +158,3 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         report = format_breakdown_response(report, offset, limit)
         return self.create_api_response(report)
-

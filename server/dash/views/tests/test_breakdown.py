@@ -71,7 +71,7 @@ class ExtractConstraintsTest(TestCase):
 
 @patch('stats.api_breakdowns.query')
 class AllAccountsBreakdownTestCase(TestCase):
-    fixtures = ['test_api', 'test_views']
+    fixtures = ['test_api', 'test_views', 'test_non_superuser.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -79,9 +79,18 @@ class AllAccountsBreakdownTestCase(TestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password='secret')
 
-    def test_post(self, mock_query):
+    def test_permission(self, mock_query):
+        url = reverse('breakdown_all_accounts', kwargs={
+            'breakdown': '/account/campaign/dma/day'
+        })
 
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_post(self, mock_query):
         mock_query.return_value = {}
+
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
 
         params = {
             'limit': 5,
@@ -123,7 +132,7 @@ class AllAccountsBreakdownTestCase(TestCase):
 
 @patch('stats.api_breakdowns.query')
 class AccountBreakdownTestCase(TestCase):
-    fixtures = ['test_api', 'test_views']
+    fixtures = ['test_api', 'test_views', 'test_non_superuser.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -131,7 +140,17 @@ class AccountBreakdownTestCase(TestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password='secret')
 
+    def test_permission(self, mock_query):
+        url = reverse('breakdown_accounts', kwargs={
+            'account_id': 1,
+            'breakdown': '/campaign/dma/day'
+        })
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_post(self, mock_query):
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
 
         mock_query.return_value = {}
 
@@ -177,7 +196,7 @@ class AccountBreakdownTestCase(TestCase):
 
 @patch('stats.api_breakdowns.query')
 class CampaignBreakdownTestCase(TestCase):
-    fixtures = ['test_api', 'test_views']
+    fixtures = ['test_api', 'test_views', 'test_non_superuser.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -185,7 +204,17 @@ class CampaignBreakdownTestCase(TestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password='secret')
 
+    def test_permission(self, mock_query):
+        url = reverse('breakdown_campaigns', kwargs={
+            'campaign_id': 1,
+            'breakdown': '/ad_group/dma/day'
+        })
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_post(self, mock_query):
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
 
         mock_query.return_value = {}
 
@@ -231,7 +260,7 @@ class CampaignBreakdownTestCase(TestCase):
 
 @patch('stats.api_breakdowns.query')
 class AdGroupBreakdownTestCase(TestCase):
-    fixtures = ['test_api', 'test_views']
+    fixtures = ['test_api', 'test_views', 'test_non_superuser.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -239,7 +268,17 @@ class AdGroupBreakdownTestCase(TestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password='secret')
 
+    def test_permission(self, mock_query):
+        url = reverse('breakdown_ad_groups', kwargs={
+            'ad_group_id': 1,
+            'breakdown': '/ad_group/dma/day'
+        })
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_post(self, mock_query):
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
 
         mock_query.return_value = {}
 
