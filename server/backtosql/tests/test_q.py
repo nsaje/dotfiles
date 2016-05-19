@@ -1,5 +1,6 @@
-import datetime
 import backtosql
+import datetime
+
 from django.test import TestCase
 
 from backtosql.tests.test_backtosql import TestSQLMixin
@@ -18,12 +19,55 @@ class QTestCase(TestCase):
             'py_bar': datetime.date.today(),
         }
 
-        c = self.ModelA.get_constraints(constraints_dict)
+        c = backtosql.Q(self.ModelA, **constraints_dict)
         constraints = c.generate()
         self.assertEquals(constraints, "(bar=%s AND foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
-        c = self.ModelA.get_constraints(constraints_dict)
+        c = backtosql.Q(self.ModelA, **constraints_dict)
         constraints = c.generate(prefix="v")
         self.assertEquals(constraints, "(v.bar=%s AND v.foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
+
+    def test_generate_nested_constraints(self):
+        constraints_dict = {
+            'py_foo__eq': [1, 2, 3],
+            'py_bar': datetime.date.today(),
+        }
+
+        q = backtosql.Q(self.ModelA, **constraints_dict)
+        for i in range(10):
+            q |= backtosql.Q(self.ModelA, **constraints_dict)
+
+        constraints = q.generate(prefix="v")
+        expected = '''\
+        (((((((((((v.bar=%s AND v.foo=ANY(%s)) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s))) OR \
+        (v.bar=%s AND v.foo=ANY(%s)))\
+        '''
+
+        self.assertEquals(constraints, expected.replace('        ', ''))
+        self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 11)
+
+    def test_generate_nested_constraints_too_deep(self):
+        constraints_dict = {
+            'py_foo__eq': [1, 2, 3],
+            'py_bar': datetime.date.today(),
+        }
+
+        q = backtosql.Q(self.ModelA, **constraints_dict)
+        q.MAX_RECURSION_DEPTH = 10
+
+        for i in range(10):
+            q |= backtosql.Q(self.ModelA, **constraints_dict)
+
+        with self.assertRaises(backtosql.BackToSQLException):
+            q.generate(prefix="v")

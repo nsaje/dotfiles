@@ -9,6 +9,7 @@ class Q(object):
 
     AND = ' AND '
     OR = ' OR '
+    MAX_RECURSION_DEPTH = 900
 
     def __init__(self, model, *args, **kwargs):
         self.negate = False
@@ -50,14 +51,20 @@ class Q(object):
             raise helpers.BackToSQLException("Query not yet generated")
         return self.params
 
-    def _generate(self, prefix=None):
-        # BUG: This code will overflow the stack in case there are too many WHERE conditions
+    def _generate(self, prefix=None, depth=1):
+        if depth >= self.MAX_RECURSION_DEPTH:
+            # This code would overflow the stack in case there are too many
+            # nested WHERE conditions. This is a limit defined by max recursion
+            # limit on your system. Anyway if you reach this limit try to redesign
+            # your logics so it won't generate a tree so deep.
+            raise helpers.BackToSQLException("Q recursion too deep {}".format(self.MAX_RECURSION_DEPTH))
+
         parts = []
         params = []
 
         for child in self.children:
             if isinstance(child, type(self)):
-                child_parts, child_params = child._generate(prefix)
+                child_parts, child_params = child._generate(prefix, depth + 1)
             else:
                 child_parts, child_params = self._generate_sql(child, prefix)
 
