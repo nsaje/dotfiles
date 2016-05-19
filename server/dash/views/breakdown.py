@@ -1,12 +1,14 @@
 import json
 
 from dash import forms
+from dash import table
 from dash.views import helpers
 
 from utils import api_common
 from utils import exc
 
 import stats.api_breakdowns
+import stats.helpers
 
 
 DEFAULT_OFFSET = 0
@@ -46,6 +48,61 @@ def format_breakdown_response(report_rows, offset, limit):
     return blocks.values()
 
 
+def get_report_through_table(user, form_data):
+    """
+    This code is temporary!
+
+    Reuses the the table.py ofr base level breakdowns.
+    """
+
+    constraints = extract_constraints(form_data)
+
+    start_date = constraints['data__gte']
+    end_date = constraints['data__lte']
+
+    filtered_sources = constraints.get('source')
+
+    offset = form_data.get('offset', DEFAULT_OFFSET)
+    limit = form_data.get('limit', DEFAULT_LIMIT)
+
+    # this mapping is not precise, for the demo it will suffice
+    size = limit - offset
+    page = offset / size
+    order = form_data.get('order')
+
+    show_archived = form_data.get('show_archived', False)
+
+    user = request.user
+
+    response = table.AccountsAccountsTable().get(
+        user,
+        filtered_sources,
+        start_date,
+        end_date,
+        order,
+        page,
+        size,
+        show_archived
+    )
+
+    for row in response['rows']:
+        row['account_id'] = row['id']
+        row['account_name'] = row['id']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['account'], row)
+        row['parent_breakdown_id'] = None
+
+    return [{
+        'breakdown_id': None,
+        'rows': response['rows'],
+        'totals': response['totals'],
+        'pagination': {
+            'offset': response['pagination']['startIndex'],
+            'limit': response['pagination']['endIndex'],
+            'count': response['pagination']['count'],
+        }
+    }]
+
+
 class AllAccountsBreakdown(api_common.BaseApiView):
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -58,6 +115,12 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown = form.cleaned_data.get('breakdown')
+
+        # FIXME redirect to table.py if base level request for a breakdown
+        if len(breakdown) == 1:
+            report = get_report_through_table(request.user, form.cleaned_data)
+            return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
             request.user,
