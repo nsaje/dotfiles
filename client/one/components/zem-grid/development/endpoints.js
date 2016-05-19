@@ -18,7 +18,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         this.getData = function (config) {
             var deferred = $q.defer();
             var data = generateData(config);
-            deferred.resolve(data[0]);
+            deferred.resolve(data);
             return deferred.promise;
         };
     }
@@ -53,18 +53,39 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     }
 
     function generateData (config) {
-        var breakdowns = getBreakdownRanges(config);
+        var breakdowns = getBreakdownRanges2(config);
         var topLevelRow = generateRandomBreakdown(breakdowns);
+        topLevelRow.breakdown.stats = topLevelRow.stats;
         var topLevelBreakdown = {
             rows: [topLevelRow],
             level: 0,
         };
 
-        var level = 0;
-        if (config.breakdown) {
-            level = config.breakdown.level;
+        return getBreakdownsForLevel(topLevelBreakdown, config.level, true);
+    }
+
+    function getBreakdownRanges2 (config) {
+        var range = []; // [[min,max], ...]
+        for (var i = 0; i < config.level - 1; ++i) {
+            range.push([1000, 0]);
         }
-        return getBreakdownsForLevel(topLevelBreakdown, level);
+
+        config.positions.forEach(function (position) {
+
+            for (var i = 0; i < config.level - 1; ++i) {
+                range[i][0] = Math.min(range[i][0], position[i + 1]);
+                range[i][1] = Math.max(range[i][1], position[i + 1]);
+            }
+        });
+
+        range.push([config.offset, config.offset + config.limit-1]);
+
+        return config.breakdown.map(function (b, i) {
+            return {
+                name: b,
+                range: range[i],
+            };
+        });
     }
 
     function getBreakdownRanges (config) {
@@ -110,7 +131,6 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         if (flat) {
             breakdowns.forEach(function (breakdown) {
                 breakdown.rows.forEach(function (row) {
-                    row.position = row.breakdown.position;
                     delete row.breakdown;
                 });
             });
@@ -126,6 +146,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
 
         var row = {
             stats: generateStats(key),
+            position: position,
         };
 
         if (level <= breakdowns.length) {
@@ -182,28 +203,25 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     function getBreakdownKeys (breakdown) {
         var keys = null;
         switch (breakdown.name) {
-        case 'date':
-            keys = TEST_BREAKDOWNS_DATES;
-            break;
-        case 'age':
-            keys = TEST_BREAKDOWNS_AGES;
-            break;
-        case 'ad_group':
-            keys = TEST_BREAKDOWNS_AD_GROUPS;
-            break;
-        case 'sex':
-            keys = TEST_BREAKDOWNS_SEX;
-            break;
+            case 'date':
+                keys = TEST_BREAKDOWNS_DATES;
+                break;
+            case 'age':
+                keys = TEST_BREAKDOWNS_AGES;
+                break;
+            case 'ad_group':
+                keys = TEST_BREAKDOWNS_AD_GROUPS;
+                break;
+            case 'sex':
+                keys = TEST_BREAKDOWNS_SEX;
+                break;
         }
 
         var keysCount = keys.length;
         var keysFrom = breakdown.range[0];
-        var keysTo = keysCount;
-        if (breakdown.range[1] > 0) {
-            keysTo = Math.min(breakdown.range[1], keysCount);
-        }
+        var keysTo = Math.min(breakdown.range[1], keysCount);
 
-        if (keysFrom >= keysTo || keysFrom < 0) {
+        if (keysFrom > keysTo || keysFrom < 0) {
             throw 'Out of bounds';
         }
 
@@ -214,7 +232,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             count: keysCount,
         };
 
-        keys = keys.slice(keysFrom, keysTo);
+        keys = keys.slice(keysFrom, keysTo + 1);
 
         return [keys, pagination];
     }

@@ -5,7 +5,7 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
 
     function parse (grid, data) {
         // Level 0 -> total data and level 1 breakdown
-        var totals = data.rows[0];
+        var totals = data;
         var breakdown = totals.breakdown;
 
         grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: totals, visible: true};

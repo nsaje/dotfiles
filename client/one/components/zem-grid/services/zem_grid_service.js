@@ -20,17 +20,25 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
     }
 
     function loadData (grid, row, size) {
-        var breakdown = null;
-        if (row) breakdown = row.data;
+        var offset, limit, breakdowns;
+        var level = 1;
+        if (row) {
+            level = row.data.level;
+            breakdowns = [row.data];
+            offset = row.data.pagination.to + 1;
+            limit = size;
+        }
+
         var deferred = $q.defer();
         grid.ui.loading = true;
-        grid.meta.source.getData(breakdown, size).then(
+        grid.meta.source.getData(level, breakdowns, offset, limit).then(
             function (data) {
-                if (breakdown) {
-                    zemGridParser.parseInplace(grid, row, data);
-                } else {
-                    zemGridParser.parse(grid, data);
-                }
+                //if (row) {
+                //    zemGridParser.parseInplace(grid, row, data);
+                //} else {
+                //    zemGridParser.parse(grid, data);
+                //}
+                zemGridParser.parse(grid, data);
                 deferred.resolve();
             }
         ).finally(function () {
