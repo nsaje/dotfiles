@@ -18,6 +18,7 @@ oneApp.factory('zemGridObject', [function () {
             source: null,
             breakdowns: null,
             levels: null,
+            pubsub: null,
         };
 
         this.ui = {};

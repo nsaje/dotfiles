@@ -77,34 +77,38 @@
       }
       &.level-1 {
         background-color: #F4F4F4;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 20px !important;
         }
       }
 
       &.level-2 {
         background-color: #ececec;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 40px !important;
         }
       }
 
       &.level-3 {
         background-color: #e8e8e8;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 60px !important;
         }
       }
 
       &.level-4 {
         background-color: #e2e2e2;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 80px !important;
         }
       }
 
       &.level-last {
-        div:not(:first-child) {
+        div:not(:first-child):not(.pagination-cell) {
           background-color: #ffffff;
         }
       }

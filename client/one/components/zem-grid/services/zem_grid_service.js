@@ -1,16 +1,14 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridObject', function ($q, zemGridConstants, zemGridParser, zemGridObject) { // eslint-disable-line max-len
+oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridUIService', function ($q, zemGridConstants, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
 
-    function loadGrid (dataSource) {
+    function loadMetadata (grid) {
         var deferred = $q.defer();
-        dataSource.getMetaData().then(
+        grid.meta.source.getMetaData().then(
             function (data) {
-                var grid = new zemGridObject.createInstance();
                 grid.header.columns = data.columns;
-                grid.meta.source = dataSource;
-                deferred.resolve(grid);
+                deferred.resolve();
             }
         );
         return deferred.promise;
@@ -20,7 +18,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         var breakdown = null;
         if (row) breakdown = row.data;
         var deferred = $q.defer();
-        grid.ui.loading = true;
+        zemGridUIService.showLoader(grid, true);
         grid.meta.source.getData(breakdown, size).then(
             function (data) {
                 if (breakdown) {
@@ -31,7 +29,9 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
                 deferred.resolve();
             }
         ).finally(function () {
-            grid.ui.loading = false;
+            zemGridUIService.resetUIState(grid);
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.ROWS_UPDATED);
+            zemGridUIService.showLoader(grid, false);
         });
         return deferred.promise;
     }
@@ -48,6 +48,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
 
     function toggleCollapse (grid, gridRow) {
         setRowCollapsed(grid, gridRow, !gridRow.collapsed);
+        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.ROWS_UPDATED);
     }
 
     function toggleCollapseLevel (grid, level) {
@@ -60,10 +61,11 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
                 setRowCollapsed(grid, row, collapsed);
             }
         }
+        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.ROWS_UPDATED);
     }
 
     return {
-        loadGrid: loadGrid,
+        loadMetadata: loadMetadata,
         loadData: loadData,
 
         // TODO: Move to separate service (interaction service)

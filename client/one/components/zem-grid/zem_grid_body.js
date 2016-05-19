@@ -10,7 +10,6 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
         controllerAs: 'ctrl',
         bindToController: {
             grid: '=',
-            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
         link: function (scope, element) {
@@ -20,17 +19,8 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             };
 
             var visibleRows;
-            var pubsub = scope.ctrl.pubsub;
-            var requestAnimFrame = (function () {
-                return window.requestAnimationFrame       ||
-                       window.webkitRequestAnimationFrame ||
-                       window.mozRequestAnimationFrame    ||
-                       window.oRequestAnimationFrame      ||
-                       window.msRequestAnimationFrame     ||
-                       function (callback) {
-                           window.setTimeout(callback, 1000 / 60);
-                       };
-            })();
+            var pubsub = scope.ctrl.grid.meta.pubsub;
+            var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
 
             function getTranslateYStyle (top) {
                 var translateCssProperty = 'translateY(' + top + 'px)';
@@ -46,7 +36,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             var updateInProgress = false;
             function requestUpdate (cb) {
                 if (!updateInProgress) {
-                    requestAnimFrame(cb);
+                    requestAnimationFrame(cb);
                     updateInProgress = true;
                 }
             }
@@ -208,39 +198,27 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 };
             }
 
-            pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, function (event, scrollTop) {
-                handleVerticalScroll(scrollTop);
-            });
-
-            pubsub.register(pubsub.EVENTS.ROWS_UPDATED, function () {
+            function updateBody () {
+                // TODO: If breakdown is changed, change first row to 0
                 updateVisibleRows();
                 scope.fullTableHeight = getTableHeightStyle();
                 initRenderedRows(prevFirstRow, true);
 
-                // $timeout(function () {
-                //     scope.ctrl.grid.ui.state.bodyRendered = true;
-                //     scope.ctrl.grid.body.element = element;
-                //     zemGridUIService.resizeGridColumns(scope.ctrl.grid);
-                // }, 0, false);
-            });
+                $timeout(function () {
+                    scope.ctrl.grid.ui.state.bodyRendered = true;
+                    scope.ctrl.grid.body.element = element;
+                    zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+                }, 0, false);
+            }
 
-            scope.$watch('ctrl.grid.body.rows', function (rows) {
-                if (rows) {
-                    updateVisibleRows();
-                    scope.fullTableHeight = getTableHeightStyle();
-                    initRenderedRows(0, true);
+            pubsub.register(pubsub.EVENTS.ROWS_UPDATED, updateBody);
 
-                    $timeout(function () {
-                        scope.ctrl.grid.ui.state.bodyRendered = true;
-                        scope.ctrl.grid.body.element = element;
-                        zemGridUIService.resizeGridColumns(scope.ctrl.grid);
-                    }, 0, false);
-                }
+            pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, function (event, scrollTop) {
+                handleVerticalScroll(scrollTop);
             });
 
             element.on('scroll', scrollListener);
         },
-        controller: ['$scope', function ($scope) {
-        }],
+        controller: [function () {}],
     };
 }]);

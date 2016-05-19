@@ -11,7 +11,6 @@ oneApp.directive('zemGridRow', [function () {
         bindToController: {
             row: '=',
             grid: '=',
-            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row.html',
         link: function (scope, element) {
@@ -24,13 +23,10 @@ oneApp.directive('zemGridRow', [function () {
                 $scope.constants = zemGridConstants;
 
                 this.loadMore = function (size) {
-                    if (!size)
-                    {
+                    if (!size) {
                         size = this.row.data.pagination.count - this.row.data.pagination.to;
                     }
-                    zemGridService.loadData(this.grid, this.row, size).then(function () {
-                        $scope.ctrl.pubsub.notify($scope.ctrl.pubsub.EVENTS.ROWS_UPDATED);
-                    });
+                    zemGridService.loadData(this.grid, this.row, size);
                 };
 
                 this.getRowClass = function () {
