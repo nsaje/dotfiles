@@ -12,8 +12,8 @@ from backtosql.templatetags import backtosql_tags
 class TestSQLMixin(object):
 
     def assertSQLEquals(self, first, second):
-        first = helpers.clean_sql(first)
-        second = helpers.clean_sql(second)
+        first = backtosql.clean_sql(first)
+        second = backtosql.clean_sql(second)
         self.assertEqual(first, second)
 
 

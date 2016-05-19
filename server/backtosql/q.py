@@ -16,9 +16,7 @@ class Q(object):
         self.children = list(args) + sorted(list(kwargs.iteritems()))
         self.model = model
 
-        # cache, used to preserve the order of params
-        # TODO can't get them out afterwards in the same order
-        # currently only supported for 1 prefix/query
+        # cache, used to preserve the order of parameters
         self.params = None
         self.query = None
         self.prefix = None
@@ -40,18 +38,17 @@ class Q(object):
 
     def generate(self, prefix=None):
         if self.prefix is not None and self.prefix is not prefix:
-            raise Exception("Only 1 prefix per Q")
+            raise helpers.BackToSQLException("Only 1 prefix per Q")
 
         self.query, self.params = self._generate(prefix)
-
         self.prefix = prefix
 
         return self.query
 
     def get_params(self):
-        # TODO wont work if taken different order
-        _, params = self._generate()
-        return params
+        if not self.params:
+            raise helpers.BackToSQLException("Query not yet generated")
+        return self.params
 
     def _generate(self, prefix=None):
         # BUG: This code will overflow the stack in case there are too many WHERE conditions
@@ -83,9 +80,8 @@ class Q(object):
         alias = helpers.clean_alias(parts[0])
         column = self.model.get_column(alias)
 
-        # TODO this needs to be solved differently
         if not column or not column.column_name:
-            raise Exception("TODO write exception, not supported column")
+            raise helpers.BackToSQLException("Column does not exist or it doesn't have a name")
 
         if len(parts) == 2:
             operator = parts[1]
@@ -121,4 +117,4 @@ class Q(object):
             else:
                 return '{}!=%s'.format(column.only_column(prefix)), [value]
         else:
-            raise Exception("Unknown constraint type: {}".format(operator))
+            raise helpers.BackToSQLException("Unknown constraint type: {}".format(operator))

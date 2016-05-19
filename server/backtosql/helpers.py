@@ -1,8 +1,17 @@
 import collections
 import sqlparse
 
-# TODO: find a better solution
 from django.db.models.query import QuerySet
+from django.template import loader
+
+
+class BackToSQLException(Exception):
+    pass
+
+
+def generate_sql(template_name, context):
+    template = loader.get_template(template_name)
+    return clean_sql(template.render(context))
 
 
 def clean_alias(alias):
@@ -38,9 +47,10 @@ def printsql(sql, params=None, cursor=None):
                           keyword_case='upper',
                           identifier_case='lower',
                           strip_comments=True).strip()
+
     print('\033[92m' + sql + '\033[0m')
 
 
 def is_collection(value):
-    return ((isinstance(value, collections.Iterable) or isinstance(value, QuerySet))
-            and type(value) not in (str, unicode))
+    return (isinstance(value, collections.Iterable) or isinstance(value, QuerySet)) \
+        and type(value) not in (str, unicode)
