@@ -92,14 +92,16 @@ class Q(object):
 
     def _generate_sql(self, constraint, prefix):
         column, operator, value = self._prepare_constraint(constraint)
-        if operator == "lte":
-            return '{}<=%s'.format(column.only_column(prefix)), [value]
-        elif operator == "lt":
-            return '{}<%s'.format(column.only_column(prefix)), [value]
-        elif operator == "gte":
-            return '{}>=%s'.format(column.only_column(prefix)), [value]
-        elif operator == "gt":
-            return '{}>%s'.format(column.only_column(prefix)), [value]
+
+        operator_dict = {
+            "lte": '{}<=%s',
+            "lt": '{}<%s',
+            "gte": '{}>=%s',
+            "gt": '{}>%s',
+        }
+
+        if operator in operator_dict:
+            return operator_dict[operator].format(column.only_column(prefix)), [value]
         elif operator == "eq":
             if helpers.is_collection(value):
                 if value:
@@ -111,7 +113,7 @@ class Q(object):
         elif operator == "neq":
             if helpers.is_collection(value):
                 if value:
-                    return '{}!=ANY(%s)'.format(column.only_column(prefix)), value
+                    return '{}!=ANY(%s)'.format(column.only_column(prefix)), [value]
 
                 return 'TRUE', []
 
