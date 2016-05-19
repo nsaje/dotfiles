@@ -104,17 +104,17 @@ class Q(object):
             if helpers.is_collection(value):
                 if value:
                     return '{}=ANY(%s)'.format(column.only_column(prefix)), [value]
-                else:
-                    return 'FALSE', []
-            else:
-                return '{}=%s'.format(column.only_column(prefix)), [value]
+                return 'FALSE', []
+
+            return '{}=%s'.format(column.only_column(prefix)), [value]
+
         elif operator == "neq":
             if helpers.is_collection(value):
                 if value:
                     return '{}!=ANY(%s)'.format(column.only_column(prefix)), value
-                else:
-                    return 'TRUE', []
-            else:
-                return '{}!=%s'.format(column.only_column(prefix)), [value]
-        else:
-            raise helpers.BackToSQLException("Unknown constraint type: {}".format(operator))
+
+                return 'TRUE', []
+
+            return '{}!=%s'.format(column.only_column(prefix)), [value]
+
+        raise helpers.BackToSQLException("Unknown constraint type: {}".format(operator))
