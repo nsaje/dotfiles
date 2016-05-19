@@ -22,7 +22,6 @@ def create_overspend_report(date, ad_group_id, debug_print):
         ad_groups = AdGroup.objects.all().prefetch_related('sources', 'contentad_set')
     ad_groups = ad_groups.exclude_archived()
     ad_group_settings = campaign_stop._get_ag_settings_dict(date, ad_groups)
-    next_day = date + datetime.timedelta(days=1)
 
     # all ad groups
     for ad_group in ad_groups:
@@ -33,7 +32,7 @@ def create_overspend_report(date, ad_group_id, debug_print):
         # all source for this ad group
         ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group, source__in=media_sources).select_related(
             'source')
-        ad_group_sources_settings = campaign_stop._get_sources_settings_dict(next_day, ad_group_sources)
+        ad_group_sources_settings = campaign_stop._get_sources_settings_dict(date, ad_group_sources)
         for ad_group_source in ad_group_sources:
             media_source = ad_group_source.source
             media_source_name = media_source.name.encode(errors='replace')
