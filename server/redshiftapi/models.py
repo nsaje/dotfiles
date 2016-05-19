@@ -42,7 +42,7 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
 
     account_id = backtosql.Column('account_id', BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
-    ad_group_id= backtosql.Column('adgroup_id', BREAKDOWN)
+    ad_group_id = backtosql.Column('adgroup_id', BREAKDOWN)
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
     source_id = backtosql.Column('source_id', BREAKDOWN)
 
@@ -64,16 +64,19 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
     cpc = backtosql.TemplateColumn('part_sumdiv_cc.sql', {'expr': 'cost_cc', 'divisor': 'clicks'}, AGGREGATES)
 
     # Postclick acquisition fields
-    visits = backtosql.TemplateColumn('part_sum.sql', {'column_name':'visits'}, AGGREGATES)
+    visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, AGGREGATES)
     click_discrepancy = backtosql.TemplateColumn('part_click_discrepancy.sql', None, AGGREGATES)
-    pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name':'pageviews'}, AGGREGATES)
+    pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, AGGREGATES)
 
     # Postclick engagement fields
-    new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name':'new_visits'}, AGGREGATES)
-    percent_new_users = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'new_visits', 'divisor': 'visits'}, AGGREGATES)
-    bounce_rate = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'bounced_visits', 'divisor': 'visits'}, AGGREGATES)
-    pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor':'visits'}, AGGREGATES)
-    avg_tos = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'total_time_on_site', 'divisor':'visits'}, AGGREGATES)
+    new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, AGGREGATES)
+    percent_new_users = backtosql.TemplateColumn('part_sumdiv_perc.sql',
+                                                 {'expr': 'new_visits', 'divisor': 'visits'}, AGGREGATES)
+    bounce_rate = backtosql.TemplateColumn('part_sumdiv_perc.sql',
+                                           {'expr': 'bounced_visits', 'divisor': 'visits'}, AGGREGATES)
+    pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor': 'visits'}, AGGREGATES)
+    avg_tos = backtosql.TemplateColumn('part_sumdiv.sql',
+                                       {'expr': 'total_time_on_site', 'divisor': 'visits'}, AGGREGATES)
 
     @classmethod
     def get_best_view(cls, breakdown):

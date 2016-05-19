@@ -6,7 +6,7 @@ from stats import constants
 
 
 def prepare_lvl1_top_rows(model, breakdown, constraints, breakdown_constraints,
-                         order, offset, limit):
+                          order, offset, limit):
 
     context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, offset, limit)
 

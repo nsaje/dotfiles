@@ -59,7 +59,6 @@ class APIBreakdownsTest(TestCase):
         self.assertEqual(context['offset'], 2)
         self.assertEqual(context['limit'], 33)
 
-
     def test_prepare_query(self):
         breakdown = ['ad_group_id', 'content_ad_id']
         constraints = {
@@ -87,7 +86,8 @@ class APIBreakdownsTest(TestCase):
                     WHEN sum(a.visits) <> 0 THEN sum(cast(a.total_time_on_site AS FLOAT)) / sum(a.visits)
                     ELSE NULL
                 END) avg_tos,
-            (sum(a.effective_cost_nano)+sum(a.effective_data_cost_nano)+sum(a.license_fee_nano))/1000000000.0 billing_cost,
+            (sum(a.effective_cost_nano)+
+            sum(a.effective_data_cost_nano)+sum(a.license_fee_nano))/1000000000.0 billing_cost,
             (CASE
                     WHEN sum(a.visits) <> 0 THEN sum(cast(a.bounced_visits AS FLOAT)) / sum(a.visits)
                     ELSE NULL

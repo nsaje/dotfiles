@@ -7,10 +7,14 @@ from django.db import connections
 def get_stats_cursor():
     return connections[settings.STATS_DB_NAME].cursor()
 
-# C/P from django docs
-# https://docs.djangoproject.com/en/1.9/topics/db/sql/#connections-and-cursors
+
 def dictfetchall(cursor):
-    "Return all rows from a cursor as a dict"
+    """
+    Return all rows from a cursor as a dict
+
+    C/P from django docs
+    https://docs.djangoproject.com/en/1.9/topics/db/sql/#connections-and-cursors
+    """
 
     columns = [col[0] for col in cursor.description]
     return [
@@ -20,7 +24,9 @@ def dictfetchall(cursor):
 
 
 def namedtuplefetchall(cursor):
-    "Return all rows from a cursor as a namedtuple"
+    """
+    Return all rows from a cursor as a namedtuple
+    """
 
     desc = cursor.description
     nt_result = namedtuple('Result', [col[0] for col in desc])
