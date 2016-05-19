@@ -50,8 +50,6 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'automation',
     'timezone_field',
-    'stats',
-    'backtosql',
 ]
 
 MIDDLEWARE_CLASSES = [

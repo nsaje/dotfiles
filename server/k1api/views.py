@@ -1,13 +1,17 @@
 import json
 import logging
+from collections import defaultdict
+
 from django.conf import settings
 from django.db.models import F, Q
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
+
 import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
 from utils import url_helper, request_signer
+from utils import k1_helper
 
 
 logger = logging.getLogger(__name__)
@@ -40,20 +44,39 @@ def get_ad_group_source_ids(request):
     _validate_signature(request)
 
     credentials_id = request.GET.get('credentials_id')
-    if not credentials_id:
-        _response_error("Missing credentials ID")
+    source_type = request.GET.get('source_type')
+    if credentials_id:
+        ad_group_source_ids = _get_ad_group_source_ids_by_credentials_id(credentials_id)
+    elif source_type:
+        ad_group_source_ids = _get_ad_group_source_ids_by_source_type(source_type)
+    else:
+        _response_error("Missing credentials ID and source type")
 
+    res = []
+    for ags in ad_group_source_ids:
+        res.append({'ad_group_id': ags.ad_group_id, 'source_campaign_key': ags.source_campaign_key})
+    return _response_ok(list(res))
+    return _response_ok(list(ad_group_source_ids))
+
+
+def _get_ad_group_source_ids_by_credentials_id(credentials_id):
     nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
-    ad_group_sources = (
+    ad_group_source_ids = (
         dash.models.AdGroupSource.objects
             .filter(ad_group__in=nonarchived)
             .filter(source_credentials_id=credentials_id)
-            .values(
-                'ad_group_id',
-                'source_campaign_key',
-            )
     )
-    return _response_ok(list(ad_group_sources))
+    return ad_group_source_ids
+
+
+def _get_ad_group_source_ids_by_source_type(source_type):
+    nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
+    ad_group_source_ids = (
+        dash.models.AdGroupSource.objects
+            .filter(ad_group__in=nonarchived)
+            .filter(source__source_type__type=source_type)
+    )
+    return ad_group_source_ids
 
 
 @csrf_exempt
@@ -70,10 +93,7 @@ def get_ad_group_source(request):
     try:
         ad_group_source = (
             dash.models.AdGroupSource.objects
-            .get(
-                ad_group_id=ad_group_id,
-                source__source_type__type=source_type,
-            )
+                .get(ad_group_id=ad_group_id, source__source_type__type=source_type)
         )
     except dash.models.AdGroupSource.DoesNotExist:
         return _response_error("The ad group %s is not present on source %s" %
@@ -82,20 +102,31 @@ def get_ad_group_source(request):
     ad_group_source_settings = ad_group_source.get_current_settings()
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
+    if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
+            ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+        source_state = constants.AdGroupSettingsState.ACTIVE
+    else:
+        source_state = constants.AdGroupSettingsState.INACTIVE
+
+    tracking_code = url_helper.combine_tracking_codes(
+        ad_group_settings.get_tracking_codes(),
+        ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
+    )
+
     data = {
         'ad_group_source_id': ad_group_source.id,
         'ad_group_id': ad_group_source.ad_group_id,
         'credentials': ad_group_source.source_credentials.credentials,
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'state': ad_group_source_settings.state,
+        'state': source_state,
         'cpc_cc': ad_group_source_settings.cpc_cc,
         'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
         'name': ad_group_source.get_external_name(),
         'start_date': ad_group_settings.start_date,
-        'end_date': ad_group_settings.start_date,
+        'end_date': ad_group_settings.end_date,
         'target_devices': ad_group_settings.target_devices,
         'target_regions': ad_group_settings.target_regions,
-        'tracking_code': ad_group_settings.tracking_code,
+        'tracking_code': tracking_code,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
     return _response_ok(data)
@@ -118,24 +149,22 @@ def get_content_ad_sources_for_ad_group(request):
     ad_group_source = (
         dash.models.AdGroupSource.objects
             .select_related('ad_group', 'source')
-            .get(
-                ad_group_id=ad_group_id,
-                source__source_type__type=source_type
-            )
+            .get(ad_group_id=ad_group_id,
+                 source__source_type__type=source_type)
     )
 
     content_ad_sources = (
         dash.models.ContentAdSource.objects
-        .select_related('content_ad')
-        .filter(content_ad__ad_group_id=ad_group_id)
-        .filter(source__source_type__type=source_type)
-        .exclude(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
+            .select_related('content_ad')
+            .filter(content_ad__ad_group_id=ad_group_id)
+            .filter(source__source_type__type=source_type)
+            .exclude(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
     )
     if content_ad_id:
         content_ad_sources = content_ad_sources.filter(content_ad_id=content_ad_id)
 
     ad_group_tracking_codes = None
-    if ad_group_source.source.update_tracking_codes_on_content_ads() and\
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and \
             ad_group_source.can_manage_content_ads:
         ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
 
@@ -202,16 +231,16 @@ def get_source_credentials_for_reports_sync(request):
 
     source_credentials_list = (
         dash.models.SourceCredentials.objects
-        .filter(sync_reports=True)
-        .filter(source__source_type__type__in=source_types)
-        .annotate(
-            source_type=F('source__source_type__type'),
-        )
-        .values(
-            'id',
-            'credentials',
-            'source_type',
-        )
+            .filter(sync_reports=True)
+            .filter(source__source_type__type__in=source_types)
+            .annotate(
+                source_type=F('source__source_type__type'),
+            )
+            .values(
+                'id',
+                'credentials',
+                'source_type',
+            )
     )
 
     return _response_ok({'source_credentials_list': list(source_credentials_list)})
@@ -229,19 +258,19 @@ def get_content_ad_source_mapping(request):
 
     contentadsources = (
         dash.models.ContentAdSource.objects
-        .filter(source_content_ad_id__in=source_content_ad_ids)
-        .annotate(
-            ad_group_id=F('content_ad__ad_group_id'),
-            source_name=F('source__name'),
-            slug=F('source__bidder_slug'),
-        )
-        .values(
-            'source_content_ad_id',
-            'content_ad_id',
-            'ad_group_id',
-            'source_name',
-            'slug',
-        )
+            .filter(source_content_ad_id__in=source_content_ad_ids)
+            .annotate(
+                ad_group_id=F('content_ad__ad_group_id'),
+                source_name=F('source__name'),
+                slug=F('source__bidder_slug'),
+            )
+            .values(
+                'source_content_ad_id',
+                'content_ad_id',
+                'ad_group_id',
+                'source_name',
+                'slug',
+            )
     )
     source_types = request.GET.getlist('source_type')
     if source_types:
@@ -322,6 +351,19 @@ def get_content_ad_ad_group(request):
     return _response_ok(list(content_ads))
 
 
+def get_publishers_blacklist_outbrain(request):
+    _validate_signature(request)
+
+    marketer_id = request.GET.get('marketer_id')
+    blacklisted_publishers = (
+        dash.models.PublisherBlacklist.objects
+            .filter(account__outbrain_marketer_id=marketer_id)
+            .filter(source__source_type__type='outbrain')
+            .values('name', 'external_id')
+    )
+    return _response_ok({'blacklist': list(blacklisted_publishers)})
+
+
 @csrf_exempt
 def get_publishers_blacklist(request):
     _validate_signature(request)
@@ -332,6 +374,7 @@ def get_publishers_blacklist(request):
         blacklist_filter = Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
         blacklisted = (dash.models.PublisherBlacklist.objects
                        .filter(blacklist_filter)
+                       .filter(Q(source__isnull=True) | Q(source__source_type__type='b1'))
                        .select_related('source', 'ad_group'))
     else:
         running_ad_groups = dash.models.AdGroup.objects.all().filter_running().select_related('campaign',
@@ -345,7 +388,8 @@ def get_publishers_blacklist(request):
                             Q(account__in=running_accounts))
         blacklisted = (dash.models.PublisherBlacklist.objects
                        .filter(blacklist_filter)
-                       .select_related('source', 'ad_group',  'campaign', 'account', 'account')
+                       .filter(Q(source__isnull=True) | Q(source__source_type__type='b1'))
+                       .select_related('source', 'ad_group', 'campaign', 'account', 'account')
                        .prefetch_related('campaign__adgroup_set',
                                          'account__campaign_set',
                                          'account__campaign_set__adgroup_set'))
@@ -421,13 +465,14 @@ def get_ad_groups(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id)
+    source_type = request.GET.get('source_type')
+    ad_groups_settings, campaigns_settings_map = _get_ad_groups_and_campaigns_settings(ad_group_id, source_type)
 
     ad_groups = []
     for ad_group_settings in ad_groups_settings:
         ad_group = {
             'id': ad_group_settings.ad_group.id,
-            'name': ad_group_settings.ad_group.name,
+            'name': ad_group_settings.ad_group.get_external_name(),
             'start_date': ad_group_settings.start_date,
             'end_date': ad_group_settings.end_date,
             'time_zone': settings.DEFAULT_TIME_ZONE,
@@ -445,18 +490,28 @@ def get_ad_groups(request):
     return _response_ok(ad_groups)
 
 
-def _get_ad_groups_and_campaigns_settings(ad_group_id):
+def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
     if ad_group_id:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id=ad_group_id)
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
         ad_group_ids = [ad_group_id]
+    elif source_type:
+        nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
+        ad_group_ids = (dash.models.AdGroupSource.objects
+                        .filter(ad_group__in=nonarchived)
+                        .filter(source__source_type__type=source_type)
+                        .values('ad_group_id'))
+        ad_groups_settings = (dash.models.AdGroupSettings.objects
+                              .filter(ad_group__id__in=ad_group_ids)
+                              .group_current_settings()
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
     else:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .all()
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
         ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
                         not ad_group_settings.archived]
 
@@ -474,42 +529,44 @@ def get_ad_groups_exchanges(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    ad_group_sources_settings = _get_ad_group_sources_settings(ad_group_id)
 
-    ad_group_sources = {}
-    for ad_group_source_setting in ad_group_sources_settings:
-        ad_group_id = ad_group_source_setting.ad_group_source.ad_group.id
-        source = {
-            'exchange': ad_group_source_setting.ad_group_source.source.bidder_slug,
-            'status': ad_group_source_setting.state,
-            'cpc_cc': ad_group_source_setting.cpc_cc,
-            'daily_budget_cc': ad_group_source_setting.daily_budget_cc,
-        }
-        ad_group_sources.setdefault(ad_group_id, []).append(source)
-
-    return _response_ok(ad_group_sources)
-
-
-def _get_ad_group_sources_settings(ad_group_id):
+    ad_groups_settings_query = dash.models.AdGroupSettings.objects
     if ad_group_id:
-        ad_group_ids = [ad_group_id]
+        ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id=ad_group_id)
     else:
-        ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .all()
-                              .group_current_settings()
-                              .select_related('ad_group'))
-        ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
-                        not ad_group_settings.archived]
+        ad_groups_settings_query = ad_groups_settings_query.all()
+
+    ad_groups_settings = ad_groups_settings_query.group_current_settings().select_related('ad_group')
+    ad_group_settings_map = {ags.ad_group: ags for ags in ad_groups_settings if ad_group_id or not ags.archived}
 
     ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
-                                 .filter(ad_group_source__ad_group__id__in=ad_group_ids,
-                                         ad_group_source__source__source_type__type='b1')
+                                 .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
+                                 .filter(ad_group_source__source__source_type__type='b1')
+                                 .filter(ad_group_source__source__deprecated=False)
                                  .group_current_settings()
                                  .select_related('ad_group_source',
-                                                 'ad_group_source__source',
-                                                 'ad_group_source__ad_group'))
+                                                 'ad_group_source__ad_group',
+                                                 'ad_group_source__source'))
 
-    return ad_group_sources_settings
+    ad_group_sources = defaultdict(list)
+
+    for ad_group_source_settings in ad_group_sources_settings:
+        ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group]
+        if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
+                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+            source_state = constants.AdGroupSettingsState.ACTIVE
+        else:
+            source_state = constants.AdGroupSettingsState.INACTIVE
+
+        source = {
+            'exchange': ad_group_source_settings.ad_group_source.source.bidder_slug,
+            'status': source_state,
+            'cpc_cc': ad_group_source_settings.cpc_cc,
+            'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
+        }
+        ad_group_sources[ad_group_settings.ad_group.id].append(source)
+
+    return _response_ok(ad_group_sources)
 
 
 @csrf_exempt
@@ -531,7 +588,6 @@ def get_content_ads(request):
             'id': item.id,
             'ad_group_id': item.ad_group.id,
             'title': item.title,
-            # TODO matijav 03.05.2016 not sure about the url --> check: api_contentads._get_content_ad_dict
             'url': item.url,
             'redirect_id': item.redirect_id,
             'image_id': item.image_id,
@@ -556,24 +612,118 @@ def get_content_ads_exchanges(request):
     content_ad_id = request.GET.get('content_ad_id')
     ad_group_id = request.GET.get('ad_group_id')
     if content_ad_id:
-        content_ad_sources = (dash.models.ContentAdSource.objects
-                              .filter(content_ad__id=content_ad_id, source__source_type__type='b1')
-                              .select_related('content_ad', 'source'))
+        content_ad_sources = (
+            dash.models.ContentAdSource.objects
+            .filter(
+                content_ad__id=content_ad_id,
+                source__source_type__type='b1',
+                source__deprecated=False,
+            )
+            .values('content_ad_id',
+                    'source__bidder_slug',
+                    'source__tracking_slug',
+                    'source_content_ad_id',
+                    'submission_status',
+                    'state')
+        )
     elif ad_group_id:
-        content_ad_sources = (dash.models.ContentAdSource.objects
-                              .filter(content_ad__ad_group__id=ad_group_id, source__source_type__type='b1')
-                              .select_related('content_ad', 'source'))
+        content_ad_sources = (
+            dash.models.ContentAdSource.objects
+            .filter(
+                content_ad__ad_group__id=ad_group_id,
+                source__source_type__type='b1',
+                source__deprecated=False,
+            )
+            .values('content_ad_id',
+                    'source__bidder_slug',
+                    'source__tracking_slug',
+                    'source_content_ad_id',
+                    'submission_status',
+                    'state')
+        )
     else:
         return _response_error("Must provide content ad id or ad group id.")
 
-    content_ad_exchanges = {}
+    content_ad_exchanges = defaultdict(list)
     for content_ad_source in content_ad_sources:
         exchange = {
-            'exchange': content_ad_source.source.bidder_slug,
-            'source_content_ad_id': content_ad_source.source_content_ad_id,
-            'submission_status': content_ad_source.submission_status,
-            'state': content_ad_source.state,
+            'exchange': content_ad_source['source__bidder_slug'],
+            'tracking_slug': content_ad_source['source__tracking_slug'],
+            'source_content_ad_id': content_ad_source['source_content_ad_id'],
+            'submission_status': content_ad_source['submission_status'],
+            'state': content_ad_source['state'],
         }
-        content_ad_exchanges.setdefault(content_ad_source.content_ad.id, []).append(exchange)
+        content_ad_exchanges[content_ad_source['content_ad_id']].append(exchange)
 
     return _response_ok(content_ad_exchanges)
+
+
+@csrf_exempt
+def update_content_ad_status(request):
+    _validate_signature(request)
+
+    data = json.loads(request.body)
+
+    content_ad_source = dash.models.ContentAdSource.objects \
+        .filter(content_ad__id=data['content_ad_id']) \
+        .filter(source__bidder_slug=data['source_slug'])
+
+    if not content_ad_source:
+        logger.exception(
+            'update_content_ad_status: content_ad_source does not exist. content ad id: %d, source slug: %s',
+            data['content_ad_id'],
+            data['source_slug']
+        )
+        raise Http404
+
+    modified = False
+    content_ad_source = content_ad_source[0]
+    if 'submission_status' in data and content_ad_source.source_state != data['submission_status']:
+        content_ad_source.source_state = data['submission_status']
+        modified = True
+
+    if 'external_id' in data and content_ad_source.source_content_ad_id != data['external_id']:
+        content_ad_source.source_content_ad_id = data['external_id']
+        modified = True
+
+    if modified:
+        content_ad_source.save()
+
+    return _response_ok(data)
+
+
+@csrf_exempt
+def set_source_campaign_key(request):
+    _validate_signature(request)
+
+    data = json.loads(request.body)
+
+    ad_group_source_id = data['ad_group_source_id']
+    source_campaign_key = data['source_campaign_key']
+    try:
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=ad_group_source_id)
+    except dash.models.AdGroupSource.DoesNotExist:
+        logger.exception(
+            'set_source_campaign_key: ad_group_source does not exist. ad_group_source id: %d',
+            ad_group_source_id,
+        )
+        raise Http404
+
+    ad_group_source.source_campaign_key = source_campaign_key
+    ad_group_source.save()
+
+    return _response_ok(data)
+
+
+@csrf_exempt
+def get_outbrain_marketer_id(request):
+    _validate_signature(request)
+    ad_group_id = request.GET.get('ad_group_id')
+    try:
+        ad_group = dash.models.AdGroup.objects.select_related('campaign__account').get(pk=ad_group_id)
+    except dash.models.AdGroup.DoesNotExist:
+        logger.exception('get_outbrain_marketer_id: ad group %s does not exist' % ad_group_id)
+        raise Http404
+    if ad_group.campaign.account.outbrain_marketer_id:
+        return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
+    # TODO(nsaje): implement logic for assigning new Outbrain account (server/actionlog/api.py#L840)

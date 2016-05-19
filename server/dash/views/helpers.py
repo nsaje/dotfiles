@@ -23,6 +23,7 @@ from dash import api
 from utils import exc
 from utils import statsd_helper
 from utils import email_helper
+from utils import k1_helper
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -65,7 +66,7 @@ def get_stats_end_date(end_time):
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
 
-    if not user.has_perm('zemauth.filter_sources') or not sources_filter:
+    if not sources_filter:
         return filtered_sources
 
     filtered_ids = []
@@ -203,9 +204,6 @@ def get_active_ad_group_sources(modelcls, modelobjects):
 
 
 def join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync):
-    if not user.has_perm('zemauth.conversion_reports'):
-        return last_success_actions
-
     last_success_actions_joined = {}
     for id_, last_sync_time in last_success_actions.items():
         if last_sync_time is None or last_pixel_sync is None:
@@ -1091,6 +1089,9 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
                     iab_update=True
                 )
             )
+
+    k1_helper.update_ad_group((ad_group.pk for ad_group in campaign_ad_groups),
+                              msg='views.helpers.save_campaign_settings_and_propagate')
 
     actionlog.zwei_actions.send(actions)
 

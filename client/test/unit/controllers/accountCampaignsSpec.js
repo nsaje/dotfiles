@@ -49,7 +49,7 @@ describe('AccountCampaignsCtrl', function () {
             };
 
             api = {
-                accountAgency: {
+                accountSettings: {
                     get: mockApiFunc,
                 },
                 accountUsers: {
