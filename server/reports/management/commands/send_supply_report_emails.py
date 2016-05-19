@@ -24,8 +24,7 @@ class Command(ExceptionCommand):
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
         today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-        # today = datetime.datetime(today.year, today.month, today.day)
-        today = datetime.datetime(2016, 5, 2)
+        today = datetime.datetime(today.year, today.month, today.day)
         yesterday = today - datetime.timedelta(days=1)
 
         recipients = reports.models.SupplyReportRecipient.objects.all()
