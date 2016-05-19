@@ -18,8 +18,7 @@ oneApp.directive('zemGridRow', [function () {
                 $scope.constants = zemGridConstants;
 
                 this.loadMore = function (size) {
-                    if (!size)
-                    {
+                    if (!size) {
                         size = this.row.data.pagination.count - this.row.data.pagination.to;
                     }
                     zemGridService.loadData(this.grid, this.row, size);

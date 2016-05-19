@@ -1,6 +1,6 @@
 /* globals oneApp */
 
-oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stateProvider, $urlRouterProvider, config) {
+oneApp.config(['$stateProvider', function ($stateProvider) {
     $stateProvider
         .state('main.development', {
             url: 'development',

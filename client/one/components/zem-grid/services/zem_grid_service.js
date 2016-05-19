@@ -83,7 +83,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         return {'min-width': width};
     }
 
-    function getInitialColumnWidths (grid) {
+    function getInitialColumnWidths () {
         // FIXME: if columnWidth ref changes, it does not work anymore when grid is reloaded (ie. submit new breakdown)
         // ==> it is not possible to generate this array when grid is loading -- load()
         var columnsWidths = [];

@@ -1,4 +1,4 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
 oneApp.constant('zemGridConstants', {

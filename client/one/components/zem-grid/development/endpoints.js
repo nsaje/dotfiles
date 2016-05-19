@@ -1,13 +1,13 @@
-/* globals oneApp,angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'api', function ($rootScope, $controller, $http, $q, $timeout, api) { // eslint-disable-line max-len
+oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
 
     function MockEndpoint () {
         this.availableBreakdowns = ['ad_group', 'age', 'sex', 'date'];
         this.defaultBreakdown = ['ad_group', 'age', 'date'];
 
-        this.getMetaData = function (config) {
+        this.getMetaData = function () {
             var deferred = $q.defer();
             deferred.resolve({
                 columns: generateColumnsData(),

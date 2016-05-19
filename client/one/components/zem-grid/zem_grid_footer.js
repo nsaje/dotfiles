@@ -1,5 +1,4 @@
-/* globals oneApp, angular */
-'use strict';
+/* globals oneApp */
 
 oneApp.directive('zemGridFooter', ['$timeout', function ($timeout) {
 
