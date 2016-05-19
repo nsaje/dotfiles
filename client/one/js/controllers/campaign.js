@@ -52,7 +52,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 heading: 'Content Insights',
                 route: 'main.campaigns.content_insights',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived && $scope.hasPermission('zemauth.campaign_content_insights_view'),
+                hidden: $scope.campaign && $scope.campaign.archived && !$scope.hasPermission('zemauth.campaign_content_insights_view'),
                 internal: $scope.hasPermission('zemauth.campaign_content_insights_view'),
             },
         ];
