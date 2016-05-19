@@ -726,7 +726,7 @@ class CanEnableAdGroupsTestCase(TestCase):
                 self._get_ad_group_sources_settings_dict(ad_group),
                 max_daily_budget_per_ags,
                 Decimal('115'),
-                Decimal('185'),
+                Decimal('300'),
             )
         )
         self.assertFalse(
@@ -736,7 +736,7 @@ class CanEnableAdGroupsTestCase(TestCase):
                 self._get_ad_group_sources_settings_dict(ad_group),
                 max_daily_budget_per_ags,
                 Decimal('114'),
-                Decimal('185'),
+                Decimal('300'),
             )
         )
         self.assertFalse(
@@ -746,7 +746,7 @@ class CanEnableAdGroupsTestCase(TestCase):
                 self._get_ad_group_sources_settings_dict(ad_group),
                 max_daily_budget_per_ags,
                 Decimal('115'),
-                Decimal('184'),
+                Decimal('299'),
             )
         )
 

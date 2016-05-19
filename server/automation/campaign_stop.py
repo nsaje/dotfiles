@@ -292,7 +292,7 @@ def _can_enable_media_sources(ad_group_sources, campaign):
 
         daily_budget_added = daily_budget_cc - max_daily_budget_per_ags.get(ad_group_source.id, 0)
         can_enable_today = daily_budget_added <= remaining_today
-        can_enable_tomorrow = daily_budget_cc <= available_tomorrow
+        can_enable_tomorrow = daily_budget_added + daily_budget_cc <= available_tomorrow
 
         ret[ad_group_source.id] = can_enable_today and can_enable_tomorrow
 
@@ -344,7 +344,7 @@ def _can_enable_ad_group(ad_group, ad_group_settings, ad_group_sources_settings_
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
 
     can_enable_today = daily_budget_added <= remaining_today
-    can_enable_tomorrow = daily_budget_total <= available_tomorrow
+    can_enable_tomorrow = daily_budget_added + daily_budget_total <= available_tomorrow
 
     return can_enable_today and can_enable_tomorrow
 
