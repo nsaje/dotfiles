@@ -1,6 +1,6 @@
 import backtosql
 
-from stats import constants
+from redshiftapi import helpers
 
 
 BREAKDOWN = 1
@@ -84,27 +84,31 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
         Selects the most suitable materialized view for the selected breakdown.
         """
 
-        if True:
-            # TODO: no materialized views yet, contentadstats
-            # is treated as one of the materialized views.
-            return 'contentadstats'
+        # TODO: no materialized views yet, contentadstats
+        # is treated as one of the materialized views.
+        return 'contentadstats'
 
-        # FIXME: The real code for view selection will be like this:
-        base = constants.get_base_dimension(breakdown)
-        structure = constants.get_structure_dimension(breakdown)
-        delivery = constants.get_delivery_dimension(breakdown)
-        time = constants.get_time_dimension(breakdown)
-        l = len(breakdown)
+    @classmethod
+    def get_default_context(cls, breakdown, constraints, breakdown_constraints,
+                            order, offset, limit):
+        """
+        Returns the template context that is used by most of templates
+        """
 
-        if base == 'account':
-            if l == 1:
-                return 'mv_by_acc'
+        breakdown_constraints_q = None
+        if breakdown_constraints:
+            breakdown_constraints_q = backtosql.Q(model, *[backtosql.Q(model, **x) for x in breakdown_constraints])
+            breakdown_constraints_q.join_operator = q.OR
 
-            if structure == 'campaign':
-                return 'mv_by_acc_camp' if l == 2 else 'mv_by_acc_camp_ext'
-            elif structure == 'source':
-                return 'mv_by_acc_sour' if l == 2 else 'mv_by_acc_sour_ext'
-            elif structure is None:
-                return 'mv_by_acc_ext'
-            else:
-                raise Exception('Should have all cases covered explicitly')
+        context = {
+            'view': cls.get_best_view(breakdown),
+            'breakdown': cls.get_breakdown(breakdown),
+            'constraints': backtosql.Q(cls, **constraints),
+            'breakdown_constraints': breakdown_constraints_q,
+            'aggregates': cls.get_aggregates(),
+            'order': cls.select_order([order]),
+            'offset': offset,
+            'limit': limit,
+        }
+
+        return context

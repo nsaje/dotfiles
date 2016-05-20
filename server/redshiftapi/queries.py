@@ -1,122 +1,68 @@
 import backtosql
 import datetime
-from dateutil import rrule, relativedelta
+import dateutil
 
 from stats import constants
 
 
-def prepare_lvl1_top_rows(model, breakdown, constraints, breakdown_constraints,
-                          order, offset, limit):
+def prepare_lvl1_top_rows(default_context):
+    sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', defaultcontext)
 
-    context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, offset, limit)
-
-    sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', context)
-
-    params = context['constraints'].get_params()
+    params = default_context['constraints'].get_params()
 
     # TODO this query requires breakdown_constraints to work correctly
-    if context['breakdown_constraints']:
-        params.extend(context['breakdown_constraints'].get_params())
+    if default_context['breakdown_constraints']:
+        params.extend(default_context['breakdown_constraints'].get_params())
 
     return sql, params
 
 
-def prepare_lvl2_top_rows(model, breakdown, constraints, breakdown_constraints,
-                          order, offset, limit):
-    context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, offset, limit)
+def prepare_lvl2_top_rows(default_context):
+    sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', default_context)
 
-    sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', context)
-
-    params = context['constraints'].get_params()
+    params = default_context['constraints'].get_params()
 
     # TODO this query requires breakdown_constraints to work correctly
-    if context['breakdown_constraints']:
-        params.extend(context['breakdown_constraints'].get_params())
+    if default_context['breakdown_constraints']:
+        params.extend(default_context['breakdown_constraints'].get_params())
 
     return sql, params
 
 
-def prepare_time_top_rows(model, time_dimension, breakdown, constraints, breakdown_constraints,
-                          order, offset, limit):
+def prepare_time_top_rows(model, time_dimension, default_context, constraints, offset, limit):
 
     _prepare_time_constraints(time_dimension, constraints, offset, limit)
-    context = _get_default_context(model, breakdown, constraints, breakdown_constraints, order, offset, limit)
+    default_context['constraints'] = backtosql.Q(cls, **constraints)
 
-    sql = backtosql.generate_sql('breakdown_simple_select.sql', context)
+    sql = backtosql.generate_sql('breakdown_simple_select.sql', default_context)
 
-    params = context['constraints'].get_params()
-    if context['breakdown_constraints']:
-        params.extend(context['breakdown_constraints'].get_params())
+    params = default_context['constraints'].get_params()
+    if default_context['breakdown_constraints']:
+        params.extend(default_context['breakdown_constraints'].get_params())
 
     return sql, params
-
-
-def _get_default_context(model, breakdown, constraints, breakdown_constraints,
-                         order, offset, limit):
-    """
-    Returns the template context that is used by most of templates
-    """
-
-    constraints = backtosql.Q(model, **constraints)
-    breakdown_constraints = _prepare_breakdown_constraints(model, breakdown_constraints)
-
-    context = {
-        'view': model.get_best_view(breakdown),
-        'breakdown': model.get_breakdown(breakdown),
-        'constraints': constraints,
-        'breakdown_constraints': breakdown_constraints,
-        'aggregates': model.get_aggregates(),
-        'order': model.select_order([order]),
-        'offset': offset,
-        'limit': limit,
-    }
-
-    return context
-
-
-def _prepare_breakdown_constraints(model, breakdown_constraints):
-    """
-    Create OR separated AND statements based on breakdown_constraints.
-    Eg.:
-
-    (a AND b) OR (c AND d)
-    """
-
-    if not breakdown_constraints:
-        return None
-
-    bq = backtosql.Q(model, **breakdown_constraints[0])
-
-    # TODO it would be better if this would be a list, not nested queries
-    for branch in breakdown_constraints[1:]:
-        bq |= backtosql.Q(model, **branch)
-
-    return bq
 
 
 def _prepare_time_constraints(time_dimension, constraints, offset, limit):
     """
     Sets time constraints so that they fit offset and limit. Instead of
-    using SQL offset and limit just adjust the dates so the scan space
+    using SQL offset and limit just adjust the date range so the scan space
     is smaller.
     """
 
-    if True:
-        # TODO this code does not work correctly yet
-        return
-
     start_date = constraints['date__gte']
 
-    start_idx = (page - 1) * limit
+    if time_dimension == constants.TimeDimension.DAY:
+        start_date = start_date + datetime.timedelta(days=offset)
+        end_date = start_date + datetime.timedelta(days=(limit - offset))
+
     if time_dimension == constants.TimeDimension.WEEK:
-        start_date = start_date + datetime.timedelta(days=7*start_idx)
-        end_date = start_date + datetime.timedelta(days=7*limit)
-    elif time_dimension == constants.TimeDimension.MONTH:
-        start_date = start_date + relativedelta.relativedelta(months=+start_idx)
-        end_date = start_date + relativedelta.relativedelta(months=limit)
-    else:
-        start_date = start_date + datetime.timedelta(days=start_idx)
-        end_date = start_date + datetime.timedelta(days=limit)
+        start_date = start_date + datetime.timedelta(days=7 * offset)
+        end_date = start_date + datetime.timedelta(days=7 * (limit - offset))
+
+    if time_dimension == constants.TimeDimension.MONTH:
+        start_date = start_date + dateutil.relativedelta.relativedelta(months=offset)
+        end_date = start_date + dateutil.relativedelta.relativedelta(months=(limit - offset))
 
     constraints['date__gte'] = start_date
-    constraints['date__lte'] = min(end_date, constraints['date__lte'])
+    constraints['date__lte'] = end_date
