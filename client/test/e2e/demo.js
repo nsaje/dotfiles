@@ -65,10 +65,6 @@ beforeEach(function () {
             browser.ignoreSynchronization = false;
         });
     }
-    
-    if(!element(by.css('.sidebar')).isDisplayed()) {
-        element(by.css('.navigation-button')).click();
-    }
 });
 
 describe('Demo loading', function () {
@@ -136,6 +132,7 @@ describe('Campaign management', function () {
 
     it ('new campaign with a new ad group', function () {
         expect(demoLoaded).toBe(true);
+        element(by.css('.navigation-button')).click();
         newCampaign();
         renameCampaign();
         tabs.campaign.adGroups.click();
