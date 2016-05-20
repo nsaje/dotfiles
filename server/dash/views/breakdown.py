@@ -57,8 +57,8 @@ def get_report_through_table(user, form_data):
 
     constraints = extract_constraints(form_data)
 
-    start_date = constraints['data__gte']
-    end_date = constraints['data__lte']
+    start_date = constraints['date__gte']
+    end_date = constraints['date__lte']
 
     filtered_sources = constraints.get('source')
 
@@ -71,8 +71,6 @@ def get_report_through_table(user, form_data):
     order = form_data.get('order')
 
     show_archived = form_data.get('show_archived', False)
-
-    user = request.user
 
     response = table.AccountsAccountsTable().get(
         user,
