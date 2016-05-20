@@ -123,7 +123,7 @@ def supply_dash_redirect(request):
     # TODO wessel, temporary hack to re-enable links to 3rd party dashboards
     if ad_group_source.source.source_type.type == constants.SourceType.YAHOO:
         url = YAHOO_DASH_URL.format(
-            advertiser_id=credentials.advertiser_id,
+            advertiser_id=json.loads(credentials)['advertiser_id'],
             campaign_id=ad_group_source.source_campaign_key
         )
     elif ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN:
