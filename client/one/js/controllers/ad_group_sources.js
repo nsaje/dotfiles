@@ -193,7 +193,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: true,
             type: 'notification',
             extraTdCss: 'notification',
-            shown: true,
+            shown: false,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
             order: true,

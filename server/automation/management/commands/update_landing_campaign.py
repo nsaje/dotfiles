@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
     option_list = ExceptionCommand.option_list + (
-        make_option('--campaign', '-c', 'campaign id'),
+        make_option('-c', '--campaign', help='campaign id'),
     )
 
     def handle(self, *args, **options):
@@ -26,4 +26,4 @@ class Command(ExceptionCommand):
             logger.info('Campaign not landing. Exiting...')
             sys.exit(0)
 
-        campaign_stop.update_landing_campaigns([campaign], pagerduty_on_fail=False)
+        campaign_stop.update_campaigns_in_landing([campaign], pagerduty_on_fail=False)

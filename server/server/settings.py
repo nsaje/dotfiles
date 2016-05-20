@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'automation',
     'redshiftapi',
     'timezone_field',
+    'backtosql',
 ]
 
 MIDDLEWARE_CLASSES = [

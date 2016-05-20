@@ -1291,11 +1291,12 @@ class AccountUsers(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         agency_users = account.agency.users.all() if account.agency else []
 
-        users = [self._get_user_dict(u, agency_manager=True) for u in agency_users] +\
-            [self._get_user_dict(u) for u in account.users.all() if u not in agency_users]
+        users = [self._get_user_dict(u) for u in account.users.all()]
+        agency_managers = [self._get_user_dict(u) for u in agency_users]
 
         return self.create_api_response({
-            'users': users
+            'users': users,
+            'agency_managers': agency_managers if account.agency else None,
         })
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
@@ -1394,15 +1395,13 @@ class AccountUsers(api_common.BaseApiView):
             'user_id': user.id
         })
 
-    def _get_user_dict(self, user, agency_manager=False):
+    def _get_user_dict(self, user):
         return {
             'id': user.id,
             'name': user.get_full_name(),
-            'suffix': 'Agency Manager' if agency_manager else None,
             'email': user.email,
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
-            'editable': not agency_manager,
         }
 
 

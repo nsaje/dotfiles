@@ -279,6 +279,11 @@ class InfoBoxHelpersTest(TestCase):
         )
         new_settings = ad_group_sources[0].get_current_settings().copy_settings()
         new_settings.daily_budget_cc = 200
+        new_settings.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+        new_settings.save(None)
+
+        new_settings = ad_group_sources[0].ad_group.get_current_settings().copy_settings()
+        new_settings.state = dash.constants.AdGroupSettingsState.ACTIVE
         new_settings.save(None)
 
         # Test also for ad group sources with daily_budget_cc not set in AdGroupSourceSettings.
@@ -292,7 +297,7 @@ class InfoBoxHelpersTest(TestCase):
         new_settings.save(None)
 
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(500, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
+        self.assertEqual(250, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         # use raw sql to bypass model restrictions
         q = 'DELETE FROM dash_adgroupsourcestate; DELETE FROM dash_adgroupsourcesettings'
@@ -749,16 +754,9 @@ class AllAccountsInfoboxHelpersTest(TestCase):
     fixtures = ['test_models.yaml']
 
     def test_calculate_daily_account_cap(self):
-        adgs = dash.models.AdGroupSource.objects.first()
-        dash.models.AdGroupSourceState.objects.create(
-            ad_group_source=adgs,
-            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
-            daily_budget_cc=50
-        )
-
         account = dash.models.Account.objects.get(pk=1)
         cap = dash.infobox_helpers.calculate_daily_account_cap(account)
-        self.assertEqual(50, cap)
+        self.assertEqual(100, cap)
 
     def test_calculate_allocated_and_available_credit(self):
         account = dash.models.Account.objects.get(pk=1)
