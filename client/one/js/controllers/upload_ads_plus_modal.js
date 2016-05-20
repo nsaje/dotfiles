@@ -1,5 +1,5 @@
 /* globals $,constants,oneApp,angular,defaults */
-oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function ($scope, $modalInstance, api, $state, $timeout, $filter) {
+oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', function ($scope, $modalInstance, api, $state, $timeout) { // eslint-disable-line max-len
     $scope.uploadBatchStatusConstants = constants.uploadBatchStatus;
 
     $scope.formData = {};
