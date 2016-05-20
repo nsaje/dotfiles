@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
+oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', function ($rootScope, $controller, $http, $q, $timeout) { // eslint-disable-line max-len
 
     function MockEndpoint () {
         this.availableBreakdowns = ['ad_group', 'age', 'sex', 'date'];
@@ -17,8 +17,10 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
 
         this.getData = function (config) {
             var deferred = $q.defer();
-            var data = generateData(config);
-            deferred.resolve(data);
+            $timeout(function () {
+                var data = generateData(config);
+                deferred.resolve(data);
+            }, 500 + (config.level - 1) * 500);
             return deferred.promise;
         };
     }
@@ -41,7 +43,6 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     // level 2-n -> breakdowns
     //
 
-    var DEFAULT_PAGINATION = [2, 3, 5, 7];
     var TEST_COLUMNS = 20;
     var TEST_BREAKDOWNS_AD_GROUPS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     var TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '99+'];
@@ -53,7 +54,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     }
 
     function generateData (config) {
-        var breakdowns = getBreakdownRanges2(config);
+        var breakdowns = getBreakdownRanges(config);
         var topLevelRow = generateRandomBreakdown(breakdowns);
         topLevelRow.breakdown.stats = topLevelRow.stats;
         var topLevelBreakdown = {
@@ -64,7 +65,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return getBreakdownsForLevel(topLevelBreakdown, config.level, true);
     }
 
-    function getBreakdownRanges2 (config) {
+    function getBreakdownRanges (config) {
         var range = []; // [[min,max], ...]
         for (var i = 0; i < config.level - 1; ++i) {
             range.push([1000, 0]);
@@ -78,7 +79,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             }
         });
 
-        range.push([config.offset, config.offset + config.limit-1]);
+        range.push([config.offset, config.offset + config.limit - 1]);
 
         return config.breakdown.map(function (b, i) {
             return {
@@ -86,35 +87,6 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                 range: range[i],
             };
         });
-    }
-
-    function getBreakdownRanges (config) {
-        var breakdown = config.breakdown;
-        var size = config.size;
-        var breakdownsRanges = [];
-        for (var i = 1; i <= config.selectedBreakdown.length; ++i) {
-            var from = 0;
-            var to = DEFAULT_PAGINATION[i - 1];
-            if (breakdown) {
-                if (i < breakdown.level) {
-                    from = breakdown.position[i];
-                    to = from + 1;
-                } else if (breakdown.level === i) {
-                    from = breakdown.pagination.to;
-                    if (size) {
-                        if (size > 0) to = from + size;
-                        else to = -1;
-                    } else {
-                        to = from + DEFAULT_PAGINATION[i - 1];
-                    }
-                }
-            }
-            breakdownsRanges.push({
-                name: config.selectedBreakdown[i - 1],
-                range: [from, to],
-            });
-        }
-        return breakdownsRanges;
     }
 
     function getBreakdownsForLevel (breakdown, level, flat) {
@@ -137,7 +109,6 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         }
         return breakdowns;
     }
-
 
     function generateRandomBreakdown (breakdowns, level, position, key) {
         if (!level) level = 1;

@@ -4,19 +4,28 @@
 oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGridConstants) {
 
     function parse (grid, data) {
-        // Level 0 -> total data and level 1 breakdown
-        var totals = data;
-        var breakdown = totals.breakdown;
-
-        grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: totals, visible: true};
-        grid.body.rows = parseBreakdown(null, breakdown);
+        if (data.level === 0) {
+            grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: data, visible: true};
+            grid.body.rows = parseBreakdown(null, data.breakdown);
+        } else {
+            throw 'Inplace parsing not supported yet.';
+        }
     }
 
-    function parseInplace (grid, row, data) {
-        var rows = parseBreakdown(row.parent, data);
+    function parseInplace (grid, breakdown) {
+        var row = getRow(grid, breakdown);
+        var rows = parseBreakdown(row.parent, breakdown);
         rows.pop();
         var idx = grid.body.rows.indexOf(row);
         grid.body.rows.splice.apply(grid.body.rows, [idx, 0].concat(rows));
+    }
+
+    function getRow (grid, breakdown) {
+        // FIXME
+        return grid.body.rows.find(function (row) {
+            return row.level == breakdown.level &&
+                JSON.stringify(breakdown.position) === JSON.stringify(row.data.position);
+        });
     }
 
     function parseBreakdown (parent, breakdown) {
@@ -51,7 +60,7 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
         return rows;
     }
 
-    return  {
+    return {
         parse: parse,
         parseInplace: parseInplace,
     };
