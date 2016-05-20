@@ -36,7 +36,6 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                               112, 55, 12, [2, 1]
                           ])
 
-        print backtosql.clean_sql(query)
         self.assertSQLEquals(query, """
         SELECT a.ad_group_id,
             a.content_ad_id,
