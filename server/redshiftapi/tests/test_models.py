@@ -4,7 +4,7 @@ from django.test import TestCase
 from redshiftapi import models
 
 
-class RSModelTest(TestCase):
+class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
     def setUp(self):
         self.model = models.RSContentAdStats
@@ -34,3 +34,43 @@ class RSModelTest(TestCase):
                                'ctr', 'cpc', 'visits', 'click_discrepancy',
                                'pageviews', 'new_visits', 'percent_new_users',
                                'bounce_rate', 'pv_per_visit', 'avg_tos'])
+
+    def test_get_default_context_constraints(self):
+
+        constraints = {
+            'account_id': 123,
+            'campaign_id': 223,
+        }
+
+        breakdown_constraints = [
+            {'content_ad_id': 32, 'source_id': 1},
+            {'content_ad_id': 33, 'source_id': [2, 3]},
+            {'content_ad_id': 35, 'source_id': [2, 4, 22]},
+        ]
+
+        context = models.RSContentAdStats.get_default_context(
+            ['account_id', 'source_id'],
+            constraints,
+            breakdown_constraints,
+            '-clicks',
+            2,
+            33
+        )
+
+        q = context['constraints']
+        self.assertEqual(
+            q.generate('A'),
+            "(A.account_id=%s AND A.campaign_id=%s)")
+        self.assertEqual(q.get_params(), [123, 223])
+
+        q = context['breakdown_constraints']
+        self.assertSQLEquals(
+            q.generate('A'),
+            """\
+            ((A.content_ad_id=%s AND A.source_id=%s) OR \
+            (A.content_ad_id=%s AND A.source_id=ANY(%s)) OR \
+            (A.content_ad_id=%s AND A.source_id=ANY(%s)))""")
+        self.assertEqual(q.get_params(), [32, 1, 33, [2, 3], 35, [2, 4, 22]])
+
+        self.assertEqual(context['offset'], 2)
+        self.assertEqual(context['limit'], 33)
