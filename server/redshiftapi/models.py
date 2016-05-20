@@ -1,7 +1,5 @@
 import backtosql
 
-from redshiftapi import helpers
-
 
 BREAKDOWN = 1
 AGGREGATES = 2
@@ -97,8 +95,8 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
 
         breakdown_constraints_q = None
         if breakdown_constraints:
-            breakdown_constraints_q = backtosql.Q(model, *[backtosql.Q(model, **x) for x in breakdown_constraints])
-            breakdown_constraints_q.join_operator = q.OR
+            breakdown_constraints_q = backtosql.Q(cls, *[backtosql.Q(cls, **x) for x in breakdown_constraints])
+            breakdown_constraints_q.join_operator = breakdown_constraints_q.OR
 
         context = {
             'view': cls.get_best_view(breakdown),

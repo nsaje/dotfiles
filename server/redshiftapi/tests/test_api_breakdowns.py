@@ -1,6 +1,6 @@
+import backtosql
 import datetime
 import re
-# import backtosql
 import unittest
 
 from django.test import TestCase
@@ -10,18 +10,7 @@ from redshiftapi import queries
 from redshiftapi import models
 
 
-def _stripWhitespace(q):
-    return re.sub(r"[\n\r\s]+", '', q)
-
-
-@unittest.skip("backtosql is currently not included")
-class APIBreakdownsTest(TestCase):
-
-    def assertSQLQueriesEqual(self, q1, q2):
-        backtosql.printsql(q1)
-        q1 = _stripWhitespace(q1).upper()
-        q2 = _stripWhitespace(q2).upper()
-        self.assertEqual(q1, q2)
+class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
 
     def test_get_default_context_constraints(self):
 
@@ -33,10 +22,10 @@ class APIBreakdownsTest(TestCase):
         breakdown_constraints = [
             {'content_ad_id': 32, 'source_id': 1},
             {'content_ad_id': 33, 'source_id': [2, 3]},
+            {'content_ad_id': 35, 'source_id': [2, 4, 22]},
         ]
 
-        context = queries._get_default_context(
-            models.RSContentAdStats,
+        context = models.RSContentAdStats.get_default_context(
             ['account_id', 'source_id'],
             constraints,
             breakdown_constraints,
@@ -44,6 +33,7 @@ class APIBreakdownsTest(TestCase):
             2,
             33
         )
+
         q = context['constraints']
         self.assertEqual(
             q.generate('A'),
@@ -51,10 +41,13 @@ class APIBreakdownsTest(TestCase):
         self.assertEqual(q.get_params(), [123, 223])
 
         q = context['breakdown_constraints']
-        self.assertEqual(
+        self.assertSQLEquals(
             q.generate('A'),
-            "((A.content_ad_id=%s AND A.source_id=%s) OR (A.content_ad_id=%s AND A.source_id=ANY(%s)))")
-        self.assertEqual(q.get_params(), [32, 1, 33, [2, 3]])
+            """\
+            ((A.content_ad_id=%s AND A.source_id=%s) OR \
+            (A.content_ad_id=%s AND A.source_id=ANY(%s)) OR \
+            (A.content_ad_id=%s AND A.source_id=ANY(%s)))""")
+        self.assertEqual(q.get_params(), [32, 1, 33, [2, 3], 35, [2, 4, 22]])
 
         self.assertEqual(context['offset'], 2)
         self.assertEqual(context['limit'], 33)
@@ -68,7 +61,8 @@ class APIBreakdownsTest(TestCase):
             'campaign_id': 22,
         }
         breakdown_constraints = [
-            {'content_ad_id': 112}
+            {'content_ad_id': 112, 'source_id': 55},
+            {'content_ad_id': 12, 'source_id': [2, 1]},
         ]
         order = '-campaign_id'
 
@@ -77,9 +71,13 @@ class APIBreakdownsTest(TestCase):
             breakdown, constraints, breakdown_constraints, order, 10, 50)
 
         self.assertEquals(params,
-                          [[1, 2, 3], 22, datetime.date(2016, 1, 1), datetime.date(2016, 1, 31), 112])
+                          [
+                              [1, 2, 3], 22, datetime.date(2016, 1, 1), datetime.date(2016, 1, 31),
+                              112, 55, 12, [2, 1]
+                          ])
 
-        self.assertSQLQueriesEqual(query, """
+        print backtosql.clean_sql(query)
+        self.assertSQLEquals(query, """
         SELECT a.ad_group_id,
             a.content_ad_id,
             (CASE
@@ -148,7 +146,7 @@ class APIBreakdownsTest(TestCase):
                 AND b.campaign_id=%s
                 AND trunc(b.date)>=%s
                 AND trunc(b.date)<=%s)
-        AND (b.content_ad_id=%s)
+        AND ((b.content_ad_id=%s AND b.source_id=%s) OR (b.content_ad_id=%s AND b.source_id=ANY(%s)))
         GROUP BY ad_group_id,
                 content_ad_id) a
         WHERE r >= 10 AND r <= 50

@@ -6,7 +6,7 @@ from stats import constants
 
 
 def prepare_lvl1_top_rows(default_context):
-    sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', defaultcontext)
+    sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
 
