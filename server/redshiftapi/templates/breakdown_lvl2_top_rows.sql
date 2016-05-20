@@ -28,8 +28,8 @@ FROM (
     GROUP BY 1, 2, 3
 ) a
 WHERE
--- limit which page we are querying
-{% if offset %} r >= {{ offset }} AND {% endif %}
-{% if limit %} r <= {{ limit }} {% endif %}
+    -- limit number of rows per group
+    {% if offset %} r >= {{ offset }} AND {% endif %}
+    r <= {{ limit }}
 GROUP BY 1, 2, 3
 {% endautoescape %}
