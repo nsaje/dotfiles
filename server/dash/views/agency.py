@@ -21,6 +21,7 @@ from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
+from dash import stats_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -28,6 +29,7 @@ from utils import statsd_helper
 from utils import exc
 from utils import email_helper
 from utils import k1_helper
+from utils import lc_helper
 
 from zemauth.models import User as ZemUser
 
@@ -1436,18 +1438,52 @@ class CampaignContentInsights(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.campaign_content_insights_view'):
             raise exc.AuthorizationError()
 
-        helpers.get_campaign(request.user, campaign_id)
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=10)
+
         return self.create_api_response({
             'summary': 'Title',
-            'metric': 'CPC',
-            'rows': [
-                {
-                    'summary': 'Test title',
-                    'metric': 10.5,
-                },
-                {
-                    'summary': 'Test title 2',
-                    'metric': 0.1,
-                },
-            ],
+            'metric': 'CTR',
+            'rows': rows,
         })
+
+    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=10):
+        stats = stats_helper.get_content_ad_stats_with_conversions(
+            user,
+            start_date,
+            end_date,
+            breakdown=['content_ad'],
+            ignore_diff_rows=True,
+            constraints={'campaign': campaign}
+        )
+        mapped_stats = {
+            stat['content_ad']: (stat['clicks'], stat['impressions']) for stat
+            in stats
+        }
+        dd_ads = self._deduplicate_content_ad_titles(campaign)
+
+        dd_cad_metric = []
+        for title, caids in dd_ads.iteritems():
+            clicks = sum(map(lambda caid: mapped_stats.get(caid, [0, 0])[0] or 0, caids))
+            impressions = sum(map(lambda caid: mapped_stats.get(caid, [0, 0])[1] or 0, caids))
+            metric = float(clicks) / impressions if impressions > 0 else None
+            dd_cad_metric.append({
+                'summary': title,
+                'metric': lc_helper.default_currency(metric, places=3) if metric else None,
+            })
+
+        top_ten = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
+        return top_ten
+
+    def _deduplicate_content_ad_titles(self, campaign):
+        ads = models.ContentAd.objects.all().filter(
+            ad_group__campaign=campaign
+        ).values_list('id', 'title')
+        ret = {}
+        for caid, title in ads:
+            ret[title] = ret.get(title, []) + [caid]
+        return ret
