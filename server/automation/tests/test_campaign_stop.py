@@ -190,7 +190,6 @@ class SwitchToLandingModeTestCase(TestCase):
             for ags in ad_group.adgroupsource_set.all():
                 if ags.get_current_settings().state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
                     active_ad_group_sources.add(ags)
-        self.assertEqual(len(active_ad_group_sources), len(mock_send_actions.call_args_list[0][0][0]))
 
     @patch('automation.campaign_stop._set_end_date_to_today')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
@@ -1020,17 +1019,10 @@ class SetAdGroupEndDateTestCase(TestCase):
         self.assertEqual(None, current_settings.end_date)
 
         today = dates_helper.utc_today()
-        actions = campaign_stop._set_ad_group_end_date(ad_group, today)
+        campaign_stop._set_ad_group_end_date(ad_group, today)
 
         new_settings = ad_group.get_current_settings()
         self.assertEqual(today, new_settings.end_date)
-
-        ad_group_source_ids = dash.models.AdGroupSource.objects.filter(ad_group=ad_group).values_list('id', flat=True)
-
-        self.assertEqual(len(ad_group_source_ids), len(actions))
-        for action in actions:
-            self.assertTrue(action.ad_group_source_id in ad_group_source_ids)
-            self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, action.action)
 
         self.assertFalse(mock_zwei_send.called)
 
@@ -1480,8 +1472,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             new_settings.landing_mode = False
             new_settings.save(None)
 
-        actions = campaign_stop._check_ad_groups_end_date(campaign)
-        self.assertEqual(len(actions), 6)
+        campaign_stop._check_ad_groups_end_date(campaign)
         self.assertFalse(campaign.adgroup_set.all().filter_active().count())
 
     @patch('utils.dates_helper.local_today')
