@@ -12,30 +12,26 @@ def augment(breakdown, stats_rows, target_dimension):
 
     def rows(dimension):
         # helper for iterating through rows of the selected dimension
-        for obj_id, rows in rows_by_obj_ids[dimension].iteritems():
+        rows_by_dimension_id = rows_by_obj_ids.get(dimension, {})
+        for obj_id, rows in rows_by_dimension_id.iteritems():
             for row in rows:
                 yield row, objs_by_id[dimension][obj_id], obj_id
 
     # only the targeted dimension will be selected here
-    if 'account_id' in rows_by_obj_ids:
-        for row, account, _ in rows('account_id'):
-            row['account_name'] = account.name if account else 'Unknown'
+    for row, account, _ in rows('account_id'):
+        row['account_name'] = account.name if account else 'Unknown'
 
-    if 'campaign_id' in rows_by_obj_ids:
-        for row, campaign, _ in rows('campaign_id'):
-            row['campaign_name'] = campaign.name if campaign else 'Unknown'
+    for row, campaign, _ in rows('campaign_id'):
+        row['campaign_name'] = campaign.name if campaign else 'Unknown'
 
-    if 'ad_group_id' in rows_by_obj_ids:
-        for row, ad_group, _ in rows('ad_group_id'):
-            row['ad_group_name'] = ad_group.name if ad_group else 'Unknown'
+    for row, ad_group, _ in rows('ad_group_id'):
+        row['ad_group_name'] = ad_group.name if ad_group else 'Unknown'
 
-    if 'content_ad_id' in rows_by_obj_ids:
-        for row, content_ad, _ in rows('content_ad_id'):
-            row['content_ad_title'] = content_ad.title if content_ad else 'Unknown'
+    for row, content_ad, _ in rows('content_ad_id'):
+        row['content_ad_title'] = content_ad.title if content_ad else 'Unknown'
 
-    if 'source_id' in rows_by_obj_ids:
-        for row, source, _ in rows('source_id'):
-            row['source_name'] = source.name if source else 'Unknown'
+    for row, source, _ in rows('source_id'):
+        row['source_name'] = source.name if source else 'Unknown'
 
     for row in stats_rows:
         row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
@@ -47,26 +43,12 @@ def _get_rows_by_obj_ids(stats_rows, target_dimension):
     """
 
     rows_by_obj_ids = collections.defaultdict(lambda: collections.defaultdict(list))
+    dimension_identifier = constants.get_dimension_identifier(target_dimension)
 
     for row in stats_rows:
 
-        if target_dimension == constants.StructureDimension.ACCOUNT and 'account_id' in row:
-            rows_by_obj_ids['account_id'][row['account_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.CAMPAIGN and 'campaign_id' in row:
-            rows_by_obj_ids['campaign_id'][row['campaign_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.AD_GROUP and 'ad_group_id' in row:
-            rows_by_obj_ids['ad_group_id'][row['ad_group_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.CONTENT_AD and 'content_ad_id' in row:
-            rows_by_obj_ids['content_ad_id'][row['content_ad_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.SOURCE and 'source_id' in row:
-            rows_by_obj_ids['source_id'][row['source_id']].append(row)
-
-        if target_dimension == constants.StructureDimension.PUBLISHER and 'publisher' in row:
-            rows_by_obj_ids['publisher'][row['publisher']].append(row)
+        if dimension_identifier in row:
+            rows_by_obj_ids[dimension_identifier][row[dimension_identifier]].append(row)
 
     return rows_by_obj_ids
 

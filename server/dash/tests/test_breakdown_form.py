@@ -46,7 +46,6 @@ class BreakdownFormTest(TestCase):
             'order': '-clicks',
         })
 
-
     def test_required_fields(self):
         form = forms.BreakdownForm(self.user, '', {})
 

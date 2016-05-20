@@ -68,7 +68,6 @@ class ExtractConstraintsTest(TestCase):
         )
 
 
-
 @patch('stats.api_breakdowns.query')
 class AllAccountsBreakdownTestCase(TestCase):
     fixtures = ['test_api', 'test_views', 'test_non_superuser.yaml']
@@ -100,7 +99,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
+            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -123,7 +122,7 @@ class AllAccountsBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            ['1-2-33','1-2-34','1-3-22'],
+            ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
             5
@@ -162,7 +161,7 @@ class AccountBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
+            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -187,7 +186,7 @@ class AccountBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            ['1-2-33','1-2-34','1-3-22'],
+            ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
             5
@@ -226,7 +225,7 @@ class CampaignBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
+            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -251,7 +250,7 @@ class CampaignBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            ['1-2-33','1-2-34','1-3-22'],
+            ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
             5
@@ -290,7 +289,7 @@ class AdGroupBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': '1,3,4',
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33','1-2-34','1-3-22'],
+            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -315,7 +314,7 @@ class AdGroupBreakdownTestCase(TestCase):
                     models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
-            ['1-2-33','1-2-34','1-3-22'],
+            ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
             5
