@@ -49,8 +49,10 @@ INSTALLED_APPS = [
     'convapi',
     'raven.contrib.django.raven_compat',
     'automation',
-    'timezone_field',
     'stats',
+    'redshiftapi',
+    'backtosql',
+    'timezone_field',
 ]
 
 MIDDLEWARE_CLASSES = [

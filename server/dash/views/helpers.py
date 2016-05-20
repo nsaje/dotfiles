@@ -453,11 +453,11 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
                     cas_ad_group_source_state = agss
                     break
 
-            if cas_ad_group_source_state is not None:
-                if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                    ad_group_source_state_text = ''
-                else:
-                    ad_group_source_state_text = '(paused)'
+            # if cas_ad_group_source_state is not None:
+            #     if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
+            #         ad_group_source_state_text = ''
+            #     else:
+            #         ad_group_source_state_text = '(paused)'
 
         status['source_state'] = ad_group_source_state_text
 

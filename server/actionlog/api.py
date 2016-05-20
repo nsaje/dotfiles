@@ -157,7 +157,7 @@ def set_publisher_blacklist(key, level, state, publishers, request, source_type,
         action=constants.Action.SET_PUBLISHER_BLACKLIST,
         action_type=constants.ActionType.AUTOMATIC,
         expiration_dt=None,
-        state=constants.ActionState.DELAYED,
+        state=constants.ActionState.ABORTED,
     )
     action.save(request)
 
@@ -561,7 +561,7 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
         action=constants.Action.SET_CAMPAIGN_STATE,
         action_type=constants.ActionType.AUTOMATIC,
         expiration_dt=None,
-        state=constants.ActionState.DELAYED,
+        state=constants.ActionState.ABORTED,
         ad_group_source=ad_group_source,
         order=order
     )
