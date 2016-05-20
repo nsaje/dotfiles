@@ -27,18 +27,8 @@
     overflow: hidden;
     background-color: #f6f6f6;
 
-    .zem-grid-cell {
-      display: table-cell;
-      vertical-align: middle;
-      text-align: left;
-      padding: 8px;
-      white-space: nowrap;
-      border-bottom: 1px solid #ddd;
-    }
-
     .zem-grid-header, .zem-grid-footer {
-      display: table;
-
+      background-color: #f6f6f6;
       font-weight: 600;
 
       a {
@@ -47,54 +37,77 @@
     }
 
     .zem-grid-body {
-      width: 100%;
-      max-height: 500px;
+      height: 515px;
       overflow: auto;
-      background-color: white;
-    }
-    .zem-grid-table {
-      display: table;
-      width: 100%;
-    }
-    .zem-grid-row {
-      display: table-row;
 
-      &.level-0 {
-        background-color: #f6f6f6;
-        div:first-child {
-          font-weight: 600;
-        }
+      background-color: white;
+
+      .zem-grid-table {
+        position: relative;
+        width: 100%;
       }
+
+      .zem-grid-row {
+        position: absolute;
+      }
+    }
+
+    .zem-grid-row {
+      height: 35px;
+
+      font-size: 0; // Hide whitespaces between inline elements
+      white-space: nowrap; // Show all cells in the same row
+
+      .zem-grid-cell {
+        display: inline-block;
+        vertical-align: middle;
+        height: 35px;
+        line-height: 35px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+        padding: 0 8px;
+        overflow: hidden;
+
+        font-size: 13px;
+        white-space: nowrap;
+        // TODO: Change to more sophisticated way of trimming long text in cells
+        text-overflow: ellipsis;
+      }
+
       &.level-1 {
         background-color: #F4F4F4;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 20px !important;
         }
       }
 
       &.level-2 {
         background-color: #ececec;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 40px !important;
         }
       }
 
       &.level-3 {
         background-color: #e8e8e8;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 60px !important;
         }
       }
 
       &.level-4 {
         background-color: #e2e2e2;
-        div:first-child {
+        div:first-child,
+        .pagination-cell {
           padding-left: 80px !important;
         }
       }
 
       &.level-last {
-        div:not(:first-child) {
+        div:not(:first-child):not(.pagination-cell) {
           background-color: #ffffff;
         }
       }

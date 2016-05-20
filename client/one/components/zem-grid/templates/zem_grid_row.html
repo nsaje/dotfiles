@@ -1,20 +1,20 @@
 <div class="zem-grid-row" ng-class="ctrl.getRowClass()">
     <zem-grid-cell ng-repeat="col in ctrl.grid.header.columns track by $index"
-                   ng-if="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
+                   ng-show="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
                    position="$index"
                    col = "col"
                    value = "ctrl.row.data.stats[col.field]"
                    row="ctrl.row"
                    grid="ctrl.grid"
     ></zem-grid-cell>
-    <div class="zem-grid-cell" ng-if="ctrl.row.type==constants.gridRowType.BREAKDOWN">
+    <div class="zem-grid-cell pagination-cell" ng-show="ctrl.row.type==constants.gridRowType.BREAKDOWN">
         <a ng-click="ctrl.loadMore()">
             - {{ctrl.row.data.pagination.size}} of {{ctrl.row.data.pagination.count}} -
         </a>
     </div>
     <div class="zem-grid-cell infobox-reloading-icon" ng-if="ctrl.row.type==constants.gridRowType.BREAKDOWN && ctrl.row.data.rows.length==0">
     </div>
-    <div class="zem-grid-cell" ng-if="ctrl.row.type==constants.gridRowType.BREAKDOWN && ctrl.row.data.rows.length>0">
+    <div class="zem-grid-cell load-more-cell" ng-if="ctrl.row.type==constants.gridRowType.BREAKDOWN && ctrl.row.data.rows.length>0">
         <a ng-click="ctrl.loadMore(5)"> (load 5 more) </a>
         <a ng-click="ctrl.loadMore(20)"> (load 20 more) </a>
         <a ng-click="ctrl.loadMore()"> (load all) </a>

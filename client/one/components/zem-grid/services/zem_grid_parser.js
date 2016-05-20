@@ -6,7 +6,7 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
     function parse (grid, data) {
         if (data.level === 0) {
             grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: data, visible: true};
-            grid.body.rows = parseBreakdown(null, data.breakdown);
+            grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
             throw 'Inplace parsing not supported yet.';
         }
@@ -14,7 +14,7 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
 
     function parseInplace (grid, breakdown) {
         var row = getRow(grid, breakdown);
-        var rows = parseBreakdown(row.parent, breakdown);
+        var rows = parseBreakdown(grid, row.parent, breakdown);
         rows.pop();
         var idx = grid.body.rows.indexOf(row);
         grid.body.rows.splice.apply(grid.body.rows, [idx, 0].concat(rows));
@@ -28,7 +28,7 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
         });
     }
 
-    function parseBreakdown (parent, breakdown) {
+    function parseBreakdown (grid, parent, breakdown) {
         var rows = [];
         var level = breakdown.level;
 
@@ -43,7 +43,7 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
             };
             rows.push(row);
             if (data.breakdown) {
-                var breakdownRows = parseBreakdown(row, data.breakdown);
+                var breakdownRows = parseBreakdown(grid, row, data.breakdown);
                 rows = rows.concat(breakdownRows);
             }
         });
@@ -55,6 +55,12 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
             parent: parent,
             visible: true,
         };
+
+        var emptyStats = {};
+        grid.header.columns.forEach(function (col) {
+            emptyStats[col.field] = '';
+        });
+        row.data.stats = emptyStats;
         rows.push(row);
 
         return rows;
