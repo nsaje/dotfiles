@@ -34,7 +34,7 @@ class ColumnTestCase(TestCase):
         self.assertEquals(column.only_alias(), 'py_cat')
         self.assertEquals(column.only_alias(prefix='t'), 't.py_cat')
 
-    def test_g_no_alias(self):
+    def test_no_alias(self):
         column = backtosql.Column('cat')
         self.assertEquals(column.only_column(), 'cat')
         self.assertEquals(column.only_column(prefix='t'), 't.cat')
@@ -67,7 +67,7 @@ class TemplateColumnTestCase(TestCase):
         self.assertEquals(column.only_alias(), "py_cat")
         self.assertEquals(column.only_alias('t'), "t.py_cat")
 
-    def test_g_no_alias(self):
+    def test_no_alias(self):
         column = backtosql.TemplateColumn('test_col.sql', {
             'column_name': 'cat',
             'multiplier': 100,
