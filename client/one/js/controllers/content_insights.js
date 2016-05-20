@@ -3,16 +3,7 @@ oneApp.controller('ContentInsightsCtrl', ['$scope', '$state', 'api', 'zemNavigat
     $scope.infoboxLinkTo = 'main.campaigns.settings';
     $scope.summary = 'Titles';
     $scope.metric = 'CTR';
-    $scope.rows = [
-            {
-                summary: 'Test title',
-                metric: 10.5,
-            },
-            {
-                summary: 'Test title 2',
-                metric: 0.1,
-            },
-        ];
+    $scope.rows = [];
 
     $scope.getInfoboxData = function () {
         api.campaignOverview.get(
@@ -29,8 +20,23 @@ oneApp.controller('ContentInsightsCtrl', ['$scope', '$state', 'api', 'zemNavigat
         );
     };
 
+    $scope.getContentInsights = function () {
+        api.campaignContentInsights.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate
+        ).then(
+            function (data) {
+                $scope.summary = data.summary;
+                $scope.metric = data.metric;
+                $scope.rows = data.rows;
+            }
+        );
+    };
+
     $scope.init = function () {
         $scope.getInfoboxData();
+        $scope.getContentInsights();
     };
 
     $scope.init();
