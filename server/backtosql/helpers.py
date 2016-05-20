@@ -1,4 +1,5 @@
 import collections
+import sqlparse
 
 from django.db.models.query import QuerySet
 from django.template import loader
@@ -26,21 +27,14 @@ def get_order(alias):
 
 
 def clean_sql(dirty_sql):
-    # removes comments
-    return dirty_sql.strip()
+    # removes comments and whitespaces
+    return sqlparse.format(dirty_sql, reindent=True, keword_case='upper', strip_comments=True).strip()
 
 
 def clean_prefix(prefix=None):
     if prefix and not prefix.endswith('.'):
         prefix = prefix + '.'
     return prefix or ''
-
-
-def printsql(sql, params=None, cursor=None):
-    if cursor:
-        sql = cursor.mogrify(sql, params)
-
-    print('\033[92m' + sql + '\033[0m')
 
 
 def is_collection(value):
