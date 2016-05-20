@@ -292,6 +292,21 @@ class K1ApiTest(TestCase):
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ad_sources_for_ad_group_no_adgroupsource(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_content_ad_sources_for_ad_group'),
+            {'source_type': 'outbrain',
+             'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+        self.assertEqual(data, [])
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_get_sources_by_tracking_slug(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_sources_by_tracking_slug')
