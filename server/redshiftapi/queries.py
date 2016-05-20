@@ -48,12 +48,12 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints, o
     """
 
     _prepare_time_constraints(time_dimension, constraints, offset, limit)
-    default_context['constraints'] = backtosql.Q(cls, **constraints)
+    default_context['constraints'] = backtosql.Q(model, **constraints)
 
     sql = backtosql.generate_sql('breakdown_simple_select.sql', default_context)
 
     params = default_context['constraints'].get_params()
-    if default_context['breakdown_constraints']:
+    if default_context.get('breakdown_constraints'):
         params.extend(default_context['breakdown_constraints'].get_params())
 
     return sql, params

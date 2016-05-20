@@ -1,6 +1,7 @@
 import backtosql
 import copy
 import datetime
+import mock
 
 from django.test import TestCase
 
@@ -107,3 +108,15 @@ class TestPrepareQuery(TestCase):
 
         with self.assertRaises(exc.MissingBreakdownConstraintsError):
             queries.prepare_lvl2_top_rows(context)
+
+    def test_top_time_rows_prepares_time(self):
+        constraints = {
+            'date__gte': datetime.date(2016, 2, 1),
+            'date__lte': datetime.date(2016, 2, 16),
+        }
+
+        _, params = queries.prepare_time_top_rows(
+            models.RSContentAdStats,
+            constants.TimeDimension.DAY, {}, constraints, 1, 2)
+
+        self.assertItemsEqual(params, [datetime.date(2016, 2, 2), datetime.date(2016, 2, 3)])
