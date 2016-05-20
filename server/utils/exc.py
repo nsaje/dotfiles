@@ -60,6 +60,10 @@ class InvalidBreakdownError(BaseError):
     pass
 
 
+class MissingBreakdownConstraintsError(BaseError):
+    pass
+
+
 custom_errors = (
     AuthError,
     AuthorizationError,

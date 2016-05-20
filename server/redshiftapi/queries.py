@@ -3,6 +3,7 @@ import datetime
 import dateutil
 
 from stats import constants
+from utils import exc
 
 
 def prepare_lvl1_top_rows(default_context):
@@ -10,9 +11,10 @@ def prepare_lvl1_top_rows(default_context):
 
     params = default_context['constraints'].get_params()
 
-    # TODO this query requires breakdown_constraints to work correctly
-    if default_context['breakdown_constraints']:
-        params.extend(default_context['breakdown_constraints'].get_params())
+    if not default_context.get('breakdown_constraints'):
+        raise exc.MissingBreakdownConstraintsError()
+
+    params.extend(default_context['breakdown_constraints'].get_params())
 
     return sql, params
 
@@ -22,9 +24,10 @@ def prepare_lvl2_top_rows(default_context):
 
     params = default_context['constraints'].get_params()
 
-    # TODO this query requires breakdown_constraints to work correctly
-    if default_context['breakdown_constraints']:
-        params.extend(default_context['breakdown_constraints'].get_params())
+    if not default_context.get('breakdown_constraints'):
+        raise exc.MissingBreakdownConstraintsError()
+
+    params.extend(default_context['breakdown_constraints'].get_params())
 
     return sql, params
 
@@ -56,11 +59,12 @@ def _prepare_time_constraints(time_dimension, constraints, offset, limit):
         start_date = start_date + datetime.timedelta(days=offset)
         end_date = start_date + datetime.timedelta(days=(limit - offset))
 
-    if time_dimension == constants.TimeDimension.WEEK:
+    elif time_dimension == constants.TimeDimension.WEEK:
         start_date = start_date + datetime.timedelta(days=7 * offset)
         end_date = start_date + datetime.timedelta(days=7 * (limit - offset))
 
-    if time_dimension == constants.TimeDimension.MONTH:
+    else:
+        start_date = start_date.replace(day=1)
         start_date = start_date + dateutil.relativedelta.relativedelta(months=offset)
         end_date = start_date + dateutil.relativedelta.relativedelta(months=(limit - offset))
 

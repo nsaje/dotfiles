@@ -6,7 +6,7 @@ SELECT
     {{ aggregates|column_as_alias }}
 FROM (
     SELECT
-        {{ breakdown|columnt_as_alias:"b" }},
+        {{ breakdown|column_as_alias:"b" }},
         SUM(b.clicks) clicks,
         SUM(b.impressions) impressions,
         SUM(b.cost_cc) cost_cc,
