@@ -66,8 +66,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 offset: offset,
                 limit: limit,
                 breakdown: ds.selectedBreakdown.slice(0, level),
-                positions: breakdowns.map(function (breakdown) {
-                    return breakdown.position;
+                breakdownIds: breakdowns.map(function (breakdown) {
+                    return breakdown.breakdownId;
                 }),
             };
 
@@ -112,16 +112,28 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 return;
             }
 
-            var position = breakdown.position;
-            var current = ds.data.breakdown;
-            for (var i = 1; i < breakdown.level; ++i) {
-                current = current.rows[position[i]].breakdown;
-            }
-
+            var current = findBreakdown(breakdown.breakdownId);
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.to = breakdown.pagination.to;
             current.pagination.size += breakdown.pagination.size;
             current.pagination.count = breakdown.pagination.count;
+        }
+
+        function findBreakdown (breakdownId, subtree) {
+            // Traverse breakdown tree to find breakdown by breakdownId
+            // If subtree (breakdown) is not passed start with base one
+            if (!subtree) subtree = ds.data.breakdown;
+            if (subtree.breakdownId === breakdownId) {
+                return subtree;
+            }
+            var res = null;
+            subtree.rows.forEach(function (row) {
+                if (row.breakdown) {
+                    var temp = findBreakdown(breakdownId, row.breakdown);
+                    if (temp) res = temp;
+                }
+            });
+            return res;
         }
 
         function initializeData (breakdown) {
@@ -140,7 +152,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                     // row = { stats, position }
                     row.breakdown = {
                         level: breakdown.level + 1,
-                        position: row.position,
+                        breakdownId: row.breakdownId,
                         pagination: {
                             from: 0,
                             to: 0,
@@ -148,7 +160,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                         },
                         rows: [],
                     };
-                    delete row.position;
+                    delete row.breakdownId;
                 });
             }
         }
