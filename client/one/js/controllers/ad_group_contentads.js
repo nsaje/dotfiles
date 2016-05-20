@@ -498,6 +498,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         return modalInstance;
     };
 
+    $scope.addContentAdsPlus = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/upload_ads_plus_modal.html',
+            controller: 'UploadAdsPlusModalCtrl',
+            windowClass: 'modal',
+            scope: $scope,
+        });
+
+        modalInstance.result.then(function () {
+            getTableData();
+        });
+
+        return modalInstance;
+    };
+
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
         updateContentAdStates(state);
 
