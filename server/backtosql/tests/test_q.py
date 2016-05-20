@@ -3,8 +3,6 @@ import datetime
 
 from django.test import TestCase
 
-from backtosql.tests.test_backtosql import TestSQLMixin
-
 
 class QTestCase(TestCase):
     class ModelA(backtosql.Model):
@@ -71,3 +69,27 @@ class QTestCase(TestCase):
 
         with self.assertRaises(backtosql.BackToSQLException):
             q.generate(prefix="v")
+
+    def test_generate_from_a_list(self):
+        constraints_dict = {
+            'py_foo__eq': [1, 2, 3],
+            'py_bar': datetime.date.today(),
+        }
+
+        q = backtosql.Q(self.ModelA, *[backtosql.Q(self.ModelA, **constraints_dict) for x in range(10)])
+        q.join_operator = q.OR
+
+        constraints = q.generate("TROL")
+        expected = '''\
+        ((TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
+        (TROL.bar=%s AND TROL.foo=ANY(%s)))'''
+        self.assertEquals(constraints, expected.replace('        ', ''))
+        self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 10)
