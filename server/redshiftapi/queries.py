@@ -7,6 +7,11 @@ from utils import exc
 
 
 def prepare_lvl1_top_rows(default_context):
+    """
+    Prepares a SQL query for a general 1st level breakdown.
+    Breakdown array should be of lenght 2 - base and 1st level breakdown.
+    """
+
     sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
@@ -20,6 +25,11 @@ def prepare_lvl1_top_rows(default_context):
 
 
 def prepare_lvl2_top_rows(default_context):
+    """
+    Prepares a SQL query for a general 2st level breakdown.
+    Breakdown array should be of lenght 3 - base, 1st level and 2nd level breakdown.
+    """
+
     sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
@@ -33,6 +43,9 @@ def prepare_lvl2_top_rows(default_context):
 
 
 def prepare_time_top_rows(model, time_dimension, default_context, constraints, offset, limit):
+    """
+    Prepares a SQL query for a breakdown where targeted dimension is time.
+    """
 
     _prepare_time_constraints(time_dimension, constraints, offset, limit)
     default_context['constraints'] = backtosql.Q(cls, **constraints)
