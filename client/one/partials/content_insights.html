@@ -2,7 +2,23 @@
     <div class="section">
         <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
             <div class="graph-infobox-row">
-                <div class="graph-container">
+                <div class="graph-container insights-container">
+                    <p class="insights-title">Best Performers</p>
+
+                    <table class="table table-insights">
+                        <thead>
+                            <th> </th>
+                            <th>{{summary}}</th>
+                            <th>{{metric}}</th>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="row in rows track by $index" ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
+                                <td>{{$index + 1}}</td>
+                                <td>{{row.summary}}</td>
+                                <td>{{row.metric}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div ng-if="hasInfoboxPermission" class="infobox-container">
                     <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
