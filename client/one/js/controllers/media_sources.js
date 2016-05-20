@@ -139,7 +139,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             unselectable: true,
             checked: true,
             type: 'text',
-            shown: false,
+            shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
             order: true,
