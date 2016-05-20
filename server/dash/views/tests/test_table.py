@@ -252,18 +252,18 @@ class AdGroupAdsTableTest(TestCase):
             'submission_status': [{
                 'name': 'AdsNative',
                 'status': 1,
-                'source_state': '',
-                'text': 'Pending / Paused'
+                'source_state': '(paused)',
+                'text': 'Pending'
             }, {
                 'name': 'Gravity',
                 'status': 2,
                 'source_state': '(paused)',
-                'text': 'Approved / Paused'
+                'text': 'Approved'
             }, {
                 'name': 'Sharethrough',
                 'status': 1,
                 'source_state': '',
-                'text': 'Pending / Paused',
+                'text': 'Pending',
             }],
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
@@ -756,18 +756,18 @@ class AdGroupAdsTableUpdatesTest(TestCase):
         self.assertIn('rows', result['data'])
         expected_submission_status = [{
             'status': 1,
-            'source_state': '',
-            'text': 'Pending / Paused',
+            'source_state': '(paused)',
+            'text': 'Pending',
             'name': 'AdsNative'
         }, {
             'status': 2,
             'source_state': '(paused)',
-            'text': 'Approved / Paused',
+            'text': 'Approved',
             'name': 'Gravity'
         }, {
             'status': 1,
             'source_state': '',
-            'text': 'Pending / Paused',
+            'text': 'Pending',
             'name': 'Sharethrough'
         }]
         self.assertItemsEqual(result['data']['rows']['1']['submission_status'], expected_submission_status)

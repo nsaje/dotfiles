@@ -442,21 +442,13 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
         }
 
         cas_source = content_ad_source.source
-        cas_ad_group = content_ad_source.content_ad.ad_group
 
         ad_group_source_state_text = ''
         if user.has_perm('zemauth.can_see_media_source_status_on_submission_popover'):
-            cas_ad_group_source_state = None
-            for agss in ad_group_sources_states:
-                if agss.ad_group_source.ad_group_id == cas_ad_group.id and\
-                   agss.ad_group_source.source_id == cas_source.id:
-                    cas_ad_group_source_state = agss
-                    break
+            cas_ad_group_source_state = ad_group_sources_states.get(cas_source.id)
 
             if cas_ad_group_source_state is not None:
-                if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                    ad_group_source_state_text = ''
-                else:
+                if cas_ad_group_source_state != constants.AdGroupSourceSettingsState.ACTIVE:
                     ad_group_source_state_text = '(paused)'
 
         status['source_state'] = ad_group_source_state_text
@@ -465,11 +457,6 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
                 content_ad_source.submission_errors is not None):
             text = '{} ({})'.format(text, content_ad_source.submission_errors)
-        else:
-            text = '{} / {}'.format(
-                text,
-                constants.ContentAdSourceState.get_text(cas_source_state)
-            )
 
         status['text'] = text
         submission_status.append(status)
@@ -754,10 +741,36 @@ def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_
 
 
 def get_ad_group_sources_states(ad_group_sources):
-    return models.AdGroupSourceState.objects\
-                                    .filter(ad_group_source__in=ad_group_sources)\
-                                    .group_current_states()\
-                                    .select_related('ad_group_source')
+    return get_fake_ad_group_source_states(ad_group_sources)
+
+    # return models.AdGroupSourceState.objects\
+    #                                .filter(ad_group_source__in=ad_group_sources)\
+    #                                .group_current_states()\
+    #                                .select_related('ad_group_source')
+
+
+def get_fake_ad_group_source_states(ad_group_sources):
+    states = []
+    for ags in ad_group_sources:
+        ad_group_settings = ags.ad_group.get_current_settings()
+        agss = ags.get_current_settings()
+
+        state = ad_group_settings.state
+        if state == constants.AdGroupSettingsState.ACTIVE:
+            state = agss.state
+
+        states.append(
+            models.AdGroupSourceState(
+                ad_group_source=ags,
+
+                state=state,
+                cpc_cc=agss.cpc_cc,
+                daily_budget_cc=agss.daily_budget_cc,
+                created_dt=agss.created_dt,
+            )
+        )
+
+    return states
 
 
 def get_ad_group_sources_settings(ad_group_sources):
