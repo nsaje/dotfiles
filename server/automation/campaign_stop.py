@@ -1290,13 +1290,9 @@ def _send_campaign_stop_notification_email(campaign, campaign_settings, availabl
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
 
-The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.
 
-Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode.
-
-While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.
-
-Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode
+Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.
 
 Yours truly,
 Zemanta'''  # noqa
@@ -1325,13 +1321,9 @@ def _send_depleting_budget_notification_email(campaign, campaign_settings, avail
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
 
-The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
-Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
-
-If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes.
-
-Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode
+If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes. Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.
 
 Yours truly,
 Zemanta'''  # noqa
