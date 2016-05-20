@@ -1,19 +1,15 @@
-import datetime
-import sqlparse
-
 from django.test import TestCase
 from django.template import Context, Template
 
 import backtosql
 from backtosql import helpers
-from backtosql.templatetags import backtosql_tags
 
 
 class TestSQLMixin(object):
 
     def assertSQLEquals(self, first, second):
-        first = backtosql.clean_sql(first)
-        second = backtosql.clean_sql(second)
+        first = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
+        second = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
         self.assertEqual(first, second)
 
 
@@ -85,14 +81,6 @@ class TemplateColumnTestCase(TestCase):
 
         with self.assertRaises(backtosql.BackToSQLException):
             self.assertEquals(column.only_alias(), "py_cat")
-
-    def test_strip_comments(self):
-        column = backtosql.TemplateColumn('test_col_comment.sql', {
-            'column_name': 'cat',
-            'multiplier': 100,
-        }, alias='py_cat')
-        self.assertEquals(column.column_as_alias(), "SUM(cat)*100 AS py_cat")
-        self.assertEquals(column.column_as_alias('t'), "SUM(t.cat)*100 AS py_cat")
 
 
 class OrderColumnTestCase(TestCase, TestSQLMixin):

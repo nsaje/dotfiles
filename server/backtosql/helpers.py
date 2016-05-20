@@ -1,5 +1,4 @@
 import collections
-import sqlparse
 
 from django.db.models.query import QuerySet
 from django.template import loader
@@ -27,8 +26,8 @@ def get_order(alias):
 
 
 def clean_sql(dirty_sql):
-    # removes comments and whitespaces
-    return sqlparse.format(dirty_sql, reindent=True, keword_case='upper', strip_comments=True).strip()
+    # removes comments
+    return dirty_sql.strip()
 
 
 def clean_prefix(prefix=None):
@@ -40,13 +39,6 @@ def clean_prefix(prefix=None):
 def printsql(sql, params=None, cursor=None):
     if cursor:
         sql = cursor.mogrify(sql, params)
-    sql = sqlparse.format(sql,
-                          reindent=True,
-                          indent_tabs=False,
-                          indent_width=1,
-                          keyword_case='upper',
-                          identifier_case='lower',
-                          strip_comments=True).strip()
 
     print('\033[92m' + sql + '\033[0m')
 
