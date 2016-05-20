@@ -19,6 +19,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.addUserErrors = null;
     $scope.canArchive = false;
     $scope.canRestore = true;
+    $scope.agencyManagers = null;
 
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
@@ -167,6 +168,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         api.accountUsers.list($state.params.id).then(
             function (data) {
                 $scope.users = data.users;
+                $scope.agencyManagers = data.agency_managers;
                 $scope.users.forEach(function (user, index) {
                     user.action = null;
                     user.emailResent = false;

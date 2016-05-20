@@ -10,7 +10,7 @@ django.setup()
 
 # django has to be started before the models are imported
 from django.db.models import Sum  # noqa
-from dash.models import AdGroup, AdGroupSourceSettings, AdGroupSource  # noqa
+from dash.models import AdGroup, AdGroupSource  # noqa
 from reports.models import ContentAdStats  # noqa
 from automation import campaign_stop  # noqa
 
@@ -20,9 +20,11 @@ def create_overspend_report(date, ad_group_id, debug_print):
         ad_groups = AdGroup.objects.filter(id=ad_group_id).prefetch_related('sources', 'contentad_set')
     else:
         ad_groups = AdGroup.objects.all().prefetch_related('sources', 'contentad_set')
+    ad_groups = ad_groups.exclude_archived()
+    ad_group_settings = campaign_stop._get_ag_settings_dict(date, ad_groups)
 
     # all ad groups
-    for ad_group in ad_groups.exclude_archived().iterator():
+    for ad_group in ad_groups:
         ad_group_name = ad_group.name.encode(errors='replace')
         media_sources = ad_group.sources.filter(source_type__type=constants.SourceType.B1)
         content_ads = ad_group.contentad_set.all()
@@ -30,15 +32,15 @@ def create_overspend_report(date, ad_group_id, debug_print):
         # all source for this ad group
         ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group, source__in=media_sources).select_related(
             'source')
+        ad_group_sources_settings = campaign_stop._get_sources_settings_dict(date, ad_group_sources)
         for ad_group_source in ad_group_sources:
             media_source = ad_group_source.source
             media_source_name = media_source.name.encode(errors='replace')
 
             #  daily budget
-            next_day = date + datetime.timedelta(days=1)
-            ad_group_settings = AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source,
-                                                                     created_dt__lt=next_day)
-            daily_budget = campaign_stop._get_source_max_daily_budget(date, ad_group_source, ad_group_settings)
+            daily_budget = campaign_stop._get_source_max_daily_budget(date, ad_group_source,
+                                                                      ad_group_settings[ad_group.id],
+                                                                      ad_group_sources_settings[ad_group_source.id])
             if daily_budget == 0:
                 continue
 

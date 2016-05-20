@@ -144,14 +144,15 @@ def get_content_ad_sources_for_ad_group(request):
         return _response_error("Must provide ad group id.")
     content_ad_id = request.GET.get('content_ad_id', None)
 
-    logger.info(ad_group_id)
-    logger.info(source_type)
-    ad_group_source = (
-        dash.models.AdGroupSource.objects
-            .select_related('ad_group', 'source')
-            .get(ad_group_id=ad_group_id,
-                 source__source_type__type=source_type)
-    )
+    try:
+        ad_group_source = (
+            dash.models.AdGroupSource.objects
+                .select_related('ad_group', 'source')
+                .get(ad_group_id=ad_group_id,
+                     source__source_type__type=source_type)
+        )
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_ok([])
 
     content_ad_sources = (
         dash.models.ContentAdSource.objects
@@ -695,12 +696,23 @@ def update_content_ad_status(request):
 
     modified = False
     content_ad_source = content_ad_source[0]
-    if 'submission_status' in data and content_ad_source.source_state != data['submission_status']:
-        content_ad_source.source_state = data['submission_status']
+    if 'submission_status' in data and content_ad_source.submission_status != data['submission_status']:
+        content_ad_source.submission_status = data['submission_status']
+        if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+            content_ad_source.submission_errors = None
         modified = True
 
+    if 'submission_errors' in data and content_ad_source.submission_errors != data['submission_errors']:
+        content_ad_source.submission_errors = data['submission_errors']
+        modified = True
+
+    # TODO(nsaje): remove after K1 uses source_content_ad_id
     if 'external_id' in data and content_ad_source.source_content_ad_id != data['external_id']:
         content_ad_source.source_content_ad_id = data['external_id']
+        modified = True
+
+    if 'source_content_ad_id' in data and content_ad_source.source_content_ad_id != data['source_content_ad_id']:
+        content_ad_source.source_content_ad_id = data['source_content_ad_id']
         modified = True
 
     if modified:
