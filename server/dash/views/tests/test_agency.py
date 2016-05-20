@@ -2,6 +2,7 @@
 import json
 import datetime
 import pytz
+import httplib
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
@@ -19,6 +20,8 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
+
+from utils import exc
 from utils.test_helper import add_permissions, fake_request
 
 
@@ -2958,3 +2961,29 @@ class AccountUsersTest(TestCase):
             ],
             response.json()['data']['users']
         )
+
+
+class CampaignContentInsightsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def user(self):
+        return User.objects.get(pk=2)
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_permission(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        with self.assertRaises(exc.AuthorizationError):
+            cis.get(fake_request(self.user()), 1)
+
+        add_permissions(self.user(), ['campaign_content_insights_view'])
+        cis = agency.CampaignContentInsights()
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'rows': [],
+                },
+                'success': True,
+            }, json.loads(response.content))
