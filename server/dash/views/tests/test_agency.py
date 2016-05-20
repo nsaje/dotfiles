@@ -2988,7 +2988,7 @@ class CampaignContentInsightsTest(TestCase):
             }, json.loads(response.content))
 
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
-    def test_basic(self, mock_get_stats):
+    def test_basic_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
         add_permissions(self.user(), ['campaign_content_insights_view'])
 
@@ -3018,6 +3018,56 @@ class CampaignContentInsightsTest(TestCase):
                         {
                             'summary': 'Test Ad',
                             'metric': '$0.100'
+                        }
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_duplicate_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['campaign_content_insights_view'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad1 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        cad2 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.bidder.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad1.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            },
+            {
+                'content_ad': cad2.id,
+                'clicks': 9000,
+                'impressions': 10000,
+            }
+        ]
+
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '$0.500'
                         }
                     ],
                 },
