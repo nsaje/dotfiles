@@ -1428,3 +1428,26 @@ class UserActivation(api_common.BaseApiView):
             )
 
         return self.create_api_response({})
+
+
+class CampaignContentInsights(api_common.BaseApiView):
+
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_content_insights_view'):
+            raise exc.AuthorizationError()
+
+        helpers.get_campaign(request.user, campaign_id)
+        return self.create_api_response({
+            'summary': 'Title',
+            'metric': 'CPC',
+            'rows': [
+                {
+                    'summary': 'Test title',
+                    'metric': 10.5,
+                },
+                {
+                    'summary': 'Test title 2',
+                    'metric': 0.1,
+                },
+            ],
+        })
