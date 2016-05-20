@@ -18,7 +18,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.adGroup = null;
 
     $scope.graphVisible = true;
-    $scope.navigationPaneVisible = true;
+    $scope.navigationPaneVisible = false;
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
