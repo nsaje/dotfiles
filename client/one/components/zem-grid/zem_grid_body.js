@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) {
+oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -19,7 +19,8 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             };
 
             var visibleRows;
-            var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+            var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE +
+                zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
             var pubsub = scope.ctrl.grid.meta.pubsub;
             var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
 
