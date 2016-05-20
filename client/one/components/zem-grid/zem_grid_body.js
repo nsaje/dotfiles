@@ -19,6 +19,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             };
 
             var visibleRows;
+            var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
             var pubsub = scope.ctrl.grid.meta.pubsub;
             var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
 
@@ -69,7 +70,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 );
 
                 var delta = currFirstRow - prevFirstRow;
-                if (Math.abs(delta) >= zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
+                if (Math.abs(delta) >= numberOfRenderedRows) {
                     // Rows can't be reused, reinitialize visible rows
                     initRenderedRows(currFirstRow, true);
                 } else if (delta) {
@@ -90,10 +91,10 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                             availableIndexes.push(row.index);
                         });
                         renderedRows = scope.state.renderedRows.slice(delta);
-                        if (visibleRows.length <= firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
-                            lastRow = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                        if (visibleRows.length <= firstRow + numberOfRenderedRows) {
+                            lastRow = numberOfRenderedRows;
                         } else {
-                            lastRow = firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                            lastRow = firstRow + numberOfRenderedRows;
                         }
                         for (i = lastRow - delta; i < lastRow; i++) {
                             row = visibleRows[i];
@@ -109,7 +110,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                             availableIndexes.push(row.index);
                         });
                         renderedRows = scope.state.renderedRows.slice(0, delta);
-                        if (visibleRows.length <= firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
+                        if (visibleRows.length <= firstRow + numberOfRenderedRows) {
                             lastRow = Math.abs(delta) - 1;
                         } else {
                             lastRow = firstRow + Math.abs(delta) - 1;
@@ -135,15 +136,22 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             }
 
             function initRenderedRows (firstRow, digest) {
+                // Reset scrolling position to 0 when initializing rendered rows from first row on - happens when
+                // rows are collapsed or after grid has been reloaded
+                if (firstRow === 0) {
+                    // FIXME: If rows are collapsed and element[0].scrollTop < 'ROW_HEIGHT', the position should not be
+                    // reset to 0
+                    element[0].scrollTop = 0;
+                }
                 requestUpdate(function () {
                     var row;
                     var renderedRows = [];
                     var index = 0;
                     var lastRow;
-                    if (visibleRows.length <= firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS) {
-                        lastRow = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                    if (visibleRows.length <= firstRow + numberOfRenderedRows) {
+                        lastRow = numberOfRenderedRows;
                     } else {
-                        lastRow = firstRow + zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                        lastRow = firstRow + numberOfRenderedRows;
                     }
 
                     for (var i = firstRow; i < lastRow; i++) {
@@ -199,9 +207,13 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             }
 
             function updateBody () {
-                // TODO: If breakdown is changed, change first row to 0
                 updateVisibleRows();
                 scope.fullTableHeight = getTableHeightStyle();
+
+                if (visibleRowsCount < (prevFirstRow + numberOfRenderedRows)) {
+                    prevFirstRow = Math.max((visibleRowsCount - numberOfRenderedRows), 0);
+                }
+
                 initRenderedRows(prevFirstRow, true);
 
                 $timeout(function () {
@@ -211,7 +223,11 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 }, 0, false);
             }
 
-            pubsub.register(pubsub.EVENTS.ROWS_UPDATED, updateBody);
+            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, function () {
+                prevFirstRow = 0;
+            });
+
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateBody);
 
             pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, function (event, scrollTop) {
                 handleVerticalScroll(scrollTop);

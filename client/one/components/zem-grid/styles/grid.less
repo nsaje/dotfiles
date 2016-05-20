@@ -60,21 +60,20 @@
 
       .zem-grid-cell {
         display: inline-block;
+        vertical-align: middle;
         height: 35px;
         line-height: 35px;
+        border-bottom: 1px solid #ddd;
         text-align: left;
         padding: 0 8px;
+        overflow: hidden;
 
         font-size: 13px;
         white-space: nowrap;
+        // TODO: Change to more sophisticated way of trimming long text in cells
+        text-overflow: ellipsis;
       }
 
-      &.level-0 {
-        background-color: #f6f6f6;
-        div:first-child {
-          font-weight: 600;
-        }
-      }
       &.level-1 {
         background-color: #F4F4F4;
         div:first-child,

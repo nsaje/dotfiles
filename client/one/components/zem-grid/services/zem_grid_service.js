@@ -8,6 +8,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         grid.meta.source.getMetaData().then(
             function (data) {
                 grid.header.columns = data.columns;
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
                 deferred.resolve();
             }
         );
@@ -30,7 +31,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
             }
         ).finally(function () {
             zemGridUIService.resetUIState(grid);
-            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.ROWS_UPDATED);
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             zemGridUIService.showLoader(grid, false);
         });
         return deferred.promise;
@@ -48,7 +49,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
 
     function toggleCollapse (grid, gridRow) {
         setRowCollapsed(grid, gridRow, !gridRow.collapsed);
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.ROWS_UPDATED);
+        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     }
 
     function toggleCollapseLevel (grid, level) {
@@ -61,7 +62,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
                 setRowCollapsed(grid, row, collapsed);
             }
         }
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.ROWS_UPDATED);
+        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     }
 
     return {

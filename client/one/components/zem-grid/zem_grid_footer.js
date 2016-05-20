@@ -34,7 +34,7 @@ oneApp.directive('zemGridFooter', ['$timeout', 'zemGridUIService', function ($ti
                 });
             }
 
-            pubsub.register(pubsub.EVENTS.ROWS_UPDATED, updateFooter);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateFooter);
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);

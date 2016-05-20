@@ -70,6 +70,10 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
             paginationCell.css({
                 'width': grid.ui.columnsWidths[0] + 'px',
             });
+            var loadMoreCell = row.find('.zem-grid-cell.load-more-cell');
+            loadMoreCell.css({
+                'width': 'auto',
+            });
         });
     }
 

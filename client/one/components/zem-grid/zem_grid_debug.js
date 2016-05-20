@@ -25,7 +25,9 @@ oneApp.directive('zemGridDebug', [function () {
                     if (value) selectedBreakdown.push(key);
                 });
                 this.grid.meta.source.selectedBreakdown = selectedBreakdown;
-                zemGridService.loadData(this.grid);
+                zemGridService.loadMetadata(this.grid).then(function () {
+                    zemGridService.loadData(this.grid);
+                }.bind(this));
             };
 
             this.toggleCollapseLevel = function (level) {
