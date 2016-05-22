@@ -19,7 +19,7 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
-from utils.test_helper import add_permissions
+from utils.test_helper import add_permissions, fake_request
 
 
 class AdGroupSettingsTest(TestCase):
@@ -2852,3 +2852,109 @@ class AccountSettingsTest(TestCase):
         new_campaign_settings.archived = True
         new_campaign_settings.save(request)
         self.assertEqual(view.get_non_removable_sources(account, [2]), [])
+
+
+class AccountUsersTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_agency.yaml']
+
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=1)
+        add_permissions(user, permissions_list)
+        user.save()
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client
+
+    def test_get(self):
+        client = self._get_client_with_permissions([
+            'account_agency_access_permissions',
+        ])
+        response = client.get(
+            reverse('account_users', kwargs={'account_id': 1}),
+        )
+        user = User.objects.get(pk=1)
+
+        self.assertIsNone(response.json()['data']['agency_managers'])
+        self.assertItemsEqual([
+                {
+                    u'name': u'',
+                    u'is_active': False,
+                    u'id': 2,
+                    u'last_login': u'2014-06-16',
+                    u'email': u'user@test.com'
+                },
+                {
+                    u'name': u'',
+                    u'is_active': False,
+                    u'id': 3,
+                    u'last_login': u'2014-06-16',
+                    u'email': u'john@test.com'
+                },
+                {
+                    u'name': u'',
+                    u'is_active': True,
+                    u'id': 1,
+                    u'last_login': user.last_login.date().isoformat(),
+                    u'email': u'superuser@test.com'
+                }
+            ],
+            response.json()['data']['users']
+        )
+
+    def test_get_agency(self):
+        client = self._get_client_with_permissions([
+            'account_agency_access_permissions',
+        ])
+
+        acc = models.Account.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(fake_request(User.objects.get(pk=1)))
+
+        user = User.objects.get(pk=1)
+        agency.users.add(User.objects.get(pk=1))
+
+        user = User.objects.get(pk=1)
+        self.maxDiff = None
+        response = client.get(
+            reverse('account_users', kwargs={'account_id': 1}),
+        )
+
+        self.assertItemsEqual([
+                {
+                    u'name': u'',
+                    u'is_active': True,
+                    u'id': 1,
+                    u'last_login': user.last_login.date().isoformat(),
+                    u'email': u'superuser@test.com'
+                }
+            ],
+            response.json()['data']['agency_managers']
+        )
+
+        self.assertItemsEqual([
+                {
+                    u'name': u'',
+                    u'is_active': False,
+                    u'id': 2,
+                    u'last_login': u'2014-06-16',
+                    u'email': u'user@test.com'
+                },
+                {
+                    u'name': u'',
+                    u'is_active': False,
+                    u'id': 3,
+                    u'last_login': u'2014-06-16',
+                    u'email': u'john@test.com'
+                },
+                {
+                    u'name': u'',
+                    u'is_active': True,
+                    u'id': 1,
+                    u'last_login': user.last_login.date().isoformat(),
+                    u'email': u'superuser@test.com'
+                }
+            ],
+            response.json()['data']['users']
+        )

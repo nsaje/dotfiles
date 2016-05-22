@@ -2145,7 +2145,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual(u'掌上留园－6park', publisher_blacklist.name)
@@ -2204,7 +2204,7 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
@@ -2250,7 +2250,7 @@ class PublishersBlacklistStatusTest(TestCase):
         publisher_blacklist = models.PublisherBlacklist.objects.first()
 
         self.assertTrue(publisher_blacklist.everywhere)
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertIsNone(publisher_blacklist.ad_group)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
@@ -2304,7 +2304,7 @@ class PublishersBlacklistStatusTest(TestCase):
         publisher_blacklist = models.PublisherBlacklist.objects.first()
 
         self.assertTrue(publisher_blacklist.everywhere)
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertIsNone(publisher_blacklist.ad_group)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
@@ -2483,7 +2483,7 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertIsNone(publisher_blacklist.ad_group)
         self.assertEqual(1, publisher_blacklist.campaign.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
@@ -2631,7 +2631,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.account.id)
         self.assertEqual('outbrain', publisher_blacklist.source.tracking_slug)
         self.assertEqual(u'Test', publisher_blacklist.name)
@@ -2781,12 +2781,20 @@ class AdGroupOverviewTest(TestCase):
             created_by=self.user,
         )
 
+        new_settings = ad_group.get_current_settings().copy_settings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+        new_settings.save(None)
+
+        new_settings = ad_group.adgroupsource_set.filter(id=1)[0].get_current_settings().copy_settings()
+        new_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+        new_settings.save(None)
+
         response = self._get_ad_group_overview(1)
 
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'test adgroup 1 Čžš')
-        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
+        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2853,7 +2861,12 @@ class AdGroupOverviewTest(TestCase):
         new_ad_group_settings = ad_group_settings.copy_settings()
         new_ad_group_settings.start_date = start_date
         new_ad_group_settings.end_date = end_date
+        new_ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
         new_ad_group_settings.save(None)
+
+        new_settings = ad_group.adgroupsource_set.filter(id=1)[0].get_current_settings().copy_settings()
+        new_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+        new_settings.save(None)
 
         credit = models.CreditLineItem.objects.create(
             account=ad_group.campaign.account,
@@ -2896,7 +2909,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'test adgroup 1 Čžš')
-        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
+        self.assertEqual(constants.InfoboxStatus.AUTOPILOT, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -3022,7 +3035,7 @@ class CampaignOverviewTest(TestCase):
         self.assertEqual('Location: US', location_setting['value'])
 
         budget_setting = self._get_setting(settings, 'daily budget')
-        self.assertEqual('$50.00', budget_setting['value'])
+        self.assertEqual('$100.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertEqual('$80.00', budget_setting['value'])

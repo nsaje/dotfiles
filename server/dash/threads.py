@@ -1,6 +1,7 @@
 from threading import Thread
 import logging
 import Queue
+import time
 
 from django.conf import settings
 from django.db.models import F
@@ -10,6 +11,8 @@ from dash import models
 from dash import exceptions
 
 logger = logging.getLogger(__name__)
+
+TRANSACTION_END_WAIT = 3
 
 
 class EscapeTransactionThread(Thread):
@@ -22,6 +25,8 @@ class EscapeTransactionThread(Thread):
         super(EscapeTransactionThread, self).__init__(*args, **kwargs)
 
     def run(self):
+        # to be sure that transaction is over
+        time.sleep(TRANSACTION_END_WAIT)
         self.func()
 
 

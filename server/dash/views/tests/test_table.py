@@ -257,7 +257,7 @@ class AdGroupAdsTableTest(TestCase):
             }, {
                 'name': 'Gravity',
                 'status': 2,
-                'source_state': '(paused)',
+                'source_state': '',
                 'text': 'Approved / Paused'
             }, {
                 'name': 'Sharethrough',
@@ -761,7 +761,7 @@ class AdGroupAdsTableUpdatesTest(TestCase):
             'name': 'AdsNative'
         }, {
             'status': 2,
-            'source_state': '(paused)',
+            'source_state': '',
             'text': 'Approved / Paused',
             'name': 'Gravity'
         }, {

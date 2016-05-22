@@ -190,7 +190,6 @@ class SwitchToLandingModeTestCase(TestCase):
             for ags in ad_group.adgroupsource_set.all():
                 if ags.get_current_settings().state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
                     active_ad_group_sources.add(ags)
-        self.assertEqual(len(active_ad_group_sources), len(mock_send_actions.call_args_list[0][0][0]))
 
     @patch('automation.campaign_stop._set_end_date_to_today')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
@@ -726,7 +725,7 @@ class CanEnableAdGroupsTestCase(TestCase):
                 self._get_ad_group_sources_settings_dict(ad_group),
                 max_daily_budget_per_ags,
                 Decimal('115'),
-                Decimal('185'),
+                Decimal('300'),
             )
         )
         self.assertFalse(
@@ -736,7 +735,7 @@ class CanEnableAdGroupsTestCase(TestCase):
                 self._get_ad_group_sources_settings_dict(ad_group),
                 max_daily_budget_per_ags,
                 Decimal('114'),
-                Decimal('185'),
+                Decimal('300'),
             )
         )
         self.assertFalse(
@@ -746,7 +745,7 @@ class CanEnableAdGroupsTestCase(TestCase):
                 self._get_ad_group_sources_settings_dict(ad_group),
                 max_daily_budget_per_ags,
                 Decimal('115'),
-                Decimal('184'),
+                Decimal('299'),
             )
         )
 
@@ -1020,17 +1019,10 @@ class SetAdGroupEndDateTestCase(TestCase):
         self.assertEqual(None, current_settings.end_date)
 
         today = dates_helper.utc_today()
-        actions = campaign_stop._set_ad_group_end_date(ad_group, today)
+        campaign_stop._set_ad_group_end_date(ad_group, today)
 
         new_settings = ad_group.get_current_settings()
         self.assertEqual(today, new_settings.end_date)
-
-        ad_group_source_ids = dash.models.AdGroupSource.objects.filter(ad_group=ad_group).values_list('id', flat=True)
-
-        self.assertEqual(len(ad_group_source_ids), len(actions))
-        for action in actions:
-            self.assertTrue(action.ad_group_source_id in ad_group_source_ids)
-            self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, action.action)
 
         self.assertFalse(mock_zwei_send.called)
 
@@ -1386,6 +1378,34 @@ class RunAutopilotTestCase(TestCase):
         ]
         mock_set_changes.assert_has_calls(set_changes_calls, any_order=True)
 
+    @patch('automation.autopilot_plus.prefetch_autopilot_data')
+    @patch('automation.autopilot_budgets.get_autopilot_daily_budget_recommendations')
+    @patch('automation.autopilot_cpc.get_autopilot_cpc_recommendations')
+    @patch('automation.autopilot_plus.set_autopilot_changes')
+    def test_autopilot_data_not_available(self, mock_set_changes, mock_ap_cpc, mock_ap_budget, mock_ap_prefetch):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ag1 = dash.models.AdGroup.objects.get(id=1)
+        ag2 = dash.models.AdGroup.objects.get(id=2)
+
+        daily_caps = {
+            1: 100,
+            2: 200,
+        }
+
+        self.assertEqual(dash.constants.AdGroupSettingsState.ACTIVE, ag1.get_current_settings().state)
+        self.assertEqual(dash.constants.AdGroupSettingsState.ACTIVE, ag2.get_current_settings().state)
+
+        mock_ap_prefetch.return_value = ({}, {
+            campaign: 'Mock campaign goal'
+        })
+
+        campaign_stop._run_autopilot(campaign, daily_caps)
+        self.assertFalse(mock_ap_cpc.called)
+        self.assertFalse(mock_ap_budget.called)
+
+        self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ag1.get_current_settings().state)
+        self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ag2.get_current_settings().state)
+
 
 class UpdateCampaignsInLandingTestCase(TestCase):
 
@@ -1452,8 +1472,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             new_settings.landing_mode = False
             new_settings.save(None)
 
-        actions = campaign_stop._check_ad_groups_end_date(campaign)
-        self.assertEqual(len(actions), 6)
+        campaign_stop._check_ad_groups_end_date(campaign)
         self.assertFalse(campaign.adgroup_set.all().filter_active().count())
 
     @patch('utils.dates_helper.local_today')

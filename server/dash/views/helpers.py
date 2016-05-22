@@ -132,6 +132,21 @@ def get_campaign(user, campaign_id, sources=None):
         raise exc.MissingDataError('Campaign does not exist')
 
 
+def get_user_agency(user):
+    try:
+        return user.agency_set.get()
+    except models.Agency.DoesNotExist:
+        pass
+    return None
+
+
+def is_agency_manager(user, account):
+    if account.agency is None:
+        return False
+
+    return get_user_agency(user) == account.agency
+
+
 def get_last_sync(sync_times):
     if not len(sync_times) or None in sync_times:
         return None
@@ -438,11 +453,11 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
                     cas_ad_group_source_state = agss
                     break
 
-            if cas_ad_group_source_state is not None:
-                if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                    ad_group_source_state_text = ''
-                else:
-                    ad_group_source_state_text = '(paused)'
+            # if cas_ad_group_source_state is not None:
+            #     if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
+            #         ad_group_source_state_text = ''
+            #     else:
+            #         ad_group_source_state_text = '(paused)'
 
         status['source_state'] = ad_group_source_state_text
 

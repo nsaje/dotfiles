@@ -938,7 +938,9 @@ class AccountSettings(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
-        user_agency = request.user.agency_set.first()
+        user_agency = None
+        if helpers.is_agency_manager(request.user, account):
+            user_agency = helpers.get_user_agency(request.user)
 
         response = {
             'settings': self.get_dict(request, account_settings, account),
@@ -1191,7 +1193,7 @@ class AccountSettings(api_common.BaseApiView):
             users = users.filter(pk=agency.users.all()) | \
                 users.filter(account__agency=agency)
 
-        users = list(users.distinct())
+        users = list(users.filter(is_active=True).distinct())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:
@@ -1287,10 +1289,14 @@ class AccountUsers(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
+        agency_users = account.agency.users.all() if account.agency else []
+
         users = [self._get_user_dict(u) for u in account.users.all()]
+        agency_managers = [self._get_user_dict(u) for u in agency_users]
 
         return self.create_api_response({
-            'users': users
+            'users': users,
+            'agency_managers': agency_managers if account.agency else None,
         })
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
@@ -1315,6 +1321,7 @@ class AccountUsers(api_common.BaseApiView):
         email = form.cleaned_data.get('email')
 
         try:
+
             user = ZemUser.objects.get(email__iexact=email)
 
             if (first_name == user.first_name and last_name == user.last_name)\

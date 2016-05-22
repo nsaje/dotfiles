@@ -292,7 +292,7 @@ def _can_enable_media_sources(ad_group_sources, campaign):
 
         daily_budget_added = daily_budget_cc - max_daily_budget_per_ags.get(ad_group_source.id, 0)
         can_enable_today = daily_budget_added <= remaining_today
-        can_enable_tomorrow = daily_budget_cc <= available_tomorrow
+        can_enable_tomorrow = daily_budget_added + daily_budget_cc <= available_tomorrow
 
         ret[ad_group_source.id] = can_enable_today and can_enable_tomorrow
 
@@ -344,7 +344,7 @@ def _can_enable_ad_group(ad_group, ad_group_settings, ad_group_sources_settings_
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
 
     can_enable_today = daily_budget_added <= remaining_today
-    can_enable_tomorrow = daily_budget_total <= available_tomorrow
+    can_enable_tomorrow = daily_budget_added + daily_budget_total <= available_tomorrow
 
     return can_enable_today and can_enable_tomorrow
 
@@ -588,8 +588,18 @@ def _run_autopilot(campaign, daily_caps):
     active_ad_groups = campaign.adgroup_set.all().filter_active()
     per_ad_group_autopilot_data, campaign_goals = autopilot_plus.prefetch_autopilot_data(active_ad_groups)
     for ad_group in active_ad_groups:
-        daily_cap = daily_caps[ad_group.id]
+        if ad_group not in per_ad_group_autopilot_data:
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Stopping ad group {}. Autopilot data not available.'.format(
+                    ad_group.id,
+                )
+            )
+            actions.extend(_stop_ad_group(ad_group))
+            continue
+
         ap_data = per_ad_group_autopilot_data[ad_group]
+        daily_cap = daily_caps[ad_group.id]
         campaign_goal = campaign_goals[ad_group.campaign]
 
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
@@ -1280,11 +1290,9 @@ def _send_campaign_stop_notification_email(campaign, campaign_settings, availabl
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
 
-The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.
 
-Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode.
-
-While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.
+Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.
 
 Yours truly,
 Zemanta'''  # noqa
@@ -1313,11 +1321,9 @@ def _send_depleting_budget_notification_email(campaign, campaign_settings, avail
 
 your campaign {campaign_name} ({account_name}) will soon run out of budget.
 
-The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}.
+The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
-Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
-
-If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes.
+If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes. Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.
 
 Yours truly,
 Zemanta'''  # noqa

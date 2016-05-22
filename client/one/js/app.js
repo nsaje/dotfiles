@@ -176,6 +176,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/budget',
             templateUrl: '/partials/campaign_budget.html',
             controller: 'CampaignBudgetCtrl',
+        })
+        .state('main.campaigns.content_insights', {
+            url: '/content_insights',
+            templateUrl: '/partials/content_insights.html',
+            controller: 'ContentInsightsCtrl'
         });
 
 

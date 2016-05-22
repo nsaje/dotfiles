@@ -52,17 +52,7 @@
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-notifications="notifications" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
 
         <div class="table-footnotes">
-            <div ng-switch="lastSyncDate">
-                <span ng-switch-when="null">
-                    * Reporting metrics haven't been synced yet.
-                </span>
-                <span ng-switch-default>
-                    * Reporting metrics synced {{ lastSyncDate.fromNow() }}. The reporting data is an estimate, and the final amount will be reflected on your invoice.
-                </span>
-            </div>
-            <div>
-                * Please note that not all media sources support publisher-level transparency, so totals in this view might not match the totals in media sources and content ads views.
-            </div>
+            <div>* The reporting data is an estimate, and the final amount will be reflected on your invoice.</div>
             <div>* All times are in Eastern Standard Time (EST).</div>
         </div>
 

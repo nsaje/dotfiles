@@ -456,7 +456,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         nameCssClass: 'data-status-icon',
         type: 'dataStatus',
         internal: $scope.isPermissionInternal('zemauth.data_status_column'),
-        shown: $scope.hasPermission('zemauth.data_status_column'),
+        shown: false,
         checked: true,
         totalRow: false,
         unselectable: true,
@@ -489,6 +489,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             controller: 'UploadAdsModalCtrl',
             windowClass: 'modal',
             scope: $scope
+        });
+
+        modalInstance.result.then(function () {
+            getTableData();
+        });
+
+        return modalInstance;
+    };
+
+    $scope.addContentAdsPlus = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/upload_ads_plus_modal.html',
+            controller: 'UploadAdsPlusModalCtrl',
+            windowClass: 'modal',
+            scope: $scope,
         });
 
         modalInstance.result.then(function () {
