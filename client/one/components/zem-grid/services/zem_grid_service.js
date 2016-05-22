@@ -20,7 +20,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         if (row) {
             breakdown = row.data;
         }
-
+        grid.ui.loading = true;
         var deferred = $q.defer();
         grid.meta.source.getData(breakdown, size).then(
             function (data) {
@@ -30,11 +30,13 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
             function () { // error
             },
             function (data) { // notify
+                grid.ui.loading = false;
                 zemGridParser.parse(grid, data);
                 zemGridUIService.resetUIState(grid);
                 grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
         ).finally(function () {
+            grid.ui.loading = false;
             zemGridUIService.resetUIState(grid);
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         });
