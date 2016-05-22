@@ -1,40 +1,42 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridObject', function ($q, zemGridConstants, zemGridParser, zemGridObject) { // eslint-disable-line max-len
+oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridUIService', function ($q, zemGridConstants, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
 
-    var columnWidths = getInitialColumnWidths();
-
-    function loadGrid (dataSource) {
+    function loadMetadata (grid) {
         var deferred = $q.defer();
-        dataSource.getMetaData().then(
+        grid.meta.source.getMetaData().then(
             function (data) {
-                var grid = new zemGridObject.createInstance();
                 grid.header.columns = data.columns;
-                grid.meta.source = dataSource;
-                grid.ui.columnWidths = columnWidths;
-                deferred.resolve(grid);
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+                deferred.resolve();
             }
         );
         return deferred.promise;
     }
 
     function loadData (grid, row, size) {
-        var breakdown = null;
-        if (row) breakdown = row.data;
+        var breakdown;
+        if (row) {
+            breakdown = row.data;
+        }
+
         var deferred = $q.defer();
-        grid.ui.loading = true;
         grid.meta.source.getData(breakdown, size).then(
             function (data) {
-                if (breakdown) {
-                    zemGridParser.parseInplace(grid, row, data);
-                } else {
-                    zemGridParser.parse(grid, data);
-                }
+                zemGridParser.parse(grid, data);
                 deferred.resolve();
+            },
+            function () { // error
+            },
+            function (data) { // notify
+                zemGridParser.parse(grid, data);
+                zemGridUIService.resetUIState(grid);
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
         ).finally(function () {
-            grid.ui.loading = false;
+            zemGridUIService.resetUIState(grid);
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         });
         return deferred.promise;
     }
@@ -51,6 +53,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
 
     function toggleCollapse (grid, gridRow) {
         setRowCollapsed(grid, gridRow, !gridRow.collapsed);
+        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     }
 
     function toggleCollapseLevel (grid, level) {
@@ -63,45 +66,15 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
                 setRowCollapsed(grid, row, collapsed);
             }
         }
+        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     }
-
-    function getRowClass (grid, row) {
-        var classes = [];
-        classes.push('level-' + row.level);
-
-        if (row.level === grid.meta.source.selectedBreakdown.length) {
-            classes.push('level-last');
-        }
-        return classes;
-    }
-
-    function getCellStyle (grid, cellIndex) {
-        var width = 'auto';
-        if (grid.ui.columnWidths[cellIndex]) {
-            width = grid.ui.columnWidths[cellIndex] + 'px';
-        }
-        return {'min-width': width};
-    }
-
-    function getInitialColumnWidths (grid) {
-        // FIXME: if columnWidth ref changes, it does not work anymore when grid is reloaded (ie. submit new breakdown)
-        // ==> it is not possible to generate this array when grid is loading -- load()
-        var columnsWidths = [];
-        for (var i = 0; i < 50; ++i) columnsWidths.push(20);
-        return columnsWidths;
-    }
-
 
     return {
-        loadGrid: loadGrid,
+        loadMetadata: loadMetadata,
         loadData: loadData,
 
         // TODO: Move to separate service (interaction service)
         toggleCollapse: toggleCollapse,
         toggleCollapseLevel: toggleCollapseLevel,
-
-        // TODO: Move to separate service (style service)
-        getRowClass: getRowClass,
-        getCellStyle: getCellStyle,
     };
 }]);

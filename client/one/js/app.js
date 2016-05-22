@@ -86,6 +86,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl'
+        })
+        .state('main.allAccounts.accounts_breakdowns', {
+            url: '/accounts-tablebreakdowns',
+            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
+            controller: 'AllAccountsAccountsBreakdownsCtrl',
         });
 
     $stateProvider
@@ -109,10 +114,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl'
         })
-        .state('main.accounts.agency', {
-            url: '/agency',
-            templateUrl: '/partials/account_agency.html',
-            controller: 'AccountAgencyCtrl'
+        .state('main.accounts.history', {
+            url: '/history',
+            templateUrl: '/partials/account_history.html',
+            controller: 'AccountHistoryCtrl'
         })
         .state('main.accounts.settings', {
             url: '/settings',
@@ -213,28 +218,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/publishers',
             templateUrl: '/partials/ad_group_publishers.html',
             controller: 'AdGroupPublishersCtrl'
-        });
-
-    $stateProvider
-        .state('main.development', {
-            url: 'development',
-            template: '<div ui-view></div>',
-            controller: 'DevelopmentCtrl',
-        })
-        .state('main.development.grid', {
-            url: '/grid',
-            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
-            controller: 'DevelopmentGridCtrl',
-        })
-        .state('main.development.grid-legacy', {
-            url: '/grid-legacy',
-            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
-            controller: 'DevelopmentGridCachedCtrl',
-        })
-        .state('main.allAccounts.accounts_tablebreakdowns', {
-            url: '/accounts-tablebreakdowns',
-            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
-            controller: 'DevelopmentGridAllAccountsCtrl',
         });
 }]);
 

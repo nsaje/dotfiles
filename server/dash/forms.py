@@ -4,8 +4,6 @@ import re
 import unicodecsv
 import dateutil.parser
 import rfc3987
-import datetime
-from decimal import Decimal
 
 from collections import Counter
 
@@ -45,11 +43,6 @@ class AdGroupSettingsForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify ad group name.'}
     )
-    state = forms.TypedChoiceField(
-        choices=constants.AdGroupSettingsState.get_choices(),
-        coerce=int,
-        empty_value=None
-    )
     start_date = forms.DateField(
         error_messages={
             'required': 'Please provide start date.',
@@ -58,10 +51,12 @@ class AdGroupSettingsForm(forms.Form):
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
+        max_value=4,
         decimal_places=4,
         required=False,
         error_messages={
             'min_value': 'Maximum CPC can\'t be lower than $0.03.',
+            'max_value': 'Maximum CPC can\'t be higher than $4.00.'
         }
     )
     daily_budget_cc = forms.DecimalField(
@@ -116,23 +111,14 @@ class AdGroupSettingsForm(forms.Form):
         self.ad_group = ad_group
         self.fields['retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
             campaign__account=ad_group.campaign.account).filter_by_user(user)
-
-    def clean_state(self):
-        state = self.cleaned_data.get('state')
-
-        # ACTIVE state is only valid when there is budget to spend
-        if state == constants.AdGroupSettingsState.ACTIVE and\
-                not validation_helpers.ad_group_has_available_budget(self.ad_group):
-            raise forms.ValidationError('Cannot enable ad group without available budget.')
-
-        return state
+        self.current_settings = self.ad_group.get_current_settings()
 
     def clean_retargeting_ad_groups(self):
         ad_groups = self.cleaned_data.get('retargeting_ad_groups')
         return [ag.id for ag in ad_groups]
 
     def clean_end_date(self):
-        state = self.cleaned_data.get('state')
+        state = self.current_settings.state
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
 
@@ -140,10 +126,10 @@ class AdGroupSettingsForm(forms.Form):
             if start_date and end_date < start_date:
                 raise forms.ValidationError('End date must not occur before start date.')
 
-            if end_date < datetime.date.today() and state == constants.AdGroupSettingsState.ACTIVE:
+            if end_date < dates_helper.local_today() and state == constants.AdGroupSettingsState.ACTIVE:
                 raise forms.ValidationError('End date cannot be set in the past.')
 
-        if self.ad_group.get_current_settings().landing_mode:
+        if self.current_settings.landing_mode:
             raise forms.ValidationError('End date cannot be set when campaign is in landing mode.')
 
         return end_date
@@ -251,13 +237,16 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AccountAgencyAgencyForm(forms.Form):
+class AccountSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
+        required=False,
         error_messages={'required': 'Please specify account name.'}
     )
-    default_account_manager = forms.IntegerField()
+    default_account_manager = forms.IntegerField(
+        required=False
+    )
     default_sales_representative = forms.IntegerField(
         required=False
     )
@@ -270,6 +259,9 @@ class AccountAgencyAgencyForm(forms.Form):
     def clean_name(self):
         name = self.cleaned_data.get('name')
 
+        if not name:
+            return None
+
         account_id = self.cleaned_data.get('id')
 
         if models.Account.objects.filter(name=name).exclude(id=account_id).exists():
@@ -280,8 +272,10 @@ class AccountAgencyAgencyForm(forms.Form):
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
 
-        err_msg = 'Invalid account manager.'
+        if not account_manager_id:
+            return None
 
+        err_msg = 'Invalid account manager.'
         try:
             account_manager = ZemUser.objects.get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
@@ -776,7 +770,7 @@ class CreditLineItemForm(forms.ModelForm):
     class Meta:
         model = models.CreditLineItem
         fields = [
-            'account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
+            'account', 'agency', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
         ]
 
 

@@ -17,6 +17,16 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.addUserRequestInProgress = false;
     $scope.addUserData = {};
     $scope.addUserErrors = null;
+    $scope.canArchive = false;
+    $scope.canRestore = true;
+
+    $scope.isAnySettingSettable = function () {
+        return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
+            $scope.hasPermission('zemauth.can_modify_account_name') ||
+            $scope.hasPermission('zemauth.can_modify_account_type') ||
+            $scope.hasPermission('zemauth.can_set_account_sales_representative') ||
+            $scope.hasPermission('zemauth.can_modify_account_manager');
+    };
 
     $scope.getAllowedMediaSources = function () {
         var list = [];
@@ -71,14 +81,32 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         usr.action = null;
     };
 
+    $scope.archiveAccount = function () {
+        if ($scope.canArchive) {
+            api.accountArchive.archive($scope.account.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
+    };
+
+    $scope.restoreAccount = function () {
+        if ($scope.canRestore) {
+            api.accountArchive.restore($scope.account.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
+    };
+
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
-        api.accountAgency.get($state.params.id).then(
+        api.accountSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 if (discarded) {
                     $scope.discarded = true;
                 } else {
@@ -100,10 +128,12 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         $scope.discarded = null;
         $scope.requestInProgress = true;
 
-        api.accountAgency.save($scope.settings).then(
+        api.accountSettings.save($scope.settings).then(
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
                 $scope.saved = true;
             },
@@ -165,7 +195,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                 user.action = null;
                 $scope.addUserErrors = null;
                 $scope.addUserData = {};
-                $scope.getSettings(); // updates history
+                $scope.getSettings();
             },
             function (data) {
                 $scope.addUserErrors = data;
@@ -186,7 +216,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
                     user.saved = false;
                 }
 
-                $scope.getSettings(); // updates history
+                $scope.getSettings();
             }
         ).finally(function () {
             user.requestInProgress = false;
@@ -208,7 +238,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
             }
         ).finally(function () {
             user.requestInProgress = false;
-            $scope.getSettings(); // updates history
+            $scope.getSettings();
         });
     };
 
@@ -219,7 +249,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         api.accountUsers.put($state.params.id, {email: user.email}).then(
             function (data) {
                 user.removed = false;
-                $scope.getSettings(); // updates history
+                $scope.getSettings();
             }
         ).finally(function () {
             user.requestInProgress = false;

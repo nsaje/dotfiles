@@ -27,6 +27,7 @@ from utils import api_common
 from utils import statsd_helper
 from utils import exc
 from utils import email_helper
+from utils import k1_helper
 
 from zemauth.models import User as ZemUser
 
@@ -83,6 +84,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
+        k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
@@ -161,7 +163,6 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group.name = resource['name']
 
     def set_settings(self, ad_group, settings, resource, user):
-        settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.daily_budget_cc = resource['daily_budget_cc']
@@ -199,11 +200,6 @@ class AdGroupSettings(api_common.BaseApiView):
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
             )
-
-            if current_settings.state != new_settings.state:
-                actionlogs_to_send.extend(
-                    actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=False)
-                )
 
         zwei_actions.send(actionlogs_to_send)
 
@@ -278,6 +274,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
             new_settings.state = new_state
             new_settings.save(request)
             actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
+            k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
         return self.create_api_response({
             'id': str(ad_group.pk),
@@ -829,249 +826,18 @@ class ConversionPixel(api_common.BaseApiView):
         })
 
 
-class AccountAgency(api_common.BaseApiView):
+class AccountHistory(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
+    @statsd_helper.statsd_timer('dash.api', 'account_history_get')
     def get(self, request, account_id):
-        if not (self._is_valid_agency_manager(account_id, request.user) or
-                request.user.has_perm('zemauth.account_agency_view')):
+        if not request.user.has_perm('zemauth.account_history_view'):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        account_settings = account.get_current_settings()
-
         response = {
-            'settings': self.get_dict(request, account_settings, account),
-            'account_managers': self.get_user_list(account_settings),
-            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
-            'can_archive': account.can_archive(),
-            'can_restore': account.can_restore(),
         }
-
         return self.create_api_response(response)
-
-    @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
-    def put(self, request, account_id):
-        if not (request.user.has_perm('zemauth.account_agency_view') or
-                self._is_valid_agency_manager(account_id, request.user)):
-            raise exc.AuthorizationError()
-
-        account = helpers.get_account(request.user, account_id)
-        resource = json.loads(request.body)
-
-        form = forms.AccountAgencyAgencyForm(resource.get('settings', {}))
-
-        settings = self.save_settings(request, account, form)
-
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
-                                            account=account)
-        response = {
-            'settings': self.get_dict(request, settings, account),
-            'history': self.get_history(account),
-            'can_archive': account.can_archive(),
-            'can_restore': account.can_restore(),
-        }
-
-        return self.create_api_response(response)
-
-    def _is_valid_agency_manager(self, account_id, user):
-        if not user.has_perm('zemauth.can_manage_agency'):
-            return False
-
-        agency = user.agency_set.first()
-        account = agency.account_set.filter(id=account_id).first() if agency else None
-
-        if agency is not None and account is not None and account.agency == agency:
-            return True
-
-        return False
-
-    def save_settings(self, request, account, form):
-        with transaction.atomic():
-            if form.is_valid():
-                if 'default_sales_representative' in form.cleaned_data and\
-                        form.cleaned_data['default_sales_representative'] is not None and not (
-                        request.user.has_perm('zemauth.account_agency_view') or
-                        request.user.has_perm('zemauth.can_set_account_sales_representative')):
-                    raise exc.AuthorizationError()
-
-                self.set_account(account, form.cleaned_data)
-
-                settings = models.AccountSettings()
-                self.set_settings(settings, account, form.cleaned_data)
-
-                if 'allowed_sources' in form.cleaned_data and\
-                        form.cleaned_data['allowed_sources'] is not None and\
-                        not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                    raise exc.AuthorizationError()
-
-                if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
-                    if not request.user.has_perm('zemauth.can_modify_account_type'):
-                        raise exc.AuthorizationError()
-                    settings.account_type = form.cleaned_data['account_type']
-
-                if 'allowed_sources' in form.cleaned_data and\
-                        form.cleaned_data['allowed_sources'] is not None:
-                    self.set_allowed_sources(
-                        settings,
-                        account,
-                        request.user.has_perm('zemauth.can_see_all_available_sources'),
-                        form
-                    )
-
-            # Form is additionally validated in self.set_allowed_sources method
-            if not form.is_valid():
-                data = self.get_validation_error_data(request, account)
-                raise exc.ValidationError(errors=dict(form.errors), data=data)
-
-            account.save(request)
-            settings.save(request)
-
-            return settings
-
-    def get_validation_error_data(self, request, account):
-        data = {}
-        if not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-            return data
-
-        data['allowed_sources'] = self.get_allowed_sources(
-            request.user.has_perm('zemauth.can_see_all_available_sources'),
-            [source.id for source in account.allowed_sources.all()]
-        )
-        return data
-
-    def set_account(self, account, resource):
-        account.name = resource['name']
-
-    def get_non_removable_sources(self, account, sources_to_be_removed):
-        non_removable_source_ids_list = []
-
-        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
-
-            for adgroup in campaign.adgroup_set.filter(is_demo=False):
-                adgroup_settings = adgroup.get_current_settings()
-                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
-                    continue
-
-                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
-                    adgroup_source_settings = adgroup_source.get_current_settings()
-                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        non_removable_source_ids_list.append(adgroup_source.source_id)
-
-        return non_removable_source_ids_list
-
-    def add_error_to_account_agency_form(self, form, to_be_removed):
-        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed).order_by('id')]
-        media_sources = ', '.join(source_names)
-        if len(source_names) > 1:
-            msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)
-        else:
-            msg = 'Can\'t save changes because media source {} is still used on this account.'.format(media_sources)
-
-        form.add_error('allowed_sources', msg)
-
-    def set_allowed_sources(self, settings, account, can_see_all_available_sources, account_agency_form):
-        allowed_sources_dict = account_agency_form.cleaned_data.get('allowed_sources')
-
-        if not allowed_sources_dict:
-            return
-
-        all_available_sources = self.get_all_media_sources(can_see_all_available_sources)
-        current_allowed_sources = self.get_allowed_media_sources(account, can_see_all_available_sources)
-        new_allowed_sources = self.filter_allowed_sources_dict(all_available_sources, allowed_sources_dict)
-
-        new_allowed_sources_set = set(new_allowed_sources)
-        current_allowed_sources_set = set(current_allowed_sources)
-
-        to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
-        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
-
-        non_removable_sources = self.get_non_removable_sources(account, to_be_removed)
-        if len(non_removable_sources) > 0:
-            self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
-            return
-
-        if to_be_added or to_be_removed:
-            settings.changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
-            account.allowed_sources.add(*list(to_be_added))
-            account.allowed_sources.remove(*list(to_be_removed))
-
-    def get_all_media_sources(self, can_see_all_available_sources):
-        qs_sources = models.Source.objects.all()
-        if not can_see_all_available_sources:
-            qs_sources = qs_sources.filter(released=True)
-
-        return list(qs_sources)
-
-    def get_allowed_media_sources(self, account, can_see_all_available_sources):
-        qs_allowed_sources = account.allowed_sources.all()
-        if not can_see_all_available_sources:
-            qs_allowed_sources = qs_allowed_sources.filter(released=True)
-
-        return list(qs_allowed_sources)
-
-    def filter_allowed_sources_dict(self, sources, allowed_sources_dict):
-        allowed_sources = []
-        for source in sources:
-            if source.id in allowed_sources_dict:
-                value = allowed_sources_dict[source.id]
-                if value.get('allowed', False):
-                    allowed_sources.append(source)
-
-        return allowed_sources
-
-    def set_settings(self, settings, account, resource):
-        settings.account = account
-        settings.name = resource['name']
-        settings.default_account_manager = resource['default_account_manager']
-        settings.default_sales_representative = resource['default_sales_representative']
-
-    def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
-        allowed_sources_dict = {}
-
-        all_sources_queryset = models.Source.objects.filter(deprecated=False)
-        if not include_unreleased_sources:
-            all_sources_queryset = all_sources_queryset.filter(released=True)
-
-        all_sources = list(all_sources_queryset)
-
-        for source in all_sources:
-            source_settings = {'name': source.name}
-            if source.id in allowed_sources_ids_list:
-                source_settings['allowed'] = True
-            source_settings['released'] = source.released
-            allowed_sources_dict[source.id] = source_settings
-
-        return allowed_sources_dict
-
-    def get_dict(self, request, settings, account):
-        result = {}
-
-        if settings:
-            result = {
-                'id': str(account.pk),
-                'name': account.name,
-                'archived': settings.archived,
-                'default_account_manager':
-                    str(settings.default_account_manager.id)
-                    if settings.default_account_manager is not None else None,
-            }
-
-            if request.user.has_perm('zemauth.account_agency_view') or\
-                    request.user.has_perm('zemauth.can_set_account_sales_representative'):
-                result['default_sales_representative'] =\
-                    str(settings.default_sales_representative.id) if\
-                    settings.default_sales_representative is not None else None
-            if request.user.has_perm('zemauth.can_modify_account_type'):
-                result['account_type'] = settings.account_type
-            if request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                result['allowed_sources'] = self.get_allowed_sources(
-                    request.user.has_perm('zemauth.can_see_all_available_sources'),
-                    [source.id for source in account.allowed_sources.all()]
-                )
-
-        return result
 
     def get_history(self, account):
         settings = models.AccountSettings.objects.\
@@ -1164,6 +930,246 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(change_strings)
 
+
+class AccountSettings(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        account_settings = account.get_current_settings()
+
+        user_agency = request.user.agency_set.first()
+
+        response = {
+            'settings': self.get_dict(request, account_settings, account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
+        }
+
+        if request.user.has_perm('zemauth.can_modify_account_manager'):
+            response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
+
+        if request.user.has_perm('zemauth.can_set_account_sales_representative'):
+            response['sales_reps'] = self.get_user_list(account_settings, 'campaign_settings_sales_rep')
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
+    def put(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        resource = json.loads(request.body)
+
+        form = forms.AccountSettingsForm(resource.get('settings', {}))
+
+        settings = self.save_settings(request, account, form)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+                                            account=account)
+        response = {
+            'settings': self.get_dict(request, settings, account),
+            'can_archive': account.can_archive(),
+            'can_restore': account.can_restore(),
+        }
+
+        return self.create_api_response(response)
+
+    def save_settings(self, request, account, form):
+        with transaction.atomic():
+            # Form is additionally validated in self.set_allowed_sources method
+            if not form.is_valid():
+                data = self.get_validation_error_data(request, account)
+                raise exc.ValidationError(errors=dict(form.errors), data=data)
+
+            self._validate_essential_account_settings(request.user, form)
+
+            self.set_account(account, form.cleaned_data)
+
+            settings = account.get_current_settings().copy_settings()
+            self.set_settings(settings, account, form.cleaned_data)
+
+            if 'allowed_sources' in form.cleaned_data and\
+                    form.cleaned_data['allowed_sources'] is not None and\
+                    not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                raise exc.AuthorizationError()
+
+            if 'account_type' in form.cleaned_data and form.cleaned_data['account_type']:
+                if not request.user.has_perm('zemauth.can_modify_account_type'):
+                    raise exc.AuthorizationError()
+                settings.account_type = form.cleaned_data['account_type']
+
+            if 'allowed_sources' in form.cleaned_data and\
+                    form.cleaned_data['allowed_sources'] is not None:
+                self.set_allowed_sources(
+                    settings,
+                    account,
+                    request.user.has_perm('zemauth.can_see_all_available_sources'),
+                    form
+                )
+
+            account.save(request)
+            settings.save(request)
+            return settings
+
+    def _validate_essential_account_settings(self, user, form):
+        if 'default_sales_representative' in form.cleaned_data and\
+                form.cleaned_data['default_sales_representative'] is not None and\
+                not user.has_perm('zemauth.can_set_account_sales_representative'):
+            raise exc.AuthorizationError()
+
+        if 'name' in form.cleaned_data and\
+                form.cleaned_data['name'] is not None and\
+                not user.has_perm('zemauth.can_modify_account_name'):
+            raise exc.AuthorizationError()
+
+        if 'default_account_manager' in form.cleaned_data and \
+                form.cleaned_data['default_account_manager'] is not None and\
+                not user.has_perm('zemauth.can_modify_account_manager'):
+            raise exc.AuthorizationError()
+
+    def get_validation_error_data(self, request, account):
+        data = {}
+        if not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            return data
+
+        data['allowed_sources'] = self.get_allowed_sources(
+            request.user.has_perm('zemauth.can_see_all_available_sources'),
+            [source.id for source in account.allowed_sources.all()]
+        )
+        return data
+
+    def set_account(self, account, resource):
+        if resource['name']:
+            account.name = resource['name']
+
+    def get_non_removable_sources(self, account, sources_to_be_removed):
+        non_removable_source_ids_list = []
+
+        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
+
+            for adgroup in campaign.adgroup_set.filter(is_demo=False):
+                adgroup_settings = adgroup.get_current_settings()
+                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
+                    continue
+
+                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
+                    adgroup_source_settings = adgroup_source.get_current_settings()
+                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                        non_removable_source_ids_list.append(adgroup_source.source_id)
+
+        return non_removable_source_ids_list
+
+    def add_error_to_account_agency_form(self, form, to_be_removed):
+        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed).order_by('id')]
+        media_sources = ', '.join(source_names)
+        if len(source_names) > 1:
+            msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)
+        else:
+            msg = 'Can\'t save changes because media source {} is still used on this account.'.format(media_sources)
+
+        form.add_error('allowed_sources', msg)
+
+    def set_allowed_sources(self, settings, account, can_see_all_available_sources, account_agency_form):
+        allowed_sources_dict = account_agency_form.cleaned_data.get('allowed_sources')
+
+        if not allowed_sources_dict:
+            return
+
+        all_available_sources = self.get_all_media_sources(can_see_all_available_sources)
+        current_allowed_sources = self.get_allowed_media_sources(account, can_see_all_available_sources)
+        new_allowed_sources = self.filter_allowed_sources_dict(all_available_sources, allowed_sources_dict)
+
+        new_allowed_sources_set = set(new_allowed_sources)
+        current_allowed_sources_set = set(current_allowed_sources)
+
+        to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
+
+        non_removable_sources = self.get_non_removable_sources(account, to_be_removed)
+        if len(non_removable_sources) > 0:
+            self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
+            return
+
+        if to_be_added or to_be_removed:
+            settings.changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
+            account.allowed_sources.add(*list(to_be_added))
+            account.allowed_sources.remove(*list(to_be_removed))
+
+    def get_all_media_sources(self, can_see_all_available_sources):
+        qs_sources = models.Source.objects.all()
+        if not can_see_all_available_sources:
+            qs_sources = qs_sources.filter(released=True)
+
+        return list(qs_sources)
+
+    def get_allowed_media_sources(self, account, can_see_all_available_sources):
+        qs_allowed_sources = account.allowed_sources.all()
+        if not can_see_all_available_sources:
+            qs_allowed_sources = qs_allowed_sources.filter(released=True)
+
+        return list(qs_allowed_sources)
+
+    def filter_allowed_sources_dict(self, sources, allowed_sources_dict):
+        allowed_sources = []
+        for source in sources:
+            if source.id in allowed_sources_dict:
+                value = allowed_sources_dict[source.id]
+                if value.get('allowed', False):
+                    allowed_sources.append(source)
+
+        return allowed_sources
+
+    def set_settings(self, settings, account, resource):
+        settings.account = account
+        if resource['name']:
+            settings.name = resource['name']
+        if resource['default_account_manager']:
+            settings.default_account_manager = resource['default_account_manager']
+        if resource['default_sales_representative']:
+            settings.default_sales_representative = resource['default_sales_representative']
+
+    def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
+        allowed_sources_dict = {}
+
+        all_sources_queryset = models.Source.objects.filter(deprecated=False)
+        if not include_unreleased_sources:
+            all_sources_queryset = all_sources_queryset.filter(released=True)
+
+        all_sources = list(all_sources_queryset)
+
+        for source in all_sources:
+            source_settings = {'name': source.name}
+            if source.id in allowed_sources_ids_list:
+                source_settings['allowed'] = True
+            source_settings['released'] = source.released
+            allowed_sources_dict[source.id] = source_settings
+
+        return allowed_sources_dict
+
+    def get_dict(self, request, settings, account):
+        if not settings:
+            return {}
+
+        result = {
+            'id': str(account.pk),
+            'archived': settings.archived,
+        }
+        if request.user.has_perm('zemauth.can_modify_account_name'):
+            result['name'] = account.name
+        if request.user.has_perm('zemauth.can_modify_account_manager'):
+            result['default_account_manager'] = str(settings.default_account_manager.id) \
+                if settings.default_account_manager is not None else None
+        if request.user.has_perm('zemauth.can_set_account_sales_representative'):
+            result['default_sales_representative'] =\
+                str(settings.default_sales_representative.id) if\
+                settings.default_sales_representative is not None else None
+        if request.user.has_perm('zemauth.can_modify_account_type'):
+            result['account_type'] = settings.account_type
+        if request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            result['allowed_sources'] = self.get_allowed_sources(
+                request.user.has_perm('zemauth.can_see_all_available_sources'),
+                [source.id for source in account.allowed_sources.all()]
+            )
+        return result
+
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
         sources_text_list = []
         if added_sources:
@@ -1178,8 +1184,14 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name=None):
-        users = list(ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all())
+    def get_user_list(self, settings, perm_name=None, agency=None):
+        users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
+
+        if agency is not None:
+            users = users.filter(pk=agency.users.all()) | \
+                users.filter(account__agency=agency)
+
+        users = list(users.distinct())
 
         manager = settings.default_account_manager
         if manager is not None and manager not in users:

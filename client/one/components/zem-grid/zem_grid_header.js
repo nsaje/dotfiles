@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridHeader', ['$timeout', function ($timeout) {
+oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
 
     return {
         restrict: 'E',
@@ -10,29 +10,21 @@ oneApp.directive('zemGridHeader', ['$timeout', function ($timeout) {
         controllerAs: 'ctrl',
         bindToController: {
             grid: '=',
-            pubsub: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function postLink (scope, element) {
-            var pubsub = scope.ctrl.pubsub;
+            var pubsub = scope.ctrl.grid.meta.pubsub;
 
-            scope.$watch('ctrl.grid.header', function (header) {
-                if (header) {
-                    $timeout(function () {
-                        // Calculate columns widths after header is rendered
-                        var columns = element.querySelectorAll('.zem-grid-cell');
-                        columns.each(function (index, column) {
-                            var columnWidth = column.offsetWidth;
-                            if (scope.ctrl.grid.ui.columnWidths[index] < columnWidth) {
-                                scope.ctrl.grid.ui.columnWidths[index] = columnWidth;
-                            }
-                        });
-                    }, 0, false);
-                }
-            });
+            function updateHeader () {
+                $timeout(function () {
+                    scope.ctrl.grid.ui.state.headerRendered = true;
+                    scope.ctrl.grid.header.element = element;
+                    zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+                }, 0, false);
+            }
 
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, value) {
-                var leftOffset = -1 * value;
+            function handleHorizontalScroll (leftOffset) {
+                leftOffset = -1 * leftOffset;
                 var translateCssProperty = 'translateX(' + leftOffset + 'px)';
 
                 element.css({
@@ -40,12 +32,14 @@ oneApp.directive('zemGridHeader', ['$timeout', function ($timeout) {
                     '-ms-transform': translateCssProperty,
                     'transform': translateCssProperty,
                 });
+            }
+
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateHeader);
+
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
+                handleHorizontalScroll(leftOffset);
             });
         },
-        controller: ['zemGridService', function (zemGridService) {
-            this.getCellStyle = function (index) {
-                return zemGridService.getCellStyle(this.grid, index);
-            };
-        }],
+        controller: [function () {}],
     };
 }]);

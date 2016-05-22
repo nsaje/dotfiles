@@ -12,6 +12,7 @@ from dash import export
 from dash import models
 from dash import constants
 import reports.redshift as redshift
+import reports.models as rm
 from utils import test_helper
 
 from zemauth.models import User
@@ -306,15 +307,30 @@ class ExportTestCase(test.TestCase):
 
         accounts = models.Account.objects.all()
 
-        models.CreditLineItem.objects.create(
+        credit = models.CreditLineItem.objects.create(
             account_id=1,
             amount=1000,
             license_fee=Decimal('0.1000'),
+            status=1,
             flat_fee_cc=1000000,
             start_date=datetime.date(2014, 6, 1),
             end_date=datetime.date(2014, 7, 31),
             flat_fee_start_date=datetime.date(2014, 6, 1),
             flat_fee_end_date=datetime.date(2014, 7, 31),
+        )
+        budget = models.BudgetLineItem.objects.create(
+            campaign_id=1,
+            amount=900,
+            credit=credit,
+            start_date=datetime.date(2014, 6, 1),
+            end_date=datetime.date(2014, 7, 31),
+        )
+        rm.BudgetDailyStatement.objects.create(
+            date=start_date,
+            budget=budget,
+            license_fee_nano=1 * 10**9,
+            media_spend_nano=100 * 10**9,
+            data_spend_nano=0
         )
 
         rows = export._generate_rows(
@@ -352,8 +368,8 @@ class ExportTestCase(test.TestCase):
              'impressions': 100000,
              'start_date': datetime.date(2014, 6, 30),
              'license_fee': 1.0,
-             'total_fee': Decimal('101.0'),
-             'flat_fee': Decimal('100.0'),
+             'total_fee': Decimal('101.0000'),
+             'flat_fee': Decimal('100.0000'),
              'status': 2,
              },
             {'account_id': 2,
@@ -368,8 +384,8 @@ class ExportTestCase(test.TestCase):
              'impressions': 200000,
              'start_date': datetime.date(2014, 6, 30),
              'license_fee': 1.0,
-             'total_fee': Decimal('1.0'),
-             'flat_fee': Decimal('0.0'),
+             'total_fee': None,
+             'flat_fee': None,
              'status': 2,
              }
         ])

@@ -11,16 +11,19 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', fun
             dataSource: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', 'zemGridPubSub', function ($scope, zemGridPubSub) {
+        controller: ['$scope', 'zemGridObject', 'zemGridPubSub', function ($scope, zemGridObject, zemGridPubSub) {
 
             var ctrl = this;
-            ctrl.grid = null;
-            ctrl.pubsub = zemGridPubSub.createInstance($scope);
+            var grid = new zemGridObject.createInstance();
+            var pubsub = zemGridPubSub.createInstance($scope);
+
+            grid.meta.pubsub = pubsub;
+            grid.meta.source = this.dataSource;
 
             activate();
 
             function activate () {
-                zemGridService.loadGrid(ctrl.dataSource).then(function (grid) {
+                zemGridService.loadMetadata(grid).then(function () {
                     ctrl.grid = grid;
                     zemGridService.loadData(ctrl.grid);
                 });

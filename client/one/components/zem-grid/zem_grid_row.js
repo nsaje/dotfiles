@@ -13,20 +13,24 @@ oneApp.directive('zemGridRow', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridService',
-            function ($scope, zemGridConstants, zemGridService) {
+        link: function (scope, element) {
+            scope.$watch('ctrl.row.style', function (style) {
+                element.css(style);
+            });
+        },
+        controller: ['$scope', 'zemGridConstants', 'zemGridService', 'zemGridUIService',
+            function ($scope, zemGridConstants, zemGridService, zemGridUIService) {
                 $scope.constants = zemGridConstants;
 
                 this.loadMore = function (size) {
-                    if (!size)
-                    {
+                    if (!size) {
                         size = this.row.data.pagination.count - this.row.data.pagination.to;
                     }
                     zemGridService.loadData(this.grid, this.row, size);
                 };
 
                 this.getRowClass = function () {
-                    return zemGridService.getRowClass(this.grid, this.row);
+                    return zemGridUIService.getRowClass(this.grid, this.row);
                 };
             }],
     };

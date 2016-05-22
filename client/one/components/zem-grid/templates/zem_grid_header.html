@@ -1,9 +1,6 @@
 <div class="zem-grid-header">
     <div class="zem-grid-row">
-        <div class="zem-grid-cell"
-             ng-repeat="col in ctrl.grid.header.columns track by $index"
-             ng-style="ctrl.getCellStyle($index)">
-
+        <div class="zem-grid-cell" ng-repeat="col in ctrl.grid.header.columns track by $index">
             <!-- Basic styling - TODO: refactor and fully support current Table styles -->
             <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
             <span ng-switch="col.order">
@@ -12,7 +9,6 @@
                 <span ng-switch-default class="col-title" ng-class="col.nameCssClass">{{ col.name }}</span>
             </span>
             <zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
-
         </div>
     </div>
 </div>

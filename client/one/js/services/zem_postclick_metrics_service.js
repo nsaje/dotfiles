@@ -203,7 +203,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         };
     }
 
-    function setConversionGoalChartOptions (chartOptions, conversionGoals, isShown) {
+    function setConversionGoalChartOptions (chartOptions, conversionGoals) {
         if (!conversionGoals || !conversionGoals.length) {
             return;
         }
@@ -212,13 +212,13 @@ oneApp.factory('zemPostclickMetricsService', function () {
             for (var i = 0; i < chartOptions.length; i++) {
                 if (chartOptions[i].value === el.id) {
                     chartOptions[i].name = el.name;
-                    chartOptions[i].shown = isShown;
+                    chartOptions[i].shown = true;
                 }
             }
         });
     }
 
-    function setConversionGoalColumnsDefaults (cols, conversionGoals, isShown) {
+    function setConversionGoalColumnsDefaults (cols, conversionGoals) {
         if (!conversionGoals || !conversionGoals.length) {
             return;
         }
@@ -227,7 +227,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             for (var i = 0; i < cols.length; i++) {
                 if (cols[i].field === el.id) {
                     cols[i].name = el.name;
-                    cols[i].shown = isShown;
+                    cols[i].shown = true;
                 }
             }
         });

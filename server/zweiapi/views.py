@@ -44,6 +44,7 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
     # content that should not exist in Outbrain and made some impressions
     927: {3: ['2015-12-08']},
     701: {3: ['2016-04-02']},
+    1: {46: ['2016-05-10']},
 }
 
 

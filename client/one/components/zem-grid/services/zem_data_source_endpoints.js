@@ -2,79 +2,15 @@
 'use strict';
 
 oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'api', function ($rootScope, $controller, $http, $q, $timeout, api) { // eslint-disable-line max-len
-
-    function MockEndpoint () {
-        var url = '/api/stats/testdata/';
-        this.availableBreakdowns = ['ad_group', 'age', 'sex', 'date'];
-        this.defaultBreakdown = ['ad_group', 'age', 'date'];
-        this.defaultPagination = [2, 3, 5, 7];
-
-        this.getMetaData = function (config) {
-            var deferred = $q.defer();
-            $http.get(url, this.createQueryParams(config)).success(function (data) {
-                var breakdown = data.data[0];
-                deferred.resolve(breakdown.meta);
-            }).error(function (data) {
-                deferred.reject(data);
-            });
-
-            return deferred.promise;
-        };
-
-        this.getData = function (config) {
-            var deferred = $q.defer();
-            $http.get(url, this.createQueryParams(config)).success(function (data) {
-                deferred.resolve(data.data[0]);
-            }).error(function (data) {
-                deferred.reject(data);
-            });
-
-            return deferred.promise;
-        };
-
-        this.createQueryParams = function (config) {
-            var breakdown = config.breakdown;
-            var size = config.size;
-            var level = 0;
-            if (breakdown) level = breakdown.level;
-
-            var ranges = [];
-            for (var i = 1; i <= config.selectedBreakdown.length; ++i) {
-                var from = 0;
-                var to = this.defaultPagination[i - 1];
-                if (breakdown) {
-                    if (i < breakdown.level) {
-                        from = breakdown.position[i];
-                        to = from + 1;
-                    } else if (breakdown.level === i) {
-                        from = breakdown.pagination.to;
-                        if (size) {
-                            if (size > 0) to = from + size;
-                            else to = -1;
-                        } else {
-                            to = from + this.defaultPagination[i - 1];
-                        }
-                    }
-                }
-                ranges.push([from, to].join('|'));
-            }
-
-            return {
-                params: {
-                    breakdowns: config.selectedBreakdown.join(','),
-                    ranges: ranges.join(','),
-                    level: level,
-                },
-            };
-        };
-    }
-
+    //
+    // Temporary endpoint to showcase how zem-grid is working with old (legacy) TableAPI
+    // TODO: Remove LegacyEndpoint and create Endpoint for new Breakdowns API
+    //
     function LegacyEndpoint (tableApi, columns) {
         this.columns = columns;
         this.tableApi = tableApi;
-        this.availableBreakdowns = ['campaign', 'source', 'device', 'week'];
+        this.availableBreakdowns = [];
         this.defaultBreakdown = [];
-        this.defaultPagination = [2, 3, 5, 7];
 
         this.getMetaData = function () {
             var deferred = $q.defer();
@@ -89,7 +25,6 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
             var page = 1;
             var size = 10;
-
             if (config && config.size) {
                 size = config.size;
             }
@@ -98,7 +33,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                 // Find optimal page size to capture desired range (from-to)
                 // Additional rows are sliced when parsing data
                 var to = config.breakdown.pagination.to + size;
-                while (true) {
+                while (true) { // eslint-disable-line
                     page = Math.floor(config.breakdown.pagination.to / size) + 1;
                     if (page * size >= to) {
                         break;
@@ -133,8 +68,8 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                 level: 1,
             };
 
+            // Slice additional rows if any
             if (config && config.breakdown) {
-                // Slice additional rows if any
                 var diff;
                 var from = config.breakdown.pagination.to + 1;
                 var to = config.size + from - 1;
@@ -169,28 +104,24 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
     }
 
     function getLegacyColumns (ctrl) {
-        // HACK (legacy support): access columns variable from corresponded controller
+        //
+        // HACK (legacy support): access columns variable from corresponded controller scope
+        //
         var mainScope = angular.element(document.querySelectorAll('[ui-view]')).scope();
         var scope = mainScope.$new();
-        try {
-            $controller(ctrl, {$scope: scope});
-        } catch (e) {
-            // just ignore exception - only scope.columns is needed
-        }
+        try { $controller(ctrl, {$scope: scope}); } catch (e) { } // eslint-disable-line
         return scope.columns;
     }
 
+    function createLegacyEndpoint (legacyApi, legacyCtrl) {
+        var columns = getLegacyColumns(legacyCtrl);
+        return new LegacyEndpoint(legacyApi, columns);
+    }
+
     return {
-        createMockEndpoint: function () {
-            return new MockEndpoint();
-        },
+        createLegacyEndpoint: createLegacyEndpoint,
         createAllAccountsEndpoint: function () {
-            var columns = getLegacyColumns('AllAccountsAccountsCtrl');
-            return new LegacyEndpoint(api.accountAccountsTable, columns);
-        },
-        createLegacyEndpoint: function (legacyApi, legacyCtrl) {
-            var columns = getLegacyColumns(legacyCtrl);
-            return new LegacyEndpoint(legacyApi, columns);
+            return createLegacyEndpoint(api.accountAccountsTable, 'AllAccountsAccountsCtrl');
         },
     };
 }]);

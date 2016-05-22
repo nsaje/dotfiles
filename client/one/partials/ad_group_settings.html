@@ -199,7 +199,7 @@
                 Autopilot
                 <zem-help-popover content="Bid CPC and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
             </label>
-			<div class="col-xs-12 alert alert-info form-alert-box" ng-if="isCampaignLanding()" >
+			<div class="col-xs-12 alert alert-info form-alert-box" ng-if="isInLanding()" >
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                 </div>
@@ -213,7 +213,7 @@
                 <div class="col">
                     <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
                         <label>
-                            <input type="radio" ng-model="settings.autopilotState" ng-value="autopilotState.value" ng-disabled="isCampaignLanding()"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover>
+                            <input type="radio" ng-model="settings.autopilotState" ng-value="autopilotState.value" ng-disabled="isInLanding()"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover>
                         </label>
                     </div>
                 </div>
@@ -229,7 +229,7 @@
                 <div class="col-xs-2">
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
-                        <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" fraction-size="0" zem-currency-input ng-disabled="isCampaignLanding()">
+                        <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" fraction-size="0" zem-currency-input ng-disabled="isInLanding()">
                     </div>
                 </div>
                 <div class="col-xs-4">

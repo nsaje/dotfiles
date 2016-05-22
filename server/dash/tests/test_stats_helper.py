@@ -93,63 +93,9 @@ class GetStatsWithConversionsTestCase(test.TestCase):
 
         # add permissions for postclick stats
         self.user.user_permissions.add(Permission.objects.get(codename='content_ads_postclick_acquisition'))
-        self.user.user_permissions.add(Permission.objects.get(codename='content_ads_postclick_engagement'))
 
         self.assertTrue(self.superuser.has_perm('zemauth.can_see_redshift_postclick_statistics'))
-        self.assertTrue(self.superuser.has_perm('zemauth.conversion_reports'))
-
         self.assertFalse(self.user.has_perm('zemauth.can_see_redshift_postclick_statistics'))
-        self.assertFalse(self.user.has_perm('zemauth.conversion_reports'))
-
-    def test_no_permissions(self, mock_as_query, mock_ca_query, mock_tp_query):
-        mock_as_query.side_effect = self._get_content_ad_stats
-        stats = stats_helper.get_stats_with_conversions(self.user, datetime.date(2015, 10, 1),
-                                                        datetime.date(2015, 10, 31), breakdown=['ad_group'], order=[])
-
-        self.assertTrue(mock_as_query.called)
-        self.assertFalse(mock_ca_query.called)
-        self.assertFalse(mock_tp_query.called)
-        self.assertEqual([{
-            'ad_group': 1,
-            'impressions': 10,
-            'clicks': 1,
-            'cost': decimal.Decimal('10.00'),
-            'cpc': decimal.Decimal('10.00'),
-            'ctr': 0.1,
-            'visits': 1,
-            'click_discrepancy': 0,
-            'pageviews': 5,
-            'percent_new_users': 100,
-            'bounce_rate': 0,
-            'pv_per_visit': 5,
-            'avg_tos': 0
-        }], stats)
-
-    def test_no_permissions_with_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
-        mock_as_query.side_effect = self._get_content_ad_stats
-        conversion_goals = models.ConversionGoal.objects.all()
-        stats = stats_helper.get_stats_with_conversions(self.user, datetime.date(2015, 10, 1),
-                                                        datetime.date(2015, 10, 31), breakdown=['ad_group'], order=[],
-                                                        conversion_goals=conversion_goals)
-
-        self.assertTrue(mock_as_query.called)
-        self.assertFalse(mock_ca_query.called)
-        self.assertFalse(mock_tp_query.called)
-        self.assertEqual([{
-            'ad_group': 1,
-            'impressions': 10,
-            'clicks': 1,
-            'cost': decimal.Decimal('10.00'),
-            'cpc': decimal.Decimal('10.00'),
-            'ctr': 0.1,
-            'visits': 1,
-            'click_discrepancy': 0,
-            'pageviews': 5,
-            'percent_new_users': 100,
-            'bounce_rate': 0,
-            'pv_per_visit': 5,
-            'avg_tos': 0
-        }], stats)
 
     def test_report_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
         mock_ca_query.side_effect = self._get_content_ad_stats

@@ -19,6 +19,7 @@ else:
 STATS_DB_NAME = 'stats'
 K1_DB_NAME = 'k1'
 K1_VIEWS_DB_NAME = K1_DB_NAME
+STATS_READ_DB_NAME = STATS_DB_NAME
 
 STATS_E2E_DB_NAME = 'stats_e2e'
 
@@ -198,7 +199,7 @@ SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 BIDDER_API_SIGN_KEY = Secret('').get()
 
 # BCM
-BUDGET_RESERVE_FACTOR=0.05
+BUDGET_RESERVE_FACTOR = 0.05
 
 # Google Analytics authentication
 GA_CLIENT_EMAIL = ''
@@ -208,6 +209,7 @@ QUERY_INSPECT_ENABLED = False
 
 # k1
 K1_DEMO_MODE = False
+K1_CONSISTENCY_SYNC = False
 
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'

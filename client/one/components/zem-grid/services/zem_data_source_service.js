@@ -3,73 +3,40 @@
 
 oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
+    //
+    // DataSource is responsible for fetching data with help of passed Endpoint and
+    // building internal representation of fetched data as a tree data structure.
+    // Each level in tree represents requested breakdown level with data, while its child nodes
+    // are breakdown data for the next level.
+    //
+    // L0 (initial levle) -> totals + rows for L1 data === base level request
+    // L(x) -> data for level x with optinal breakdowns for level (x+1)
+    //
+    // L(x)
+    //  --> stats (data - key:value dict)
+    //  --> breakdown
+    //      --> breakdown_id
+    //      --> rows [L(x+1)]
+    //      --> pagination {from, to, size, count}
+    //
+
+
     var EVENTS = {
         ON_LOAD: 'zem-data-source-on-load',
     };
 
-    //
-    // DataRow
-    //   --> Data (dict - key:value)
-    //   --> Breakdown (optional)
-    //      --> breakdown_id (request id)
-    //      --> pagination (offset, size, count)
-    //      --> rows [DataRow]
-    //
-
-    // this.data = DataRow
-    //   --> Data (totals)
-    //   --> Breakdown (L0/Base breakdown)
-    //      --> breakdown_id = None
-    //      --> pagination
-    //      --> rows [DataRow]
-    //
-
-    //
-    // ApiRow
-    //   --> pagination
-    //   --> breakdown_id
-    //   --> rows [Data, ...]
-    //
-    //
-
-    //
-    // ApiRow -> DataRow
-    //   Data -> DataRow (Data) w/ empty breakdown (breakdown_id, pagination = None/?)
-    //
-
-    // request by ids (level)
-
     function DataSource (endpoint) {
         var ds = this;
 
-        this.dataRows =
         this.data = null;
-
         this.endpoint = endpoint;
         this.availableBreakdowns = endpoint.availableBreakdowns;
         this.selectedBreakdown = endpoint.defaultBreakdown;
+        this.defaultPagination = [2, 3, 5, 7];
 
         this.getData = getData;
         this.getMetaData = getMetaData;
-
         this.onLoad = onLoad;
-
-        function applyBreakdown (breakdown) {
-            if (breakdown.level === 0) {
-                ds.data = breakdown.rows[0];
-                return;
-            }
-
-            var position = breakdown.position;
-            var current = ds.data.breakdown;
-            for (var i = 1; i < breakdown.level; ++i) {
-                current = current.rows[position[i]].breakdown;
-            }
-
-            current.rows = current.rows.concat(breakdown.rows);
-            current.pagination.to = breakdown.pagination.to;
-            current.pagination.size += breakdown.pagination.size;
-        }
 
         function getMetaData () {
             var config = {
@@ -78,40 +45,124 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             return ds.endpoint.getMetaData(config);
         }
 
-        function getData (breakdown, size) { // level, page
+        function getData (breakdown, size) {
+            var level = 1;
+            var offset, limit, breakdowns;
+            if (breakdown) {
+                level = breakdown.level;
+                offset = breakdown.pagination.to + 1;
+                limit = size;
+                breakdowns = [breakdown];
+            }
+            return getDataByLevel(level, breakdowns, offset, limit);
+        }
+
+        function getDataByLevel (level, breakdowns, offset, limit) {
+            if (!offset) offset = 0;
+            if (!limit) limit = ds.defaultPagination[level - 1];
+            if (!breakdowns) breakdowns = [];
             var config = {
-                selectedBreakdown: ds.selectedBreakdown,
-                breakdown: breakdown,
-                size: size,
+                level: level,
+                offset: offset,
+                limit: limit,
+                breakdown: ds.selectedBreakdown.slice(0, level),
+                breakdownIds: breakdowns.map(function (breakdown) {
+                    return breakdown.breakdownId;
+                }),
             };
+
             var deferred = $q.defer();
-            ds.endpoint.getData(config).then(function (breakdown) {
-                notifyListeners(EVENTS.ON_LOAD, breakdown);
-                applyBreakdown(breakdown);
-                deferred.resolve(breakdown);
-            }, function (error) {
-                deferred.reject(error);
+            ds.endpoint.getData(config).then(function (breakdowns) {
+                applyBreakdowns(breakdowns);
+                deferred.notify(ds.data);
+                if (level < ds.selectedBreakdown.length) {
+                    // Chain request for each successive level
+                    var childBreakdowns = getChildBreakdowns(breakdowns);
+                    var promise = getDataByLevel(level + 1, childBreakdowns);
+                    deferred.resolve(promise);
+                } else {
+                    deferred.resolve(ds.data);
+                }
             });
 
             return deferred.promise;
         }
 
-        // request base
-        // breakdowns -> request more/initial
-
-        function getData2 (level) {
-            if (level > 0) {
-                // traverse whole tree and retrieve level ids
-            }
-            var config = {
-                level: level,
-                breakdown: ds.selectedBreakdown.slice(0, level + 1),
-                positions: [[1, 1], [1, 2]],
-            };
+        function getChildBreakdowns (breakdowns) {
+            var childBreakdowns = [];
+            breakdowns.forEach(function (breakdown) {
+                childBreakdowns = childBreakdowns.concat(breakdown.rows.map(function (row) {
+                    return row.breakdown;
+                }));
+            });
+            return childBreakdowns;
         }
 
-        function getElements (level) {
+        function applyBreakdowns (breakdowns) {
+            breakdowns.forEach(function (breakdown) {
+                applyBreakdown(breakdown);
+            });
+        }
 
+        function applyBreakdown (breakdown) {
+            notifyListeners(EVENTS.ON_LOAD, breakdown);
+            initializeRowsData(breakdown);
+            if (breakdown.level === 1 && breakdown.pagination.from === 0) {
+                initializeData(breakdown);
+                return;
+            }
+
+            var current = findBreakdown(breakdown.breakdownId);
+            current.rows = current.rows.concat(breakdown.rows);
+            current.pagination.to = breakdown.pagination.to;
+            current.pagination.size += breakdown.pagination.size;
+            current.pagination.count = breakdown.pagination.count;
+        }
+
+        function findBreakdown (breakdownId, subtree) {
+            // Traverse breakdown tree to find breakdown by breakdownId
+            // If subtree (breakdown) is not passed start with base one
+            if (!subtree) subtree = ds.data.breakdown;
+            if (subtree.breakdownId === breakdownId) {
+                return subtree;
+            }
+            var res = null;
+            subtree.rows.forEach(function (row) {
+                if (row.breakdown) {
+                    var temp = findBreakdown(breakdownId, row.breakdown);
+                    if (temp) res = temp;
+                }
+            });
+            return res;
+        }
+
+        function initializeData (breakdown) {
+            ds.data = {
+                breakdown: breakdown,
+                stats: breakdown.stats,
+                level: 0,
+            };
+            delete breakdown.stats;
+        }
+
+        function initializeRowsData (breakdown) {
+            // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
+            if (breakdown.level < ds.selectedBreakdown.length) {
+                breakdown.rows.forEach(function (row) {
+                    // row = { stats, position }
+                    row.breakdown = {
+                        level: breakdown.level + 1,
+                        breakdownId: row.breakdownId,
+                        pagination: {
+                            from: 0,
+                            to: 0,
+                            size: 0,
+                        },
+                        rows: [],
+                    };
+                    delete row.breakdownId;
+                });
+            }
         }
 
         function onLoad (scope, callback) {

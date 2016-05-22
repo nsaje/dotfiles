@@ -16,7 +16,6 @@ import actionlog.views
 import convapi.views
 import reports.views
 import zemauth.views
-import stats.views
 
 import dash.views.daily_stats
 import dash.views.bcm
@@ -275,9 +274,14 @@ urlpatterns += [
         name='account_campaigns'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/agency/',
-        login_required(dash.views.agency.AccountAgency.as_view()),
-        name='account_agency'
+        r'^api/accounts/(?P<account_id>\d+)/history/',
+        login_required(dash.views.agency.AccountHistory.as_view()),
+        name='account_history'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/settings/',
+        login_required(dash.views.agency.AccountSettings.as_view()),
+        name='account_settings'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
@@ -456,11 +460,6 @@ urlpatterns += [
     url(
         r'^api/accounts/export/',
         login_required(dash.views.export.AllAccountsExport.as_view())
-    ),
-    url(
-        r'^api/stats/testdata/',
-        stats.views.BreakdownsTestData.as_view(),
-        name='stats_breakdowns_test_data'
     )
 ]
 
@@ -545,6 +544,11 @@ urlpatterns += [
         name='k1api.get_publishers_blacklist',
     ),
     url(
+        r'^k1api/get_publishers_blacklist_outbrain$',
+        k1api.views.get_publishers_blacklist_outbrain,
+        name='k1api.get_publishers_blacklist_outbrain',
+    ),
+    url(
         r'^k1api/get_ad_groups$',
         k1api.views.get_ad_groups,
         name='k1api.get_ad_groups',
@@ -568,7 +572,22 @@ urlpatterns += [
         r'^k1api/get_content_ad_ad_group$',
         k1api.views.get_content_ad_ad_group,
         name='k1api.get_content_ad_ad_group',
-    )
+    ),
+    url(
+        r'^k1api/update_content_ad_status$',
+        k1api.views.update_content_ad_status,
+        name='k1api.update_content_ad_status',
+    ),
+    url(
+        r'^k1api/set_source_campaign_key$',
+        k1api.views.set_source_campaign_key,
+        name='k1api.set_source_campaign_key',
+    ),
+    url(
+        r'^k1api/get_outbrain_marketer_id$',
+        k1api.views.get_outbrain_marketer_id,
+        name='k1api.get_outbrain_marketer_id',
+    ),
 ]
 
 # Crossvalidation Api

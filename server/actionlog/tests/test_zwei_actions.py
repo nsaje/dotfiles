@@ -65,6 +65,41 @@ class SendTestCase(TestCase):
             json.loads(self.mock_urlopen.call_args[0][0].data)
         )
 
+    @override_settings(K1_CONSISTENCY_SYNC=True)
+    def test_abort_consistency(self):
+        for action in [
+            constants.Action.SET_CAMPAIGN_STATE,
+            constants.Action.SET_PUBLISHER_BLACKLIST,
+            constants.Action.CREATE_CAMPAIGN,
+            constants.Action.INSERT_CONTENT_AD,
+            constants.Action.INSERT_CONTENT_AD_BATCH,
+            constants.Action.UPDATE_CONTENT_AD,
+            constants.Action.SUBMIT_AD_GROUP,
+        ]:
+            action_log = models.ActionLog.objects.create(
+                action=action,
+                state=constants.ActionState.WAITING,
+                action_type=1,
+                ad_group_source=dash.models.AdGroupSource.objects.get(id=1),
+                expiration_dt=datetime.datetime(2015, 7, 1, 12),
+                payload={
+                    'action': action,
+                    'source': 'outbrain',
+                    'expiration_dt': datetime.datetime(2015, 7, 1, 12),
+                    'args': {
+                        'source_campaign_key': '1234567890',
+                        'conf': {
+                            'cpc_cc': 1000
+                        },
+                    },
+                    'callback_url': 'http://localhost/'
+                }
+            )
+            zwei_actions.send(action_log)
+            self.assertFalse(self.mock_urlopen.called)
+            action_log.refresh_from_db()
+            self.assertEqual(constants.ActionState.ABORTED, action_log.state)
+
     @override_settings(CREDENTIALS_ENCRYPTION_KEY='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     def test_send_batch(self):
         zwei_actions.send([self.action_log])
