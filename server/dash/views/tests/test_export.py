@@ -677,7 +677,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
             ",Clicks,Impressions\r\n2014-06-30,2014-07-01,"
             "test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
             "test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
-            "test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Active,AdsNative,"
+            "test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,AdsNative,"
             "20.230,203,200000\r\n2014-06-30,2014-07-01,"
             "test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
             "test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,"

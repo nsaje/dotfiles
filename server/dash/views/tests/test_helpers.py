@@ -183,48 +183,6 @@ class ViewHelpersTestCase(TestCase):
         self.assertEqual(len(last_sync_messages), 1)
         self.assertEquals(last_sync_messages[3], ([], True))
 
-    def test_get_ad_group_sources_data_status(self):
-        ad_group_source1 = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source2 = models.AdGroupSource.objects.get(pk=2)
-        ad_group_source3 = models.AdGroupSource.objects.get(pk=3)
-        ad_group_sources = [ad_group_source1, ad_group_source2, ad_group_source3]
-
-        ad_group_settings = models.AdGroup.objects.get(id=1).get_current_settings()
-        ad_group_sources_settings = helpers.get_ad_group_sources_settings(ad_group_sources)
-        ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
-
-        last_successful_ags_sync_times = {}
-        for ags in ad_group_sources:
-            last_successful_ags_sync_times.update(
-                actionlog.sync.AdGroupSourceSync(ags).get_latest_success_by_child()
-            )
-
-        data_status = helpers.get_data_status(
-            ad_group_sources,
-            helpers.get_last_sync_messages(ad_group_sources, last_successful_ags_sync_times),
-            helpers.get_ad_group_sources_state_messages(ad_group_sources,
-                                                        ad_group_settings,
-                                                        ad_group_sources_settings,
-                                                        ad_group_sources_states)
-        )
-
-        self.assertEqual(data_status[ad_group_source1.source_id]['ok'], False)
-
-        self.assertEqual(
-            data_status[ad_group_source1.source_id]['message'],
-            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
-        )
-
-        self.assertEqual(
-            data_status[ad_group_source2.source_id]['message'],
-            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br /><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
-        )
-
-        self.assertEqual(
-            data_status[ad_group_source3.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
-        )
-
     def test_get_ad_group_sources_data_status_cannot_edit_cpc_budget(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=2)
 
@@ -430,7 +388,7 @@ class ViewHelpersTestCase(TestCase):
         # check that the data status is now considered not-OK
         self.assertEqual({
             '1': {
-                'message': 'The status of this Content Ad differs on these media sources: AdsNative, Sharethrough.',
+                'message': 'The status of this Content Ad differs on these media sources: Sharethrough.',
                 'ok': False
             },
             '2': {

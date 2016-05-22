@@ -515,7 +515,6 @@ def _compute_daily_cap(ad_groups):
     ret = 0
     for agss in ad_group_source_settings:
         if agss['state'] != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            print agss
             continue
 
         ags = ad_group_settings[agss['ad_group_source__ad_group_id']]

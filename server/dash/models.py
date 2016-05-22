@@ -1375,6 +1375,23 @@ class AdGroup(models.Model):
 
         return constants.AdGroupRunningStatus.INACTIVE
 
+    def get_sources_state(self):
+        settings = self.get_current_settings()
+
+        ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=self,
+        ).group_current_settings().values('ad_group_source__source_id', 'state')
+
+        states = {}
+        for source_settings in ad_group_source_settings:
+            state = source_settings['state']
+            if state == constants.AdGroupSourceSettingsState.ACTIVE:
+                state = settings.state
+
+            states[source_settings['ad_group_source__source_id']] = state
+
+        return states
+
     @classmethod
     def get_running_status_by_flight_time(cls, ad_group_settings):
         if not cls.is_ad_group_active(ad_group_settings):
