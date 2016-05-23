@@ -67,7 +67,7 @@ def get_report_through_table(user, form_data):
 
     # this mapping is not precise, for the demo it will suffice
     size = limit - offset
-    page = offset / size
+    page = int(offset / size) + 1
     order = form_data.get('order')
 
     show_archived = form_data.get('show_archived', False)
@@ -84,8 +84,8 @@ def get_report_through_table(user, form_data):
     )
 
     for row in response['rows']:
-        row['account_id'] = row['id']
-        row['account_name'] = row['id']
+        row['account_id'] = int(row['id'])
+        row['account_name'] = row['name']
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['account'], row)
         row['parent_breakdown_id'] = None
 

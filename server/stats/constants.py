@@ -56,9 +56,24 @@ SpecialDimensionIdentificators = {
 }
 
 
+SpecialDimensionNameKeys = {
+    StructureDimension.ACCOUNT: 'account_name',
+    StructureDimension.CAMPAIGN: 'campaign_name',
+    StructureDimension.AD_GROUP: 'ad_group_name',
+    StructureDimension.CONTENT_AD: 'content_ad_title',
+    StructureDimension.SOURCE: 'source_name',
+}
+
+
 def get_dimension_identifier(dimension):
     if dimension in SpecialDimensionIdentificators:
         return SpecialDimensionIdentificators[dimension]
+    return dimension
+
+
+def get_dimension_name_key(dimension):
+    if dimension in SpecialDimensionNameKeys:
+        return SpecialDimensionNameKeys[dimension]
     return dimension
 
 
