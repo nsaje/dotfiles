@@ -50,7 +50,7 @@ def format_breakdown_response(report_rows, offset, limit):
 
 def get_report_through_table(user, form_data):
     """
-    This code is temporary!
+    FIXME: This code is temporary! It will only be used for the prototype.
 
     Reuses the the table.py ofr base level breakdowns.
     """
