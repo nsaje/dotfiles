@@ -1743,6 +1743,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var result = {
                 name: errors.name,
                 campaignGoal: errors.campaign_goal,
+                noGoals: errors.no_goals,
                 goals: errors.goals,
                 goalQuantity: errors.goal_quantity,
                 targetDevices: errors.target_devices,
