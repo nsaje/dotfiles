@@ -48,19 +48,35 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 hidden: $scope.campaign && $scope.campaign.archived,
                 internal: false,
             },
+        ];
+    };
+
+    $scope.getSideTabs = function () {
+        return [
+            {
+                heading: 'Ad groups',
+                route: 'main.campaigns.ad_groups',
+                active: true,
+                hidden: $scope.campaign && $scope.campaign.archived,
+                internal: false,
+            },
             {
                 heading: 'Content Insights',
                 route: 'main.campaigns.content_insights',
                 active: false,
                 hidden: $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_content_insights_view'),
                 internal: $scope.hasPermission('zemauth.campaign_content_insights_view'),
-            },
+            }
         ];
     };
 
     $scope.setActiveTab = function () {
         $scope.tabs.forEach(function (tab) {
             tab.active = $state.is(tab.route);
+        });
+
+        $scope.sideTabs.forEach(function (sideTab) {
+            sideTab.active = $state.is(sideTab.route);
         });
     };
 
@@ -101,6 +117,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
 
     $scope.setModels(campaignData);
     $scope.tabs = $scope.getTabs();
+    $scope.sideTabs = $scope.getSideTabs();
     $scope.setActiveTab();
 
     if ($scope.campaign && $scope.campaign.archived) {
@@ -121,6 +138,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.$watch('campaign.archived', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.tabs = $scope.getTabs();
+            $scope.sideTabs = $scope.getSideTabs();
             $scope.setActiveTab();
         }
     });
