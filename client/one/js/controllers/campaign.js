@@ -59,6 +59,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 active: true,
                 hidden: $scope.campaign && $scope.campaign.archived,
                 internal: false,
+                cls: 'performance',
             },
             {
                 heading: 'Content Insights',
@@ -66,6 +67,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 active: false,
                 hidden: $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_content_insights_view'),
                 internal: $scope.hasPermission('zemauth.campaign_content_insights_view'),
+                cls: 'content-insights',
             }
         ];
     };

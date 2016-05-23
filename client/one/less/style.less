@@ -20,6 +20,10 @@
 @insights-table-gray: #fafafa;
 @insights-title: #70c700;
 @insights-table-header: #d7d7d7;
+
+@sidebar-background-inactive: #f6f6f6;
+@sidebar-background-active: #ecf6f8;
+
 @white: #fff;
 
 @keyframes show-updated {
@@ -760,6 +764,59 @@ div[datepicker] {
     width: 100px;
     padding-right: 20px;
     vertical-align: top;
+
+    .zem-side-tabset {
+
+        height: 300px;
+        ul {
+            height: 100%;
+        }
+
+        li.active>a {
+           background-color: @sidebar-background-active;
+        }
+        li>a {
+            background-color: @sidebar-background-inactive;
+        }
+
+        .performance {
+            .active>a {
+                background-image: url('img/performance-blue.svg');
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: 30px 30px;
+            }
+            a {
+                background-image: url('img/performance-gray.svg');
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: 30px 30px;
+            }
+        }
+
+        li {
+            height: 50%;
+        }
+
+        .content-insights {
+            active>a {
+                background-image: url('img/content_insights-blue.svg');
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: 30px 30px;
+            }
+            a {
+                background-image: url('img/content_insights-gray.svg');
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: 30px 30px;
+            }
+        }
+
+        a {
+            height: 100%;
+        }
+    }
 }
 
 .graph-container {
