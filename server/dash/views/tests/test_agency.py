@@ -674,7 +674,7 @@ class AdGroupSettingsStateTest(TestCase):
     @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
     def test_activate(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
-        ad_group = models.AdGroup.objects.get(pk=2)
+        ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
@@ -727,6 +727,23 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(mock_zwei_send.called, False)
         self.assertFalse(mock_k1_ping.called)
+
+    @patch('dash.validation_helpers.ad_group_has_available_budget')
+    @patch('actionlog.zwei_actions.send')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_activate_no_goals(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        mock_budget_check.return_value = True
+
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
+        response = self.client.post(
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
