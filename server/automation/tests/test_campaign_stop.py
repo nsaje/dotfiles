@@ -190,7 +190,6 @@ class SwitchToLandingModeTestCase(TestCase):
             for ags in ad_group.adgroupsource_set.all():
                 if ags.get_current_settings().state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
                     active_ad_group_sources.add(ags)
-        self.assertEqual(len(active_ad_group_sources), len(mock_send_actions.call_args_list[0][0][0]))
 
     @patch('automation.campaign_stop._set_end_date_to_today')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
@@ -571,80 +570,80 @@ class CanEnableMediaSourcesTestCase(TestCase):
             for ad_group_source in ad_group.adgroupsource_set.all():
                 self.assertTrue(can_enable[ad_group_source.id])
 
-    # @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    # def test_can_enable_media_sources(self, mock_get_min_remaining):
-    #     campaign = dash.models.Campaign.objects.get(id=1)
-    #     ad_group = dash.models.AdGroup.objects.get(id=1)
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_can_enable_media_sources(self, mock_get_min_remaining):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        ad_group = dash.models.AdGroup.objects.get(id=1)
 
-    #     mock_get_min_remaining.return_value = Decimal('50'), Decimal('20'), None
-    #     can_enable = campaign_stop.can_enable_media_sources(
-    #         ad_group, campaign, campaign.get_current_settings())
-    #     self.assertEqual({
-    #         1: True,
-    #         2: True,
-    #         3: False,  # the only inactive source
-    #         4: True,
-    #         5: True,
-    #     }, can_enable)
+        mock_get_min_remaining.return_value = Decimal('50'), Decimal('20'), None
+        can_enable = campaign_stop.can_enable_media_sources(
+            ad_group, campaign, campaign.get_current_settings())
+        self.assertEqual({
+            1: True,
+            2: True,
+            3: False,  # the only inactive source
+            4: True,
+            5: True,
+        }, can_enable)
 
-    #     # disable all sources
-    #     for ad_group_source in ad_group.adgroupsource_set.all():
-    #         new_settings = ad_group_source.get_current_settings().copy_settings()
-    #         new_settings.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-    #         new_settings.save(None)
+        # disable all sources
+        for ad_group_source in ad_group.adgroupsource_set.all():
+            new_settings = ad_group_source.get_current_settings().copy_settings()
+            new_settings.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            new_settings.save(None)
 
-    #     can_enable = campaign_stop.can_enable_media_sources(
-    #         ad_group, campaign, campaign.get_current_settings())
-    #     self.assertEqual({
-    #         1: False,
-    #         2: False,
-    #         3: False,
-    #         4: True,  # the only source with enough budget for tomorrow
-    #         5: False,
-    #     }, can_enable)
+        can_enable = campaign_stop.can_enable_media_sources(
+            ad_group, campaign, campaign.get_current_settings())
+        self.assertEqual({
+            1: False,
+            2: False,
+            3: False,
+            4: True,  # the only source with enough budget for tomorrow
+            5: False,
+        }, can_enable)
 
-    #     # sources that were active can be enabled with same budget again
-    #     mock_get_min_remaining.return_value = Decimal('30'), Decimal('100'), None
-    #     can_enable = campaign_stop.can_enable_media_sources(
-    #         ad_group, campaign, campaign.get_current_settings())
-    #     self.assertEqual({
-    #         1: True,
-    #         2: True,
-    #         3: False,  # wasn't active, not enough budget for today
-    #         4: True,
-    #         5: True,
-    #     }, can_enable)
+        # sources that were active can be enabled with same budget again
+        mock_get_min_remaining.return_value = Decimal('30'), Decimal('100'), None
+        can_enable = campaign_stop.can_enable_media_sources(
+            ad_group, campaign, campaign.get_current_settings())
+        self.assertEqual({
+            1: True,
+            2: True,
+            3: False,  # wasn't active, not enough budget for today
+            4: True,
+            5: True,
+        }, can_enable)
 
-    #     new_ags_settings = ad_group.adgroupsource_set.all().get(id=1).get_current_settings().copy_settings()
-    #     new_ags_settings.daily_budget_cc += Decimal('5')
+        new_ags_settings = ad_group.adgroupsource_set.all().get(id=1).get_current_settings().copy_settings()
+        new_ags_settings.daily_budget_cc += Decimal('5')
 
-    #     for ags in ad_group.adgroupsource_set.all().exclude(id=1):
-    #         new_ags_settings = ags.get_current_settings().copy_settings()
-    #         new_ags_settings.daily_budget_cc += Decimal('10')
-    #         new_ags_settings.save(None)
+        for ags in ad_group.adgroupsource_set.all().exclude(id=1):
+            new_ags_settings = ags.get_current_settings().copy_settings()
+            new_ags_settings.daily_budget_cc += Decimal('10')
+            new_ags_settings.save(None)
 
-    #     mock_get_min_remaining.return_value = Decimal('5'), Decimal('100'), None
-    #     can_enable = campaign_stop.can_enable_media_sources(
-    #         ad_group, campaign, campaign.get_current_settings())
-    #     self.assertEqual({
-    #         1: True,  # will increase caps for only $5, can be enabled
-    #         2: False,
-    #         3: False,
-    #         4: False,
-    #         5: False,
-    #     }, can_enable)
+        mock_get_min_remaining.return_value = Decimal('5'), Decimal('100'), None
+        can_enable = campaign_stop.can_enable_media_sources(
+            ad_group, campaign, campaign.get_current_settings())
+        self.assertEqual({
+            1: True,  # will increase caps for only $5, can be enabled
+            2: False,
+            3: False,
+            4: False,
+            5: False,
+        }, can_enable)
 
-    #     # tomorrow's remaining budget must be fully covered
-    #     mock_get_min_remaining.return_value = Decimal('100'), Decimal('55'), None
-    #     can_enable = campaign_stop.can_enable_media_sources(
-    #         ad_group, campaign, campaign.get_current_settings())
-    #     self.assertEqual({
-    #         1: True,
-    #         2: True,
-    #         3: False,
-    #         4: True,
-    #         5: False,
-    #     }, can_enable)
+        # tomorrow's remaining budget must be fully covered
+        mock_get_min_remaining.return_value = Decimal('100'), Decimal('55'), None
+        can_enable = campaign_stop.can_enable_media_sources(
+            ad_group, campaign, campaign.get_current_settings())
+        self.assertEqual({
+            1: True,
+            2: True,
+            3: False,
+            4: True,
+            5: False,
+        }, can_enable)
 
 
 class CanEnableAdGroupsTestCase(TestCase):
@@ -1020,17 +1019,10 @@ class SetAdGroupEndDateTestCase(TestCase):
         self.assertEqual(None, current_settings.end_date)
 
         today = dates_helper.utc_today()
-        actions = campaign_stop._set_ad_group_end_date(ad_group, today)
+        campaign_stop._set_ad_group_end_date(ad_group, today)
 
         new_settings = ad_group.get_current_settings()
         self.assertEqual(today, new_settings.end_date)
-
-        ad_group_source_ids = dash.models.AdGroupSource.objects.filter(ad_group=ad_group).values_list('id', flat=True)
-
-        self.assertEqual(len(ad_group_source_ids), len(actions))
-        for action in actions:
-            self.assertTrue(action.ad_group_source_id in ad_group_source_ids)
-            self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, action.action)
 
         self.assertFalse(mock_zwei_send.called)
 
@@ -1480,8 +1472,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             new_settings.landing_mode = False
             new_settings.save(None)
 
-        actions = campaign_stop._check_ad_groups_end_date(campaign)
-        self.assertEqual(len(actions), 6)
+        campaign_stop._check_ad_groups_end_date(campaign)
         self.assertFalse(campaign.adgroup_set.all().filter_active().count())
 
     @patch('utils.dates_helper.local_today')

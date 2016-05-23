@@ -22,6 +22,19 @@
                 </button>
             </div>
 
+
+            <div ng-if="hasPermission('zemauth.can_use_improved_ads_upload')">
+                <div class="button-bar-item">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_use_improved_ads_upload')" popover-placement="top"></zem-internal-feature>
+                    <button
+                        type="button"
+                        class="btn btn-add"
+                        ng-click="addContentAdsPlus()">
+                        + Content Ads v2
+                    </button>
+                </div>
+            </div>
+
             <div class="button-bar-item">
               <zem-dropdown
                    zem-placeholder="Bulk Actions"

@@ -1,0 +1,1 @@
+SUM({{ p }}{{ column_name }}) {{ alias }}

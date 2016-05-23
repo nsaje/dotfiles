@@ -56,6 +56,14 @@ class ForbiddenError(BaseError):
         self.http_status_code = 403
 
 
+class InvalidBreakdownError(BaseError):
+    pass
+
+
+class MissingBreakdownConstraintsError(BaseError):
+    pass
+
+
 custom_errors = (
     AuthError,
     AuthorizationError,
