@@ -66,7 +66,7 @@ def get_report_through_table(user, form_data):
     limit = form_data.get('limit', DEFAULT_LIMIT)
 
     # this mapping is not precise, for the demo it will suffice
-    size = limit - offset
+    size = limit
     page = int(offset / size) + 1
     order = form_data.get('order')
 
