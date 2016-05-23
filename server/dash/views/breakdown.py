@@ -94,8 +94,8 @@ def get_report_through_table(user, form_data):
         'rows': response['rows'],
         'totals': response['totals'],
         'pagination': {
-            'offset': response['pagination']['startIndex'],
-            'limit': response['pagination']['endIndex'],
+            'offset': response['pagination']['startIndex'] - 1,  # offset is 0-based
+            'limit': response['pagination']['endIndex'] - response['pagination']['startIndex'] - 1,
             'count': response['pagination']['count'],
         }
     }]
