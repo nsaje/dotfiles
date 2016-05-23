@@ -3,7 +3,7 @@ import json
 import logging
 import newrelic.agent
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
@@ -1460,16 +1460,13 @@ class CampaignContentInsights(api_common.BaseApiView):
             ignore_diff_rows=True,
             constraints={'campaign': campaign}
         )
-        mapped_stats = {
-            stat['content_ad']: (stat['clicks'], stat['impressions']) for stat
-            in stats
-        }
+        mapped_stats = {stat['content_ad']: stat for stat in stats}
         dd_ads = self._deduplicate_content_ad_titles(campaign)
 
         dd_cad_metric = []
         for title, caids in dd_ads.iteritems():
-            clicks = sum(map(lambda caid: mapped_stats.get(caid, [0, 0])[0] or 0, caids))
-            impressions = sum(map(lambda caid: mapped_stats.get(caid, [0, 0])[1] or 0, caids))
+            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 1) or 0, caids))
+            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 1) or 0, caids))
             metric = float(clicks) / impressions if impressions > 0 else None
             dd_cad_metric.append({
                 'summary': title,
@@ -1483,8 +1480,7 @@ class CampaignContentInsights(api_common.BaseApiView):
         ads = models.ContentAd.objects.all().filter(
             ad_group__campaign=campaign
         ).values_list('id', 'title')
-        ret = {}
+        ret = defaultdict(list)
         for caid, title in ads:
-            ret[title] = ret.get(title, [])
             ret[title].append(caid)
         return ret
