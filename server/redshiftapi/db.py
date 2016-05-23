@@ -5,7 +5,7 @@ from django.db import connections
 
 
 def get_stats_cursor():
-    return connections[settings.STATS_DB_NAME].cursor()
+    return connections[settings.K1_DB_NAME].cursor()
 
 
 def dictfetchall(cursor):
