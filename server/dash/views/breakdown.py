@@ -87,6 +87,7 @@ def get_report_through_table(user, form_data):
         row['account_id'] = int(row['id'])
         row['account_name'] = row['name']
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['account'], row)
+        row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
     return [{
