@@ -29,7 +29,8 @@ def augment(breakdown, stats_rows, target_dimension):
     for row in stats_rows:
         row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
         row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
-        row['parent_breakdown_id'] = helpers.create_breakdown_id(breakdown[:-1], row) if breakdown else None
+        row['parent_breakdown_id'] = helpers.create_breakdown_id(
+            constants.get_parent_breakdown(breakdown), row) if breakdown else None
 
 
 def augment_accounts(stats_rows):

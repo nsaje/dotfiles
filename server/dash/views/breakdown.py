@@ -1,3 +1,4 @@
+import collections
 import json
 
 from dash import forms
@@ -26,33 +27,38 @@ def extract_constraints(form_data, **kwargs):
     return constraints
 
 
-def format_breakdown_response(report_rows, offset, limit):
-    blocks = {}
+def format_breakdown_response(report_rows, offset, limit, breakdown_page):
+    blocks = []
 
+    # map rows by breakdown pages
+    rows_by_parent_br_id = collections.defaultdict(list)
     for row in report_rows:
-        if not row['parent_breakdown_id'] in blocks:
-            blocks[row['parent_breakdown_id']] = {
-                'breakdown_id': row['parent_breakdown_id'],
-                'rows': [],
-                'totals': {},
-                'pagination': {
-                    'offset': offset,
-                    'limit': limit,
-                    'count': -1,  # TODO count
-                },
-            }
+        rows_by_parent_br_id[row['parent_breakdown_id']].append(row)
 
-        block = blocks[row['parent_breakdown_id']]
-        block['rows'].append(row)
+    # create blocks for every breakdown_page
+    for parent_br_id in breakdown_page:
+        rows = rows_by_parent_br_id[parent_br_id]
 
-    return blocks.values()
+        blocks.append({
+            'breakdown_id': parent_br_id,
+            'rows': rows,
+            'totals': {},
+            'pagination': {
+                'offset': offset,
+                'limit': len(rows),  # TODO count current
+                'count': -1,  # TODO count all
+            },
+        })
+
+    return blocks
 
 
 def get_report_through_table(user, form_data):
     """
-    This code is temporary!
+    FIXME: This code is temporary! It will only be used for the prototype.
 
     Reuses the the table.py ofr base level breakdowns.
+    Base breakdown is always 'account'
     """
 
     constraints = extract_constraints(form_data)
@@ -87,6 +93,7 @@ def get_report_through_table(user, form_data):
         row['account_id'] = int(row['id'])
         row['account_name'] = row['name']
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['account'], row)
+        row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
     return [{
@@ -95,7 +102,7 @@ def get_report_through_table(user, form_data):
         'totals': response['totals'],
         'pagination': {
             'offset': response['pagination']['startIndex'] - 1,  # offset is 0-based
-            'limit': response['pagination']['endIndex'] - response['pagination']['startIndex'] - 1,
+            'limit': len(response['rows']),
             'count': response['pagination']['count'],
         }
     }]
@@ -114,6 +121,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get('breakdown')
+        breakdown_page = form.cleaned_data.get('breakdown_page', None)
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
@@ -124,13 +132,13 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data),
-            form.cleaned_data.get('breakdown_page', None),
+            breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
             limit,
         )
 
-        report = format_breakdown_response(report, offset, limit)
+        report = format_breakdown_response(report, offset, limit, breakdown_page)
         return self.create_api_response(report)
 
 
@@ -148,18 +156,19 @@ class AccountBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown_page = form.cleaned_data.get('breakdown_page', None)
 
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data, account=account),
-            form.cleaned_data.get('breakdown_page', None),
+            breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
             limit,
         )
 
-        report = format_breakdown_response(report, offset, limit)
+        report = format_breakdown_response(report, offset, limit, breakdown_page)
         return self.create_api_response(report)
 
 
@@ -177,18 +186,19 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown_page = form.cleaned_data.get('breakdown_page', None)
 
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data, campaign=campaign),
-            form.cleaned_data.get('breakdown_page', None),
+            breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
             limit,
         )
 
-        report = format_breakdown_response(report, offset, limit)
+        report = format_breakdown_response(report, offset, limit, breakdown_page)
         return self.create_api_response(report)
 
 
@@ -206,16 +216,17 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown_page = form.cleaned_data.get('breakdown_page', None)
 
         report = stats.api_breakdowns.query(
             request.user,
             form.cleaned_data['breakdown'],
             extract_constraints(form.cleaned_data, ad_group=ad_group),
-            form.cleaned_data.get('breakdown_page', None),
+            breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
             limit,
         )
 
-        report = format_breakdown_response(report, offset, limit)
+        report = format_breakdown_response(report, offset, limit, breakdown_page)
         return self.create_api_response(report)

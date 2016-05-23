@@ -71,3 +71,25 @@ def create_breakdown_id(breakdown, row):
     Returns: '1-2-500'
     """
     return "-".join(str(row[constants.get_dimension_identifier(dimension)]) for dimension in breakdown)
+
+
+def extract_order_fields(order, breakdown):
+    # time dimension overrides everything
+    # TODO should this be requested by frontend?
+    time_dimension = constants.get_time_dimension(breakdown)
+    if time_dimension:
+        return [time_dimension]
+
+    new_order = []
+    for field in order:
+        prefix = ''
+        if field.startswith('-'):
+            prefix = '-'
+            field = field[1:]
+
+        if field in constants.SpecialDimensionNameKeys:
+            field = constants.get_dimension_name_key(field)
+
+        new_order.append(prefix + field)
+
+    return new_order

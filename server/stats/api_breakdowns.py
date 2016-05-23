@@ -1,6 +1,7 @@
 import copy
 
 from utils import exc
+from utils import sort_helper
 
 from stats import helpers
 from stats import constants
@@ -20,7 +21,7 @@ def query(user, breakdown, constraints, breakdown_page,
 
     validate_breakdown(breakdown)
 
-    stats_rows = redshiftapi.api_breakdowns.query(
+    rows = redshiftapi.api_breakdowns.query(
         helpers.extract_stats_breakdown(breakdown),
         helpers.extract_stats_constraints(constraints),
         helpers.extract_stats_breakdown_constraints(breakdown, breakdown_page),
@@ -29,9 +30,11 @@ def query(user, breakdown, constraints, breakdown_page,
         limit)
 
     target_dimension = constants.get_target_dimension(breakdown)
-    augmenter.augment(breakdown, stats_rows, target_dimension)
+    augmenter.augment(breakdown, rows, target_dimension)
 
-    return stats_rows
+    rows = sort_helper.sort_results(rows, helpers.extract_order_fields(order, breakdown))
+
+    return rows
 
 
 def validate_breakdown(breakdown):

@@ -1,6 +1,7 @@
 from redshiftapi import db
 from redshiftapi import models
 from redshiftapi import queries
+from redshiftapi import postprocess
 
 from stats import constants
 from utils import exc
@@ -15,9 +16,13 @@ def query(breakdown, constraints, breakdown_constraints, order, offset, limit):
 
     with db.get_stats_cursor() as cursor:
         cursor.execute(query, params)
-        results = db.dictfetchall(cursor)
+        rows = db.dictfetchall(cursor)
 
-    return results
+        empty_row = db.get_empty_row_dict(cursor.description)
+
+    _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints)
+
+    return rows
 
 
 def _prepare_query(model, breakdown, constraints, breakdown_constraints,
@@ -38,3 +43,11 @@ def _prepare_query(model, breakdown, constraints, breakdown_constraints,
         return queries.prepare_lvl2_top_rows(default_context)
 
     raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))
+
+
+def _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints):
+    time_dimension = constants.get_time_dimension(breakdown)
+
+    if time_dimension:
+        postprocess.postprocess_time_dimension(time_dimension, rows, empty_row,
+                                               breakdown, constraints, breakdown_constraints)
