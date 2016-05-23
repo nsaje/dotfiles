@@ -1451,7 +1451,7 @@ class CampaignContentInsights(api_common.BaseApiView):
             'rows': rows,
         })
 
-    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=10):
+    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=8):
         stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
@@ -1473,8 +1473,8 @@ class CampaignContentInsights(api_common.BaseApiView):
                 'metric': lc_helper.default_currency(metric, places=3) if metric else None,
             })
 
-        top_ten = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
-        return top_ten
+        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
+        return top_cads
 
     def _deduplicate_content_ad_titles(self, campaign):
         ads = models.ContentAd.objects.all().filter(
