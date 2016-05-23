@@ -2302,16 +2302,16 @@ class ContentAdSource(models.Model):
 
 
 class ContentAdCandidate(models.Model):
-    label = models.CharField(max_length=25)
-    url = models.CharField(max_length=936)
-    title = models.CharField(max_length=256)
-    image_url = models.CharField(max_length=936)
-    image_crop = models.CharField(max_length=25)
+    label = models.CharField(max_length=25, null=True)
+    url = models.CharField(max_length=936, null=True)
+    title = models.CharField(max_length=256, null=True)
+    image_url = models.CharField(max_length=936, null=True)
+    image_crop = models.CharField(max_length=25, null=True)
 
-    display_url = models.CharField(max_length=25)
-    brand_name = models.CharField(max_length=25)
-    description = models.CharField(max_length=140)
-    call_to_action = models.CharField(max_length=25)
+    display_url = models.CharField(max_length=25, null=True)
+    brand_name = models.CharField(max_length=25, null=True)
+    description = models.CharField(max_length=140, null=True)
+    call_to_action = models.CharField(max_length=25, null=True)
 
     tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
 
