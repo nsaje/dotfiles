@@ -464,22 +464,22 @@ urlpatterns += [
         login_required(dash.views.export.AllAccountsExport.as_view())
     ),
     url(
-        r'^api/all_accounts/breakdown(?P<breakdown>(\/\w+)+(\/)*)',
+        r'^api/all_accounts/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AllAccountsBreakdown.as_view()),
         name='breakdown_all_accounts'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/breakdown(?P<breakdown>(\/\w+)+(\/)*)',
+        r'^api/accounts/(?P<account_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AccountBreakdown.as_view()),
         name='breakdown_accounts'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/breakdown(?P<breakdown>(\/\w+)+(\/)*)',
+        r'^api/campaigns/(?P<campaign_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.CampaignBreakdown.as_view()),
         name='breakdown_campaigns'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(\/\w+)+(\/)*)',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
     ),
