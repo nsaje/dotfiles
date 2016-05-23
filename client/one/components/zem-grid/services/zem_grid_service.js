@@ -18,9 +18,14 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
     function loadData (grid, row, size) {
         var breakdown;
         if (row) {
+            // Load more
             breakdown = row.data;
         }
-        grid.ui.loading = true;
+        else {
+            // Initial load or reload
+            // TODO: move to DataSource
+            grid.ui.loading = true;
+        }
         var deferred = $q.defer();
         grid.meta.source.getData(breakdown, size).then(
             function (data) {

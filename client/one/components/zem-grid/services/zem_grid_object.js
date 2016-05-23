@@ -3,6 +3,17 @@
 
 oneApp.factory('zemGridObject', [function () {
 
+    //
+    // This service defines Grid object. It is the main
+    // data structure holding entire Grid state that is passed
+    // to the Grid directives and services.
+    //
+    // This service defines empty grid state and its artifacts
+    // and document all for easier reasoning.
+    //
+    // TODO: refactor, docs needed
+    //
+
     function Grid () {
         this.header = {
             element: null,

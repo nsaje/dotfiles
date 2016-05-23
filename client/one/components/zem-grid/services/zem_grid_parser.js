@@ -3,6 +3,11 @@
 
 oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGridConstants) {
 
+    //
+    // Service responsible for parsing Breakdown data (tree) to Grid rows
+    // It flattens tree so that Grid is functioning on rows[] array.
+    //
+
     function parse (grid, data) {
         if (data.level === 0) {
             grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: data, visible: true};
@@ -10,22 +15,6 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
         } else {
             throw 'Inplace parsing not supported yet.';
         }
-    }
-
-    function parseInplace (grid, breakdown) {
-        var row = getRow(grid, breakdown);
-        var rows = parseBreakdown(grid, row.parent, breakdown);
-        rows.pop();
-        var idx = grid.body.rows.indexOf(row);
-        grid.body.rows.splice.apply(grid.body.rows, [idx, 0].concat(rows));
-    }
-
-    function getRow (grid, breakdown) {
-        // FIXME
-        return grid.body.rows.find(function (row) {
-            return row.level == breakdown.level &&
-                JSON.stringify(breakdown.position) === JSON.stringify(row.data.position);
-        });
     }
 
     function parseBreakdown (grid, parent, breakdown) {
@@ -56,6 +45,8 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
             visible: true,
         };
 
+        // TODO: refactor (move to virtual scroll functionality)
+        // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
         var emptyStats = {};
         grid.header.columns.forEach(function (col) {
             emptyStats[col.field] = '';
@@ -68,6 +59,5 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
 
     return {
         parse: parse,
-        parseInplace: parseInplace,
     };
 }]);

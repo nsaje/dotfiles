@@ -9,8 +9,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
     // Each level in tree represents requested breakdown level with data, while its child nodes
     // are breakdown data for the next level.
     //
-    // L0 (initial levle) -> totals + rows for L1 data === base level request
-    // L(x) -> data for level x with optinal breakdowns for level (x+1)
+    // L0 (initial level) -> totals + rows for L1 data === base level request
+    // L(x) -> data for level x with optional breakdowns for level (x+1)
     //
     // L(x)
     //  --> stats (data - key:value dict)
@@ -29,10 +29,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         var ds = this;
 
         this.data = null;
+        this.config = {};
         this.endpoint = endpoint;
         this.availableBreakdowns = endpoint.availableBreakdowns;
         this.selectedBreakdown = endpoint.defaultBreakdown;
         this.defaultPagination = [20, 3, 5, 7];
+
 
         this.getData = getData;
         this.getMetaData = getMetaData;
@@ -47,7 +49,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function getData (breakdown, size) {
             var level = 1;
-            var offset, limit, breakdowns;
+            var offset, limit, breakdowns = [];
             if (breakdown) {
                 level = breakdown.level;
                 offset = breakdown.pagination.limit;
@@ -58,29 +60,19 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         }
 
         function getDataByLevel (level, breakdowns, offset, limit) {
-            if (!offset) offset = 0;
-            if (!limit) limit = ds.defaultPagination[level - 1];
-            if (!breakdowns) breakdowns = [];
-            var config = {
-                start_date: '2016-05-15',
-                end_date: '2016-05-20',
-                order: '-clicks',
-                level: level,
-                offset: offset,
-                limit: limit,
-                breakdown: ds.selectedBreakdown.slice(0, level),
-                breakdown_page: breakdowns.map(function (breakdown) {
-                    return breakdown.breakdownId;
-                }),
-            };
+            //
+            // Fetches data for passed breakdowns (pagination - offset and limit) at the same time.
+            // All retrieved data is applied to data tree and if not the last level subsequent data is fetch,
+            // with newly retrieved breakdowns (breakdownIds)
+            //
+            var config = prepareConfig(level, breakdowns, offset, limit);
+
+            breakdowns.forEach(function (breakdown) {
+                breakdown.meta.loading = true;
+            });
 
             var deferred = $q.defer();
             ds.endpoint.getData(config).then(function (breakdowns) {
-                if (!breakdowns) {
-                    deferred.resolve(ds.data);
-                    return;
-                }
-
                 applyBreakdowns(breakdowns);
                 deferred.notify(ds.data);
                 if (level < ds.selectedBreakdown.length) {
@@ -91,9 +83,32 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 } else {
                     deferred.resolve(ds.data);
                 }
+            }).finally(function(){
+                breakdowns.forEach(function (breakdown) {
+                    breakdown.meta.loading = false;
+                })
             });
 
             return deferred.promise;
+        }
+
+        function prepareConfig (level, breakdowns, offset, limit) {
+            if (!offset) offset = 0;
+            if (!limit) limit = ds.defaultPagination[level - 1];
+            var config = {
+                level: level,
+                offset: offset,
+                limit: limit,
+                breakdown: ds.selectedBreakdown.slice(0, level),
+                breakdown_page: breakdowns.map(function (breakdown) {
+                    return breakdown.breakdownId;
+                }),
+            };
+
+            // Extend configs with DataSource configuration (dates, orders, etc.)
+            angular.extend(config, ds.config);
+
+            return config;
         }
 
         function getChildBreakdowns (breakdowns) {
@@ -113,6 +128,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         }
 
         function applyBreakdown (breakdown) {
+            // Add breakdown to current data tree
+            // Notify listeners, to give them chance to modify data,
+            // initialize expected data structures
             notifyListeners(EVENTS.ON_LOAD, breakdown);
             initializeRowsData(breakdown);
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
@@ -120,6 +138,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 return;
             }
 
+            // Find breakdown by id and apply partial breakdown data
             var current = findBreakdown(breakdown.breakdownId);
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.limit = current.rows.length;
@@ -133,20 +152,23 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             if (subtree.breakdownId === breakdownId) {
                 return subtree;
             }
-            var res = null;
-            subtree.rows.forEach(function (row) {
+
+            for (var i = 0; i< subtree.rows.length; ++i) {
+                var row = subtree.rows[i];
                 if (row.breakdown) {
-                    var temp = findBreakdown(breakdownId, row.breakdown);
-                    if (temp) res = temp;
+                    var res = findBreakdown(breakdownId, row.breakdown);
+                    if (res) return res;
                 }
-            });
-            return res;
+            }
+            return null;
         }
 
         function initializeData (breakdown) {
+            // Tree starts with L0 data representing
+            // base level breakdown and totals data
             ds.data = {
                 breakdown: breakdown,
-                stats: breakdown.stats,
+                stats: breakdown.totals,
                 level: 0,
             };
             delete breakdown.stats;
@@ -156,7 +178,6 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
             if (breakdown.level < ds.selectedBreakdown.length) {
                 breakdown.rows.forEach(function (row) {
-                    // row = { stats, position }
                     row.breakdown = {
                         level: breakdown.level + 1,
                         breakdownId: row.breakdownId,
@@ -166,6 +187,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                             size: 0,
                         },
                         rows: [],
+                        meta: {}
                     };
                     delete row.breakdownId;
                 });

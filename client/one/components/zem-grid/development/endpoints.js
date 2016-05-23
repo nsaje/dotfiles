@@ -71,7 +71,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             range.push([1000, 0]);
         }
 
-        config.breakdownIds.forEach(function (breakdownId) {
+        config.breakdown_page.forEach(function (breakdownId) {
             var position = JSON.parse(breakdownId);
             for (var i = 0; i < config.level - 1; ++i) {
                 range[i][0] = Math.min(range[i][0], position[i + 1]);
@@ -135,7 +135,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
 
             keys.forEach(function (k, idx) {
                 var childPosition = position.slice(0);
-                childPosition.push(pagination.from + idx);
+                childPosition.push(pagination.offset + idx);
                 var r = generateRandomBreakdown(breakdowns, level + 1, childPosition, k);
                 rows.push(r);
             });
@@ -197,9 +197,8 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         }
 
         var pagination = {
-            from: keysFrom,
-            to: keysTo,
-            size: keysTo - keysFrom + 1,
+            offset: keysFrom,
+            limit: keysTo - keysFrom,
             count: keysCount,
         };
 
