@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'fixture_magic',
     'import_export',
     'dash',
     'zemauth',
@@ -51,6 +52,32 @@ INSTALLED_APPS = [
     'automation',
     'timezone_field',
 ]
+
+CUSTOM_DUMPS = {
+    'dash.adgroup': {  # Initiate dump with: ./manage.py custom_dump addon id
+        'primary': 'dash.adgroup',  # This is our reference model.
+        'dependents': [  # These are the attributes/methods of the model that we wish to dump.
+            'get_current_settings',
+            'adgroupsource_set.all',
+            'contentad_set.all',
+            {
+                'primary': 'campaign',
+                'dependents': [
+                    'account'
+                ]
+            }
+            # {
+            #     'primary': 'contentad_set.all',
+            #     'dependents': [
+            #         'contentadsource_set.all'
+            #     ]
+            # }
+        ],
+    },
+    # 'dash.source': {
+    #     'primary': 'dash.source'
+    # }
+}
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',

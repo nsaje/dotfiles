@@ -48,3 +48,6 @@ secretcrypt==0.4.1
 # Statsd and influx
 statsd==3.2.1
 git+https://github.com/Zemanta/django-statsd-influx.git@v0.1
+
+# demo dump
+git+https://github.com/dwatkinsweb/django-fixture-magic.git@custom-dump-nested-deps
