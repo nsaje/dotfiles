@@ -89,4 +89,10 @@ def _prepare_time_constraints(time_dimension, constraints, offset, limit):
         end_date = start_date + dateutil.relativedelta.relativedelta(months=limit)
 
     constraints['date__gte'] = max(start_date, constraints['date__gte'])
-    constraints['date__lte'] = min(end_date, constraints['date__lte'])
+    if min(end_date, constraints['date__lte']) == constraints['date__lte']:
+        # end of date range - fetch until the end
+        constraints['date__lte'] = constraints['date__lte']
+    else:
+        # else later ranges are possible
+        del constraints['date__lte']
+        constraints['date__lt'] = end_date
