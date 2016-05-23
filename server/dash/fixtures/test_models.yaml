@@ -70,6 +70,16 @@
     model: dash.account
     pk: 2
 
+# test campaigngoal
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        campaign: 1
+        type: 1
+        primary: true
+    model: dash.campaigngoal
+    pk: 1
+
 # test campaigns
 
 -   fields:
