@@ -105,3 +105,7 @@ def get_target_dimension(breakdown):
 
 def get_base_dimension(breakdown):
     return breakdown[0] if breakdown else None
+
+
+def get_parent_breakdown(breakdown):
+    return breakdown[:-1]

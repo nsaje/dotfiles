@@ -8,6 +8,10 @@ def get_stats_cursor():
     return connections[settings.K1_DB_NAME].cursor()
 
 
+def get_empty_row_dict(cursor_description):
+    return {c[0]: None for c in cursor_description}
+
+
 def dictfetchall(cursor):
     """
     Return all rows from a cursor as a dict
