@@ -431,7 +431,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         userSettings.registerGlobal('graphVisible');
         userSettings.registerGlobal('navigationPaneVisible');
 
-        if(document.referrer.indexOf(location.protocol + "//" + location.host) === 0 && document.referrer.indexOf('/signin') > 0) {
+        if (document.referrer.indexOf(location.protocol + '//' + location.host) === 0 &&
+            document.referrer.indexOf('/signin') > 0) {
             $scope.navigationPaneVisible = false;
         }
     };
