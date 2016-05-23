@@ -20,46 +20,14 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         this.getData = function (config) {
             var url = baseUrl + config.breakdown.join('/') + '/';
             var deferred = $q.defer();
-            var params = { // TODO: support all parameters
-                start_date: '2016-05-16',
-                end_date: '2016-05-23',
-                offset: config.offset,
-                limit: config.limit,
-                order: '-clicks',
-                breakdown: config.breakdown,
-                breakdown_page: config.breakdownIds,
-            }
-
-            if (config.level == 1) {
-                // Base level hack - partial data, pagination not working, etc.
-                params.offset = 0;
-                params.limit = 5;
-                params.order = '-clicks';
-            }
-
-            $http.post(url, {params: params}).success(function (data) {
+            $http.post(url, {params: config}).success(function (data) {
                 var breakdowns = data.data;
-                breakdowns.forEach(function (breakdown) {
-                    breakdown.level = config.level;
-                    breakdown.pagination.from = breakdown.pagination.offset;
-                    breakdown.pagination.to = breakdown.pagination.offset + breakdown.pagination.limit;
-
-                    if (config.level == 1) {
-                        // Base level hack - partial data, pagination not working, etc.
-                        breakdown.pagination.from = 0;
-                        breakdown.pagination.to = breakdown.rows.length;
-                        breakdown.stats = breakdown.totals;
-                    }
-
-                    breakdown.breakdownId = breakdown.breakdown_id;
-                    breakdown.rows = breakdown.rows.map(function (row) {
-                        return {
-                            stats: row,
-                            breakdownId: row.breakdown_id,
-                        };
+                if (breakdowns) {
+                    breakdowns.forEach(function (breakdown) {
+                        convertFromApi(config, breakdown);
+                        // check count ...
                     });
-
-                });
+                }
                 deferred.resolve(data.data);
             }).error(function (data) {
                 deferred.reject(data);
@@ -67,6 +35,22 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
             return deferred.promise;
         };
+    }
+
+    function convertFromApi (config, breakdown) {
+        breakdown.level = config.level;
+        breakdown.breakdownId = breakdown.breakdown_id;
+        breakdown.rows = breakdown.rows.map(function (row) {
+            if (config.level > 1)
+                row.breakdownName = row.breakdown_name;
+            else
+                row.breakdownName = row.account_name;
+
+            return {
+                stats: row,
+                breakdownId: row.breakdown_id,
+            };
+        });
     }
 
     function getControllerColumns (ctrl) {
@@ -79,6 +63,12 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             $controller(ctrl, {$scope: scope});
         } catch (e) {
         } // eslint-disable-line
+
+        // Replace first column type to text and field breakdown name, to solve
+        // temporary problems with primary column content in level>1 breakdowns
+        // FIXME: find appropriate solution for this problem (special type)
+        scope.columns[0].field = 'breakdownName';
+        scope.columns[0].type = 'text';
         return scope.columns;
     }
 

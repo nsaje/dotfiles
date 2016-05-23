@@ -32,7 +32,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         this.endpoint = endpoint;
         this.availableBreakdowns = endpoint.availableBreakdowns;
         this.selectedBreakdown = endpoint.defaultBreakdown;
-        this.defaultPagination = [2, 3, 5, 7];
+        this.defaultPagination = [20, 3, 5, 7];
 
         this.getData = getData;
         this.getMetaData = getMetaData;
@@ -50,7 +50,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             var offset, limit, breakdowns;
             if (breakdown) {
                 level = breakdown.level;
-                offset = breakdown.pagination.to + 1;
+                offset = breakdown.pagination.limit;
                 limit = size;
                 breakdowns = [breakdown];
             }
@@ -62,17 +62,25 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             if (!limit) limit = ds.defaultPagination[level - 1];
             if (!breakdowns) breakdowns = [];
             var config = {
+                start_date: '2016-05-15',
+                end_date: '2016-05-20',
+                order: '-clicks',
                 level: level,
                 offset: offset,
                 limit: limit,
                 breakdown: ds.selectedBreakdown.slice(0, level),
-                breakdownIds: breakdowns.map(function (breakdown) {
+                breakdown_page: breakdowns.map(function (breakdown) {
                     return breakdown.breakdownId;
                 }),
             };
 
             var deferred = $q.defer();
             ds.endpoint.getData(config).then(function (breakdowns) {
+                if (!breakdowns) {
+                    deferred.resolve(ds.data);
+                    return;
+                }
+
                 applyBreakdowns(breakdowns);
                 deferred.notify(ds.data);
                 if (level < ds.selectedBreakdown.length) {
@@ -107,15 +115,14 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         function applyBreakdown (breakdown) {
             notifyListeners(EVENTS.ON_LOAD, breakdown);
             initializeRowsData(breakdown);
-            if (breakdown.level === 1 && breakdown.pagination.from === 0) {
+            if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
                 initializeData(breakdown);
                 return;
             }
 
             var current = findBreakdown(breakdown.breakdownId);
             current.rows = current.rows.concat(breakdown.rows);
-            current.pagination.to = breakdown.pagination.to;
-            current.pagination.size += breakdown.pagination.size;
+            current.pagination.limit = current.rows.length;
             current.pagination.count = breakdown.pagination.count;
         }
 

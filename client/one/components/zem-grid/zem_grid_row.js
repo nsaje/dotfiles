@@ -24,7 +24,7 @@ oneApp.directive('zemGridRow', [function () {
 
                 this.loadMore = function (size) {
                     if (!size) {
-                        size = this.row.data.pagination.count - this.row.data.pagination.to;
+                        size = this.row.data.pagination.count - this.row.data.pagination.limit;
                     }
                     zemGridService.loadData(this.grid, this.row, size);
                 };
