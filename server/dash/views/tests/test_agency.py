@@ -2,6 +2,7 @@
 import json
 import datetime
 import pytz
+import httplib
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
@@ -19,6 +20,8 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
+
+from utils import exc
 from utils.test_helper import add_permissions, fake_request
 
 
@@ -2958,3 +2961,167 @@ class AccountUsersTest(TestCase):
             ],
             response.json()['data']['users']
         )
+
+
+class CampaignContentInsightsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def user(self):
+        return User.objects.get(pk=2)
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_permission(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        with self.assertRaises(exc.AuthorizationError):
+            cis.get(fake_request(self.user()), 1)
+
+        add_permissions(self.user(), ['campaign_content_insights_view'])
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'rows': [],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_basic_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['campaign_content_insights_view'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            }
+        ]
+
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '$0.100'
+                        }
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_duplicate_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['campaign_content_insights_view'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad1 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        cad2 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.bidder.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad1.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            },
+            {
+                'content_ad': cad2.id,
+                'clicks': 9000,
+                'impressions': 10000,
+            }
+        ]
+
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '$0.500'
+                        }
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_order_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['campaign_content_insights_view'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad1 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        cad2 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Awesome Ad',
+            url='http://www.bidder.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad1.id,
+                'clicks': 1,
+                'impressions': 1000,
+            },
+            {
+                'content_ad': cad2.id,
+                'clicks': 10,
+                'impressions': 1000,
+            }
+        ]
+
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'rows': [
+                        {
+                            'metric': '$0.010',
+                            'summary': 'Awesome Ad',
+                        },
+                        {
+                            'metric': '$0.001',
+                            'summary': 'Test Ad',
+                        }
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))
