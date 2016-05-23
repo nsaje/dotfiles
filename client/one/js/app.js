@@ -45,8 +45,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         return false;
     });
 
-    var basicTemplate = '<ng-include src="\'/partials/tabset.html\'"></ng-include><div ui-view></div>';
-
     $stateProvider
         .state('main', {
             url: '/',
@@ -69,7 +67,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.allAccounts', {
             url: 'all_accounts',
-            template: basicTemplate,
+            templateUrl: '/partials/basic_template.html',
             controller: 'AllAccountsCtrl'
         })
         .state('main.allAccounts.accounts', {
@@ -91,7 +89,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.accounts', {
             url: 'accounts/{id}',
-            template: basicTemplate,
+            templateUrl: '/partials/basic_template.html',
             controller: 'AccountCtrl',
             resolve: {
                 accountData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
@@ -135,7 +133,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.campaigns', {
             url: 'campaigns/{id}',
-            template: basicTemplate,
+            templateUrl: '/partials/basic_template.html',
             controller: 'CampaignCtrl',
             resolve: {
                 campaignData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
@@ -182,7 +180,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.adGroups', {
             url: 'ad_groups/{id}',
-            template: basicTemplate,
+            templateUrl: '/partials/basic_template.html',
             controller: 'AdGroupCtrl',
             resolve: {
                 adGroupData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
