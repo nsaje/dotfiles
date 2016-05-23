@@ -4,8 +4,8 @@
 oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'api', function ($rootScope, $controller, $http, $q, $timeout, api) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, ctrl) {
-        this.availableBreakdowns = ['account', 'source', 'dma', 'day'];
-        this.defaultBreakdown = ['account'];
+        this.availableBreakdowns = ['account', 'source', 'day'];
+        this.defaultBreakdown = ['account', 'day'];
         this.columns = getControllerColumns(ctrl);
         this.baseUrl = baseUrl;
 
@@ -21,8 +21,8 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             var url = baseUrl + config.breakdown.join('/') + '/';
             var deferred = $q.defer();
             var params = { // TODO: support all parameters
-                start_date: '2016-01-01',
-                end_date: '2016-05-01',
+                start_date: '2016-05-16',
+                end_date: '2016-05-23',
                 offset: config.offset,
                 limit: config.limit,
                 order: '-clicks',
@@ -33,14 +33,13 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             if (config.level == 1) {
                 // Base level hack - partial data, pagination not working, etc.
                 params.offset = 0;
-                params.limit = 2;
-                params.order = 'total_fee';
+                params.limit = 5;
+                params.order = '-clicks';
             }
 
-            $http.post(url, { params: params}).
-            success(function (data) {
+            $http.post(url, {params: params}).success(function (data) {
                 var breakdowns = data.data;
-                breakdowns.forEach(function(breakdown){
+                breakdowns.forEach(function (breakdown) {
                     breakdown.level = config.level;
                     breakdown.pagination.from = breakdown.pagination.offset;
                     breakdown.pagination.to = breakdown.pagination.offset + breakdown.pagination.limit;
@@ -50,13 +49,16 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                         breakdown.pagination.from = 0;
                         breakdown.pagination.to = breakdown.rows.length;
                         breakdown.stats = breakdown.totals;
-                        breakdown.rows = breakdown.rows.map(function (row) {
-                            return {
-                                stats: row,
-                                breakdownId: row.id,
-                            }
-                        });
                     }
+
+                    breakdown.breakdownId = breakdown.breakdown_id;
+                    breakdown.rows = breakdown.rows.map(function (row) {
+                        return {
+                            stats: row,
+                            breakdownId: row.breakdown_id,
+                        };
+                    });
+
                 });
                 deferred.resolve(data.data);
             }).error(function (data) {
@@ -73,7 +75,10 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         //
         var mainScope = angular.element(document.querySelectorAll('[ui-view]')).scope();
         var scope = mainScope.$new();
-        try { $controller(ctrl, {$scope: scope}); } catch (e) { } // eslint-disable-line
+        try {
+            $controller(ctrl, {$scope: scope});
+        } catch (e) {
+        } // eslint-disable-line
         return scope.columns;
     }
 
