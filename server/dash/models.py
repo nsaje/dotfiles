@@ -2148,7 +2148,7 @@ class UploadBatch(models.Model):
 
 
 class ContentAd(models.Model):
-    label = models.CharField(max_length=25)
+    label = models.CharField(max_length=25, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
