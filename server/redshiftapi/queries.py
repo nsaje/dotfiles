@@ -54,6 +54,9 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints, o
     default_context['offset'] = None
     default_context['limit'] = None
 
+    # when querying time dimension order is always time asc
+    default_context['order'] = model.select_order([time_dimension])
+
     sql = backtosql.generate_sql('breakdown_simple_select.sql', default_context)
 
     params = default_context['constraints'].get_params()
