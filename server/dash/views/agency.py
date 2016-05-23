@@ -1485,5 +1485,6 @@ class CampaignContentInsights(api_common.BaseApiView):
         ).values_list('id', 'title')
         ret = {}
         for caid, title in ads:
-            ret[title] = ret.get(title, []) + [caid]
+            ret[title] = ret.get(title, [])
+            ret[title].append(caid)
         return ret
