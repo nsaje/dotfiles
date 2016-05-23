@@ -2148,6 +2148,7 @@ class UploadBatch(models.Model):
 
 
 class ContentAd(models.Model):
+    label = models.CharField(max_length=25)
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
@@ -2298,6 +2299,31 @@ class ContentAdSource(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+
+class ContentAdCandidate(models.Model):
+    label = models.CharField(max_length=25)
+    url = models.CharField(max_length=936)
+    title = models.CharField(max_length=256)
+    image_url = models.CharField(max_length=936)
+    image_crop = models.CharField(max_length=25)
+
+    display_url = models.CharField(max_length=25)
+    brand_name = models.CharField(max_length=25)
+    description = models.CharField(max_length=140)
+    call_to_action = models.CharField(max_length=25)
+
+    tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
+
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
+    batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
+
+    image_id = models.CharField(max_length=256, null=True)
+    image_width = models.PositiveIntegerField(null=True)
+    image_height = models.PositiveIntegerField(null=True)
+    image_hash = models.CharField(max_length=128, null=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
 
 class Article(models.Model):
