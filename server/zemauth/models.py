@@ -170,6 +170,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('account_history_view', 'Can view account''s history tab.'),
             ('can_access_table_breakdowns_feature', 'Can access table breakdowns feature.'),
             ('campaign_content_insights_view', "Can view campaign's content insights tab."),
+            ('can_use_improved_ads_upload', 'Can use improved content ads upload'),
         )
 
     def get_full_name(self):

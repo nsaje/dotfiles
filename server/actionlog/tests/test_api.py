@@ -67,17 +67,14 @@ class ActionLogApiTestCase(TestCase):
 
         self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-
-        expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime(
-            '%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        self.assertEqual(action.state, constants.ActionState.ABORTED)
 
         callback = url_helper.get_zwei_callback_url(action.id)
 
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.SET_CAMPAIGN_STATE,
-            'expiration_dt': expiration_dt,
+            'expiration_dt': None,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'conf': {
@@ -164,7 +161,7 @@ class ActionLogApiTestCase(TestCase):
 
         self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.state, constants.ActionState.ABORTED)
         self.assertEqual(action.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.ACTIVE})
 
@@ -262,7 +259,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action1.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action1.action_type, constants.ActionType.AUTOMATIC)
         # Action can be delayed since we are changing two settings in source settings
-        self.assertTrue(action1.state in (constants.ActionState.DELAYED, constants.ActionState.WAITING))
+        self.assertTrue(action1.state in (constants.ActionState.DELAYED, constants.ActionState.ABORTED))
         self.assertEqual(action1.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
@@ -285,7 +282,7 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action2.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action2.action_type, constants.ActionType.AUTOMATIC)
         # Action can be delayed since we are changing two settings in source settings
-        self.assertTrue(action1.state in (constants.ActionState.DELAYED, constants.ActionState.WAITING))
+        self.assertEqual(action1.state, constants.ActionState.ABORTED)
         self.assertEqual(action2.payload.get('args', {}).get('conf'),
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
@@ -398,7 +395,7 @@ class ActionLogApiTestCase(TestCase):
 
         self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
+        self.assertEqual(action.state, constants.ActionState.ABORTED)
         self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
 
         # Two changes
@@ -410,7 +407,7 @@ class ActionLogApiTestCase(TestCase):
 
         self.assertEqual(action.action, constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(action.action_type, constants.ActionType.AUTOMATIC)
-        self.assertEqual(action.state, constants.ActionState.DELAYED)
+        self.assertEqual(action.state, constants.ActionState.ABORTED)
         self.assertEqual(action.payload.get('args', {}).get('conf'), changes)
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
