@@ -2302,21 +2302,23 @@ class ContentAdSource(models.Model):
 
 
 class ContentAdCandidate(models.Model):
-    label = models.CharField(max_length=25, null=True)
-    url = models.CharField(max_length=936, null=True)
-    title = models.CharField(max_length=256, null=True)
-    image_url = models.CharField(max_length=936, null=True)
-    image_crop = models.CharField(max_length=25, null=True)
+    label = models.TextField(null=True)
+    url = models.TextField(null=True)
+    title = models.TextField(null=True)
+    image_url = models.TextField(null=True)
+    image_crop = models.TextField(null=True)
 
-    display_url = models.CharField(max_length=25, null=True)
-    brand_name = models.CharField(max_length=25, null=True)
-    description = models.CharField(max_length=140, null=True)
-    call_to_action = models.CharField(max_length=25, null=True)
+    display_url = models.TextField(null=True)
+    brand_name = models.TextField(null=True)
+    description = models.TextField(null=True)
+    call_to_action = models.TextField(null=True)
 
-    tracker_urls = ArrayField(models.CharField(max_length=2048), null=True)
+    tracker_urls = models.TextField(null=True)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
+
+    redirect_id = models.CharField(max_length=128, null=True)
 
     image_id = models.CharField(max_length=256, null=True)
     image_width = models.PositiveIntegerField(null=True)
