@@ -1091,13 +1091,7 @@ class AdGroupAdsTableUpdates(object):
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
 
-        ad_group_sources_states = models.AdGroupSourceState.objects\
-            .filter(
-                ad_group_source__ad_group=ad_group,
-                ad_group_source__source__in=filtered_sources,
-            )\
-            .group_current_states()\
-            .select_related('ad_group_source')
+        ad_group_sources_states = ad_group.get_sources_state()
 
         rows = {}
         for content_ad in changed_content_ads:
@@ -1332,13 +1326,7 @@ class AdGroupAdsTable(object):
             content_ad_id__in=[row['id'] for row in rows]
         ).select_related('content_ad__ad_group').select_related('source')
 
-        ad_group_sources_states = models.AdGroupSourceState.objects\
-            .filter(
-                ad_group_source__ad_group=ad_group,
-                ad_group_source__source__in=filtered_sources,
-            )\
-            .group_current_states()\
-            .select_related('ad_group_source')
+        ad_group_sources_states = ad_group.get_sources_state()
 
         for row in rows:
             content_ad_id = int(row['id'])
