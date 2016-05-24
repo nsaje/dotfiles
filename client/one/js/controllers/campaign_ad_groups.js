@@ -453,14 +453,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         );
     };
 
-    $scope.$watch('selected', function (newValue, oldValue) {
-        console.log('test', newValue);
-    });
-
-    $scope.$watch('selectedSideTab.tab', function (newValue, oldValue) {
-        console.log('test', newValue);
-    });
-
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
