@@ -1,7 +1,11 @@
 /* globals oneApp,constants */
-oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', function ($scope, $state, $location, zemNavigationService, campaignData) { // eslint-disable-line max-len
+oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
     $scope.isInLanding = false;
+
+    $scope.summary = null;
+    $scope.metric = null;
+    $scope.rows = [];
 
     $scope.getTabs = function () {
         return [
@@ -92,9 +96,24 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         $scope.updateBreadcrumbAndTitle();
     });
 
+    $scope.getContentInsights = function () {
+        api.campaignContentInsights.get(
+            $state.params.id,
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate
+        ).then(
+            function (data) {
+                $scope.summary = data.summary;
+                $scope.metric = data.metric;
+                $scope.rows = data.rows;
+            }
+        );
+    };
+
     $scope.setModels(campaignData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
+    $scope.getContentInsights();
 
     if ($scope.campaign && $scope.campaign.archived) {
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {

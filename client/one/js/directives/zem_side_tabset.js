@@ -31,10 +31,11 @@ oneApp.directive('zemSideTabset', function () {
 
             $scope.tabClick = function (tab) {
                 $scope.selected = tab;
+                console.log($scope.selected, tab);
             };
 
             $scope.tabs = $scope.getSideTabs();
-            $scope.selected = $scope.tabs[0];
+            $scope.selected = { tab: $scope.tabs[0] };
         }]
     };
 });

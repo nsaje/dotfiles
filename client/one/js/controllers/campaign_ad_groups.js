@@ -20,6 +20,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.campaigns.settings';
+    $scope.selectedSideTab = {};
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
@@ -451,6 +452,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             }
         );
     };
+
+    $scope.$watch('selected', function (newValue, oldValue) {
+        console.log('test', newValue);
+    });
+
+    $scope.$watch('selectedSideTab.tab', function (newValue, oldValue) {
+        console.log('test', newValue);
+    });
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
