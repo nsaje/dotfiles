@@ -6,6 +6,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.summary = null;
     $scope.metric = null;
     $scope.rows = [];
+    $scope.selectedSideTab = {};
 
     $scope.getTabs = function () {
         return [
@@ -97,6 +98,12 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     });
 
     $scope.getContentInsights = function () {
+        if (!$scope.hasPermission('zemauth.can_view_sidetabs')) {
+            return;
+        }
+        if (!$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab')) {            
+            return;
+        }
         api.campaignContentInsights.get(
             $state.params.id,
             $scope.dateRange.startDate,
@@ -113,7 +120,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.setModels(campaignData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
-    $scope.getContentInsights();
 
     if ($scope.campaign && $scope.campaign.archived) {
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {

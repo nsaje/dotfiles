@@ -20,7 +20,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.campaigns.settings';
-    $scope.selectedSideTab = {};
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
@@ -710,6 +709,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
+        $scope.getContentInsights();
         $scope.getInfoboxData();
     };
 
