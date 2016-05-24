@@ -174,18 +174,18 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     function getBreakdownKeys (breakdown) {
         var keys = null;
         switch (breakdown.name) {
-            case 'date':
-                keys = TEST_BREAKDOWNS_DATES;
-                break;
-            case 'age':
-                keys = TEST_BREAKDOWNS_AGES;
-                break;
-            case 'ad_group':
-                keys = TEST_BREAKDOWNS_AD_GROUPS;
-                break;
-            case 'sex':
-                keys = TEST_BREAKDOWNS_SEX;
-                break;
+        case 'date':
+            keys = TEST_BREAKDOWNS_DATES;
+            break;
+        case 'age':
+            keys = TEST_BREAKDOWNS_AGES;
+            break;
+        case 'ad_group':
+            keys = TEST_BREAKDOWNS_AD_GROUPS;
+            break;
+        case 'sex':
+            keys = TEST_BREAKDOWNS_SEX;
+            break;
         }
 
         var keysCount = keys.length;

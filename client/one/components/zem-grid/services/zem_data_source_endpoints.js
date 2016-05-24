@@ -1,7 +1,7 @@
 /* globals oneApp,angular */
 'use strict';
 
-oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'api', function ($rootScope, $controller, $http, $q, $timeout, api) { // eslint-disable-line max-len
+oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, ctrl) {
         this.availableBreakdowns = ['account', 'source', 'day'];
@@ -56,7 +56,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         // requested one -- in that case set the count to
         // the current size od data
         var pagination = breakdown.pagination;
-        if (pagination.count < 0){
+        if (pagination.count < 0) {
             if (config.limit > pagination.limit) {
                 pagination.count = pagination.offset + pagination.limit;
             }

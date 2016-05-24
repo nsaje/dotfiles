@@ -20,8 +20,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'ze
         if (row) {
             // Load more
             breakdown = row.data;
-        }
-        else {
+        } else {
             // Initial load or reload
             // TODO: move to DataSource
             grid.ui.loading = true;

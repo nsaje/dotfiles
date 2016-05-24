@@ -6,8 +6,8 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSource
     $scope.configureDataSource = function () {
         // TODO: propagate configuration to automatically request Grid reload
         $scope.dataSource.config = {
-            start_date: $scope.dateRange.startDate.format('YYYY-MM-DD'),
-            end_date: $scope.dateRange.endDate.format('YYYY-MM-DD'),
+            start_date: $scope.dateRange.startDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
+            end_date: $scope.dateRange.endDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
             order: '-clicks', // TODO: support ordering
         };
     };
@@ -15,7 +15,7 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSource
     $scope.dataSource.onLoad($scope, function (event, breakdown) {
         var rows = breakdown.rows;
         // TODO: name_link not used at the moment (breakdown column - 1st - not yet supported)
-        if (breakdown.level == 1) {
+        if (breakdown.level === 1) {
             rows.map(function (row) {
                 row.stats.name_link = { // eslint-disable-line
                     text: row.stats.name,

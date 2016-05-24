@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp,angular */
 'use strict';
 
 oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
@@ -83,10 +83,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 } else {
                     deferred.resolve(ds.data);
                 }
-            }).finally(function(){
+            }).finally(function () {
                 breakdowns.forEach(function (breakdown) {
                     breakdown.meta.loading = false;
-                })
+                });
             });
 
             return deferred.promise;
@@ -100,7 +100,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 offset: offset,
                 limit: limit,
                 breakdown: ds.selectedBreakdown.slice(0, level),
-                breakdown_page: breakdowns.map(function (breakdown) {
+                breakdown_page: breakdowns.map(function (breakdown) { // eslint-disable-line camelcase
                     return breakdown.breakdownId;
                 }),
             };
@@ -153,7 +153,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 return subtree;
             }
 
-            for (var i = 0; i< subtree.rows.length; ++i) {
+            for (var i = 0; i < subtree.rows.length; ++i) {
                 var row = subtree.rows[i];
                 if (row.breakdown) {
                     var res = findBreakdown(breakdownId, row.breakdown);
