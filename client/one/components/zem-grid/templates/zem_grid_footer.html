@@ -1,0 +1,11 @@
+<div class="zem-grid-footer">
+    <div class="zem-grid-row">
+        <zem-grid-cell ng-repeat="col in ctrl.grid.header.columns track by $index"
+                       position="$index"
+                       col = "col"
+                       value = "ctrl.grid.footer.data.stats[col.field]"
+                       row="ctrl.row"
+                       grid="ctrl.grid"
+        ></zem-grid-cell>
+    </div>
+</div>
