@@ -56,7 +56,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     function generateData (config) {
         var breakdowns = getBreakdownRanges(config);
         var topLevelRow = generateRandomBreakdown(breakdowns);
-        topLevelRow.breakdown.stats = topLevelRow.stats;
+        topLevelRow.breakdown.totals = topLevelRow.stats;
         var topLevelBreakdown = {
             rows: [topLevelRow],
             level: 0,

@@ -171,6 +171,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 stats: breakdown.totals,
                 level: 0,
             };
+            breakdown.meta = {};
             delete breakdown.stats;
         }
 
@@ -182,12 +183,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                         level: breakdown.level + 1,
                         breakdownId: row.breakdownId,
                         pagination: {
-                            from: 0,
-                            to: 0,
-                            size: 0,
+                            offset: 0,
+                            limit: 0,
+                            count: -1,
                         },
                         rows: [],
-                        meta: {}
+                        meta: {},
                     };
                     delete row.breakdownId;
                 });
