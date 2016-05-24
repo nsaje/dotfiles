@@ -7,6 +7,5 @@ MIGRATION_MODULES = {
     'utils': 'server.migrations_not_used_in_tests',
     'reports': 'server.migrations_not_used_in_tests',
     'dash': 'server.migrations_not_used_in_tests',
-    'convapi': 'server.migrations_not_used_in_tests',
     'actionlog': 'server.migrations_not_used_in_tests',
     }
