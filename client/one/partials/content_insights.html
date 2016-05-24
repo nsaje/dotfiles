@@ -2,10 +2,7 @@
     <div class="section">
         <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
             <div class="graph-infobox-row">
-                <!--<div ng-if="hasPermission('zemauth.can_view_sidetabs')" class='sidebar-container'> -->
-                    <!-- <side-tabset></side-tabset> -->
-                    <div class='sidebar-container' ng-include="'/partials/side_tabset.html'"></div>
-                    <!-- </div> -->
+                <div ng-if="hasPermission('zemauth.can_view_sidetabs')" class='sidebar-container' ng-include="'/partials/side_tabset.html'"></div>
                 <div class="graph-container insights-container">
                     <p class="insights-title">Best Performers</p>
 
