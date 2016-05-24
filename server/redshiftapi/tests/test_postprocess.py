@@ -3,7 +3,6 @@ import datetime
 from django.test import TestCase
 
 from stats import constants
-
 from redshiftapi import postprocess
 
 
@@ -33,7 +32,6 @@ class PostprocessTest(TestCase):
             datetime.date(2016, 2, 3),
             datetime.date(2016, 2, 4),
         ])
-
 
     def test_get_representative_dates_weeks(self):
         constraints = {

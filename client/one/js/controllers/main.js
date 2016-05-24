@@ -430,6 +430,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         userSettings.registerGlobal('graphVisible');
         userSettings.registerGlobal('navigationPaneVisible');
+
+        if (document.referrer.indexOf(location.protocol + '//' + location.host) === 0 &&
+            document.referrer.indexOf('/signin') > 0) {
+            $scope.navigationPaneVisible = false;
+        }
     };
 
     $scope.init();
