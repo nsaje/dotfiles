@@ -23,6 +23,8 @@
 
 @sidebar-background-inactive: #f6f6f6;
 @sidebar-background-active: #ecf6f8;
+@sidebar-border-gray: #dddddd;
+@sidebar-border-highlight: #43a7c7;
 
 @white: #fff;
 
@@ -771,50 +773,55 @@ div[datepicker] {
         ul {
             height: 100%;
         }
+        a {
+            height: 100%;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: 30px 30px;
+            border: 0px;
+        }
+        /**
+         * TODO: This needs to be set either in code or through some other magic
+         */
+        li {
+            height: 50%;
+        }
 
         li.active>a {
-           background-color: @sidebar-background-active;
+            background-color: @sidebar-background-active;
+            border-style: solid;
+            border-color: @sidebar-border-gray;
+            border-width: 0px 1px 0px 0px;
         }
         li>a {
             background-color: @sidebar-background-inactive;
+            border-radius: 0px;
         }
 
         .performance {
             .active>a {
                 background-image: url('img/performance-blue.svg');
-                background-position: center center;
-                background-repeat: no-repeat;
-                background-size: 30px 30px;
             }
             a {
                 background-image: url('img/performance-gray.svg');
-                background-position: center center;
-                background-repeat: no-repeat;
-                background-size: 30px 30px;
             }
-        }
-
-        li {
-            height: 50%;
         }
 
         .content-insights {
             active>a {
                 background-image: url('img/content_insights-blue.svg');
-                background-position: center center;
-                background-repeat: no-repeat;
-                background-size: 30px 30px;
             }
             a {
                 background-image: url('img/content_insights-gray.svg');
-                background-position: center center;
-                background-repeat: no-repeat;
-                background-size: 30px 30px;
             }
         }
 
-        a {
-            height: 100%;
+        .nav-tabs>li.active>a, 
+        .nav-tabs>li.active>a:focus, 
+        .nav-tabs>li.active>a:hover {
+            border-style: solid;
+            border-color: @sidebar-border-highlight;
+            border-width: 0px 1px 0px 0px;
         }
     }
 }
