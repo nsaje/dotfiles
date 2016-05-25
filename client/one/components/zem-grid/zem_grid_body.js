@@ -3,7 +3,6 @@
 
 // TODO:
 // - refactor grid object
-// - clean-up and handle empty body.rows array when updating visibleRows array
 
 oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
@@ -69,12 +68,11 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
 
             var prevFirstRow = 0;
             function handleVerticalScroll (scrollTop) {
-                var currFirstRow = Math.max(
-                    Math.floor(scrollTop / zemGridConstants.gridBodyRendering.ROW_HEIGHT),
-                    0
-                );
-
-                updateRenderedRows(currFirstRow, true);
+                var currFirstRow = Math.floor(scrollTop / zemGridConstants.gridBodyRendering.ROW_HEIGHT);
+                if (currFirstRow !== prevFirstRow) {
+                    updateRenderedRows(currFirstRow, true);
+                    prevFirstRow = currFirstRow;
+                }
             }
 
             function updateRenderedRows (firstRow, digest) {
@@ -83,7 +81,6 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                     if (digest) {
                         scope.$digest();
                     }
-                    prevFirstRow = firstRow;
                     updateInProgress = false;
                 });
             }
