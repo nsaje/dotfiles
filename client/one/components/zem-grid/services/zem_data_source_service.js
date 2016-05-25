@@ -45,7 +45,6 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         // TODO: default values will be defined by Breakdown selector (TBD)
         var defaultPagination = [20, 3, 5, 7];
 
-
         //
         // Public API
         //
