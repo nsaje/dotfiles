@@ -100,12 +100,14 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     });
 
     $scope.getContentInsights = function () {
+        console.log('Getting data --- ');
         if (!$scope.hasPermission('zemauth.can_view_sidetabs')) {
             return;
         }
         if (!$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab')) {
             return;
         }
+        console.log('Getting data');
         api.campaignContentInsights.get(
             $state.params.id,
             $scope.dateRange.startDate,
