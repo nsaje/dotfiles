@@ -18,7 +18,7 @@ describe('zemSideTabset', function () {
         };
         scope.hasPermissionInternal = function () {
             return true;
-        }
+        };
 
         sideBar = $compile(sideBar)(scope);
         scope.$digest();
