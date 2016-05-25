@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/* globals oneApp,constants */
 'use strict';
 
 oneApp.directive('zemSideTabset', function () {
@@ -15,16 +15,16 @@ oneApp.directive('zemSideTabset', function () {
             $scope.getSideTabs = function () {
                 return [
                     {
+                        type: constants.sideBarTabs.PERFORMANCE,
                         heading: 'Ad groups',
                         hidden: $scope.campaign && $scope.campaign.archived,
                         internal: false,
-                        cls: 'performance',
                     },
                     {
+                        type: constants.sideBarTabs.CONTENT_INSIGHTS,
                         heading: 'Content Insights',
                         hidden: $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_content_insights_view'),
                         internal: $scope.hasPermission('zemauth.campaign_content_insights_view'),
-                        cls: 'content-insights',
                     }
                 ];
             };
@@ -34,7 +34,7 @@ oneApp.directive('zemSideTabset', function () {
             };
 
             $scope.tabs = $scope.getSideTabs();
-            $scope.selected = { tab: $scope.tabs[0] };
+            $scope.selected = { type: $scope.tabs[0].type };
         }]
     };
 });

@@ -10,8 +10,8 @@
         <tbody>
             <tr ng-repeat="row in rows track by $index" ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
                 <td>{{$index + 1}}</td>
-                <td>{{row.summary}}</td>
-                <td>{{row.metric}}</td>
+                <td>{{ row.summary }}</td>
+                <td>{{ row.metric }}</td>
             </tr>
         </tbody>
     </table>

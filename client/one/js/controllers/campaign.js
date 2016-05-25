@@ -3,10 +3,12 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.level = constants.level.CAMPAIGNS;
     $scope.isInLanding = false;
 
-    $scope.summary = null;
-    $scope.metric = null;
-    $scope.rows = [];
-    $scope.selectedSideTab = {};
+    $scope.contentInsights = {
+        summary: null,
+        metric: null,
+        rows: [],
+    };
+    $scope.selectedSideTab = {type: constants.sideBarTabs.CONTENT_INSIGHTS};
 
     $scope.getTabs = function () {
         return [
@@ -110,9 +112,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
             $scope.dateRange.endDate
         ).then(
             function (data) {
-                $scope.summary = data.summary;
-                $scope.metric = data.metric;
-                $scope.rows = data.rows;
+                $scope.contentInsights = data;
+                console.log($scope.rows);
             }
         );
     };
