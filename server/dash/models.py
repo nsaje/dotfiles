@@ -3102,5 +3102,5 @@ class GAAnalyticsAccount(models.Model):
 class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
     ad_account_id = models.CharField(max_length=127)
-    page_id = models.CharField(max_length=127)
+    page_url = models.CharField(max_length=255)
 
