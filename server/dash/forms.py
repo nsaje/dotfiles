@@ -17,6 +17,7 @@ from dash import constants
 from dash import models
 from dash import regions
 from dash import validation_helpers
+from dash.views import helpers
 from utils import dates_helper
 
 from zemauth.models import User as ZemUser
@@ -35,6 +36,15 @@ class AdvancedDateTimeField(forms.fields.DateTimeField):
 
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
+
+
+class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
+    """
+    Same as TypedMultipleChoiceField but unrestricted choices list.
+    """
+
+    def valid_value(self, value):
+        return True
 
 
 class AdGroupSettingsForm(forms.Form):
@@ -910,12 +920,12 @@ class CreditLineItemAdminForm(forms.ModelForm):
             a.pk for a in models.Account.objects.all() if not a.is_archived()
         ]
         # workaround to not change model __unicode__ methods
-        self.fields['account'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['account'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['account'].queryset = models.Account.objects.filter(
             pk__in=not_archived
         ).order_by('id')
 
-        self.fields['agency'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['agency'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['agency'].queryset = models.Agency.objects.all().order_by('id')
 
     class Meta:
@@ -950,3 +960,46 @@ class BudgetLineItemAdminForm(forms.ModelForm):
     class Meta:
         model = models.BudgetLineItem
         fields = ['campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment']
+
+
+class BreakdownForm(forms.Form):
+
+    def __init__(self, user, breakdown, request_body, *args, **kwargs):
+        request_body['breakdown'] = breakdown
+        self.user = user
+
+        super(BreakdownForm, self).__init__(request_body, *args, **kwargs)
+
+    start_date = forms.DateField(
+        error_messages={
+            'required': 'Please provide start date.',
+        }
+    )
+
+    end_date = forms.DateField(
+        error_messages={
+            'required': 'Please provide end date.',
+        }
+    )
+
+    show_archived = forms.BooleanField(required=False)
+
+    offset = forms.IntegerField(min_value=0, required=True)
+    limit = forms.IntegerField(min_value=0, max_value=100, required=True)
+
+    breakdown_page = TypedMultipleAnyChoiceField(
+        required=False,
+        coerce=str,
+    )
+
+    filtered_sources = forms.CharField(required=False)
+
+    order = forms.CharField(required=False)
+
+    breakdown = forms.CharField(required=True)
+
+    def clean_filtered_sources(self):
+        return helpers.get_filtered_sources(self.user, self.cleaned_data.get('filtered_sources'))
+
+    def clean_breakdown(self):
+        return [x for x in self.cleaned_data['breakdown'].split('/') if x]

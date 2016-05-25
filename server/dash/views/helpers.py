@@ -2,6 +2,7 @@ import collections
 import datetime
 import dateutil.parser
 import pytz
+import logging
 
 from decimal import Decimal
 
@@ -29,6 +30,8 @@ STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
 SPECIAL_COLUMNS = ['performance', 'styles']
+
+logger = logging.getLogger(__name__)
 
 
 def parse_datetime(dt_string):
@@ -521,39 +524,20 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-def get_data_status(objects, last_sync_messages, state_messages=None, last_pixel_sync_message=None):
+def get_data_status(objects):
     data_status = {}
     for obj in objects:
-        messages, state_ok = [], True
-        if state_messages:
-            messages, state_ok = state_messages[obj.id]
+        messages = []
 
-        last_sync_message_parts = last_sync_messages[obj.id][0][:]  # create a copy
-        last_sync_ok = last_sync_messages[obj.id][1]
-        if last_pixel_sync_message is not None:
-            pixel_sync_message, pixel_sync_ok = last_pixel_sync_message
-            last_sync_ok = last_sync_ok and pixel_sync_ok
-            last_sync_message_parts.append(pixel_sync_message)
-
-        if last_sync_ok and state_ok:
-            last_sync_message_parts.insert(0, 'All data is OK.')
-
-        if hasattr(obj, 'maintenance') and obj.maintenance and not last_sync_ok:
-            last_sync_ok = True
+        if hasattr(obj, 'maintenance') and obj.maintenance:
             messages.insert(0, 'This source is in maintenance mode.')
 
-        if hasattr(obj, 'deprecated') and obj.deprecated and not last_sync_ok:
-            last_sync_ok = True
+        if hasattr(obj, 'deprecated') and obj.deprecated:
             messages.insert(0, 'This source is deprecated.')
-
-        if not last_sync_ok:
-            last_sync_message_parts.insert(0, 'Reporting data is stale.')
-
-        messages.append(' '.join(last_sync_message_parts))
 
         data_status[obj.id] = {
             'message': '<br />'.join(messages),
-            'ok': last_sync_ok and state_ok,
+            'ok': True,
         }
 
     return data_status
@@ -750,10 +734,26 @@ def get_ad_group_sources_states(ad_group_sources):
 
 
 def get_fake_ad_group_source_states(ad_group_sources):
+    ad_group_sources_settings = {
+        ags.ad_group_source_id: ags for ags in models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=ad_group_sources,
+        ).group_current_settings()
+    }
+
+    ad_groups_settings = {
+        ag.ad_group_id: ag for ag in models.AdGroupSettings.objects.filter(
+            ad_group__in=list({ags.ad_group for ags in ad_group_sources}),
+        ).group_current_settings()
+    }
+
     states = []
     for ags in ad_group_sources:
-        ad_group_settings = ags.ad_group.get_current_settings()
-        agss = ags.get_current_settings()
+        ad_group_settings = ad_groups_settings.get(ags.ad_group.id)
+        agss = ad_group_sources_settings.get(ags.id)
+
+        if ad_group_settings is None or agss is None:
+            logger.error("Missing settigns got ad group source: %s", ags.id)
+            continue
 
         state = ad_group_settings.state
         if state == constants.AdGroupSettingsState.ACTIVE:

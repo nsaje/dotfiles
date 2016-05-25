@@ -86,6 +86,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl'
+        })
+        .state('main.allAccounts.accounts_breakdowns', {
+            url: '/accounts-tablebreakdowns',
+            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
+            controller: 'AllAccountsAccountsBreakdownsCtrl',
         });
 
     $stateProvider
@@ -213,9 +218,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/publishers',
             templateUrl: '/partials/ad_group_publishers.html',
             controller: 'AdGroupPublishersCtrl'
-        })
-
-        ;
+        });
 }]);
 
 oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
