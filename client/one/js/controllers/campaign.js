@@ -103,7 +103,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         if (!$scope.hasPermission('zemauth.can_view_sidetabs')) {
             return;
         }
-        if (!$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab')) {            
+        if (!$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab')) {
             return;
         }
         api.campaignContentInsights.get(

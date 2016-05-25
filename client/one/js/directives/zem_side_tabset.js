@@ -11,7 +11,7 @@ oneApp.directive('zemSideTabset', function () {
             isPermissionInternal: '=zemIsPermissionInternal',
         },
         templateUrl: '/partials/zem_side_tabset.html',
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        controller: ['$scope', '$element', function ($scope, $element) {
             $scope.getSideTabs = function () {
                 return [
                     {
@@ -23,9 +23,11 @@ oneApp.directive('zemSideTabset', function () {
                     {
                         type: constants.sideBarTabs.CONTENT_INSIGHTS,
                         heading: 'Content Insights',
-                        hidden: $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
+                        hidden: $scope.campaign && 
+                            $scope.campaign.archived || 
+                            !$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
                         internal: $scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
-                    }
+                    },
                 ];
             };
 
@@ -35,7 +37,7 @@ oneApp.directive('zemSideTabset', function () {
                     if (!tab.hidden) count++;
                 });
                 return count;
-            }
+            };
 
             $scope.tabClick = function (tab) {
                 $scope.selected = tab;
@@ -44,6 +46,6 @@ oneApp.directive('zemSideTabset', function () {
             $scope.tabs = $scope.getSideTabs();
             $scope.visibleTabs = $scope.countVisibleTabs($scope.tabs);
             $scope.selected = { type: $scope.tabs[0].type };
-        }]
+        }],
     };
 });
