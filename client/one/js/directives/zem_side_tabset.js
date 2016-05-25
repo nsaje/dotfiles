@@ -31,7 +31,7 @@ oneApp.directive('zemSideTabset', function () {
 
             $scope.countVisibleTabs = function (tabs) {
                 var count = 0;
-                $scope.tabs.forEach(function(tab) {
+                tabs.forEach(function(tab) {
                     if (!tab.hidden) count++;
                 });
                 return count;
