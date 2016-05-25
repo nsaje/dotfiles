@@ -742,7 +742,7 @@ def get_fake_ad_group_source_states(ad_group_sources):
 
     ad_groups_settings = {
         ag.ad_group_id: ag for ag in models.AdGroupSettings.objects.filter(
-            ad_group__in=list({ags.ad_group for ags in ad_group_sources}),
+            ad_group__in=ad_group_sources.values("ad_group_id"),
         ).group_current_settings()
     }
 
