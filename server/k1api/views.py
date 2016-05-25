@@ -93,7 +93,10 @@ def get_ad_group_source(request):
     try:
         ad_group_source = (
             dash.models.AdGroupSource.objects
-                .get(ad_group_id=ad_group_id, source__source_type__type=source_type)
+                .select_related(
+                    'source_credentials', 'source', 'source__source_type',
+                    'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
+                ).get(ad_group_id=ad_group_id, source__source_type__type=source_type)
         )
     except dash.models.AdGroupSource.DoesNotExist:
         return _response_error("The ad group %s is not present on source %s" %
@@ -129,6 +132,7 @@ def get_ad_group_source(request):
         'tracking_code': tracking_code,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
+
     return _response_ok(data)
 
 
