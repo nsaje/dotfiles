@@ -21,6 +21,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
     //
 
 
+    // Definition of events used internally in DataSource
+    // External listeners are registered through dedicated methods (e.g. onLoad)
     var EVENTS = {
         ON_LOAD: 'zem-data-source-on-load',
     };
@@ -31,11 +33,22 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         this.data = null;
         this.config = {};
         this.endpoint = endpoint;
+
+        // Available breakdowns are all breakdowns supported by endpoint
+        // while selectedBreakdown defines currently configured breakdown
+        // TODO: default values will be defined by Breakdown selector (TBD)
         this.availableBreakdowns = endpoint.availableBreakdowns;
         this.selectedBreakdown = endpoint.defaultBreakdown;
-        this.defaultPagination = [20, 3, 5, 7];
+
+        // Define default pagination (limits) for all levels when
+        // size is not passed when requesting new data
+        // TODO: default values will be defined by Breakdown selector (TBD)
+        var defaultPagination = [20, 3, 5, 7];
 
 
+        //
+        // Public API
+        //
         this.getData = getData;
         this.getMetaData = getMetaData;
         this.onLoad = onLoad;
@@ -49,7 +62,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function getData (breakdown, size) {
             var level = 1;
-            var offset, limit, breakdowns = [];
+            var offset, limit;
+            var breakdowns = [];
             if (breakdown) {
                 level = breakdown.level;
                 offset = breakdown.pagination.limit;
@@ -94,13 +108,13 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function prepareConfig (level, breakdowns, offset, limit) {
             if (!offset) offset = 0;
-            if (!limit) limit = ds.defaultPagination[level - 1];
+            if (!limit) limit = defaultPagination[level - 1];
             var config = {
                 level: level,
                 offset: offset,
                 limit: limit,
                 breakdown: ds.selectedBreakdown.slice(0, level),
-                breakdown_page: breakdowns.map(function (breakdown) { // eslint-disable-line camelcase
+                breakdownPage: breakdowns.map(function (breakdown) {
                     return breakdown.breakdownId;
                 }),
             };
@@ -177,22 +191,22 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function initializeRowsData (breakdown) {
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
-            if (breakdown.level < ds.selectedBreakdown.length) {
-                breakdown.rows.forEach(function (row) {
-                    row.breakdown = {
-                        level: breakdown.level + 1,
-                        breakdownId: row.breakdownId,
-                        pagination: {
-                            offset: 0,
-                            limit: 0,
-                            count: -1,
-                        },
-                        rows: [],
-                        meta: {},
-                    };
-                    delete row.breakdownId;
-                });
-            }
+            if (breakdown.level >= ds.selectedBreakdown.length) return;
+
+            breakdown.rows.forEach(function (row) {
+                row.breakdown = {
+                    level: breakdown.level + 1,
+                    breakdownId: row.breakdownId,
+                    pagination: {
+                        offset: 0,
+                        limit: 0,
+                        count: -1,
+                    },
+                    rows: [],
+                    meta: {},
+                };
+                delete row.breakdownId;
+            });
         }
 
         function onLoad (scope, callback) {

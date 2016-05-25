@@ -71,7 +71,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             range.push([1000, 0]);
         }
 
-        config.breakdown_page.forEach(function (breakdownId) {
+        config.breakdownPage.forEach(function (breakdownId) {
             var position = JSON.parse(breakdownId);
             for (var i = 0; i < config.level - 1; ++i) {
                 range[i][0] = Math.min(range[i][0], position[i + 1]);
