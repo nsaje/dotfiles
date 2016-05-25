@@ -20,7 +20,7 @@ describe('CampaignCtrl', function () {
             $state.params.id = 1;
 
             user = {
-                permissions: {}
+                permissions: {},
             };
 
             var mockApiFunc = function () {
@@ -49,7 +49,7 @@ describe('CampaignCtrl', function () {
                 accountsAccess: {
                     hasAccounts: true,
                 },
-                zemFullStoryService: {identify: function () {}}
+                zemFullStoryService: {identify: function () {}},
             });
             $controller('CampaignCtrl', {
                 $scope: $scope,
