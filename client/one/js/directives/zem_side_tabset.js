@@ -23,17 +23,26 @@ oneApp.directive('zemSideTabset', function () {
                     {
                         type: constants.sideBarTabs.CONTENT_INSIGHTS,
                         heading: 'Content Insights',
-                        hidden: $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_content_insights_view'),
-                        internal: $scope.hasPermission('zemauth.campaign_content_insights_view'),
+                        hidden: $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
+                        internal: $scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
                     }
                 ];
             };
+
+            $scope.countVisibleTabs = function (tabs) {
+                var count = 0;
+                $scope.tabs.forEach(function(tab) {
+                    if (!tab.hidden) count++;
+                });
+                return count;
+            }
 
             $scope.tabClick = function (tab) {
                 $scope.selected = tab;
             };
 
             $scope.tabs = $scope.getSideTabs();
+            $scope.visibleTabs = $scope.countVisibleTabs($scope.tabs);
             $scope.selected = { type: $scope.tabs[0].type };
         }]
     };
