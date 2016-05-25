@@ -24,6 +24,8 @@ oneApp.directive('zemGrid', ['config', 'zemGridConstants', 'zemGridService', fun
 
             function activate () {
                 zemGridService.loadMetadata(grid).then(function () {
+                    // After meta data is loaded in Grid, bind it to controller
+                    // so that it is passed to child directives through defined bindings
                     ctrl.grid = grid;
                     zemGridService.loadData(ctrl.grid);
                 });
