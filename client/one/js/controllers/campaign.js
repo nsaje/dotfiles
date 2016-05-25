@@ -113,7 +113,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         ).then(
             function (data) {
                 $scope.contentInsights = data;
-                console.log($scope.rows);
             }
         );
     };
