@@ -770,7 +770,7 @@ div[datepicker] {
     .zem-side-tabset {
 
         width: 100%;
-        height: 359px;
+        height: 353px;
 
         ul {
             height: 100%;
@@ -992,6 +992,7 @@ img.zem-icon {
     overflow: hidden;
     font-size: 13px;
     color: @infobox-black;
+    height: 339px;
 
     hr {
         border-top: 1px solid #dddddd;
@@ -1030,7 +1031,7 @@ img.zem-icon {
 }
 
 .infobox-footer {
-    height: 70px;
+    height: 117px;
     overflow-y: auto;
     // due to scroller
     margin-right: -5px;
@@ -1235,7 +1236,7 @@ img.zem-icon {
     }
 
     .chart {
-        height: 250px;
+        height: 256px;
         margin-top: 5px;
         margin-bottom: 5px;
     }
@@ -4168,13 +4169,13 @@ select.media-source-select {
     width: 100%;
     vertical-align: top;
     padding-right: 20px;
-    padding-bottom: 9px;
 
     .table-insights>tbody>tr:nth-child(even) {
         background-color: @insights-table-gray;
     }
     
     .table {
+        margin-bottom: 0px;
         thead {
             background: @white;
         }
@@ -4191,6 +4192,20 @@ select.media-source-select {
 
             color: @insights-table-header;
             font-weight: normal;
+        }
+
+        td:first-child {
+            width: 30px;
+        }
+        td:last-child {
+            width: 35px;
+        }
+
+        td {
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
     
