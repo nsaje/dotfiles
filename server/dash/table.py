@@ -209,12 +209,7 @@ class AllAccountsSourcesTable(object):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
 
     def get_data_status(self, user):
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
-        return helpers.get_data_status(
-            self.get_sources(),
-            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
-            last_pixel_sync_message=last_pixel_sync_message,
-        )
+        return helpers.get_data_status(self.get_sources())
 
 
 class AccountSourcesTable(object):
@@ -261,18 +256,13 @@ class AccountSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=self.account.id))
+        return None
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(accounts=[self.account], sources=self.filtered_sources)
+        return False
 
     def get_data_status(self, user):
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
-        return helpers.get_data_status(
-            self.get_sources(),
-            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
-            last_pixel_sync_message=last_pixel_sync_message,
-        )
+        return helpers.get_data_status(self.get_sources())
 
 
 class CampaignSourcesTable(object):
@@ -327,19 +317,13 @@ class CampaignSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=self.campaign.account_id))
+        return None
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(campaigns=[self.campaign], sources=self.filtered_sources)
+        return False
 
     def get_data_status(self, user):
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
-
-        return helpers.get_data_status(
-            self.get_sources(),
-            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
-            last_pixel_sync_message=last_pixel_sync_message
-        )
+        return helpers.get_data_status(self.get_sources())
 
 
 class AdGroupSourcesTable(object):
@@ -400,27 +384,13 @@ class AdGroupSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=self.ad_group.campaign.account_id))
+        return None
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
+        return False
 
     def get_data_status(self, user):
-        state_messages = helpers.get_ad_group_sources_state_messages(
-            self.active_ad_group_sources,
-            self.ad_group_settings,
-            self.ad_group_sources_settings,
-            self.ad_group_sources_states,
-        )
-
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
-
-        return helpers.get_data_status(
-            self.get_sources(),
-            helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
-            state_messages=state_messages,
-            last_pixel_sync_message=last_pixel_sync_message
-        )
+        return helpers.get_data_status(self.get_sources())
 
 
 class AdGroupSourcesTableUpdates(object):
@@ -983,13 +953,7 @@ class AccountsAccountsTable(object):
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
-
-        return helpers.get_data_status(
-            accounts,
-            helpers.get_last_sync_messages(accounts, last_success_actions),
-            last_pixel_sync_message=last_pixel_sync_message
-        )
+        return helpers.get_data_status(accounts)
 
     def get_budgets(self, accounts):
         account_budget, account_total_spend = bcm_helpers.get_account_media_budget_data(
@@ -1497,12 +1461,7 @@ class CampaignAdGroupsTable(object):
         return yesterday_cost, yesterday_total_cost
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
-        return helpers.get_data_status(
-            ad_groups,
-            helpers.get_last_sync_messages(ad_groups, last_success_actions),
-            last_pixel_sync_message=last_pixel_sync_message
-        )
+        return helpers.get_data_status(ad_groups)
 
     def get_rows(self, user, campaign, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
                  show_archived, e_yesterday_cost, yesterday_cost):
@@ -1715,12 +1674,7 @@ class AccountCampaignsTable(object):
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
-        last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
-        return helpers.get_data_status(
-            campaigns,
-            helpers.get_last_sync_messages(campaigns, last_success_actions),
-            last_pixel_sync_message=last_pixel_sync_message
-        )
+        return helpers.get_data_status(campaigns)
 
     def get_rows(self, user, account, campaigns, campaigns_settings, campaign_status_dict, stats,
                  last_actions, order, has_view_managers_permission, show_archived,
