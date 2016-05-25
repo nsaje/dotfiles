@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/* globals oneApp */
 'use strict';
 
 oneApp.directive('zemContentInsights', function () {
@@ -10,8 +10,5 @@ oneApp.directive('zemContentInsights', function () {
             rows: '=',
         },
         templateUrl: '/partials/zem_content_insights.html',
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-
-        }]
     };
 });
