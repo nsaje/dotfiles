@@ -1,6 +1,8 @@
 /* globals oneApp */
 oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
-    var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint();
+    // Temporary workaround for retrieving columns defined in original controller
+    var columns = zemDataSourceEndpoints.getControllerColumns($scope, 'AllAccountsAccountsCtrl');
+    var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(columns);
     $scope.dataSource = zemDataSourceService.createInstance(endpoint);
 
     $scope.configureDataSource = function () {

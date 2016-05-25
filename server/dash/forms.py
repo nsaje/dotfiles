@@ -920,12 +920,12 @@ class CreditLineItemAdminForm(forms.ModelForm):
             a.pk for a in models.Account.objects.all() if not a.is_archived()
         ]
         # workaround to not change model __unicode__ methods
-        self.fields['account'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['account'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['account'].queryset = models.Account.objects.filter(
             pk__in=not_archived
         ).order_by('id')
 
-        self.fields['agency'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['agency'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['agency'].queryset = models.Agency.objects.all().order_by('id')
 
     class Meta:

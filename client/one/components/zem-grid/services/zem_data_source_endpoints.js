@@ -3,10 +3,10 @@
 
 oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
 
-    function StatsEndpoint (baseUrl, ctrl) {
+    function StatsEndpoint (baseUrl, columns) {
         this.availableBreakdowns = ['account', 'source', 'day'];
         this.defaultBreakdown = ['account', 'source', 'day'];
-        this.columns = getControllerColumns(ctrl);
+        this.columns = columns;
         this.baseUrl = baseUrl;
 
         this.getMetaData = function () {
@@ -69,13 +69,10 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         }
     }
 
-    function getControllerColumns (ctrl) {
+    function getControllerColumns (scope, ctrl) {
         //
         // HACK (legacy support): access columns variable from corresponded controller scope
         //
-        var mainScope = angular.element(document.querySelectorAll('[ui-view]')).scope();
-        var scope = mainScope.$new();
-
         try { $controller(ctrl, {$scope: scope}); } catch (e) { } // eslint-disable-line
 
         // Replace first column type to text and field breakdown name, to solve
@@ -87,8 +84,9 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
     }
 
     return {
-        createAllAccountsEndpoint: function () {
-            return new StatsEndpoint('/api/all_accounts/breakdown/', 'AllAccountsAccountsCtrl');
+        createAllAccountsEndpoint: function (columns) {
+            return new StatsEndpoint('/api/all_accounts/breakdown/', columns);
         },
+        getControllerColumns: getControllerColumns,
     };
 }]);
