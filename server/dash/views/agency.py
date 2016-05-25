@@ -1443,7 +1443,7 @@ class CampaignContentInsights(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=10)
+        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=8)
 
         return self.create_api_response({
             'summary': 'Title',

@@ -1,0 +1,18 @@
+<tabset class="zem-side-tabset" vertical="true">
+<tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" active="tab.type === selected.type"  ng-style="{'height': 100/visibleTabs + '%'}">
+        <tab-heading>
+           <div class="tab-table">
+               <div class="tab-row">
+                    <div class="tab-body-cell {{tab.type}}">
+                        <a class="tab-title" ng-click="tabClick(tab)">
+                        <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
+                        </a>
+                    </div>
+                    <div class="tab-selection-cell">
+                        <div ng-class="{'right-arrow': selected.type === tab.type}"></div>
+                    </div>
+                </div>
+            </div>
+        </tab-heading>
+    </tab>
+</tabset>

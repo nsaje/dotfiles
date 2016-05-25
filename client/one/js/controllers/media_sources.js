@@ -737,6 +737,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getTableData();
         $scope.getInfoboxData();
         pollSyncStatus();
+
+
+        if ($scope.level === constants.level.CAMPAIGNS) {
+            $scope.getContentInsights();
+        }
     };
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
