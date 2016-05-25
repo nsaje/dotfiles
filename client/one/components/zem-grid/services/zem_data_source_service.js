@@ -62,7 +62,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function getData (breakdown, size) {
             var level = 1;
-            var offset, limit, breakdowns = [];
+            var offset, limit;
+            var breakdowns = [];
             if (breakdown) {
                 level = breakdown.level;
                 offset = breakdown.pagination.limit;
@@ -113,7 +114,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 offset: offset,
                 limit: limit,
                 breakdown: ds.selectedBreakdown.slice(0, level),
-                breakdown_page: breakdowns.map(function (breakdown) { // eslint-disable-line camelcase
+                breakdownPage: breakdowns.map(function (breakdown) {
                     return breakdown.breakdownId;
                 }),
             };
@@ -190,22 +191,22 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function initializeRowsData (breakdown) {
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
-            if (breakdown.level < ds.selectedBreakdown.length) {
-                breakdown.rows.forEach(function (row) {
-                    row.breakdown = {
-                        level: breakdown.level + 1,
-                        breakdownId: row.breakdownId,
-                        pagination: {
-                            offset: 0,
-                            limit: 0,
-                            count: -1,
-                        },
-                        rows: [],
-                        meta: {},
-                    };
-                    delete row.breakdownId;
-                });
-            }
+            if (breakdown.level >= ds.selectedBreakdown.length) return;
+
+            breakdown.rows.forEach(function (row) {
+                row.breakdown = {
+                    level: breakdown.level + 1,
+                    breakdownId: row.breakdownId,
+                    pagination: {
+                        offset: 0,
+                        limit: 0,
+                        count: -1,
+                    },
+                    rows: [],
+                    meta: {},
+                };
+                delete row.breakdownId;
+            });
         }
 
         function onLoad (scope, callback) {
