@@ -568,7 +568,7 @@ class CampaignSettings(api_common.BaseApiView):
             'modified': {}
         })
 
-        if len(current) - len(changes['removed']) + len(changes['added']) == 0:
+        if len(current) - len(changes['removed']) + len(changes['added']) <= 0:
             errors['no_goals'] = 'At least one goal must be defined'
             raise exc.ValidationError(errors=errors)
 
