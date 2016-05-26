@@ -766,6 +766,27 @@ div[datepicker] {
     width: 80px;
     padding-right: 5px;
     vertical-align: top;
+    position: relative;
+
+
+    zem-internal-feature {
+        position: absolute;
+        z-index: 1500;
+
+        .internal {
+            margin-right: 0.5em;
+
+            &:before {
+                content: " ";
+                width: 0;
+                height: 0;
+                display: block;
+                border-top: 7px solid @internal-color;
+                border-right: 7px solid transparent;
+                float: left;
+            }
+        }
+    }
 
     .zem-side-tabset {
 
