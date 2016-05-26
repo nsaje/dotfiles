@@ -54,35 +54,15 @@ INSTALLED_APPS = [
 ]
 
 CUSTOM_DUMPS = {
-    'dash.adgroup': {  # Initiate dump with: ./manage.py custom_dump addon id
-        'primary': 'dash.adgroup',  # This is our reference model.
-        'dependents': [  # These are the attributes/methods of the model that we wish to dump.
-            'get_current_settings',
-            'adgroupsource_set.all',
-            'contentad_set.all',
-            # 'campaign.account.users'
-            # 'campaign.account.groups'
-            # {
-            #     'primary': 'campaign.account',
-            #     'dependents': [
-            #         'group_set.all',
-            #         {
-            #             'primary': 'user_set.all',
-            #             'dependents': ['group_set.all'],
-            #         }
-            #     ]
-            # }
-        ],
-    },
-    'dash.real_adgroup': {  # Initiate dump with: ./manage.py custom_dump addon id
-        'primary': 'dash.adgroup',  # This is our reference model.
-        'dependents': [  # These are the attributes/methods of the model that we wish to dump.
-            'get_current_settings',
-            'adgroupsource_set.all',
-            'contentad_set.all',
-        ],
-    },
-    'dash.account': {  # Initiate dump with: ./manage.py custom_dump addon id
+    # 'real_adgroup': {
+    #     'primary': 'dash.adgroup',  # This is our reference model.
+    #     'dependents': [  # These are the attributes/methods of the model that we wish to dump.
+    #         'get_current_settings',
+    #         'adgroupsource_set.all',
+    #         'contentad_set.all',
+    #     ],
+    # },
+    'account': {
         'primary': 'dash.account',  # This is our reference model.
         'dependents': [  # These are the attributes/methods of the model that we wish to dump.
             'get_current_settings',
@@ -93,7 +73,14 @@ CUSTOM_DUMPS = {
                     {
                         'primary': 'adgroup_set.all',
                         'dependents': [
-                            'get_current_settings'
+                            'get_current_settings',
+                            'adgroupsource_set.all',
+                            {
+                                'primary': 'contentad_set.all',
+                                'dependents': [
+                                    'contentadsource_set.all'
+                                ]
+                            }
                         ]
                     }
                 ]

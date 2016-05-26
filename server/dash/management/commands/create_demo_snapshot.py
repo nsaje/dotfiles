@@ -27,21 +27,23 @@ class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     def handle(self, *args, **options):
-        # dump_name = 'dash.adgroup'
-        dump_name = 'dash.account'
-        # pks = [1842]
-        pks = [308]
+        demo_users = loading.get_model('zemauth', 'User').objects.filter(email__endswith='test@test.com')
+        # add_to_serialize_list(demo_users)
+
+        dump_name = 'account'
+        pks = [168]
         dump_settings = settings.CUSTOM_DUMPS[dump_name]
         (app_label, model_name) = dump_settings['primary'].split('.')
         dump_me = loading.get_model(app_label, model_name)
-        objs = dump_me.objects.filter(pk__in=[int(i) for i in pks])
-        for obj in objs:
-            add_object_dependencies(obj, dump_settings['dependents'])
-        # add_to_serialize_list(objs)
+        real_accounts = dump_me.objects.filter(pk__in=[int(i) for i in pks])
+        for account in real_accounts:
+            account.users = demo_users
+            add_object_dependencies(account, dump_settings['dependents'])
 
         serialize_fully()
         data = serialize('json', [o for o in serialize_me if o is not None],
-                         use_natural_foreign_keys=True, use_natural_primary_keys=True)
+                         use_natural_foreign_keys=True, use_natural_primary_keys=True,
+                         indent=4)
 
         self.stdout.write(data)
 
