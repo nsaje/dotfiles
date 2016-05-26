@@ -1,5 +1,5 @@
 <tabset class="zem-side-tabset" vertical="true">
-<tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" active="tab.type === selected.type"  ng-style="{'height': 100/visibleTabs + '%'}">
+<tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" active="tab.type === selected.type"  ng-style="{'height': 100/visibleTabCount + '%'}">
         <tab-heading>
            <div class="tab-table">
                <div class="tab-row">
