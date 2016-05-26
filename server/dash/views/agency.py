@@ -1443,12 +1443,19 @@ class CampaignContentInsights(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=8)
+        best_performer_rows, worst_performer_rows = self._fetch_content_ad_metrics(
+            request.user,
+            campaign,
+            start_date,
+            end_date,
+            limit=8
+        )
 
         return self.create_api_response({
             'summary': 'Title',
             'metric': 'CTR',
-            'rows': rows,
+            'best_performer_rows': best_performer_rows,
+            'worst_performer_rows': worst_performer_rows,
         })
 
     def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=8):
@@ -1472,10 +1479,15 @@ class CampaignContentInsights(api_common.BaseApiView):
                 'summary': title,
                 'metric': '{:.2f}%'.format(metric*100) if metric else None,
                 'value': metric or 0,
+                'clicks': clicks or 0,
             })
 
         top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
-        return top_cads
+
+        active_dd_cad_metric = [cad_metric for cad_metric in dd_cad_metric if cad_metric['clicks'] >= 10]
+        bott_cads = sorted(active_dd_cad_metric, key=lambda dd_cad: dd_cad['value'])[:limit]
+        return [{'summary': cad['summary'], 'metric': cad['metric']} for cad in top_cads],\
+            [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
 
     def _deduplicate_content_ad_titles(self, campaign):
         ads = models.ContentAd.objects.all().filter(

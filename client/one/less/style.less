@@ -18,8 +18,9 @@
 @infobox-dark-gray: #888888;
 
 @insights-table-gray: #fafafa;
-@insights-title: #70c700;
 @insights-table-header: #d7d7d7;
+@insights-text-green: #70c700;
+@insights-text-red: #cb0101;
 
 @sidebar-background-inactive: #f6f6f6;
 @sidebar-background-active: #ecf6f8;
@@ -4226,7 +4227,12 @@ select.media-source-select {
     
     .insights-title {
         font-size: 16px;
-        color: @insights-title;
+    }
+    .best-performers>.insights-title {
+        color: @insights-text-green;
+    }
+    .worst-performers>.insights-title {
+        color: @insights-text-red;
     }
 }
 

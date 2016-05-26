@@ -7,7 +7,8 @@ oneApp.directive('zemContentInsights', function () {
         scope: {
             summary: '=',
             metric: '=',
-            rows: '=',
+            bestPerformerRows: '=',
+            worstPerformerRows: '=',
         },
         templateUrl: '/partials/zem_content_insights.html',
     };
