@@ -1,86 +1,65 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridService', ['$q', 'zemGridConstants', 'zemGridParser', 'zemGridUIService', function ($q, zemGridConstants, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
+oneApp.factory('zemGridService', ['$q', 'zemGridParser', 'zemGridUIService', function ($q, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
 
-    function loadMetadata (grid) {
-        var deferred = $q.defer();
-        grid.meta.source.getMetaData().then(
-            function (data) {
-                grid.header.columns = data.columns;
-                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
-                deferred.resolve();
-            }
-        );
-        return deferred.promise;
-    }
+    function GridService (grid) {
+        this.loadMetaData = loadMetaData;
+        this.loadData = loadData;
 
-    function loadData (grid, row, size) {
-        var breakdown;
-        if (row) {
-            // Load more
-            breakdown = row.data;
-        } else {
-            // Initial load or reload
-            // TODO: move to DataSource
-            grid.ui.loading = true;
+        this.initialize = initialize;
+
+        function initialize () {
+            grid.meta.source.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
+            loadMetaData().then(function () {
+                grid.meta.initialized = true;
+                loadData();
+            });
         }
-        var deferred = $q.defer();
-        grid.meta.source.getData(breakdown, size).then(
-            function (data) {
-                zemGridParser.parse(grid, data);
-                deferred.resolve();
-            },
-            function () { // error
-            },
-            function (data) { // notify
-                grid.ui.loading = false;
-                zemGridParser.parse(grid, data);
-                zemGridUIService.resetUIState(grid);
-                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
+
+        function loadMetaData () {
+            var deferred = $q.defer();
+            grid.meta.source.getMetaData().then(
+                function (data) {
+                    grid.header.columns = data.columns;
+                    grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+                    deferred.resolve();
+                }
+            );
+            return deferred.promise;
+        }
+
+        function loadData (row, size) {
+            var breakdown;
+            if (row) {
+                // When additional data (load more...) is requested
+                // breakdown row is passed as an argument
+                breakdown = row.data;
             }
-        ).finally(function () {
-            grid.ui.loading = false;
+            var deferred = $q.defer();
+            grid.meta.source.getData(breakdown, size).then(
+                function (data) {
+                    zemGridParser.parse(grid, data);
+                    deferred.resolve();
+                },
+                function () {
+                    // TODO: Handle errors
+                }
+            );
+            return deferred.promise;
+        }
+
+        function handleSourceDataUpdate (event, data) {
+            zemGridParser.parse(grid, data);
             zemGridUIService.resetUIState(grid);
+            grid.meta.loading = !data.breakdown;
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-        });
-        return deferred.promise;
-    }
-
-    function setRowCollapsed (grid, gridRow, collapsed) {
-        gridRow.collapsed = collapsed;
-        var idx = grid.body.rows.indexOf(gridRow);
-        while (++idx < grid.body.rows.length) {
-            var child = grid.body.rows[idx];
-            if (child.level <= gridRow.level) break;
-            child.visible = !gridRow.collapsed && !child.parent.collapsed;
         }
-    }
-
-    function toggleCollapse (grid, gridRow) {
-        setRowCollapsed(grid, gridRow, !gridRow.collapsed);
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-    }
-
-    function toggleCollapseLevel (grid, level) {
-        var collapsed = null;
-        for (var i = 0; i < grid.body.rows.length; ++i) {
-            var row = grid.body.rows[i];
-            if (row.level === level) {
-                if (collapsed === null)
-                    collapsed = !row.collapsed;
-                setRowCollapsed(grid, row, collapsed);
-            }
-        }
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     }
 
     return {
-        loadMetadata: loadMetadata,
-        loadData: loadData,
-
-        // TODO: Move to separate service (interaction service)
-        toggleCollapse: toggleCollapse,
-        toggleCollapseLevel: toggleCollapseLevel,
+        createInstance: function (grid) {
+            return new GridService(grid);
+        },
     };
 }]);

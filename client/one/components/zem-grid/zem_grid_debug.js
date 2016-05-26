@@ -25,8 +25,8 @@ oneApp.directive('zemGridDebug', [function () {
                     if (value) selectedBreakdown.push(key);
                 });
                 this.grid.meta.source.selectedBreakdown = selectedBreakdown;
-                zemGridService.loadMetadata(this.grid).then(function () {
-                    zemGridService.loadData(this.grid);
+                this.grid.meta.service.loadMetaData().then(function () {
+                    this.grid.meta.service.loadData();
                 }.bind(this));
             };
 

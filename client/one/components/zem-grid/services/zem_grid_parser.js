@@ -9,11 +9,14 @@ oneApp.factory('zemGridParser', ['$q', 'zemGridConstants', function ($q, zemGrid
     //
 
     function parse (grid, data) {
-        if (data.level === 0) {
+        if (data.level > 0) throw 'Inplace parsing not supported yet.';
+
+        if (data.breakdown) {
             grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: data, visible: true};
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
-            throw 'Inplace parsing not supported yet.';
+            grid.body.rows = [];
+            grid.footer.stats = null;
         }
     }
 
