@@ -1395,3 +1395,15 @@ class SystemUserType(ConstantBase):
         CAMPAIGN_STOP: 'Campaign Stop',
         AUTOPILOT: 'Zemanta Autopilot'
     }
+
+
+class AsyncUploadJobStatus(ConstantBase):
+    WAITING = 1
+    OK = 2
+    FAILED = 3
+
+    _VALUES = {
+        WAITING: 'Waiting',
+        OK: 'OK',
+        FAILED: 'Failed',
+    }
