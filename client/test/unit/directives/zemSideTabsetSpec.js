@@ -17,8 +17,8 @@ describe('zemSideTabset', function () {
         scope.hasPermission = function () {
             return true;
         };
-        scope.hasPermissionInternal = function () {
-            return true;
+        scope.isPermissionInternal = function () {
+            return false;
         };
 
         sideBar = $compile(sideBar)(scope);
@@ -29,9 +29,9 @@ describe('zemSideTabset', function () {
     }));
 
     it('should initialize correctly', function () {
-        expect(isolate.visibleTabs).toEqual(2);
-        expect(isolate.selected.tab.type).toEqual(
-            constants.sideBarTabs.PERFORMANCE,
+        expect(isolate.visibleTabCount).toEqual(2);
+        expect(isolate.selected.type).toEqual(
+            constants.sideBarTabs.PERFORMANCE
         );
     });
 });
