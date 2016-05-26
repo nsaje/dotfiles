@@ -3,14 +3,18 @@
         <div class="best-performers" style="display:table-cell; padding-right: 20px">
             <p ng-if="expanded" class="insights-best-title">Best Performers</p>
 
-            <div ng-if="!expanded" style="display: table">
+            <div class="performer-switch-table" ng-if="!expanded" style="display: table">
                 <div style="display: table-row">
                     <a style="display: table-cell" href ng-click="showBestPerformers()" class="insights-best-title">Best Performers</a>
                     <a style="display: table-cell" href ng-click="showWorstPerformers()" class="insights-worst-title">Worst Performers</a>
                 </div>
                 <div style="display: table-row">
-                    <div style="display: table-cell"></div>
-                    <div style="display: table-cell"></div>
+                    <div class="top-selection-cell">
+                        <div ng-if="shortenedShown === 'best-performers'" class="top-arrow"></div>
+                    </div>
+                    <div class="top-selection-cell">
+                       <div ng-if="shortenedShown === 'worst-performers'" class="top-arrow"></div>
+                    </div>
                 </div>
             </div>
             <table class="table table-insights">
