@@ -1435,7 +1435,7 @@ class UserActivation(api_common.BaseApiView):
 class CampaignContentInsights(api_common.BaseApiView):
 
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_content_insights_view'):
+        if not request.user.has_perm('zemauth.can_view_campaign_content_insights_side_tab'):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
