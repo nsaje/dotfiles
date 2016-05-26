@@ -1,8 +1,18 @@
 <div style="display: table; width: 100%">
     <div style="display:table-row">
         <div class="best-performers" style="display:table-cell; padding-right: 20px">
-            <p class="insights-title">Best Performers</p>
+            <p ng-if="expanded" class="insights-best-title">Best Performers</p>
 
+            <div ng-if="!expanded" style="display: table">
+                <div style="display: table-row">
+                    <a style="display: table-cell" href ng-click="showBestPerformers()" class="insights-best-title">Best Performers</a>
+                    <a style="display: table-cell" href ng-click="showWorstPerformers()" class="insights-worst-title">Worst Performers</a>
+                </div>
+                <div style="display: table-row">
+                    <div style="display: table-cell"></div>
+                    <div style="display: table-cell"></div>
+                </div>
+            </div>
             <table class="table table-insights">
                 <thead>
                     <th> </th>
@@ -10,7 +20,7 @@
                     <th>{{metric}}</th>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="row in bestPerformerRows track by $index" ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
+                    <tr ng-repeat="row in (expanded ? bestPerformerRows : shortenedRows) track by $index" ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
                         <td>{{$index + 1}}</td>
                         <td>{{ row.summary }}</td>
                         <td>{{ row.metric }}</td>
@@ -19,8 +29,8 @@
             </table>
         </div>
 
-        <div class="worst-performers" style="display: table-cell">
-            <p class="insights-title">Worst Performers</p>
+        <div ng-if="expanded" class="worst-performers" style="display: table-cell">
+            <p class="insights-worst-title">Worst Performers</p>
 
             <table class="table table-insights">
                 <thead>

@@ -162,7 +162,9 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 var w = $('.chart').parent().width(),
                     h = $('.chart').height();
                 // setsize will trigger the graph redraw
-                chart.setSize(w, h, false);
+                if (chart) {
+                    chart.setSize(w, h, false);
+                }
             });
 
             $scope.$watch('data', function (newValue, oldValue) {
