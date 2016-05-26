@@ -30,8 +30,8 @@ describe('zemSideTabset', function () {
 
     it('should initialize correctly', function () {
         expect(isolate.visibleTabs).toEqual(2);
-        expect(isolate.selected).toEqual({
-            type: constants.sideBarTabs.PERFORMANCE,
-        });
+        expect(isolate.selected.tab.type).toEqual(
+            constants.sideBarTabs.PERFORMANCE,
+        );
     });
 });

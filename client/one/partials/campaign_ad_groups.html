@@ -3,7 +3,8 @@
         <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
             <div class="graph-infobox-row">
                 <div ng-if="hasPermission('zemauth.can_view_sidetabs')" class='sidebar-container'>
-                    <zem-side-tabset zem-selected="selectedSideTab.tab" zem-has-permission="hasPermission" zem-has-permission-internal="hasPermissionInternal"/>
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_sidetabs')" popover-placement="bottom"></zem-internal-feature>
+                    <zem-side-tabset zem-selected="selectedSideTab.tab" zem-has-permission="hasPermission" zem-has-permission-internal="isPermissionInternal"/>
                 </div>
                 <div class="insights-container" ng-if="isContentInsightsVisible">
                     <zem-content-insights summary="contentInsights.summary" metric="contentInsights.metric" rows="contentInsights.rows"></zem-content-insights>
