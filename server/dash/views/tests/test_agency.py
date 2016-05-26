@@ -3017,7 +3017,7 @@ class CampaignContentInsightsTest(TestCase):
                     'rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '$0.100'
+                            'metric': '10%'
                         }
                     ],
                 },
@@ -3066,7 +3066,7 @@ class CampaignContentInsightsTest(TestCase):
                     'rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '$0.500'
+                            'metric': '50%'
                         }
                     ],
                 },
@@ -3114,11 +3114,11 @@ class CampaignContentInsightsTest(TestCase):
                     'summary': 'Title',
                     'rows': [
                         {
-                            'metric': '$0.010',
+                            'metric': '1%',
                             'summary': 'Awesome Ad',
                         },
                         {
-                            'metric': '$0.001',
+                            'metric': '0%',
                             'summary': 'Test Ad',
                         }
                     ],

@@ -1470,7 +1470,7 @@ class CampaignContentInsights(api_common.BaseApiView):
             metric = float(clicks) / impressions if impressions > 0 else None
             dd_cad_metric.append({
                 'summary': title,
-                'metric': lc_helper.default_currency(metric, places=3) if metric else None,
+                'metric': '{:.0f}%'.format(metric*100) if metric else None,
             })
 
         top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
