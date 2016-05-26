@@ -2975,7 +2975,7 @@ class CampaignContentInsightsTest(TestCase):
         with self.assertRaises(exc.AuthorizationError):
             cis.get(fake_request(self.user()), 1)
 
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
@@ -2990,7 +2990,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_basic_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad = models.ContentAd.objects.create(
@@ -3027,7 +3027,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_duplicate_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd.objects.create(
@@ -3076,7 +3076,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_order_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd.objects.create(
