@@ -27,15 +27,17 @@ class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     def handle(self, *args, **options):
-        dump_name = 'dash.adgroup'
-        pks = [840]
+        # dump_name = 'dash.adgroup'
+        dump_name = 'dash.account'
+        # pks = [1842]
+        pks = [308]
         dump_settings = settings.CUSTOM_DUMPS[dump_name]
         (app_label, model_name) = dump_settings['primary'].split('.')
         dump_me = loading.get_model(app_label, model_name)
         objs = dump_me.objects.filter(pk__in=[int(i) for i in pks])
-        # for obj in objs:
-        #     add_object_dependencies(obj, dump_settings['dependents'])
-        add_to_serialize_list(objs)
+        for obj in objs:
+            add_object_dependencies(obj, dump_settings['dependents'])
+        # add_to_serialize_list(objs)
 
         serialize_fully()
         data = serialize('json', [o for o in serialize_me if o is not None],
@@ -103,25 +105,25 @@ def add_to_serialize_list(objs):
             idx = serialize_me.index(obj)
             serialize_me[idx] = None
             serialize_me.append(obj)
-#
-#
-# def add_object_dependencies(obj, dependencies):
-#     # get the dependent objects and add to serialize list
-#     for dep in dependencies:
-#         try:
-#             if isinstance(dep, dict):
-#                 sub_deps = dep['dependents']
-#                 dep = dep['primary']
-#             else:
-#                 sub_deps = None
-#
-#             thing = Variable("thing.%s" % dep).resolve({'thing': obj})
-#             add_to_serialize_list([thing])
-#             if sub_deps:
-#                 for new_obj in thing:
-#                     add_object_dependencies(new_obj, sub_deps)
-#         except VariableDoesNotExist:
-#             sys.stderr.write('%s not found' % dep)
-#
-#     if not dependencies:
-#         add_to_serialize_list([obj])
+
+
+def add_object_dependencies(obj, dependencies):
+    # get the dependent objects and add to serialize list
+    for dep in dependencies:
+        try:
+            if isinstance(dep, dict):
+                sub_deps = dep['dependents']
+                dep = dep['primary']
+            else:
+                sub_deps = None
+
+            thing = Variable("thing.%s" % dep).resolve({'thing': obj})
+            add_to_serialize_list([thing])
+            if sub_deps:
+                for new_obj in thing:
+                    add_object_dependencies(new_obj, sub_deps)
+        except VariableDoesNotExist:
+            sys.stderr.write('%s not found' % dep)
+
+    if not dependencies:
+        add_to_serialize_list([obj])

@@ -60,23 +60,46 @@ CUSTOM_DUMPS = {
             'get_current_settings',
             'adgroupsource_set.all',
             'contentad_set.all',
-            {
-                'primary': 'campaign',
-                'dependents': [
-                    'account'
-                ]
-            }
+            # 'campaign.account.users'
+            # 'campaign.account.groups'
             # {
-            #     'primary': 'contentad_set.all',
+            #     'primary': 'campaign.account',
             #     'dependents': [
-            #         'contentadsource_set.all'
+            #         'group_set.all',
+            #         {
+            #             'primary': 'user_set.all',
+            #             'dependents': ['group_set.all'],
+            #         }
             #     ]
             # }
         ],
     },
-    # 'dash.source': {
-    #     'primary': 'dash.source'
-    # }
+    'dash.real_adgroup': {  # Initiate dump with: ./manage.py custom_dump addon id
+        'primary': 'dash.adgroup',  # This is our reference model.
+        'dependents': [  # These are the attributes/methods of the model that we wish to dump.
+            'get_current_settings',
+            'adgroupsource_set.all',
+            'contentad_set.all',
+        ],
+    },
+    'dash.account': {  # Initiate dump with: ./manage.py custom_dump addon id
+        'primary': 'dash.account',  # This is our reference model.
+        'dependents': [  # These are the attributes/methods of the model that we wish to dump.
+            'get_current_settings',
+            {
+                'primary': 'campaign_set.all',
+                'dependents': [
+                    'get_current_settings',
+                    {
+                        'primary': 'adgroup_set.all',
+                        'dependents': [
+                            'get_current_settings'
+                        ]
+                    }
+                ]
+            }
+        ],
+    },
 }
 
 MIDDLEWARE_CLASSES = [
