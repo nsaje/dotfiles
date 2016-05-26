@@ -837,6 +837,7 @@
 
 -   fields:
         image_id: '123456789'
+        image_hash: '987654321'
         image_width: 200
         image_height: 300
         batch: 1
@@ -858,6 +859,7 @@
 
 -   fields:
         image_id: '123456789'
+        image_hash: '987654321'
         image_width: 200
         image_height: 300
         batch: 1
@@ -877,6 +879,7 @@
 
 -   fields:
         image_id: '123456789'
+        image_hash: '987654321'
         image_width: 200
         image_height: 300
         batch: 2
@@ -895,6 +898,7 @@
 
 -   fields:
         image_id: '123456789'
+        image_hash: '987654321'
         image_width: 200
         image_height: 300
         batch: 2
@@ -913,6 +917,7 @@
 
 -   fields:
         image_id: '123456789'
+        image_hash: '987654321'
         image_width: 200
         image_height: 300
         batch: 2
