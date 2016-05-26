@@ -1,13 +1,21 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridService', ['$q', 'zemGridParser', 'zemGridUIService', function ($q, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
+oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridUIService', function ($q, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
 
-    function GridService (grid) {
+    // GridDataService is responsible to request data from DataSource and listen to any DataSource changes
+    // It prepares data suitable for Grid component along with data states (initializing, loading, etc.) used
+    // to communicate current data source status
+
+    function GridDataService (grid) {
+
+        //
+        // Public API
+        //
+        this.initialize = initialize;
         this.loadMetaData = loadMetaData;
         this.loadData = loadData;
 
-        this.initialize = initialize;
 
         function initialize () {
             grid.meta.source.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
@@ -59,7 +67,7 @@ oneApp.factory('zemGridService', ['$q', 'zemGridParser', 'zemGridUIService', fun
 
     return {
         createInstance: function (grid) {
-            return new GridService(grid);
+            return new GridDataService(grid);
         },
     };
 }]);

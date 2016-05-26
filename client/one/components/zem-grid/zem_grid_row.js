@@ -18,8 +18,8 @@ oneApp.directive('zemGridRow', [function () {
                 element.css(style);
             });
         },
-        controller: ['$scope', 'zemGridConstants', 'zemGridService', 'zemGridUIService',
-            function ($scope, zemGridConstants, zemGridService, zemGridUIService) {
+        controller: ['$scope', 'zemGridConstants', 'zemGridUIService',
+            function ($scope, zemGridConstants, zemGridUIService) {
                 $scope.constants = zemGridConstants;
 
                 this.loadMore = function (size) {
