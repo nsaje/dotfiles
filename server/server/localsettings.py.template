@@ -62,8 +62,6 @@ EMAIL_HOST_PASSWORD = Secret('').get()
 SEND_NOTIFICATION_MAIL = False
 FROM_EMAIL = 'help-test@zemanta.com'
 
-MAILGUN_API_KEY = Secret('').get()
-
 # Path to log file
 LOG_FILE = '/path/to/log.log'
 
@@ -191,10 +189,6 @@ SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
-
-# Google Analytics authentication
-GA_CLIENT_EMAIL = ''
-GA_PRIVATE_KEY = ''
 
 # k1
 K1_DEMO_MODE = False

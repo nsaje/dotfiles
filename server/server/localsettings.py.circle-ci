@@ -75,8 +75,6 @@ SEND_NOTIFICATION_MAIL = False
 SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help-test@zemanta.com'
 
-MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
-
 # Path to log file
 LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
 
@@ -197,10 +195,6 @@ BIDDER_API_SIGN_KEY = Secret('').get()
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
-
-# Google Analytics authentication
-GA_CLIENT_EMAIL = ''
-GA_PRIVATE_KEY = ''
 
 QUERY_INSPECT_ENABLED = False
 
