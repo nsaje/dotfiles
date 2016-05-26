@@ -1458,22 +1458,23 @@ class CampaignContentInsights(api_common.BaseApiView):
             end_date,
             breakdown=['content_ad'],
             ignore_diff_rows=True,
-            constraints={'campaign': campaign}
+            constraints={'campaign': campaign.id}
         )
         mapped_stats = {stat['content_ad']: stat for stat in stats}
         dd_ads = self._deduplicate_content_ad_titles(campaign)
 
         dd_cad_metric = []
         for title, caids in dd_ads.iteritems():
-            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 1) or 0, caids))
-            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 1) or 0, caids))
+            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 0) or 0, caids))
+            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 0) or 0, caids))
             metric = float(clicks) / impressions if impressions > 0 else None
             dd_cad_metric.append({
                 'summary': title,
-                'metric': '{:.0f}%'.format(metric*100) if metric else None,
+                'metric': '{:.2f}%'.format(metric*100) if metric else None,
+                'value': metric or 0,
             })
 
-        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
+        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
         return top_cads
 
     def _deduplicate_content_ad_titles(self, campaign):
