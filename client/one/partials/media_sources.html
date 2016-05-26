@@ -2,7 +2,7 @@
     <div class="section">
         <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
             <div class="graph-infobox-row">
-                <div ng-if="hasPermission('zemauth.can_view_sidetabs')" class='sidebar-container'>
+                <div ng-if="sideBarVisible" class='sidebar-container'>
                     <zem-side-tabset selected="selectedSideTab.tab" zem-has-permission="hasPermission" zem-has-permission-internal="hasPermissionInternal"/>
                 </div>
                 <div class="insights-container" ng-if="selectedSideTab.tab.heading === 'Content Insights'">
