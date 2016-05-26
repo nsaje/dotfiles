@@ -154,6 +154,7 @@ class User(api_common.BaseApiView):
             return {}
 
         agency = helpers.get_user_agency(user)
+        print(agency)
         return {
             'id': str(user.pk),
             'email': user.email,
