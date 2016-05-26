@@ -44,7 +44,7 @@ oneApp.directive('zemSideTabset', function () {
             };
 
             $scope.tabs = $scope.getSideTabs();
-            $scope.visibleTabs = $scope.countVisibleTabs($scope.tabs);
+            $scope.visibleTabCount = $scope.countVisibleTabs($scope.tabs);
             $scope.selected = {
                 type: $scope.tabs[0].type,
             };
