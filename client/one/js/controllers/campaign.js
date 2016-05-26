@@ -7,10 +7,10 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         metric: null,
         rows: [],
     };
-    $scope.selectedSideTab = { tab: { type: constants.sideBarTabs.PERFORMANCE } };
+    $scope.selectedSideTab = {tab: {type: constants.sideBarTabs.PERFORMANCE}};
     $scope.isChartVisible = true;
     $scope.isContentInsightsVisible = false;
-    $scope.$watch('selectedSideTab.tab', function (newValue, oldValue) {
+    $scope.$watch('selectedSideTab.tab', function (newValue) {
         if (newValue.type === constants.sideBarTabs.PERFORMANCE) {
             $scope.isChartVisible = true;
             $scope.isContentInsightsVisible = false;
