@@ -3017,7 +3017,8 @@ class CampaignContentInsightsTest(TestCase):
                     'rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '10%'
+                            'metric': '10%',
+                            'value': 0.1,
                         }
                     ],
                 },
@@ -3066,7 +3067,8 @@ class CampaignContentInsightsTest(TestCase):
                     'rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '50%'
+                            'metric': '50%',
+                            'value': 0.5,
                         }
                     ],
                 },
@@ -3116,10 +3118,12 @@ class CampaignContentInsightsTest(TestCase):
                         {
                             'metric': '1%',
                             'summary': 'Awesome Ad',
+                            'value': 0.01,
                         },
                         {
                             'metric': '0%',
                             'summary': 'Test Ad',
+                            'value': 0.001,
                         }
                     ],
                 },

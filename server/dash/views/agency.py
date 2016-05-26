@@ -1471,9 +1471,10 @@ class CampaignContentInsights(api_common.BaseApiView):
             dd_cad_metric.append({
                 'summary': title,
                 'metric': '{:.0f}%'.format(metric*100) if metric else None,
+                'value': metric or 0,
             })
 
-        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
+        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
         return top_cads
 
     def _deduplicate_content_ad_titles(self, campaign):
