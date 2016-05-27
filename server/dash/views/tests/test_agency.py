@@ -3012,7 +3012,8 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [],
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
                 },
                 'success': True,
             }, json.loads(response.content))
@@ -3044,7 +3045,8 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [],
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
                 },
                 'success': True,
             }, json.loads(response.content))
@@ -3075,11 +3077,16 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'summary': 'Test Ad',
                             'metric': '10.00%',
-                            'value': 0.1,
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '10.00%',
                         }
                     ],
                 },
@@ -3125,11 +3132,16 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'summary': 'Test Ad',
                             'metric': '50.00%',
-                            'value': 0.5,
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '50.00%',
                         }
                     ],
                 },
@@ -3169,23 +3181,28 @@ class CampaignContentInsightsTest(TestCase):
             }
         ]
 
+        self.maxDiff = None
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'metric': '1.00%',
                             'summary': 'Awesome Ad',
-                            'value': 0.01,
                         },
                         {
                             'metric': '0.10%',
                             'summary': 'Test Ad',
-                            'value': 0.001,
                         }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'metric': '1.00%',
+                            'summary': 'Awesome Ad',
+                        },
                     ],
                 },
                 'success': True,
