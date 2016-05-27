@@ -4,9 +4,6 @@
 oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
     function boot (user) {
         if (window.supportHeroWidget != undefined) {
-            console.log(window.supportHeroWidget);
-            return;
-
             var properties = {
                 custom: {
                     customerId: user.id,
