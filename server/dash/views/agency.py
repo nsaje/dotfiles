@@ -1488,7 +1488,7 @@ class CampaignContentInsights(api_common.BaseApiView):
     def _deduplicate_content_ad_titles(self, campaign):
         ads = models.ContentAd.objects.all().filter(
             ad_group__campaign=campaign
-        ).values_list('id', 'title')
+        ).exclude_archived().values_list('id', 'title')
         ret = defaultdict(list)
         for caid, title in ads:
             ret[title].append(caid)
