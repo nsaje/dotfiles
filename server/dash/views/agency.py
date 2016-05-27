@@ -1200,7 +1200,7 @@ class AccountSettings(api_common.BaseApiView):
         users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
 
         if agency is not None:
-            users = users.filter(pk=agency.users.all()) | \
+            users = users.filter(pk__in=agency.users.all()) | \
                 users.filter(account__agency=agency)
 
         users = list(users.filter(is_active=True).distinct())
