@@ -33,11 +33,11 @@ DATABASES = {
     },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
-        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
-        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
-        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+        'NAME': 'one',
+        'USER': 'eins',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'PORT': 5439
     },
     STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -52,6 +52,9 @@ DATABASES = {
 ALLOWED_HOSTS = []
 
 BASE_URL = 'https://one.zemanta.com'
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REDIRECT_EXEMPT = [ '^healthcheck$', '^k1api/']
 
 # Email settings
 EMAIL_USE_TLS = True
