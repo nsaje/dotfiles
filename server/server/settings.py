@@ -53,42 +53,6 @@ INSTALLED_APPS = [
     'timezone_field',
 ]
 
-CUSTOM_DUMPS = {
-    # 'real_adgroup': {
-    #     'primary': 'dash.adgroup',  # This is our reference model.
-    #     'dependents': [  # These are the attributes/methods of the model that we wish to dump.
-    #         'get_current_settings',
-    #         'adgroupsource_set.all',
-    #         'contentad_set.all',
-    #     ],
-    # },
-    'account': {
-        'primary': 'dash.account',  # This is our reference model.
-        'dependents': [  # These are the attributes/methods of the model that we wish to dump.
-            'get_current_settings',
-            {
-                'primary': 'campaign_set.all',
-                'dependents': [
-                    'get_current_settings',
-                    {
-                        'primary': 'adgroup_set.all',
-                        'dependents': [
-                            'get_current_settings',
-                            'adgroupsource_set.all',
-                            {
-                                'primary': 'contentad_set.all',
-                                'dependents': [
-                                    'contentadsource_set.all'
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
-    },
-}
-
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

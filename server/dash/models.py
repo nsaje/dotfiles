@@ -1299,9 +1299,6 @@ class DefaultSourceSettings(models.Model):
 
 
 class AdGroup(models.Model):
-    _demo_fields = [
-        ('name', 'abcde')
-    ]
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,

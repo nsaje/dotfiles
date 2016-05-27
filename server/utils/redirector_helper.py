@@ -124,7 +124,7 @@ def _call_api_retry(url, data=None, method='POST'):
 
 
 def _call_api(url, data, method='POST'):
-    if settings.DEMO_MODE:
+    if settings.R1_DEMO_MODE:
         return {}
     request = urllib2.Request(url, data)
     request.get_method = lambda: method
