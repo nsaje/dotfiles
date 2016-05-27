@@ -1398,12 +1398,14 @@ class SystemUserType(ConstantBase):
 
 
 class AsyncUploadJobStatus(ConstantBase):
-    WAITING = 1
-    OK = 2
-    FAILED = 3
+    PENDING_START = 1
+    WAITING_RESPONSE = 2
+    OK = 3
+    FAILED = 4
 
     _VALUES = {
-        WAITING: 'Waiting',
+        PENDING_START: 'Pending',
+        WAITING_RESPONSE: 'Waiting for response',
         OK: 'OK',
         FAILED: 'Failed',
     }
