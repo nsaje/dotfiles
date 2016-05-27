@@ -4,7 +4,7 @@
             <div class="graph-infobox-row">
                 <div ng-if="sideBarVisible" class='sidebar-container'>
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_sidetabs')" popover-placement="bottom"></zem-internal-feature>
-                    <zem-side-tabset zem-selected="selectedSideTab.tab" zem-has-permission="hasPermission" zem-has-permission-internal="isPermissionInternal"/>
+                    <zem-side-tabset zem-selected="selectedSideTab.tab" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"/>
                 </div>
                 <div class="insights-container" ng-if="isContentInsightsVisible">
                     <zem-content-insights summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"></zem-content-insights>
