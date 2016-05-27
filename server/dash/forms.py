@@ -1123,10 +1123,20 @@ class ContentAdForm(ContentAdCandidateForm):
     image_id = forms.CharField()
     image_hash = forms.CharField()
     image_width = forms.IntegerField(
-        min_value=0,
+        min_value=2,
+        max_value=4000,
+        error_messages={
+            'min_value': 'Image too small (min width %(limit_value)d px)',
+            'max_value': 'Image too big (max width %(limit_value)d px)',
+        },
     )
     image_height = forms.IntegerField(
-        min_value=0,
+        min_value=2,
+        max_value=3000,
+        error_messages={
+            'min_value': 'Image too small (min height %(limit_value)d px)',
+            'max_value': 'Image too big (max height %(limit_value)d px)',
+        },
     )
 
     image_status = forms.IntegerField()
@@ -1135,7 +1145,7 @@ class ContentAdForm(ContentAdCandidateForm):
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
         if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK:
-            raise forms.ValidationError('Invalid image URL')
+            self.add_error('image_url', 'Image could not be processed')
 
         if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
-            raise forms.ValidationError('Invalid image URL')
+            self.add_error('url', 'Content unreachable')
