@@ -5,7 +5,6 @@ oneApp.factory('zemIntercomService', ['$window', function ($window) {
     var INTERCOM_APP_ID = 'anyekw96';
 
     function boot (user) {
-        console.log(user);
         var userDict, companyObject;
         if ($window.Intercom === undefined) {
             return;
