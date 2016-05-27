@@ -2,14 +2,24 @@
 oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
     $scope.isInLanding = false;
-
     $scope.contentInsights = {
         summary: null,
         metric: null,
-        rows: [],
+        bestPerformerRows: [],
+        worstPerformerRows: [],
     };
-    $scope.selectedSideTab = {type: constants.sideBarTabs.CONTENT_INSIGHTS};
-
+    $scope.selectedSideTab = {tab: {type: constants.sideBarTabs.PERFORMANCE}};
+    $scope.isChartVisible = true;
+    $scope.isContentInsightsVisible = false;
+    $scope.$watch('selectedSideTab.tab', function (newValue) {
+        if (newValue.type === constants.sideBarTabs.PERFORMANCE) {
+            $scope.isChartVisible = true;
+            $scope.isContentInsightsVisible = false;
+        } else if (newValue.type === constants.sideBarTabs.CONTENT_INSIGHTS) {
+            $scope.isChartVisible = false;
+            $scope.isContentInsightsVisible = true;
+        }
+    });
     $scope.getTabs = function () {
         return [
             {

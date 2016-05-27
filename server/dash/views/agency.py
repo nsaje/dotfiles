@@ -290,10 +290,12 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if not campaign_stop.can_enable_ad_group(ad_group, campaign, campaign_settings):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
-        if state == constants.AdGroupSettingsState.ACTIVE and \
-                not validation_helpers.ad_group_has_available_budget(ad_group):
-            # ACTIVE state is only valid when there is budget to spend
-            raise exc.ValidationError('Cannot enable ad group without available budget.')
+        if state == constants.AdGroupSettingsState.ACTIVE:
+            if not validation_helpers.ad_group_has_available_budget(ad_group):
+                raise exc.ValidationError('Cannot enable ad group without available budget.')
+
+            if models.CampaignGoal.objects.filter(campaign=campaign).count() == 0:
+                raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
 class CampaignAgency(api_common.BaseApiView):
@@ -558,8 +560,20 @@ class CampaignSettings(api_common.BaseApiView):
         if not settings_form.is_valid():
             errors.update(dict(settings_form.errors))
 
+        current = models.CampaignGoal.objects.filter(campaign=campaign)
+        changes = resource.get('goals', {
+            'added': [],
+            'removed': [],
+            'primary': None,
+            'modified': {}
+        })
+
+        if len(current) - len(changes['removed']) + len(changes['added']) <= 0:
+            errors['no_goals'] = 'At least one goal must be defined'
+            raise exc.ValidationError(errors=errors)
+
         with transaction.atomic():
-            goal_errors = self.set_goals(request, campaign, resource)
+            goal_errors = self.set_goals(request, campaign, changes)
 
         if any(goal_error for goal_error in goal_errors):
             errors['goals'] = goal_errors
@@ -586,15 +600,9 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def set_goals(self, request, campaign, resource):
+    def set_goals(self, request, campaign, changes):
         if not request.user.has_perm('zemauth.can_see_campaign_goals'):
             return []
-        changes = resource.get('goals', {
-            'added': [],
-            'removed': [],
-            'primary': None,
-            'modified': {}
-        })
 
         new_primary_id = None
         errors = []
@@ -1192,7 +1200,7 @@ class AccountSettings(api_common.BaseApiView):
         users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
 
         if agency is not None:
-            users = users.filter(pk=agency.users.all()) | \
+            users = users.filter(pk__in=agency.users.all()) | \
                 users.filter(account__agency=agency)
 
         users = list(users.filter(is_active=True).distinct())
@@ -1443,43 +1451,56 @@ class CampaignContentInsights(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=8)
+        best_performer_rows, worst_performer_rows = self._fetch_content_ad_metrics(
+            request.user,
+            campaign,
+            start_date,
+            end_date,
+            limit=10
+        )
 
         return self.create_api_response({
             'summary': 'Title',
             'metric': 'CTR',
-            'rows': rows,
+            'best_performer_rows': best_performer_rows,
+            'worst_performer_rows': worst_performer_rows,
         })
 
-    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=8):
+    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=10):
         stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
             end_date,
             breakdown=['content_ad'],
             ignore_diff_rows=True,
-            constraints={'campaign': campaign}
+            constraints={'campaign': campaign.id}
         )
         mapped_stats = {stat['content_ad']: stat for stat in stats}
         dd_ads = self._deduplicate_content_ad_titles(campaign)
 
         dd_cad_metric = []
         for title, caids in dd_ads.iteritems():
-            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 1) or 0, caids))
-            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 1) or 0, caids))
+            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 0) or 0, caids))
+            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 0) or 0, caids))
             metric = float(clicks) / impressions if impressions > 0 else None
             dd_cad_metric.append({
                 'summary': title,
-                'metric': lc_helper.default_currency(metric, places=3) if metric else None,
+                'metric': '{:.2f}%'.format(metric*100) if metric else None,
+                'value': metric or 0,
+                'clicks': clicks or 0,
             })
 
-        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
-        return top_cads
+        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
+
+        active_dd_cad_metric = [cad_metric for cad_metric in dd_cad_metric if cad_metric['clicks'] >= 10]
+        bott_cads = sorted(active_dd_cad_metric, key=lambda dd_cad: dd_cad['value'])[:limit]
+        return [{'summary': cad['summary'], 'metric': cad['metric']} for cad in top_cads],\
+            [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
 
     def _deduplicate_content_ad_titles(self, campaign):
         ads = models.ContentAd.objects.all().filter(
             ad_group__campaign=campaign
-        ).values_list('id', 'title')
+        ).exclude_archived().values_list('id', 'title')
         ret = defaultdict(list)
         for caid, title in ads:
             ret[title].append(caid)

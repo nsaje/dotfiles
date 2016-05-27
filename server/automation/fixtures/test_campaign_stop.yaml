@@ -365,7 +365,7 @@
 
 - fields:
     ad_group_id: 8
-    created_dt: '2016-04-06T12:00:00'
+    created_dt: '2016-04-06T12:00:01'
     created_by: 1
     state: 1
     end_date: '2016-04-06'
