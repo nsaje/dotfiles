@@ -3044,11 +3044,10 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [ ],
+                    'rows': [],
                 },
                 'success': True,
             }, json.loads(response.content))
-
 
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_basic_title_ctr(self, mock_get_stats):
