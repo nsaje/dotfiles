@@ -2134,6 +2134,9 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
+    original_filename = models.CharField(max_length=1024, null=True)
+
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
 
@@ -2143,8 +2146,19 @@ class UploadBatch(models.Model):
     cancelled = models.BooleanField(default=False)
     batch_size = models.PositiveIntegerField(null=True)
 
+    objects = QuerySetManager()
+
     class Meta:
         get_latest_by = 'created_dt'
+
+    class QuerySet(models.QuerySet):
+
+        def filter_by_user(self, user):
+            return self.filter(
+                models.Q(account__users__id=user.id) |
+                models.Q(account__groups__user__id=user.id) |
+                models.Q(account__agency__users__id=user.id)
+            ).distinct()
 
 
 class ContentAd(models.Model):

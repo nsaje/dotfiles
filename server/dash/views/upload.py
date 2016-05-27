@@ -1,3 +1,6 @@
+import os
+
+from django.core.urlresolvers import reverse
 from django.db import transaction
 
 from dash import constants
@@ -9,6 +12,7 @@ from dash.views import helpers
 
 from utils import api_common
 from utils import exc
+from utils import s3helpers
 
 
 class MultipleAdsUpload(api_common.BaseApiView):
@@ -57,11 +61,12 @@ class MultipleAdsUpload(api_common.BaseApiView):
 
         batch_name = form.cleaned_data['batch_name']
         content_ads = form.cleaned_data['content_ads']
+        filename = request.FILES['content_ads'].name
         self._augment_candidates_data(form.cleaned_data)
 
         with transaction.atomic():
             self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
-            batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name)
+            batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name, filename)
         for candidate in candidates:
             upload_plus.invoke_external_validation(candidate)
         errors = upload_plus.validate_candidates(candidates)
@@ -101,9 +106,41 @@ class UploadSave(api_common.BaseApiView):
 
     def post(self, request, ad_group_id, batch_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        batch = helpers.get_upload_batch(request.user, batch_id)
 
-        upload_plus.persist_candidates(ad_group, batch_id)
+        error_report_key, num_errors = upload_plus.persist_candidates(ad_group, batch)
         helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
                                             ad_group=ad_group)
 
+        error_report = None
+        if error_report_key:
+            error_report = reverse('upload_plus_error_report',
+                                   kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
+        return self.create_api_response({
+            'num_errors': num_errors,
+            'error_report': error_report,
+        })
+
+
+class UploadCancel(api_common.BaseApiView):
+
+    def post(self, request, ad_group_id, batch_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        batch = helpers.get_upload_batch(request.user, batch_id)
+
+        upload_plus.cancel_upload(ad_group, batch)
         return self.create_api_response({})
+
+
+class UploadErrorReport(api_common.BaseApiView):
+
+    def get(self, request, ad_group_id, batch_id):
+        batch = helpers.get_upload_batch(request.user, batch_id)
+
+        content = s3helpers.S3Helper().get(batch.error_report_key)
+        basefnm, _ = os.path.splitext(
+            os.path.basename(batch.error_report_key))
+
+        name = basefnm.rsplit('_', 1)[0] + '_errors'
+
+        return self.create_csv_response(name, content=content)

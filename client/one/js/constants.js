@@ -586,6 +586,12 @@ var constants = {
         PERFORMANCE: 'performance',
         CONTENT_INSIGHTS: 'content-insights',
     },
+    asyncUploadJobStatus: {
+        PENDING_START: 1,
+        WAITING_RESPONSE: 2,
+        OK: 3,
+        FAILED: 4,
+    },
 };
 
 var options = {

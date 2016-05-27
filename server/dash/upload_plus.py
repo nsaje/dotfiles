@@ -17,10 +17,12 @@ S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{batch_id}/{filename
 
 
 @transaction.atomic
-def insert_candidates(content_ads_data, ad_group, batch_name):
+def insert_candidates(content_ads_data, ad_group, batch_name, filename):
     batch = models.UploadBatch.objects.create(
         name=batch_name,
+        account=ad_group.campaign.account,
         batch_size=len(content_ads_data),
+        original_filename=filename,
     )
     candidates = _create_candidates(content_ads_data, ad_group, batch)
     return batch, candidates
@@ -45,10 +47,9 @@ def invoke_external_validation(candidate):
 
 
 @transaction.atomic
-def persist_candidates(ad_group, batch_id):
+def persist_candidates(ad_group, batch):
     candidates = models.ContentAdCandidate.objects.filter(
-        ad_group=ad_group,  # to check user has access
-        batch_id=batch_id,
+        batch_id=batch,
     )
     ad_group_sources = []
     for s in models.AdGroupSource.objects.filter(
@@ -61,16 +62,31 @@ def persist_candidates(ad_group, batch_id):
     for candidate in candidates:
         f = forms.ContentAdForm(model_to_dict(candidate))
         if f.is_valid():
-            _create_content_ad(f.cleaned_data, ad_group.id, batch_id, ad_group_sources)
+            _create_content_ad(f.cleaned_data, ad_group.id, batch.id, ad_group_sources)
             continue
 
         # f.errors is a dict of lists
         errors[candidate] = ', '.join([', '.join(inner) for inner in f.errors.values()])
 
+    error_report_key = None
     if errors:
-        _save_error_report(batch_id, errors)
+        error_report_key = _save_error_report(batch.id, batch.original_filename, errors)
+        batch.error_report_key = error_report_key
+
+    batch.status = constants.UploadBatchStatus.DONE
+    batch.num_errors = len(errors)
+    batch.save()
 
     candidates.delete()
+    return batch.error_report_key, batch.num_errors
+
+
+@transaction.atomic
+def cancel_upload(ad_group, batch):
+    batch.status = constants.UploadBatchStatus.CANCELLED
+    batch.save()
+
+    batch.contentadcandidate_set.all().delete()
 
 
 def validate_candidates(candidates):
@@ -82,8 +98,7 @@ def validate_candidates(candidates):
     return errors
 
 
-def _save_error_report(batch_id, error_dict):
-    filename = 'errors.csv'
+def _save_error_report(batch_id, filename, error_dict):
     string = StringIO.StringIO()
 
     fields = list(forms.MANDATORY_CSV_FIELDS) + list(forms.OPTIONAL_CSV_FIELDS)
