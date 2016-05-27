@@ -4,7 +4,6 @@ from mock import call, patch
 
 from django.test import TestCase
 
-import actionlog.constants
 from automation import campaign_stop
 import dash.models
 import reports.models
@@ -1627,3 +1626,48 @@ class MinimumBudgetAmountTestCase(TestCase):
             campaign_stop.get_minimum_budget_amount(budget),
             Decimal('679.4444444444444444444444444')  # max daily budgets without spend
         )
+
+
+class GetMatchingPairsTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml']
+
+    def test_many_ad_group_settings(self):
+        from django.http.request import HttpRequest
+        from zemauth.models import User
+        r = HttpRequest()
+        r.user = User.objects.get(id=1)
+
+        acc = dash.models.Account()
+        acc.save(r)
+
+        c = dash.models.Campaign()
+        c.account = acc
+        c.save(r)
+
+        ag = dash.models.AdGroup()
+        ag.campaign = c
+        ag.save(r)
+        ags = dash.models.AdGroupSource.objects.create(ad_group=ag, source=dash.models.Source.objects.get(id=1))
+
+        n_ags = ags.get_current_settings().copy_settings()
+        n_ags.state = 2
+        n_ags.daily_budget_cc = Decimal('20')
+        n_ags.save(None)
+
+        for i in range(100):
+            n = ag.get_current_settings().copy_settings()
+            n.state = 2
+            n.changes_text = str(i)
+            n.save(None)
+
+        n_ags = ags.get_current_settings().copy_settings()
+        n_ags.state = 1
+        n_ags.save(None)
+
+        n = ag.get_current_settings().copy_settings()
+        n.state = 1
+        n.changes_text = str(i)
+        n.save(None)
+
+        self.assertEqual(Decimal('20'), campaign_stop._get_max_daily_budget(dates_helper.local_today(), ag.campaign))

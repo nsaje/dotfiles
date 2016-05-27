@@ -25,7 +25,7 @@
 @sidebar-background-inactive: #f6f6f6;
 @sidebar-background-active: #ecf6f8;
 @sidebar-border-gray: #dddddd;
-@sidebar-border-highlight: #43a7c7;
+@sidebar-border-highlight: #43a8c6;
 
 @white: #fff;
 
@@ -816,7 +816,7 @@ div[datepicker] {
 
             border-style: solid;
             border-color: @sidebar-border-gray;
-            border-width: 0px 1px 0px 0px;
+            border-width: 0px 2px 0px 0px;
 
             background-position: center center;
             background-repeat: no-repeat;
@@ -870,7 +870,7 @@ div[datepicker] {
                     height: 0;
                     border-style: solid;
                     border-width: 9.5px 0 9.5px 9px;
-                    border-color: transparent transparent transparent #007bff;
+                    border-color: transparent transparent transparent @sidebar-border-highlight;
                 }
             }
         }
@@ -1708,7 +1708,7 @@ ul.icon-list li {
 }
 
 .settings-archive-container {
- 
+
     display: inline-block;
     position: relative;
     float: right;
@@ -1744,7 +1744,7 @@ ul.icon-list li {
 }
 
 .settings-restore-container {
- 
+
     display: inline-block;
     position: relative;
 
@@ -2886,7 +2886,8 @@ ul.icon-list li {
         }
 
         &.image {
-            padding: 0;
+            padding-top: 0;
+            padding-bottom: 0;
 
             img {
                 height: 34px;
@@ -4189,7 +4190,7 @@ select.media-source-select {
     .table-insights>tbody>tr:nth-child(even) {
         background-color: @insights-table-gray;
     }
-    
+
     .table {
         margin-bottom: 0px;
         thead {
@@ -4278,6 +4279,9 @@ select.media-source-select {
         td:first-child {
             width: 30px;
             color: @insights-table-header;
+        }
+        td:last-child {
+            color: @insights-title;
         }
     }
 }

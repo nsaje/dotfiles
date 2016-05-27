@@ -19,7 +19,7 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSource
         // TODO: name_link not used at the moment (breakdown column - 1st - not yet supported)
         if (breakdown.level === 1) {
             rows.map(function (row) {
-                row.stats.name_link = { // eslint-disable-line
+                row.stats.name_link = { // eslint-disable-line camelcase
                     text: row.stats.name,
                     state: $scope.getDefaultAccountState(),
                     id: row.stats.id,
