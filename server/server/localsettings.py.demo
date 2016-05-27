@@ -9,7 +9,7 @@ DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
-K1_DB_NAME = 'stats'
+K1_DB_NAME = 'k1'
 STATS_DB_NAME = 'stats'
 STATS_E2E_DB_NAME = 'stats_e2e'
 STATS_READ_DB_NAME = K1_DB_NAME
@@ -34,6 +34,14 @@ DATABASES = {
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'one',
+        'USER': 'eins',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'PORT': 5439
+    },
+    K1_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'k1',
         'USER': 'eins',
         'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
         'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
