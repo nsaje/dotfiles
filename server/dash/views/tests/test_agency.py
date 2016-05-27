@@ -3045,7 +3045,8 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [],
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
                 },
                 'success': True,
             }, json.loads(response.content))
