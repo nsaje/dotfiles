@@ -582,6 +582,10 @@ var constants = {
         NEUTRAL: 2,
         SAD: 3,
     },
+    sideBarTabs: {
+        PERFORMANCE: 'performance',
+        CONTENT_INSIGHTS: 'content-insights',
+    },
 };
 
 var options = {

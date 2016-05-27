@@ -93,7 +93,10 @@ def get_ad_group_source(request):
     try:
         ad_group_source = (
             dash.models.AdGroupSource.objects
-                .get(ad_group_id=ad_group_id, source__source_type__type=source_type)
+                .select_related(
+                    'source_credentials', 'source', 'source__source_type',
+                    'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
+                ).get(ad_group_id=ad_group_id, source__source_type__type=source_type)
         )
     except dash.models.AdGroupSource.DoesNotExist:
         return _response_error("The ad group %s is not present on source %s" %
@@ -129,6 +132,7 @@ def get_ad_group_source(request):
         'tracking_code': tracking_code,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
+
     return _response_ok(data)
 
 
@@ -552,10 +556,10 @@ def get_ad_groups_exchanges(request):
     if ad_group_id:
         ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id=ad_group_id)
     else:
-        ad_groups_settings_query = ad_groups_settings_query.all()
+        ad_groups_settings_query = ad_groups_settings_query.filter(archived=False)
 
-    ad_groups_settings = ad_groups_settings_query.group_current_settings().select_related('ad_group')
-    ad_group_settings_map = {ags.ad_group: ags for ags in ad_groups_settings if ad_group_id or not ags.archived}
+    ad_groups_settings = ad_groups_settings_query.group_current_settings()
+    ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
     ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
                                  .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
@@ -563,13 +567,12 @@ def get_ad_groups_exchanges(request):
                                  .filter(ad_group_source__source__deprecated=False)
                                  .group_current_settings()
                                  .select_related('ad_group_source',
-                                                 'ad_group_source__ad_group',
                                                  'ad_group_source__source'))
 
     ad_group_sources = defaultdict(list)
 
     for ad_group_source_settings in ad_group_sources_settings:
-        ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group]
+        ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group_id]
         if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
                 ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
             source_state = constants.AdGroupSettingsState.ACTIVE
@@ -582,7 +585,7 @@ def get_ad_groups_exchanges(request):
             'cpc_cc': ad_group_source_settings.cpc_cc,
             'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
         }
-        ad_group_sources[ad_group_settings.ad_group.id].append(source)
+        ad_group_sources[ad_group_settings.ad_group_id].append(source)
 
     return _response_ok(ad_group_sources)
 

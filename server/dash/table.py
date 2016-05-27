@@ -1273,6 +1273,7 @@ class AdGroupAdsTable(object):
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
                 },
+                'image_hash': content_ad.image_hash,
                 'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)

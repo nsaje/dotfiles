@@ -131,9 +131,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.settings')) {
             return 'main.campaigns.settings';
         }
-        if ($state.includes('**.content_insights') && $scope.hasPermission('zemauth.campaign_content_insights_view')) {
-            return 'main.campaigns.content_insights';
-        }
 
         // otherwise get default state
         return 'main.campaigns.ad_groups';

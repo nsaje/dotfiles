@@ -21,6 +21,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
+    $scope.sideBarVisible = false;
 
     var userSettings = null,
         hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
@@ -737,6 +738,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getTableData();
         $scope.getInfoboxData();
         pollSyncStatus();
+
+        if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
+            $scope.sideBarVisible = true;
+            $scope.getContentInsights();
+        } else {
+            $scope.sideBarVisible = false;
+        }
     };
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {

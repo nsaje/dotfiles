@@ -170,14 +170,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         selectionMenuConfig: $scope.selectionMenuConfig
     }, {
         name: 'Thumbnail',
-        nameCssClass: 'table-name-hidden',
         field: 'image_urls',
         checked: true,
         type: 'image',
         shown: true,
         totalRow: false,
         titleField: 'title',
-        order: false
+        order: true,
+        orderField: 'image_hash',
+        initialOrder: 'asc'
     }, {
         name: '\u25CF',
         field: 'status_setting',

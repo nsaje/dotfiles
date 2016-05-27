@@ -1195,16 +1195,23 @@ def _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings):
     ag_settings_iter = _get_lookahead_iter(ad_group_settings)
     ag_settings, next_ag_settings = next(ag_settings_iter)
 
-    pairs = []
-    for ags_settings, next_ags_settings in _get_lookahead_iter(ad_group_source_settings):
-        pairs.append((ag_settings, ags_settings))
-        if not next_ags_settings and next_ag_settings:
-            pairs.append((next_ag_settings, ags_settings))
-            continue
+    ags_settings_iter = _get_lookahead_iter(ad_group_source_settings)
+    ags_settings, next_ags_settings = next(ags_settings_iter)
 
-        if next_ag_settings and next_ags_settings.created_dt > next_ag_settings.created_dt:
-            pairs.append((next_ag_settings, ags_settings))
+    pairs = [(ag_settings, ags_settings)]
+    while True:
+        if not next_ag_settings and not next_ags_settings:
+            break
+
+        if next_ag_settings and not next_ags_settings:
             ag_settings, next_ag_settings = next(ag_settings_iter)
+        elif not next_ag_settings and next_ags_settings:
+            ags_settings, next_ags_settings = next(ags_settings_iter)
+        elif next_ag_settings.created_dt > next_ags_settings.created_dt:
+            ags_settings, next_ags_settings = next(ags_settings_iter)
+        else:
+            ag_settings, next_ag_settings = next(ag_settings_iter)
+        pairs.append((ag_settings, ags_settings))
 
     return pairs
 

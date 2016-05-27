@@ -1435,7 +1435,7 @@ class UserActivation(api_common.BaseApiView):
 class CampaignContentInsights(api_common.BaseApiView):
 
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_content_insights_view'):
+        if not request.user.has_perm('zemauth.can_view_campaign_content_insights_side_tab'):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -1443,7 +1443,7 @@ class CampaignContentInsights(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=10)
+        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=8)
 
         return self.create_api_response({
             'summary': 'Title',
@@ -1458,22 +1458,23 @@ class CampaignContentInsights(api_common.BaseApiView):
             end_date,
             breakdown=['content_ad'],
             ignore_diff_rows=True,
-            constraints={'campaign': campaign}
+            constraints={'campaign': campaign.id}
         )
         mapped_stats = {stat['content_ad']: stat for stat in stats}
         dd_ads = self._deduplicate_content_ad_titles(campaign)
 
         dd_cad_metric = []
         for title, caids in dd_ads.iteritems():
-            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 1) or 0, caids))
-            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 1) or 0, caids))
+            clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 0) or 0, caids))
+            impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 0) or 0, caids))
             metric = float(clicks) / impressions if impressions > 0 else None
             dd_cad_metric.append({
                 'summary': title,
-                'metric': lc_helper.default_currency(metric, places=3) if metric else None,
+                'metric': '{:.2f}%'.format(metric*100) if metric else None,
+                'value': metric or 0,
             })
 
-        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['metric'], reverse=True)[:limit]
+        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
         return top_cads
 
     def _deduplicate_content_ad_titles(self, campaign):

@@ -369,7 +369,6 @@ class AdGroupSettingsTest(TestCase):
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
-            self.maxDiff = None
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
@@ -2919,7 +2918,6 @@ class AccountUsersTest(TestCase):
         agency.users.add(User.objects.get(pk=1))
 
         user = User.objects.get(pk=1)
-        self.maxDiff = None
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
@@ -2975,7 +2973,7 @@ class CampaignContentInsightsTest(TestCase):
         with self.assertRaises(exc.AuthorizationError):
             cis.get(fake_request(self.user()), 1)
 
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
@@ -2990,7 +2988,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_basic_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad = models.ContentAd.objects.create(
@@ -3007,7 +3005,6 @@ class CampaignContentInsightsTest(TestCase):
                 'impressions': 10000,
             }
         ]
-
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
@@ -3017,7 +3014,8 @@ class CampaignContentInsightsTest(TestCase):
                     'rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '$0.100'
+                            'metric': '10.00%',
+                            'value': 0.1,
                         }
                     ],
                 },
@@ -3027,7 +3025,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_duplicate_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd.objects.create(
@@ -3066,7 +3064,8 @@ class CampaignContentInsightsTest(TestCase):
                     'rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '$0.500'
+                            'metric': '50.00%',
+                            'value': 0.5,
                         }
                     ],
                 },
@@ -3076,7 +3075,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_order_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd.objects.create(
@@ -3114,12 +3113,14 @@ class CampaignContentInsightsTest(TestCase):
                     'summary': 'Title',
                     'rows': [
                         {
-                            'metric': '$0.010',
+                            'metric': '1.00%',
                             'summary': 'Awesome Ad',
+                            'value': 0.01,
                         },
                         {
-                            'metric': '$0.001',
+                            'metric': '0.10%',
                             'summary': 'Test Ad',
+                            'value': 0.001,
                         }
                     ],
                 },
