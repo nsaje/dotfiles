@@ -709,6 +709,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         initColumns();
         pollSyncStatus();
         getDailyStats();
+        $scope.getContentInsights();
         $scope.getInfoboxData();
     };
 
