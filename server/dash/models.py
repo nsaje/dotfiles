@@ -2321,11 +2321,11 @@ class ContentAdCandidate(models.Model):
 
     image_status = models.IntegerField(
         choices=constants.AsyncUploadJobStatus.get_choices(),
-        default=constants.AsyncUploadJobStatus.WAITING,
+        default=constants.AsyncUploadJobStatus.PENDING_START,
     )
     url_status = models.IntegerField(
         choices=constants.AsyncUploadJobStatus.get_choices(),
-        default=constants.AsyncUploadJobStatus.WAITING,
+        default=constants.AsyncUploadJobStatus.PENDING_START,
     )
 
     image_id = models.CharField(max_length=256, null=True)
