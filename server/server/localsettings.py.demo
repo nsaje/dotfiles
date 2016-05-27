@@ -11,7 +11,6 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 K1_DB_NAME = 'k1'
 STATS_DB_NAME = 'stats'
-STATS_E2E_DB_NAME = 'stats_e2e'
 STATS_READ_DB_NAME = K1_DB_NAME
 
 # Database
@@ -24,12 +23,6 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
         'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
         'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
-    },
-    'e2e': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': ''
     },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -47,14 +40,6 @@ DATABASES = {
         'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
         'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'PORT': 5439
-    }
-    STATS_E2E_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
         'PORT': 5439
     }
 }
