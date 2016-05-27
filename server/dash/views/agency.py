@@ -1456,7 +1456,7 @@ class CampaignContentInsights(api_common.BaseApiView):
             campaign,
             start_date,
             end_date,
-            limit=8
+            limit=10
         )
 
         return self.create_api_response({
@@ -1466,7 +1466,7 @@ class CampaignContentInsights(api_common.BaseApiView):
             'worst_performer_rows': worst_performer_rows,
         })
 
-    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=8):
+    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=10):
         stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
