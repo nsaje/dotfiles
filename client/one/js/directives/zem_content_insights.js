@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp,angular,$ */
 'use strict';
 
 oneApp.directive('zemContentInsights', function () {
@@ -11,16 +11,9 @@ oneApp.directive('zemContentInsights', function () {
             worstPerformerRows: '=',
         },
         templateUrl: '/partials/zem_content_insights.html',
-        controller: ['$scope', '$element', '$window', function ($scope, $element, $window) {
+        controller: ['$scope', '$element', '$window', '$timeout', function ($scope, $element, $window, $timeout) {
             $scope.expanded = true;
-
-            var w = angular.element($window);
-            $scope.$watch(function () {
-                return {
-                    'h': w.height(), 
-                    'w': w.width()
-                };
-            }, function (newValue, oldValue) {
+            $scope.updateExpanded = function () {
                 var containerWidth = $('.insights-container').width();
                 if (containerWidth < 800) {
                     $scope.expanded = false;
@@ -28,11 +21,7 @@ oneApp.directive('zemContentInsights', function () {
                     $scope.expanded = true;
                     $scope.setDefaultShortened();
                 }
-            }, true);
-
-            w.bind('resize', function () {
-               $scope.$apply();
-            });
+            };
 
             $scope.setDefaultShortened = function () {
                 $scope.shortenedShown = 'best-performers';
@@ -49,7 +38,24 @@ oneApp.directive('zemContentInsights', function () {
                 $scope.shortenedRows = $scope.worstPerformerRows;
             };
 
-            $scope.setDefaultShortened();
+            $scope.$watch('bestPerformerRows', function () {
+                if (!$scope.expanded && $scope.shortenedShown === 'best-performers') {
+                    $scope.shortenedRows = $scope.bestPerformerRows;
+                }
+            });
+
+            var w = angular.element($window);
+            w.bind('resize', function () {
+                $scope.$watch(function () {
+                    return w.innerWidth();
+                }, function () {
+                    $scope.updateExpanded();
+                }, true);
+                $scope.$digest();
+            });
+
+            $timeout($scope.updateExpanded, 0);
+            $timeout($scope.setDefaultShortened, 0);
         }],
     };
 });
