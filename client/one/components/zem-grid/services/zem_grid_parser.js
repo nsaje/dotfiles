@@ -12,11 +12,14 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
     //
 
     function parse (grid, data) {
-        if (data.level === 0) {
-            grid.footer = createRow(grid, data, 0);
+        if (data.level > 0) throw 'Inplace parsing not supported yet.';
+
+        if (data.breakdown) {
+            grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: data, visible: true};
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
-            throw 'Inplace parsing not supported yet.';
+            grid.body.rows = [];
+            grid.footer.stats = null;
         }
     }
 

@@ -40,6 +40,23 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 handleHorizontalScroll(leftOffset);
             });
         },
-        controller: [function () {}],
+        controller: [function () {
+            this.setOrder = function (column) {
+                var order = this.grid.meta.source.config.order;
+
+                if (order === column.field) {
+                    order = '-' + column.field;
+                } else if (order === '-' + column.field) {
+                    order = column.field;
+                } else if (column.initialOrder === 'asc') {
+                    order = column.field;
+                } else {
+                    order = '-' + column.field;
+                }
+
+                this.grid.meta.source.setOrder(order);
+                this.grid.meta.source.getData();
+            };
+        }],
     };
 }]);
