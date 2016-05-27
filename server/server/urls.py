@@ -26,6 +26,7 @@ import dash.views.table
 import dash.views.agency
 import dash.views.views
 import dash.views.navigation
+import dash.views.lambdas
 
 
 admin.site.login = login_required(admin.site.login)
@@ -486,6 +487,15 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
+    ),
+]
+
+# Lambdas
+urlpatterns += [
+    url(
+        r'^api/lambdas/content-upload-callback$',
+        dash.views.lambdas.content_upload_callback,
+        name='lambdas.content_upload_callback',
     ),
 ]
 
