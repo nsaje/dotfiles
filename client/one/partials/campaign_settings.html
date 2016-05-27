@@ -35,8 +35,11 @@
                     <label class="col-xs-2 control-label">
                         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>Campaign goals:
                     </label>
-                    <span class="col-xs-4">
-                        <span ng-show="campaignGoals.length > 1" class="pull-right primary-goal-label">Primary goal</span>
+                    <span class="col-xs-4" ng-show="!!errors.noGoals">
+                        <label class="control-label error">{{ errors.noGoals }}</label>
+                    </span>
+                    <span class="col-xs-4" ng-show="campaignGoals.length > 1">
+                        <span class="pull-right primary-goal-label">Primary goal</span>
                     </span>
                 </div>
 
