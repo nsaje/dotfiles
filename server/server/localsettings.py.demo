@@ -35,7 +35,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'one',
         'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
+        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
     },
@@ -43,10 +44,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'k1',
         'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
+        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
-    },
+    }
     STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
