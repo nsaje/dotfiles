@@ -407,7 +407,7 @@ class Account(models.Model):
         def filter_with_spend(self):
             return self.filter(
                 pk__in=reports.models.BudgetDailyStatement.objects.filter(
-                    budget__credit__account_id__in=self
+                    budget__campaign__account__id__in=self
                 ).filter(
                     media_spend_nano__gt=0
                 ).values_list(
