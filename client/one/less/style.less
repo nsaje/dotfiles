@@ -4191,86 +4191,109 @@ select.media-source-select {
         background-color: @insights-table-gray;
     }
 
-    .table {
-        margin-bottom: 0px;
-        thead {
-            background: @white;
-        }
-        tbody>tr>td {
-            border-top: 0px;
-            border-bottom: 0px;
-        }
+    .content-insights {
+        display: table; 
+        width: 100%;
 
-        thead>tr>th,
-        thead:first-child>tr:first-child>th {
-            border-top: 1px solid @insights-table-header;
-            border-bottom: 1px solid @insights-table-header;
-            border-color: @insights-table-header;
+        .best-performers {
+            display:table-cell; 
+            padding-right: 20px;
+            width: 50%;
 
-            color: @insights-table-header;
-            font-weight: normal;
-        }
-
-        td:first-child {
-            width: 30px;
-        }
-        td:last-child {
-            width: 35px;
-        }
-
-        td {
-            white-space: nowrap;
-            max-width: 300px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-    
-    .performer-switch-table {
-        a {
-            white-space: nowrap;
-            padding-right: 20px;            
-        }
-
-        a:link,
-        a:focus, 
-        a:hover,
-        a:visited {
-            border-width: 0px;
-            text-decoration: none;
-        }
-
-
-        .top-selection-cell {
-            display: table-cell;
-            width: 6px;
-            height: 6px;
-            vertical-align: bottom;
-            text-align: center;
-            position:relative;
-
-            .top-arrow {
-                display: block;
-                width: 0;
-                height: 0;
-                border-style: solid;
-                border-width: 0 6px 6px 6px;
-                border-color: transparent transparent @insights-table-header transparent;
-                margin: 0 auto; // centers the arrow
+            td:last-child {
+                color: @insights-text-green;
             }
         }
-    }
+        .worst-performers {
+           display: table-cell;
+           width: 50%;
 
-    .insights-title {
-        font-size: 16px;
-    }
-    .insights-best-title {
-        .insights-title;
-        color: @insights-text-green;
-    }
-    .insights-worst-title {
-        .insights-title;
-        color: @insights-text-red;
+            td:last-child {
+                color: @insights-text-red;
+            }
+        }
+
+        .table {
+            margin-bottom: 0px;
+            thead {
+                background: @white;
+            }
+            tbody>tr>td {
+                border-top: 0px;
+                border-bottom: 0px;
+            }
+
+            thead>tr>th,
+            thead:first-child>tr:first-child>th {
+                border-top: 1px solid @insights-table-header;
+                border-bottom: 1px solid @insights-table-header;
+                border-color: @insights-table-header;
+
+                color: @insights-table-header;
+                font-weight: normal;
+            }
+
+            td:first-child {
+                width: 30px;
+            }
+            td:last-child {
+                width: 35px;
+            }
+
+            td {
+                white-space: nowrap;
+                max-width: 300px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        
+        .performer-switch-table {
+            a {
+                white-space: nowrap;
+                padding-right: 20px;            
+            }
+
+            a:link,
+            a:focus, 
+            a:hover,
+            a:visited {
+                border-width: 0px;
+                text-decoration: none;
+            }
+
+
+            .top-selection-cell {
+                display: table-cell;
+                width: 6px;
+                height: 6px;
+                vertical-align: bottom;
+                text-align: center;
+                position:relative;
+
+                .top-arrow {
+                    display: block;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 0 6px 6px 6px;
+                    border-color: transparent transparent @insights-table-header transparent;
+                    margin: 0 auto; // centers the arrow
+                }
+            }
+        }
+
+        .insights-title {
+            font-size: 16px;
+        }
+        .insights-best-title {
+            .insights-title;
+            color: @insights-text-green;
+        }
+        .insights-worst-title {
+            .insights-title;
+            color: @insights-text-red;
+        }
     }
 }
 
@@ -4279,9 +4302,6 @@ select.media-source-select {
         td:first-child {
             width: 30px;
             color: @insights-table-header;
-        }
-        td:last-child {
-            color: @insights-title;
         }
     }
 }
