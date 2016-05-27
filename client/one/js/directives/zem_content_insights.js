@@ -18,7 +18,7 @@ oneApp.directive('zemContentInsights', function () {
             w.bind('resize', function () {
                 $scope.$watch(function () {
                     return w.innerWidth();
-                }, function (newValue) {
+                }, function () {
                     var containerWidth = $('.insights-container').width();
                     if (containerWidth < 800) {
                         $scope.expanded = false;
