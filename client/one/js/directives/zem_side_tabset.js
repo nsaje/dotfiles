@@ -26,7 +26,7 @@ oneApp.directive('zemSideTabset', function () {
                         hidden: $scope.campaign &&
                             $scope.campaign.archived ||
                             !$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
-                        internal: $scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
+                        internal: $scope.isPermissionInternal('zemauth.can_view_campaign_content_insights_side_tab'),
                     },
                 ];
             };
