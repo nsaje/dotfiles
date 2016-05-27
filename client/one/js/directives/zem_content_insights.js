@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp,angular,$ */
 'use strict';
 
 oneApp.directive('zemContentInsights', function () {
@@ -15,20 +15,20 @@ oneApp.directive('zemContentInsights', function () {
             $scope.expanded = true;
 
             var w = angular.element($window);
-            $scope.$watch(function () {
-                return w.innerWidth();
-            }, function (newValue, oldValue) {
-                var containerWidth = $('.insights-container').width();
-                if (containerWidth < 800) {
-                    $scope.expanded = false;
-                } else {
-                    $scope.expanded = true;
-                    $scope.setDefaultShortened();
-                }
-            }, true);
-
             w.bind('resize', function () {
-               $scope.$apply();
+                $scope.$watch(function () {
+                    return w.innerWidth();
+                }, function (newValue) {
+                    var containerWidth = $('.insights-container').width();
+                    if (containerWidth < 800) {
+                        $scope.expanded = false;
+                    } else {
+                        $scope.expanded = true;
+                        $scope.setDefaultShortened();
+                    }
+                }, true);
+
+                $scope.$apply();
             });
 
             $scope.setDefaultShortened = function () {
