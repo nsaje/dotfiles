@@ -29,7 +29,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridUIService',
             var deferred = $q.defer();
             grid.meta.source.getMetaData().then(
                 function (data) {
-                    grid.header.columns = data.columns;
+                    grid.meta.data = data;
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
                     deferred.resolve();
                 }

@@ -1,5 +1,8 @@
 /* globals oneApp */
 oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
+    $scope.gridApi = {
+        visibleColumns: []
+    }; // Defined by zem-grid
     $scope.dataSource = createDataSource();
 
     function createDataSource () {

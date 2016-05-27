@@ -41,6 +41,16 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             });
         },
         controller: [function () {
+
+            this.grid.header.columns = this.grid.meta.data.columns.filter(function (column){
+                return column.checked;
+            });
+            this.grid.meta.pubsub.register(this.grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
+                this.grid.header.columns = this.grid.meta.data.columns.filter(function (column){
+                    return column.checked;
+                });
+            }.bind(this));
+
             this.setOrder = function (column) {
                 var order = this.grid.meta.source.config.order;
 
