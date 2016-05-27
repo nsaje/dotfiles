@@ -4195,6 +4195,10 @@ select.media-source-select {
         display: table; 
         width: 100%;
 
+        &>div {
+            display: table-row;
+        }
+
         .best-performers {
             display:table-cell; 
             padding-right: 20px;
@@ -4227,7 +4231,6 @@ select.media-source-select {
             thead:first-child>tr:first-child>th {
                 border-top: 1px solid @insights-table-header;
                 border-bottom: 1px solid @insights-table-header;
-                border-color: @insights-table-header;
 
                 color: @insights-table-header;
                 font-weight: normal;
@@ -4249,9 +4252,19 @@ select.media-source-select {
         }
         
         .performer-switch-table {
+            display: table;
+            &>div {
+                display: table-row;
+            }
+
+            .link-cell {
+                display: table-cell;
+            }
+
             a {
                 white-space: nowrap;
-                padding-right: 20px;            
+                margin-left: 10px;
+                margin-right:10px;
             }
 
             a:link,
@@ -4262,7 +4275,6 @@ select.media-source-select {
                 text-decoration: none;
             }
 
-
             .top-selection-cell {
                 display: table-cell;
                 width: 6px;
@@ -4270,6 +4282,10 @@ select.media-source-select {
                 vertical-align: bottom;
                 text-align: center;
                 position:relative;
+
+                &:first-of-type {
+                    border-right: 1px solid @insights-table-header;
+                }
 
                 .top-arrow {
                     display: block;
@@ -4280,6 +4296,12 @@ select.media-source-select {
                     border-color: transparent transparent @insights-table-header transparent;
                     margin: 0 auto; // centers the arrow
                 }
+            }
+
+
+            .link-cell:first-of-type,
+            .top-selection-cell:first-of-type {
+                border-right: 1px solid @insights-table-header;
             }
         }
 
