@@ -1,6 +1,6 @@
 <div class="content-insights">
     <div>
-        <div class="best-performers">
+        <div class="best-performers" ng-class="{'worst-selected-performers': !expanded && shortenedShown === 'worst-performers'}">
             <p ng-if="expanded" class="insights-best-title">Best Titles</p>
 
             <div class="performer-switch-table" ng-if="!expanded">
