@@ -1,3 +1,13 @@
+@zem-grid-text-color: #454545;
+@zem-grid-bg-color: #ffffff;
+@zem-grid-level-1-bg-color: #f4f4f4;
+@zem-grid-level-2-bg-color: #ececec;
+@zem-grid-level-3-bg-color: #e8e8e8;
+@zem-grid-level-4-bg-color: #e2e2e2;
+@zem-grid-header-footer-bg-color: #f6f6f6;
+@zem-grid-cell-border-color: #dddddd;
+
+
 .zem-grid-debug-container {
   overflow: auto;
 
@@ -20,24 +30,27 @@
   padding: 20px;
 
   font-size: 13px;
-  color: #454545;
+  color: @zem-grid-text-color;
 
   .zem-grid {
     width: 100%;
     overflow: hidden;
-    background-color: #f6f6f6;
+    background-color: @zem-grid-bg-color;
 
     .zem-grid-header, .zem-grid-footer {
-      background-color: #f6f6f6;
       font-weight: 600;
 
       a {
-        color: #454545;
+        color: @zem-grid-text-color;
+      }
+
+      .zem-grid-cell {
+        background-color: @zem-grid-header-footer-bg-color;
       }
     }
 
     .zem-grid-body {
-      height: 515px;
+      height: 525px;
       overflow: auto;
 
       background-color: white;
@@ -63,7 +76,7 @@
         vertical-align: middle;
         height: 35px;
         line-height: 35px;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid @zem-grid-cell-border-color;
         text-align: left;
         padding: 0 8px;
         overflow: hidden;
@@ -75,47 +88,47 @@
       }
 
       &.level-1 {
-        background-color: #F4F4F4;
-        div:first-child,
+        background-color: @zem-grid-level-1-bg-color;
+        .zem-grid-cell:first-child,
         .pagination-cell {
-          padding-left: 20px !important;
+          padding-left: 20px;
         }
       }
 
       &.level-2 {
-        background-color: #ececec;
-        div:first-child,
+        background-color: @zem-grid-level-2-bg-color;
+        .zem-grid-cell:first-child,
         .pagination-cell {
-          padding-left: 40px !important;
+          padding-left: 40px;
         }
       }
 
       &.level-3 {
-        background-color: #e8e8e8;
-        div:first-child,
+        background-color: @zem-grid-level-3-bg-color;
+        .zem-grid-cell:first-child,
         .pagination-cell {
-          padding-left: 60px !important;
+          padding-left: 60px;
         }
       }
 
       &.level-4 {
-        background-color: #e2e2e2;
-        div:first-child,
+        background-color: @zem-grid-level-4-bg-color;
+        .zem-grid-cell:first-child,
         .pagination-cell {
-          padding-left: 80px !important;
+          padding-left: 80px;
         }
       }
 
       &.level-last {
-        div:not(:first-child):not(.pagination-cell) {
-          background-color: #ffffff;
+        .zem-grid-cell:not(:first-child):not(.pagination-cell) {
+          background-color: @zem-grid-bg-color;
         }
       }
     }
 
+    // Workaround for links without href attribute
     a {
       cursor: pointer;
     }
   }
-
 }
