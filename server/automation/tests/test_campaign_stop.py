@@ -585,11 +585,16 @@ class CanEnableMediaSourcesTestCase(TestCase):
             5: True,
         }, can_enable)
 
-        # disable all sources
-        for ad_group_source in ad_group.adgroupsource_set.all():
-            new_settings = ad_group_source.get_current_settings().copy_settings()
-            new_settings.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
-            new_settings.save(None)
+        today = dates_helper.local_today()
+        with test_helper.disable_auto_now_add(dash.models.AdGroupSourceSettings, 'created_dt'):
+            # disable all sources
+            for ad_group_source in ad_group.adgroupsource_set.all():
+                current_settings = ad_group_source.get_current_settings()
+                new_settings = current_settings.copy_settings()
+                new_settings.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+                # set settings on this day for every tz
+                new_settings.created_dt = datetime.datetime(today.year, today.month, today.day, 10)
+                new_settings.save(None)
 
         can_enable = campaign_stop.can_enable_media_sources(
             ad_group, campaign, campaign.get_current_settings())
@@ -616,10 +621,12 @@ class CanEnableMediaSourcesTestCase(TestCase):
         new_ags_settings = ad_group.adgroupsource_set.all().get(id=1).get_current_settings().copy_settings()
         new_ags_settings.daily_budget_cc += Decimal('5')
 
-        for ags in ad_group.adgroupsource_set.all().exclude(id=1):
-            new_ags_settings = ags.get_current_settings().copy_settings()
-            new_ags_settings.daily_budget_cc += Decimal('10')
-            new_ags_settings.save(None)
+        with test_helper.disable_auto_now_add(dash.models.AdGroupSourceSettings, 'created_dt'):
+            for ags in ad_group.adgroupsource_set.all().exclude(id=1):
+                new_ags_settings = ags.get_current_settings().copy_settings()
+                new_ags_settings.daily_budget_cc += Decimal('10')
+                new_ags_settings.created_dt = datetime.datetime(today.year, today.month, today.day, 10, 1)
+                new_ags_settings.save(None)
 
         mock_get_min_remaining.return_value = Decimal('5'), Decimal('100'), None
         can_enable = campaign_stop.can_enable_media_sources(

@@ -5,7 +5,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.contentInsights = {
         summary: null,
         metric: null,
-        rows: [],
+        bestPerformerRows: [],
+        worstPerformerRows: [],
     };
     $scope.selectedSideTab = {tab: {type: constants.sideBarTabs.PERFORMANCE}};
     $scope.isChartVisible = true;

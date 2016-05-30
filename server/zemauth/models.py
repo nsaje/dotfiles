@@ -169,7 +169,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_account_manager', 'Can view and set account manager on account settings tab.'),
             ('account_history_view', 'Can view account''s history tab.'),
             ('can_access_table_breakdowns_feature', 'Can access table breakdowns feature.'),
-            ('campaign_content_insights_view', "Can view campaign's content insights tab."),
             ('can_use_improved_ads_upload', 'Can use improved content ads upload'),
             ('can_view_sidetabs', 'Can view sidetabs.'),
             ('can_view_campaign_content_insights_side_tab', 'Can view content insights side tab on campaign level.'),
