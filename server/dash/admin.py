@@ -1421,6 +1421,23 @@ class GAAnalyticsAccount(admin.ModelAdmin):
     pass
 
 
+class EmailTemplateAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'template_type',
+        'subject',
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1445,3 +1462,4 @@ admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
+admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
