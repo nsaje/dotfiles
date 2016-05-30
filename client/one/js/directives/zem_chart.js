@@ -157,15 +157,19 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             };
 
             angular.element($window).bind('resize', function () {
+                $scope.updateSize();
+            });
+
+            $scope.updateSize = function () {
                 var chart = $('.chart').highcharts();
 
                 var w = $('.chart').parent().width(),
                     h = $('.chart').height();
                 // setsize will trigger the graph redraw
-                if (chart) {
+                if (chart && $('.graph-container').css('display') !== 'none') {
                     chart.setSize(w, h, false);
                 }
-            });
+            };
 
             $scope.$watch('data', function (newValue, oldValue) {
                 var i = 0,
