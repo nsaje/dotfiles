@@ -27,6 +27,7 @@ import dash.views.agency
 import dash.views.views
 import dash.views.navigation
 import dash.views.lambdas
+import dash.views.upload
 
 
 admin.site.login = login_required(admin.site.login)
@@ -156,6 +157,18 @@ urlpatterns += [
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/',
         login_required(dash.views.views.AdGroupAdsUpload.as_view()), name='ad_group_ads_upload'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/multiple/',
+        login_required(dash.views.upload.MultipleAdsUpload.as_view()), name='upload_plus_multiple'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/status/',
+        login_required(dash.views.upload.UploadStatus.as_view()), name='upload_plus_status'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/save/',
+        login_required(dash.views.upload.UploadSave.as_view()), name='upload_plus_save'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
