@@ -25,7 +25,7 @@ oneApp.directive('zemGridColumnSelector', ['config', function (config) {
                 }
             };
         },
-        controller: ['$scope', '$element', '$attrs', 'zemGridColumnsSelectorService', function ($scope, $element, $attrs, zemGridColumnsSelectorService) { // eslint-disable-line max-len
+        controller: ['$scope', '$element', '$attrs', 'zemGridStorageService', function ($scope, $element, $attrs, zemGridStorageService) { // eslint-disable-line max-len
             var vm = this;
 
             this.columns = [];
@@ -38,13 +38,13 @@ oneApp.directive('zemGridColumnSelector', ['config', function (config) {
             init();
 
             function init () {
-                zemGridColumnsSelectorService.load(vm.grid.header.data.localStoragePrefix, vm.grid.header.data.columns);
+                zemGridStorageService.loadColumns(vm.grid);
                 initCategories();
                 updateHeaderColumns();
             }
 
             function columnChecked(column) {
-                zemGridColumnsSelectorService.save(vm.grid.header.data.localStoragePrefix, vm.grid.header.data.columns);
+                zemGridStorageService.saveColumns(vm.grid);
                 updateHeaderColumns();
             }
 
