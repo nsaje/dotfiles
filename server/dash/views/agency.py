@@ -37,6 +37,7 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
+CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -1456,7 +1457,6 @@ class CampaignContentInsights(api_common.BaseApiView):
             campaign,
             start_date,
             end_date,
-            limit=10
         )
 
         return self.create_api_response({
@@ -1466,7 +1466,7 @@ class CampaignContentInsights(api_common.BaseApiView):
             'worst_performer_rows': worst_performer_rows,
         })
 
-    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=10):
+    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date):
         stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
@@ -1490,10 +1490,13 @@ class CampaignContentInsights(api_common.BaseApiView):
                 'clicks': clicks or 0,
             })
 
-        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
+        top_cads = sorted(
+            dd_cad_metric,
+            key=lambda dd_cad: dd_cad['value'],
+            reverse=True)[:CONTENT_INSIGHTS_TABLE_ROW_COUNT ]
 
         active_dd_cad_metric = [cad_metric for cad_metric in dd_cad_metric if cad_metric['clicks'] >= 10]
-        bott_cads = sorted(active_dd_cad_metric, key=lambda dd_cad: dd_cad['value'])[:limit]
+        bott_cads = sorted(active_dd_cad_metric, key=lambda dd_cad: dd_cad['value'])[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
         return [{'summary': cad['summary'], 'metric': cad['metric']} for cad in top_cads],\
             [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
 
