@@ -9,7 +9,7 @@ class LambdaCallbackApiTest(TestCase):
     @override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='key')
     def test_content_upload_callback(self, mock_verify_wsgi_request):
         response = self.client.post(
-            reverse('lambdas.content_upload_callback')
+            reverse('callbacks.content_upload')
         )
         mock_verify_wsgi_request.called_with(response.wsgi_request, 'key')
-        self.assertEqual(response.json(), { 'status': 'ok' })
+        self.assertEqual(response.json(), {'status': 'ok'})

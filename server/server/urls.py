@@ -26,7 +26,7 @@ import dash.views.table
 import dash.views.agency
 import dash.views.views
 import dash.views.navigation
-import dash.views.lambdas
+import dash.views.callbacks
 import dash.views.upload
 
 
@@ -506,9 +506,9 @@ urlpatterns += [
 # Lambdas
 urlpatterns += [
     url(
-        r'^api/lambdas/content-upload-callback$',
-        dash.views.lambdas.content_upload_callback,
-        name='lambdas.content_upload_callback',
+        r'^api/callbacks/content-upload$',
+        dash.views.callbacks.content_upload,
+        name='callbacks.content_upload',
     ),
 ]
 

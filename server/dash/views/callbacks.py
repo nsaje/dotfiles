@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-def content_upload_callback(request):
+def content_upload(request):
     try:
         request_signer.verify_wsgi_request(request, settings.LAMBDA_CONTENT_UPLOAD_SIGN_KEY)
     except request_signer.SignatureError:
