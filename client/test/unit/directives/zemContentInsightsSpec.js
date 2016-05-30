@@ -1,10 +1,11 @@
+/* global $,module,beforeEach,it,describe,expect,inject */
 'use strict';
 
 describe('zemContentInsights', function () {
     var $scope, element, isolate;
     var data = [];
 
-    var template = '<zem-content-insights summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"><div class="insights-container"></div></zem-content-insights>';
+    var template = '<zem-content-insights summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"><div class="insights-container"></div></zem-content-insights>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
 
@@ -74,7 +75,7 @@ describe('zemContentInsights', function () {
                 metric: '90%',
             }]);
 
-            isolate.bestPerformerRows = []
+            isolate.bestPerformerRows = [];
             isolate.$digest();
 
             expect(isolate.collapsedRows).toEqual([]);
