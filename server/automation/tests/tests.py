@@ -14,6 +14,7 @@ from reports import refresh
 import automation.settings
 import automation.constants
 import automation.autopilot_budgets
+from utils.test_helper import fake_request
 
 from zemauth.models import User
 
@@ -48,16 +49,25 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(budgetdepletion.budget_is_depleting(-100, 5), True)
 
     @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
-    def test_notify_campaign_with_depleting_budget(self, _):
+    def test_notify_campaign_with_depleting_budget(self, mock):
+        campaign = models.Campaign.objects.get(pk=1)
+        user = User.objects.create_user('accountmanager@test.com')
+        account_settings = models.AccountSettings(account=campaign.account, default_account_manager=user)
+        account_settings.save(fake_request(user))
         budgetdepletion.notify_campaign_with_depleting_budget(
-            models.Campaign.objects.get(pk=1),
+            campaign,
             100,
             150
         )
+
         notif = automationmodels.CampaignBudgetDepletionNotification.objects.all().latest('created_dt')
         self.assertEqual(notif.campaign, models.Campaign.objects.get(pk=1))
         self.assertEqual(notif.available_budget, 100)
         self.assertEqual(notif.yesterdays_spend, 150)
+
+        mock.assert_called_with(u'Test Campaign 1',
+            'https://one.zemanta.com/campaigns/1/budget', u'Test Account 1',
+            ['em@il.com', 'accountmanager@test.com'], 100, 150, decimal.Decimal('60.0000'))
 
     @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
     def test_manager_has_been_notified(self, _):
