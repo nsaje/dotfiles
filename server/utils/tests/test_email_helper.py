@@ -66,6 +66,7 @@ class EmailHelperTestCase(TestCase):
 
     def test_send_ad_group_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
+        account_manager = User.objects.create_user('accountmanager@user.com')
 
         account = dash_models.Account()
         account.save(self.request)
@@ -75,6 +76,9 @@ class EmailHelperTestCase(TestCase):
 
         campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
+
+        account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
+        account_settings.save(self.request)
 
         ad_group = dash_models.AdGroup(id=8, campaign=campaign)
         ad_group.save(self.request)
@@ -88,7 +92,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
+        self.assertEqual(mail.outbox[0].to, [campaign_manager.email, account_manager.email])
 
         self.request.user = campaign_manager
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
@@ -120,6 +124,7 @@ class EmailHelperTestCase(TestCase):
 
     def test_send_campaign_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
+        account_manager = User.objects.create_user('accountmanager@user.com')
 
         account = dash_models.Account()
         account.save(self.request)
@@ -130,6 +135,9 @@ class EmailHelperTestCase(TestCase):
         campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
+        account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
+        account_settings.save(self.request)
+
         email_helper.send_campaign_notification_email(campaign, self.request, 'Something changed, yo')
 
         subject = 'Settings change - campaign , account '
@@ -139,7 +147,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
+        self.assertEqual(mail.outbox[0].to, [campaign_manager.email, account_manager.email])
 
         self.request.user = campaign_manager
         email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
@@ -171,6 +179,7 @@ class EmailHelperTestCase(TestCase):
 
     def test_send_budget_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
+        account_manager = User.objects.create_user('accountmanager@user.com')
 
         account = dash_models.Account()
         account.save(self.request)
@@ -181,6 +190,9 @@ class EmailHelperTestCase(TestCase):
         campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
+        account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
+        account_settings.save(self.request)
+
         email_helper.send_budget_notification_email(campaign, self.request, 'Something changed, yo')
 
         subject = 'Settings change - campaign , account '
@@ -190,7 +202,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
+        self.assertEqual(mail.outbox[0].to, [campaign_manager.email, account_manager.email])
 
         self.request.user = campaign_manager
         email_helper.send_budget_notification_email(campaign, self.request, 'Test')
