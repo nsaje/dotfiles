@@ -258,7 +258,6 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             ad_group=ad_group,
             rows=conv_rows
         )
-        reports.refresh.notify_contentadstats_change(dt, ad_group.campaign_id)
         logger.info("\tGA-aggregate - goals_update_adgroup - after")
         logger.info("\tGA-aggregate - add_visits_imported - before")
         self.report_log.add_visits_imported(sum(d['visits'] for d in data.values()))

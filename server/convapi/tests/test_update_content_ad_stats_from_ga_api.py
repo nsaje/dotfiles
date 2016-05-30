@@ -36,8 +36,6 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
         self.assertEqual({'conversions': 2, 'content_ad': 1, 'goal_type': 'ga', 'source': 4,
                           'date': datetime.datetime(2015, 12, 7, 0, 0)},
                          model_to_dict(goal_conversion_stats.first(), exclude='id'))
-        sqs_write_message_mock.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
-                                                       {'date': '2015-12-07', 'campaign_id': 1})
 
     @mock.patch('convapi.ga_api.get_ga_service')
     @mock.patch.object(Command, '_fetch_reports')
