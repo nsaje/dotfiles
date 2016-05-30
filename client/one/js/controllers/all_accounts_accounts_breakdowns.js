@@ -1,14 +1,12 @@
 /* globals oneApp */
 oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
-    $scope.gridApi = {
-        visibleColumns: []
-    }; // Defined by zem-grid
+    $scope.gridApi = { }; // Defined by zem-grid
     $scope.dataSource = createDataSource();
 
     function createDataSource () {
         // Temporary workaround for retrieving columns defined in original controller
-        var columns = zemDataSourceEndpoints.getControllerColumns($scope, 'AllAccountsAccountsCtrl');
-        var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(columns);
+        var metadata = zemDataSourceEndpoints.getControllerMetaData($scope, 'AllAccountsAccountsCtrl');
+        var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(metadata);
         var dataSource = zemDataSourceService.createInstance(endpoint);
         dataSource.setDateRange($scope.dateRange);
         return dataSource;

@@ -3,16 +3,15 @@
     Columns
   </a>
   <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
-    <div ng-switch="hasCategories">
+    <div ng-switch="ctrl.hasCategories">
       <div ng-switch-when="true">
-        <div ng-repeat="cat in categoryColumns">
+        <div ng-repeat="cat in ctrl.categoryColumns">
           <div class="category-name">{{ cat.name }}</div>
-          <li ng-repeat="col in cat.columns | filter:filterColumns">
+          <li ng-repeat="col in cat.columns">
             <div class="checkbox">
               <label>
-                <input type="checkbox" ng-model="col.checked" ng-change="columnChecked(col)">
-                <zem-internal-feature ng-if="col.internal">
-                </zem-internal-feature>
+                <input type="checkbox" ng-model="col.checked" ng-change="ctrl.columnChecked(col)">
+                <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
                 {{ col.name }}
               </label>
             </div>
@@ -20,7 +19,7 @@
        </div>
       </div>
       <div ng-switch-default>
-        <li ng-repeat="col in columns | filter:filterColumns">
+        <li ng-repeat="col in ctrl.columns">
           <div class="checkbox">
             <label>
               <input type="checkbox" ng-model="col.checked" ng-change="columnChecked(col)">

@@ -14,6 +14,16 @@ oneApp.factory('zemGridObject', [function () {
     // TODO: refactor, docs needed
     //
 
+    //
+    //  Grid
+    //      header - columns
+    //      body - rows (type, stats, etc.)
+    //      footer - stats
+    //      $ui - ui related stuff
+    //      $data - data related stuff
+    //      $meta - services, etc.
+    //
+
     function Grid () {
         this.header = {
             element: null,
