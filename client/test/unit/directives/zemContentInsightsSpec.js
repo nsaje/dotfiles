@@ -43,7 +43,7 @@ describe('zemContentInsights', function () {
         $timeout.flush();
     }));
 
-    describe('it works', function (done) {
+    describe('it works', function () {
         it('toggles correctly', function () {
             expect(isolate.expanded).toEqual(false);
             expect(isolate.collapsedDataState).toEqual('best-performers');

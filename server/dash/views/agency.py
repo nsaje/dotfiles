@@ -1493,7 +1493,7 @@ class CampaignContentInsights(api_common.BaseApiView):
         top_cads = sorted(
             dd_cad_metric,
             key=lambda dd_cad: dd_cad['value'],
-            reverse=True)[:CONTENT_INSIGHTS_TABLE_ROW_COUNT ]
+            reverse=True)[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
 
         active_metrics = [cad_metric for cad_metric in dd_cad_metric if cad_metric['clicks'] >= 10]
         bott_cads = sorted(active_metrics, key=lambda dd_cad: dd_cad['value'])[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
