@@ -43,6 +43,12 @@ oneApp.directive('zemContentInsights', function () {
                 }
             });
 
+            $scope.$watch('worstPerformerRows', function () {
+                if (!$scope.expanded && $scope.collapsedDataState === 'worst-performers') {
+                    $scope.collapsedRows = $scope.worstPerformerRows;
+                }
+            });
+
             var w = angular.element($window);
             w.bind('resize', function () {
                 $scope.$watch(function () {
