@@ -23,13 +23,8 @@ oneApp.directive('zemContentInsights', function () {
                 } else {
                     // when tahb
                     $scope.expanded = true;
-                    $scope.updateCollapsedTableState();
+                    $scope.showBestPerformersCollapsed();
                 }
-            };
-
-            $scope.updateCollapsedTableState = function () {
-                $scope.collapsedDataState = 'best-performers';
-                $scope.collapsedRows = $scope.bestPerformerRows;
             };
 
             $scope.showBestPerformersCollapsed = function () {
@@ -59,7 +54,7 @@ oneApp.directive('zemContentInsights', function () {
             });
 
             $timeout($scope.updateTableState, 0);
-            $timeout($scope.updateCollapsedTableState, 0);
+            $timeout($scope.showBestPerformersCollapsed, 0);
         }],
     };
 });
