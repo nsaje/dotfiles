@@ -3,12 +3,13 @@ import StringIO
 
 from django.db import transaction
 from django.forms.models import model_to_dict
+from django.conf import settings
 import unicodecsv
 
 from dash import constants
 from dash import forms
 from dash import models
-from utils import s3helpers
+from utils import s3helpers, lambda_helper
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,22 @@ def insert_candidates(content_ads_data, ad_group, batch_name):
     candidates = _create_candidates(content_ads_data, ad_group, batch)
     return batch, candidates
 
+@transaction.atomic
+def invoke_external_validation(candidate):
+    lambda_helper.invoke_lambda(
+        settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
+        {
+            'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
+            'candidateID': candidate.pk,
+            'pageUrl': candidate.url,
+            'adGroupID': candidate.ad_group.pk,
+            'batchID': candidate.batch.pk,
+            'imageUrl': candidate.image_url,
+        }
+    )
+    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    candidate.save()
 
 @transaction.atomic
 def persist_candidates(ad_group, batch_id):
@@ -148,3 +165,24 @@ def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
                 state=constants.ContentAdSourceState.ACTIVE
             )
         )
+
+@transaction.atomic
+def process_callback(callback_data):
+    try:
+        candidate = models.ContentAdCandidate.objects.get(pk=int(callback_data['id']))
+
+        candidate.image_status = constants.AsyncUploadJobStatus.OK
+        candidate.url_status = constants.AsyncUploadJobStatus.OK if callback_data['valid'] else constants.AsyncUploadJobStatus.FAILED
+
+        candidate.image_id = callback_data['image']['id']
+        candidate.image_width = callback_data['image']['width']
+        candidate.image_height = callback_data['image']['height']
+        candidate.image_hash = callback_data['image']['hash']
+
+        
+    except:
+        logger.exception('Failed to parse callback data %s', str(callback_data))
+        candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+        candidate.url_status = constants.AsyncUploadJobStatus.FAILED
+
+    candidate.save()
