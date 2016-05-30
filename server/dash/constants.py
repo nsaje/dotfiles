@@ -1409,3 +1409,34 @@ class AsyncUploadJobStatus(ConstantBase):
         OK: 'OK',
         FAILED: 'Failed',
     }
+
+
+class EmailTemplateType(ConstantBase):
+
+    ADGROUP_CHANGE = 1
+    CAMPAIGN_CHANGE = 2
+    BUDGET_CHANGE = 3
+    PIXEL_ADD = 4
+    PASSWORD_RESET = 5
+    NEW_USER = 6
+    SUPPLY_REPORT = 7
+    SCHEDULED_EXPORT_REPORT = 8
+    DEPLETING_BUDGET = 9
+    CAMPAIGN_STOPPED = 10
+    AUTOPILOT_AD_GROUP_CHANGE = 11
+    AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
+
+    _VALUES = {
+        ADGROUP_CHANGE: 'Ad group settings change',
+        CAMPAIGN_CHANGE: 'Campaign settings change',
+        BUDGET_CHANGE: 'Budget change',
+        PIXEL_ADD: 'New conversion pixel',
+        PASSWORD_RESET: 'User password reset',
+        NEW_USER: 'New user introduction email',
+        SUPPLY_REPORT: 'Supply report',
+        SCHEDULED_EXPORT_REPORT: 'Scheduled report',
+        DEPLETING_BUDGET: 'Depleting budet notification',
+        CAMPAIGN_STOPPED: 'Campaign stopped notification',
+        AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
+        AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
+    }
