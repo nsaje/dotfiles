@@ -68,10 +68,11 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(budgetdepletion.manager_has_been_notified(camp), True)
 
     def test_send_depleting_budget_notification_email(self):
+        campaign = models.Campaign.objects.get(pk=1)
+
         budgetdepletion._send_depleting_budget_notification_email(
-            'campaign_name',
+            campaign,
             'campaign_url',
-            'account_name',
             ['test@zemanta.com'],
             1000,
             1500,

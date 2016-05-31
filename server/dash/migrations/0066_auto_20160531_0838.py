@@ -142,6 +142,22 @@ Zemanta
 Report was scheduled by {scheduled_by}.
     ''').save()
 
+    EmailTemplate(
+        template_type=EmailTemplateType.DEPLETING_BUDGET,
+        subject=u'Campaign budget low - {campaign.name}, {account.name}',
+        body=u'''Hi account manager of {campaign.name}
+
+We'd like to notify you that campaign {campaign.name}, {account.name} is about to run out of available budget.
+
+The available budget remaining today is ${available_budget}, current daily cap is ${cap} and yesterday's spend was ${yesterday_spend}.
+
+Please check {link_url} for details.
+
+Yours truly,
+Zemanta
+    ''').save()
+
+
 
 class Migration(migrations.Migration):
 
