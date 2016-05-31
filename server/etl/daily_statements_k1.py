@@ -13,14 +13,11 @@ import dash.models
 import reports.models
 
 from utils import dates_helper
+from utils import converters
 
 from etl import helpers
 
 logger = logging.getLogger(__name__)
-
-CC_TO_NANO = int(1E5)
-DOLAR_TO_NANO = int(1E9)
-MICRO_TO_NANO = int(1E3)
 
 
 def _generate_statements(date, campaign, campaign_spend):
@@ -49,7 +46,7 @@ def _generate_statements(date, campaign, campaign_spend):
         total_data_nano = 0
 
     for budget in budgets.order_by('created_dt'):
-        budget_amount_nano = budget.amount * DOLAR_TO_NANO
+        budget_amount_nano = budget.amount * converters.DOLAR_TO_NANO
         attributed_media_nano = 0
         attributed_data_nano = 0
         license_fee_nano = 0
@@ -186,8 +183,8 @@ def _get_campaign_spend(date, all_campaigns):
             if data_spend is None:
                 data_spend = 0
 
-            campaign_spend[campaign_id]['media_nano'] += media_spend * MICRO_TO_NANO
-            campaign_spend[campaign_id]['data_nano'] += data_spend * MICRO_TO_NANO
+            campaign_spend[campaign_id]['media_nano'] += media_spend * converters.MICRO_TO_NANO
+            campaign_spend[campaign_id]['data_nano'] += data_spend * converters.MICRO_TO_NANO
 
     return campaign_spend
 
