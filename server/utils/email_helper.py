@@ -96,35 +96,17 @@ def send_budget_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    subject = u'Settings change - campaign {}, account {}'.format(
-        campaign.name,
-        campaign.account.name
-    )
-
     link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
-
-    body = u'''Hi account manager of campaign {campaign.name}
-
-We'd like to notify you that {user.email} has made the following change in the budget of campaign {campaign.name}, account {account.name}:
-
-{changes_text}
-
-Please check {link_url} for further details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        campaign=campaign,
-        account=campaign.account,
-        link_url=link_url,
-        changes_text=_format_changes_text(changes_text)
-    )
-
+    args = {
+        'user': request.user,
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text),
+    }
+    subject, body = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
     campaign_settings = campaign.get_current_settings()
-
     send_notification_mail(
         [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
 

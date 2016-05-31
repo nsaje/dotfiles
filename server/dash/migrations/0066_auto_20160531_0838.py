@@ -22,7 +22,7 @@ Please check {link_url} for further details.
 
 Yours truly,
 Zemanta
-    ''',
+    '''
     ).save()
 
     EmailTemplate(
@@ -38,8 +38,23 @@ Please check {link_url} for further details.
 
 Yours truly,
 Zemanta
-    ''',
+    '''
     ).save()
+
+    EmailTemplate(
+        template_type=EmailTemplateType.BUDGET_CHANGE,
+        subject=u'Settings change - campaign {campaign.name}, account {account.name}',
+        body=u'''Hi account manager of campaign {campaign.name}
+
+We'd like to notify you that {user.email} has made the following change in the budget of campaign {campaign.name}, account {account.name}:
+
+{changes_text}
+
+Please check {link_url} for further details.
+
+Yours truly,
+Zemanta
+    ''').save()
 
 
 class Migration(migrations.Migration):
