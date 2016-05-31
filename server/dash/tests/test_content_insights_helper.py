@@ -13,7 +13,32 @@ class ContentInsightsHelperTestCase(test.TestCase):
 
     #def _extract_ends(deduplicated_ads, stats):
 
-    #def _extract_ctr_metric(title, caids, mapped_stats):
+    def test_extract_ctr_metric(self):
+        # title, caids, mapped_stats):
+        title = 'Test'
+        caids = [1, 2, 3]
+        mapped_stats = {
+            1: {
+                'clicks': 10,
+                'impressions': 200,
+            },
+            2: {
+                'clicks': 15,
+                'impressions': 300,
+            },
+            3: {
+                'clicks': 25,
+                'impressions': 500,
+            },
+        }
+        res = content_insights_helper._extract_ctr_metric(title, caids, mapped_stats)
+        self.assertDictEqual({
+            'summary': 'Test',
+            'metric': '5.00%',
+            'value': 0.05,
+            'clicks': 50,
+        }, res)
+
 
     def test_deduplicate_content_ad_titles(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
