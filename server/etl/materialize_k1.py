@@ -8,12 +8,11 @@ from django.conf import settings
 
 import dash.models
 
+from utils import converters
+
 from etl import helpers
 
 logger = logging.getLogger(__name__)
-
-CC_TO_MICRO = 100
-MICRO_TO_NANO = 1000
 
 POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
 
@@ -116,8 +115,8 @@ class ContentAdStats(object):
                 row[4],  # impressions
                 row[5],  # clicks
 
-                _micro_to_cc(cost),
-                _micro_to_cc(data_cost),
+                converters.micro_to_cc(cost),
+                converters.micro_to_cc(data_cost),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -126,9 +125,9 @@ class ContentAdStats(object):
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
 
-                _decimal_to_int(effective_cost * MICRO_TO_NANO),
-                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
-                _decimal_to_int(license_fee * MICRO_TO_NANO),
+                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
             )
 
         logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
@@ -258,12 +257,12 @@ class Publishers(object):
                 row[5],  # clicks
                 row[4],  # impressions
 
-                cost * MICRO_TO_NANO,
-                data_cost * MICRO_TO_NANO,
+                cost * converters.MICRO_TO_NANO,
+                data_cost * converters.MICRO_TO_NANO,
 
-                _decimal_to_int(effective_cost * MICRO_TO_NANO),
-                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
-                _decimal_to_int(license_fee * MICRO_TO_NANO),
+                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -283,7 +282,7 @@ class Publishers(object):
                 continue
 
             clicks = row[3]
-            cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
+            cost = converters.decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
@@ -303,12 +302,12 @@ class Publishers(object):
                 clicks,
                 0,
 
-                cost * MICRO_TO_NANO,
-                data_cost * MICRO_TO_NANO,
+                cost * converters.MICRO_TO_NANO,
+                data_cost * converters.MICRO_TO_NANO,
 
-                _decimal_to_int(effective_cost * MICRO_TO_NANO),
-                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
-                _decimal_to_int(license_fee * MICRO_TO_NANO),
+                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -391,14 +390,6 @@ def _query_rows(query):
         c.execute(query)
         for row in c:
             yield row
-
-
-def _decimal_to_int(d):
-    return int(round(d))
-
-
-def _micro_to_cc(d):
-    return _decimal_to_int(Decimal(d) / CC_TO_MICRO)
 
 
 def _sum_conversion(conversion_str):
