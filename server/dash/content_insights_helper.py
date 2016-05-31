@@ -23,15 +23,7 @@ def _extract_ends(deduplicated_ads, stats):
     mapped_stats = {stat['content_ad']: stat for stat in stats}
     dd_cad_metric = []
     for title, caids in deduplicated_ads.iteritems():
-        clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 0) or 0, caids))
-        impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 0) or 0, caids))
-        metric = float(clicks) / impressions if impressions > 0 else None
-        dd_cad_metric.append({
-            'summary': title,
-            'metric': '{:.2f}%'.format(metric*100) if metric else None,
-            'value': metric or 0,
-            'clicks': clicks or 0,
-        })
+        dd_cad_metric.append(_extract_metric(title, caids, mapped_stats))
 
     top_cads = sorted(
         dd_cad_metric,
@@ -46,6 +38,18 @@ def _extract_ends(deduplicated_ads, stats):
         key=lambda dd_cad: dd_cad['value'])[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
     return [{'summary': cad['summary'], 'metric': cad['metric']} for cad in top_cads],\
         [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
+
+
+def _extract_metric(title, caids, mapped_stats):
+    clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 0) or 0, caids))
+    impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 0) or 0, caids))
+    metric = float(clicks) / impressions if impressions > 0 else None
+    return {
+        'summary': title,
+        'metric': '{:.2f}%'.format(metric*100) if metric else None,
+        'value': metric or 0,
+        'clicks': clicks or 0,
+    }
 
 
 def _deduplicate_content_ad_titles(campaign=None, ad_group=None):
