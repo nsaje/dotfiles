@@ -13,7 +13,6 @@ from zemauth.forms import AuthenticationForm
 import zweiapi.views
 import k1api.views
 import actionlog.views
-import convapi.views
 import reports.views
 import zemauth.views
 
@@ -647,16 +646,6 @@ urlpatterns += [
         name='api.crossvalidation',
     )
 ]
-
-# Conversion Api
-urlpatterns += [
-    url(
-        r'^convapi/mailgun/gareps$',
-        convapi.views.mailgun_gareps,
-        name='convapi.mailgun',
-    )
-]
-
 
 # Source OAuth
 urlpatterns += [
