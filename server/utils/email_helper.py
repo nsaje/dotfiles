@@ -71,9 +71,14 @@ Zemanta
     )
 
     campaign_settings = ad_group.campaign.get_current_settings()
+    account_settings = ad_group.campaign.account.get_current_settings()
+
+    emails = [campaign_settings.campaign_manager.email]
+    if account_settings.default_account_manager:
+        emails.append(account_settings.default_account_manager.email)
 
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, ad_group.campaign.get_campaign_url(request))
+        emails, subject, body, ad_group.campaign.get_campaign_url(request))
 
 
 def send_campaign_notification_email(campaign, request, changes_text):
@@ -108,9 +113,14 @@ Zemanta
     )
 
     campaign_settings = campaign.get_current_settings()
+    account_settings = campaign.account.get_current_settings()
+
+    emails = [campaign_settings.campaign_manager.email]
+    if account_settings.default_account_manager:
+        emails.append(account_settings.default_account_manager.email)
 
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request))
 
 
 def send_budget_notification_email(campaign, request, changes_text):
@@ -145,9 +155,14 @@ Zemanta
     )
 
     campaign_settings = campaign.get_current_settings()
+    account_settings = campaign.account.get_current_settings()
+
+    emails = [campaign_settings.campaign_manager.email]
+    if account_settings.default_account_manager:
+        emails.append(account_settings.default_account_manager.email)
 
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request))
 
 
 def send_account_pixel_notification(account, request):
