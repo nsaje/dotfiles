@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'automation',
     'stats',
     'redshiftapi',
+    'etl',
     'backtosql',
     'timezone_field',
 ]

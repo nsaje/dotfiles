@@ -506,7 +506,7 @@ urlpatterns += [
 # Lambdas
 urlpatterns += [
     url(
-        r'^api/callbacks/content-upload$',
+        r'^api/callbacks/content-upload/$',
         dash.views.callbacks.content_upload,
         name='callbacks.content_upload',
     ),

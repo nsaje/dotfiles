@@ -211,3 +211,8 @@ K1_CONSISTENCY_SYNC = False
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
+
+# l1
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
