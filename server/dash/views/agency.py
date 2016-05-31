@@ -36,7 +36,6 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
-CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -1456,7 +1455,6 @@ class CampaignContentInsights(api_common.BaseApiView):
                 campaign,
                 start_date,
                 end_date,
-                limit=10
             )
         return self.create_api_response({
             'summary': 'Title',

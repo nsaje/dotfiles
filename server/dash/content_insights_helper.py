@@ -2,21 +2,11 @@ import dash.models
 from dash import stats_helper
 from collections import defaultdict
 
-
-def fetch_ad_group_content_ad_metrics(user, ad_group, start_date, end_date, limit=10):
-    stats = stats_helper.get_content_ad_stats_with_conversions(
-        user,
-        start_date,
-        end_date,
-        breakdown=['content_ad'],
-        ignore_diff_rows=True,
-        constraints={'ad_group': ad_group.id}
-    )
-    dd_ads = _deduplicate_content_ad_titles(ad_group=ad_group)
-    return _extract_ends(dd_ads, stats)
+CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
+MIN_WORST_PERFORMER_CLICKS = 10
 
 
-def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date, limit=10):
+def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date):
     stats = stats_helper.get_content_ad_stats_with_conversions(
         user,
         start_date,
@@ -29,7 +19,7 @@ def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date, limi
     return _extract_ends(dd_ads, stats)
 
 
-def _extract_ends(deduplicated_ads, stats, limit=10):
+def _extract_ends(deduplicated_ads, stats):
     mapped_stats = {stat['content_ad']: stat for stat in stats}
     dd_cad_metric = []
     for title, caids in deduplicated_ads.iteritems():
@@ -43,10 +33,17 @@ def _extract_ends(deduplicated_ads, stats, limit=10):
             'clicks': clicks or 0,
         })
 
-    top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
+    top_cads = sorted(
+        dd_cad_metric,
+        key=lambda dd_cad: dd_cad['value'],
+        reverse=True)[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
 
-    active_dd_cad_metric = [cad_metric for cad_metric in dd_cad_metric if cad_metric['clicks'] >= 10]
-    bott_cads = sorted(active_dd_cad_metric, key=lambda dd_cad: dd_cad['value'])[:limit]
+    active_metrics = [cad_metric for cad_metric in dd_cad_metric if
+                      cad_metric['clicks'] >= MIN_WORST_PERFORMER_CLICKS]
+
+    bott_cads = sorted(
+        active_metrics,
+        key=lambda dd_cad: dd_cad['value'])[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
     return [{'summary': cad['summary'], 'metric': cad['metric']} for cad in top_cads],\
         [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
 
