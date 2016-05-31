@@ -167,6 +167,7 @@ class SwitchToLandingModeTestCase(TestCase):
             new_settings.end_date = in_30_days
             new_settings.save(None)
 
+        from pudb import set_trace; set_trace()
         campaign_stop.switch_low_budget_campaigns_to_landing_mode(dash.models.Campaign.objects.all().exclude_landing())
         self.assertTrue(mock_send_email.called)
         self.assertEqual(mock_k1_ping.call_count, 4)

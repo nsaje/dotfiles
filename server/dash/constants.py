@@ -1425,6 +1425,8 @@ class EmailTemplateType(ConstantBase):
     CAMPAIGN_STOPPED = 10
     AUTOPILOT_AD_GROUP_CHANGE = 11
     AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
+    CAMPAIGN_LANDING_MODE_SWITCH = 13
+    CAMPAIGN_BUDGET_LOW = 14
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1439,4 +1441,6 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGN_STOPPED: 'Campaign stopped notification',
         AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
         AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
+        CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
+        CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
     }

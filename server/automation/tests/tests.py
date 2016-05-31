@@ -66,9 +66,8 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(notif.yesterdays_spend, 150)
 
         mock.assert_called_with(
-            u'Test Campaign 1',
+            campaign,
             'https://one.zemanta.com/campaigns/1/budget',
-            u'Test Account 1',
             ['em@il.com', 'accountmanager@test.com'],
             100, 150,
             decimal.Decimal('60.0000')
