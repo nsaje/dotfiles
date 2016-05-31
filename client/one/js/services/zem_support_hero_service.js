@@ -1,4 +1,4 @@
-/*globals SupprtHero*/
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
@@ -10,12 +10,12 @@ oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
                     userEmail: user.email,
                     userName: user.name,
                     language: 'en_US',
-                }
+                },
             };
             $window.supportHeroWidget.track(properties);
         }
     }
     return {
-        boot: boot
+        boot: boot,
     };
 }]);
