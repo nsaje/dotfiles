@@ -77,7 +77,10 @@ class EmailHelperTestCase(TestCase):
         campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
-        account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
+        account_settings = dash_models.AccountSettings(
+            account=campaign.account,
+            default_account_manager=account_manager
+        )
         account_settings.save(self.request)
 
         ad_group = dash_models.AdGroup(id=8, campaign=campaign)
@@ -132,7 +135,10 @@ class EmailHelperTestCase(TestCase):
         campaign = dash_models.Campaign(account=account, id=48)
         campaign.save(self.request)
 
-        campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
+        campaign_settings = dash_models.CampaignSettings(
+            campaign=campaign,
+            campaign_manager=campaign_manager
+        )
         campaign_settings.save(self.request)
 
         account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
@@ -190,7 +196,10 @@ class EmailHelperTestCase(TestCase):
         campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
-        account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
+        account_settings = dash_models.AccountSettings(
+            account=campaign.account,
+            default_account_manager=account_manager
+        )
         account_settings.save(self.request)
 
         email_helper.send_budget_notification_email(campaign, self.request, 'Something changed, yo')

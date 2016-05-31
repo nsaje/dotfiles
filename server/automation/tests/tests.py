@@ -65,9 +65,14 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(notif.available_budget, 100)
         self.assertEqual(notif.yesterdays_spend, 150)
 
-        mock.assert_called_with(u'Test Campaign 1',
-            'https://one.zemanta.com/campaigns/1/budget', u'Test Account 1',
-            ['em@il.com', 'accountmanager@test.com'], 100, 150, decimal.Decimal('60.0000'))
+        mock.assert_called_with(
+            u'Test Campaign 1',
+            'https://one.zemanta.com/campaigns/1/budget',
+            u'Test Account 1',
+            ['em@il.com', 'accountmanager@test.com'],
+            100, 150,
+            decimal.Decimal('60.0000')
+        )
 
     @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
     def test_manager_has_been_notified(self, _):
