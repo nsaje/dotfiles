@@ -49,6 +49,10 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=Fal
             changed, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
         except:
             logger.exception('Campaign stop check for campaign with id %s not successful', campaign.id)
+            models.CampaignStopLog.objects.create(
+                campaign=campaign,
+                notes='Failed to check non-landing campaign.'
+            )
             if pagerduty_on_fail:
                 _trigger_check_pagerduty(campaign)
             continue
@@ -1195,16 +1199,23 @@ def _get_matching_settings_pairs(ad_group_settings, ad_group_source_settings):
     ag_settings_iter = _get_lookahead_iter(ad_group_settings)
     ag_settings, next_ag_settings = next(ag_settings_iter)
 
-    pairs = []
-    for ags_settings, next_ags_settings in _get_lookahead_iter(ad_group_source_settings):
-        pairs.append((ag_settings, ags_settings))
-        if not next_ags_settings and next_ag_settings:
-            pairs.append((next_ag_settings, ags_settings))
-            continue
+    ags_settings_iter = _get_lookahead_iter(ad_group_source_settings)
+    ags_settings, next_ags_settings = next(ags_settings_iter)
 
-        if next_ag_settings and next_ags_settings.created_dt > next_ag_settings.created_dt:
-            pairs.append((next_ag_settings, ags_settings))
+    pairs = [(ag_settings, ags_settings)]
+    while True:
+        if not next_ag_settings and not next_ags_settings:
+            break
+
+        if next_ag_settings and not next_ags_settings:
             ag_settings, next_ag_settings = next(ag_settings_iter)
+        elif not next_ag_settings and next_ags_settings:
+            ags_settings, next_ags_settings = next(ags_settings_iter)
+        elif next_ag_settings.created_dt > next_ags_settings.created_dt:
+            ags_settings, next_ags_settings = next(ags_settings_iter)
+        else:
+            ag_settings, next_ag_settings = next(ag_settings_iter)
+        pairs.append((ag_settings, ags_settings))
 
     return pairs
 

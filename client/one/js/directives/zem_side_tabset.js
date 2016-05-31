@@ -5,7 +5,7 @@ oneApp.directive('zemSideTabset', function () {
     return {
         restrict: 'E',
         scope: {
-            selected: '=',
+            selected: '=zemSelected',
             tabs: '=',
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
@@ -23,10 +23,8 @@ oneApp.directive('zemSideTabset', function () {
                     {
                         type: constants.sideBarTabs.CONTENT_INSIGHTS,
                         heading: 'Content Insights',
-                        hidden: $scope.campaign &&
-                            $scope.campaign.archived ||
-                            !$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
-                        internal: $scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
+                        hidden: !$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab'),
+                        internal: $scope.isPermissionInternal('zemauth.can_view_campaign_content_insights_side_tab'),
                     },
                 ];
             };
@@ -44,10 +42,8 @@ oneApp.directive('zemSideTabset', function () {
             };
 
             $scope.tabs = $scope.getSideTabs();
-            $scope.visibleTabs = $scope.countVisibleTabs($scope.tabs);
-            $scope.selected = {
-                type: $scope.tabs[0].type,
-            };
+            $scope.visibleTabCount = $scope.countVisibleTabs($scope.tabs);
+            $scope.selected = $scope.tabs[0];
         }],
     };
 });

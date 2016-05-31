@@ -40,6 +40,7 @@ FIELDNAMES = {
     'url': 'URL',
     'end_date': 'End Date',
     'image_url': 'Image URL',
+    'image_hash': 'Image Hash',
     'impressions': 'Impressions',
     'pageviews': 'Pageviews',
     'percent_new_users': 'Percent New Users',
@@ -96,6 +97,8 @@ FORMAT_EMPTY_TO_0 = [
     'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
+
+FORMAT_HASH = ['image_hash']
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
@@ -382,6 +385,7 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['title'] = content_ad.title
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
+    stat['image_hash'] = content_ad.image_hash
     stat['uploaded'] = content_ad.created_dt.date()
     stat['status'] = content_ad.state
     stat['archived'] = content_ad.archived
@@ -551,6 +555,7 @@ def get_csv_content(fieldnames, data):
             formatted_value = _format_empty_value(formatted_value, field)
             formatted_value = _format_percentages(formatted_value, field)
             formatted_value = _format_decimals(formatted_value, field)
+            formatted_value = _format_hash(formatted_value, field)
             formatted_value = _format_statuses_and_dates(formatted_value, field, archived)
             row[field] = formatted_value
 
@@ -590,6 +595,12 @@ def _format_decimals(value, field):
         return '{:.2f}'.format(value)
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(value)
+    return value
+
+
+def _format_hash(value, field):
+    if value and field in FORMAT_HASH:
+        return '#{}'.format(value)
     return value
 
 
@@ -739,7 +750,7 @@ class AccountExport(object):
             required_fields.extend(['campaign', 'ad_group'])
             dimensions.extend(['campaign', 'ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'url'])
+            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'image_hash', 'url'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
         required_fields.extend(['status'])
@@ -792,7 +803,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url', 'url'])
+            required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:
@@ -835,7 +846,7 @@ class AdGroupAdsExport(object):
         if breakdown == 'ad_group':
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url', 'url'])
+            required_fields.extend(['title', 'image_url', 'image_hash', 'url'])
             dimensions.extend(['content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:

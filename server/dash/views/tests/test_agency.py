@@ -369,7 +369,6 @@ class AdGroupSettingsTest(TestCase):
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
-            self.maxDiff = None
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
@@ -677,6 +676,9 @@ class AdGroupSettingsStateTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
+        # ensure this campaign has a goal
+        models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
+
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
@@ -697,6 +699,9 @@ class AdGroupSettingsStateTest(TestCase):
     def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
+
+        # ensure this campaign has a goal
+        models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -727,6 +732,23 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(mock_zwei_send.called, False)
         self.assertFalse(mock_k1_ping.called)
+
+    @patch('dash.validation_helpers.ad_group_has_available_budget')
+    @patch('actionlog.zwei_actions.send')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_activate_no_goals(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        mock_budget_check.return_value = True
+
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
+        response = self.client.post(
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
@@ -1873,6 +1895,9 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
 
+        # ensure this campaign has a goal
+        models.CampaignGoal.objects.create(campaign_id=campaign.id)
+
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -2030,10 +2055,16 @@ class CampaignSettingsTest(TestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_removed(self, p1, p2, p3):
+
+        campaign_id = 1
+
+        # ensure this campaign has more than 1 goal
+        models.CampaignGoal.objects.create(campaign_id=campaign_id)
+
         goal = models.CampaignGoal.objects.create(
             type=1,
             primary=True,
-            campaign_id=1,
+            campaign_id=campaign_id,
         )
 
         add_permissions(self.user, [
@@ -2044,7 +2075,7 @@ class CampaignSettingsTest(TestCase):
             '/api/campaigns/1/settings/',
             json.dumps({
                 'settings': {
-                    'id': 1,
+                    'id': campaign_id,
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
@@ -2062,7 +2093,7 @@ class CampaignSettingsTest(TestCase):
         )
         content = json.loads(response.content)
         self.assertTrue(content['success'])
-        self.assertFalse(models.CampaignGoal.objects.all())
+        self.assertEqual(1, models.CampaignGoal.objects.all().count())
         self.assertFalse(models.CampaignGoalValue.objects.all())
 
     def test_validation(self):
@@ -2919,7 +2950,6 @@ class AccountUsersTest(TestCase):
         agency.users.add(User.objects.get(pk=1))
 
         user = User.objects.get(pk=1)
-        self.maxDiff = None
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
@@ -2975,14 +3005,48 @@ class CampaignContentInsightsTest(TestCase):
         with self.assertRaises(exc.AuthorizationError):
             cis.get(fake_request(self.user()), 1)
 
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [],
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_basic_archived(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1,
+            archived=True,
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            }
+        ]
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
                 },
                 'success': True,
             }, json.loads(response.content))
@@ -2990,7 +3054,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_basic_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad = models.ContentAd.objects.create(
@@ -3007,17 +3071,22 @@ class CampaignContentInsightsTest(TestCase):
                 'impressions': 10000,
             }
         ]
-
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '$0.100'
+                            'metric': '10.00%',
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '10.00%',
                         }
                     ],
                 },
@@ -3027,7 +3096,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_duplicate_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd.objects.create(
@@ -3063,10 +3132,16 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'summary': 'Test Ad',
-                            'metric': '$0.500'
+                            'metric': '50.00%',
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '50.00%',
                         }
                     ],
                 },
@@ -3076,7 +3151,7 @@ class CampaignContentInsightsTest(TestCase):
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_order_title_ctr(self, mock_get_stats):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ['campaign_content_insights_view'])
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd.objects.create(
@@ -3106,21 +3181,28 @@ class CampaignContentInsightsTest(TestCase):
             }
         ]
 
+        self.maxDiff = None
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
-                            'metric': '$0.010',
+                            'metric': '1.00%',
                             'summary': 'Awesome Ad',
                         },
                         {
-                            'metric': '$0.001',
+                            'metric': '0.10%',
                             'summary': 'Test Ad',
                         }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'metric': '1.00%',
+                            'summary': 'Awesome Ad',
+                        },
                     ],
                 },
                 'success': True,
