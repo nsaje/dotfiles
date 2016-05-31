@@ -52,6 +52,8 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
         function convertToApi (config) {
             config.breakdown_page = config.breakdownPage; // eslint-disable-line camelcase
+            config.start_date = config.startDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
+            config.end_date = config.endDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
             delete config.breakdownPage;
         }
 

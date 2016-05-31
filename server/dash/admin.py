@@ -1418,7 +1418,12 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
 
 
 class GAAnalyticsAccount(admin.ModelAdmin):
-    pass
+    list_display = (
+        'account',
+        'ga_account_id',
+        'ga_web_property_id',
+    )
+    search_fields = ('ga_account_id', 'ga_web_property_id')
 
 
 admin.site.register(models.Agency, AgencyAdmin)

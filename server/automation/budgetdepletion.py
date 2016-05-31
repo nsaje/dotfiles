@@ -45,6 +45,10 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
         emails.append(campaign_manager.email)
     if sales_rep is not None:
         emails.append(sales_rep.email)
+    account_settings = campaign.account.get_current_settings()
+    if account_settings.default_account_manager is not None:
+        emails.append(account_settings.default_account_manager.email)
+
     total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
     campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
 
@@ -214,11 +218,15 @@ def stop_and_notify_depleted_budget_campaigns():
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
+
     emails = []
     if campaign_manager is not None:
         emails.append(campaign_manager.email)
     if sales_rep is not None:
         emails.append(sales_rep.email)
+    account_settings = campaign.account.get_current_settings()
+    if account_settings.default_account_manager is not None:
+        emails.append(account_settings.default_account_manager.email)
 
     campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
     _send_campaign_stopped_notification_email(

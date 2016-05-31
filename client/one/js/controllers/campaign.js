@@ -15,9 +15,11 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         if (newValue.type === constants.sideBarTabs.PERFORMANCE) {
             $scope.isChartVisible = true;
             $scope.isContentInsightsVisible = false;
+            $scope.reflowGraph(0);
         } else if (newValue.type === constants.sideBarTabs.CONTENT_INSIGHTS) {
             $scope.isChartVisible = false;
             $scope.isContentInsightsVisible = true;
+            $scope.reflowGraph(0);
         }
     });
     $scope.getTabs = function () {
