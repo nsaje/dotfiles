@@ -33,6 +33,13 @@ class ContentInsightsHelperTestCase(test.TestCase):
         self.assertEqual(['Test Ad'], res.keys())
         self.assertEqual(ids, set(res['Test Ad']))
 
+
+        res = content_insights_helper._deduplicate_content_ad_titles(
+            ad_group=campaign.adgroup_set.first()
+        )
+        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(ids, set(res['Test Ad']))
+
         for i in range(10):
             cad = dash.models.ContentAd.objects.create(
                 ad_group=campaign.adgroup_set.first(),
@@ -42,6 +49,15 @@ class ContentInsightsHelperTestCase(test.TestCase):
                 archived=True,
             )
 
+        res = content_insights_helper._deduplicate_content_ad_titles(
+            campaign=campaign
+        )
         # archived are ignored
+        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(ids, set(res['Test Ad']))
+
+        res = content_insights_helper._deduplicate_content_ad_titles(
+            ad_group=campaign.adgroup_set.first()
+        )
         self.assertEqual(['Test Ad'], res.keys())
         self.assertEqual(ids, set(res['Test Ad']))
