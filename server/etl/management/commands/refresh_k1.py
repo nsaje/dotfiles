@@ -3,7 +3,7 @@ import logging
 
 from utils.command_helpers import ExceptionCommand
 
-import reports.refresh_k1
+from etl import refresh_k1
 
 logger = logging.getLogger(__name__)
 
@@ -34,4 +34,4 @@ class Command(ExceptionCommand):
             logger.error(err)
             return
 
-        reports.refresh_k1.refresh_k1_reports(since)
+        refresh_k1.refresh_k1_reports(since)

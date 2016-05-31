@@ -5,12 +5,12 @@ from mock import patch
 from django.test import TestCase
 
 import dash.models
-from reports import daily_statements_k1 as daily_statements
+from etl import daily_statements_k1 as daily_statements
 import reports.models
 
 
 @patch('utils.dates_helper.datetime')
-@patch('reports.daily_statements_k1._get_campaign_spend')
+@patch('etl.daily_statements_k1._get_campaign_spend')
 class DailyStatementsK1TestCase(TestCase):
 
     fixtures = ['test_daily_statements.yaml']

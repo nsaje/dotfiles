@@ -7,7 +7,7 @@ from django.db import connections
 from django.conf import settings
 
 import dash.models
-from reports import daily_statements_k1
+from etl import daily_statements_k1
 
 logger = logging.getLogger(__name__)
 

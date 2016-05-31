@@ -10,8 +10,8 @@ from django.db import connections, transaction
 
 from utils import s3helpers
 
-from reports import daily_statements_k1
-from reports import materialize_k1
+from etl import daily_statements_k1
+from etl import materialize_k1
 
 logger = logging.getLogger(__name__)
 
