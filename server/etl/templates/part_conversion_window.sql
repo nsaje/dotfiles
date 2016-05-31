@@ -3,9 +3,7 @@
 -- NOTE: does not include same window in longer windows. This information should be retrieved
 -- in the postprocess phase.
 CASE
-  WHEN {{ p }}{{ column_name }} <= {{ conversion_lags|first }} THEN {{ conversion_lags|first }}
-  {% for r in conversion_lags|slice:"1:-1" %}
-  WHEN {{ p }}{{ column_name }} > {{ r }} AND {{ p }}{{ column_name }} <= {{ r }} THEN {{ r }}
-  {% endfor %}
-  ELSE {{ conversion_lags|last }}
+  WHEN {{ p }}{{ column_name }} <= {{ conversion_windows.0 }} THEN {{ conversion_windows.0 }}
+  WHEN {{ p }}{{ column_name }} > {{ conversion_windows.0 }} AND {{ p }}{{ column_name }} <= {{ conversion_windows.1 }} THEN {{ conversion_windows.1 }}
+  ELSE {{ conversion_windows.2 }}
 END {{ alias|as_kw }}
