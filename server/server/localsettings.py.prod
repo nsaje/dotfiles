@@ -143,6 +143,7 @@ AWS_SECRET_ACCESS_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2
 # S3 related settings
 S3_BUCKET = 'zemantaone'
 S3_BUCKET_STATS = 'z1-stats'
+S3_BUCKET_DEMO = 'z1-demo'
 USE_S3 = True
 
 # adgroup-level reports aggregations
