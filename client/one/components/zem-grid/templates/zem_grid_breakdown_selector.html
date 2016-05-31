@@ -1,0 +1,18 @@
+<span class="dropdown custom-cols" dropdown>
+  <a href class="btn btn-default" dropdown-toggle title="Show/hide columns">
+    Breakdowns
+  </a>
+  <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
+        <div ng-repeat="level in ctrl.levels">
+          <div class="category-name">{{ level.name }}</div>
+          <li ng-repeat="breakdown in level.breakdowns">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="breakdown.checked" ng-change="">
+                {{ breakdown }}
+              </label>
+            </div>
+          </li>
+       </div>
+  </ul>
+</span>
