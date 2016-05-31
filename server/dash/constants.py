@@ -1435,7 +1435,7 @@ class EmailTemplateType(ConstantBase):
         NEW_USER: 'New user introduction email',
         SUPPLY_REPORT: 'Supply report',
         SCHEDULED_EXPORT_REPORT: 'Scheduled report',
-        DEPLETING_BUDGET: 'Depleting budet notification',
+        DEPLETING_BUDGET: 'Depleting budget notification',
         CAMPAIGN_STOPPED: 'Campaign stopped notification',
         AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
         AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',

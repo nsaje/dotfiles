@@ -1,5 +1,6 @@
 import logging
 import traceback
+import string
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -8,9 +9,19 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMessage
 
+from dash.constants import EmailTemplateType
+import dash.models
+
 from utils import pagerduty_helper
 
 logger = logging.getLogger(__name__)
+
+
+def format_email(template_type, **kwargs):
+    # since editing through admin is currently unavailable no validation takes
+    # place
+    template = dash.models.EmailTemplate.objects.get(template_type=template_type)
+    return template.subject.format(**kwargs), template.body.format(**kwargs)
 
 
 def send_notification_mail(to_emails, subject, body, settings_url=None):
@@ -41,35 +52,18 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     if not should_send_notification_mail(ad_group.campaign, request.user, request):
         return
 
-    subject = u'Settings change - ad group {}, campaign {}, account {}'.format(
-        ad_group.name,
-        ad_group.campaign.name,
-        ad_group.campaign.account.name
-    )
-
     link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
     link_url = link_url.replace('http://', 'https://')
+    args = {
+        'user': request.user,
+        'ad_group': ad_group,
+        'campaign': ad_group.campaign,
+        'account': ad_group.campaign.account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text)
+    }
 
-    body = u'''Hi account manager of ad group {ad_group.name}
-
-We'd like to notify you that {user.email} has made the following change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}:
-
-{changes_text}
-
-Please check {link_url} for further details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        ad_group=ad_group,
-        campaign=ad_group.campaign,
-        account=ad_group.campaign.account,
-        link_url=link_url,
-        changes_text=_format_changes_text(changes_text)
-    )
-
+    subject, body = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
     campaign_settings = ad_group.campaign.get_current_settings()
 
     send_notification_mail(
@@ -80,33 +74,18 @@ def send_campaign_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    subject = u'Settings change - campaign {}, account {}'.format(
-        campaign.name,
-        campaign.account.name
-    )
-
     link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
 
-    body = u'''Hi account manager of campaign {campaign.name}
+    args = {
+        'user': request.user,
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text)
+    }
 
-We'd like to notify you that {user.email} has made the following change in the settings of campaign {campaign.name}, account {account.name}:
-
-{changes_text}
-
-Please check {link_url} for further details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        campaign=campaign,
-        account=campaign.account,
-        link_url=link_url,
-        changes_text=_format_changes_text(changes_text)
-    )
-
+    subject, body = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
     campaign_settings = campaign.get_current_settings()
 
     send_notification_mail(
