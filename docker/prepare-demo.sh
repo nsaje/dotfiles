@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$CONF_ENV" -ne "demo" || "${DB_PORT_5432_TCP_ADDR}" -ne "db" ]]; then
+if [[ "$CONF_ENV" != "demo" || "${DB_PORT_5432_TCP_ADDR}" != "db" ]]; then
     echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
     exit 1
 fi
