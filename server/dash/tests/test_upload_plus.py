@@ -82,5 +82,5 @@ class UploadPlusTest(TestCase):
         })
 
         candidate = dash.models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
-        self.assertEqual(candidate.url_status, dash.AsyncUploadJobStatus.OK)
-        self.assertEqual(candidate.image_status, dash.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.url_status, dash.constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, dash.constants.AsyncUploadJobStatus.OK)
