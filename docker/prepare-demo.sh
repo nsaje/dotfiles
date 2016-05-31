@@ -20,6 +20,9 @@ python /app/zemanta-eins/manage.py migrate --noinput
 echo "Downloading dump"
 curl -L "${DUMP_URL}" >> dump.json
 
+echo "Clearing DB"
+python /app/zemanta-eins/manage.py sqlflush | python /app/zemanta-eins/manage.py dbshell
+
 echo "Loading dump"
 python /app/zemanta-eins/manage.py loaddata dump.json
 
