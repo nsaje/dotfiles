@@ -88,7 +88,6 @@ class ContentInsightsHelperTestCase(test.TestCase):
             'clicks': 50,
         }, res)
 
-
     def test_deduplicate_content_ad_titles(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ids = set()
@@ -106,7 +105,6 @@ class ContentInsightsHelperTestCase(test.TestCase):
         )
         self.assertEqual(['Test Ad'], res.keys())
         self.assertEqual(ids, set(res['Test Ad']))
-
 
         res = content_insights_helper._deduplicate_content_ad_titles(
             ad_group=campaign.adgroup_set.first()
