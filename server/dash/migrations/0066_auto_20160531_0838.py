@@ -56,6 +56,23 @@ Yours truly,
 Zemanta
     ''').save()
 
+    EmailTemplate(
+        template_type=EmailTemplateType.PASSWORD_RESET,
+        subject='Recover Password',
+        body=u'''<p>Hi {user.first_name},</p>
+<p>You told us you forgot your password. If you really did, click here to choose a new one:</p>
+<a href="{link_url}">Choose a New Password</a>
+<p>If you didn't mean to reset your password, then you can just ignore this email; your password will not change.</p>
+<p>
+As always, please don't hesitate to contact help@zemanta.com with any questions.
+</p>
+<p>
+Thanks,<br/>
+Zemanta Client Services
+</p>
+    '''
+    ).save()
+
 
 class Migration(migrations.Migration):
 

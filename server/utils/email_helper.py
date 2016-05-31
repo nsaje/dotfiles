@@ -140,24 +140,12 @@ Zemanta
 
 
 def send_password_reset_email(user, request):
-    body = u'''<p>Hi {name},</p>
-<p>You told us you forgot your password. If you really did, click here to choose a new one:</p>
-<a href="{link_url}">Choose a New Password</a>
-<p>If you didn't mean to reset your password, then you can just ignore this email; your password will not change.</p>
-<p>
-As always, please don't hesitate to contact help@zemanta.com with any questions.
-</p>
-<p>
-Thanks,<br/>
-Zemanta Client Services
-</p>
-    '''
+    args = {
+        'user': user,
+        'link_url': _generate_password_reset_url(user, request),
+    }
 
-    body = body.format(
-        name=user.first_name,
-        link_url=_generate_password_reset_url(user, request)
-    )
-
+    subject, body = format_email(EmailTemplateType.PASSWORD_RESET, **args)
     _send_email_to_user(user, request, 'Recover Password', body)
 
 
