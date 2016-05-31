@@ -141,7 +141,10 @@ class EmailHelperTestCase(TestCase):
         )
         campaign_settings.save(self.request)
 
-        account_settings = dash_models.AccountSettings(account=campaign.account, default_account_manager=account_manager)
+        account_settings = dash_models.AccountSettings(
+            account=campaign.account,
+            default_account_manager=account_manager
+        )
         account_settings.save(self.request)
 
         email_helper.send_campaign_notification_email(campaign, self.request, 'Something changed, yo')
