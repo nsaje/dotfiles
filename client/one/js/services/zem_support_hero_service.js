@@ -8,7 +8,8 @@ oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
                 custom: {
                     customerId: user.id,
                     userEmail: user.email,
-                    userName: user.name
+                    userName: user.name,
+                    language: 'en_US',
                 }
             };
             $window.supportHeroWidget.track(properties);
