@@ -1,23 +1,23 @@
 <div class="content-insights">
     <div>
-        <div class="best-performers" ng-class="{'worst-selected-performers': !expanded && shortenedShown === 'worst-performers'}">
+        <div class="best-performers" ng-class="{'worst-selected-performers': !expanded && collapsedDataState === 'worst-performers'}">
             <p ng-if="expanded" class="insights-best-title">Best Titles</p>
 
             <div class="performer-switch-table" ng-if="!expanded">
                 <div>
                     <div class="link-cell">
-                        <a href ng-click="showBestPerformers()" class="insights-best-title">Best Titles</a>
+                        <a href ng-click="showBestPerformersCollapsed()" class="insights-best-title">Best Titles</a>
                     </div>
                     <div class="link-cell">
-                        <a href ng-click="showWorstPerformers()" class="insights-worst-title">Worst Titles</a>
+                        <a href ng-click="showWorstPerformersCollapsed()" class="insights-worst-title">Worst Titles</a>
                     </div>
                 </div>
                 <div>
                     <div class="top-selection-cell">
-                        <div ng-if="shortenedShown === 'best-performers'" class="top-arrow"></div>
+                        <div ng-if="collapsedDataState === 'best-performers'" class="top-arrow"></div>
                     </div>
                     <div class="top-selection-cell">
-                       <div ng-if="shortenedShown === 'worst-performers'" class="top-arrow"></div>
+                       <div ng-if="collapsedDataState === 'worst-performers'" class="top-arrow"></div>
                     </div>
                 </div>
             </div>
@@ -28,7 +28,7 @@
                     <th>{{metric}}</th>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="row in (expanded ? bestPerformerRows : shortenedRows) track by $index" ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
+                    <tr ng-repeat="row in (expanded ? bestPerformerRows : collapsedRows) track by $index" ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
                         <td>{{$index + 1}}</td>
                         <td>{{ row.summary }}</td>
                         <td>{{ row.metric }}</td>

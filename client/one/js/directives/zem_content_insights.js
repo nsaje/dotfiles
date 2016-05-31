@@ -13,34 +13,39 @@ oneApp.directive('zemContentInsights', function () {
         templateUrl: '/partials/zem_content_insights.html',
         controller: ['$scope', '$element', '$window', '$timeout', function ($scope, $element, $window, $timeout) {
             $scope.expanded = true;
-            $scope.updateExpanded = function () {
+            $scope.updateTableState = function () {
+                // table can be either expanded(best and worst performers displayed side-by-side)
+                // or shortened (only one table shown(best performer elements) with data bound
+                // either to best or worst performers)
                 var containerWidth = $('.insights-container').width();
                 if (containerWidth < 800) {
                     $scope.expanded = false;
                 } else {
+                    // when tahb
                     $scope.expanded = true;
-                    $scope.setDefaultShortened();
+                    $scope.showBestPerformersCollapsed();
                 }
             };
 
-            $scope.setDefaultShortened = function () {
-                $scope.shortenedShown = 'best-performers';
-                $scope.shortenedRows = $scope.bestPerformerRows;
+            $scope.showBestPerformersCollapsed = function () {
+                $scope.collapsedDataState = 'best-performers';
+                $scope.collapsedRows = $scope.bestPerformerRows;
             };
 
-            $scope.showBestPerformers = function () {
-                $scope.shortenedShown = 'best-performers';
-                $scope.shortenedRows = $scope.bestPerformerRows;
-            };
-
-            $scope.showWorstPerformers = function () {
-                $scope.shortenedShown = 'worst-performers';
-                $scope.shortenedRows = $scope.worstPerformerRows;
+            $scope.showWorstPerformersCollapsed = function () {
+                $scope.collapsedDataState = 'worst-performers';
+                $scope.collapsedRows = $scope.worstPerformerRows;
             };
 
             $scope.$watch('bestPerformerRows', function () {
-                if (!$scope.expanded && $scope.shortenedShown === 'best-performers') {
-                    $scope.shortenedRows = $scope.bestPerformerRows;
+                if (!$scope.expanded && $scope.collapsedDataState === 'best-performers') {
+                    $scope.collapsedRows = $scope.bestPerformerRows;
+                }
+            });
+
+            $scope.$watch('worstPerformerRows', function () {
+                if (!$scope.expanded && $scope.collapsedDataState === 'worst-performers') {
+                    $scope.collapsedRows = $scope.worstPerformerRows;
                 }
             });
 
@@ -49,13 +54,13 @@ oneApp.directive('zemContentInsights', function () {
                 $scope.$watch(function () {
                     return w.innerWidth();
                 }, function () {
-                    $scope.updateExpanded();
+                    $scope.updateTableState();
                 }, true);
                 $scope.$digest();
             });
 
-            $timeout($scope.updateExpanded, 0);
-            $timeout($scope.setDefaultShortened, 0);
+            $timeout($scope.updateTableState, 0);
+            $timeout($scope.showBestPerformersCollapsed, 0);
         }],
     };
 });
