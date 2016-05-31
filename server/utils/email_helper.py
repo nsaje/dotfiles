@@ -155,7 +155,7 @@ def send_email_to_new_user(user, request):
         'user': user,
         'link_url': _generate_password_reset_url(user, request),
     }
-    subject, body = format_email(EmailTemplateType.NEW_USER, **args)
+    subject, body = format_email(EmailTemplateType.USER_NEW, **args)
     return _send_email_to_user(user, request, subject, body)
 
 

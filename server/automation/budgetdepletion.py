@@ -83,7 +83,7 @@ def _send_depleting_budget_notification_email(
         'cap': _round_budget(total_daily_budget),
         'yesterday_spend': _round_budget(yesterdays_spend)
     }
-    subject, body = format_email(EmailTemplateType.DEPLETING_BUDGET, **args)
+    subject, body = format_email(EmailTemplateType.BUDGET_DEPLETING, **args)
 
     try:
         send_mail(

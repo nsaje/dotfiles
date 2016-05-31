@@ -1418,10 +1418,10 @@ class EmailTemplateType(ConstantBase):
     BUDGET_CHANGE = 3
     PIXEL_ADD = 4
     PASSWORD_RESET = 5
-    NEW_USER = 6
+    USER_NEW = 6
     SUPPLY_REPORT = 7
     SCHEDULED_EXPORT_REPORT = 8
-    DEPLETING_BUDGET = 9
+    BUDGET_DEPLETING = 9
     CAMPAIGN_STOPPED = 10
     AUTOPILOT_AD_GROUP_CHANGE = 11
     AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
@@ -1432,10 +1432,10 @@ class EmailTemplateType(ConstantBase):
         BUDGET_CHANGE: 'Budget change',
         PIXEL_ADD: 'New conversion pixel',
         PASSWORD_RESET: 'User password reset',
-        NEW_USER: 'New user introduction email',
+        USER_NEW: 'New user introduction email',
         SUPPLY_REPORT: 'Supply report',
         SCHEDULED_EXPORT_REPORT: 'Scheduled report',
-        DEPLETING_BUDGET: 'Depleting budget notification',
+        BUDGET_DEPLETING: 'Depleting budget notification',
         CAMPAIGN_STOPPED: 'Campaign stopped notification',
         AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
         AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',

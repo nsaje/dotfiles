@@ -86,7 +86,7 @@ Zemanta Client Services
     ).save()
 
     EmailTemplate(
-        template_type=EmailTemplateType.NEW_USER,
+        template_type=EmailTemplateType.USER_NEW,
         subject=u'Welcome to Zemanta!',
         body=u'''<p>Hi {user.first_name},</p>
 <p>
@@ -142,7 +142,7 @@ Report was scheduled by {scheduled_by}.
     ''').save()
 
     EmailTemplate(
-        template_type=EmailTemplateType.DEPLETING_BUDGET,
+        template_type=EmailTemplateType.BUDGET_DEPLETING,
         subject=u'Campaign budget low - {campaign.name}, {account.name}',
         body=u'''Hi account manager of {campaign.name}
 
