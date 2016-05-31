@@ -114,25 +114,14 @@ def send_budget_notification_email(campaign, request, changes_text):
 def send_account_pixel_notification(account, request):
     if not should_send_account_notification_mail(account, request.user, request):
         return
-
-    subject = u'Conversion pixel added - account {}'.format(account.name)
-
     link_url = request.build_absolute_uri('/accounts/{}/settings'.format(account.pk))
     link_url = link_url.replace('http://', 'https://')
-
-    body = u'''Hi default account manager of {account.name},
-
-We'd like to notify you that {user.email} has added a conversion pixel on account {account.name}. Please check {link_url} for details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        account=account,
-        link_url=link_url
-    )
-
+    args = {
+        'user': request.user,
+        'account': account,
+        'link_url': link_url
+    }
+    subject, body = format_email(EmailTemplateType.PIXEL_ADD, **args)
     account_settings = account.get_current_settings()
 
     send_notification_mail(

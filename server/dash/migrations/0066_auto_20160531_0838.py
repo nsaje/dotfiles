@@ -56,6 +56,18 @@ Yours truly,
 Zemanta
     ''').save()
 
+
+    EmailTemplate(
+        template_type=EmailTemplateType.PIXEL_ADD,
+        subject = u'Conversion pixel added - account {account.name}',
+        body=u'''Hi default account manager of {account.name},
+
+We'd like to notify you that {user.email} has added a conversion pixel on account {account.name}. Please check {link_url} for details.
+
+Yours truly,
+Zemanta
+    ''').save()
+
     EmailTemplate(
         template_type=EmailTemplateType.PASSWORD_RESET,
         subject='Recover Password',
