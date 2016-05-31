@@ -177,7 +177,7 @@ def process_callback(callback_data):
     except models.ContentAdCandidate.DoesNotExist:
         logger.exception('No candidate with id %s', callback_data['id'])
         return
-    
+
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
     candidate.url_status = constants.AsyncUploadJobStatus.FAILED
     try:
