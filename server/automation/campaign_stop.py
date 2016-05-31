@@ -574,7 +574,7 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
                 actions.extend(_stop_ad_group_source(ags))
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
-                notes=u'Stopping sources on ad group {}:\n\n{}\nLowering minimum autopilot budget not possible.\n'
+                notes=u'Stopping sources on ad group {}:\n{}\n\nLowering minimum autopilot budget not possible.\n'
                       'Minimum budget: {}, Daily cap: {}.'.format(
                           ad_group.id,
                           '\n'.join([ags.source.name for ags in sorted(to_stop, key=lambda x: x.source.name)]),
