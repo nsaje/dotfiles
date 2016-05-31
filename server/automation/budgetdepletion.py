@@ -16,7 +16,7 @@ import automation.models
 import automation.settings
 import automation.helpers
 from utils import pagerduty_helper, url_helper
-from utils.email_helper import format_email
+from utils.email_helper import format_email, email_manager_list
 from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -42,11 +42,10 @@ def _allowed_to_automatically_stop_campaign(campaign):
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
-    emails = []
-    if campaign_manager is not None:
-        emails.append(campaign_manager.email)
+    emails = email_manager_list(campaign)
     if sales_rep is not None:
         emails.append(sales_rep.email)
+
     total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
     campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
 
@@ -190,9 +189,8 @@ def stop_and_notify_depleted_budget_campaigns():
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
-    emails = []
-    if campaign_manager is not None:
-        emails.append(campaign_manager.email)
+
+    emails = email_manager_list(campaign)
     if sales_rep is not None:
         emails.append(sales_rep.email)
 

@@ -78,10 +78,9 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     }
 
     subject, body = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
-    campaign_settings = ad_group.campaign.get_current_settings()
-
+    emails = email_manager_list(ad_group.campaign)
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, ad_group.campaign.get_campaign_url(request))
+        emails, subject, body, ad_group.campaign.get_campaign_url(request))
 
 
 def send_campaign_notification_email(campaign, request, changes_text):
@@ -100,10 +99,9 @@ def send_campaign_notification_email(campaign, request, changes_text):
     }
 
     subject, body = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
-    campaign_settings = campaign.get_current_settings()
-
+    emails = email_manager_list(campaign)
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request))
 
 
 def send_budget_notification_email(campaign, request, changes_text):
@@ -120,9 +118,9 @@ def send_budget_notification_email(campaign, request, changes_text):
         'changes_text': _format_changes_text(changes_text),
     }
     subject, body = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
-    campaign_settings = campaign.get_current_settings()
+    emails = email_manager_list(campaign)
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request))
 
 
 def send_account_pixel_notification(account, request):
