@@ -1,15 +1,11 @@
-import argparse
 import collections
 from django.db import models, connection
-import django
+import faker
 
 from utils.command_helpers import ExceptionCommand
+from utils import demo_anonymizer
 
 import sys
-try:
-    import json
-except ImportError:
-    from django.utils import simplejson as json
 
 try:
     from django.db.models import loading
@@ -57,18 +53,27 @@ class Command(ExceptionCommand):
     def __init__(self):
         super(ExceptionCommand, self).__init__()
         self.serialize_list = collections.OrderedDict()
-        self.seen = {}
+        self.name_pools = demo_anonymizer.DemoNamePools(
+            ['Top 4 Mobile Carrier'],
+            ['Brand Awareness Campaign', 'Earned Media Promotion & Retargeting', 'The Quiz'],
+            ['Audio & Connected audience segment', 'Connected Family audience segment',
+             'Full Feature audience segment', '4G LTE', 'Best Value for International Travel',
+             'Waive early termination fee', 'Digital Moms', 'Hipsters', 'Teenagers'])
+        self.demo_users_set = None
+
+        demo_anonymizer.set_name_pools(self.name_pools)
+        demo_anonymizer.set_fake_factory(faker.Faker())
 
     def handle(self, *args, **options):
-        settings.DEBUG = True
-
         demo_users = loading.get_model('zemauth', 'User').objects.filter(email__endswith='test@test.com').prefetch_related(
             'groups__permissions__content_type',
             'user_permissions__content_type',
         )
+        self.demo_users_set = set(demo_users)
 
         # pks = [168]
         pks = [279]
+        # pks = [203]
         (app_label, model_name) = ACCOUNT_DUMP_SETTINGS['primary'].split('.')
         model_to_dump = loading.get_model(app_label, model_name)
         real_accounts = model_to_dump.objects.filter(pk__in=[int(i) for i in pks]).prefetch_related(
@@ -79,14 +84,13 @@ class Command(ExceptionCommand):
         for account in real_accounts:
             account.users = demo_users
             self._add_object_dependencies(account, ACCOUNT_DUMP_SETTINGS['dependents'])
-
         self._serialize_fully()
         data = serialize('json', [o for o in self.serialize_list if o is not None],
-                         use_natural_foreign_keys=True, use_natural_primary_keys=True,
                          indent=4)
+        #  use_natural_foreign_keys=True, use_natural_primary_keys=True,
 
         self.stdout.write(data)
-        logger.info("QUERIES: %s", str(connection.queries))
+        # logger.info("QUERIES: %s", str(connection.queries))
         logger.info("QUERIES: %s", len(connection.queries))
 
     @staticmethod
@@ -105,8 +109,14 @@ class Command(ExceptionCommand):
 
     def _serialize_fully(self):
         for obj in self.serialize_list:
+            anonymize = getattr(obj, '_demo_fields', {})
+            if obj in self.demo_users_set:  # don't anonymize demo users
+                anonymize = {}
             for field in self._get_fields(obj):
                 logger.info(str(obj) + ': ' + str(field))
+                if field.name in anonymize:
+                    logger.info("ANONYMIZING %s", field.name)
+                    setattr(obj, field.name, anonymize[field.name]())
                 if isinstance(field, models.ForeignKey):
                     self._add_to_serialize_list(
                         [obj.__getattribute__(field.name)])
@@ -128,21 +138,13 @@ class Command(ExceptionCommand):
             # Proxy models don't serialize well in Django.
             if obj._meta.proxy:
                 obj = obj._meta.proxy_for_model.objects.get(pk=obj.pk)
-            # model_name = getattr(obj._meta, 'model_name',
-            #                      getattr(obj._meta, 'module_name', None))
-            # key = "%s:%s:%s" % (obj._meta.app_label, model_name, obj.pk)
 
-            self.serialize_list[obj] = None
-            # if key not in self.seen:
-            #     self.serialize_list[obj] = None
-            #     self.seen[key] = 1
-            # else:  # move to end
-            #     logger.info("MOVING TO END: " + str(obj))
-            #     # idx = self.serialize_list.index(obj)
-            #     # self.serialize_list[idx] = None
-            #     # self.serialize_list.append(obj)
-            #     del self.serialize_list[obj]
-            #     self.serialize_list[obj] = None
+            if obj not in self.serialize_list:
+                self.serialize_list[obj] = None
+            else:  # move to end
+                logger.info("MOVING TO END: " + str(obj))
+                del self.serialize_list[obj]
+                self.serialize_list[obj] = None
 
     def _add_object_dependencies(self, obj, dependencies):
         # get the dependent objects and add to serialize list

@@ -8,6 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.core import validators
 from django.core.exceptions import ValidationError
 
+import utils.demo_anonymizer
+
 
 class UserManager(auth_models.BaseUserManager):
 
@@ -53,6 +55,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     IMPORTANT: Default unique constraint on the email created by Django is deleted and
     replaced by case-insensitive unique index created by one of migrations.
     '''
+    _demo_fields = {
+        'email': utils.demo_anonymizer.fake_email,
+        'username': utils.demo_anonymizer.fake_username,
+        'first_name': utils.demo_anonymizer.fake_first_name,
+        'last_name': utils.demo_anonymizer.fake_last_name,
+    }
     email = models.EmailField(_('email address'), max_length=255, unique=True)
     username = models.CharField(
         _('username'),

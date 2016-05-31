@@ -51,3 +51,4 @@ git+https://github.com/Zemanta/django-statsd-influx.git@v0.1
 
 # demo dump
 git+https://github.com/dwatkinsweb/django-fixture-magic.git@custom-dump-nested-deps
+fake-factory==0.5.7
