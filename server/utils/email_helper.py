@@ -24,6 +24,20 @@ def format_email(template_type, **kwargs):
     return template.subject.format(**kwargs), template.body.format(**kwargs)
 
 
+def email_manager_list(campaign):
+    '''
+    Fetch campaign manager and account manager emails if they exist
+    '''
+    campaign_manager = campaign.get_current_settings().campaign_manager
+    account_manager = campaign.account.get_current_settings().default_account_manager
+    ret = set([])
+    if account_manager is not None:
+        ret.add(account_manager.email)
+    if campaign_manager is not None:
+        ret.add(campaign_manager.email)
+    return list(ret)
+
+
 def send_notification_mail(to_emails, subject, body, settings_url=None):
     try:
         send_mail(

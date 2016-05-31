@@ -12,7 +12,7 @@ from automation.constants import DailyBudgetChangeComment, CpcChangeComment
 from dash import constants
 import dash.models
 from utils import pagerduty_helper, url_helper
-from utils.email_helper import format_email
+from utils.email_helper import format_email, email_manager_list
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +95,7 @@ def get_campaign_goal_column_importance(campaign_goal):
 
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
-        campaign_manager = camp.get_current_settings().campaign_manager
-        account_manager = camp.account.get_current_settings().default_account_manager
-        emails = [account_manager.email] + ([campaign_manager.email] if campaign_manager and
-                                            account_manager.email != campaign_manager.email else [])
+        emails = email_manager_list(camp)
         if initialization:
             send_budget_autopilot_initialisation_email(camp, emails, changes_data)
         else:
