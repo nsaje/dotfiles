@@ -23,7 +23,7 @@ def _extract_ends(deduplicated_ads, stats):
     mapped_stats = {stat['content_ad']: stat for stat in stats}
     dd_cad_metric = []
     for title, caids in deduplicated_ads.iteritems():
-        dd_cad_metric.append(_extract_metric(title, caids, mapped_stats))
+        dd_cad_metric.append(_extract_ctr_metric(title, caids, mapped_stats))
 
     top_cads = sorted(
         dd_cad_metric,
@@ -40,7 +40,7 @@ def _extract_ends(deduplicated_ads, stats):
         [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
 
 
-def _extract_metric(title, caids, mapped_stats):
+def _extract_ctr_metric(title, caids, mapped_stats):
     clicks = sum(map(lambda caid: mapped_stats.get(caid, {}).get('clicks', 0) or 0, caids))
     impressions = sum(map(lambda caid: mapped_stats.get(caid, {}).get('impressions', 0) or 0, caids))
     metric = float(clicks) / impressions if impressions > 0 else None
