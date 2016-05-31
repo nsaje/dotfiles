@@ -3,7 +3,7 @@
 
 oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
     function boot (user) {
-        if (window.supportHeroWidget != undefined) {
+        if ($window.supportHeroWidget != undefined) {
             var properties = {
                 custom: {
                     customerId: user.id,
@@ -11,10 +11,9 @@ oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
                     userName: user.name
                 }
             };
-            window.supportHeroWidget.track(properties);
+            $window.supportHeroWidget.track(properties);
         }
     }
-
     return {
         boot: boot
     };
