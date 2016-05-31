@@ -55,7 +55,7 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
                 $scope.hasCategories = hasCategories;
             };
 
-            $scope.columnChecked = function (column) {
+            $scope.columnUpdated = function (column) {
                 zemCustomTableColsService.save($scope.localStoragePrefix, $scope.columns);
             };
 

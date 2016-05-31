@@ -38,16 +38,11 @@ oneApp.directive('zemGridColumnSelector', ['config', function (config) {
             }
 
             function initCategories () {
-                var columns = vm.grid.meta.data.columns.filter(function (column) {
-                    return !column.unselectable;
-                });
-
+                // Place columns in a corresponding category
+                // If column is un-selectable (always visible) or not shown skip it
                 vm.categories = [];
-
-                for (var i = 0; i < vm.grid.meta.data.categories.length; i++) {
-                    var cat = vm.grid.meta.data.categories[i];
-
-                    var cols = columns.filter(function (col) {
+                vm.grid.meta.data.categories.forEach(function (cat) {
+                    var cols = vm.grid.meta.data.columns.filter(function (col) {
                         return cat.fields.indexOf(col.field) !== -1 && col.shown && !col.unselectable;
                     });
 
@@ -57,7 +52,7 @@ oneApp.directive('zemGridColumnSelector', ['config', function (config) {
                             'columns': cols,
                         });
                     }
-                }
+                });
             }
         }],
     };
