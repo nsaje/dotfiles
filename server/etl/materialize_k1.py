@@ -421,4 +421,4 @@ def _sum_conversion(conversion_str):
         for k, v in c.iteritems():
             conv[k] += v
 
-        return dict(conv)
+    return dict(conv)
