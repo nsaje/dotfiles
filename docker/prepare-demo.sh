@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ "$CONF_ENV" -ne "demo" || "${DB_PORT_5432_TCP_ADDR}" -ne "db" ]]; do
+    echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
+done
+
 echo "Wait for PostgreSQL"
 sleep 5
 retval=0
@@ -20,7 +24,7 @@ python /app/zemanta-eins/manage.py migrate --noinput
 echo "Downloading dump"
 curl -L "${DUMP_URL}" >> dump.json
 
-echo "Clearing DB"
+echo "Clearing the DB"
 python /app/zemanta-eins/manage.py sqlflush | python /app/zemanta-eins/manage.py dbshell
 
 echo "Loading dump"
