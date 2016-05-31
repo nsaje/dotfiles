@@ -177,18 +177,19 @@ def process_callback(callback_data):
     except models.ContentAdCandidate.DoesNotExist:
         logger.exception('No candidate with id %s', callback_data['id'])
         return
-
+    
+    candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
     try:
-        candidate.image_status = constants.AsyncUploadJobStatus.OK
-        candidate.url_status = constants.AsyncUploadJobStatus.OK if callback_data[
-            'valid'] else constants.AsyncUploadJobStatus.FAILED
+        if callback_data['image']['id']:
+            candidate.image_status = constants.AsyncUploadJobStatus.OK
+        if callback_data['url']['valid']:
+            candidate.url_status = constants.AsyncUploadJobStatus.OK
         candidate.image_id = callback_data['image']['id']
         candidate.image_width = callback_data['image']['width']
         candidate.image_height = callback_data['image']['height']
         candidate.image_hash = callback_data['image']['hash']
     except:
         logger.exception('Failed to parse callback data %s', str(callback_data))
-        candidate.image_status = constants.AsyncUploadJobStatus.FAILED
-        candidate.url_status = constants.AsyncUploadJobStatus.FAILED
 
     candidate.save()
