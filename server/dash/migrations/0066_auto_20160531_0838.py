@@ -85,6 +85,63 @@ Zemanta Client Services
     '''
     ).save()
 
+    EmailTemplate(
+        template_type=EmailTemplateType.NEW_USER,
+        subject=u'Welcome to Zemanta!',
+        body=u'''<p>Hi {user.first_name},</p>
+<p>
+Welcome to Zemanta's Content DSP!
+</p>
+<p>
+We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
+</p>
+<p>
+Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
+</p>
+<p>
+As always, please don't hesitate to contact help@zemanta.com with any questions.
+</p>
+<p>
+Thanks,<br/>
+Zemanta Client Services
+</p>
+    ''').save()
+
+    EmailTemplate(
+        template_type=EmailTemplateType.SUPPLY_REPORT,
+        subject = u'Zemanta Report for {date}',
+        body = u'''
+Hello,
+
+Here are the impressions and spend for {date}.
+
+Impressions: {impressions}
+Spend: {cost}
+
+Yours truly,
+Zemanta
+
+---
+The reporting data is an estimate. Final amounts are tallied and should be invoiced per your agreement with Zemanta.
+* All times are in Eastern Standard Time (EST).
+    ''').save()
+
+
+    EmailTemplate(
+        template_type=EmailTemplateType.SCHEDULED_EXPORT_REPORT,
+        subject=u'Zemanta Scheduled Report: {report_name}',
+        body = u'''Hi,
+
+Please find attached Your {frequency} scheduled report "{report_name}" for {entity_level}{entity_name}{granularity}.
+
+Yours truly,
+Zemanta
+
+----------
+
+Report was scheduled by {scheduled_by}.
+    ''').save()
+
 
 class Migration(migrations.Migration):
 

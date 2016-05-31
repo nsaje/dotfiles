@@ -135,35 +135,16 @@ def send_password_reset_email(user, request):
     }
 
     subject, body = format_email(EmailTemplateType.PASSWORD_RESET, **args)
-    _send_email_to_user(user, request, 'Recover Password', body)
+    _send_email_to_user(user, request, subject, body)
 
 
 def send_email_to_new_user(user, request):
-    body = u'''<p>Hi {name},</p>
-<p>
-Welcome to Zemanta's Content DSP!
-</p>
-<p>
-We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
-</p>
-<p>
-Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
-</p>
-<p>
-As always, please don't hesitate to contact help@zemanta.com with any questions.
-</p>
-<p>
-Thanks,<br/>
-Zemanta Client Services
-</p>
-    '''
-
-    body = body.format(
-        name=user.first_name,
-        link_url=_generate_password_reset_url(user, request)
-    )
-
-    return _send_email_to_user(user, request, 'Welcome to Zemanta!', body)
+    args = {
+        'user': user,
+        'link_url': _generate_password_reset_url(user, request),
+    }
+    subject, body = format_email(EmailTemplateType.NEW_USER, **args)
+    return _send_email_to_user(user, request, subject, body)
 
 
 def _generate_password_reset_url(user, request):
@@ -220,27 +201,12 @@ def _send_email_to_user(user, request, subject, body):
 
 def send_supply_report_email(email, date, impressions, cost):
     date_str = '%d/%d/%d' % (date.month, date.day, date.year)
-    subject = u'Zemanta Report for {}'.format(date_str)
-    body = u'''
-Hello,
-
-Here are the impressions and spend for {date}.
-
-Impressions: {impressions}
-Spend: {cost}
-
-Yours truly,
-Zemanta
-
----
-The reporting data is an estimate. Final amounts are tallied and should be invoiced per your agreement with Zemanta.
-* All times are in Eastern Standard Time (EST).
-    '''
-    body = body.format(
-        date=date_str,
-        impressions=impressions,
-        cost=cost
-    )
+    args = {
+        'date': date_str,
+        'impressions': impressions,
+        'cost': cost,
+    }
+    subject, body = format_email(EmailTemplateType.SUPPLY_REPORT, **args)
 
     try:
         send_mail(
@@ -313,28 +279,17 @@ def should_send_notification_mail(campaign, user, request):
 
 
 def send_scheduled_export_report(report_name, frequency, granularity, entity_level, entity_name, scheduled_by, email_adresses, report_contents, report_filename):
-    subject = u'Zemanta Scheduled Report: {}'.format(
-        report_name
-    )
-    body = u'''Hi,
+    args = {
+        'frequency': frequency.lower(),
+        'report_name': report_name,
+        'entity_level': entity_level,
+        'entity_name': ' ' + entity_name if entity_name != entity_level else '',
+        'granularity': ' by ' + granularity if granularity != entity_level else '',
+        'scheduled_by': scheduled_by,
+    }
 
-Please find attached Your {frequency} scheduled report "{report_name}" for {entity_level}{entity_name}{granularity}.
+    subject, body = format_email(EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
 
-Yours truly,
-Zemanta
-
-----------
-
-Report was scheduled by {scheduled_by}.
-    '''
-    body = body.format(
-        frequency=frequency.lower(),
-        report_name=report_name,
-        entity_level=entity_level,
-        entity_name=' ' + entity_name if entity_name != entity_level else '',
-        granularity=' by ' + granularity if granularity != entity_level else '',
-        scheduled_by=scheduled_by
-    )
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
     email = EmailMessage(subject, body, 'Zemanta <{}>'.format(settings.FROM_EMAIL), email_adresses)
