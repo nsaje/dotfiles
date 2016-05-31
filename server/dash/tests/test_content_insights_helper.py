@@ -1,6 +1,11 @@
+import datetime
 from django import test
 from dash import content_insights_helper
 import dash.models
+
+from zemauth.models import User
+
+from mock import patch
 
 
 class ContentInsightsHelperTestCase(test.TestCase):
@@ -9,12 +14,56 @@ class ContentInsightsHelperTestCase(test.TestCase):
     def user(self):
         return User.objects.get(pk=2)
 
-    #def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date):
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_fetch_campaign_content_ad_metrics(self, mock_get_stats):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ids = []
+        for i in range(3):
+            cad = dash.models.ContentAd.objects.create(
+                ad_group=campaign.adgroup_set.first(),
+                title='Test Ad {}'.format(i),
+                url='http://www.zemanta.com',
+                batch_id=1,
+                archived=False,
+            )
+            ids.append(cad.id)
 
-    #def _extract_ends(deduplicated_ads, stats):
+        mock_get_stats.return_value = [
+            {
+                'content_ad': ids[0],
+                'clicks': 1,
+                'impressions': 1000,
+            },
+            {
+                'content_ad': ids[1],
+                'clicks': 10,
+                'impressions': 1000,
+            },
+            {
+                'content_ad': ids[2],
+                'clicks': 100,
+                'impressions': 1000,
+            }
+        ]
+
+        s, e = datetime.datetime.utcnow(), datetime.datetime.utcnow()
+        best, worst = content_insights_helper.fetch_campaign_content_ad_metrics(self.user(), campaign, s, e)
+        self.assertItemsEqual([
+            {
+                'metric': '10.00%',
+                'summary': 'Test Ad 2',
+            },
+            {
+                'metric': '1.00%',
+                'summary': 'Test Ad 1',
+            },
+            {
+                'metric': '0.10%',
+                'summary': 'Test Ad 0',
+            }
+        ], best)
 
     def test_extract_ctr_metric(self):
-        # title, caids, mapped_stats):
         title = 'Test'
         caids = [1, 2, 3]
         mapped_stats = {
