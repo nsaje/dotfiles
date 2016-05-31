@@ -1,7 +1,7 @@
-/*global $,oneApp,constants*/
+/* global oneApp */
 'use strict';
 
-oneApp.directive('zemGridColumnSelector', ['config', function (config) {
+oneApp.directive('zemGridColumnSelector', [function () {
     return {
         restrict: 'E',
         scope: {},
@@ -20,7 +20,6 @@ oneApp.directive('zemGridColumnSelector', ['config', function (config) {
             var vm = this;
 
             vm.categories = [];
-            vm.constants = constants;
             vm.columnChecked = columnChecked;
 
             init();

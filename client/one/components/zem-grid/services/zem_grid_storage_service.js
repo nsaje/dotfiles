@@ -1,4 +1,4 @@
-/*globals angular,oneApp,options,moment,JSON*/
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zemLocalStorageService) {
