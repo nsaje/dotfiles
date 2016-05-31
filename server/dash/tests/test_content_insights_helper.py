@@ -41,7 +41,6 @@ class ContentInsightsHelperTestCase(test.TestCase):
                 batch_id=1,
                 archived=True,
             )
-            ids.add(cad.id)
 
         # archived are ignored
         self.assertEqual(['Test Ad'], res.keys())
