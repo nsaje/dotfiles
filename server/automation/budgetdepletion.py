@@ -117,31 +117,19 @@ def _round_budget(budget):
 
 
 def _send_campaign_stopped_notification_email(
-        campaign_name,
+        campaign,
         campaign_url,
-        account_name,
         emails
         ):
-    body = u'''Hi account manager of {camp}
-
-We'd like to notify you that campaign {camp}, {account} has run out of available budget and was stopped.
-
-Please check {camp_url} for details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        camp=campaign_name,
-        account=account_name,
-        camp_url=campaign_url
-    )
+    args = {
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': campaign_url,
+    }
+    subject, body = format_email(EmailTemplateType.CAMPAIGN_STOPPED, **args)
     try:
         send_mail(
-            'Campaign stopped - {camp}, {account}'.format(
-                camp=campaign_name,
-                account=account_name
-            ),
+            subject,
             body,
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
@@ -149,10 +137,10 @@ Zemanta
         )
     except Exception as e:
         logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
-                         campaign_name,
+                         campaign.name,
                          ', '.join(emails))
         desc = {
-            'campaign_name': campaign_name,
+            'campaign_name': campaign.name,
             'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
@@ -210,11 +198,10 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
 
     campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
     _send_campaign_stopped_notification_email(
-        campaign.name,
+        campaign,
         campaign_url,
-        campaign.account.name,
         emails
-        )
+    )
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,

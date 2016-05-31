@@ -56,10 +56,9 @@ Yours truly,
 Zemanta
     ''').save()
 
-
     EmailTemplate(
         template_type=EmailTemplateType.PIXEL_ADD,
-        subject = u'Conversion pixel added - account {account.name}',
+        subject=u'Conversion pixel added - account {account.name}',
         body=u'''Hi default account manager of {account.name},
 
 We'd like to notify you that {user.email} has added a conversion pixel on account {account.name}. Please check {link_url} for details.
@@ -109,8 +108,8 @@ Zemanta Client Services
 
     EmailTemplate(
         template_type=EmailTemplateType.SUPPLY_REPORT,
-        subject = u'Zemanta Report for {date}',
-        body = u'''
+        subject=u'Zemanta Report for {date}',
+        body=u'''
 Hello,
 
 Here are the impressions and spend for {date}.
@@ -126,11 +125,10 @@ The reporting data is an estimate. Final amounts are tallied and should be invoi
 * All times are in Eastern Standard Time (EST).
     ''').save()
 
-
     EmailTemplate(
         template_type=EmailTemplateType.SCHEDULED_EXPORT_REPORT,
         subject=u'Zemanta Scheduled Report: {report_name}',
-        body = u'''Hi,
+        body=u'''Hi,
 
 Please find attached Your {frequency} scheduled report "{report_name}" for {entity_level}{entity_name}{granularity}.
 
@@ -157,6 +155,18 @@ Yours truly,
 Zemanta
     ''').save()
 
+    EmailTemplate(
+        template_type=EmailTemplateType.CAMPAIGN_STOPPED,
+        subject='Campaign stopped - {campaign.name}, {account.name}',
+        body=u'''Hi account manager of {campaign.name}
+
+We'd like to notify you that campaign {campaign.name}, {account.name} has run out of available budget and was stopped.
+
+Please check {link_url} for details.
+
+Yours truly,
+Zemanta
+    ''').save()
 
 
 class Migration(migrations.Migration):
