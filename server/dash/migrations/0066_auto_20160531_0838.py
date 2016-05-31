@@ -185,6 +185,24 @@ Zemanta
         )
     ).save()
 
+    EmailTemplate(
+        template_type=EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT,
+        subject=u'Ad Group put on Bid CPC and Daily Budgets Optimising Autopilot - {account.name}',
+        body=textwrap.dedent(
+            u'''Hi account manager of {account.name}
+
+            Bid CPC and Daily Budgets Optimising Autopilot's settings on Your ad group in campaign {campaign.name} have been changed.
+            Autopilot made the following changes:{changes}
+            - all Paused Media Sources\' Daily Budgets have been set to minimum values.
+
+            Please check {link_url} for details.
+
+            Yours truly,
+            Zemanta
+            '''
+        )
+    ).save()
+
 
 class Migration(migrations.Migration):
 

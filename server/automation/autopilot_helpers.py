@@ -1,7 +1,6 @@
 import datetime
 import logging
 import traceback
-import textwrap
 
 from django.core.mail import send_mail
 
@@ -101,12 +100,7 @@ def send_autopilot_changes_emails(email_changes_data, data, initialization):
         emails = [account_manager.email] + ([campaign_manager.email] if campaign_manager and
                                             account_manager.email != campaign_manager.email else [])
         if initialization:
-            send_budget_autopilot_initialisation_email(
-                camp.name,
-                camp.id,
-                camp.account.name,
-                emails,
-                changes_data)
+            send_budget_autopilot_initialisation_email(camp, emails, changes_data)
         else:
             send_autopilot_changes_email(camp, emails, changes_data)
 
@@ -152,36 +146,23 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
         )
 
 
-def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, account_name, emails, changes_data):
+def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
 
-    body = textwrap.dedent(u'''\
-    Hi account manager of {account}
-
-    Bid CPC and Daily Budgets Optimising Autopilot's settings on Your ad group in campaign {camp} have been changed.
-    Autopilot made the following changes:{changes}
-    - all Paused Media Sources\' Daily Budgets have been set to minimum values.
-
-    Please check {camp_url} for details.
-
-    Yours truly,
-    Zemanta
-    ''')
-    body = body.format(
-        camp=campaign_name,
-        account=account_name,
-        camp_url=url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign_id)),
-        changes=''.join(changesText)
-    )
+    args = {
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
+        'changes': ''.join(changesText)
+    }
+    subject, body = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
     try:
         send_mail(
-            u'Ad Group put on Bid CPC and Daily Budgets Optimising Autopilot - {account}'.format(
-                account=account_name
-            ),
+            subject,
             body,
             u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
             emails,
@@ -190,10 +171,10 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     except Exception as e:
         logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign %s to %s was not sent because an exception was raised:',
-                         campaign_name,
+                         campaign.name,
                          u', '.join(emails))
         desc = {
-            'campaign_name': campaign_name,
+            'campaign_name': campaign.name,
             'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
