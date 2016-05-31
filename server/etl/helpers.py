@@ -18,6 +18,7 @@ def get_local_date_context(date):
         'tzhour_to': hour_to.hour,
     }
 
+
 def calculate_effective_cost(cost, data_cost, factors):
     pct_actual_spend, pct_license_fee = factors
 
