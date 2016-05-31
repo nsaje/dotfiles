@@ -1,6 +1,7 @@
 import datetime
 import collections
 import os
+import urllib, urllib2
 import sys
 
 import faker
@@ -14,7 +15,7 @@ from django.core.serializers import serialize
 from django.template import Variable, VariableDoesNotExist
 
 from utils.command_helpers import ExceptionCommand
-from utils import demo_anonymizer, s3helpers
+from utils import demo_anonymizer, s3helpers, request_signer
 
 import logging
 logger = logging.getLogger(__name__)
@@ -69,7 +70,14 @@ class Command(ExceptionCommand):
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
+        _deploykitty_prepare()
+
         logger.info("QUERIES: %s", len(connection.queries))
+
+
+def _deploykitty_prepare(snapshot_id):
+    request = urllib2.Request(settings.DK_DEMO_PREPARE_ENDPOINT + '?' + urllib.urlencode({'version': snapshot_id}))
+    request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
 
 
 def _prepare_objects(serialize_list, real_account_pks):

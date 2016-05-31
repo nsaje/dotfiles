@@ -233,3 +233,7 @@ K1_CONSISTENCY_SYNC = True
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
+
+# DeployKitty
+DK_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyhYmJQhFDfCW5k1X8CARCAO0IHlmnLpLAQAFmJJjnN2dlvrMyFqV7e7YlKDNSpbEJupOwov7IKDFSmYjnqxfsbrVNulP6vbSiLssVt').get()
+DK_DEMO_PREPARE_ENDPOINT = ''

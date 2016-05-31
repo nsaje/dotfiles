@@ -218,3 +218,7 @@ K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 
 DEMO_MODE = False
+
+# DeployKitty
+DK_API_KEY = Secret('').get()
+DK_DEMO_PREPARE_ENDPOINT = ''
