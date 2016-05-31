@@ -2,7 +2,8 @@
 
 if [[ "$CONF_ENV" -ne "demo" || "${DB_PORT_5432_TCP_ADDR}" -ne "db" ]]; do
     echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
-done
+    exit 1
+fi
 
 echo "Wait for PostgreSQL"
 sleep 5
