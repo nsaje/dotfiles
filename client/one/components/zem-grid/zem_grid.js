@@ -9,7 +9,6 @@ oneApp.directive('zemGrid', [function () {
         controllerAs: 'ctrl',
         bindToController: {
             dataSource: '=',
-            api: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
         controller: ['$scope', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', function ($scope, zemGridObject, zemGridPubSub, zemGridDataService) { // eslint-disable-line max-len
