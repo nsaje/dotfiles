@@ -9,77 +9,55 @@ oneApp.directive('zemGridColumnSelector', ['config', function (config) {
         bindToController: {
             grid: '=',
         },
-        templateUrl: '/components/zem-grid-columns-selector/zem_grid_columns_selector.html',
-        compile: function compile (tElement) {
+        templateUrl: '/components/zem-grid/templates/zem_grid_column_selector.html',
+        link: function (scope, tElement) {
             // Prevent closing of dropdown-menu when checkbox is clicked.
             $(tElement).on('click', function (e) {
                 e.stopPropagation();
             });
-
-            return {
-                pre: function preLink (scope, iElement, iAttrs, controller) {
-                    return;
-                },
-                post: function postLink (scope, iElement, iAttrs, controller) {
-                    return;
-                }
-            };
         },
-        controller: ['$scope', '$element', '$attrs', 'zemGridStorageService', function ($scope, $element, $attrs, zemGridStorageService) { // eslint-disable-line max-len
+        controller: ['zemGridStorageService', function (zemGridStorageService) {
             var vm = this;
 
-            this.columns = [];
-            this.categoryColumns = [];
-            this.hasCategories = false;
-            this.constants = constants;
-
-            this.columnChecked = columnChecked;
+            vm.categories = [];
+            vm.constants = constants;
+            vm.columnChecked = columnChecked;
 
             init();
 
             function init () {
-                zemGridStorageService.loadColumns(vm.grid);
                 initCategories();
-                updateHeaderColumns();
             }
 
-            function columnChecked(column) {
+            function columnChecked () {
                 zemGridStorageService.saveColumns(vm.grid);
-                updateHeaderColumns();
-            }
-
-            function updateHeaderColumns () {
-                vm.grid.header.columns = vm.grid.header.data.columns.filter(function (column) {
+                vm.grid.header.columns = vm.grid.meta.data.columns.filter(function (column) {
                     return column.shown && column.checked;
                 });
                 vm.grid.meta.pubsub.notify(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED);
             }
 
             function initCategories () {
-                vm.columns = vm.grid.header.data.columns.filter(function (column) {
+                var columns = vm.grid.meta.data.columns.filter(function (column) {
                     return !column.unselectable;
                 });
 
-                var categoryColumns = [],
-                    hasCategories = false;
+                vm.categories = [];
 
-                for (var i = 0; i < vm.grid.header.data.categories.length; i++) {
-                    var cat = vm.grid.header.data.categories[i];
+                for (var i = 0; i < vm.grid.meta.data.categories.length; i++) {
+                    var cat = vm.grid.meta.data.categories[i];
 
-                    var cols = vm.columns.filter(function (col) {
+                    var cols = columns.filter(function (col) {
                         return cat.fields.indexOf(col.field) !== -1 && col.shown && !col.unselectable;
                     });
 
                     if (cols.length > 0) {
-                        categoryColumns.push({
-                            'columns': cols,
+                        vm.categories.push({
                             'name': cat.name,
+                            'columns': cols,
                         });
-                        hasCategories = true;
                     }
                 }
-                vm.categoryColumns = categoryColumns;
-                vm.hasCategories = hasCategories;
             }
         }],
     };

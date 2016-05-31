@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridUIService', function ($q, zemGridParser, zemGridUIService) { // eslint-disable-line max-len
+oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageService', 'zemGridUIService', function ($q, zemGridParser, zemGridStorageService, zemGridUIService) { // eslint-disable-line max-len
 
     // GridDataService is responsible to request data from DataSource and listen to any DataSource changes
     // It prepares data suitable for Grid component along with data states (initializing, loading, etc.) used
@@ -29,7 +29,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridUIService',
             var deferred = $q.defer();
             grid.meta.source.getMetaData().then(
                 function (data) {
-                    grid.header.data = data;
+                    grid.meta.data = data;
+                    zemGridStorageService.loadColumns(grid);
                     grid.header.columns = data.columns.filter(function (column) {
                         return column.shown && column.checked;
                     });
