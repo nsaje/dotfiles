@@ -1242,7 +1242,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        deferred.resolve(data.data);
+                        var convertedData = {
+                            metric: data.data.metric,
+                            summary: data.data.summary,
+                            bestPerformerRows: data.data.best_performer_rows,
+                            worstPerformerRows: data.data.worst_performer_rows,
+                        };
+                        deferred.resolve(convertedData);
                     }
                 }).
                 error(function (data, status, headers, config) {
@@ -1743,6 +1749,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var result = {
                 name: errors.name,
                 campaignGoal: errors.campaign_goal,
+                noGoals: errors.no_goals,
                 goals: errors.goals,
                 goalQuantity: errors.goal_quantity,
                 targetDevices: errors.target_devices,

@@ -73,7 +73,8 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
 
     function parseStats (grid, stats) {
         // Parse (pre-filter) all stats that does not require special handling to remove the
-        // need for filters in the templates (huge performance gain)
+        // need for filters in the templates (huge performance gain). If field can't be parsed
+        // here just use the same value as in data stats
         var parsedStats = {};
         grid.meta.data.columns.forEach(function (col) {
             var parsedValue;
@@ -101,7 +102,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
     }
 
     function parseDateTime (value) {
-        if (!value) 'N/A';
+        if (!value) return 'N/A';
         return $filter('date')(value, 'M/d/yyyy h:mm a');
     }
 
