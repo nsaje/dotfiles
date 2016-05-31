@@ -7,7 +7,8 @@ from django.db import connections
 from django.conf import settings
 
 import dash.models
-from etl import daily_statements_k1
+
+from etl import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ class ContentAdStats(object):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
@@ -242,7 +243,7 @@ class Publishers(object):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
@@ -285,7 +286,7 @@ class Publishers(object):
             cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
-            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost
                     cost, data_cost, campaign_factors[ad_group.campaign])
 
             media_source = source.tracking_slug
@@ -381,7 +382,7 @@ class Breakdown(object):
 
     def _get_date_query(self):
         if self.table == 'stats':
-            return daily_statements_k1._get_redshift_date_query(self.date)
+            return helpers.get_local_date_context(self.date)
         return "date = '{date}'".format(date=self.date.isoformat())
 
 
@@ -390,16 +391,6 @@ def _query_rows(query):
         c.execute(query)
         for row in c:
             yield row
-
-
-def _calculate_effective_cost(cost, data_cost, factors):
-    pct_actual_spend, pct_license_fee = factors
-
-    effective_cost = cost * pct_actual_spend
-    effective_data_cost = data_cost * pct_actual_spend
-    license_fee = (effective_cost + effective_data_cost) * pct_license_fee
-
-    return effective_cost, effective_data_cost, license_fee
 
 
 def _decimal_to_int(d):

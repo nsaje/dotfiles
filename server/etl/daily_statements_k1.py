@@ -14,6 +14,8 @@ import reports.models
 
 from utils import dates_helper
 
+from etl import helpers
+
 logger = logging.getLogger(__name__)
 
 CC_TO_NANO = int(1E5)
@@ -165,7 +167,7 @@ def _get_campaign_spend(date, all_campaigns):
         from stats
         where {date_query}
         group by ad_group_id
-    """.format(date_query=_get_redshift_date_query(date))
+    """.format(date_query=helpers.get_local_date_context(date))
 
     logger.info("Running redshift query: %s", query)
 
@@ -188,30 +190,6 @@ def _get_campaign_spend(date, all_campaigns):
             campaign_spend[campaign_id]['data_nano'] += data_spend * MICRO_TO_NANO
 
     return campaign_spend
-
-
-def _get_redshift_date_query(date):
-    hour_from = dates_helper.local_to_utc_time(datetime.datetime(date.year, date.month, date.day))
-
-    date_next = date + datetime.timedelta(days=1)
-    hour_to = dates_helper.local_to_utc_time(datetime.datetime(date_next.year, date_next.month, date_next.day))
-
-    query = """
-    (date = '{date}' and hour is null) or (
-        hour is not null and (
-            (date = '{tzdate_from}' and hour >= {tzhour_from}) or
-            (date = '{tzdate_to}' and hour < {tzhour_to})
-        )
-    )
-    """.format(
-        date=date.isoformat(),
-        tzdate_from=hour_from.date().isoformat(),
-        tzhour_from=hour_from.hour,
-        tzdate_to=hour_to.date().isoformat(),
-        tzhour_to=hour_to.hour,
-    )
-
-    return query
 
 
 @transaction.atomic
