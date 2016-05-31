@@ -33,7 +33,7 @@ class UploadPlusTest(TestCase):
         )
         for candidate in candidates:
             dash.upload_plus.invoke_external_validation(candidate)
-        
+
         self.assertEqual(mock_lambda.call_count, 2)
 
         (lambda_name1, lambda_data1), _ = mock_lambda.call_args_list[0]
@@ -60,8 +60,8 @@ class UploadPlusTest(TestCase):
         _, candidates = dash.upload_plus.insert_candidates(
             [{
                 "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
-                "image_url": "http://static1.squarespace.com/static/56bbb88007eaa031a14e3472/t/56bbb9e6f8baf3d9ee6c7172/1464051308855/?format=1500w",
-    
+                "image_url": "http://static1.squarespace.com/image.jpg",
+
             }],
             ad_group,
             'Test batch'
@@ -82,5 +82,5 @@ class UploadPlusTest(TestCase):
         })
 
         candidate = dash.models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
-        self.assertEqual(candidate.url_status, dash.constants.OK)
-        self.assertEqual(candidate.image_status, dash.constants.OK)
+        self.assertEqual(candidate.url_status, dash.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, dash.AsyncUploadJobStatus.OK)
