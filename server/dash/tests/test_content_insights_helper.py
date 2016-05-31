@@ -32,3 +32,17 @@ class ContentInsightsHelperTestCase(test.TestCase):
         )
         self.assertEqual(['Test Ad'], res.keys())
         self.assertEqual(ids, set(res['Test Ad']))
+
+        for i in range(10):
+            cad = dash.models.ContentAd.objects.create(
+                ad_group=campaign.adgroup_set.first(),
+                title='Test Ad',
+                url='http://www.zemanta.com',
+                batch_id=1,
+                archived=True,
+            )
+            ids.add(cad.id)
+
+        # archived are ignored
+        self.assertEqual(['Test Ad'], res.keys())
+        self.assertEqual(ids, set(res['Test Ad']))
