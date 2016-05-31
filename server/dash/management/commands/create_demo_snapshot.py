@@ -70,7 +70,7 @@ class Command(ExceptionCommand):
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
-        _deploykitty_prepare()
+        _deploykitty_prepare(snapshot_id)
 
         logger.info("QUERIES: %s", len(connection.queries))
 

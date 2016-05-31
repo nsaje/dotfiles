@@ -236,4 +236,4 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 
 # DeployKitty
 DK_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyhYmJQhFDfCW5k1X8CARCAO0IHlmnLpLAQAFmJJjnN2dlvrMyFqV7e7YlKDNSpbEJupOwov7IKDFSmYjnqxfsbrVNulP6vbSiLssVt').get()
-DK_DEMO_PREPARE_ENDPOINT = ''
+DK_DEMO_PREPARE_ENDPOINT = 'https://dk.zemanta.com/api/demo/prepare'
