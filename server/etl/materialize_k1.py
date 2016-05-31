@@ -100,8 +100,8 @@ class ContentAdStats(object):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost
-                    cost, data_cost, campaign_factors[ad_group.campaign])
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
+                cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
 
@@ -243,8 +243,8 @@ class Publishers(object):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost
-                    cost, data_cost, campaign_factors[ad_group.campaign])
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
+                cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
 
@@ -286,8 +286,8 @@ class Publishers(object):
             cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost
-                    cost, data_cost, campaign_factors[ad_group.campaign])
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
+                cost, data_cost, campaign_factors[ad_group.campaign])
 
             media_source = source.tracking_slug
             publisher = row[2]
