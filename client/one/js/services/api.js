@@ -2646,7 +2646,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 if (status === '413') {
                     data = {
                         'data': {
-                            'status': 2,
+                            'status': constants.uploadBatchStatus.FAILED,
                             'errors': {
                                 'content_ads': ['File too large (max 1MB).'],
                             },

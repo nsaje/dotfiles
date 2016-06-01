@@ -41,7 +41,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
         var count = 0;
         angular.forEach(candidates, function (status) {
             if (status.imageStatus !== constants.asyncUploadJobStatus.PENDING_START &&
-                status.urlStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE &&
+                status.imageStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE &&
                 status.urlStatus !== constants.asyncUploadJobStatus.PENDING_START &&
                 status.urlStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE) {
                 count += 1;
