@@ -172,6 +172,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_improved_ads_upload', 'Can use improved content ads upload'),
             ('can_view_sidetabs', 'Can view sidetabs.'),
             ('can_view_campaign_content_insights_side_tab', 'Can view content insights side tab on campaign level.'),
+            ('can_modify_campaign_manager', 'Can view and set campaign manager on campaign settings tab.'),
+            ('can_modify_campaign_iab_category', 'Can view and set campaign IAB category on campaign settings tab.'),
 
         )
 
