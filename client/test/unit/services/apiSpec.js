@@ -1,4 +1,5 @@
 'use strict';
+/* eslint-disable camelcase */
 
 describe('api', function () {
     var $httpBackend, api;
