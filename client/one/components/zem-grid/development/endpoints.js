@@ -1,11 +1,33 @@
 /* globals oneApp, angular */
+/* eslint-disable camelcase */
 'use strict';
 
 oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'config', function ($rootScope, $controller, $http, $q, $timeout, config) { // eslint-disable-line max-len
 
-    // column = {field: {... definition ...}}
+    function MockEndpoint () {
+        this.availableBreakdowns = ['base_level', 'age', 'sex', 'date'];
+        this.defaultBreakdown = ['base_level'];
+
+        this.getMetaData = function () {
+            var deferred = $q.defer();
+            deferred.resolve({
+                columns: mockedColumns,
+            });
+            return deferred.promise;
+        };
+
+        this.getData = function (config) {
+            var deferred = $q.defer();
+            $timeout(function () {
+                var data = generateData(config);
+                deferred.resolve(data);
+            }, 500 + (config.level - 1) * 500);
+            return deferred.promise;
+        };
+    }
+
     var COLUMNS = {
-        mocked_level: {
+        base_level: {
             name: 'Mocked Level',
             type: 'breakdownName',
             help: 'Mocked level.',
@@ -17,7 +39,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         status: {
             name: 'Status',
             type: 'text',
-            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused too; otherwise the account is enabled.',
+            help: 'Status of an account (enabled or paused).',
         },
         performance: {
             nameCssClass: 'performance-icon',
@@ -56,7 +78,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         last_sync: {
             name: 'Last OK Sync (EST)',
             type: 'datetime',
-            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
+            help: 'Dashboard reporting data is synchronized on an hourly basis.',
         },
         text_with_popup: {
             name: 'Text with Popup',
@@ -90,19 +112,19 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             enabledValue: 'Enabled',
             pausedValue: 'Paused',
             onChange: function () {
-                console.log('State changed');
+                return false;
             },
             enablingAutopilotSourcesNotAllowed: function () {
                 return false;
             },
             getDisabledMessage: function () {
-                return 'Disabled.'
+                return 'Disabled.';
             },
         },
     };
 
-    var mockedLevelColumns = getColumnsForLevel([
-        'mocked_level',
+    var mockedColumns = getColumnsForFields([
+        'base_level',
         'thumbnail',
         'status',
         'performance',
@@ -122,29 +144,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         'test_click_permission_or_text',
     ]);
 
-    function MockEndpoint () {
-        this.availableBreakdowns = ['mocked_level', 'age', 'sex', 'date'];
-        this.defaultBreakdown = ['mocked_level'];
-
-        this.getMetaData = function () {
-            var deferred = $q.defer();
-            deferred.resolve({
-                columns: mockedLevelColumns,
-            });
-            return deferred.promise;
-        };
-
-        this.getData = function (config) {
-            var deferred = $q.defer();
-            $timeout(function () {
-                var data = generateData(config);
-                deferred.resolve(data);
-            }, 500 + (config.level - 1) * 500);
-            return deferred.promise;
-        };
-    }
-
-    function getColumnsForLevel (fields) {
+    function getColumnsForFields (fields) {
         var columns = [];
         fields.forEach(function (field) {
             var column = angular.copy(COLUMNS[field]);
@@ -172,7 +172,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     // level 2-n -> breakdowns
     //
 
-    var TEST_BREAKDOWNS_MOCKED_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft'];
+    var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft']; // eslint-disable-line max-len
     var TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '99+'];
     var TEST_BREAKDOWNS_SEX = ['man', 'woman'];
     var TEST_BREAKDOWNS_DATES = [];
@@ -281,8 +281,8 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         case 'age':
             keys = TEST_BREAKDOWNS_AGES;
             break;
-        case 'mocked_level':
-            keys = TEST_BREAKDOWNS_MOCKED_LEVEL;
+        case 'base_level':
+            keys = TEST_BREAKDOWNS_BASE_LEVEL;
             break;
         case 'sex':
             keys = TEST_BREAKDOWNS_SEX;
@@ -311,7 +311,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     function generateStats (key) {
         var stats = {};
 
-        mockedLevelColumns.forEach(function (column) {
+        mockedColumns.forEach(function (column) {
             var value;
             if (column.type === 'breakdownName') {
                 value = key;
@@ -324,52 +324,121 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return stats;
     }
 
-    // Mock data is generated based on column type
+    /* eslint-disable complexity */
     function generateRandomValue (type, field, key) {
         var value;
 
         switch (type) {
         case 'text':
             if (field === 'status') {
-                value = getRandomStatus();
+                value = getMockedStatus();
             } else if (field === 'default_account_manager') {
-                value = getRandomAccountManager();
+                value = getMockedAccountManager();
+            } else {
+                value = 'abcde';
             }
             break;
         case 'number':
-            if (Math.random() < 0.6) {
-                value = Math.floor(Math.random() * 10000);
-                if (key === 'Total') {
-                    value *= 10000;
-                }
-            }
+            value = getMockedNumber(key === 'Total');
             break;
         case 'currency':
-            if (Math.random() < 0.6) {
-                value = (Math.random() * 1000000 | 0) / 100;
-                if (key === 'Total') {
-                    value *= 10000;
-                }
-            }
+            value = getMockedCurrency(key === 'Total');
             break;
         case 'percent':
-            if (Math.random() < 0.6) {
-                value = Math.random() * 400;
-            }
+            value = getMockedPercentage();
             break;
         case 'seconds':
-            if (Math.random() < 0.6) {
-                value = Math.random() * 100;
-            }
+            value = getMockedSeconds();
             break;
         case 'datetime':
-            if (Math.random() < 0.6) {
-                value = getRandomTimestamp(new Date(2016, 0, 1), new Date());
-            }
+            value = getMockedDateTime();
             break;
         case 'link':
+        case 'visibleLink':
+        case 'linkText':
+            value = getMockedExternalLink(type);
+            break;
+        case 'linkNav':
+            value = getMockedInternalLink();
+            break;
+        case 'clickPermissionOrText':
+            value = getMockedAction();
+            break;
+        case 'image':
+            value = getMockedImage();
+            break;
+        case 'submissionStatus':
+            value = getMockedSubmissionStatus();
+            break;
+        case 'icon-list':
+            value = getMockedIcon();
+            break;
+        case 'state':
+            value = getMockedState();
+            break;
+        case 'textWithPopup':
+            value = getMockedTextWithPopup();
+            break;
+        }
+
+        return value;
+    }
+    /* eslint-enable complexity */
+
+    function getMockedStatus () {
+        var statuses = ['Active', 'Paused', 'Archived'];
+        return statuses[Math.floor(Math.random() * statuses.length)];
+    }
+
+    function getMockedAccountManager () {
+        var managers = ['Ana Dejanović', 'Tadej Pavlič', 'Chad Lloyd', 'Louis Calderon', 'Helen Wagner', ''];
+        return managers[Math.floor(Math.random() * managers.length)];
+    }
+
+    function getMockedNumber (isTotal) {
+        if (Math.random() < 0.6) {
+            var randomNumber = Math.floor(Math.random() * 10000);
+            if (isTotal) {
+                randomNumber *= 10000;
+            }
+            return randomNumber;
+        }
+    }
+
+    function getMockedCurrency (isTotal) {
+        if (Math.random() < 0.6) {
+            var randomNumber = (Math.random() * 1000000 | 0) / 100;
+            if (isTotal) {
+                randomNumber *= 10000;
+            }
+            return randomNumber;
+        }
+    }
+
+    function getMockedPercentage () {
+        if (Math.random() < 0.6) {
+            return Math.random() * 400;
+        }
+    }
+
+    function getMockedSeconds () {
+        if (Math.random() < 0.6) {
+            return Math.random() * 100;
+        }
+    }
+
+    function getMockedDateTime () {
+        if (Math.random() < 0.6) {
+            return getRandomTimestamp(new Date(2016, 0, 1), new Date());
+        }
+    }
+
+    function getMockedExternalLink (type) {
+        var mockedExternalLink;
+        switch (type) {
+        case 'link':
             if (Math.random() < 0.6) {
-                value = {
+                mockedExternalLink = {
                     url: '/?random_link=' + Math.floor(Math.random() * 10000),
                     text: '',
                     icon: config.static_url + '/one/img/link.svg',
@@ -378,7 +447,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                     disabledMessage: 'No link here.',
                 };
             } else {
-                value = {
+                mockedExternalLink = {
                     url: '',
                     text: '',
                     icon: config.static_url + '/one/img/link.svg',
@@ -387,10 +456,10 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                     disabledMessage: 'Should be visible.',
                 };
             }
-            break;
+            return mockedExternalLink;
         case 'visibleLink':
             if (Math.random() < 0.6) {
-                value = {
+                mockedExternalLink = {
                     url: '/?random_link=' + Math.floor(Math.random() * 10000),
                     text: '',
                     icon: config.static_url + '/one/img/link.svg',
@@ -399,8 +468,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                     disabledMessage: '',
                 };
             } else {
-                value = {
-                    url: '',
+                mockedExternalLink = {
                     text: '',
                     icon: config.static_url + '/one/img/link.svg',
                     title: 'Should be hidden.',
@@ -408,10 +476,10 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                     disabledMessage: '',
                 };
             }
-            break;
+            return mockedExternalLink;
         case 'linkText':
             if (Math.random() < 0.6) {
-                value = {
+                mockedExternalLink = {
                     url: '/?random_link=' + Math.floor(Math.random() * 10000),
                     text: 'Link with text',
                     icon: '',
@@ -420,7 +488,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                     disabledMessage: '',
                 };
             } else {
-                value = {
+                mockedExternalLink = {
                     url: '',
                     text: 'No link with text',
                     icon: '',
@@ -429,57 +497,23 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                     disabledMessage: '',
                 };
             }
-            break;
-        case 'linkNav':
-            value = {
-                state: 'main.accounts.campaigns',
-                id: 118,
-                text: 'Test link nav',
-            };
-            break;
-        case 'clickPermissionOrText':
-            value = 'Test click permission or text';
-            break;
-        case 'image':
-            value = getRandomImage();
-            break;
-        case 'submissionStatus':
-            value = {
-                statusItems: [
-                    {status: 1, text: 'Pending', name: 'Sharethrough', source_state: ''},
-                    {status: 2, text: 'Approved', name: 'TripleLift', source_state: ''},
-                    {status: 3, text: 'Rejected (Title too long)', name: 'Yahoo', source_state: ''},
-                ],
-            };
-            break;
-        case 'icon-list':
-            value = getRandomIcon();
-            break;
-        case 'state':
-            value = Math.floor(Math.random() * 3 + 1);
-            break;
-        case 'textWithPopup':
-            value = {
-                text: 'Random text',
-                popupContent: 'ಠᴗಠ',
-            };
-            break;
+            return mockedExternalLink;
         }
-
-        return value;
     }
 
-    function getRandomStatus () {
-        var statuses = ['Active', 'Paused', 'Archived'];
-        return statuses[Math.floor(Math.random() * statuses.length)];
+    function getMockedInternalLink () {
+        return {
+            state: 'main.accounts.campaigns',
+            id: 118,
+            text: 'Test link nav',
+        };
     }
 
-    function getRandomAccountManager () {
-        var managers = ['Ana Dejanović', 'Tadej Pavlič', 'Chad Lloyd', 'Louis Calderon', 'Helen Wagner', ''];
-        return managers[Math.floor(Math.random() * managers.length)];
+    function getMockedAction () {
+        return 'Test click permission or text';
     }
 
-    function getRandomImage () {
+    function getMockedImage () {
         var images = [
             'ff36fcbc-64b0-419c-bf56-346778f6fd4b.jpg',
             '725f638c-e8a4-4ff9-a2f2-3783971d98d3.jpg',
@@ -499,7 +533,17 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         };
     }
 
-    function getRandomIcon () {
+    function getMockedSubmissionStatus () {
+        return {
+            statusItems: [
+                {status: 1, text: 'Pending', name: 'Sharethrough', source_state: ''},
+                {status: 2, text: 'Approved', name: 'TripleLift', source_state: ''},
+                {status: 3, text: 'Rejected (Title too long)', name: 'Yahoo', source_state: ''},
+            ],
+        };
+    }
+
+    function getMockedIcon () {
         var rnd = Math.random();
         if (rnd < 0.25) {
             return {list: [{emoticon: 1, text: '$0.201 CPC (planned $0.350)'}], overall: 1};
@@ -508,6 +552,17 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         } else if (rnd < 0.75) {
             return {list: [{emoticon: 3, text: 'N/A CPC (planned $0.350)'}], overall: 3};
         }
+    }
+
+    function getMockedState () {
+        return Math.floor(Math.random() * 3 + 1);
+    }
+
+    function getMockedTextWithPopup () {
+        return {
+            text: 'Random text',
+            popupContent: 'ಠᴗಠ',
+        };
     }
 
     function getRandomTimestamp (start, end) {
