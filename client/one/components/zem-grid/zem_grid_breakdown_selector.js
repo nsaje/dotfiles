@@ -46,7 +46,7 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
 
                 vm.grid.meta.source.setBreakdown(breakdown);
                 vm.grid.meta.source.getData();
-            };
+            }
         }],
     };
 }]);

@@ -132,10 +132,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         //
         // HACK (legacy support): access columns variable from corresponded controller scope
         //
-        try {
-            $controller(ctrl, {$scope: scope});
-        } catch (e) {
-        } // eslint-disable-line
+        try { $controller(ctrl, {$scope: scope}); } catch (e) { } // eslint-disable-line
 
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns

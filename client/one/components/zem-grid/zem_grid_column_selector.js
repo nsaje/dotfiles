@@ -1,4 +1,4 @@
-/* global oneApp, $ */
+/* global oneApp */
 'use strict';
 
 oneApp.directive('zemGridColumnSelector', [function () {
