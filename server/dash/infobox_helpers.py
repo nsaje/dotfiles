@@ -257,16 +257,19 @@ def calculate_available_media_campaign_budget(campaign):
 def calculate_allocated_and_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
-    credit_total = credits.aggregate(amount_sum=Sum('amount'))
+    credit_total = credits.aggregate(
+        amount_sum=Sum('amount'),
+        flat_fee_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('flat_fee_cc'))
     budget_total = dash.models.BudgetLineItem.objects.filter(
         credit__in=credits
     ).aggregate(
         amount_sum=Sum('amount'),
         freed_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('freed_cc')
     )
+    assigned = (credit_total['amount_sum'] or 0) - (credit_total['flat_fee_sum'] or 0)
     allocated = (budget_total['amount_sum'] or 0) - (budget_total['freed_sum'] or 0)
-    return allocated, \
-        (credit_total['amount_sum'] or 0) - allocated
+
+    return allocated, (assigned or 0) - allocated
 
 
 def calculate_spend_and_available_budget(account):

@@ -3012,7 +3012,41 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [],
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_basic_archived(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1,
+            archived=True,
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            }
+        ]
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
                 },
                 'success': True,
             }, json.loads(response.content))
@@ -3043,11 +3077,16 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'summary': 'Test Ad',
                             'metric': '10.00%',
-                            'value': 0.1,
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '10.00%',
                         }
                     ],
                 },
@@ -3093,11 +3132,16 @@ class CampaignContentInsightsTest(TestCase):
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'summary': 'Test Ad',
                             'metric': '50.00%',
-                            'value': 0.5,
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '50.00%',
                         }
                     ],
                 },
@@ -3137,23 +3181,28 @@ class CampaignContentInsightsTest(TestCase):
             }
         ]
 
+        self.maxDiff = None
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
                 'data': {
                     'metric': 'CTR',
                     'summary': 'Title',
-                    'rows': [
+                    'best_performer_rows': [
                         {
                             'metric': '1.00%',
                             'summary': 'Awesome Ad',
-                            'value': 0.01,
                         },
                         {
                             'metric': '0.10%',
                             'summary': 'Test Ad',
-                            'value': 0.001,
                         }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'metric': '1.00%',
+                            'summary': 'Awesome Ad',
+                        },
                     ],
                 },
                 'success': True,

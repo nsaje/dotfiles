@@ -37,6 +37,7 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
+CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -1200,7 +1201,7 @@ class AccountSettings(api_common.BaseApiView):
         users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
 
         if agency is not None:
-            users = users.filter(pk=agency.users.all()) | \
+            users = users.filter(pk__in=agency.users.all()) | \
                 users.filter(account__agency=agency)
 
         users = list(users.filter(is_active=True).distinct())
@@ -1451,15 +1452,21 @@ class CampaignContentInsights(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        rows = self._fetch_content_ad_metrics(request.user, campaign, start_date, end_date, limit=8)
+        best_performer_rows, worst_performer_rows = self._fetch_content_ad_metrics(
+            request.user,
+            campaign,
+            start_date,
+            end_date,
+        )
 
         return self.create_api_response({
             'summary': 'Title',
             'metric': 'CTR',
-            'rows': rows,
+            'best_performer_rows': best_performer_rows,
+            'worst_performer_rows': worst_performer_rows,
         })
 
-    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date, limit=8):
+    def _fetch_content_ad_metrics(self, user, campaign, start_date, end_date):
         stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
@@ -1480,15 +1487,23 @@ class CampaignContentInsights(api_common.BaseApiView):
                 'summary': title,
                 'metric': '{:.2f}%'.format(metric*100) if metric else None,
                 'value': metric or 0,
+                'clicks': clicks or 0,
             })
 
-        top_cads = sorted(dd_cad_metric, key=lambda dd_cad: dd_cad['value'], reverse=True)[:limit]
-        return top_cads
+        top_cads = sorted(
+            dd_cad_metric,
+            key=lambda dd_cad: dd_cad['value'],
+            reverse=True)[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
+
+        active_metrics = [cad_metric for cad_metric in dd_cad_metric if cad_metric['clicks'] >= 10]
+        bott_cads = sorted(active_metrics, key=lambda dd_cad: dd_cad['value'])[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
+        return [{'summary': cad['summary'], 'metric': cad['metric']} for cad in top_cads],\
+            [{'summary': cad['summary'], 'metric': cad['metric']} for cad in bott_cads]
 
     def _deduplicate_content_ad_titles(self, campaign):
         ads = models.ContentAd.objects.all().filter(
             ad_group__campaign=campaign
-        ).values_list('id', 'title')
+        ).exclude_archived().values_list('id', 'title')
         ret = defaultdict(list)
         for caid, title in ads:
             ret[title].append(caid)

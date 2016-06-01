@@ -15,7 +15,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         if (data.level > 0) throw 'Inplace parsing not supported yet.';
 
         if (data.breakdown) {
-            grid.footer = {type: zemGridConstants.gridRowType.STATS, level: 0, data: data, visible: true};
+            grid.footer = createRow(grid, data, 0);
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
             grid.body.rows = [];
@@ -73,7 +73,8 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
 
     function parseStats (grid, stats) {
         // Parse (pre-filter) all stats that does not require special handling to remove the
-        // need for filters in the templates (huge performance gain)
+        // need for filters in the templates (huge performance gain). If field can't be parsed
+        // here just use the same value as in data stats
         var parsedStats = {};
         grid.header.columns.forEach(function (col) {
             var parsedValue;
@@ -97,11 +98,11 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
 
     function parseSeconds (value) {
         if (value !== 0 && !value) return 'N/A';
-        return $filter('number')(value, 1);
+        return $filter('number')(value, 1) + ' s';
     }
 
     function parseDateTime (value) {
-        if (!value) 'N/A';
+        if (!value) return 'N/A';
         return $filter('date')(value, 'M/d/yyyy h:mm a');
     }
 

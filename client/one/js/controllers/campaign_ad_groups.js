@@ -731,6 +731,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
+
+        $scope.getContentInsights();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
