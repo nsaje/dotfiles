@@ -164,7 +164,7 @@ def _get_campaign_spend(date, all_campaigns):
         from stats
         where {date_query}
         group by ad_group_id
-    """.format(date_query=helpers.get_local_date_context(date))
+    """.format(date_query=helpers.get_local_date_query(date))
 
     logger.info("Running redshift query: %s", query)
 
