@@ -1,7 +1,6 @@
 /* globals oneApp,constants */
 oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
-    $scope.isInLanding = false;
     $scope.contentInsights = {
         summary: null,
         metric: null,
@@ -88,7 +87,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     };
 
     $scope.isInLanding = function () {
-        return !!$scope.campaign.landingMode;
+        return $scope.campaign && !!$scope.campaign.landingMode;
     };
 
     $scope.manageBudget = function () {
