@@ -104,6 +104,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         if ($scope.canArchive) {
             $scope.requestInProgress = true;
             api.campaignArchive.archive($scope.campaign.id).then(function () {
+                $scope.requestInProgress = false;
                 $scope.refreshPage();
             }, function () {
                 $scope.requestInProgress = false;
@@ -115,6 +116,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         if ($scope.canRestore) {
             $scope.requestInProgress = true;
             api.campaignArchive.restore($scope.campaign.id).then(function () {
+                $scope.requestInProgress = false;
                 $scope.refreshPage();
             }, function () {
                 $scope.requestInProgress = false;
@@ -123,11 +125,10 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     };
 
     $scope.refreshPage = function () {
-        zemNavigationService.reload();
         $scope.getSettings();
+        zemNavigationService.reload();
     };
 
-
-    $scope.refreshPage();
+    $scope.getSettings();
     $scope.setActiveTab();
 }]);
