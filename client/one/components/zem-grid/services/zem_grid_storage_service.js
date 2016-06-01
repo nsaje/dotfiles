@@ -6,10 +6,10 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
 
     function loadColumns (grid) {
         var namespace = grid.meta.data.localStoragePrefix;
-        var cols = zemLocalStorageService.get(key, namespace);
-        if (cols) {
-            grid.meta.data.columns.forEach(function (x) {
-                x.checked = x.unselectable || cols.indexOf(x.field) > -1;
+        var columns = zemLocalStorageService.get(key, namespace);
+        if (columns) {
+            grid.meta.data.columns.forEach(function (column) {
+                column.checked = column.unselectable || columns.indexOf(column.field) > -1;
             });
         } else {
             // Use defaults
