@@ -1408,41 +1408,15 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         if not user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
             return
 
-        global_blacklist = []
         # currently only support enabling global blacklist
         filtered_queryset = queryset.filter(
             everywhere=True,
             status=constants.PublisherStatus.BLACKLISTED
         )
 
-        # currently only support enabling global blacklist
-        matching_sources = models.Source.objects.filter(
-            deprecated=False
-        )
-        candidate_source = None
-        for source in matching_sources:
-            if source.can_modify_publisher_blacklist_automatically():
-                candidate_source = source
-                break
-
-        for publisher_blacklist in filtered_queryset:
-            global_blacklist.append({
-                'domain': publisher_blacklist.name,
-                'source': candidate_source,
-            })
-
-        actionlogs_to_send = []
-        with transaction.atomic():
-            actionlogs_to_send.extend(
-                api.create_global_publisher_blacklist_actions(
-                    None,
-                    request,
-                    constants.PublisherStatus.ENABLED,
-                    global_blacklist,
-                    send=False
-                )
-            )
-        actionlog.zwei_actions.send(actionlogs_to_send)
+        for pub in filtered_queryset:
+            pub.status = constants.PublisherStatus.ENABLED
+            pub.save()
 
     reenable_global.short_description = "Re-enable publishers globally"
 

@@ -209,10 +209,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl'
         })
-        .state('main.adGroups.agency', {
-            url: '/agency',
-            templateUrl: '/partials/ad_group_agency.html',
-            controller: 'AdGroupAgencyCtrl'
+        .state('main.adGroups.history', {
+            url: '/history',
+            templateUrl: '/partials/ad_group_history.html',
+            controller: 'AdGroupHistoryCtrl'
         })
         .state('main.adGroups.publishers', {
             url: '/publishers',

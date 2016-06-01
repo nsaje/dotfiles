@@ -107,7 +107,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_agency_view', "Can view campaign's agency tab."),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
             ('supply_dash_link_view', 'Can view supply dash link.'),
-            ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
+            ('ad_group_agency_tab_view', "Can view ad group's history tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
             ('account_campaigns_view', "Can view accounts's campaigns tab."),
             ('account_credit_view', "Can view accounts's credit tab."),
@@ -180,6 +180,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_improved_ads_upload', 'Can use improved content ads upload'),
             ('can_view_sidetabs', 'Can view sidetabs.'),
             ('can_view_campaign_content_insights_side_tab', 'Can view content insights side tab on campaign level.'),
+
         )
 
     def get_full_name(self):

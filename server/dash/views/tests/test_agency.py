@@ -76,9 +76,12 @@ class AdGroupSettingsTest(TestCase):
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
         )
+        self.maxDiff = None
 
         self.assertDictEqual(json.loads(response.content), {
             'data': {
+                'can_archive': True,
+                'can_restore': True,
                 'action_is_waiting': False,
                 'default_settings': {
                     'target_devices': ['mobile'],
@@ -803,7 +806,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
 
-class AdGroupAgencyTest(TestCase):
+class AdGroupHistoryTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -817,7 +820,7 @@ class AdGroupAgencyTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = reverse('ad_group_agency', kwargs={'ad_group_id': 0})
+        url = reverse('ad_group_history', kwargs={'ad_group_id': 0})
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
@@ -860,15 +863,13 @@ class AdGroupAgencyTest(TestCase):
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
-            reverse('ad_group_agency', kwargs={'ad_group_id': ad_group_id}),
+            reverse('ad_group_history', kwargs={'ad_group_id': ad_group_id}),
             follow=True
         )
 
         mock_is_waiting.assert_called_once(ad_group)
         self.assertEqual(json.loads(response.content), {
             u'data': {
-                u'can_archive': True,
-                u'can_restore': True,
                 u'history': [{
                     u'changed_by': u'non_superuser@zemanta.com',
                     u'changes_text': u'Created settings',
