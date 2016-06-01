@@ -13,7 +13,7 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
                 $scope.history = data.history;
                 $scope.requestInProgress = false;
             },
-            function (data) {
+            function () {
                 // error
                 $scope.requestInProgress = false;
                 return;
