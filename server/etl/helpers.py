@@ -131,3 +131,8 @@ def extract_postclick_source(postclick_source):
     if postclick_source in ('gaapi', 'ga_mail', 'omniture'):
         return postclick_source
     return 'other'
+
+def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
+    # a helper function is just so that we don't mess up the order of these
+
+    return (source_id, content_ad_id)
