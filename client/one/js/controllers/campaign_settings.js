@@ -104,7 +104,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         if ($scope.canArchive) {
             $scope.requestInProgress = true;
             api.campaignArchive.archive($scope.campaign.id).then(function () {
-                $state.go('main.campaigns.archived', {id: $scope.campaign.id});
+                $scope.refreshPage();
             }, function () {
                 $scope.requestInProgress = false;
             });
@@ -115,7 +115,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         if ($scope.canRestore) {
             $scope.requestInProgress = true;
             api.campaignArchive.restore($scope.campaign.id).then(function () {
-                $state.go('main.campaigns.settings', {id: $scope.campaign.id});
+                $scope.refreshPage();
             }, function () {
                 $scope.requestInProgress = false;
             });
