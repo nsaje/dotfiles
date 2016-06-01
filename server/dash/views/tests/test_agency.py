@@ -1842,6 +1842,10 @@ class CampaignSettingsTest(TestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
     def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
+        add_permissions(self.user, [
+            'can_modify_campaign_manager',
+            'can_modify_campaign_iab_category',
+        ])
         campaign = models.Campaign.objects.get(pk=1)
 
         settings = campaign.get_current_settings()

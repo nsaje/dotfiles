@@ -474,7 +474,6 @@ class CampaignSettings(api_common.BaseApiView):
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
         }
-
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
             response['campaign_managers'] = self.get_user_list(campaign_settings)
 

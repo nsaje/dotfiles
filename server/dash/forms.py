@@ -510,13 +510,16 @@ class CampaignSettingsForm(forms.Form):
         choices=constants.AdTargetLocation.get_choices()
     )
 
-    campaign_manager = forms.IntegerField()
+    campaign_manager = forms.IntegerField(required=False)
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
+        required=False,
     )
 
     def clean_campaign_manager(self):
         campaign_manager_id = self.cleaned_data.get('campaign_manager')
+        if campaign_manager_id is None:
+            return
 
         err_msg = 'Invalid campaign manager.'
 
