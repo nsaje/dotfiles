@@ -3,19 +3,17 @@
 
 oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
 
-    function StatsEndpoint (baseUrl, columns) {
+    function StatsEndpoint (baseUrl, metaData) {
         this.availableBreakdowns = ['account', 'source', 'day'];
         this.defaultBreakdown = ['account', 'source', 'day'];
-        this.columns = columns;
+        this.metaData = metaData;
         this.baseUrl = baseUrl;
 
         this.getMetaData = function () {
             // Meta data is not yet fetched from backend,
             // therefor just return already fulfilled promise
             var deferred = $q.defer();
-            deferred.resolve({
-                columns: this.columns,
-            });
+            deferred.resolve(this.metaData);
             return deferred.promise;
         };
 
@@ -71,7 +69,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         }
     }
 
-    function getControllerColumns (scope, ctrl) {
+    function getControllerMetaData (scope, ctrl) {
         //
         // HACK (legacy support): access columns variable from corresponded controller scope
         //
@@ -82,13 +80,17 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         // FIXME: find appropriate solution for this problem (special type)
         scope.columns[0].field = 'breakdownName';
         scope.columns[0].type = 'text';
-        return scope.columns;
+        return {
+            columns: scope.columns,
+            categories: scope.columnCategories,
+            localStoragePrefix: scope.localStoragePrefix,
+        };
     }
 
     return {
-        createAllAccountsEndpoint: function (columns) {
-            return new StatsEndpoint('/api/all_accounts/breakdown/', columns);
+        createAllAccountsEndpoint: function (metaData) {
+            return new StatsEndpoint('/api/all_accounts/breakdown/', metaData);
         },
-        getControllerColumns: getControllerColumns,
+        getControllerMetaData: getControllerMetaData,
     };
 }]);

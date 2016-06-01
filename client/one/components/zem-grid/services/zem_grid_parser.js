@@ -47,7 +47,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
         var emptyStats = {};
-        grid.header.columns.forEach(function (col) {
+        grid.meta.data.columns.forEach(function (col) {
             emptyStats[col.field] = '';
         });
         row.data.stats = emptyStats;
@@ -76,7 +76,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         // need for filters in the templates (huge performance gain). If field can't be parsed
         // here just use the same value as in data stats
         var parsedStats = {};
-        grid.header.columns.forEach(function (col) {
+        grid.meta.data.columns.forEach(function (col) {
             var parsedValue;
             switch (col.type) {
             case 'percent': parsedValue = parsePercent(stats[col.field], col); break;

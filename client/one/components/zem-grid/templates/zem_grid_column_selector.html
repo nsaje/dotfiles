@@ -1,0 +1,19 @@
+<span class="dropdown custom-cols" dropdown>
+  <a href class="btn btn-default" dropdown-toggle title="Show/hide columns">
+    Columns
+  </a>
+  <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
+        <div ng-repeat="category in ctrl.categories">
+          <div class="category-name">{{ category.name }}</div>
+          <li ng-repeat="column in category.columns">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="column.checked" ng-change="ctrl.columnChecked(column)">
+                <zem-internal-feature ng-if="column.internal"></zem-internal-feature>
+                {{ column.name }}
+              </label>
+            </div>
+          </li>
+       </div>
+  </ul>
+</span>
