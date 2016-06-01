@@ -328,7 +328,7 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.adGroupAgency.get = resetIfErrorWrapper(
+        $delegate.adGroupHistory.get = resetIfErrorWrapper(
             defaultGetWrapper('/api/ad_groups/{id}/history/', $delegate.adGroupHistory.get)
         );
 
