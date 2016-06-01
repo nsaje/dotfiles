@@ -38,18 +38,18 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 internal: false,
             },
             {
-                heading: 'Agency',
-                route: 'main.campaigns.agency',
-                active: false,
-                hidden:  $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_agency_view'),
-                internal: $scope.isPermissionInternal('zemauth.campaign_agency_view'),
-            },
-            {
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
                 hidden: $scope.campaign && $scope.campaign.archived ,
                 internal: false,
+            },
+            {
+                heading: 'History',
+                route: 'main.campaigns.history',
+                active: false,
+                hidden:  $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_agency_view'),
+                internal: $scope.isPermissionInternal('zemauth.campaign_agency_view'),
             },
             {
                 heading: 'Budget',

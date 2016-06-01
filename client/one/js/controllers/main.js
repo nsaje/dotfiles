@@ -126,8 +126,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.sources')) {
             return 'main.campaigns.sources';
         }
-        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_agency_view')) {
-            return 'main.campaigns.agency';
+        if ($state.includes('**.history') && $scope.hasPermission('zemauth.campaign_agency_view')) {
+            return 'main.campaigns.history';
         }
         if ($state.includes('**.settings')) {
             return 'main.campaigns.settings';

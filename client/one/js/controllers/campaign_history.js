@@ -1,5 +1,5 @@
 /* globals oneApp, options */
-oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) { // eslint-disable-line max-len
+oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.history = [];
     $scope.requestInProgress = false;
@@ -9,7 +9,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'z
     $scope.getSettings = function (discarded) {
         $scope.requestInProgress = true;
         $scope.errors = {};
-        api.campaignAgency.get($state.params.id).then(
+        api.campaignHistory.get($state.params.id).then(
             function (data) {
                 $scope.history = data.history;
             },

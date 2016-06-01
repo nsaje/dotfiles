@@ -300,7 +300,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
                 raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
-class CampaignAgency(api_common.BaseApiView):
+class CampaignHistory(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):

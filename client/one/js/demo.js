@@ -159,30 +159,15 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.campaignAgency.get = resetIfErrorWrapper(
+        $delegate.campaignHistory.get = resetIfErrorWrapper(
             defaultGetWrapper(
-                '/api/campaigns/{id}/agency/',
-                $delegate.campaignAgency.get,
+                '/api/campaigns/{id}/history/',
+                $delegate.campaignHistory.get,
                 function () { return function () {
                     resetDemo();
                 }; }
             )
         );
-        $delegate.campaignAgency.save = function demo (settings) {
-            var deferred = $q.defer(),
-                cacheId = '/api/campaigns/' + settings.id + '/agency/',
-                history = (zemDemoCacheService.get(cacheId) || {}).history,
-                response = {
-                    settings: settings,
-                    history: history,
-                    canArchive: false,
-                    canRestore: false
-                };
-            response.history.push({changedBy: 'test.account@zemanta.si', changesText: 'Updated settings', showOldSettings: false, datetime: (new Date()).toISOString()});
-            deferred.resolve(response);
-            zemDemoCacheService.update(cacheId, 'settings', settings);
-            return deferred.promise;
-        };
 
         /* ADD ADGROUP */
         $delegate.campaignAdGroups.create = function demo (id) {

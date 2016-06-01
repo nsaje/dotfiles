@@ -1607,7 +1607,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignAgency () {
+    function CampaignHistory() {
         function convertHistoryFromApi (history) {
             return history.map(function (item) {
                 return {
@@ -1640,7 +1640,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.get = function (id) {
             var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/agency/';
+            var url = '/api/campaigns/' + id + '/history/';
 
             $http.get(url).
                 success(function (data, status) {
@@ -3096,7 +3096,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
-        campaignAgency: new CampaignAgency(),
+        campaignHistory: new CampaignHistory(),
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
