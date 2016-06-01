@@ -113,7 +113,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     args = {
         'campaign': campaign,
         'account': campaign.account,
-        'camp_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
+        'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
         'changes': ''.join(changesText)
     }
     subject, body = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
