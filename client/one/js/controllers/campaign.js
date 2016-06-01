@@ -125,11 +125,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.setActiveTab();
 
     if ($scope.campaign && $scope.campaign.archived) {
-        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
-            $state.go('main.campaigns.agency', {id: $scope.campaign.id});
-        }
-
-        $state.go('main.campaigns.settings', {id: $scope.campaign.id});
+        $state.go('main.campaigns.archived', {id: $scope.campaign.id});
     }
 
     zemNavigationService.onUpdate($scope, function () {
