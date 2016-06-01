@@ -76,9 +76,12 @@ class AdGroupSettingsTest(TestCase):
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
         )
+        self.maxDiff = None
 
         self.assertDictEqual(json.loads(response.content), {
             'data': {
+                'can_archive': True,
+                'can_restore': True,
                 'action_is_waiting': False,
                 'default_settings': {
                     'target_devices': ['mobile'],
