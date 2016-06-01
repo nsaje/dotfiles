@@ -83,7 +83,7 @@ class ContentAdStats(object):
 
         ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
         media_sources_map = {
-            extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()
+            s.bidder_slug: s for s in dash.models.Source.objects.all()
         }
 
         for row in self._stats_breakdown(date).rows():
@@ -105,7 +105,12 @@ class ContentAdStats(object):
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
-            post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
+            post_click = self._get_post_click_data(
+                content_ad_postclick,
+                ad_group,
+                content_ad_id,
+                extract_source_slug(media_source_slug)
+            )
 
             yield (
                 date,
