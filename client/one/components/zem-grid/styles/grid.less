@@ -7,12 +7,11 @@
 @zem-grid-header-footer-bg-color: #f6f6f6;
 @zem-grid-cell-border-color: #dddddd;
 
-
 .zem-grid-debug-container {
   overflow: auto;
 
   .debug-panel {
-    float:left;
+    float: left;
     margin: 20px;
     padding: 10px;
     border: 1px solid orange;
@@ -21,6 +20,21 @@
       padding: 10px;
       font-size: 12pt;
     }
+  }
+}
+
+.zem-grid-button-bar {
+  margin: 10px 0px;
+
+  .dropdown .btn-apply {
+    width: 180px;
+    margin: 10px 20px;
+  }
+
+  &:after {
+    clear: both;
+    content: "";
+    display: block;
   }
 }
 

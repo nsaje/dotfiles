@@ -32,18 +32,19 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
             }
 
             function applyBreakdown () {
-                var selectedBreakdown = [];
+                var breakdown = [];
 
+                // Add base level breakdown and all checked
+                // breakdowns in successive levels
                 var baseLevelGroup = vm.grid.meta.data.breakdownGroups[0];
-                selectedBreakdown.push(baseLevelGroup.breakdowns[0]);
-
+                breakdown.push(baseLevelGroup.breakdowns[0]);
                 vm.breakdownGroups.forEach(function (group) {
                     group.breakdowns.forEach(function (b) {
-                        if (b.checked) selectedBreakdown.push(b);
+                        if (b.checked) breakdown.push(b);
                     });
                 });
 
-                vm.grid.meta.source.selectedBreakdown = selectedBreakdown;
+                vm.grid.meta.source.setBreakdown(breakdown);
                 vm.grid.meta.source.getData();
             };
         }],

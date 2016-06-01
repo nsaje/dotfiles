@@ -54,6 +54,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         this.getMetaData = getMetaData;
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
+        this.setBreakdown = setBreakdown;
         this.onLoad = onLoad;
         this.onDataUpdated = onDataUpdated;
 
@@ -125,6 +126,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function setOrder (order) {
             ds.config.order = order;
+        }
+
+        function setBreakdown (breakdown) {
+            ds.selectedBreakdown = breakdown;
         }
 
         function prepareConfig (level, breakdowns, offset, limit) {
