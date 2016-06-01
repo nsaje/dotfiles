@@ -48,7 +48,10 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
             fail_silently=False
         )
     except Exception as e:
-        logger.exception('Account manager email notification was not sent because an exception was raised')
+        logger.exception(
+            'Account manager email notification was not sent because '
+            'an exception was raised'
+        )
 
         desc = {}
         if settings_url:
@@ -57,7 +60,8 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='account_manager_notification_mail_failed',
-            description='Account manager email notification was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            description='Account manager email notification was not sent because '
+            'an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc,
         )
 
@@ -137,7 +141,11 @@ def send_account_pixel_notification(account, request):
     account_settings = account.get_current_settings()
 
     send_notification_mail(
-        [account_settings.default_account_manager.email], subject, body, account.get_account_url(request))
+        [account_settings.default_account_manager.email],
+        subject,
+        body,
+        account.get_account_url(request)
+    )
 
 
 def send_password_reset_email(user, request):
@@ -186,11 +194,12 @@ def _send_email_to_user(user, request, subject, body):
                 traceback.format_exc(e))
             desc = {}
         else:
-            message = 'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
-                user.get_full_name(),
-                user.email,
-                traceback.format_exc(e)
-            )
+            message =\
+                'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
+                    user.get_full_name(),
+                    user.email,
+                    traceback.format_exc(e)
+                )
 
             user_url = request.build_absolute_uri(
                 reverse('admin:zemauth_user_change', args=(user.pk,))
@@ -229,7 +238,10 @@ def send_supply_report_email(email, date, impressions, cost):
             fail_silently=False
         )
     except Exception as e:
-        logger.error('Supply report e-mail to %s was not sent because an exception was raised: %s', email, traceback.format_exc(e))
+        logger.error(
+            'Supply report e-mail to %s was not sent because an exception was raised: %s',
+            email,
+            traceback.format_exc(e))
 
 
 def should_send_account_notification_mail(account, user, request):
@@ -240,7 +252,8 @@ def should_send_account_notification_mail(account, user, request):
 
     if not account_settings or not account_settings.default_account_manager:
         logger.error(
-            'Could not send e-mail because there is no default account manager set for account with id %s.',
+            'Could not send e-mail because there is no default account '
+            'manager set for account with id %s.',
             account.pk
         )
 
@@ -250,7 +263,8 @@ def should_send_account_notification_mail(account, user, request):
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
             incident_key='notification_mail_failed',
-            description='E-mail notification was not sent because default account manager is not set.',
+            description='E-mail notification was not sent because '
+            'default account manager is not set.',
             details=desc,
         )
         return False
@@ -269,7 +283,8 @@ def should_send_notification_mail(campaign, user, request):
 
     if not campaign_settings or not campaign_settings.campaign_manager:
         logger.error(
-            'Could not send e-mail because there is no account manager set for campaign with id %s.',
+            'Could not send e-mail because there is no account manager '
+            'set for campaign with id %s.',
             campaign.pk
         )
 
@@ -279,7 +294,8 @@ def should_send_notification_mail(campaign, user, request):
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
             incident_key='notification_mail_failed',
-            description='E-mail notification was not sent because account manager is not set.',
+            description='E-mail notification was not sent because '
+            'account manager is not set.',
             details=desc,
         )
         return False
@@ -290,7 +306,9 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_scheduled_export_report(report_name, frequency, granularity, entity_level, entity_name, scheduled_by, email_adresses, report_contents, report_filename):
+def send_scheduled_export_report(report_name, frequency, granularity,
+                                 entity_level, entity_name, scheduled_by,
+                                 email_adresses, report_contents, report_filename):
     args = {
         'frequency': frequency.lower(),
         'report_name': report_name,
@@ -304,7 +322,9 @@ def send_scheduled_export_report(report_name, frequency, granularity, entity_lev
 
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
-    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(settings.FROM_EMAIL), email_adresses)
+    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
     email.send(fail_silently=False)
 
