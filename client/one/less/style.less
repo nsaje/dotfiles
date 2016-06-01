@@ -16,6 +16,17 @@
 @infobox-black: #414141;
 @infobox-gray: #aaaaaa;
 @infobox-dark-gray: #888888;
+
+@insights-table-gray: #fafafa;
+@insights-table-header: #d7d7d7;
+@insights-text-green: #70c700;
+@insights-text-red: #cb0101;
+
+@sidebar-background-inactive: #f6f6f6;
+@sidebar-background-active: #ecf6f8;
+@sidebar-border-gray: #dddddd;
+@sidebar-border-highlight: #43a8c6;
+
 @white: #fff;
 
 @keyframes show-updated {
@@ -751,6 +762,121 @@ div[datepicker] {
     display: table-row;
 }
 
+.sidebar-container {
+    display: table-cell;
+    width: 80px;
+    padding-right: 5px;
+    vertical-align: top;
+    position: relative;
+
+
+    zem-internal-feature {
+        position: absolute;
+        z-index: 1500;
+
+        .internal {
+            margin-right: 0.5em;
+
+            &:before {
+                content: " ";
+                width: 0;
+                height: 0;
+                display: block;
+                border-top: 7px solid @internal-color;
+                border-right: 7px solid transparent;
+                float: left;
+            }
+        }
+    }
+
+    .zem-side-tabset {
+
+        width: 100%;
+        height: 340px;
+
+        ul {
+            height: 100%;
+            border: 0px;
+            padding-bottom: 14px;
+        }
+        a {
+            height: 100%;
+            border: 0px;
+        }
+        li>a {
+            padding: 0px;
+            border-radius: 0px;
+            border: 0px;
+        }
+
+        li .tab-body-cell {
+            background-color: @sidebar-background-inactive;
+            border-radius: 0px;
+            padding: 0px;
+
+            border-style: solid;
+            border-color: @sidebar-border-gray;
+            border-width: 0px 2px 0px 0px;
+
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: 30px 30px;
+        }
+        li .tab-body-cell>a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        li .performance { background-image: url('img/performance-gray.svg'); }
+        li .content-insights{ background-image: url('img/content_insights-gray.svg');}
+
+        li.active .tab-body-cell{
+            background-color: @sidebar-background-active;
+            border-color: @sidebar-border-highlight;
+        }
+
+        li.active>a, 
+        .nav-tabs>li.active>a:focus, 
+        .nav-tabs>li.active>a:hover {
+            border-width: 0px;
+        }
+
+        li.active .performance { background-image: url('img/performance-gray.svg'); }
+        li.active .content-insights { background-image: url('img/content_insights-blue.svg'); };
+
+        .tab-table {
+            display: table;
+            width: 100%;
+            height: 100%;
+
+            .tab-row {
+                display: table-row;
+            }
+
+            .tab-body-cell {
+                display: table-cell;
+                width: 100%; 
+                height:100%;
+            }
+            .tab-selection-cell {
+                display: table-cell; 
+                vertical-align: middle;
+                width: 10px;
+                min-width: 10px;
+                background: white;
+
+                .right-arrow {
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 9.5px 0 9.5px 9px;
+                    border-color: transparent transparent transparent @sidebar-border-highlight;
+                }
+            }
+        }
+    }
+}
+
 .graph-container {
     display: table-cell;
     width: 100%;
@@ -826,8 +952,9 @@ img.zem-icon {
 .infobox-wrapper {
     display: block;
     overflow: hidden;
-    max-height: 300px;
-
+    height: 100%;
+    height: 327px;
+    max-height: 327px;
 }
 
 .infobox-adgroup {
@@ -881,6 +1008,7 @@ img.zem-icon {
     overflow: hidden;
     font-size: 13px;
     color: @infobox-black;
+    height: 339px;
 
     hr {
         border-top: 1px solid #dddddd;
@@ -912,14 +1040,14 @@ img.zem-icon {
 }
 
 .infobox-body {
-    overflow-y: scroll;
-    height: 130px;
+    overflow-y: auto;
+    height: 158px;
     // due to scroller
     margin-right: -5px;
 }
 
 .infobox-footer {
-    height: 70px;
+    height: 82px;
     overflow-y: auto;
     // due to scroller
     margin-right: -5px;
@@ -1124,7 +1252,7 @@ img.zem-icon {
     }
 
     .chart {
-        height: 250px;
+        height: 284px;
         margin-top: 5px;
         margin-bottom: 5px;
     }
@@ -1580,7 +1708,7 @@ ul.icon-list li {
 }
 
 .settings-archive-container {
- 
+
     display: inline-block;
     position: relative;
     float: right;
@@ -1616,7 +1744,7 @@ ul.icon-list li {
 }
 
 .settings-restore-container {
- 
+
     display: inline-block;
     position: relative;
 
@@ -2758,7 +2886,8 @@ ul.icon-list li {
         }
 
         &.image {
-            padding: 0;
+            padding-top: 0;
+            padding-bottom: 0;
 
             img {
                 height: 34px;
@@ -4050,4 +4179,158 @@ select.media-source-select {
 
 .nopadding {
     padding: 0 !important;
+}
+
+.insights-container {
+    display: table-cell;
+    width: 100%;
+    vertical-align: top;
+    padding-right: 20px;
+
+    .table-insights>tbody>tr:nth-child(even) {
+        background-color: @insights-table-gray;
+    }
+
+    .content-insights {
+        display: table; 
+        width: 100%;
+
+        &>div {
+            display: table-row;
+        }
+
+        .best-performers {
+            display:table-cell; 
+            padding-right: 20px;
+            width: 50%;
+
+            td:last-child {
+                color: @insights-text-green;
+            }
+        }
+        .worst-performers {
+           display: table-cell;
+           width: 50%;
+
+            td:last-child {
+                color: @insights-text-red;
+            }
+        }
+        .worst-selected-performers {
+            td:last-child {
+                color: @insights-text-red;
+            }
+        }
+
+        .table {
+            margin-bottom: 0px;
+            thead {
+                background: @white;
+            }
+            tbody>tr>td {
+                border-top: 0px;
+                border-bottom: 0px;
+            }
+
+            thead>tr>th,
+            thead:first-child>tr:first-child>th {
+                border-top: 1px solid @insights-table-header;
+                border-bottom: 1px solid @insights-table-header;
+
+                color: @insights-table-header;
+                font-weight: normal;
+            }
+
+            td:first-child {
+                width: 30px;
+            }
+            td:last-child {
+                width: 35px;
+            }
+
+            td {
+                white-space: nowrap;
+                max-width: 300px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding: 4px;
+                line-height: 18px;
+            }
+        }
+        
+        .performer-switch-table {
+            display: table;
+            &>div {
+                display: table-row;
+            }
+
+            .link-cell {
+                display: table-cell;
+            }
+
+            a {
+                white-space: nowrap;
+                margin-left: 10px;
+                margin-right:10px;
+            }
+
+            a:link,
+            a:focus, 
+            a:hover,
+            a:visited {
+                border-width: 0px;
+                text-decoration: none;
+            }
+
+            .top-selection-cell {
+                display: table-cell;
+                width: 6px;
+                height: 9px;
+                vertical-align: bottom;
+                text-align: center;
+                position:relative;
+
+                &:first-of-type {
+                    border-right: 1px solid @insights-table-header;
+                }
+
+                .top-arrow {
+                    display: block;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 0 6px 6px 6px;
+                    border-color: transparent transparent @insights-table-header transparent;
+                    margin: 0 auto; // centers the arrow
+                }
+            }
+
+
+            .link-cell:first-of-type,
+            .top-selection-cell:first-of-type {
+                border-right: 1px solid @insights-table-header;
+            }
+        }
+
+        .insights-title {
+            font-size: 16px;
+        }
+        .insights-best-title {
+            .insights-title;
+            color: @insights-text-green;
+        }
+        .insights-worst-title {
+            .insights-title;
+            color: @insights-text-red;
+        }
+    }
+}
+
+.table-insights {
+    tr {
+        td:first-child {
+            width: 30px;
+            color: @insights-table-header;
+        }
+    }
 }

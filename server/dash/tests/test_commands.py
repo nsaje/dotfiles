@@ -109,27 +109,3 @@ class MonitorPublisherBlacklistTest(TestCase):
                 mock.call('dash.blacklisted_publisher_stats.clicks', 5),
             ]
         )
-
-
-class CreateBlacklistTest(TestCase):
-    fixtures = ['test_api.yaml']
-
-    def test_create_blacklist(self):
-        ad_group = AdGroup.objects.get(id=1)
-        domains = ['foo.com', 'bar.com']
-
-        command = create_blacklist.Command()
-
-        action_logs = command.create_actionlogs_for_domains(ad_group, domains)
-
-        self.assertEqual(len(action_logs),
-                         1,
-                         'Wrong number of actionlogs were created')
-
-        self.assertEqual(len(action_logs[0].payload['args']['publishers']),
-                         4,
-                         'Wrong number of publishers in payload')
-
-        self.assertEqual(action_logs[0].payload['args']['publishers'][0]['domain'],
-                         'foo.com',
-                         'Did not find foo.com at its expected location')

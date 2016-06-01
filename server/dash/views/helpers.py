@@ -2,6 +2,7 @@ import collections
 import datetime
 import dateutil.parser
 import pytz
+import logging
 
 from decimal import Decimal
 
@@ -29,6 +30,8 @@ STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
 SPECIAL_COLUMNS = ['performance', 'styles']
+
+logger = logging.getLogger(__name__)
 
 
 def parse_datetime(dt_string):
@@ -442,21 +445,13 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
         }
 
         cas_source = content_ad_source.source
-        cas_ad_group = content_ad_source.content_ad.ad_group
 
         ad_group_source_state_text = ''
         if user.has_perm('zemauth.can_see_media_source_status_on_submission_popover'):
-            cas_ad_group_source_state = None
-            for agss in ad_group_sources_states:
-                if agss.ad_group_source.ad_group_id == cas_ad_group.id and\
-                   agss.ad_group_source.source_id == cas_source.id:
-                    cas_ad_group_source_state = agss
-                    break
+            cas_ad_group_source_state = ad_group_sources_states.get(cas_source.id)
 
             if cas_ad_group_source_state is not None:
-                if cas_ad_group_source_state.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                    ad_group_source_state_text = ''
-                else:
+                if cas_ad_group_source_state != constants.AdGroupSourceSettingsState.ACTIVE:
                     ad_group_source_state_text = '(paused)'
 
         status['source_state'] = ad_group_source_state_text
@@ -465,11 +460,6 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
         if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
                 content_ad_source.submission_errors is not None):
             text = '{} ({})'.format(text, content_ad_source.submission_errors)
-        else:
-            text = '{} / {}'.format(
-                text,
-                constants.ContentAdSourceState.get_text(cas_source_state)
-            )
 
         status['text'] = text
         submission_status.append(status)
@@ -534,39 +524,20 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-def get_data_status(objects, last_sync_messages, state_messages=None, last_pixel_sync_message=None):
+def get_data_status(objects):
     data_status = {}
     for obj in objects:
-        messages, state_ok = [], True
-        if state_messages:
-            messages, state_ok = state_messages[obj.id]
+        messages = []
 
-        last_sync_message_parts = last_sync_messages[obj.id][0][:]  # create a copy
-        last_sync_ok = last_sync_messages[obj.id][1]
-        if last_pixel_sync_message is not None:
-            pixel_sync_message, pixel_sync_ok = last_pixel_sync_message
-            last_sync_ok = last_sync_ok and pixel_sync_ok
-            last_sync_message_parts.append(pixel_sync_message)
-
-        if last_sync_ok and state_ok:
-            last_sync_message_parts.insert(0, 'All data is OK.')
-
-        if hasattr(obj, 'maintenance') and obj.maintenance and not last_sync_ok:
-            last_sync_ok = True
+        if hasattr(obj, 'maintenance') and obj.maintenance:
             messages.insert(0, 'This source is in maintenance mode.')
 
-        if hasattr(obj, 'deprecated') and obj.deprecated and not last_sync_ok:
-            last_sync_ok = True
+        if hasattr(obj, 'deprecated') and obj.deprecated:
             messages.insert(0, 'This source is deprecated.')
-
-        if not last_sync_ok:
-            last_sync_message_parts.insert(0, 'Reporting data is stale.')
-
-        messages.append(' '.join(last_sync_message_parts))
 
         data_status[obj.id] = {
             'message': '<br />'.join(messages),
-            'ok': last_sync_ok and state_ok,
+            'ok': True,
         }
 
     return data_status
@@ -754,10 +725,52 @@ def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_
 
 
 def get_ad_group_sources_states(ad_group_sources):
-    return models.AdGroupSourceState.objects\
-                                    .filter(ad_group_source__in=ad_group_sources)\
-                                    .group_current_states()\
-                                    .select_related('ad_group_source')
+    return get_fake_ad_group_source_states(ad_group_sources)
+
+    # return models.AdGroupSourceState.objects\
+    #                                .filter(ad_group_source__in=ad_group_sources)\
+    #                                .group_current_states()\
+    #                                .select_related('ad_group_source')
+
+
+def get_fake_ad_group_source_states(ad_group_sources):
+    ad_group_sources_settings = {
+        ags.ad_group_source_id: ags for ags in models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=ad_group_sources,
+        ).group_current_settings()
+    }
+
+    ad_groups_settings = {
+        ag.ad_group_id: ag for ag in models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_group_sources.values("ad_group_id"),
+        ).group_current_settings()
+    }
+
+    states = []
+    for ags in ad_group_sources:
+        ad_group_settings = ad_groups_settings.get(ags.ad_group.id)
+        agss = ad_group_sources_settings.get(ags.id)
+
+        if ad_group_settings is None or agss is None:
+            logger.error("Missing settigns got ad group source: %s", ags.id)
+            continue
+
+        state = ad_group_settings.state
+        if state == constants.AdGroupSettingsState.ACTIVE:
+            state = agss.state
+
+        states.append(
+            models.AdGroupSourceState(
+                ad_group_source=ags,
+
+                state=state,
+                cpc_cc=agss.cpc_cc,
+                daily_budget_cc=agss.daily_budget_cc,
+                created_dt=agss.created_dt,
+            )
+        )
+
+    return states
 
 
 def get_ad_group_sources_settings(ad_group_sources):

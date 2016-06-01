@@ -13,18 +13,20 @@ from zemauth.forms import AuthenticationForm
 import zweiapi.views
 import k1api.views
 import actionlog.views
-import convapi.views
 import reports.views
 import zemauth.views
 
 import dash.views.daily_stats
 import dash.views.bcm
+import dash.views.breakdown
 import dash.views.export
 import dash.views.sync
 import dash.views.table
 import dash.views.agency
 import dash.views.views
 import dash.views.navigation
+import dash.views.callbacks
+import dash.views.upload
 
 
 admin.site.login = login_required(admin.site.login)
@@ -156,6 +158,18 @@ urlpatterns += [
         login_required(dash.views.views.AdGroupAdsUpload.as_view()), name='ad_group_ads_upload'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/multiple/',
+        login_required(dash.views.upload.MultipleAdsUpload.as_view()), name='upload_plus_multiple'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/status/',
+        login_required(dash.views.upload.UploadStatus.as_view()), name='upload_plus_status'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/save/',
+        login_required(dash.views.upload.UploadSave.as_view()), name='upload_plus_save'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
         login_required(dash.views.views.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'
@@ -272,6 +286,10 @@ urlpatterns += [
         r'^api/accounts/(?P<account_id>\d+)/campaigns/',
         login_required(dash.views.views.AccountCampaigns.as_view()),
         name='account_campaigns'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/content-insights/',
+        login_required(dash.views.agency.CampaignContentInsights.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/history/',
@@ -461,7 +479,36 @@ urlpatterns += [
     url(
         r'^api/accounts/export/',
         login_required(dash.views.export.AllAccountsExport.as_view())
-    )
+    ),
+    url(
+        r'^api/all_accounts/breakdown(?P<breakdown>(/\w+)+/?)',
+        login_required(dash.views.breakdown.AllAccountsBreakdown.as_view()),
+        name='breakdown_all_accounts'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
+        login_required(dash.views.breakdown.AccountBreakdown.as_view()),
+        name='breakdown_accounts'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
+        login_required(dash.views.breakdown.CampaignBreakdown.as_view()),
+        name='breakdown_campaigns'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
+        login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
+        name='breakdown_ad_groups'
+    ),
+]
+
+# Lambdas
+urlpatterns += [
+    url(
+        r'^api/callbacks/content-upload/$',
+        dash.views.callbacks.content_upload,
+        name='callbacks.content_upload',
+    ),
 ]
 
 # Action Log
@@ -599,16 +646,6 @@ urlpatterns += [
         name='api.crossvalidation',
     )
 ]
-
-# Conversion Api
-urlpatterns += [
-    url(
-        r'^convapi/mailgun/gareps$',
-        convapi.views.mailgun_gareps,
-        name='convapi.mailgun',
-    )
-]
-
 
 # Source OAuth
 urlpatterns += [

@@ -257,16 +257,19 @@ def calculate_available_media_campaign_budget(campaign):
 def calculate_allocated_and_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
-    credit_total = credits.aggregate(amount_sum=Sum('amount'))
+    credit_total = credits.aggregate(
+        amount_sum=Sum('amount'),
+        flat_fee_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('flat_fee_cc'))
     budget_total = dash.models.BudgetLineItem.objects.filter(
         credit__in=credits
     ).aggregate(
         amount_sum=Sum('amount'),
         freed_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('freed_cc')
     )
+    assigned = (credit_total['amount_sum'] or 0) - (credit_total['flat_fee_sum'] or 0)
     allocated = (budget_total['amount_sum'] or 0) - (budget_total['freed_sum'] or 0)
-    return allocated, \
-        (credit_total['amount_sum'] or 0) - allocated
+
+    return allocated, (assigned or 0) - allocated
 
 
 def calculate_spend_and_available_budget(account):
@@ -503,25 +506,26 @@ def _retrieve_active_creditlineitems(account, date):
 
 
 def _compute_daily_cap(ad_groups):
-    ad_group_sources = dash.models.AdGroupSource.objects.filter(
-        ad_group__in=ad_groups
-    )
-
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_settings().values_list('ad_group_source__id', 'daily_budget_cc')
+        ad_group_source__ad_group__in=ad_groups
+    ).group_current_settings().values('ad_group_source__source_id', 'ad_group_source__ad_group_id', 'daily_budget_cc', 'state')
 
-    adgs_settings = dict(ad_group_source_settings)
-
-    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
-        ad_group_source__in=ad_group_sources
-    ).group_current_states()
+    ad_group_settings = {
+        ags.ad_group_id: ags for ags in
+        dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()
+    }
 
     ret = 0
-    for adgs_state in ad_group_source_states:
-        if not adgs_state.state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    for agss in ad_group_source_settings:
+        if agss['state'] != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
-        ret += adgs_settings.get(adgs_state.ad_group_source_id) or adgs_state.daily_budget_cc or 0
+
+        ags = ad_group_settings[agss['ad_group_source__ad_group_id']]
+
+        if ags.state != dash.constants.AdGroupSettingsState.ACTIVE:
+            continue
+
+        ret += agss['daily_budget_cc'] or 0
 
     return ret
 

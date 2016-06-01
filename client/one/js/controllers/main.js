@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular, constants */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', '$window', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modalStack, $timeout, $window, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -18,7 +18,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.adGroup = null;
 
     $scope.graphVisible = true;
-    $scope.navigationPaneVisible = true;
+    $scope.navigationPaneVisible = false;
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -62,6 +62,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.reflowGraph = function (delay) {
         $timeout(function () {
+            $window.dispatchEvent(new Event('resize'));
             $scope.$broadcast('highchartsng.reflow');
         }, delay);
     };
@@ -422,11 +423,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.init = function () {
         zemFullStoryService.identify($scope.user);
         zemIntercomService.boot($scope.user);
+        zemSupportHeroService.boot($scope.user);
         zemNavigationService.reload();
 
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         userSettings.registerGlobal('graphVisible');
         userSettings.registerGlobal('navigationPaneVisible');
+
+        if (document.referrer.indexOf(location.protocol + '//' + location.host) === 0 &&
+            document.referrer.indexOf('/signin') > 0) {
+            $scope.navigationPaneVisible = false;
+        }
     };
 
     $scope.init();

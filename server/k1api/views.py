@@ -93,7 +93,10 @@ def get_ad_group_source(request):
     try:
         ad_group_source = (
             dash.models.AdGroupSource.objects
-                .get(ad_group_id=ad_group_id, source__source_type__type=source_type)
+                .select_related(
+                    'source_credentials', 'source', 'source__source_type',
+                    'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
+                ).get(ad_group_id=ad_group_id, source__source_type__type=source_type)
         )
     except dash.models.AdGroupSource.DoesNotExist:
         return _response_error("The ad group %s is not present on source %s" %
@@ -129,6 +132,7 @@ def get_ad_group_source(request):
         'tracking_code': tracking_code,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
+
     return _response_ok(data)
 
 
@@ -144,14 +148,15 @@ def get_content_ad_sources_for_ad_group(request):
         return _response_error("Must provide ad group id.")
     content_ad_id = request.GET.get('content_ad_id', None)
 
-    logger.info(ad_group_id)
-    logger.info(source_type)
-    ad_group_source = (
-        dash.models.AdGroupSource.objects
-            .select_related('ad_group', 'source')
-            .get(ad_group_id=ad_group_id,
-                 source__source_type__type=source_type)
-    )
+    try:
+        ad_group_source = (
+            dash.models.AdGroupSource.objects
+                .select_related('ad_group', 'source')
+                .get(ad_group_id=ad_group_id,
+                     source__source_type__type=source_type)
+        )
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_ok([])
 
     content_ad_sources = (
         dash.models.ContentAdSource.objects
@@ -551,10 +556,10 @@ def get_ad_groups_exchanges(request):
     if ad_group_id:
         ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id=ad_group_id)
     else:
-        ad_groups_settings_query = ad_groups_settings_query.all()
+        ad_groups_settings_query = ad_groups_settings_query.filter(archived=False)
 
-    ad_groups_settings = ad_groups_settings_query.group_current_settings().select_related('ad_group')
-    ad_group_settings_map = {ags.ad_group: ags for ags in ad_groups_settings if ad_group_id or not ags.archived}
+    ad_groups_settings = ad_groups_settings_query.group_current_settings()
+    ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
     ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
                                  .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
@@ -562,13 +567,12 @@ def get_ad_groups_exchanges(request):
                                  .filter(ad_group_source__source__deprecated=False)
                                  .group_current_settings()
                                  .select_related('ad_group_source',
-                                                 'ad_group_source__ad_group',
                                                  'ad_group_source__source'))
 
     ad_group_sources = defaultdict(list)
 
     for ad_group_source_settings in ad_group_sources_settings:
-        ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group]
+        ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group_id]
         if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
                 ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
             source_state = constants.AdGroupSettingsState.ACTIVE
@@ -581,7 +585,7 @@ def get_ad_groups_exchanges(request):
             'cpc_cc': ad_group_source_settings.cpc_cc,
             'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
         }
-        ad_group_sources[ad_group_settings.ad_group.id].append(source)
+        ad_group_sources[ad_group_settings.ad_group_id].append(source)
 
     return _response_ok(ad_group_sources)
 
@@ -695,12 +699,23 @@ def update_content_ad_status(request):
 
     modified = False
     content_ad_source = content_ad_source[0]
-    if 'submission_status' in data and content_ad_source.source_state != data['submission_status']:
-        content_ad_source.source_state = data['submission_status']
+    if 'submission_status' in data and content_ad_source.submission_status != data['submission_status']:
+        content_ad_source.submission_status = data['submission_status']
+        if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+            content_ad_source.submission_errors = None
         modified = True
 
+    if 'submission_errors' in data and content_ad_source.submission_errors != data['submission_errors']:
+        content_ad_source.submission_errors = data['submission_errors']
+        modified = True
+
+    # TODO(nsaje): remove after K1 uses source_content_ad_id
     if 'external_id' in data and content_ad_source.source_content_ad_id != data['external_id']:
         content_ad_source.source_content_ad_id = data['external_id']
+        modified = True
+
+    if 'source_content_ad_id' in data and content_ad_source.source_content_ad_id != data['source_content_ad_id']:
+        content_ad_source.source_content_ad_id = data['source_content_ad_id']
         modified = True
 
     if modified:

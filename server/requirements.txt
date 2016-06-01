@@ -51,3 +51,6 @@ git+https://github.com/Zemanta/django-statsd-influx.git@v0.1
 
 # Demo anonymization
 fake-factory==0.5.7
+
+# for backtosql
+sqlparse==0.1.18

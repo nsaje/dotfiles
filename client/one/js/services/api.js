@@ -1223,6 +1223,42 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
+    function CampaignContentInsights () {
+        this.get = function (id, startDate, endDate) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/content-insights/';
+            var config = {
+                params: {},
+            };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        var convertedData = {
+                            metric: data.data.metric,
+                            summary: data.data.summary,
+                            bestPerformerRows: data.data.best_performer_rows,
+                            worstPerformerRows: data.data.worst_performer_rows,
+                        };
+                        deferred.resolve(convertedData);
+                    }
+                }).
+                error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AccountArchive () {
         this.archive = function (id) {
             var deferred = $q.defer();
@@ -1713,6 +1749,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var result = {
                 name: errors.name,
                 campaignGoal: errors.campaign_goal,
+                noGoals: errors.no_goals,
                 goals: errors.goals,
                 goalQuantity: errors.goal_quantity,
                 targetDevices: errors.target_devices,
@@ -3119,6 +3156,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
+        campaignContentInsights: new CampaignContentInsights(),
         accountHistory: new AccountHistory(),
         accountSettings: new AccountSettings(),
         account: new Account(),

@@ -1,7 +1,6 @@
 from threading import Thread
 import logging
 import Queue
-import time
 
 from django.conf import settings
 from django.db.models import F
@@ -13,21 +12,6 @@ from dash import exceptions
 logger = logging.getLogger(__name__)
 
 TRANSACTION_END_WAIT = 3
-
-
-class EscapeTransactionThread(Thread):
-    '''
-    This is a hack used to escape transaction that wraps every django admin method.
-    It's not intended to be used elsewhere.
-    '''
-    def __init__(self, func, *args, **kwargs):
-        self.func = func
-        super(EscapeTransactionThread, self).__init__(*args, **kwargs)
-
-    def run(self):
-        # to be sure that transaction is over
-        time.sleep(TRANSACTION_END_WAIT)
-        self.func()
 
 
 class UpdateUploadBatchThread(Thread):

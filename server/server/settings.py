@@ -46,9 +46,12 @@ INSTALLED_APPS = [
     'reports',
     'zweiapi',
     'k1api',
-    'convapi',
     'raven.contrib.django.raven_compat',
     'automation',
+    'stats',
+    'redshiftapi',
+    'etl',
+    'backtosql',
     'timezone_field',
 ]
 
@@ -60,6 +63,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'server.urls'
@@ -118,7 +122,6 @@ TEST_OUTPUT_DIR = os.path.join(BASE_DIR, '.junit_xml')
 COVERAGE_ENABLED = 'COVERAGE_ENABLED' in os.environ
 
 DEFAULT_FROM_EMAIL = ''
-MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
 
@@ -141,7 +144,6 @@ try:
 except ImportError:
     pass
 
-from celeryconfig import *
 from localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:
@@ -230,9 +232,6 @@ if TESTING:
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
     Z3_API_IMAGE_URL = ''
     IMAGE_THUMBNAIL_URL = ''
-
-    CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
-    CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
     TESTING_DB_PREFIX = 'testing_'
     testing_databases = {db: DATABASES[db] for db in DATABASES.keys() if db.startswith(TESTING_DB_PREFIX)}

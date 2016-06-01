@@ -7,6 +7,7 @@ import urllib
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.http import Http404
 
 import dash.constants
 import dash.models
@@ -288,6 +289,21 @@ class K1ApiTest(TestCase):
         ]
         for ad_group_id, content_ad_id in test_cases:
             self._test_get_content_ad_sources_for_ad_group(mock_verify_wsgi_request, ad_group_id, content_ad_id)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ad_sources_for_ad_group_no_adgroupsource(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_content_ad_sources_for_ad_group'),
+            {'source_type': 'outbrain',
+             'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+        self.assertEqual(data, [])
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
@@ -612,9 +628,34 @@ class K1ApiTest(TestCase):
         # TODO matijav 03.05.2016
         pass
 
-    def update_content_ad_status(self):
-        # TODO maticz, 10.5.2016
-        pass
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_content_ad_status(self, mock_verify_wsgi_request):
+        response = self.client.post(
+            reverse('k1api.update_content_ad_status'),
+            json.dumps({'content_ad_id': 1, 'source_slug': 'adblade',
+                        'submission_status': 2, 'submission_errors': 'my-errors',
+                        'source_content_ad_id': 123}),
+            'application/json',
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        cas = dash.models.ContentAdSource.objects.filter(content_ad_id=1, source__bidder_slug='adblade')[0]
+        self.assertEqual(cas.submission_status, 2)
+        self.assertEqual(cas.submission_errors, 'my-errors')
+        self.assertEqual(cas.source_content_ad_id, '123')
+
+        response = self.client.post(
+            reverse('k1api.update_content_ad_status'),
+            json.dumps({'content_ad_id': 1000, 'source_slug': 'adblade',
+                        'submission_status': 2, 'submission_errors': 'my-errors',
+                        'source_content_ad_id': 123}),
+            'application/json',
+        )
+        self.assertEqual(response.status_code, 404)
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')

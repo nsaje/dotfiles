@@ -170,14 +170,15 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         selectionMenuConfig: $scope.selectionMenuConfig
     }, {
         name: 'Thumbnail',
-        nameCssClass: 'table-name-hidden',
         field: 'image_urls',
         checked: true,
         type: 'image',
         shown: true,
         totalRow: false,
         titleField: 'title',
-        order: false
+        order: true,
+        orderField: 'image_hash',
+        initialOrder: 'asc'
     }, {
         name: '\u25CF',
         field: 'status_setting',
@@ -489,6 +490,21 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             controller: 'UploadAdsModalCtrl',
             windowClass: 'modal',
             scope: $scope
+        });
+
+        modalInstance.result.then(function () {
+            getTableData();
+        });
+
+        return modalInstance;
+    };
+
+    $scope.addContentAdsPlus = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/upload_ads_plus_modal.html',
+            controller: 'UploadAdsPlusModalCtrl',
+            windowClass: 'modal',
+            scope: $scope,
         });
 
         modalInstance.result.then(function () {

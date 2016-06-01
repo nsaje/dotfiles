@@ -105,7 +105,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
 
         response = export.AdGroupAdsExport().get(request, self.ad_group_id)
         expected_content = (
-            'Start Date,End Date,Agency,Account,Campaign,Ad Group,Title,Image URL,URL,'
+            'Start Date,End Date,Agency,Account,Campaign,Ad Group,Title,Image URL,Image Hash,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
             'Visits\r\n2014-06-30,2014-07-01,'
             ','
@@ -114,6 +114,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Active,10.230,103,40\r\n2014-06-30,2014-07-01,'
             ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -121,6 +122,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article with no content_ad_sources 1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Inactive,20.230,203,30\r\n2014-06-30,2014-07-01,'
             ','
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -128,6 +130,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article with no content_ad_sources 2,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Archived,30.230,303,20\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
@@ -239,7 +242,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
 
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,'
+            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Image Hash,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
             'Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -247,12 +250,14 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,'
             '2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article with no content_ad_sources 1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Inactive,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
@@ -395,7 +400,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         response = export.AccountCampaignsExport().get(request, self.account_id)
 
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,'
+            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Image Hash,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Average CPC,Clicks,'
             'Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -403,12 +408,14 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Active,10.230,103,100000\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article with no content_ad_sources 1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Inactive,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
@@ -677,7 +684,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
             ",Clicks,Impressions\r\n2014-06-30,2014-07-01,"
             "test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
             "test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
-            "test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Active,AdsNative,"
+            "test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,AdsNative,"
             "20.230,203,200000\r\n2014-06-30,2014-07-01,"
             "test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
             "test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,"
@@ -811,7 +818,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         response = export.CampaignSourcesExport().get(request, self.campaign_id)
 
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,'
+            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Image Hash,URL,'
             'Status (' + time.strftime('%Y-%m-%d') + '),Source,Average CPC,'
             'Clicks,Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
@@ -819,6 +826,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,'
             '/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg,'
+            '#987654321,'
             'http://testurl.com,Active,Taboola,10.230,103,100000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
@@ -978,7 +986,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         response = export.AccountSourcesExport().get(request, self.account_id)
 
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Status ('
+            'Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Image Hash,URL,Status ('
             '' + time.strftime('%Y-%m-%d') + '),Source,Average CPC,Clicks,'
             'Impressions\r\n2014-06-30,2014-07-01'
             ',test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
@@ -986,6 +994,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
             ',test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1'
             ',Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1'
             ',/123456789.jpg?w=200&h=300&fit=crop&crop=faces&fm=jpg'
+            ',#987654321'
             ',http://testurl.com,Active,Taboola,10.230,103,100000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)

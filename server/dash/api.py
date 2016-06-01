@@ -1038,6 +1038,8 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
                     send=send
                 )
             )
+
+    k1_helper.update_ad_group(ad_group.id, msg='create_publisher_blacklist_actions')
     return actions
 
 
