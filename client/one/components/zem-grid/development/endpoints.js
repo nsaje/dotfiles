@@ -1,16 +1,135 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 'use strict';
 
-oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', function ($rootScope, $controller, $http, $q, $timeout) { // eslint-disable-line max-len
+oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'config', function ($rootScope, $controller, $http, $q, $timeout, config) { // eslint-disable-line max-len
+
+    // column = {field: {... definition ...}}
+    var COLUMNS = {
+        mocked_level: {
+            name: 'Mocked Level',
+            type: 'breakdownName',
+            help: 'Mocked level.',
+        },
+        thumbnail: {
+            name: 'Thumbnail',
+            type: 'image',
+        },
+        status: {
+            name: 'Status',
+            type: 'text',
+            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused too; otherwise the account is enabled.',
+        },
+        performance: {
+            nameCssClass: 'performance-icon',
+            type: 'icon-list',
+            help: 'Goal performance indicator',
+        },
+        submission_status: {
+            name: 'Submission Status',
+            type: 'submissionStatus',
+            help: 'Current submission status.',
+        },
+        default_account_manager: {
+            name: 'Account Manager',
+            type: 'text',
+            help: 'Account manager responsible for the campaign and the communication with the client.',
+        },
+        cost: {
+            name: 'Spend',
+            type: 'currency',
+            help: 'Amount spent per account',
+        },
+        pacing: {
+            name: 'Pacing',
+            type: 'percent',
+            help: '',
+        },
+        clicks: {
+            name: 'Clicks',
+            type: 'number',
+            help: 'The number of times a content ad has been clicked.',
+        },
+        time_on_site: {
+            name: 'Time on Site',
+            type: 'seconds',
+        },
+        last_sync: {
+            name: 'Last OK Sync (EST)',
+            type: 'datetime',
+            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
+        },
+        text_with_popup: {
+            name: 'Text with Popup',
+            type: 'textWithPopup',
+            help: 'Test text with popup.',
+        },
+        test_link_with_icon: {
+            name: 'Link with Icon',
+            type: 'link',
+        },
+        text_visible_link: {
+            name: 'Visible Link',
+            type: 'visibleLink',
+        },
+        test_link_text: {
+            name: 'Link Text',
+            type: 'linkText',
+        },
+        test_link_nav: {
+            name: 'Link Nav',
+            type: 'linkNav',
+        },
+        test_click_permission_or_text: {
+            name: 'Click Permissions',
+            type: 'clickPermissionOrText',
+            hasPermission: true,
+        },
+        status_setting: {
+            name: 'State',
+            type: 'state',
+            enabledValue: 'Enabled',
+            pausedValue: 'Paused',
+            onChange: function () {
+                console.log('State changed');
+            },
+            enablingAutopilotSourcesNotAllowed: function () {
+                return false;
+            },
+            getDisabledMessage: function () {
+                return 'Disabled.'
+            },
+        },
+    };
+
+    var mockedLevelColumns = getColumnsForLevel([
+        'mocked_level',
+        'thumbnail',
+        'status',
+        'performance',
+        'submission_status',
+        'status_setting',
+        'default_account_manager',
+        'cost',
+        'pacing',
+        'clicks',
+        'time_on_site',
+        'last_sync',
+        'text_with_popup',
+        'test_link_with_icon',
+        'text_visible_link',
+        'test_link_text',
+        'test_link_nav',
+        'test_click_permission_or_text',
+    ]);
 
     function MockEndpoint () {
-        this.availableBreakdowns = ['ad_group', 'age', 'sex', 'date'];
-        this.defaultBreakdown = ['ad_group', 'age', 'date'];
+        this.availableBreakdowns = ['mocked_level', 'age', 'sex', 'date'];
+        this.defaultBreakdown = ['mocked_level'];
 
         this.getMetaData = function () {
             var deferred = $q.defer();
             deferred.resolve({
-                columns: generateColumnsData(),
+                columns: mockedLevelColumns,
             });
             return deferred.promise;
         };
@@ -23,6 +142,16 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             }, 500 + (config.level - 1) * 500);
             return deferred.promise;
         };
+    }
+
+    function getColumnsForLevel (fields) {
+        var columns = [];
+        fields.forEach(function (field) {
+            var column = angular.copy(COLUMNS[field]);
+            column.field = field;
+            columns.push(column);
+        });
+        return columns;
     }
 
     // ///////////////////////////////////////////////////////////////////////////////////////////
@@ -43,8 +172,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     // level 2-n -> breakdowns
     //
 
-    var TEST_COLUMNS = 20;
-    var TEST_BREAKDOWNS_AD_GROUPS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    var TEST_BREAKDOWNS_MOCKED_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft'];
     var TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '99+'];
     var TEST_BREAKDOWNS_SEX = ['man', 'woman'];
     var TEST_BREAKDOWNS_DATES = [];
@@ -144,33 +272,6 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return row;
     }
 
-    function generateColumnsData () {
-        var columns = [];
-        for (var idx = 0; idx < TEST_COLUMNS; idx++) {
-            columns.push({
-                name: 'Field ' + idx,
-                field: 'field' + idx,
-            });
-        }
-        return columns;
-    }
-
-    function generateStats (key) {
-        var stats = {
-            field0: key,
-        };
-
-        for (var idx = 1; idx < TEST_COLUMNS; idx++) {
-            var val = (Math.random() * 1000000 | 0) / 100;
-            if (key === 'Total') {
-                val = (Math.random() * 100000000 * 100 | 0) / 100;
-            }
-            stats['field' + idx] = '' + val;
-        }
-
-        return stats;
-    }
-
     function getBreakdownKeys (breakdown) {
         var keys = null;
         switch (breakdown.name) {
@@ -180,8 +281,8 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         case 'age':
             keys = TEST_BREAKDOWNS_AGES;
             break;
-        case 'ad_group':
-            keys = TEST_BREAKDOWNS_AD_GROUPS;
+        case 'mocked_level':
+            keys = TEST_BREAKDOWNS_MOCKED_LEVEL;
             break;
         case 'sex':
             keys = TEST_BREAKDOWNS_SEX;
@@ -205,6 +306,212 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         keys = keys.slice(keysFrom, keysTo + 1);
 
         return [keys, pagination];
+    }
+
+    function generateStats (key) {
+        var stats = {};
+
+        mockedLevelColumns.forEach(function (column) {
+            var value;
+            if (column.type === 'breakdownName') {
+                value = key;
+            } else {
+                value = generateRandomValue(column.type, column.field, key);
+            }
+            stats[column.field] = value;
+        });
+
+        return stats;
+    }
+
+    // Mock data is generated based on column type
+    function generateRandomValue (type, field, key) {
+        var value;
+
+        switch (type) {
+        case 'text':
+            if (field === 'status') {
+                value = getRandomStatus();
+            } else if (field === 'default_account_manager') {
+                value = getRandomAccountManager();
+            }
+            break;
+        case 'number':
+            if (Math.random() < 0.6) {
+                value = Math.floor(Math.random() * 10000);
+                if (key === 'Total') {
+                    value *= 10000;
+                }
+            }
+            break;
+        case 'currency':
+            if (Math.random() < 0.6) {
+                value = (Math.random() * 1000000 | 0) / 100;
+                if (key === 'Total') {
+                    value *= 10000;
+                }
+            }
+            break;
+        case 'percent':
+            if (Math.random() < 0.6) {
+                value = Math.random() * 400;
+            }
+            break;
+        case 'seconds':
+            if (Math.random() < 0.6) {
+                value = Math.random() * 100;
+            }
+            break;
+        case 'datetime':
+            if (Math.random() < 0.6) {
+                value = getRandomTimestamp(new Date(2016, 0, 1), new Date());
+            }
+            break;
+        case 'link':
+            if (Math.random() < 0.6) {
+                value = {
+                    url: '/?random_link=' + Math.floor(Math.random() * 10000),
+                    text: '',
+                    icon: config.static_url + '/one/img/link.svg',
+                    title: 'Random link with icon.',
+                    showDisabled: true,
+                    disabledMessage: 'No link here.',
+                };
+            } else {
+                value = {
+                    url: '',
+                    text: '',
+                    icon: config.static_url + '/one/img/link.svg',
+                    title: 'Disabled link with icon.',
+                    showDisabled: true,
+                    disabledMessage: 'Should be visible.',
+                };
+            }
+            break;
+        case 'visibleLink':
+            if (Math.random() < 0.6) {
+                value = {
+                    url: '/?random_link=' + Math.floor(Math.random() * 10000),
+                    text: '',
+                    icon: config.static_url + '/one/img/link.svg',
+                    title: 'Should be visible.',
+                    showDisabled: false,
+                    disabledMessage: '',
+                };
+            } else {
+                value = {
+                    url: '',
+                    text: '',
+                    icon: config.static_url + '/one/img/link.svg',
+                    title: 'Should be hidden.',
+                    showDisabled: false,
+                    disabledMessage: '',
+                };
+            }
+            break;
+        case 'linkText':
+            if (Math.random() < 0.6) {
+                value = {
+                    url: '/?random_link=' + Math.floor(Math.random() * 10000),
+                    text: 'Link with text',
+                    icon: '',
+                    title: 'Link with text.',
+                    showDisabled: true,
+                    disabledMessage: '',
+                };
+            } else {
+                value = {
+                    url: '',
+                    text: 'No link with text',
+                    icon: '',
+                    title: 'No link with text.',
+                    showDisabled: true,
+                    disabledMessage: '',
+                };
+            }
+            break;
+        case 'linkNav':
+            value = {
+                state: 'main.accounts.campaigns',
+                id: 118,
+                text: 'Test link nav',
+            };
+            break;
+        case 'clickPermissionOrText':
+            value = 'Test click permission or text';
+            break;
+        case 'image':
+            value = getRandomImage();
+            break;
+        case 'submissionStatus':
+            value = {
+                statusItems: [
+                    {status: 1, text: 'Pending', name: 'Sharethrough', source_state: ''},
+                    {status: 2, text: 'Approved', name: 'TripleLift', source_state: ''},
+                    {status: 3, text: 'Rejected (Title too long)', name: 'Yahoo', source_state: ''},
+                ],
+            };
+            break;
+        case 'icon-list':
+            value = getRandomIcon();
+            break;
+        case 'state':
+            value = Math.floor(Math.random() * 3 + 1);
+            break;
+        case 'textWithPopup':
+            value = {
+                text: 'Random text',
+                popupContent: 'ಠᴗಠ',
+            };
+            break;
+        }
+
+        return value;
+    }
+
+    function getRandomStatus () {
+        var statuses = ['Active', 'Paused', 'Archived'];
+        return statuses[Math.floor(Math.random() * statuses.length)];
+    }
+
+    function getRandomAccountManager () {
+        var managers = ['Ana Dejanović', 'Tadej Pavlič', 'Chad Lloyd', 'Louis Calderon', 'Helen Wagner', ''];
+        return managers[Math.floor(Math.random() * managers.length)];
+    }
+
+    function getRandomImage () {
+        var images = [
+            'ff36fcbc-64b0-419c-bf56-346778f6fd4b.jpg',
+            '725f638c-e8a4-4ff9-a2f2-3783971d98d3.jpg',
+            '2fbbf448-8988-4617-854b-53d3ab2260e0.jpg',
+            'efdda23c-5d57-4842-808a-963554b0d3d9.jpg',
+            '6daa9ae4-f8d4-49e1-86db-058f9a9fb91b.jpg',
+            '09f44654-f8a9-4a77-abc8-667f9e5ed0e3.jpg',
+            '58bb0b05-83aa-481d-b0a1-9e94c3b076b5.jpg',
+            'aeaaaf0e-62a4-41f7-a4bf-92f6d8fa7549.jpg',
+            'e325b27c-2330-4c0e-ba4b-c5d76c742439.jpg',
+            '18b47c2f-ac70-4e75-a9d5-82b6f7a79d6e.jpg',
+        ];
+        var randomImage = images[Math.floor(Math.random() * images.length)];
+        return {
+            square: 'https://images2.zemanta.com/' + randomImage + '?w=160&h=160&fit=crop&crop=faces&fm=jpg',
+            landscape: 'https://images2.zemanta.com/' + randomImage + '?w=256&h=160&fit=crop&crop=faces&fm=jpg',
+        };
+    }
+
+    function getRandomIcon () {
+        var rnd = Math.random();
+        if (rnd < 0.25) {
+            return {list: [{emoticon: 1, text: '$0.201 CPC (planned $0.350)'}], overall: 1};
+        } else if (rnd < 0.5) {
+            return {list: [{emoticon: 2, text: 'N/A CPC (planned $0.350)'}], overall: 2};
+        } else if (rnd < 0.75) {
+            return {list: [{emoticon: 3, text: 'N/A CPC (planned $0.350)'}], overall: 3};
+        }
+    }
+
+    function getRandomTimestamp (start, end) {
+        return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).getTime();
     }
 
     return {
