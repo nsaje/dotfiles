@@ -38,7 +38,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         api.campaignSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
-                console.log($scope.settings.campaignManager);
                 $scope.campaignGoals = data.goals;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
