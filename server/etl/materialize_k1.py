@@ -93,6 +93,10 @@ class ContentAdStats(object):
                 continue
             media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
+                # Quick hack for missing facebook and probably also instagram postclick data
+                if media_source_slug in ('facebook', 'instagram'):
+                    media_source = media_sources_map.get('b1_' + media_source_slug)
+
                 logger.error("Got spend for invalid media_source: %s", media_source_slug)
                 continue
 
@@ -100,7 +104,7 @@ class ContentAdStats(object):
             data_cost = row[7] or 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
-                    cost, data_cost, campaign_factors[ad_group.campaign])
+                cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group, content_ad_id, media_source_slug)
 
@@ -243,7 +247,7 @@ class Publishers(object):
             data_cost = row[7] or 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
-                    cost, data_cost, campaign_factors[ad_group.campaign])
+                cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
 
@@ -286,7 +290,7 @@ class Publishers(object):
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
-                    cost, data_cost, campaign_factors[ad_group.campaign])
+                cost, data_cost, campaign_factors[ad_group.campaign])
 
             media_source = source.tracking_slug
             publisher = row[2]
