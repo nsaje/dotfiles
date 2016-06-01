@@ -473,8 +473,10 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, campaign_settings, campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
-            'campaign_managers': self.get_user_list(campaign_settings),
         }
+
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            response['campaign_managers'] = self.get_user_list(campaign_settings)
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
@@ -640,9 +642,12 @@ class CampaignSettings(api_common.BaseApiView):
         result['target_regions'] = settings.target_regions
 
         # TODO: add permissions
-        result['campaign_manager'] = str(settings.campaign_manager.id)\
-            if settings.campaign_manager is not None else None
-        result['iab_category'] = settings.iab_category
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            result['campaign_manager'] = str(settings.campaign_manager.id)\
+                if settings.campaign_manager is not None else None
+
+        if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
+            result['iab_category'] = settings.iab_category
 
         return result
 
@@ -652,8 +657,10 @@ class CampaignSettings(api_common.BaseApiView):
         settings.goal_quantity = resource['goal_quantity']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
-        settings.campaign_manager = resource['campaign_manager']
-        settings.iab_category = resource['iab_category']
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            settings.campaign_manager = resource['campaign_manager']
+        if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
+            settings.iab_category = resource['iab_category']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
