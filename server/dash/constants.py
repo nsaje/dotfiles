@@ -1459,4 +1459,15 @@ class EmailTemplateType(ConstantBase):
         AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
         CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
         CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
+
+
+class ImageCrop(ConstantBase):
+    CENTER = 'center'
+    FACES = 'faces'
+    ENTROPY = 'entropy'
+
+    _VALUES = {
+        CENTER: 'Center',
+        FACES: 'Faces',
+        ENTROPY: 'Entropy',
     }

@@ -2593,7 +2593,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     function UploadPlus () {
         this.getDefaults = function (adGroupId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/multiple/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/csv/';
 
             $http.get(url).
                 success(function (data) {
@@ -2620,9 +2620,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         };
 
-        this.uploadMultiple = function (adGroupId, data) {
+        this.uploadCsv = function (adGroupId, data) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/multiple/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/csv/';
 
             var formData = new FormData();
             formData.append('content_ads', data.file);

@@ -119,7 +119,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
 
         cleanDisplayUrl($scope.formData);
 
-        api.uploadPlus.uploadMultiple(
+        api.uploadPlus.uploadCsv(
             $state.params.id, $scope.formData
         ).then(function (result) {
             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;

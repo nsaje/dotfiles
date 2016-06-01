@@ -29,7 +29,8 @@ class UploadPlusTest(TestCase):
         _, candidates = dash.upload_plus.insert_candidates(
             content_ads_data,
             ad_group,
-            'Test batch'
+            'Test batch',
+            'test_upload.csv',
         )
         for candidate in candidates:
             dash.upload_plus.invoke_external_validation(candidate)
@@ -64,7 +65,8 @@ class UploadPlusTest(TestCase):
 
             }],
             ad_group,
-            'Test batch'
+            'Test batch',
+            'test_upload.csv',
         )
         dash.upload_plus.process_callback({
             "id": candidates[0].pk,

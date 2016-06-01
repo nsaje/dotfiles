@@ -158,8 +158,8 @@ urlpatterns += [
         login_required(dash.views.views.AdGroupAdsUpload.as_view()), name='ad_group_ads_upload'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/multiple/',
-        login_required(dash.views.upload.MultipleAdsUpload.as_view()), name='upload_plus_multiple'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/csv/',
+        login_required(dash.views.upload.UploadCsv.as_view()), name='upload_plus_csv'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/status/',
