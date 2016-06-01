@@ -1427,6 +1427,8 @@ class GAAnalyticsAccount(admin.ModelAdmin):
 
 
 class EmailTemplateAdmin(admin.ModelAdmin):
+    actions = None
+
     list_display = (
         'template_type',
         'subject',
