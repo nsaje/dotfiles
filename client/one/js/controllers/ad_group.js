@@ -124,11 +124,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     $scope.setActiveTab();
 
     if ($scope.adGroup && $scope.adGroup.archived) {
-        if ($scope.hasPermission('zemauth.ad_group_agency_tab_view')) {
-            $state.go('main.adGroups.history', {id: $scope.adGroup.id});
-        } else {
-            $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
-        }
+        $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
     }
 
     zemNavigationService.onUpdate($scope, function () {
