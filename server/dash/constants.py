@@ -1397,6 +1397,22 @@ class SystemUserType(ConstantBase):
     }
 
 
+class FacebookPageRequestType(ConstantBase):
+    EMPTY = 1
+    CONNECTED = 2
+    PENDING = 3
+    INVALID_PAGE = 4
+    UNKNOWN = 5
+
+    _VALUES = {
+        EMPTY: 'Empty',
+        CONNECTED: 'Connected',
+        PENDING: 'Pending',
+        INVALID_PAGE: 'Invalid page',
+        UNKNOWN: 'Unknown'
+    }
+
+
 class AsyncUploadJobStatus(ConstantBase):
     PENDING_START = 1
     WAITING_RESPONSE = 2
