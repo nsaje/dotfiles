@@ -180,6 +180,7 @@ BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 10,
 }
 
+R1_DEMO_MODE = False
 R1_API_SIGN_KEY = Secret('').get()
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
