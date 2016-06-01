@@ -13,6 +13,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.minEndDate = new Date();
     $scope.retargetableAdGroups = [];
     $scope.warnings = {};
+    $scope.canArchive = false;
+    $scope.canRestore = false;
 
     // isOpen has to be an object property instead
     // of being directly on $scope because
@@ -39,6 +41,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
 
         api.adGroupSettings.get(id).then(
             function (data) {
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.settings = data.settings;
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;

@@ -54,7 +54,9 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
-            'warnings': self.get_warnings(request, settings)
+            'warnings': self.get_warnings(request, settings),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
         return self.create_api_response(response)
 
