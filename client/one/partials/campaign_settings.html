@@ -12,7 +12,7 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.campaignManager}" ng-if="!hasPermission('zemauth.can_modify_campaign_manager')">
+        <div class="form-group" ng-class="{'has-error': !!errors.campaignManager}" ng-if="hasPermission('zemauth.can_modify_campaign_manager')">
             <label for="account-manager-select" class="col-xs-3 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_manager')" popover-placement="right"></zem-internal-feature>Campaign Manager
                 <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
@@ -28,7 +28,7 @@
             <label ng-repeat="error in errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}" ng-if="!hasPermission('zemauth.can_modify_campaign_iab_category')">
+        <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
             <label for="iab-category-select" class="col-xs-3 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_iab_category')" popover-placement="right"></zem-internal-feature>IAB Category
                 <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
