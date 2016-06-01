@@ -1020,14 +1020,16 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
 
 class DemoMappingAdminForm(forms.ModelForm):
     demo_campaign_name_pool = SimpleArrayField(
-        forms.CharField(help_text='A comma delimited list of names'),
+        forms.CharField(),
         delimiter='\n',
-        widget=forms.Textarea
+        widget=forms.Textarea,
+        help_text='Put every demo name in a separate line'
     )
     demo_ad_group_name_pool = SimpleArrayField(
-        forms.CharField(help_text='A comma delimited list of names'),
+        forms.CharField(),
         delimiter='\n',
-        widget=forms.Textarea
+        widget=forms.Textarea,
+        help_text='Put every demo name in a separate line'
     )
 
 

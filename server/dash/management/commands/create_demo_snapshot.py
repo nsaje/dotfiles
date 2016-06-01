@@ -9,7 +9,9 @@ import sys
 import faker
 
 
-from django.db import models, connection
+from django.db import models, connection, transaction
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.conf import settings
 from django.core.serializers import serialize
 from django.template import Variable, VariableDoesNotExist
@@ -56,6 +58,11 @@ ACCOUNT_DUMP_SETTINGS = {
 }
 
 
+@receiver(pre_save)
+def pre_save_handler(sender, instance, *args, **kwargs):
+    raise Exception("Do not save inside the demo data dump command!")
+
+
 class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
@@ -63,7 +70,7 @@ class Command(ExceptionCommand):
         demo_mappings = dash.models.DemoMapping.objects.all()
 
         serialize_list = collections.OrderedDict()
-        _prepare_objects(serialize_list, demo_mappings)
+        prepare_demo_objects(serialize_list, demo_mappings)
         dump_data = serialize('json', [obj for obj in reversed(serialize_list) if obj is not None], indent=4)
 
         snapshot_id = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H%M")
@@ -72,7 +79,7 @@ class Command(ExceptionCommand):
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
-        _deploykitty_prepare(snapshot_id)
+        # _deploykitty_prepare(snapshot_id)
 
         logger.info("QUERIES: %s", len(connection.queries))
 
@@ -82,7 +89,8 @@ def _deploykitty_prepare(snapshot_id):
     request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
 
 
-def _prepare_objects(serialize_list, demo_mappings):
+@transaction.atomic()
+def prepare_demo_objects(serialize_list, demo_mappings):
     demo_users = zemauth.models.User.objects.filter(email__endswith='test@test.com')
     demo_users_set = set(demo_users)
 
@@ -105,6 +113,9 @@ def _prepare_objects(serialize_list, demo_mappings):
         start_extracting_at = len(serialize_list)
         _add_object_dependencies(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
+
+    # SAFETY CHECK: rollback at the end to prevent accidental changes to production DB
+    transaction.set_rollback(True)
 
 
 def _get_fields(obj):
