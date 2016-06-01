@@ -107,10 +107,10 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
         with transaction.atomic():
             actions.extend(_switch_campaign_to_landing_mode(campaign))
         _send_campaign_stop_notification_email(
-            campaign, campaign_settings, available_tomorrow, current_daily_budget, yesterday_spend)
+            campaign, available_tomorrow, current_daily_budget, yesterday_spend)
     elif is_near_depleted:
         _send_depleting_budget_notification_email(
-            campaign, campaign_settings, available_tomorrow, current_daily_budget, yesterday_spend)
+            campaign, available_tomorrow, current_daily_budget, yesterday_spend)
 
     if switched_to_landing:
         utils.k1_helper.update_ad_groups(
@@ -1294,74 +1294,42 @@ def _trigger_pagerduty(campaign, incident_key, description):
     )
 
 
-def _send_campaign_stop_notification_email(campaign, campaign_settings, available_tomorrow,
+def _send_campaign_stop_notification_email(campaign, available_tomorrow,
                                            max_daily_budget, yesterday_spend):
-    subject = 'Campaign is switching to landing mode'
-    body = u'''Hi, campaign manager,
-
-your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
-
-The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please visit {campaign_budgets_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.
-
-Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.
-
-Yours truly,
-Zemanta'''  # noqa
-
-    subject = subject.format(
-        campaign_name=campaign.name,
-        account_name=campaign.account.name
+    args = {
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
+        'available_tomorrow': available_tomorrow,
+        'max_daily_budget': max_daily_budget,
+        'yesterday_spend': yesterday_spend,
+    }
+    subject, body = email_helper.format_email(
+        dash.constants.EmailTemplateType.CAMPAIGN_LANDING_MODE_SWITCH,
+        **args
     )
-    body = body.format(
-        campaign_name=campaign.name,
-        account_name=campaign.account.name,
-        campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
-        available_tomorrow=available_tomorrow,
-        max_daily_budget=max_daily_budget,
-        yesterday_spend=yesterday_spend,
-    )
-
-    account_settings = campaign.account.get_current_settings()
-    _send_notification_email(subject, body, campaign_settings, account_settings)
+    _send_notification_email(subject, body, campaign)
 
 
-def _send_depleting_budget_notification_email(campaign, campaign_settings, available_tomorrow,
+def _send_depleting_budget_notification_email(campaign, available_tomorrow,
                                               max_daily_budget, yesterday_spend):
-    subject = 'Campaign is running out of budget'
-    body = u'''Hi, campaign manager,
+    args = {
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
+        'available_tomorrow': available_tomorrow,
+        'max_daily_budget': max_daily_budget,
+        'yesterday_spend': yesterday_spend,
+    }
 
-your campaign {campaign_name} ({account_name}) will soon run out of budget.
-
-The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
-
-If you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes. Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.
-
-Yours truly,
-Zemanta'''  # noqa
-
-    subject = subject.format(
-        campaign_name=campaign.name,
-        account_name=campaign.account.name
+    subject, body = email_helper.format_email(
+        dash.constants.EmailTemplateType.CAMPAIGN_BUDGET_LOW,
+        **args
     )
-    body = body.format(
-        campaign_name=campaign.name,
-        account_name=campaign.account.name,
-        campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
-        available_tomorrow=available_tomorrow,
-        max_daily_budget=max_daily_budget,
-        yesterday_spend=yesterday_spend,
-    )
-
-    account_settings = campaign.account.get_current_settings()
-    _send_notification_email(subject, body, campaign_settings, account_settings)
+    _send_notification_email(subject, body, campaign)
 
 
-def _send_notification_email(subject, body, campaign_settings, account_settings):
-    emails = []
-    if account_settings.default_account_manager:
-        emails.append(account_settings.default_account_manager.email)
-    if campaign_settings.campaign_manager:
-        emails.append(campaign_settings.campaign_manager.email)
-
+def _send_notification_email(subject, body, campaign):
+    emails = email_helper.email_manager_list(campaign)
     email_helper.send_notification_mail(emails, subject, body)
     email_helper.send_notification_mail(['luka.silovinac@zemanta.com'], subject, body)

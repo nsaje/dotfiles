@@ -1426,6 +1426,33 @@ class GAAnalyticsAccount(admin.ModelAdmin):
     search_fields = ('ga_account_id', 'ga_web_property_id')
 
 
+class EmailTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        'template_type',
+        'subject',
+    )
+    readonly_fields = ('template_type', 'subject', 'body')
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        extra_context['show_save_and_add_another'] = False
+        extra_context['show_save_and_continue'] = False
+        return super(EmailTemplateAdmin, self).change_view(
+            request, object_id,
+            form_url, extra_context=extra_context
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1450,3 +1477,4 @@ admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
+admin.site.register(models.EmailTemplate, EmailTemplateAdmin)

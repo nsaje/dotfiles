@@ -3111,3 +3111,16 @@ class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
     ad_account_id = models.CharField(max_length=127)
     page_url = models.CharField(max_length=255)
+
+
+class EmailTemplate(models.Model):
+    template_type = models.PositiveSmallIntegerField(
+        choices=constants.EmailTemplateType.get_choices(), null=True, blank=True)
+    subject = models.CharField(blank=True, null=False, max_length=255)
+    body = models.TextField(blank=True, null=False)
+
+    def __unicode__(self):
+        return constants.EmailTemplateType.get_text(self.template_type) if self.template_type else 'Unassigned'
+
+    class Meta:
+        unique_together = ('template_type',)
