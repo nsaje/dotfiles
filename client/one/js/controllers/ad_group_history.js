@@ -8,7 +8,7 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
 
     $scope.getSettings = function (id) {
         $scope.requestInProgress = true;
-        api.adGroupAgency.get(id).then(
+        api.adGroupHistory.get(id).then(
             function (data) {
                 $scope.history = data.history;
                 $scope.requestInProgress = false;
