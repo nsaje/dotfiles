@@ -495,7 +495,6 @@ class CampaignSettings(api_common.BaseApiView):
         current_settings = campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
 
-        from pudb import set_trace; set_trace()
         settings_form = forms.CampaignSettingsForm(settings_dict)
         errors = {}
         if not settings_form.is_valid():
