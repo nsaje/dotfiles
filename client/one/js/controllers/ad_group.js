@@ -26,15 +26,14 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             heading: 'Settings',
             route: 'main.adGroups.settings',
             active: false,
-            hidden: (!$scope.hasPermission('dash.settings_view')) ||
-                (!$scope.hasPermission('dash.settings_view') && !($scope.adGroup && $scope.adGroup.archived)) ||
-                ($scope.hasPermission('zemauth.ad_group_agency_tab_view') &&
-                 ($scope.adGroup && $scope.adGroup.archived)),
+            hidden: !$scope.hasPermission('dash.settings_view') ||
+                ($scope.adGroup && $scope.adGroup.archived),
         }, {
             heading: 'History',
             route: 'main.adGroups.history',
             active: false,
-            hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'),
+            hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view') ||
+                ($scope.adGroup && $scope.adGroup.archived),
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view'),
         }];
 
