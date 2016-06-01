@@ -1777,7 +1777,7 @@ class CampaignHistoryTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = '/api/campaigns/1/agency/'
+        url = '/api/campaigns/1/history/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
@@ -1785,7 +1785,7 @@ class CampaignHistoryTest(TestCase):
     def test_get(self):
         add_permissions(self.user, ['campaign_agency_view'])
         response = self.client.get(
-            '/api/campaigns/1/agency/'
+            '/api/campaigns/1/history/'
         )
 
         content = json.loads(response.content)
