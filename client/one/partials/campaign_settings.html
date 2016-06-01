@@ -88,6 +88,11 @@
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
 
+        <div class="settings-restore-container" ng-if="hasPermission('zemauth.archive_restore_entity')">
+            <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
+            <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.') || ''}}" ng-click="archiveCampaign()">Archive campaign</button>
+        </div>
+
         <div class="loader" ng-show="requestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
@@ -102,3 +107,15 @@
 		ng-if="!hasPermission('zemauth.can_see_campaign_goals')">
     </zem-conversion-goals>
 </div>
+
+<div class="page page-campaign-agency" ng-if="!!campaign.archived">
+    <p>
+        <strong>This campaign is archived.</strong>
+    </p>
+
+    <div class="settings-restore-container" ng-if="hasPermission('zemauth.archive_restore_entity')">
+        <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
+        <button type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreCampaign()" title="{{ (!canRestore && 'In order to restore a campaign, it\'s account must be restored first.') || '' }}">Restore campaign</button>
+    </div>
+</div>
+

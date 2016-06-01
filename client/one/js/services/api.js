@@ -1677,8 +1677,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         campaignManagers: data.data.campaign_managers,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
                         history: convertHistoryFromApi(data.data.history)
                     });
                 }).
@@ -1819,6 +1817,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         goals: convertCampaignGoalsFromApi(data.data.goals)
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function (data, status, headers) {

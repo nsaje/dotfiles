@@ -1,4 +1,4 @@
-<div class="page page-campaign-agency" ng-if="!campaign.archived">
+<div class="page page-campaign-agency">
     <form id="form-campaign-agency" class="form-horizontal">
         <div class="form-group" ng-class="{'has-error': !!errors.campaignManager}">
             <label for="account-manager-select" class="col-xs-3 control-label">
@@ -31,7 +31,6 @@
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
 		<button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-                <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.') || ''}}" ng-click="archiveCampaign()">Archive campaign</button>
         <div class="loader" ng-show="requestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
@@ -70,13 +69,6 @@
             </table>
         </div>
     </div>
-</div>
-
-<div class="page page-campaign-agency" ng-if="!!campaign.archived">
-    <p>
-        <strong>This campaign is archived.</strong>
-    </p>
-    <button type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreCampaign()" title="{{ (!canRestore && 'In order to restore a campaign, it\'s account must be restored first.') || '' }}">Restore campaign</button>
 </div>
 
 <script id="popoverContent.html" type="text/ng-template">

@@ -2,8 +2,6 @@
 oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.history = [];
-    $scope.canArchive = false;
-    $scope.canRestore = true;
     $scope.campaignManagers = [];
     $scope.errors = {};
     $scope.availablePixels = [];
@@ -23,8 +21,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'z
             function (data) {
                 $scope.settings = data.settings;
                 $scope.history = data.history;
-                $scope.canArchive = data.canArchive;
-                $scope.canRestore = data.canRestore;
 
                 if (discarded) {
                     $scope.discarded = true;
@@ -49,8 +45,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'z
         api.campaignAgency.save($scope.settings).then(
             function (data) {
                 $scope.history = data.history;
-                $scope.canArchive = data.canArchive;
-                $scope.canRestore = data.canRestore;
                 $scope.errors = {};
                 $scope.settings = data.settings;
                 $scope.updateBreadcrumbAndTitle();
@@ -69,22 +63,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'z
     $scope.refreshPage = function () {
         zemNavigationService.reload();
         $scope.getSettings();
-    };
-
-    $scope.archiveCampaign = function () {
-        if ($scope.canArchive) {
-            api.campaignArchive.archive($scope.campaign.id).then(function () {
-                $scope.refreshPage();
-            });
-        }
-    };
-
-    $scope.restoreCampaign = function () {
-        if ($scope.canRestore) {
-            api.campaignArchive.restore($scope.campaign.id).then(function () {
-                $scope.refreshPage();
-            });
-        }
     };
 
     $scope.getSettings();

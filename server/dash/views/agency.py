@@ -315,8 +315,6 @@ class CampaignAgency(api_common.BaseApiView):
             'settings': self.get_dict(campaign_settings, campaign),
             'campaign_managers': self.get_user_list(campaign_settings),
             'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
         }
 
         return self.create_api_response(response)
@@ -538,6 +536,8 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, campaign_settings, campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):

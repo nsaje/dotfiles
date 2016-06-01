@@ -9,6 +9,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.discarded = null;
     $scope.campaignGoals = [],
     $scope.campaignGoalsDiff = {};
+    $scope.canArchive = false;
+    $scope.canRestore = true;
 
     function validateGoals () {
         var primary = false,
@@ -36,6 +38,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
             function (data) {
                 $scope.settings = data.settings;
                 $scope.campaignGoals = data.goals;
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
 
                 $scope.discarded = discarded;
                 campaignFreshSettings.resolve(data.settings.name === 'New campaign');
@@ -88,6 +92,22 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         ).finally(function () {
             $scope.requestInProgress = false;
         });
+    };
+
+    $scope.archiveCampaign = function () {
+        if ($scope.canArchive) {
+            api.campaignArchive.archive($scope.campaign.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
+    };
+
+    $scope.restoreCampaign = function () {
+        if ($scope.canRestore) {
+            api.campaignArchive.restore($scope.campaign.id).then(function () {
+                $scope.refreshPage();
+            });
+        }
     };
 
     $scope.getSettings();
