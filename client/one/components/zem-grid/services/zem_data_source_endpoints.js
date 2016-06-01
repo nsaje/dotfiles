@@ -17,8 +17,8 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
 
         this.getData = function (config) {
+            var url = createUrl(baseUrl, config);
             convertToApi(config);
-            var url = baseUrl + config.breakdown.join('/') + '/';
             var deferred = $q.defer();
             $http.post(url, {params: config}).success(function (data) {
                 var breakdowns = data.data;
@@ -33,6 +33,13 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
 
             return deferred.promise;
         };
+
+        function createUrl (baseUrl, config) {
+            var queries = config.breakdown.map(function (breakdown) {
+                return breakdown.query;
+            });
+            return baseUrl + queries.join('/') + '/';
+        }
 
         function convertFromApi (config, breakdown) {
             breakdown.level = config.level;
@@ -51,6 +58,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             config.start_date = config.startDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
             config.end_date = config.endDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
             delete config.breakdownPage;
+            delete config.breakdown;
         }
 
         function checkPaginationCount (config, breakdown) {
@@ -124,7 +132,10 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         //
         // HACK (legacy support): access columns variable from corresponded controller scope
         //
-        try { $controller(ctrl, {$scope: scope}); } catch (e) { } // eslint-disable-line
+        try {
+            $controller(ctrl, {$scope: scope});
+        } catch (e) {
+        } // eslint-disable-line
 
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns
