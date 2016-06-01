@@ -1,11 +1,9 @@
-/* globals oneApp,angular */
+/* globals oneApp, angular */
 'use strict';
 
 oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
-        this.availableBreakdowns = ['account', 'source', 'day'];
-        this.defaultBreakdown = ['account', 'source', 'day'];
         this.metaData = metaData;
         this.baseUrl = baseUrl;
 
@@ -69,6 +67,59 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         }
     }
 
+
+    //
+    // TODO: Dedicated service for breakdowns and columns definitions
+    //
+    var BREAKDOWN_GROUPS = [
+        {
+            name: 'Base level',
+            breakdowns: [
+                // Base level breakdown - defined later based on Endpoint type
+            ],
+        },
+        {
+            name: 'By delivery',
+            breakdowns: [
+                {name: 'Age', query: 'age'},
+                {name: 'Gender', query: 'gender'},
+                {name: 'Age and Gender', query: 'agegender'},
+                {name: 'Country', query: 'country'},
+                {name: 'State', query: 'state'},
+                {name: 'DMA', query: 'dma'},
+                {name: 'Device', query: 'device'},
+            ],
+        },
+        {
+            name: 'By structure',
+            breakdowns: [
+                // Type specific structure breakdown - Defined later based on Endpoint type
+                {name: 'By media source', query: 'source'},
+                {name: 'By publishers', query: 'publishers'},
+            ],
+        },
+        {
+            name: 'By time',
+            breakdowns: [
+                {name: 'By day', query: 'day'},
+                {name: 'By week', query: 'week'},
+                {name: 'By month', query: 'month'},
+            ],
+        },
+    ];
+
+    var BASE_LEVEL_BREAKDOWNS = [
+        {name: 'By Account', query: 'account'},
+        {name: 'By Campaign', query: 'campaign'},
+        {name: 'By AdGroup', query: 'adgroup'},
+    ];
+
+    var STRUCTURE_LEVEL_BREAKDOWNS = [
+        {name: 'By Campaign', query: 'campaign'},
+        {name: 'By Ad Group', query: 'adgroup'},
+        {name: 'By Content Ad', query: 'contentad'},
+    ];
+
     function getControllerMetaData (scope, ctrl) {
         //
         // HACK (legacy support): access columns variable from corresponded controller scope
@@ -80,9 +131,17 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         // FIXME: find appropriate solution for this problem (special type)
         scope.columns[0].field = 'breakdownName';
         scope.columns[0].type = 'text';
+
+        // Types not supported atm, therefor just assume Account type,
+        // and add required base and structure level breakdowns
+        var breakdownGroups = angular.copy(BREAKDOWN_GROUPS);
+        breakdownGroups[0].breakdowns.push(BASE_LEVEL_BREAKDOWNS[0]);
+        breakdownGroups[2].breakdowns.unshift(STRUCTURE_LEVEL_BREAKDOWNS[0]);
+
         return {
             columns: scope.columns,
             categories: scope.columnCategories,
+            breakdownGroups: breakdownGroups,
             localStoragePrefix: scope.localStoragePrefix,
         };
     }
