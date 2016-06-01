@@ -77,3 +77,30 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
                          dash.constants.AgeGenderGroup.AGE_21_29_UNDEFINED)
         self.assertEqual(helpers.extract_age_gender(dash.constants.AgeGroup.UNDEFINED, dash.constants.Gender.WOMEN),
                          dash.constants.AgeGenderGroup.UNDEFINED)
+
+    def test_extract_postclick_source(self):
+        self.assertEqual(helpers.extract_postclick_source('gaapi'), 'gaapi')
+        self.assertEqual(helpers.extract_postclick_source('ga_mail'), 'ga_mail')
+        self.assertEqual(helpers.extract_postclick_source('omniture'), 'omniture')
+        self.assertEqual(helpers.extract_postclick_source('lol'), 'other')
+
+    def test_get_highest_priority_postclick_source(self):
+        self.assertEqual(helpers.get_highest_priority_postclick_source({
+            'gaapi': 1,
+            'ga_mail': 2,
+        }), 1)
+        self.assertEqual(helpers.get_highest_priority_postclick_source({
+            'ga_mail': 2,
+        }), 2)
+        self.assertEqual(helpers.get_highest_priority_postclick_source({
+            'ga_mail': 2,
+            'omniture': 3,
+            'other': 4,
+        }), 2)
+        self.assertEqual(helpers.get_highest_priority_postclick_source({
+            'omniture': 3,
+            'other': 4,
+        }), 3)
+        self.assertEqual(helpers.get_highest_priority_postclick_source({
+            'other': 4,
+        }), 4)
