@@ -2375,6 +2375,35 @@ class DemoAdGroupRealAdGroup(models.Model):
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
 
 
+class DemoMapping(models.Model):
+    real_account = models.OneToOneField(Account, on_delete=models.PROTECT, related_name='+')
+    demo_account_name = models.CharField(
+        max_length=127,
+        editable=True,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    demo_campaign_name_pool = ArrayField(
+        models.CharField(
+            max_length=127,
+            editable=True,
+            unique=True,
+            blank=False,
+            null=False
+        )
+    )
+    demo_ad_group_name_pool = ArrayField(
+        models.CharField(
+            max_length=127,
+            editable=True,
+            unique=True,
+            blank=False,
+            null=False
+        )
+    )
+
+
 class UserActionLog(models.Model):
 
     id = models.AutoField(primary_key=True)
