@@ -867,8 +867,6 @@ class AdGroupHistoryTest(TestCase):
         mock_is_waiting.assert_called_once(ad_group)
         self.assertEqual(json.loads(response.content), {
             u'data': {
-                u'can_archive': True,
-                u'can_restore': True,
                 u'history': [{
                     u'changed_by': u'non_superuser@zemanta.com',
                     u'changes_text': u'Created settings',
