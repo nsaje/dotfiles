@@ -49,7 +49,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
-                hidden: false,
+                hidden: $scope.campaign && $scope.campaign.archived ,
                 internal: false,
             },
             {

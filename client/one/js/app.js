@@ -163,7 +163,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/campaign_agency.html',
             controller: 'CampaignAgencyCtrl',
         })
-        .state('main.campaigns.settings', {
+        .state('main.campaigns.archived', {
             url: '/archived',
             templateUrl: '/partials/campaign_settings.html',
         })

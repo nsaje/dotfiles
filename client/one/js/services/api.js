@@ -1816,7 +1816,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        goals: convertCampaignGoalsFromApi(data.data.goals)
+                        goals: convertCampaignGoalsFromApi(data.data.goals),
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
                     });

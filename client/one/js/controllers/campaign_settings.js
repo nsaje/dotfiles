@@ -10,7 +10,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.campaignGoals = [],
     $scope.campaignGoalsDiff = {};
     $scope.canArchive = false;
-    $scope.canRestore = true;
+    $scope.canRestore = false;
 
     function validateGoals () {
         var primary = false,
@@ -110,6 +110,12 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         }
     };
 
-    $scope.getSettings();
+    $scope.refreshPage = function () {
+        zemNavigationService.reload();
+        $scope.getSettings();
+    };
+
+
+    $scope.refreshPage();
     $scope.setActiveTab();
 }]);
