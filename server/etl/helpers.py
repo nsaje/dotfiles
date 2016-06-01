@@ -117,3 +117,17 @@ def extract_age_gender(age, gender):
         return mapping[gender].get(age, constants.AgeGenderGroup.UNDEFINED)
 
     return constants.AgeGenderGroup.UNDEFINED
+
+
+def get_highest_priority_postclick_source(rows_by_postclick_source):
+    return rows_by_postclick_source.get(
+        'gaapi', rows_by_postclick_source.get(
+            'ga_mail', rows_by_postclick_source.get(
+                'omniture', rows_by_postclick_source.get(
+                    'other', []))))
+
+
+def extract_postclick_source(postclick_source):
+    if postclick_source in ('gaapi', 'ga_mail', 'omniture'):
+        return postclick_source
+    return 'other'
