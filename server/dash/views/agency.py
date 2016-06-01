@@ -306,46 +306,12 @@ class CampaignAgency(api_common.BaseApiView):
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
-
-        campaign_settings = campaign.get_current_settings()
-
         response = {
-            'settings': self.get_dict(campaign_settings, campaign),
             'history': self.get_history(campaign),
         }
-
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
-    def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_agency_view'):
-            raise exc.AuthorizationError()
-
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        resource = json.loads(request.body)
-
-        form = forms.CampaignAgencyForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        old_settings = campaign.get_current_settings()
-        new_settings = old_settings.copy_settings()
-        self.set_settings(new_settings, campaign, form.cleaned_data)
-
-        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
-        helpers.log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request,
-                                                        constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS)
-
-        response = {
-            'settings': self.get_dict(new_settings, campaign),
-            'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
-        }
-
-        return self.create_api_response(response)
 
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
@@ -394,22 +360,6 @@ class CampaignAgency(api_common.BaseApiView):
                     field, getattr(old_settings, field, models.CampaignSettings.get_default_value(field)))
 
         return settings_dict
-
-    def get_dict(self, settings, campaign):
-        result = {}
-
-        if settings:
-            result = {
-                'id': str(campaign.pk),
-                'name': campaign.name,
-            }
-
-        return result
-
-    def set_settings(self, settings, campaign, resource):
-        settings.campaign = campaign
-        settings.campaign_manager = resource['campaign_manager']
-        settings.iab_category = resource['iab_category']
 
 
 class CampaignConversionGoals(api_common.BaseApiView):
