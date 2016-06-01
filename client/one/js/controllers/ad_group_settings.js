@@ -124,6 +124,24 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         );
     };
 
+    $scope.archiveAdGroup = function () {
+        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
+        api.adGroupArchive.archive($scope.adGroup.id).then(function () {
+            $scope.refreshPage();
+        }, function () {
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
+        });
+    };
+
+    $scope.restoreAdGroup = function () {
+        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
+        api.adGroupArchive.restore($scope.adGroup.id).then(function () {
+            $scope.refreshPage();
+        }, function () {
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
+        });
+    };
+
     function getDeviceItemByValue (devices, value) {
         var result;
 
@@ -203,10 +221,13 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
     });
 
+    $scope.refreshPage = function () {
+        zemNavigationService.reloadAdGroup($state.params.id);
+        $scope.getSettings($state.params.id);
+    };
+
     var init = function () {
-        if (!$scope.adGroup.archived) {
-            $scope.getSettings($state.params.id);
-        }
+        $scope.getSettings($state.params.id);
     };
 
     init();

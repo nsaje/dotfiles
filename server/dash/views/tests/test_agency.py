@@ -803,7 +803,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
 
-class AdGroupAgencyTest(TestCase):
+class AdGroupHistoryTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -817,7 +817,7 @@ class AdGroupAgencyTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = reverse('ad_group_agency', kwargs={'ad_group_id': 0})
+        url = reverse('ad_group_history', kwargs={'ad_group_id': 0})
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
@@ -860,7 +860,7 @@ class AdGroupAgencyTest(TestCase):
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
-            reverse('ad_group_agency', kwargs={'ad_group_id': ad_group_id}),
+            reverse('ad_group_history', kwargs={'ad_group_id': ad_group_id}),
             follow=True
         )
 

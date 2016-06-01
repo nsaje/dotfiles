@@ -151,7 +151,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             return 'main.adGroups.sources';
         }
         if ($state.includes('**.agency') && $scope.hasPermission('zemauth.ad_group_agency_tab_view')) {
-            return 'main.adGroups.agency';
+            return 'main.adGroups.history';
         }
 
         // otherwise get default state

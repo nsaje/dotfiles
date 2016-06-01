@@ -78,9 +78,9 @@ urlpatterns += [
         name='ad_group_settings'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/agency/',
-        login_required(dash.views.agency.AdGroupAgency.as_view()),
-        name='ad_group_agency'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/history/',
+        login_required(dash.views.agency.AdGroupHistory.as_view()),
+        name='ad_group_history'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/$',

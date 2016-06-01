@@ -31,8 +31,8 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
                 ($scope.hasPermission('zemauth.ad_group_agency_tab_view') &&
                  ($scope.adGroup && $scope.adGroup.archived)),
         }, {
-            heading: 'Agency',
-            route: 'main.adGroups.agency',
+            heading: 'History',
+            route: 'main.adGroups.history',
             active: false,
             hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'),
             internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view'),
@@ -125,7 +125,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
 
     if ($scope.adGroup && $scope.adGroup.archived) {
         if ($scope.hasPermission('zemauth.ad_group_agency_tab_view')) {
-            $state.go('main.adGroups.agency', {id: $scope.adGroup.id});
+            $state.go('main.adGroups.history', {id: $scope.adGroup.id});
         } else {
             $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
         }

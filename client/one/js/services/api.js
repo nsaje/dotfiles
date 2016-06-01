@@ -1892,7 +1892,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAgency () {
+    function AdGroupHistory() {
 
         function convertHistoryFromApi (history) {
             return history.map(function (item) {
@@ -1926,7 +1926,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.get = function (id) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/agency/';
+            var url = '/api/ad_groups/' + id + '/history/';
             var config = {
                 params: {}
             };
@@ -1939,8 +1939,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         history: history,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore
                     });
                 }).
                 error(function (data, status, headers, config) {
@@ -3139,7 +3137,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         user: new User(),
         adGroupSettings: new AdGroupSettings(),
         adGroupSettingsState: new AdGroupSettingsState(),
-        adGroupAgency: new AdGroupAgency(),
+        adGroupHistory: new AdGroupHistory(),
         adGroupSources: new AdGroupSources(),
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
