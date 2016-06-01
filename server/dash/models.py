@@ -3115,7 +3115,7 @@ class FacebookAccount(models.Model):
 
 class EmailTemplate(models.Model):
     template_type = models.PositiveSmallIntegerField(
-        choices=constants.EmailTemplateType.get_choices(),null=True, blank=True)
+        choices=constants.EmailTemplateType.get_choices(), null=True, blank=True)
     subject = models.CharField(blank=True, null=False, max_length=255)
     body = models.TextField(blank=True, null=False)
 

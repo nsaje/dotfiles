@@ -1426,8 +1426,18 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         'template_type',
         'subject',
     )
+    readonly_fields = ('template_type', 'subject', 'body')
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        extra_context['show_save_and_add_another'] = False
+        extra_context['show_save_and_continue'] = False
+        return super(EmailTemplateAdmin, self).change_view(request, object_id,
+            form_url, extra_context=extra_context)
+
     def has_add_permission(self, request):
-        return True
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return False
