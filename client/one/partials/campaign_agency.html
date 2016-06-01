@@ -1,45 +1,6 @@
 <div class="page page-campaign-agency">
-    <form id="form-campaign-agency" class="form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.campaignManager}">
-            <label for="account-manager-select" class="col-xs-3 control-label">
-                Campaign Manager
-                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.campaignManager">
-                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                    <ui-select-choices repeat="manager.id as manager in campaignManagers | orderBy:getName | filter:$select.search">
-                        <div ng-bind-html="manager.name | highlight: $select.search"></div>
-                    </ui-select-choices>
-                </ui-select>
-            </div>
-            <label ng-repeat="error in errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}">
-            <label for="iab-category-select" class="col-xs-3 control-label">
-                IAB Category
-                <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
-                    <option ng-repeat="category in iabCategories" value="{{category.value}}">{{category.name}}</option>
-                </select>
-            </div>
-            <label ng-repeat="error in errors.IABCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
-        </div>
-
-		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-		<button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-        <div class="loader" ng-show="requestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
-	</form>
-
     <div class="section table-campaign-agency">
-        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
-</div>
+        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover></div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">

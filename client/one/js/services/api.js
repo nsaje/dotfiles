@@ -1731,6 +1731,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 goalQuantity: settings.goal_quantity,
                 targetDevices: convertTargetDevicesFromApi(settings.target_devices),
                 targetRegions: settings.target_regions,
+                campaignManager: settings.campaign_manager,
+                IABCategory: settings.iab_category,
             };
         }
 
@@ -1741,7 +1743,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 campaign_goal: settings.campaignGoal,
                 goal_quantity: settings.goalQuantity,
                 target_devices: convertTargetDevicesToApi(settings.targetDevices),
-                target_regions: settings.targetRegions
+                target_regions: settings.targetRegions,
+                campaign_manager: settings.campaignManager,
+                iab_category: settings.IABCategory,
             };
         }
 
@@ -1753,7 +1757,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 goals: errors.goals,
                 goalQuantity: errors.goal_quantity,
                 targetDevices: errors.target_devices,
-                targetRegions: errors.target_regions
+                targetRegions: errors.target_regions,
+                campaignManager: errors.campaign_manager,
+                IABCategory: errors.iab_category,
             };
 
             return result;
@@ -1817,6 +1823,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         goals: convertCampaignGoalsFromApi(data.data.goals),
+                        campaignManagers: data.data.campaign_managers,
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
                     });

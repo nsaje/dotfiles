@@ -530,6 +530,23 @@ class CampaignSettingsForm(forms.Form):
         choices=constants.AdTargetLocation.get_choices()
     )
 
+    campaign_manager = forms.IntegerField()
+    iab_category = forms.ChoiceField(
+        choices=constants.IABCategory.get_choices(),
+    )
+
+    def clean_campaign_manager(self):
+        campaign_manager_id = self.cleaned_data.get('campaign_manager')
+
+        err_msg = 'Invalid campaign manager.'
+
+        try:
+            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return campaign_manager
+
 
 class UserForm(forms.Form):
     email = forms.EmailField(

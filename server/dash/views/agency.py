@@ -313,7 +313,6 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'campaign_managers': self.get_user_list(campaign_settings),
             'history': self.get_history(campaign),
         }
 
@@ -403,10 +402,6 @@ class CampaignAgency(api_common.BaseApiView):
             result = {
                 'id': str(campaign.pk),
                 'name': campaign.name,
-                'campaign_manager':
-                    str(settings.campaign_manager.id)
-                    if settings.campaign_manager is not None else None,
-                'iab_category': settings.iab_category,
             }
 
         return result
@@ -415,16 +410,6 @@ class CampaignAgency(api_common.BaseApiView):
         settings.campaign = campaign
         settings.campaign_manager = resource['campaign_manager']
         settings.iab_category = resource['iab_category']
-
-    def get_user_list(self, settings):
-        users = ZemUser.objects.all()
-
-        manager = settings.campaign_manager
-        if manager is not None and manager not in users:
-            users.append(manager)
-
-        return [{'id': str(user.id),
-                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class CampaignConversionGoals(api_common.BaseApiView):
@@ -538,6 +523,7 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, campaign_settings, campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
+            'campaign_managers': self.get_user_list(campaign_settings),
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
@@ -557,6 +543,7 @@ class CampaignSettings(api_common.BaseApiView):
         current_settings = campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
 
+        from pudb import set_trace; set_trace()
         settings_form = forms.CampaignSettingsForm(settings_dict)
         errors = {}
         if not settings_form.is_valid():
@@ -702,6 +689,11 @@ class CampaignSettings(api_common.BaseApiView):
         result['target_devices'] = settings.target_devices
         result['target_regions'] = settings.target_regions
 
+        # TODO: add permissions
+        result['campaign_manager'] = str(settings.campaign_manager.id)\
+            if settings.campaign_manager is not None else None
+        result['iab_category'] = settings.iab_category
+
         return result
 
     def set_settings(self, request, settings, campaign, resource):
@@ -710,9 +702,21 @@ class CampaignSettings(api_common.BaseApiView):
         settings.goal_quantity = resource['goal_quantity']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
+        settings.campaign_manager = resource['campaign_manager']
+        settings.iab_category = resource['iab_category']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
+
+    def get_user_list(self, settings):
+        users = ZemUser.objects.all()
+
+        manager = settings.campaign_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
+        return [{'id': str(user.id),
+                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class AccountConversionPixels(api_common.BaseApiView):

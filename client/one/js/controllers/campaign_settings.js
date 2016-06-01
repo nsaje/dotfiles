@@ -11,6 +11,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.campaignGoalsDiff = {};
     $scope.canArchive = false;
     $scope.canRestore = false;
+    $scope.iabCategories = options.iabCategories;
 
     function validateGoals () {
         var primary = false,
@@ -37,11 +38,17 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         api.campaignSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                console.log($scope.settings.campaignManager);
                 $scope.campaignGoals = data.goals;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
 
                 $scope.discarded = discarded;
+                if (discarded) {
+                    $scope.discarded = true;
+                } else {
+                    $scope.campaignManagers = data.campaignManagers;
+                }
                 campaignFreshSettings.resolve(data.settings.name === 'New campaign');
             },
             function () {
@@ -111,7 +118,8 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     };
 
     $scope.refreshPage = function () {
-        zemNavigationService.reload();
+        // potential demo fix
+        // zemNavigationService.reload();
         $scope.getSettings();
     };
 
