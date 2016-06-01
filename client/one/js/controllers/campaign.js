@@ -42,22 +42,14 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 heading: 'Agency',
                 route: 'main.campaigns.agency',
                 active: false,
-                hidden: !$scope.hasPermission('zemauth.campaign_agency_view'),
+                hidden:  $scope.campaign && $scope.campaign.archived || !$scope.hasPermission('zemauth.campaign_agency_view'),
                 internal: $scope.isPermissionInternal('zemauth.campaign_agency_view'),
-            },
-            // this tab is only shown for archived campaigns
-            {
-                heading: 'Settings',
-                route: 'main.campaigns.archived',
-                active: false,
-                hidden: !$scope.campaign || !$scope.campaign.archived,
-                internal: false,
             },
             {
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived,
+                hidden: false,
                 internal: false,
             },
             {
