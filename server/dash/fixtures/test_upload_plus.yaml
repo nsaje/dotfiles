@@ -1,0 +1,300 @@
+# Users
+- fields:
+    date_joined: '2014-06-16T12:21:29'
+    email: superuser@test.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-16T12:21:29'
+    last_name: ''
+    password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+    user_permissions: []
+    username: ''
+  model: zemauth.user
+  pk: 1
+
+- fields:
+    date_joined: '2014-06-16T12:21:29'
+    email: user@test.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: '2014-06-16T12:21:29'
+    last_name: ''
+    password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+    user_permissions: []
+    username: ''
+  model: zemauth.user
+  pk: 2
+
+- fields:
+    date_joined: '2014-06-16T12:21:29'
+    email: john@test.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: '2014-06-16T12:21:29'
+    last_name: ''
+    password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+    user_permissions: []
+    username: ''
+  model: zemauth.user
+  pk: 3
+
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test Account 1'
+    users: [1, 2, 3]
+  model: dash.account
+  pk: 1
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 1'
+  model: dash.campaign
+  pk: 1
+
+# Ad Groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 1'
+  model: dash.adgroup
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 2'  # batch with unprocessed content
+  model: dash.adgroup
+  pk: 2
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 3'  # batch with processed and valid content
+  model: dash.adgroup
+  pk: 3
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 2'  # batch with processed and invalid content
+  model: dash.adgroup
+  pk: 4
+
+# Ad Group Settings
+- fields:
+    ad_group_id: 1
+    created_dt: '2016-02-29T09:58:21'
+    created_by: 1
+    state: 2
+    display_url: 'example.com'
+    brand_name: 'Example'
+    description: 'Example description'
+    call_to_action: 'Click here!'
+  model: dash.adgroupsettings
+  pk: 1
+
+# Source Types
+-   fields:
+        type: 'adblade'
+        available_actions: []
+        min_daily_budget: 5.00
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'adbanana'
+        available_actions: []
+    model: dash.sourcetype
+    pk: 2
+
+# Sources
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBlade
+        source_type: 1
+        maintenance: false
+        tracking_slug: '["slug1"]'
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBanana
+        source_type: 2
+        tracking_slug: '["slug2"]'
+        maintenance: false
+    model: dash.source
+    pk: 2
+
+# Ad Group Sources
+- fields:
+    source: 1
+    ad_group: 1
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 1
+
+- fields:
+    source: 2
+    ad_group: 1
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 2
+
+# Ad Group Source Settings
+- fields:
+    created_dt: '2016-02-29T09:00:00'
+    ad_group_source: 1
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 1
+
+- fields:
+    created_dt: '2016-02-29T09:00:00'
+    ad_group_source: 2
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 2
+
+
+# Upload batches
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 1'
+    status: 3  # in progress
+    ad_group: 2
+    original_filename: 'test_upload.csv'
+    batch_size: 1
+  model: dash.uploadbatch
+  pk: 1
+
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 2'
+    status: 3  # in progress
+    ad_group: 3
+    original_filename: 'test_upload.csv'
+    batch_size: 1
+  model: dash.uploadbatch
+  pk: 2
+
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 3'
+    status: 3  # in progress
+    ad_group: 4
+    original_filename: 'test_upload.csv'
+    batch_size: 1
+  model: dash.uploadbatch
+  pk: 3
+
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 4'
+    status: 1  # done
+    ad_group: 2
+    original_filename: 'test_upload.csv'
+    error_report_key: 'test_upload_1234abc.csv'
+    batch_size: 1
+  model: dash.uploadbatch
+  pk: 4
+
+# Content ad candidates
+- fields:
+    ad_group: 2
+    batch_id: 1
+    image_status: 1  # pending
+    url_status: 1  # pending
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 1'
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'entropy'
+    display_url: 'zemanta.com'
+    brand_name: 'Zemanta'
+    description: 'Zemanta blog'
+    call_to_action: 'Read more'
+    tracker_urls: ''
+    image_id: null
+    image_width: null
+    image_height: null
+    image_hash: null
+  model: dash.contentadcandidate
+  pk: 1
+
+- fields:
+    ad_group: 3
+    batch_id: 2
+    image_status: 3  # ok
+    url_status: 3  # ok
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 1'
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'entropy'
+    display_url: 'zemanta.com'
+    brand_name: 'Zemanta'
+    description: 'Zemanta blog'
+    call_to_action: 'Read more'
+    tracker_urls: 'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
+    image_id: 'abc12345'
+    image_width: 300
+    image_height: 300
+    image_hash: '54321cba'
+  model: dash.contentadcandidate
+  pk: 2
+
+- fields:
+    ad_group: 4
+    batch_id: 3
+    image_status: 4  # failed
+    url_status: 4  # failed
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 1'
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'entropy'
+    display_url: 'zemanta.com'
+    brand_name: 'Zemanta'
+    description: 'Zemanta blog'
+    call_to_action: 'Read more'
+    tracker_urls: ''
+    image_id: null
+    image_width: null
+    image_height: null
+    image_hash: null
+  model: dash.contentadcandidate
+  pk: 3
