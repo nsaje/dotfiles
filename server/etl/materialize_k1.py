@@ -16,6 +16,10 @@ MICRO_TO_NANO = 1000
 
 POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
 
+def extract_source_slug(source_slug):
+    if source_slug.startswith('b1_'):
+        return source_slug[3:]
+    return source_slug
 
 class ContentAdStats(object):
     """
@@ -74,14 +78,13 @@ class ContentAdStats(object):
         content_ad_postclick = defaultdict(list)
         for row in self._postclick_stats_breakdown(date).rows():
             content_ad_id = row[0]
-            media_source = row[2]
-            if media_source.startswith('b1_'):
-                # TODO fix in k1
-                media_source = media_source[3:]
+            media_source = extract_source_slug(row[2])
             content_ad_postclick[(content_ad_id, media_source)].append(row)
 
         ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
-        media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
+        media_sources_map = {
+            extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()
+        }
 
         for row in self._stats_breakdown(date).rows():
             content_ad_id = row[1]
@@ -93,10 +96,6 @@ class ContentAdStats(object):
                 continue
             media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
-                # Quick hack for missing facebook and probably also instagram postclick data
-                if media_source_slug in ('facebook', 'instagram'):
-                    media_source = media_sources_map.get('b1_' + media_source_slug)
-
                 logger.error("Got spend for invalid media_source: %s", media_source_slug)
                 continue
 
