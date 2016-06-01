@@ -1607,7 +1607,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignHistory() {
+    function CampaignHistory () {
         function convertHistoryFromApi (history) {
             return history.map(function (item) {
                 return {

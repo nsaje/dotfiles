@@ -312,7 +312,6 @@ class CampaignHistory(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
             filter(campaign=campaign).\
