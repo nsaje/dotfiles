@@ -9,13 +9,14 @@ import sys
 import faker
 
 
-from django.db import models, connection, transaction
+from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.conf import settings
 from django.core.serializers import serialize
 from django.template import Variable, VariableDoesNotExist
 
+from dash import constants
 import dash.models
 import zemauth.models
 from utils.command_helpers import ExceptionCommand
@@ -79,12 +80,25 @@ class Command(ExceptionCommand):
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
-        # _deploykitty_prepare(snapshot_id)
+        _deploykitty_prepare(snapshot_id)
 
 
 def _deploykitty_prepare(snapshot_id):
     request = urllib2.Request(settings.DK_DEMO_PREPARE_ENDPOINT + '?' + urllib.urlencode({'version': snapshot_id}))
     request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+
+
+def _create_fake_credit(account):
+    return dash.models.CreditLineItem(
+        id=1,
+        account=account,
+        amount=200.0,
+        start_date=datetime.date.today(),
+        end_date=datetime.date.today() + datetime.timedelta(days=30),
+        status=constants.CreditLineItemStatus.SIGNED,
+        created_dt=datetime.datetime.utcnow(),
+        modified_dt=datetime.datetime.utcnow(),
+    )
 
 
 def prepare_demo_objects(serialize_list, demo_mappings):
@@ -103,12 +117,16 @@ def prepare_demo_objects(serialize_list, demo_mappings):
             *ACCOUNT_DUMP_SETTINGS['prefetch_related']
         ).get(pk=demo_mapping.real_account_id)
 
+        # create fake credit
+        fake_credit = _create_fake_credit(account)
+
         # set demo users as the users of the future demo account
         account.users = demo_users
 
         # extract dependencies and anonymize
         start_extracting_at = len(serialize_list)
         _add_object_dependencies(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
+        _add_to_serialize_list(serialize_list, [fake_credit])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
 
 
