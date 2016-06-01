@@ -1,25 +1,28 @@
 import datetime
 import collections
+import itertools
 import os
-import urllib, urllib2
+import urllib
+import urllib2
 import sys
 
 import faker
-try:
-    from django.db.models import loading
-except ImportError:
-    from django.apps import apps as loading
+
+
 from django.db import models, connection
 from django.conf import settings
 from django.core.serializers import serialize
 from django.template import Variable, VariableDoesNotExist
 
+import dash.models
+import zemauth.models
 from utils.command_helpers import ExceptionCommand
 from utils import demo_anonymizer, s3helpers, request_signer
 
 import logging
 logger = logging.getLogger(__name__)
 
+demo_anonymizer.set_fake_factory(faker.Faker())
 
 ACCOUNT_DUMP_SETTINGS = {
     'primary': 'dash.account',  # This is our reference model.
@@ -57,11 +60,10 @@ class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     def handle(self, *args, **options):
-        real_account_pks = [279]  # TODO: get this from DB
-        demo_anonymizer.set_fake_factory(faker.Faker())
+        demo_mappings = dash.models.DemoMapping.objects.all()
 
         serialize_list = collections.OrderedDict()
-        _prepare_objects(serialize_list, real_account_pks)
+        _prepare_objects(serialize_list, demo_mappings)
         dump_data = serialize('json', [obj for obj in reversed(serialize_list) if obj is not None], indent=4)
 
         snapshot_id = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H%M")
@@ -80,32 +82,29 @@ def _deploykitty_prepare(snapshot_id):
     request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
 
 
-def _prepare_objects(serialize_list, real_account_pks):
-    demo_users = (loading.get_model('zemauth', 'User').objects.filter(email__endswith='test@test.com'))
+def _prepare_objects(serialize_list, demo_mappings):
+    demo_users = zemauth.models.User.objects.filter(email__endswith='test@test.com')
     demo_users_set = set(demo_users)
 
-    (app_label, model_name) = ACCOUNT_DUMP_SETTINGS['primary'].split('.')
-    model_to_dump = loading.get_model(app_label, model_name)
-    for real_account_pk in real_account_pks:
-        # TODO: get this from DB
+    anonymized_objects = set()
+    for demo_mapping in demo_mappings:
         name_pools = demo_anonymizer.DemoNamePools(
-            ['Top 4 Mobile Carrier'],
-            ['Brand Awareness Campaign', 'Earned Media Promotion & Retargeting', 'The Quiz'],
-            ['Audio & Connected audience segment', 'Connected Family audience segment',
-             'Full Feature audience segment', '4G LTE', 'Best Value for International Travel',
-             'Waive early termination fee', 'Digital Moms', 'Hipsters', 'Teenagers'])
+            [demo_mapping.demo_account_name],
+            demo_mapping.demo_campaign_name_pool,
+            demo_mapping.demo_ad_group_name_pool)
         demo_anonymizer.set_name_pools(name_pools)
 
-        account = model_to_dump.objects.prefetch_related(
+        account = dash.models.Account.objects.prefetch_related(
             *ACCOUNT_DUMP_SETTINGS['prefetch_related']
-        ).get(pk=real_account_pk)
+        ).get(pk=demo_mapping.real_account_id)
 
         # set demo users as the users of the future demo account
         account.users = demo_users
 
         # extract dependencies and anonymize
+        start_extracting_at = len(serialize_list)
         _add_object_dependencies(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
-        _extract_dependencies_and_anonymize(serialize_list, demo_users_set)  # FIXME: continue on from end
+        _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
 
 
 def _get_fields(obj):
@@ -122,15 +121,16 @@ def _get_many_to_many_fields(obj):
         return []
 
 
-def _extract_dependencies_and_anonymize(serialize_list, demo_users_set):
-    for obj in serialize_list:
+def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_at=0):
+    for obj in itertools.islice(serialize_list, start_at, None):
         anonymize = getattr(obj, '_demo_fields', {})
-        if obj in demo_users_set:  # don't anonymize demo users
+        if obj in demo_users_set or obj in anonymized_objects:  # don't anonymize demo users
             anonymize = {}
 
         for field in _get_fields(obj):
             if field.name in anonymize:
                 setattr(obj, field.name, anonymize[field.name]())
+                anonymized_objects.add(obj)
             if isinstance(field, models.ForeignKey):
                 _add_to_serialize_list(serialize_list, [obj.__getattribute__(field.name)])
         for field in _get_many_to_many_fields(obj):
