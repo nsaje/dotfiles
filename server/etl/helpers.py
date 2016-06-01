@@ -5,6 +5,20 @@ from dash import constants
 from utils import dates_helper
 
 
+def get_local_date_query(date):
+    context = get_local_date_context(date)
+
+    query = """
+    (date = '{date}' and hour is null) or (
+        hour is not null and (
+            (date = '{tzdate_from}' and hour >= {tzhour_from}) or
+            (date = '{tzdate_to}' and hour < {tzhour_to})
+        )
+    )
+    """.format(**context)
+    return query
+
+
 def get_local_date_context(date):
     hour_from = dates_helper.local_to_utc_time(datetime.datetime(date.year, date.month, date.day))
     date_next = date + datetime.timedelta(days=1)

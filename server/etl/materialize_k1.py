@@ -381,7 +381,7 @@ class Breakdown(object):
 
     def _get_date_query(self):
         if self.table == 'stats':
-            return helpers.get_local_date_context(self.date)
+            return helpers.get_local_date_query(self.date)
         return "date = '{date}'".format(date=self.date.isoformat())
 
 
