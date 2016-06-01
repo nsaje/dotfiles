@@ -81,17 +81,14 @@ class Command(ExceptionCommand):
 
         # _deploykitty_prepare(snapshot_id)
 
-        logger.info("QUERIES: %s", len(connection.queries))
-
 
 def _deploykitty_prepare(snapshot_id):
     request = urllib2.Request(settings.DK_DEMO_PREPARE_ENDPOINT + '?' + urllib.urlencode({'version': snapshot_id}))
     request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
 
 
-@transaction.atomic()
 def prepare_demo_objects(serialize_list, demo_mappings):
-    demo_users = zemauth.models.User.objects.filter(email__endswith='test@test.com')
+    demo_users = zemauth.models.User.objects.filter(email__endswith='+demo@zemanta.com')
     demo_users_set = set(demo_users)
 
     anonymized_objects = set()
@@ -113,9 +110,6 @@ def prepare_demo_objects(serialize_list, demo_mappings):
         start_extracting_at = len(serialize_list)
         _add_object_dependencies(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
-
-    # SAFETY CHECK: rollback at the end to prevent accidental changes to production DB
-    transaction.set_rollback(True)
 
 
 def _get_fields(obj):
