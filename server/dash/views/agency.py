@@ -54,7 +54,9 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
-            'warnings': self.get_warnings(request, settings)
+            'warnings': self.get_warnings(request, settings),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
         return self.create_api_response(response)
 
@@ -1212,7 +1214,7 @@ class AccountSettings(api_common.BaseApiView):
         return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
-class AdGroupAgency(api_common.BaseApiView):
+class AdGroupHistory(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
     def get(self, request, ad_group_id):
@@ -1220,13 +1222,9 @@ class AdGroupAgency(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
         response = {
             'history': self.get_history(ad_group, request.user),
-            'can_archive': ad_group.can_archive(),
-            'can_restore': ad_group.can_restore(),
         }
-
         return self.create_api_response(response)
 
     @newrelic.agent.function_trace()
