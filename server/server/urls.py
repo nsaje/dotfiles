@@ -263,8 +263,8 @@ urlpatterns += [
         name='campaign_ad_groups'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/agency/',
-        login_required(dash.views.agency.CampaignAgency.as_view()),
+        r'^api/campaigns/(?P<campaign_id>\d+)/history/',
+        login_required(dash.views.agency.CampaignHistory.as_view()),
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
