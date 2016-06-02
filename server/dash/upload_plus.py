@@ -37,6 +37,7 @@ def invoke_external_validation(candidate):
             'adGroupID': candidate.ad_group.pk,
             'batchID': candidate.batch.pk,
             'imageUrl': candidate.image_url,
+            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL
         }
     )
     candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
