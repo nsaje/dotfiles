@@ -16,10 +16,6 @@ logger = logging.getLogger(__name__)
 
 POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
 
-def extract_source_slug(source_slug):
-    if source_slug.startswith('b1_'):
-        return source_slug[3:]
-    return source_slug
 
 class ContentAdStats(object):
     """
@@ -78,7 +74,7 @@ class ContentAdStats(object):
         content_ad_postclick = defaultdict(list)
         for row in self._postclick_stats_breakdown(date).rows():
             content_ad_id = row[0]
-            media_source = extract_source_slug(row[2])
+            media_source = helpers.extract_source_slug(row[2])
             content_ad_postclick[(content_ad_id, media_source)].append(row)
 
         ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
@@ -109,7 +105,7 @@ class ContentAdStats(object):
                 content_ad_postclick,
                 ad_group,
                 content_ad_id,
-                extract_source_slug(media_source_slug)
+                helpers.extract_source_slug(media_source_slug)
             )
 
             yield (
