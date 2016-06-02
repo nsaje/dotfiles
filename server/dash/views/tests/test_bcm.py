@@ -633,13 +633,13 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "start_date": "2015-10-01"
                 },
                 {
-                    'available': u'100000.0000',
+                    'available': u'99900.0000',
                     'comment': u'Agency credit',
                     'end_date': u'2015-11-30',
                     'start_date': u'2015-10-01',
                     'is_available': False,
                     'license_fee': u'20',
-                    'total': u'100000.0000',
+                    'total': u'99900.0000',
                     'id': 1000,
                 }
             ]
@@ -1070,7 +1070,6 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-
         self.assertDictEqual(response.json()['data'], {
             "active": [
                 {
@@ -1079,6 +1078,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "10000.0000",
                     "total": "10000.0000",
                     "id": 1001,
@@ -1096,6 +1096,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "100000.0000",
                     "comment": "Test case",
                     "total": "100000.0000",
@@ -1125,6 +1126,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "comment": None,
                     "allocated": "4994.0000",
                     "total": "10000.0000",
@@ -1143,6 +1145,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
                     "id": 1,
@@ -1170,6 +1173,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "4950.0000",
                     "comment": None,
                     "total": "10000.0000",
@@ -1188,6 +1192,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "comment": "Test case",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
@@ -1213,6 +1218,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 11, 11)
             budget.free_inactive_allocated_assets()
             response = self.client.get(url)
+
         self.assertEqual(json.loads(response.content)['data'], on_reserve_data)
 
         with patch('utils.dates_helper.local_today') as mock_now:
