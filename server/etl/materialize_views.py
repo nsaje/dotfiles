@@ -107,9 +107,9 @@ class MasterView(object):
                 row.publisher,
 
                 helpers.extract_device_type(row.device_type),
-                row.country,
-                row.state,
-                row.dma,
+                helpers.extract_country(row.country),
+                helpers.extract_state(row.state),
+                helpers.extract_dma(row.dma),
                 age,
                 gender,
                 helpers.extract_age_gender(age, gender),

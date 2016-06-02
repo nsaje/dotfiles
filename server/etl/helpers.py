@@ -64,6 +64,24 @@ def extract_device_type(device_type):
     return constants.DeviceType.UNDEFINED
 
 
+def extract_country(country):
+    if len(country) == 2:
+        return country
+    return None
+
+
+def extract_state(state):
+    if len(state) == 2:
+        return state
+    return None
+
+
+def extract_dma(dma):
+    if 400 < dma < 1000:
+        return dma
+    return None
+
+
 def extract_age(age):
     age = age.strip()
     if age == '18-20':
