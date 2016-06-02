@@ -2,16 +2,7 @@ import datetime
 from decimal import Decimal
 from django.db.models import Sum
 
-
-CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
-
-
-def nano_to_cc(num):
-    return int(round(num * 0.00001))
-
-
-def nano_to_dec(num):
-    return Decimal(nano_to_cc(num) * CC_TO_DEC_MULTIPLIER)
+from utils import converters
 
 
 def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
@@ -36,7 +27,7 @@ def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
     )
 
     spend_data = {
-        (key + '_cc'): nano_to_cc(spend or 0)
+        (key + '_cc'): converters.nano_to_cc(spend or 0)
         for key, spend in statements.aggregate(
             media=Sum('media_spend_nano'),
             data=Sum('data_spend_nano'),
@@ -47,7 +38,7 @@ def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
     if not use_decimal:
         return spend_data
     return {
-        key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
+        key[:-3]: Decimal(spend_data[key]) * converters.CC_TO_DECIMAL_DOLAR
         for key in spend_data.keys()
     }
 
@@ -67,7 +58,7 @@ def calculate_spend_data(statements, date=None, use_decimal=False):
         statements = statements.filter(date__lte=date)
 
     spend_data = {
-        (key + '_cc'): nano_to_cc(spend or 0)
+        (key + '_cc'): converters.nano_to_cc(spend or 0)
         for key, spend in statements.aggregate(
             media=Sum('media_spend_nano'),
             data=Sum('data_spend_nano'),
@@ -78,6 +69,6 @@ def calculate_spend_data(statements, date=None, use_decimal=False):
     if not use_decimal:
         return spend_data
     return {
-        key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
+        key[:-3]: Decimal(spend_data[key]) * converters.CC_TO_DECIMAL_DOLAR
         for key in spend_data.keys()
     }
