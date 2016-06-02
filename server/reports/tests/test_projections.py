@@ -13,6 +13,8 @@ from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 from zemauth.models import User
 
+from utils import converters
+
 
 class ProjectionsTestCase(test.TestCase):
     fixtures = ['test_projections']
@@ -24,9 +26,9 @@ class ProjectionsTestCase(test.TestCase):
         reports.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=media * dash.models.TO_NANO_MULTIPLIER,
-            data_spend_nano=data * dash.models.TO_NANO_MULTIPLIER,
-            license_fee_nano=fee * dash.models.TO_NANO_MULTIPLIER,
+            media_spend_nano=media * converters.DOLAR_TO_NANO,
+            data_spend_nano=data * converters.DOLAR_TO_NANO,
+            license_fee_nano=fee * converters.DOLAR_TO_NANO,
         )
 
     def _create_batch_statements(self, budgets, start_date, end_date=None):
