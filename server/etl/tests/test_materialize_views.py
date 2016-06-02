@@ -37,7 +37,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch('etl.materialize_views.MasterView._get_stats')
     @mock.patch('etl.materialize_views.MasterView._get_postclickstats')
     @mock.patch('etl.materialize_views.MasterView._get_touchpoint_conversions')
-    def test_generate_rows(self, mock_get_touchpoint_conversions, mock_get_postclickstats, mock_get_stats):
+    @mock.patch('redshiftapi.db.get_stats_cursor')
+    def test_generate_rows(self, mock_cursor, mock_get_touchpoint_conversions, mock_get_postclickstats, mock_get_stats):
 
         date = datetime.date(2016, 5, 1)
 
@@ -175,7 +176,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         view = materialize_views.MasterView()
         view._prefetch()
 
-        self.assertItemsEqual(list(view._get_stats(date, campaign_factors)), [
+        self.assertItemsEqual(list(view._get_stats(None, date, campaign_factors)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
                       constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
                       22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None)),
@@ -202,7 +203,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         view = materialize_views.MasterView()
         view._prefetch()
 
-        self.assertItemsEqual(list(view._get_postclickstats(date)), [
+        self.assertItemsEqual(list(view._get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
@@ -233,7 +234,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         view._prefetch()
 
         self.maxDiff = None
-        self.assertItemsEqual(list(view._get_touchpoint_conversions(date)), [
+        self.assertItemsEqual(list(view._get_touchpoint_conversions(None, date)), [
             ((1, 1),
              (
                  date, 1, 1, 1, 1, 1, 1, 'bla.com',

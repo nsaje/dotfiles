@@ -30,32 +30,33 @@ class MasterView(object):
     def generate_rows(self, date, campaign_factors):
         self._prefetch()
 
-        breakdown_keys_with_preclick_stats = set()
+        with db.get_stats_cursor() as c:
+            breakdown_keys_with_preclick_stats = set()
 
-        for breakdown_key, row in self._get_stats(date, campaign_factors):
-            breakdown_keys_with_preclick_stats.add(breakdown_key)
-            yield row
-
-        skipped_postclick_stats = set()
-        # only return those rows for which we have
-        for breakdown_key, row in self._get_postclickstats(date):
-            if breakdown_key in breakdown_keys_with_preclick_stats:
+            for breakdown_key, row in self._get_stats(c, date, campaign_factors):
+                breakdown_keys_with_preclick_stats.add(breakdown_key)
                 yield row
-            else:
-                skipped_postclick_stats.add(breakdown_key)
 
-        skipped_tpconversions = set()
-        for breakdown_key, row in self._get_touchpoint_conversions(date):
-            if breakdown_key in breakdown_keys_with_preclick_stats:
-                yield row
-            else:
-                skipped_tpconversions.add(breakdown_key)
+            skipped_postclick_stats = set()
+            # only return those rows for which we have
+            for breakdown_key, row in self._get_postclickstats(c, date):
+                if breakdown_key in breakdown_keys_with_preclick_stats:
+                    yield row
+                else:
+                    skipped_postclick_stats.add(breakdown_key)
 
-        if skipped_postclick_stats:
-            logger.info('MasterView: Couldn\'t join the following postclick stats:', skipped_postclick_stats)
+            skipped_tpconversions = set()
+            for breakdown_key, row in self._get_touchpoint_conversions(c, date):
+                if breakdown_key in breakdown_keys_with_preclick_stats:
+                    yield row
+                else:
+                    skipped_tpconversions.add(breakdown_key)
 
-        if skipped_tpconversions:
-            logger.info('MasterView: Couldn\'t join the following touchpoint conversions stats:', skipped_tpconversions)
+            if skipped_postclick_stats:
+                logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
+
+            if skipped_tpconversions:
+                logger.info('MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
 
     def _prefetch(self):
         self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
@@ -65,11 +66,12 @@ class MasterView(object):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
-    def _get_stats(self, date, campaign_factors):
+    def _get_stats(self, cursor, date, campaign_factors):
 
-        results = self._get_stats_query_results(date)
+        print 'get stats'
+        # results = self._get_stats_query_results(date)
 
-        for row in results:
+        for row in self._get_stats_query_results(cursor, date):
 
             if row.ad_group_id not in self.ad_groups_map:
                 logger.error("Got spend for unknown ad group: %s", row.ad_group_id)
@@ -133,15 +135,17 @@ class MasterView(object):
                 None,
             )
 
-    def _get_postclickstats(self, date):
-        results = self._get_postclickstats_query_results(date)
+    def _get_postclickstats(self, cursor, date):
+        # results = self._get_postclickstats_query_results(date)
 
+        print 'get postclicks'
         # group postclick rows by ad group and postclick source
         rows_by_ad_group = defaultdict(lambda: defaultdict(list))
-        for row in results:
+        for row in self._get_postclickstats_query_results(cursor, date):
             postclick_source = helpers.extract_postclick_source(row.postclick_source)
             rows_by_ad_group[row.ad_group_id][postclick_source].append(row)
 
+        print 'after mapping postclicks'
         for ad_group_id, rows_by_postclick_source in rows_by_ad_group.iteritems():
 
             if len(rows_by_postclick_source.keys()) > 1:
@@ -203,11 +207,14 @@ class MasterView(object):
                     None,
                 )
 
-    def _get_touchpoint_conversions(self, date):
+    def _get_touchpoint_conversions(self, cursor, date):
 
-        results = self._get_touchpoint_conversions_query_results(date)
+        print 'get tp conversions'
 
-        conversions_breakdown = helpers.construct_touchpoint_conversions_dict(results)
+        conversions_breakdown = helpers.construct_touchpoint_conversions_dict(
+            self._get_touchpoint_conversions_query_results(cursor, date))
+
+        print 'tp conversions built'
 
         for breakdown_key, conversions in conversions_breakdown.iteritems():
             ad_group_id, content_ad_id, source_id, publisher = breakdown_key
@@ -263,34 +270,25 @@ class MasterView(object):
             )
 
     @classmethod
-    def _get_stats_query_results(cls, date):
+    def _get_stats_query_results(cls, cursor, date):
         sql, params = cls._prepare_stats_query(date)
 
-        with db.get_stats_cursor() as c:
-            c.execute(sql, constraints)
-            results = db.namedtuplefetchall(c)
-
-        return results
+        cursor.execute(sql, params)
+        return db.xnamedtuplefetchall(cursor)
 
     @classmethod
-    def _get_postclickstats_query_results(cls, date):
-        sql, params = self._prepare_postclickstats_query(date, ad_group_ids)
+    def _get_postclickstats_query_results(cls, c, date):
+        sql, params = cls._prepare_postclickstats_query(date)
 
-        with db.get_stats_cursor() as c:
-            c.execute(sql, constraints)
-            results = db.namedtuplefetchall(c)
-
-        return results
+        c.execute(sql, params)
+        return db.xnamedtuplefetchall(c)
 
     @classmethod
-    def _get_touchpoint_conversions_query_results(cls, date):
+    def _get_touchpoint_conversions_query_results(cls, c, date):
         sql, params = cls._prepare_touchpoint_conversions_query(date)
 
-        with db.get_stats_cursor() as c:
-            c.execute(sql, params)
-            results = db.namedtuplefetchall(c)
-
-        return results
+        c.execute(sql, params)
+        return db.xnamedtuplefetchall(c)
 
     @classmethod
     def _prepare_stats_query(cls, date):
