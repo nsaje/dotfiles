@@ -1166,7 +1166,7 @@ var options = {
 
 var defaults = {
     callToAction: [
-        {id: 'Read Mode', text: 'Read More'},
+        {id: 'Read More', text: 'Read More'},
         {id: 'Book Now', text: 'Book Now'},
         {id: 'Contact Us', text: 'Contact Us'},
         {id: 'Download', text: 'Download'},
