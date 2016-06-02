@@ -15,6 +15,7 @@ from dash.views import helpers
 from utils import api_common
 from utils import exc
 from utils import s3helpers
+from utils import redirector_helper
 
 
 class UploadCsv(api_common.BaseApiView):
@@ -117,6 +118,18 @@ class UploadStatus(api_common.BaseApiView):
 
 class UploadSave(api_common.BaseApiView):
 
+    def _create_redirect_ids(self, content_ads):
+        for content_ad in content_ads:
+            redirect = redirector_helper.insert_redirect(
+                content_ad.url,
+                content_ad.pk,
+                content_ad.ad_group_id,
+            )
+
+            content_ad.url = redirect["redirect"]["url"]
+            content_ad.redirect_id = redirect["redirectid"]
+            content_ad.save()
+
     def post(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
             raise Http404('Forbidden')
@@ -128,10 +141,11 @@ class UploadSave(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         try:
-            upload_plus.persist_candidates(batch)
+            content_ads = upload_plus.persist_candidates(batch)
         except upload_plus.InvalidBatchStatus as e:
             raise exc.ValidationError(message=e.message)
 
+        self._create_redirect_ids(content_ads)
         helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
                                             ad_group=ad_group)
         batch.refresh_from_db()
