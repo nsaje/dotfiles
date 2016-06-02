@@ -208,7 +208,7 @@ class MasterView(object):
 
         results = self._get_touchpoint_conversions_query_results(date)
 
-        conversions_breakdown = self._construct_touchpoint_conversions_dict(results)
+        conversions_breakdown = helpers.construct_touchpoint_conversions_dict(results)
 
         for breakdown_key, conversions in conversions_breakdown.iteritems():
             ad_group_id, content_ad_id, source_id, publisher = breakdown_key
@@ -262,33 +262,6 @@ class MasterView(object):
                 None,
                 json.dumps(conversions),
             )
-
-    @classmethod
-    def _construct_touchpoint_conversions_dict(cls, rows):
-        """
-        Returns conversions dicts by breakdown keys. Conversion dict keys are formulated
-        as {slug}__{conversion_window}, values represent the number of touchpoint conversions
-        in given conversion lag.
-
-        Structure built:
-        <breakdown_key>: {
-             {slug}__{conversion_window}: {n of touchpoint conversions}
-        }
-        """
-
-        conversions_breakdown = defaultdict(lambda: defaultdict(int))
-        allowed_windows = dash.constants.ConversionWindows.get_all()
-
-        for row in rows:
-            breakdown_key = (row.ad_group_id, row.content_ad_id, row.source_id, row.publisher)
-
-            # count this window in smaller windows
-            for window in allowed_windows:
-                if row.conversion_window <= window:
-                    conversion_key = '{}_{}'.format(row.slug, window)
-                    conversions_breakdown[breakdown_key][conversion_key] += row.count
-
-        return conversions_breakdown
 
     @classmethod
     def _get_stats_query_results(cls, date):

@@ -1,4 +1,5 @@
 import datetime
+from collections import defaultdict
 
 from dash import constants
 
@@ -137,6 +138,32 @@ def extract_postclick_source(postclick_source):
     return 'other'
 
 def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
-    # a helper function is just so that we don't mess up the order of these
+    # this is a helper function just so that we don't mess up the order of these
 
     return (source_id, content_ad_id)
+
+def construct_touchpoint_conversions_dict(rows):
+    """
+    Returns conversions dicts by breakdown keys. Conversion dict keys are formulated
+    as {slug}__{conversion_window}, values represent the number of touchpoint conversions
+    in given conversion lag.
+
+    Structure built:
+    <breakdown_key>: {
+            {slug}__{conversion_window}: {n of touchpoint conversions}
+    }
+    """
+
+    conversions_breakdown = defaultdict(lambda: defaultdict(int))
+    allowed_windows = constants.ConversionWindows.get_all()
+
+    for row in rows:
+        breakdown_key = (row.ad_group_id, row.content_ad_id, row.source_id, row.publisher)
+
+        # count this window in smaller windows
+        for window in allowed_windows:
+            if row.conversion_window <= window:
+                conversion_key = '{}_{}'.format(row.slug, window)
+                conversions_breakdown[breakdown_key][conversion_key] += row.count
+
+    return conversions_breakdown
