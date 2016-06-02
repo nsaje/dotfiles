@@ -59,6 +59,7 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = Secret('').get()
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+SEND_NOTIFICATION_MAIL = False
 FROM_EMAIL = 'help-test@zemanta.com'
 
 MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
