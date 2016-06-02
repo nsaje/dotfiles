@@ -69,6 +69,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
                     "comment": "Test case",
@@ -106,6 +107,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "comment": "Test case",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
@@ -133,19 +135,18 @@ class AccountCreditViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
 
-        self.maxDiff = None
-
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['data'], {
             "active": [
                 {
-                    "available": "100000.0000",
+                    "available": "99900.0000",
                     "end_date": "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "agency-master@test.com",
                     "license_fee": "20%",
+                    "flat_fee": "100.0000",
                     "allocated": "0",
-                    "total": "100000.0000",
+                    "total": "99900.0000",
                     "comment": "Agency credit",
                     "id": 1000,
                     "is_signed": False,
@@ -156,9 +157,9 @@ class AccountCreditViewTest(BCMViewTestCase):
             ],
             "past": [],
             "totals": {
-                "available": "100000.0000",
+                "available": "99900.0000",
                 "allocated": "0",
-                "total": "100000.0000",
+                "total": "99900.0000",
                 "past": "0",
             }
         })
