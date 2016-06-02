@@ -638,7 +638,6 @@ class CampaignSettings(api_common.BaseApiView):
         result['target_devices'] = settings.target_devices
         result['target_regions'] = settings.target_regions
 
-        # TODO: add permissions
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
             result['campaign_manager'] = str(settings.campaign_manager.id)\
                 if settings.campaign_manager is not None else None
