@@ -22,7 +22,10 @@ class BudgetProjections(object):
         assert breakdown in ('account', 'campaign', )
 
         self.breakdown = breakdown
-        self.projection_date = projection_date or (datetime.date.today() - datetime.timedelta(1))
+        self.projection_date = min(
+            projection_date or (datetime.date.today() - datetime.timedelta(1)),
+            end_date,
+        )
         self.start_date = start_date
         self.confidence_date = start_date - datetime.timedelta(
             BudgetProjections.CONFIDENCE_OFFSET_DAYS

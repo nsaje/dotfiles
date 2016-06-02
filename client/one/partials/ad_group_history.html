@@ -1,13 +1,7 @@
-<div class="page page-ad-group-agency" ng-if="!adGroup.archived">
-    <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
-    <form id="form-ad-group-agency" class="form-horizontal">
-
-                <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" ng-click="archiveAdGroup()" title="{{ (!canArchive && 'An ad group has to be paused in order to archive it.') || ''}}">Archive ad group</button>
-	</form>
-
+<div class="page page-ad-group-agency">
     <div class="section ad-group-agency-history-table">
-        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
-</div>
+        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover></div>
+
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">
@@ -37,13 +31,6 @@
             </table>
         </div>
     </div>
-</div>
-
-<div class="page page-ad-group-agency" ng-if="!!adGroup.archived">
-    <p>
-        <strong>This ad group is archived.</strong>
-    </p>
-    <button href type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreAdGroup()" title="{{ (!canRestore && 'In order to restore this ad group it\'s campaign must be restored first.') || '' }}">Restore ad group</button>
 </div>
 
 <script id="popoverContent.html" type="text/ng-template">

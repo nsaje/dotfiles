@@ -284,7 +284,7 @@ oneApp.config(['$provide', function ($provide) {
         $delegate.adGroupSettings.save = function demo (settings) {
             var deferred = $q.defer(),
                 cacheId = '/api/ad_groups/' + settings.id + '/settings/',
-                cacheHistoryId = '/api/ad_groups/' + settings.id + '/agency/',
+                cacheHistoryId = '/api/ad_groups/' + settings.id + '/history/',
                 cacheStateId = '/api/ad_groups/' + settings.id + '/state/',
                 oldSettings = zemDemoCacheService.get(cacheHistoryId),
                 agency = oldSettings || {
@@ -328,8 +328,8 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.adGroupAgency.get = resetIfErrorWrapper(
-            defaultGetWrapper('/api/ad_groups/{id}/agency/', $delegate.adGroupAgency.get)
+        $delegate.adGroupHistory.get = resetIfErrorWrapper(
+            defaultGetWrapper('/api/ad_groups/{id}/history/', $delegate.adGroupHistory.get)
         );
 
         /* Ad group media sources */
