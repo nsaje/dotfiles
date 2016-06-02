@@ -106,45 +106,54 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         view = materialize_views.MasterView()
         self.assertItemsEqual(list(view.generate_rows(date, {})), [
-            (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
-             constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
-             22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None),
-            (date, 2, 1, 2, 2, 2, 2, 'Trol', constants.DeviceType.TABLET, 'US', 'FL', 866,
-             constants.AgeGroup.AGE_21_29, constants.Gender.WOMEN, constants.AgeGenderGroup.AGE_21_29_WOMEN,
-             22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None),
-            (date, 1, 1, 1, 3, 3, 3, 'beer', constants.DeviceType.UNDEFINED, 'US', 'MA', 866,
-             constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-             22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None),
-            (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
-             constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-             0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None),
-            (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
-             constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-             0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None),
-             (
-                 date, 3, 1, 1, 1, 1, 1, 'bla.com',
-                 constants.DeviceType.UNDEFINED, None, None, None,
-                 constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, json.dumps({
-                     'blapix_168': 2,
-                     'blapix_720': 2,
-                     'einpix_24': 2,
-                     'einpix_168': 10,
-                     'einpix_720': 12,
-                 }),
-             ),
-             (
-                 date, 2, 1, 1, 1, 1, 2, 'na.com',
-                 constants.DeviceType.UNDEFINED, None, None, None,
-                 constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, json.dumps({
+            (
+                date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
+                constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
+                22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None
+            ),
+            (
+                date, 2, 1, 2, 2, 2, 2, 'Trol', constants.DeviceType.TABLET, 'US', 'FL', 866,
+                constants.AgeGroup.AGE_21_29, constants.Gender.WOMEN, constants.AgeGenderGroup.AGE_21_29_WOMEN,
+                22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None
+            ),
+            (
+                date, 1, 1, 1, 3, 3, 3, 'beer', constants.DeviceType.UNDEFINED, 'US', 'MA', 866,
+                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None
+            ),
+            (
+                date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
+                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
+            ),
+            (
+                date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
+                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
+            ),
+            (
+                date, 3, 1, 1, 1, 1, 1, 'bla.com',
+                constants.DeviceType.UNDEFINED, None, None, None,
+                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, json.dumps({
+                    'blapix_168': 2,
+                    'blapix_720': 2,
+                    'einpix_24': 2,
+                    'einpix_168': 10,
+                    'einpix_720': 12,
+                }),
+            ),
+            (
+                date, 2, 1, 1, 1, 1, 2, 'na.com',
+                constants.DeviceType.UNDEFINED, None, None, None,
+                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, json.dumps({
                     'einpix_24': 2,
                     'einpix_168': 2,
                     'einpix_720': 2,
-                 }),
-             ),
+                }),
+            ),
         ])
-        pass
 
     @mock.patch('etl.materialize_views.MasterView._get_stats_query_results')
     def test_get_stats(self, mock_get_stats_query_results):

@@ -37,9 +37,8 @@ class MasterView(object):
             yield row
 
         skipped_postclick_stats = set()
-        # only return those rows for which we have 
+        # only return those rows for which we have
         for breakdown_key, row in self._get_postclickstats(date):
-            print breakdown_key, breakdown_key in breakdown_keys_with_preclick_stats
             if breakdown_key in breakdown_keys_with_preclick_stats:
                 yield row
             else:
@@ -334,4 +333,3 @@ class MasterView(object):
         params = {'date': date}
 
         return sql, params
-

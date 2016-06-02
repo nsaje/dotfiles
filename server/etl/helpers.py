@@ -137,10 +137,12 @@ def extract_postclick_source(postclick_source):
         return postclick_source
     return 'other'
 
+
 def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
     # this is a helper function just so that we don't mess up the order of these
 
     return (source_id, content_ad_id)
+
 
 def construct_touchpoint_conversions_dict(rows):
     """
