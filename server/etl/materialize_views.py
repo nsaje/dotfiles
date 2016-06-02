@@ -56,7 +56,8 @@ class MasterView(object):
                 logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
 
             if skipped_tpconversions:
-                logger.info('MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
+                logger.info(
+                    'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
 
     def _prefetch(self):
         self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
@@ -67,9 +68,6 @@ class MasterView(object):
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
     def _get_stats(self, cursor, date, campaign_factors):
-
-        print 'get stats'
-        # results = self._get_stats_query_results(date)
 
         for row in self._get_stats_query_results(cursor, date):
 
@@ -136,16 +134,13 @@ class MasterView(object):
             )
 
     def _get_postclickstats(self, cursor, date):
-        # results = self._get_postclickstats_query_results(date)
 
-        print 'get postclicks'
         # group postclick rows by ad group and postclick source
         rows_by_ad_group = defaultdict(lambda: defaultdict(list))
         for row in self._get_postclickstats_query_results(cursor, date):
             postclick_source = helpers.extract_postclick_source(row.postclick_source)
             rows_by_ad_group[row.ad_group_id][postclick_source].append(row)
 
-        print 'after mapping postclicks'
         for ad_group_id, rows_by_postclick_source in rows_by_ad_group.iteritems():
 
             if len(rows_by_postclick_source.keys()) > 1:
@@ -209,12 +204,8 @@ class MasterView(object):
 
     def _get_touchpoint_conversions(self, cursor, date):
 
-        print 'get tp conversions'
-
         conversions_breakdown = helpers.construct_touchpoint_conversions_dict(
             self._get_touchpoint_conversions_query_results(cursor, date))
-
-        print 'tp conversions built'
 
         for breakdown_key, conversions in conversions_breakdown.iteritems():
             ad_group_id, content_ad_id, source_id, publisher = breakdown_key
