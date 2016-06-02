@@ -16,11 +16,17 @@ logger = logging.getLogger(__name__)
 S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{batch_id}/{filename}'
 
 
+class InvalidBatchStatus(Exception):
+    pass
+
+
 @transaction.atomic
-def insert_candidates(content_ads_data, ad_group, batch_name):
+def insert_candidates(content_ads_data, ad_group, batch_name, filename):
     batch = models.UploadBatch.objects.create(
         name=batch_name,
+        ad_group=ad_group,
         batch_size=len(content_ads_data),
+        original_filename=filename,
     )
     candidates = _create_candidates(content_ads_data, ad_group, batch)
     return batch, candidates
@@ -46,45 +52,59 @@ def invoke_external_validation(candidate):
 
 
 @transaction.atomic
-def persist_candidates(ad_group, batch_id):
-    candidates = models.ContentAdCandidate.objects.filter(
-        ad_group=ad_group,  # to check user has access
-        batch_id=batch_id,
-    )
-    ad_group_sources = []
-    for s in models.AdGroupSource.objects.filter(
-            ad_group_id=ad_group.id,
-    ).select_related('source__source_type'):
-        if s.can_manage_content_ads and s.source.can_manage_content_ads():
-            ad_group_sources.append(s)
+def persist_candidates(batch):
+    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
+        raise InvalidBatchStatus('Invalid batch status')
 
-    errors = {}
+    new_content_ads, errors = _prepare_candidates(batch)
+    _persist_content_ads(batch, new_content_ads)
+    _update_batch_status(batch, errors)
+
+
+def _prepare_candidates(batch):
+    candidates = models.ContentAdCandidate.objects.filter(
+        batch=batch,
+    )
+
+    new_content_ads = []
+    errors = []
     for candidate in candidates:
         f = forms.ContentAdForm(model_to_dict(candidate))
-        if f.is_valid():
-            _create_content_ad(f.cleaned_data, ad_group.id, batch_id, ad_group_sources)
+        if not f.is_valid():
+            # f.errors is a dict of lists of messages
+            errors.append({
+                'candidate': candidate,
+                'errors': ', '.join([', '.join(inner) for inner in f.errors.values()])
+            })
             continue
-
-        # f.errors is a dict of lists
-        errors[candidate] = ', '.join([', '.join(inner) for inner in f.errors.values()])
-
-    if errors:
-        _save_error_report(batch_id, errors)
+        new_content_ads.append(f.cleaned_data)
 
     candidates.delete()
+    return new_content_ads, errors
 
 
-def validate_candidates(candidates):
-    errors = {}
-    for candidate in candidates:
-        f = forms.ContentAdCandidateForm(model_to_dict(candidate))
-        if not f.is_valid():
-            errors[candidate.id] = f.errors
-    return errors
+def _persist_content_ads(batch, new_content_ads):
+    ad_group_sources = []
+    for ags in models.AdGroupSource.objects.filter(
+            ad_group=batch.ad_group,
+    ).select_related('source__source_type'):
+        if ags.can_manage_content_ads and ags.source.can_manage_content_ads():
+            ad_group_sources.append(ags)
+
+    for content_ad in new_content_ads:
+        _create_content_ad(content_ad, batch.ad_group_id, batch.id, ad_group_sources)
 
 
-def _save_error_report(batch_id, error_dict):
-    filename = 'errors.csv'
+def _update_batch_status(batch, errors):
+    if errors:
+        batch.error_report_key = _save_error_report(batch.id, batch.original_filename, errors)
+
+    batch.status = constants.UploadBatchStatus.DONE
+    batch.num_errors = len(errors)
+    batch.save()
+
+
+def _save_error_report(batch_id, filename, errors):
     string = StringIO.StringIO()
 
     fields = list(forms.MANDATORY_CSV_FIELDS) + list(forms.OPTIONAL_CSV_FIELDS)
@@ -94,9 +114,9 @@ def _save_error_report(batch_id, error_dict):
     writer = unicodecsv.DictWriter(string, fields)
 
     writer.writeheader()
-    for candidate, errors in error_dict.iteritems():
-        row = {k: v for k, v in model_to_dict(candidate).items() if k in fields}
-        row['errors'] = errors
+    for error_dict in errors:
+        row = {k: v for k, v in model_to_dict(error_dict['candidate']).items() if k in fields}
+        row['errors'] = error_dict['errors']
         writer.writerow(row)
 
     content = string.getvalue()
@@ -117,6 +137,52 @@ def _upload_error_report_to_s3(batch_id, content, filename):
     return None
 
 
+@transaction.atomic
+def cancel_upload(batch):
+    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
+        raise InvalidBatchStatus('Invalid batch status')
+
+    batch.status = constants.UploadBatchStatus.CANCELLED
+    batch.save()
+
+    batch.contentadcandidate_set.all().delete()
+
+
+def validate_candidates(candidates):
+    errors = {}
+    for candidate in candidates:
+        f = forms.ContentAdCandidateForm(model_to_dict(candidate))
+        if not f.is_valid():
+            errors[candidate.id] = f.errors
+    return errors
+
+
+@transaction.atomic
+def process_callback(callback_data):
+    try:
+        candidate_id = callback_data.get('id')
+        candidate = models.ContentAdCandidate.objects.get(pk=candidate_id)
+    except models.ContentAdCandidate.DoesNotExist:
+        logger.exception('No candidate with id %s', callback_data['id'])
+        return
+
+    candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
+    try:
+        if callback_data['image']['id']:
+            candidate.image_status = constants.AsyncUploadJobStatus.OK
+        if callback_data['url']['valid']:
+            candidate.url_status = constants.AsyncUploadJobStatus.OK
+        candidate.image_id = callback_data['image']['id']
+        candidate.image_width = callback_data['image']['width']
+        candidate.image_height = callback_data['image']['height']
+        candidate.image_hash = callback_data['image']['hash']
+    except:
+        logger.exception('Failed to parse callback data %s', str(callback_data))
+
+    candidate.save()
+
+
 def _create_candidates(content_ads_data, ad_group, batch):
     candidates_added = []
     for content_ad in content_ads_data:
@@ -128,12 +194,12 @@ def _create_candidates(content_ads_data, ad_group, batch):
                 url=content_ad.get('url', ''),
                 title=content_ad.get('title', ''),
                 image_url=content_ad.get('image_url', ''),
-                image_crop=content_ad.get('image_crop', 'faces'),
+                image_crop=content_ad.get('image_crop', constants.ImageCrop.CENTER),
                 display_url=content_ad.get('display_url', ''),
                 brand_name=content_ad.get('brand_name', ''),
                 description=content_ad.get('description', ''),
                 call_to_action=content_ad.get('call_to_action', ''),
-                tracker_urls=content_ad.get('trakcer_urls', ''),
+                tracker_urls=content_ad.get('tracker_urls', ''),
             )
         )
     return candidates_added
@@ -168,29 +234,3 @@ def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
                 state=constants.ContentAdSourceState.ACTIVE
             )
         )
-
-
-@transaction.atomic
-def process_callback(callback_data):
-    try:
-        candidate_id = callback_data.get('id')
-        candidate = models.ContentAdCandidate.objects.get(pk=candidate_id)
-    except models.ContentAdCandidate.DoesNotExist:
-        logger.exception('No candidate with id %s', callback_data['id'])
-        return
-
-    candidate.image_status = constants.AsyncUploadJobStatus.FAILED
-    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
-    try:
-        if callback_data['image']['id']:
-            candidate.image_status = constants.AsyncUploadJobStatus.OK
-        if callback_data['url']['valid']:
-            candidate.url_status = constants.AsyncUploadJobStatus.OK
-        candidate.image_id = callback_data['image']['id']
-        candidate.image_width = callback_data['image']['width']
-        candidate.image_height = callback_data['image']['height']
-        candidate.image_hash = callback_data['image']['hash']
-    except:
-        logger.exception('Failed to parse callback data %s', str(callback_data))
-
-    candidate.save()

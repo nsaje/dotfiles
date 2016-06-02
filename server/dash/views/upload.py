@@ -1,4 +1,9 @@
+import os
+
+import boto.exception
+from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.http import Http404
 
 from dash import constants
 from dash import forms
@@ -9,9 +14,10 @@ from dash.views import helpers
 
 from utils import api_common
 from utils import exc
+from utils import s3helpers
 
 
-class MultipleAdsUpload(api_common.BaseApiView):
+class UploadCsv(api_common.BaseApiView):
 
     def _update_ad_group_batch_settings(self, request, ad_group, cleaned_fields):
         new_settings = ad_group.get_current_settings().copy_settings()
@@ -36,6 +42,9 @@ class MultipleAdsUpload(api_common.BaseApiView):
         return cleaned_fields['content_ads']
 
     def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         current_settings = ad_group.get_current_settings()
@@ -49,6 +58,9 @@ class MultipleAdsUpload(api_common.BaseApiView):
         })
 
     def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
@@ -57,11 +69,12 @@ class MultipleAdsUpload(api_common.BaseApiView):
 
         batch_name = form.cleaned_data['batch_name']
         content_ads = form.cleaned_data['content_ads']
+        filename = request.FILES['content_ads'].name
         self._augment_candidates_data(form.cleaned_data)
 
         with transaction.atomic():
             self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
-            batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name)
+            batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name, filename)
         for candidate in candidates:
             upload_plus.invoke_external_validation(candidate)
         errors = upload_plus.validate_candidates(candidates)
@@ -75,13 +88,18 @@ class MultipleAdsUpload(api_common.BaseApiView):
 class UploadStatus(api_common.BaseApiView):
 
     def get(self, request, ad_group_id, batch_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        candidates = models.ContentAdCandidate.objects.filter(
-            ad_group=ad_group,  # to check user has access
-            batch_id=batch_id,
-        )
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
 
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError()
+
+        candidates = batch.contentadcandidate_set.all()
         candidate_ids = request.GET.get('candidates')
+
         if candidate_ids:
             candidates = candidates.filter(id__in=candidate_ids)
 
@@ -100,10 +118,79 @@ class UploadStatus(api_common.BaseApiView):
 class UploadSave(api_common.BaseApiView):
 
     def post(self, request, ad_group_id, batch_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
 
-        upload_plus.persist_candidates(ad_group, batch_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError()
+
+        try:
+            upload_plus.persist_candidates(batch)
+        except upload_plus.InvalidBatchStatus as e:
+            raise exc.ValidationError(message=e.message)
+
         helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
                                             ad_group=ad_group)
+        batch.refresh_from_db()
+
+        error_report = None
+        if batch.error_report_key:
+            error_report = reverse('upload_plus_error_report',
+                                   kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
+        return self.create_api_response({
+            'num_errors': batch.num_errors,
+            'error_report': error_report,
+        })
+
+
+class UploadCancel(api_common.BaseApiView):
+
+    def post(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError()
+
+        try:
+            upload_plus.cancel_upload(batch)
+        except upload_plus.InvalidBatchStatus as e:
+            raise exc.ValidationError(message=e.message)
 
         return self.create_api_response({})
+
+
+class UploadErrorReport(api_common.BaseApiView):
+
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError()
+
+        if batch.status != constants.UploadBatchStatus.DONE:
+            raise exc.ValidationError()
+
+        if not batch.error_report_key:
+            raise exc.ValidationError()
+
+        try:
+            content = s3helpers.S3Helper().get(batch.error_report_key)
+        except boto.exception.S3ResponseError:
+            raise exc.MissingDataError()
+
+        basefnm, _ = os.path.splitext(
+            os.path.basename(batch.error_report_key))
+
+        name = basefnm.rsplit('_', 1)[0] + '_errors'
+        return self.create_csv_response(name, content=content)
