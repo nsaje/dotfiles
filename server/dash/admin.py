@@ -1019,6 +1019,7 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
 
 
 class DemoMappingAdminForm(forms.ModelForm):
+    real_account = forms.ModelChoiceField(queryset=models.Account.objects.order_by('name'))
     demo_campaign_name_pool = SimpleArrayField(
         forms.CharField(),
         delimiter='\n',
