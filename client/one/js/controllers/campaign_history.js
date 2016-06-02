@@ -12,10 +12,6 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
         api.campaignHistory.get($state.params.id).then(
             function (data) {
                 $scope.history = data.history;
-            },
-            function () {
-                // error
-                return;
             }
         ).finally(function () {
             $scope.requestInProgress = false;
