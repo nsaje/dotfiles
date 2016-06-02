@@ -139,7 +139,7 @@ def prepare_demo_objects(serialize_list, demo_mappings):
 
         # extract dependencies and anonymize
         start_extracting_at = len(serialize_list)
-        _add_object_dependencies(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
+        _add_explicit_object_dependents(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
         _add_to_serialize_list(serialize_list, [fake_credit])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
 
@@ -196,7 +196,7 @@ def _add_to_serialize_list(serialize_list, objs):
             serialize_list[obj] = obj
 
 
-def _add_object_dependencies(serialize_list, obj, dependencies):
+def _add_explicit_object_dependents(serialize_list, obj, dependencies):
     # get the dependent objects and add to serialize list
     for dep in dependencies:
         try:
@@ -210,7 +210,7 @@ def _add_object_dependencies(serialize_list, obj, dependencies):
             _add_to_serialize_list(serialize_list, [thing])
             if sub_deps:
                 for new_obj in thing:
-                    _add_object_dependencies(serialize_list, new_obj, sub_deps)
+                    _add_explicit_object_dependents(serialize_list, new_obj, sub_deps)
         except VariableDoesNotExist:
             sys.stderr.write('%s not found' % dep)
 

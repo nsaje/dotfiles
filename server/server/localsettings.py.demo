@@ -46,7 +46,7 @@ DATABASES = {
 
 ALLOWED_HOSTS = []
 
-BASE_URL = 'https://one.zemanta.com'
+BASE_URL = 'https://demo.zemanta.com'
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_REDIRECT_EXEMPT = [ '^healthcheck$', '^k1api/']
@@ -165,8 +165,8 @@ BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
 
-SQS_REGION = 'us-east-1'
-SQS_QUEUE_PREFIX = 'test'
+SQS_REGION = ''
+SQS_QUEUE_PREFIX = 'demo'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
 
 CAMPAIGN_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-campaign_change'
@@ -183,12 +183,12 @@ BROKER_TRANSPORT_OPTIONS = {
 
 R1_DEMO_MODE = True
 R1_API_SIGN_KEY = Secret('').get()
-R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
-R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
-R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
+R1_REDIRECTS_API_URL = ''
+R1_REDIRECTS_ADGROUP_API_URL = ''
+R1_VALIDATE_API_URL = ''
 R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/'
-R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
-R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
+R1_CONVERSION_STATS_URL = ''
+R1_CONVERSION_STATS_RESULT_URL = ''
 
 BIDDER_API_SIGN_KEY = ''
 
