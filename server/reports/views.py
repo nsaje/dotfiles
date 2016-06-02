@@ -10,7 +10,7 @@ import newrelic.agent
 from utils import request_signer
 import dash.models
 import reports.api_contentads
-import reports.refresh_k1
+import etl.refresh_k1
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def generate_reports(request):
     # TODO celery task
 
     try:
-        reports.refresh_k1.refresh_k1_reports()
+        etl.refresh_k1.refresh_k1_reports()
     except Exception as e:
         logger.exception("Refresh k1 reports error")
         return _error_response({"error": str(e)}, status=500)

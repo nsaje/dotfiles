@@ -582,6 +582,16 @@ var constants = {
         NEUTRAL: 2,
         SAD: 3,
     },
+    sideBarTabs: {
+        PERFORMANCE: 'performance',
+        CONTENT_INSIGHTS: 'content-insights',
+    },
+    asyncUploadJobStatus: {
+        PENDING_START: 1,
+        WAITING_RESPONSE: 2,
+        OK: 3,
+        FAILED: 4,
+    },
 };
 
 var options = {
@@ -1162,7 +1172,7 @@ var options = {
 
 var defaults = {
     callToAction: [
-        {id: 'Read Mode', text: 'Read More'},
+        {id: 'Read More', text: 'Read More'},
         {id: 'Book Now', text: 'Book Now'},
         {id: 'Contact Us', text: 'Contact Us'},
         {id: 'Download', text: 'Download'},

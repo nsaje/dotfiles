@@ -46,8 +46,6 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
 import actionlog.zwei_actions
-import actionlog.models
-import actionlog.constants
 
 from automation import campaign_stop
 
@@ -60,10 +58,12 @@ from dash import infobox_helpers
 from dash import publisher_helpers
 
 import reports.api_publishers
-import reports.api
 import reports.projections
 
 logger = logging.getLogger(__name__)
+
+YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}'
+OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/selfserve/manage-content?ecampaignId={campaign_id}&eadvId={marketer_id}'
 
 
 def create_name(objects, name):
@@ -120,10 +120,21 @@ def supply_dash_redirect(request):
     credentials = ad_group_source.source_credentials and \
         ad_group_source.source_credentials.decrypt()
 
-    url_response = actionlog.zwei_actions.get_supply_dash_url(
-        ad_group_source.source.source_type.type, credentials, ad_group_source.source_campaign_key)
+    # TODO wessel, temporary hack to re-enable links to 3rd party dashboards
+    if ad_group_source.source.source_type.type == constants.SourceType.YAHOO:
+        url = YAHOO_DASH_URL.format(
+            advertiser_id=json.loads(credentials)['advertiser_id'],
+            campaign_id=ad_group_source.source_campaign_key
+        )
+    elif ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN:
+        url = OUTBRAIN_DASH_URL.format(
+            campaign_id=ad_group_source.source_campaign_key['campaign_id'],
+            marketer_id=str(ad_group_source.source_campaign_key['marketer_id'])
+        )
+    else:
+        raise exc.MissingDataError()
 
-    return render(request, 'redirect.html', {'url': url_response['url']})
+    return render(request, 'redirect.html', {'url': url})
 
 
 class User(api_common.BaseApiView):
@@ -459,14 +470,11 @@ class AdGroupRestore(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
 
-        actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
-
         for ad_group_source in ad_group.adgroupsource_set.all():
             api.refresh_publisher_blacklist(ad_group_source, request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
                                             ad_group=ad_group)
-
         return self.create_api_response({})
 
 

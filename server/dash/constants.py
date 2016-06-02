@@ -1395,3 +1395,182 @@ class SystemUserType(ConstantBase):
         CAMPAIGN_STOP: 'Campaign Stop',
         AUTOPILOT: 'Zemanta Autopilot'
     }
+
+
+class FacebookPageRequestType(ConstantBase):
+    EMPTY = 1
+    CONNECTED = 2
+    PENDING = 3
+    INVALID_PAGE = 4
+    UNKNOWN = 5
+
+    _VALUES = {
+        EMPTY: 'Empty',
+        CONNECTED: 'Connected',
+        PENDING: 'Pending',
+        INVALID_PAGE: 'Invalid page',
+        UNKNOWN: 'Unknown'
+    }
+
+
+class AsyncUploadJobStatus(ConstantBase):
+    PENDING_START = 1
+    WAITING_RESPONSE = 2
+    OK = 3
+    FAILED = 4
+
+    _VALUES = {
+        PENDING_START: 'Pending',
+        WAITING_RESPONSE: 'Waiting for response',
+        OK: 'OK',
+        FAILED: 'Failed',
+    }
+
+
+class DeviceType(ConstantBase):
+    UNDEFINED = 0
+    DESKTOP = 1
+    TABLET = 2
+    MOBILE = 3
+
+    _VALUES = {
+        UNDEFINED: 'Undefined',
+        DESKTOP: 'Desktop',
+        TABLET: 'Tablet',
+        MOBILE: 'Mobile',
+    }
+
+
+class AgeGroup(ConstantBase):
+    UNDEFINED = 0
+    AGE_18_20 = 1
+    AGE_21_29 = 2
+    AGE_30_39 = 3
+    AGE_40_49 = 4
+    AGE_50_64 = 5
+    AGE_65_MORE = 6
+
+    _VALUES = {
+        UNDEFINED: 'Undefined',
+        AGE_18_20: '18-20',
+        AGE_21_29: '21-29',
+        AGE_30_39: '30-39',
+        AGE_40_49: '40-49',
+        AGE_50_64: '50-64',
+        AGE_65_MORE: '65 and older',
+    }
+
+
+class Gender(ConstantBase):
+    UNDEFINED = 0
+    MEN = 1
+    WOMEN = 2
+
+    _VALUES = {
+        UNDEFINED: 'Undefined',
+        MEN: 'Men',
+        WOMEN: 'Women',
+    }
+
+
+class AgeGenderGroup(ConstantBase):
+    UNDEFINED = 0
+    AGE_18_20_MEN = 1
+    AGE_18_20_WOMEN = 2
+    AGE_18_20_UNDEFINED = 3
+    AGE_21_29_MEN = 4
+    AGE_21_29_WOMEN = 5
+    AGE_21_29_UNDEFINED = 6
+    AGE_30_39_MEN = 7
+    AGE_30_39_WOMEN = 8
+    AGE_30_39_UNDEFINED = 9
+    AGE_40_49_MEN = 10
+    AGE_40_49_WOMEN = 11
+    AGE_40_49_UNDEFINED = 12
+    AGE_50_64_MEN = 13
+    AGE_50_64_WOMEN = 14
+    AGE_50_64_UNDEFINED = 15
+    AGE_65_MORE_MEN = 16
+    AGE_65_MORE_WOMEN = 17
+    AGE_65_MORE_UNDEFINED = 18
+
+    _VALUES = {
+        UNDEFINED: 'Undefined',
+        AGE_18_20_MEN: '18-20 Men',
+        AGE_18_20_WOMEN: '18-20 Women',
+        AGE_18_20_UNDEFINED: '18-20 Undefined',
+        AGE_21_29_MEN: '21-29 Men',
+        AGE_21_29_WOMEN: '21-29 Women',
+        AGE_21_29_UNDEFINED: '21-29 Undefined',
+        AGE_30_39_MEN: '30-39 Men',
+        AGE_30_39_WOMEN: '30-39 Women',
+        AGE_30_39_UNDEFINED: '30-39 Undefined',
+        AGE_40_49_MEN: '40-49 Men',
+        AGE_40_49_WOMEN: '40-49 Women',
+        AGE_40_49_UNDEFINED: '40-49 Undefined',
+        AGE_50_64_MEN: '50-64 Men',
+        AGE_50_64_WOMEN: '50-64 Women',
+        AGE_50_64_UNDEFINED: '50-64 Undefined',
+        AGE_65_MORE_MEN: '65+ Men',
+        AGE_65_MORE_WOMEN: '65+ Women',
+        AGE_65_MORE_UNDEFINED: '65+ Undefined',
+    }
+
+
+class ConversionWindows(ConstantBase):
+    LEQ_1_DAY = 24
+    LEQ_7_DAYS = 168
+    LEQ_30_DAYS = 720
+
+    _VALUES = {
+        LEQ_1_DAY: '1 day',
+        LEQ_7_DAYS: '7 days',
+        LEQ_30_DAYS: '30 days',
+    }
+
+
+class EmailTemplateType(ConstantBase):
+
+    ADGROUP_CHANGE = 1
+    CAMPAIGN_CHANGE = 2
+    BUDGET_CHANGE = 3
+    PIXEL_ADD = 4
+    PASSWORD_RESET = 5
+    USER_NEW = 6
+    SUPPLY_REPORT = 7
+    SCHEDULED_EXPORT_REPORT = 8
+    BUDGET_DEPLETING = 9
+    CAMPAIGN_STOPPED = 10
+    AUTOPILOT_AD_GROUP_CHANGE = 11
+    AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
+    CAMPAIGN_LANDING_MODE_SWITCH = 13
+    CAMPAIGN_BUDGET_LOW = 14
+
+    _VALUES = {
+        ADGROUP_CHANGE: 'Ad group settings change',
+        CAMPAIGN_CHANGE: 'Campaign settings change',
+        BUDGET_CHANGE: 'Budget change',
+        PIXEL_ADD: 'New conversion pixel',
+        PASSWORD_RESET: 'User password reset',
+        USER_NEW: 'New user introduction email',
+        SUPPLY_REPORT: 'Supply report',
+        SCHEDULED_EXPORT_REPORT: 'Scheduled report',
+        BUDGET_DEPLETING: 'Depleting budget notification',
+        CAMPAIGN_STOPPED: 'Campaign stopped notification',
+        AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
+        AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
+        CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
+        CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
+    }
+
+
+class ImageCrop(ConstantBase):
+    CENTER = 'center'
+    FACES = 'faces'
+    ENTROPY = 'entropy'
+
+    _VALUES = {
+        CENTER: 'Center',
+        FACES: 'Faces',
+        ENTROPY: 'Entropy',
+    }

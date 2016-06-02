@@ -22,7 +22,6 @@ from dash import api
 from dash import constants
 from dash import models
 from dash import forms as dash_forms
-from dash import threads
 from dash import validation_helpers
 
 import utils.k1_helper
@@ -450,16 +449,13 @@ class CampaignAdmin(admin.ModelAdmin):
     form = dash_forms.CampaignAdminForm
 
     def save_model(self, request, obj, form, change):
-        with transaction.atomic():
-            automatic_campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
-            new_settings = obj.get_current_settings().copy_settings()
-            if new_settings.automatic_campaign_stop != automatic_campaign_stop:
-                new_settings.automatic_campaign_stop = automatic_campaign_stop
-                new_settings.save(request)
-            obj.save(request)
-        threads.EscapeTransactionThread(
-            partial(campaign_stop.perform_landing_mode_check, obj, new_settings)
-        ).start()
+        automatic_campaign_stop = form.cleaned_data.get('automatic_campaign_stop', None)
+        new_settings = obj.get_current_settings().copy_settings()
+        if new_settings.automatic_campaign_stop != automatic_campaign_stop:
+            new_settings.automatic_campaign_stop = automatic_campaign_stop
+            new_settings.save(request)
+        obj.save(request)
+        campaign_stop.perform_landing_mode_check(obj, new_settings)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -483,7 +479,7 @@ class CampaignAdmin(admin.ModelAdmin):
     settings_.allow_tags = True
 
     def view_on_site(self, obj):
-        return '/campaigns/{}/agency'.format(obj.id)
+        return '/campaigns/{}/ad_groups'.format(obj.id)
 
 
 class SourceAdmin(admin.ModelAdmin):
@@ -739,8 +735,6 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         else:
             formset.save()
 
-        threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
-
 
 def approve_ad_group_sources(modeladmin, request, queryset):
     logger.info(
@@ -753,7 +747,6 @@ def approve_ad_group_sources(modeladmin, request, queryset):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         ad_group_source.save()
         actions.extend(api.update_content_ads_submission_status(ad_group_source))
-    threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 approve_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as APPROVED'
 
 
@@ -768,7 +761,6 @@ def reject_ad_group_sources(modeladmin, request, queryset):
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         ad_group_source.save()
         actions.extend(api.update_content_ads_submission_status(ad_group_source))
-    threads.EscapeTransactionThread(partial(actionlog.zwei_actions.send, actions)).start()
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
@@ -1384,41 +1376,15 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         if not user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
             return
 
-        global_blacklist = []
         # currently only support enabling global blacklist
         filtered_queryset = queryset.filter(
             everywhere=True,
             status=constants.PublisherStatus.BLACKLISTED
         )
 
-        # currently only support enabling global blacklist
-        matching_sources = models.Source.objects.filter(
-            deprecated=False
-        )
-        candidate_source = None
-        for source in matching_sources:
-            if source.can_modify_publisher_blacklist_automatically():
-                candidate_source = source
-                break
-
-        for publisher_blacklist in filtered_queryset:
-            global_blacklist.append({
-                'domain': publisher_blacklist.name,
-                'source': candidate_source,
-            })
-
-        actionlogs_to_send = []
-        with transaction.atomic():
-            actionlogs_to_send.extend(
-                api.create_global_publisher_blacklist_actions(
-                    None,
-                    request,
-                    constants.PublisherStatus.ENABLED,
-                    global_blacklist,
-                    send=False
-                )
-            )
-        actionlog.zwei_actions.send(actionlogs_to_send)
+        for pub in filtered_queryset:
+            pub.status = constants.PublisherStatus.ENABLED
+            pub.save()
 
     reenable_global.short_description = "Re-enable publishers globally"
 
@@ -1426,7 +1392,41 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
 
 
 class GAAnalyticsAccount(admin.ModelAdmin):
-    pass
+    list_display = (
+        'account',
+        'ga_account_id',
+        'ga_web_property_id',
+    )
+    search_fields = ('ga_account_id', 'ga_web_property_id')
+
+
+class EmailTemplateAdmin(admin.ModelAdmin):
+    actions = None
+
+    list_display = (
+        'template_type',
+        'subject',
+    )
+    readonly_fields = ('template_type', 'subject', 'body')
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        extra_context['show_save_and_add_another'] = False
+        extra_context['show_save_and_continue'] = False
+        return super(EmailTemplateAdmin, self).change_view(
+            request, object_id,
+            form_url, extra_context=extra_context
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
 
 
 admin.site.register(models.Agency, AgencyAdmin)
@@ -1453,3 +1453,4 @@ admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
+admin.site.register(models.EmailTemplate, EmailTemplateAdmin)

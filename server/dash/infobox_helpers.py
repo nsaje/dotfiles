@@ -15,7 +15,10 @@ import reports.models
 import utils.dates_helper
 import utils.lc_helper
 
+from utils import converters
+
 from decimal import Decimal
+
 
 MAX_PREVIEW_REGIONS = 1
 
@@ -257,16 +260,19 @@ def calculate_available_media_campaign_budget(campaign):
 def calculate_allocated_and_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
-    credit_total = credits.aggregate(amount_sum=Sum('amount'))
+    credit_total = credits.aggregate(
+        amount_sum=Sum('amount'),
+        flat_fee_sum=converters.CC_TO_DECIMAL_DOLAR * Sum('flat_fee_cc'))
     budget_total = dash.models.BudgetLineItem.objects.filter(
         credit__in=credits
     ).aggregate(
         amount_sum=Sum('amount'),
-        freed_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('freed_cc')
+        freed_sum=converters.CC_TO_DECIMAL_DOLAR * Sum('freed_cc')
     )
+    assigned = (credit_total['amount_sum'] or 0) - (credit_total['flat_fee_sum'] or 0)
     allocated = (budget_total['amount_sum'] or 0) - (budget_total['freed_sum'] or 0)
-    return allocated, \
-        (credit_total['amount_sum'] or 0) - allocated
+
+    return allocated, (assigned or 0) - allocated
 
 
 def calculate_spend_and_available_budget(account):
@@ -508,14 +514,13 @@ def _compute_daily_cap(ad_groups):
     ).group_current_settings().values('ad_group_source__source_id', 'ad_group_source__ad_group_id', 'daily_budget_cc', 'state')
 
     ad_group_settings = {
-        ags.ad_group.id: ags for ags in
+        ags.ad_group_id: ags for ags in
         dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()
     }
 
     ret = 0
     for agss in ad_group_source_settings:
         if agss['state'] != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            print agss
             continue
 
         ags = ad_group_settings[agss['ad_group_source__ad_group_id']]

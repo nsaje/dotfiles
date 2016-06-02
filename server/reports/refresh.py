@@ -22,6 +22,7 @@ from utils import json_helper
 from utils import s3helpers
 from utils import statsd_helper
 from utils import sqs_helper
+from utils import converters
 
 import dash.models
 import dash.constants
@@ -35,9 +36,6 @@ RAW_PUB_POSTCLICK_DATA_S3_PREFIX = 'publishers_postclick_raw/{year}/{month:02d}/
 
 LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
 LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
-
-CC_TO_NANO = 100000
-DOLLAR_TO_NANO = 1000000000
 
 MAX_DATES_TO_REFRESH = 200
 
@@ -132,8 +130,8 @@ def _get_goals_json(goals):
 def _add_effective_spend(date, campaign, rows):
     pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
     for row in rows:
-        row['effective_cost_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
-        row['effective_data_cost_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
+        row['effective_cost_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * converters.CC_TO_NANO)
+        row['effective_data_cost_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * converters.CC_TO_NANO)
         row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
 
 
@@ -399,7 +397,8 @@ def _get_raw_ob_pub_data(s3_keys):
             }
 
             if total_clicks > 0:
-                new_row['cost_nano'] = int(round((float(row['clicks']) / total_clicks) * total_cost * DOLLAR_TO_NANO))
+                new_row['cost_nano'] = int(round(
+                    (float(row['clicks']) / total_clicks) * total_cost * converters.DOLAR_TO_NANO))
 
             rows.append(new_row)
 

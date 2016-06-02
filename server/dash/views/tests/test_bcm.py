@@ -15,6 +15,8 @@ from reports.models import BudgetDailyStatement
 from utils.test_helper import add_permissions, fake_request
 from django.test.client import RequestFactory
 
+from utils import converters
+
 
 class BCMViewTestCase(TestCase):
     fixtures = ['test_bcm.yaml', 'test_agency.yaml']
@@ -937,9 +939,9 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=300 * models.TO_NANO_MULTIPLIER,
-            data_spend_nano=200 * models.TO_NANO_MULTIPLIER,
-            license_fee_nano=50 * models.TO_NANO_MULTIPLIER,
+            media_spend_nano=300 * converters.DOLAR_TO_NANO,
+            data_spend_nano=200 * converters.DOLAR_TO_NANO,
+            license_fee_nano=50 * converters.DOLAR_TO_NANO,
         )
 
         # Another budget with daily statement
@@ -949,8 +951,8 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=100 * models.TO_NANO_MULTIPLIER,
-            data_spend_nano=100 * models.TO_NANO_MULTIPLIER,
+            media_spend_nano=100 * converters.DOLAR_TO_NANO,
+            data_spend_nano=100 * converters.DOLAR_TO_NANO,
             license_fee_nano=105 * (10**8),
         )
 
@@ -1049,17 +1051,17 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=500 * models.TO_NANO_MULTIPLIER,
+            media_spend_nano=500 * converters.DOLAR_TO_NANO,
             data_spend_nano=0,
-            license_fee_nano=50 * models.TO_NANO_MULTIPLIER,
+            license_fee_nano=50 * converters.DOLAR_TO_NANO,
         )
         for num in range(0, 5):
             BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
-                media_spend_nano=800 * models.TO_NANO_MULTIPLIER,
+                media_spend_nano=800 * converters.DOLAR_TO_NANO,
                 data_spend_nano=0,
-                license_fee_nano=80 * models.TO_NANO_MULTIPLIER,
+                license_fee_nano=80 * converters.DOLAR_TO_NANO,
             )
 
         with patch('utils.dates_helper.local_today') as mock_now:

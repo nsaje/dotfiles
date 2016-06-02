@@ -407,11 +407,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         adgs2 = models.AdGroupSettings()
         adgs2.tracking_code = "a=b"
 
-        ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        self.assertEqual(2, len(ret))
-        self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
-        self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
-
+        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertTrue(self.mock_insert_adgroup.called)
         self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source.ad_group_id)
         self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
@@ -964,13 +960,8 @@ class UpdateAdGroupSourceSettings(TestCase):
         adgs2 = models.AdGroupSettings()
         adgs2.iab_category = 'IAB1'
 
-        ret = api.order_ad_group_settings_update(
+        api.order_ad_group_settings_update(
             ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
-
-        self.assertEqual(2, len(ret))
-        for r in ret:
-            self.assertEqual(r.action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
-            self.assertEqual(r.action_type, actionlog.constants.ActionType.AUTOMATIC)
 
     def test_iab_category_none(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -1616,7 +1607,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        actions = self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_to_zwei=False)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_to_zwei=False)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -1627,14 +1618,6 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
-
-        # action has been created
-        self.assertEqual(1, len(actions))
-        self.assertEqual(self.ad_group_source, actions[0].ad_group_source)
-        self.assertEqual(actionlog.constants.Action.SET_CAMPAIGN_STATE, actions[0].action)
-
-        # action hasn't been sent to zwei
-        self.assertFalse(mock_zweiapi_send.called)
 
         mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request,
                                           'AdsNative Max CPC bid set from $0.12 to $2.00')

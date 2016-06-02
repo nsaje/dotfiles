@@ -38,7 +38,7 @@ class Q(object):
         return self
 
     def generate(self, prefix=None):
-        if self.prefix is not None and self.prefix is not prefix:
+        if self.prefix is not None and self.prefix != prefix:
             raise helpers.BackToSQLException("Only 1 prefix per Q")
 
         self.query, self.params = self._generate(prefix)

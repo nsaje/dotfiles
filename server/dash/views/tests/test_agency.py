@@ -2,6 +2,7 @@
 import json
 import datetime
 import pytz
+import httplib
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
@@ -19,6 +20,8 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
+
+from utils import exc
 from utils.test_helper import add_permissions, fake_request
 
 
@@ -73,9 +76,12 @@ class AdGroupSettingsTest(TestCase):
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
         )
+        self.maxDiff = None
 
         self.assertDictEqual(json.loads(response.content), {
             'data': {
+                'can_archive': True,
+                'can_restore': True,
                 'action_is_waiting': False,
                 'default_settings': {
                     'target_devices': ['mobile'],
@@ -366,7 +372,6 @@ class AdGroupSettingsTest(TestCase):
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
-            self.maxDiff = None
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
@@ -674,6 +679,9 @@ class AdGroupSettingsStateTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
+        # ensure this campaign has a goal
+        models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
+
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
@@ -694,6 +702,9 @@ class AdGroupSettingsStateTest(TestCase):
     def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
+
+        # ensure this campaign has a goal
+        models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(
@@ -724,6 +735,23 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(mock_zwei_send.called, False)
         self.assertFalse(mock_k1_ping.called)
+
+    @patch('dash.validation_helpers.ad_group_has_available_budget')
+    @patch('actionlog.zwei_actions.send')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_activate_no_goals(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        mock_budget_check.return_value = True
+
+        add_permissions(self.user, ['can_control_ad_group_state_in_table'])
+        response = self.client.post(
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     @patch('actionlog.zwei_actions.send')
     def test_campaign_in_landing_mode(self, mock_zwei_send):
@@ -778,7 +806,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
 
-class AdGroupAgencyTest(TestCase):
+class AdGroupHistoryTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -792,7 +820,7 @@ class AdGroupAgencyTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = reverse('ad_group_agency', kwargs={'ad_group_id': 0})
+        url = reverse('ad_group_history', kwargs={'ad_group_id': 0})
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
@@ -831,19 +859,17 @@ class AdGroupAgencyTest(TestCase):
             settings.save(request)
 
         add_permissions(self.user, [
-            'ad_group_agency_tab_view',
+            'ad_group_history_view',
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
-            reverse('ad_group_agency', kwargs={'ad_group_id': ad_group_id}),
+            reverse('ad_group_history', kwargs={'ad_group_id': ad_group_id}),
             follow=True
         )
 
         mock_is_waiting.assert_called_once(ad_group)
         self.assertEqual(json.loads(response.content), {
             u'data': {
-                u'can_archive': True,
-                u'can_restore': True,
                 u'history': [{
                     u'changed_by': u'non_superuser@zemanta.com',
                     u'changes_text': u'Created settings',
@@ -1737,7 +1763,7 @@ class UserActivationTest(TestCase):
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
 
 
-class CampaignAgencyTest(TestCase):
+class CampaignHistoryTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1751,25 +1777,19 @@ class CampaignAgencyTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = '/api/campaigns/1/agency/'
+        url = '/api/campaigns/1/history/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
-        add_permissions(self.user, ['campaign_agency_view'])
+        add_permissions(self.user, ['campaign_history_view'])
         response = self.client.get(
-            '/api/campaigns/1/agency/'
+            '/api/campaigns/1/history/'
         )
 
         content = json.loads(response.content)
         self.assertTrue(content['success'])
-        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
-        self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
-
         self.assertEqual(content['data']['history'], [{
             'datetime': '2014-06-04T05:58:21',
             'changed_by': 'non_superuser@zemanta.com',
@@ -1789,45 +1809,6 @@ class CampaignAgencyTest(TestCase):
             'show_old_settings': False,
             'changes_text': 'Created settings'
         }])
-
-    @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
-        add_permissions(self.user, ['campaign_agency_view'])
-
-        response = self.client.put(
-            '/api/campaigns/1/agency/',
-            json.dumps({
-                'settings': {
-                    'id': 1,
-                    'campaign_manager': 1,
-                    'iab_category': 'IAB17',
-                    'name': 'ignore name'
-                }
-            }),
-            content_type='application/json',
-        )
-
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-
-        self.assertEqual(mock_k1_ping.call_count, 1)
-
-        campaign = models.Campaign.objects.get(pk=1)
-        settings = campaign.get_current_settings()
-
-        self.assertEqual(campaign.name, 'test campaign 1')
-        self.assertEqual(settings.campaign_manager_id, 1)
-        self.assertEqual(settings.iab_category, 'IAB17')
-
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
-            campaign=campaign
-        )
 
 
 class CampaignSettingsTest(TestCase):
@@ -1861,6 +1842,10 @@ class CampaignSettingsTest(TestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
     def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
+        add_permissions(self.user, [
+            'can_modify_campaign_manager',
+            'can_modify_campaign_iab_category',
+        ])
         campaign = models.Campaign.objects.get(pk=1)
 
         settings = campaign.get_current_settings()
@@ -1869,6 +1854,9 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.campaign_goal, 2)
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
+
+        # ensure this campaign has a goal
+        models.CampaignGoal.objects.create(campaign_id=campaign.id)
 
         response = self.client.put(
             '/api/campaigns/1/settings/',
@@ -1879,7 +1867,9 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
+                    'target_regions': ['CA', '502'],
+                    'campaign_manager': 1,
+                    'iab_category': 'IAB17',
                 }
             }),
             content_type='application/json',
@@ -1897,6 +1887,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.campaign_goal, 2)
         self.assertEqual(settings.target_devices, ['desktop'])
         self.assertEqual(settings.target_regions, ['CA', '502'])
+        self.assertEqual(settings.campaign_manager_id, 1)
+        self.assertEqual(settings.iab_category, 'IAB17')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
@@ -2027,10 +2019,16 @@ class CampaignSettingsTest(TestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     def test_put_goals_removed(self, p1, p2, p3):
+
+        campaign_id = 1
+
+        # ensure this campaign has more than 1 goal
+        models.CampaignGoal.objects.create(campaign_id=campaign_id)
+
         goal = models.CampaignGoal.objects.create(
             type=1,
             primary=True,
-            campaign_id=1,
+            campaign_id=campaign_id,
         )
 
         add_permissions(self.user, [
@@ -2041,7 +2039,7 @@ class CampaignSettingsTest(TestCase):
             '/api/campaigns/1/settings/',
             json.dumps({
                 'settings': {
-                    'id': 1,
+                    'id': campaign_id,
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
@@ -2059,7 +2057,7 @@ class CampaignSettingsTest(TestCase):
         )
         content = json.loads(response.content)
         self.assertTrue(content['success'])
-        self.assertFalse(models.CampaignGoal.objects.all())
+        self.assertEqual(1, models.CampaignGoal.objects.all().count())
         self.assertFalse(models.CampaignGoalValue.objects.all())
 
     def test_validation(self):
@@ -2916,7 +2914,6 @@ class AccountUsersTest(TestCase):
         agency.users.add(User.objects.get(pk=1))
 
         user = User.objects.get(pk=1)
-        self.maxDiff = None
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
@@ -2958,3 +2955,219 @@ class AccountUsersTest(TestCase):
             ],
             response.json()['data']['users']
         )
+
+
+class CampaignContentInsightsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def user(self):
+        return User.objects.get(pk=2)
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_permission(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        with self.assertRaises(exc.AuthorizationError):
+            cis.get(fake_request(self.user()), 1)
+
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_basic_archived(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1,
+            archived=True,
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            }
+        ]
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [],
+                    'worst_performer_rows': [],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_basic_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            }
+        ]
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '10.00%',
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '10.00%',
+                        }
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_duplicate_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad1 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        cad2 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.bidder.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad1.id,
+                'clicks': 1000,
+                'impressions': 10000,
+            },
+            {
+                'content_ad': cad2.id,
+                'clicks': 9000,
+                'impressions': 10000,
+            }
+        ]
+
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '50.00%',
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'summary': 'Test Ad',
+                            'metric': '50.00%',
+                        }
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))
+
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_order_title_ctr(self, mock_get_stats):
+        cis = agency.CampaignContentInsights()
+        add_permissions(self.user(), ['can_view_campaign_content_insights_side_tab'])
+
+        campaign = models.Campaign.objects.get(pk=1)
+        cad1 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Test Ad',
+            url='http://www.zemanta.com',
+            batch_id=1
+        )
+
+        cad2 = models.ContentAd.objects.create(
+            ad_group=campaign.adgroup_set.first(),
+            title='Awesome Ad',
+            url='http://www.bidder.com',
+            batch_id=1
+        )
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': cad1.id,
+                'clicks': 1,
+                'impressions': 1000,
+            },
+            {
+                'content_ad': cad2.id,
+                'clicks': 10,
+                'impressions': 1000,
+            }
+        ]
+
+        self.maxDiff = None
+        response = cis.get(fake_request(self.user()), 1)
+        self.assertEqual(httplib.OK, response.status_code)
+        self.assertDictEqual({
+                'data': {
+                    'metric': 'CTR',
+                    'summary': 'Title',
+                    'best_performer_rows': [
+                        {
+                            'metric': '1.00%',
+                            'summary': 'Awesome Ad',
+                        },
+                        {
+                            'metric': '0.10%',
+                            'summary': 'Test Ad',
+                        }
+                    ],
+                    'worst_performer_rows': [
+                        {
+                            'metric': '1.00%',
+                            'summary': 'Awesome Ad',
+                        },
+                    ],
+                },
+                'success': True,
+            }, json.loads(response.content))

@@ -135,10 +135,7 @@
                         <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
                     <div class="form-alert-body">
-                        {{ warnings.retargeting.text }}
-                        <ul>
-                            <li ng-repeat="source in warnings.retargeting.sources">{{ source }}</label>
-                        </ul>
+                        {{ warnings.retargeting.text }} {{ warnings.retargeting.sourcesText }}.
                     </div>
                 </div>
 
@@ -252,14 +249,25 @@
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+
+        <div class="settings-restore-container pull-right" ng-if="hasPermission('zemauth.archive_restore_entity')">
+            <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
+            <button type="button" class="btn btn-default" ng-class="{'disabled': !canArchive}" ng-click="archiveAdGroup()" title="{{ (!canArchive && 'An ad group has to be paused in order to archive it.') || ''}}">Archive ad group</button>
+        </div>
 	</form>
 </div>
 <div class="page page-ad-group-settings" ng-if="adGroup && adGroup.archived">
     <p>
         <strong>This ad group is archived.</strong>
-
     </p>
-    <p>
+    <p ng-if="!hasPermission('zemauth.archive_restore_entity')">
         Contact <a class="contact" href="mailto:help@zemanta.com?Subject=Archived%20Ad%20Group%20Issue">Zemanta client services</a> if you need assistance.
     </p>
+
+    <div class="settings-restore-container" ng-if="hasPermission('zemauth.archive_restore_entity')">
+        <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
+        <button type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreAdGroup()" title="{{ (!canRestore && 'In order to restore this ad group it\'s campaign must be restored first.') || '' }}">Restore ad group</button>
+    </div>
+
+    <div class="loader" ng-show="saveRequestInProgress"></div>
 </div>

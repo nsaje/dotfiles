@@ -12,7 +12,7 @@ class ModelMeta(type):
 
         # Important: this initializes alias names from python attribute names
         # This is the main functionality of the model
-        model_class._init_columns()
+        model_class._init_column_aliases()
         return model_class
 
 
@@ -23,7 +23,12 @@ class Model(object):
     __COLUMNS_DICT__ = None
 
     @classmethod
-    def _init_columns(cls):
+    def _init_column_aliases(cls):
+        """
+        Gets alias names from python attributes and sets alias attributes
+        on TemplateColumn with those names.
+        """
+
         columns = [(name, getattr(cls, name)) for name in dir(cls)
                    if isinstance(getattr(cls, name), TemplateColumn)]
 

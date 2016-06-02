@@ -34,7 +34,7 @@ class ColumnTestCase(TestCase):
         self.assertEquals(column.only_alias(), 'py_cat')
         self.assertEquals(column.only_alias(prefix='t'), 't.py_cat')
 
-    def test_g_no_alias(self):
+    def test_no_alias(self):
         column = backtosql.Column('cat')
         self.assertEquals(column.only_column(), 'cat')
         self.assertEquals(column.only_column(prefix='t'), 't.cat')
@@ -67,7 +67,7 @@ class TemplateColumnTestCase(TestCase):
         self.assertEquals(column.only_alias(), "py_cat")
         self.assertEquals(column.only_alias('t'), "t.py_cat")
 
-    def test_g_no_alias(self):
+    def test_no_alias(self):
         column = backtosql.TemplateColumn('test_col.sql', {
             'column_name': 'cat',
             'multiplier': 100,
@@ -81,6 +81,14 @@ class TemplateColumnTestCase(TestCase):
 
         with self.assertRaises(backtosql.BackToSQLException):
             self.assertEquals(column.only_alias(), "py_cat")
+
+    def test_strip_comments(self):
+        column = backtosql.TemplateColumn('test_col_comment.sql', {
+            'column_name': 'cat',
+            'multiplier': 100,
+        }, alias='py_cat')
+        self.assertEquals(column.column_as_alias(), "SUM(cat)*100 AS py_cat")
+        self.assertEquals(column.column_as_alias('t'), "SUM(t.cat)*100 AS py_cat")
 
 
 class OrderColumnTestCase(TestCase, TestSQLMixin):

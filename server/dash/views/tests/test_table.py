@@ -247,23 +247,24 @@ class AdGroupAdsTableTest(TestCase):
                 'landscape': '/123456789.jpg?w=256&h=160&fit=crop&crop=faces&fm=jpg',
                 'square': '/123456789.jpg?w=160&h=160&fit=crop&crop=faces&fm=jpg'
             },
+            'image_hash': '987654321',
             'impressions': 1000000,
             'status_setting': 1,
             'submission_status': [{
                 'name': 'AdsNative',
                 'status': 1,
-                'source_state': '',
-                'text': 'Pending / Paused'
+                'source_state': '(paused)',
+                'text': 'Pending'
             }, {
                 'name': 'Gravity',
                 'status': 2,
-                'source_state': '',
-                'text': 'Approved / Paused'
+                'source_state': '(paused)',
+                'text': 'Approved'
             }, {
                 'name': 'Sharethrough',
                 'status': 1,
                 'source_state': '',
-                'text': 'Pending / Paused',
+                'text': 'Pending',
             }],
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
@@ -296,6 +297,7 @@ class AdGroupAdsTableTest(TestCase):
             'image_urls': {
                 'square': '/123456789.jpg?w=160&h=160&fit=crop&crop=faces&fm=jpg',
                 'landscape': '/123456789.jpg?w=256&h=160&fit=crop&crop=faces&fm=jpg'},
+            'image_hash': '987654321',
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'submission_status': [],
             'cost': None,
@@ -756,18 +758,18 @@ class AdGroupAdsTableUpdatesTest(TestCase):
         self.assertIn('rows', result['data'])
         expected_submission_status = [{
             'status': 1,
-            'source_state': '',
-            'text': 'Pending / Paused',
+            'source_state': '(paused)',
+            'text': 'Pending',
             'name': 'AdsNative'
         }, {
             'status': 2,
-            'source_state': '',
-            'text': 'Approved / Paused',
+            'source_state': '(paused)',
+            'text': 'Approved',
             'name': 'Gravity'
         }, {
             'status': 1,
             'source_state': '',
-            'text': 'Pending / Paused',
+            'text': 'Pending',
             'name': 'Sharethrough'
         }]
         self.assertItemsEqual(result['data']['rows']['1']['submission_status'], expected_submission_status)

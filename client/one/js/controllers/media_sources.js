@@ -21,6 +21,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
+    $scope.sideBarVisible = false;
 
     var userSettings = null,
         hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
@@ -139,7 +140,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             unselectable: true,
             checked: true,
             type: 'text',
-            shown: false,
+            shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
             order: true,
@@ -737,6 +738,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getTableData();
         $scope.getInfoboxData();
         pollSyncStatus();
+
+        if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
+            $scope.sideBarVisible = true;
+            $scope.getContentInsights();
+        } else {
+            $scope.sideBarVisible = false;
+        }
     };
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
@@ -757,6 +765,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
         getDailyStats();
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
+            $scope.sideBarVisible = true;
+            $scope.getContentInsights();
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

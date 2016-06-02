@@ -21,6 +21,7 @@ from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
+from dash import content_insights_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -35,6 +36,7 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
+CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -52,7 +54,9 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
-            'warnings': self.get_warnings(request, settings)
+            'warnings': self.get_warnings(request, settings),
+            'can_archive': ad_group.can_archive(),
+            'can_restore': ad_group.can_restore(),
         }
         return self.create_api_response(response)
 
@@ -288,60 +292,24 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if not campaign_stop.can_enable_ad_group(ad_group, campaign, campaign_settings):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
-        if state == constants.AdGroupSettingsState.ACTIVE and \
-                not validation_helpers.ad_group_has_available_budget(ad_group):
-            # ACTIVE state is only valid when there is budget to spend
-            raise exc.ValidationError('Cannot enable ad group without available budget.')
+        if state == constants.AdGroupSettingsState.ACTIVE:
+            if not validation_helpers.ad_group_has_available_budget(ad_group):
+                raise exc.ValidationError('Cannot enable ad group without available budget.')
+
+            if models.CampaignGoal.objects.filter(campaign=campaign).count() == 0:
+                raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
-class CampaignAgency(api_common.BaseApiView):
+class CampaignHistory(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_agency_view'):
+        if not request.user.has_perm('zemauth.campaign_history_view'):
             raise exc.AuthorizationError()
-
         campaign = helpers.get_campaign(request.user, campaign_id)
-
-        campaign_settings = campaign.get_current_settings()
-
         response = {
-            'settings': self.get_dict(campaign_settings, campaign),
-            'campaign_managers': self.get_user_list(campaign_settings),
             'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
         }
-
-        return self.create_api_response(response)
-
-    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
-    def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_agency_view'):
-            raise exc.AuthorizationError()
-
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        resource = json.loads(request.body)
-
-        form = forms.CampaignAgencyForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        old_settings = campaign.get_current_settings()
-        new_settings = old_settings.copy_settings()
-        self.set_settings(new_settings, campaign, form.cleaned_data)
-
-        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
-        helpers.log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request,
-                                                        constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS)
-
-        response = {
-            'settings': self.get_dict(new_settings, campaign),
-            'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
-        }
-
         return self.create_api_response(response)
 
     def get_history(self, campaign):
@@ -391,36 +359,6 @@ class CampaignAgency(api_common.BaseApiView):
                     field, getattr(old_settings, field, models.CampaignSettings.get_default_value(field)))
 
         return settings_dict
-
-    def get_dict(self, settings, campaign):
-        result = {}
-
-        if settings:
-            result = {
-                'id': str(campaign.pk),
-                'name': campaign.name,
-                'campaign_manager':
-                    str(settings.campaign_manager.id)
-                    if settings.campaign_manager is not None else None,
-                'iab_category': settings.iab_category,
-            }
-
-        return result
-
-    def set_settings(self, settings, campaign, resource):
-        settings.campaign = campaign
-        settings.campaign_manager = resource['campaign_manager']
-        settings.iab_category = resource['iab_category']
-
-    def get_user_list(self, settings):
-        users = ZemUser.objects.all()
-
-        manager = settings.campaign_manager
-        if manager is not None and manager not in users:
-            users.append(manager)
-
-        return [{'id': str(user.id),
-                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class CampaignConversionGoals(api_common.BaseApiView):
@@ -532,7 +470,11 @@ class CampaignSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(request, campaign_settings, campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
         }
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            response['campaign_managers'] = self.get_user_list(campaign_settings)
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
@@ -556,8 +498,20 @@ class CampaignSettings(api_common.BaseApiView):
         if not settings_form.is_valid():
             errors.update(dict(settings_form.errors))
 
+        current = models.CampaignGoal.objects.filter(campaign=campaign)
+        changes = resource.get('goals', {
+            'added': [],
+            'removed': [],
+            'primary': None,
+            'modified': {}
+        })
+
+        if len(current) - len(changes['removed']) + len(changes['added']) <= 0:
+            errors['no_goals'] = 'At least one goal must be defined'
+            raise exc.ValidationError(errors=errors)
+
         with transaction.atomic():
-            goal_errors = self.set_goals(request, campaign, resource)
+            goal_errors = self.set_goals(request, campaign, changes)
 
         if any(goal_error for goal_error in goal_errors):
             errors['goals'] = goal_errors
@@ -584,15 +538,9 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def set_goals(self, request, campaign, resource):
+    def set_goals(self, request, campaign, changes):
         if not request.user.has_perm('zemauth.can_see_campaign_goals'):
             return []
-        changes = resource.get('goals', {
-            'added': [],
-            'removed': [],
-            'primary': None,
-            'modified': {}
-        })
 
         new_primary_id = None
         errors = []
@@ -690,6 +638,13 @@ class CampaignSettings(api_common.BaseApiView):
         result['target_devices'] = settings.target_devices
         result['target_regions'] = settings.target_regions
 
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            result['campaign_manager'] = str(settings.campaign_manager.id)\
+                if settings.campaign_manager is not None else None
+
+        if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
+            result['iab_category'] = settings.iab_category
+
         return result
 
     def set_settings(self, request, settings, campaign, resource):
@@ -698,9 +653,23 @@ class CampaignSettings(api_common.BaseApiView):
         settings.goal_quantity = resource['goal_quantity']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
+        if request.user.has_perm('zemauth.can_modify_campaign_manager'):
+            settings.campaign_manager = resource['campaign_manager']
+        if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
+            settings.iab_category = resource['iab_category']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
+
+    def get_user_list(self, settings):
+        users = ZemUser.objects.all()
+
+        manager = settings.campaign_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
+        return [{'id': str(user.id),
+                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class AccountConversionPixels(api_common.BaseApiView):
@@ -1190,7 +1159,7 @@ class AccountSettings(api_common.BaseApiView):
         users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
 
         if agency is not None:
-            users = users.filter(pk=agency.users.all()) | \
+            users = users.filter(pk__in=agency.users.all()) | \
                 users.filter(account__agency=agency)
 
         users = list(users.filter(is_active=True).distinct())
@@ -1202,21 +1171,17 @@ class AccountSettings(api_common.BaseApiView):
         return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
-class AdGroupAgency(api_common.BaseApiView):
+class AdGroupHistory(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
+        if not request.user.has_perm('zemauth.ad_group_history_view'):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
         response = {
             'history': self.get_history(ad_group, request.user),
-            'can_archive': ad_group.can_archive(),
-            'can_restore': ad_group.can_restore(),
         }
-
         return self.create_api_response(response)
 
     @newrelic.agent.function_trace()
@@ -1428,3 +1393,28 @@ class UserActivation(api_common.BaseApiView):
             )
 
         return self.create_api_response({})
+
+
+class CampaignContentInsights(api_common.BaseApiView):
+
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.can_view_campaign_content_insights_side_tab'):
+            raise exc.AuthorizationError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        best_performer_rows, worst_performer_rows =\
+            content_insights_helper.fetch_campaign_content_ad_metrics(
+                request.user,
+                campaign,
+                start_date,
+                end_date,
+            )
+        return self.create_api_response({
+            'summary': 'Title',
+            'metric': 'CTR',
+            'best_performer_rows': best_performer_rows,
+            'worst_performer_rows': worst_performer_rows,
+        })

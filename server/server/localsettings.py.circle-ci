@@ -17,10 +17,6 @@ else:
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 STATS_DB_NAME = 'stats'
-K1_DB_NAME = 'k1'
-K1_VIEWS_DB_NAME = K1_DB_NAME
-STATS_READ_DB_NAME = STATS_DB_NAME
-
 STATS_E2E_DB_NAME = 'stats_e2e'
 
 DATABASES = {
@@ -44,14 +40,6 @@ DATABASES = {
         'HOST': '',
         'PORT': 5439,
     },
-    K1_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': 5439,
-    },
     STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'circle_test',
@@ -64,6 +52,9 @@ DATABASES = {
 
 BASE_URL = 'https://one.zemanta.com'
 
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Email settings
 EMAIL_USE_TLS = True
 EMAIL_HOST = ''
@@ -74,8 +65,6 @@ EMAIL_HOST_PASSWORD = Secret('').get()
 SEND_NOTIFICATION_MAIL = False
 SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help-test@zemanta.com'
-
-MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
 
 # Path to log file
 LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
@@ -177,9 +166,6 @@ SQS_VISIBILITY_TIMEOUT = 10 * 60
 CAMPAIGN_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-campaign_change'
 DAILY_STATEMENTS_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-budget-change'
 
-CELERY_DEFAULT_CONVAPI_QUEUE = SQS_QUEUE_PREFIX + '-convapi'
-CELERY_DEFAULT_CONVAPI_V2_QUEUE = SQS_QUEUE_PREFIX + '-' + 'convapi_v2'
-
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
     'region': SQS_REGION,
@@ -201,10 +187,6 @@ BIDDER_API_SIGN_KEY = Secret('').get()
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
 
-# Google Analytics authentication
-GA_CLIENT_EMAIL = ''
-GA_PRIVATE_KEY = ''
-
 QUERY_INSPECT_ENABLED = False
 
 # k1
@@ -214,3 +196,9 @@ K1_CONSISTENCY_SYNC = False
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
+
+# l1
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://z1-1452281140.us-east-1.elb.amazonaws.com/api/callbacks/content-upload/'

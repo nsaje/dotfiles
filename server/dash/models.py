@@ -31,12 +31,10 @@ from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
+from utils import converters
 
 
 SHORT_NAME_MAX_LENGTH = 22
-CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
-TO_CC_MULTIPLIER = 10**4
-TO_NANO_MULTIPLIER = 10**9
 
 
 class Round(Func):
@@ -47,14 +45,6 @@ class Round(Func):
 class Coalesce(Func):
     function = 'COALESCE'
     template = '%(function)s(%(expressions)s, 0)'
-
-
-def nano_to_cc(num):
-    return int(round(num * 0.00001))
-
-
-def nano_to_dec(num):
-    return Decimal(nano_to_cc(num) * CC_TO_DEC_MULTIPLIER)
 
 
 def validate(*validators):
@@ -406,13 +396,13 @@ class Account(models.Model):
 
         def filter_with_spend(self):
             return self.filter(
-                pk__in=reports.models.BudgetDailyStatement.objects.filter(
-                    budget__credit__account_id__in=self
+                pk__in=set(reports.models.BudgetDailyStatement.objects.filter(
+                    budget__campaign__account_id__in=self
                 ).filter(
                     media_spend_nano__gt=0
                 ).values_list(
-                    'budget__credit__account_id'
-                )
+                    'budget__campaign__account_id', flat=True
+                ))
             )
 
 
@@ -1375,6 +1365,23 @@ class AdGroup(models.Model):
 
         return constants.AdGroupRunningStatus.INACTIVE
 
+    def get_sources_state(self):
+        settings = self.get_current_settings()
+
+        ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=self,
+        ).group_current_settings().values('ad_group_source__source_id', 'state')
+
+        states = {}
+        for source_settings in ad_group_source_settings:
+            state = source_settings['state']
+            if state == constants.AdGroupSourceSettingsState.ACTIVE:
+                state = settings.state
+
+            states[source_settings['ad_group_source__source_id']] = state
+
+        return states
+
     @classmethod
     def get_running_status_by_flight_time(cls, ad_group_settings):
         if not cls.is_ad_group_active(ad_group_settings):
@@ -2117,6 +2124,9 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
+    original_filename = models.CharField(max_length=1024, null=True)
+
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
 
@@ -2131,6 +2141,7 @@ class UploadBatch(models.Model):
 
 
 class ContentAd(models.Model):
+    label = models.CharField(max_length=25, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
@@ -2147,6 +2158,7 @@ class ContentAd(models.Model):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
     crop_areas = models.CharField(max_length=128, null=True)
+    image_crop = models.CharField(max_length=25, null=True)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -2281,6 +2293,40 @@ class ContentAdSource(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+
+class ContentAdCandidate(models.Model):
+    label = models.TextField(null=True)
+    url = models.TextField(null=True)
+    title = models.TextField(null=True)
+    image_url = models.TextField(null=True)
+    image_crop = models.TextField(null=True)
+
+    display_url = models.TextField(null=True)
+    brand_name = models.TextField(null=True)
+    description = models.TextField(null=True)
+    call_to_action = models.TextField(null=True)
+
+    tracker_urls = models.TextField(null=True)
+
+    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
+    batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
+
+    image_status = models.IntegerField(
+        choices=constants.AsyncUploadJobStatus.get_choices(),
+        default=constants.AsyncUploadJobStatus.PENDING_START,
+    )
+    url_status = models.IntegerField(
+        choices=constants.AsyncUploadJobStatus.get_choices(),
+        default=constants.AsyncUploadJobStatus.PENDING_START,
+    )
+
+    image_id = models.CharField(max_length=256, null=True)
+    image_width = models.PositiveIntegerField(null=True)
+    image_height = models.PositiveIntegerField(null=True)
+    image_hash = models.CharField(max_length=128, null=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
 
 class Article(models.Model):
@@ -2517,7 +2563,7 @@ class CreditLineItem(FootprintModel):
         return self.status == constants.CreditLineItemStatus.PENDING
 
     def flat_fee(self):
-        return Decimal(self.flat_fee_cc) * CC_TO_DEC_MULTIPLIER
+        return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_DOLAR
 
     def effective_amount(self):
         return Decimal(self.amount) - self.flat_fee()
@@ -2706,10 +2752,10 @@ class BudgetLineItem(FootprintModel):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
     def allocated_amount_cc(self):
-        return self.amount * TO_CC_MULTIPLIER - self.freed_cc
+        return self.amount * converters.DOLAR_TO_CC - self.freed_cc
 
     def allocated_amount(self):
-        return Decimal(self.allocated_amount_cc()) * CC_TO_DEC_MULTIPLIER
+        return Decimal(self.allocated_amount_cc()) * converters.CC_TO_DECIMAL_DOLAR
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -2720,7 +2766,7 @@ class BudgetLineItem(FootprintModel):
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
-        amount_cc = self.amount * TO_CC_MULTIPLIER
+        amount_cc = self.amount * converters.DOLAR_TO_CC
         spend_data = self.get_spend_data()
 
         reserve = self.get_reserve_amount_cc()
@@ -2743,7 +2789,7 @@ class BudgetLineItem(FootprintModel):
             statement = list(self.statements.all().order_by('-date')[:2])[-1]
         except IndexError:
             return None
-        total_cc = nano_to_cc(
+        total_cc = converters.nano_to_cc(
             statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
         )
         return total_cc * (factor_offset + settings.BUDGET_RESERVE_FACTOR)
@@ -3052,3 +3098,40 @@ class GAAnalyticsAccount(models.Model):
 
     def __unicode__(self):
         return self.account.name
+
+
+class FacebookAccount(models.Model):
+    account = models.OneToOneField(Account, primary_key=True)
+    ad_account_id = models.CharField(max_length=127, blank=True)
+    page_url = models.CharField(max_length=255)
+    status = models.IntegerField(
+        default=constants.FacebookPageRequestType.EMPTY,
+        choices=constants.FacebookPageRequestType.get_choices()
+    )
+
+    def get_page_id(self):
+        if not self.page_url:
+            return None
+
+        url = self.page_url.strip('/')
+        page_id = url[url.rfind('/') + 1:]
+        dash_index = page_id.rfind('-')
+        if dash_index != -1:
+            page_id = url[dash_index + 1:]
+        return page_id
+
+    def __unicode__(self):
+        return self.account.name
+
+
+class EmailTemplate(models.Model):
+    template_type = models.PositiveSmallIntegerField(
+        choices=constants.EmailTemplateType.get_choices(), null=True, blank=True)
+    subject = models.CharField(blank=True, null=False, max_length=255)
+    body = models.TextField(blank=True, null=False)
+
+    def __unicode__(self):
+        return constants.EmailTemplateType.get_text(self.template_type) if self.template_type else 'Unassigned'
+
+    class Meta:
+        unique_together = ('template_type',)

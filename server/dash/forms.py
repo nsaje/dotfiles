@@ -17,6 +17,7 @@ from dash import constants
 from dash import models
 from dash import regions
 from dash import validation_helpers
+from dash.views import helpers
 from utils import dates_helper
 
 from zemauth.models import User as ZemUser
@@ -35,6 +36,15 @@ class AdvancedDateTimeField(forms.fields.DateTimeField):
 
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
+
+
+class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
+    """
+    Same as TypedMultipleChoiceField but unrestricted choices list.
+    """
+
+    def valid_value(self, value):
+        return True
 
 
 class AdGroupSettingsForm(forms.Form):
@@ -477,26 +487,6 @@ class CampaignAdminForm(forms.ModelForm):
         )
 
 
-class CampaignAgencyForm(forms.Form):
-    id = forms.IntegerField()
-    campaign_manager = forms.IntegerField()
-    iab_category = forms.ChoiceField(
-        choices=constants.IABCategory.get_choices(),
-    )
-
-    def clean_campaign_manager(self):
-        campaign_manager_id = self.cleaned_data.get('campaign_manager')
-
-        err_msg = 'Invalid campaign manager.'
-
-        try:
-            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
-        except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
-
-        return campaign_manager
-
-
 class CampaignSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
@@ -520,6 +510,26 @@ class CampaignSettingsForm(forms.Form):
         choices=constants.AdTargetLocation.get_choices()
     )
 
+    campaign_manager = forms.IntegerField(required=False)
+    iab_category = forms.ChoiceField(
+        choices=constants.IABCategory.get_choices(),
+        required=False,
+    )
+
+    def clean_campaign_manager(self):
+        campaign_manager_id = self.cleaned_data.get('campaign_manager')
+        if campaign_manager_id is None:
+            return
+
+        err_msg = 'Invalid campaign manager.'
+
+        try:
+            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return campaign_manager
+
 
 class UserForm(forms.Form):
     email = forms.EmailField(
@@ -538,7 +548,8 @@ class UserForm(forms.Form):
 
 DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
-OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
+OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name',
+                       'description', 'call_to_action', 'label', 'image_crop']
 IGNORED_CSV_FIELDS = ['errors']
 
 # Example CSV content - must be ignored if mistakenly uploaded
@@ -910,12 +921,12 @@ class CreditLineItemAdminForm(forms.ModelForm):
             a.pk for a in models.Account.objects.all() if not a.is_archived()
         ]
         # workaround to not change model __unicode__ methods
-        self.fields['account'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['account'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['account'].queryset = models.Account.objects.filter(
             pk__in=not_archived
         ).order_by('id')
 
-        self.fields['agency'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['agency'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['agency'].queryset = models.Agency.objects.all().order_by('id')
 
     class Meta:
@@ -950,3 +961,202 @@ class BudgetLineItemAdminForm(forms.ModelForm):
     class Meta:
         model = models.BudgetLineItem
         fields = ['campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment']
+
+
+class BreakdownForm(forms.Form):
+
+    def __init__(self, user, breakdown, request_body, *args, **kwargs):
+        request_body['breakdown'] = breakdown
+        self.user = user
+
+        super(BreakdownForm, self).__init__(request_body, *args, **kwargs)
+
+    start_date = forms.DateField(
+        error_messages={
+            'required': 'Please provide start date.',
+        }
+    )
+
+    end_date = forms.DateField(
+        error_messages={
+            'required': 'Please provide end date.',
+        }
+    )
+
+    show_archived = forms.BooleanField(required=False)
+
+    offset = forms.IntegerField(min_value=0, required=True)
+    limit = forms.IntegerField(min_value=0, max_value=100, required=True)
+
+    breakdown_page = TypedMultipleAnyChoiceField(
+        required=False,
+        coerce=str,
+    )
+
+    filtered_sources = forms.CharField(required=False)
+
+    order = forms.CharField(required=False)
+
+    breakdown = forms.CharField(required=True)
+
+    def clean_filtered_sources(self):
+        return helpers.get_filtered_sources(self.user, self.cleaned_data.get('filtered_sources'))
+
+    def clean_breakdown(self):
+        return [x for x in self.cleaned_data['breakdown'].split('/') if x]
+
+
+class ContentAdCandidateForm(forms.Form):
+    label = forms.CharField(
+        max_length=25,
+        required=False,
+        error_messages={
+            'max_length': 'Label too long (max %(limit_value)d characters)',
+        }
+    )
+    url = forms.CharField(
+        max_length=936,
+        error_messages={
+            'required': 'Missing URL',
+            'max_length': 'URL too long (max %(limit_value)d characters)',
+        }
+    )
+    title = forms.CharField(
+        max_length=256,
+        error_messages={
+            'required': 'Missing title',
+            'max_length': 'Title too long (max %(limit_value)d characters)',
+        },
+    )
+    image_url = forms.CharField(
+        error_messages={
+            'required': 'Missing image URL',
+        }
+    )
+    image_crop = forms.ChoiceField(
+        choices=constants.ImageCrop.get_choices(),
+        required=False,
+    )
+    display_url = forms.CharField(
+        max_length=25,
+        error_messages={
+            'required': 'Missing display URL',
+            'max_length': 'Display URL too long (max %(limit_value)d characters)',
+        },
+    )
+    brand_name = forms.CharField(
+        max_length=25,
+        error_messages={
+            'required': 'Missing brand name',
+            'max_length': 'Brand name too long (max %(limit_value)d characters)',
+        },
+    )
+    description = forms.CharField(
+        max_length=140,
+        error_messages={
+            'required': 'Missing description',
+            'max_length': 'Description too long (max %(limit_value)d characters)',
+        },
+    )
+    call_to_action = forms.CharField(
+        max_length=25,
+        error_messages={
+            'required': 'Missing call to action',
+            'max_length': 'Call to action too long (max %(limit_value)d characters)',
+        },
+    )
+    tracker_urls = forms.CharField(
+        required=False,
+    )
+
+    def _validate_url(self, url):
+        validate_url = validators.URLValidator(schemes=['http', 'https'])
+        try:
+            validate_url(url)
+            return url
+        except forms.ValidationError:
+            pass
+
+        url = 'http://{}'.format(url)
+        validate_url(url)
+
+        return url
+
+    def clean_url(self):
+        url = self.cleaned_data.get('url').strip()
+        try:
+            return self._validate_url(url)
+        except forms.ValidationError:
+            raise forms.ValidationError('Invalid URL')
+
+    def clean_image_url(self):
+        image_url = self.cleaned_data.get('image_url').strip()
+        try:
+            return self._validate_url(image_url)
+        except forms.ValidationError:
+            raise forms.ValidationError('Invalid image URL')
+
+    def clean_tracker_urls(self):
+        tracker_urls_str = self.cleaned_data.get('tracker_urls').strip()
+        if not tracker_urls_str:
+            return []
+
+        tracker_urls = tracker_urls_str.strip().split(' ')
+
+        result = []
+        validate_url = validators.URLValidator(schemes=['https'])
+
+        for url in tracker_urls:
+            try:
+                # URL is considered invalid if it contains any unicode chars
+                url = url.encode('ascii')
+                validate_url(url)
+            except (forms.ValidationError, UnicodeEncodeError):
+                raise forms.ValidationError('Invalid tracker URLs')
+
+            result.append(url)
+
+        return result
+
+
+class ContentAdForm(ContentAdCandidateForm):
+    image_id = forms.CharField(
+        required=False,
+    )
+    image_hash = forms.CharField(
+        required=False,
+    )
+    image_width = forms.IntegerField(
+        required=False,
+        min_value=2,
+        max_value=4000,
+        error_messages={
+            'min_value': 'Image too small (min width %(limit_value)d px)',
+            'max_value': 'Image too big (max width %(limit_value)d px)',
+        },
+    )
+    image_height = forms.IntegerField(
+        required=False,
+        min_value=2,
+        max_value=3000,
+        error_messages={
+            'min_value': 'Image too small (min height %(limit_value)d px)',
+            'max_value': 'Image too big (max height %(limit_value)d px)',
+        },
+    )
+
+    image_status = forms.IntegerField()
+    url_status = forms.IntegerField()
+
+    def clean(self):
+        cleaned_data = super(ContentAdForm, self).clean()
+
+        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
+           not cleaned_data['image_id'] or\
+           not cleaned_data['image_hash'] or\
+           not cleaned_data['image_width'] or\
+           not cleaned_data['image_height']:
+            self.add_error('image_url', 'Image could not be processed.')
+
+        if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
+            self.add_error('url', 'Content unreachable.')
