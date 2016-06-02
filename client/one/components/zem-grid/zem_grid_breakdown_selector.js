@@ -10,7 +10,7 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_breakdown_selector.html',
-        controller: ['zemGridStorageService', function (zemGridStorageService) {
+        controller: [function () {
             var vm = this;
 
             vm.onChecked = onChecked;
@@ -32,10 +32,9 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
             }
 
             function applyBreakdown () {
-                var breakdown = [];
-
                 // Add base level breakdown and all checked
                 // breakdowns in successive levels
+                var breakdown = [];
                 var baseLevelGroup = vm.grid.meta.data.breakdownGroups[0];
                 breakdown.push(baseLevelGroup.breakdowns[0]);
                 vm.breakdownGroups.forEach(function (group) {
@@ -43,7 +42,6 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
                         if (b.checked) breakdown.push(b);
                     });
                 });
-
                 vm.grid.meta.source.setBreakdown(breakdown);
                 vm.grid.meta.source.getData();
             }
