@@ -119,7 +119,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
     var BASE_LEVEL_BREAKDOWNS = [
         {name: 'By Account', query: 'account'},
         {name: 'By Campaign', query: 'campaign'},
-        {name: 'By AdGroup', query: 'adgroup'},
+        {name: 'By Ad Group', query: 'adgroup'},
     ];
 
     var STRUCTURE_LEVEL_BREAKDOWNS = [
