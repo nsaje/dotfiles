@@ -20,6 +20,10 @@ def get_local_date_query(date):
 
 
 def get_local_date_context(date):
+    """
+    Prepare a date time context for aggregation of data by local time zone from UTC hourly data in the stats table.
+    """
+
     hour_from = dates_helper.local_to_utc_time(datetime.datetime(date.year, date.month, date.day))
     date_next = date + datetime.timedelta(days=1)
     hour_to = dates_helper.local_to_utc_time(datetime.datetime(date_next.year, date_next.month, date_next.day))
