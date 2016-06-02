@@ -637,7 +637,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         )
         agency.save(r)
 
-        start_date, end_date = datetime.date(2014, 6, 30), datetime.date(2014, 07, 01)
+        start_date, end_date = datetime.date(2014, 6, 30), datetime.date(2014, 7, 1)
 
         credit = dash.models.CreditLineItem(
             agency=agency,
