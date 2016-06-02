@@ -5,14 +5,12 @@
 oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'config', function ($rootScope, $controller, $http, $q, $timeout, config) { // eslint-disable-line max-len
 
     function MockEndpoint () {
-        this.availableBreakdowns = ['base_level', 'age', 'sex', 'date'];
-        this.defaultBreakdown = ['base_level'];
-
         this.getMetaData = function () {
             var deferred = $q.defer();
             deferred.resolve({
-                columns: mockedColumns,
-                categories: mockedCategories,
+                columns: getMockedColumns(),
+                categories: getMockedCategories(),
+                breakdownGroups: getMockedBreakdownGroups(),
             });
             return deferred.promise;
         };
@@ -26,6 +24,17 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             return deferred.promise;
         };
     }
+
+    // ///////////////////////////////////////////////////////////////////////////////////////////
+    // Mocked MetaData Definition
+    //
+
+    var BREAKDOWN_GROUPS = [
+        {name: 'Base level', breakdowns: [{name: 'Base level', query: 'base_level'}]},
+        {name: 'Group 1',    breakdowns: [{name: 'By Age', query: 'age'}]},
+        {name: 'Group 2',    breakdowns: [{name: 'By Sex', query: 'sex'}]},
+        {name: 'Group 3',    breakdowns: [{name: 'By Date', query: 'date'}]},
+    ];
 
     var COLUMNS = {
         base_level: {
@@ -175,57 +184,65 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         },
     };
 
-    var mockedColumns = getColumnsForFields([
-        'base_level',
-        'thumbnail',
-        'status',
-        'performance',
-        'submission_status',
-        'status_setting',
-        'default_account_manager',
-        'cost',
-        'pacing',
-        'clicks',
-        'time_on_site',
-        'last_sync',
-        'text_with_popup',
-        'test_link_with_icon',
-        'text_visible_link',
-        'test_link_text',
-        'test_link_nav',
-        'test_click_permission_or_text',
-    ]);
+    function getMockedBreakdownGroups () {
+        return angular.copy(BREAKDOWN_GROUPS);
+    }
 
-    var mockedCategories = [
-        {
-            'name': '1st category',
-            fields: [
-                'base_level',
-                'thumbnail',
-                'status',
-                'performance',
-                'submission_status',
-                'status_setting',
-                'default_account_manager',
-                'cost',
-                'pacing',
-                'clicks',
-            ],
-        },
-        {
-            'name': '2nd category',
-            fields: [
-                'time_on_site',
-                'last_sync',
-                'text_with_popup',
-                'test_link_with_icon',
-                'text_visible_link',
-                'test_link_text',
-                'test_link_nav',
-                'test_click_permission_or_text',
-            ],
-        },
-    ];
+    function getMockedCategories () {
+        return [
+            {
+                'name': '1st category',
+                fields: [
+                    'base_level',
+                    'thumbnail',
+                    'status',
+                    'performance',
+                    'submission_status',
+                    'status_setting',
+                    'default_account_manager',
+                    'cost',
+                    'pacing',
+                    'clicks',
+                ],
+            },
+            {
+                'name': '2nd category',
+                fields: [
+                    'time_on_site',
+                    'last_sync',
+                    'text_with_popup',
+                    'test_link_with_icon',
+                    'text_visible_link',
+                    'test_link_text',
+                    'test_link_nav',
+                    'test_click_permission_or_text',
+                ],
+            },
+        ];
+    }
+
+    function getMockedColumns () {
+        return getColumnsForFields([
+            'base_level',
+            'thumbnail',
+            'status',
+            'performance',
+            'submission_status',
+            'status_setting',
+            'default_account_manager',
+            'cost',
+            'pacing',
+            'clicks',
+            'time_on_site',
+            'last_sync',
+            'text_with_popup',
+            'test_link_with_icon',
+            'text_visible_link',
+            'test_link_text',
+            'test_link_nav',
+            'test_click_permission_or_text',
+        ]);
+    }
 
     function getColumnsForFields (fields) {
         var columns = [];
@@ -255,6 +272,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     // level 2-n -> breakdowns
     //
 
+    var mockedColumns = getMockedColumns();
     var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft']; // eslint-disable-line max-len
     var TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '99+'];
     var TEST_BREAKDOWNS_SEX = ['man', 'woman'];
@@ -294,7 +312,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
 
         return config.breakdown.map(function (b, i) {
             return {
-                name: b,
+                query: b.query,
                 range: range[i],
             };
         });
@@ -357,7 +375,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
 
     function getBreakdownKeys (breakdown) {
         var keys = null;
-        switch (breakdown.name) {
+        switch (breakdown.query) {
         case 'date':
             keys = TEST_BREAKDOWNS_DATES;
             break;

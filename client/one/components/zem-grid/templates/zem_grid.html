@@ -1,9 +1,7 @@
 <div>
-    <div class="zem-grid-debug-container" ng-if="ctrl.grid">
-        <zem-grid-debug grid="ctrl.grid"></zem-grid-debug>
-    </div>
-    <div class="button-bar" style="height: 50px"> <!-- TODO: style -->
-        <zem-grid-column-selector ng-if="ctrl.grid.meta.initialized" grid="ctrl.grid"></zem-grid-column-selector>
+    <div class="zem-grid-button-bar">
+        <zem-grid-column-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" grid="ctrl.grid"></zem-grid-column-selector>
+        <zem-grid-breakdown-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" grid="ctrl.grid"></zem-grid-breakdown-selector>
     </div>
     <div class="zem-grid-container loader-container">
         <div class="loader" ng-show="ctrl.grid.meta.loading"></div>
