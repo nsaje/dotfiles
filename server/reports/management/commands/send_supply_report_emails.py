@@ -10,7 +10,7 @@ from django.db import connections
 import dash.models
 import reports.models
 import reports.api
-from reports import daily_statements_k1
+from etl import daily_statements_k1
 
 import utils.email_helper
 from utils.command_helpers import ExceptionCommand

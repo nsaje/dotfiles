@@ -135,10 +135,7 @@
                         <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
                     <div class="form-alert-body">
-                        {{ warnings.retargeting.text }}
-                        <ul>
-                            <li ng-repeat="source in warnings.retargeting.sources">{{ source }}</label>
-                        </ul>
+                        {{ warnings.retargeting.text }} {{ warnings.retargeting.sourcesText }}.
                     </div>
                 </div>
 

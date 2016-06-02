@@ -65,8 +65,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
 
         if ($scope.warnings.retargeting !== undefined) {
-            $scope.warnings.retargeting.text = 'You have some active media sources that don\'t support retargeting. ' +
-               'To start using it please disable/pause these media sources:';
+            $scope.warnings.retargeting.text = 'You have some active media sources that ' +
+                'don\'t support retargeting. ' +
+                'To start using it please disable/pause these media sources:';
+            $scope.warnings.retargeting.sourcesText = $scope.warnings.retargeting.sources.join(', ');
         }
 
         if ($scope.warnings.endDate !== undefined) {
