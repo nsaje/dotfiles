@@ -491,10 +491,10 @@ class UploadErrorReport(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, 'get')
     def test_existing(self, mock_s3_get):
-        mock_s3_get.return_value = 'url,title,image_url,tracker_urls,display_url,brand_name,description,call_to_action,'\
-                                   'label,image_crop,errors\r\nhttp://zemanta.com/blog,Zemanta blog,'\
-                                   'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,'\
-                                   'entropy,"Content unreachable., Image could not be processed."\r\n'
+        mock_s3_get.return_value = 'url,title,image_url,tracker_urls,display_url,brand_name,description,'\
+                                   'call_to_action,label,image_crop,errors\r\nhttp://zemanta.com/blog,Zemanta blog,'\
+                                   'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,'\
+                                   'content ad 1,entropy,"Content unreachable., Image could not be processed."\r\n'
         batch_id = 4
         ad_group_id = 5
 
