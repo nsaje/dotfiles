@@ -15,7 +15,6 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-
         this.getData = function (config) {
             var url = createUrl(baseUrl, config);
             convertToApi(config);
@@ -72,6 +71,36 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                     pagination.count = pagination.offset + pagination.limit;
                 }
             }
+        }
+
+        function saveData (value, row, column) {
+
+            // Use endpoint for save
+
+            // function AdGroupContentAdState ()
+            //      this.save = function (adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+
+            //function AdGroupSettings () {
+            //    this.save = function (settings) { // settings = {adgroup: id, field: value}
+
+            //function AdGroupSourceSettings () {
+            //    this.save = function (adGroupId, sourceId, data) {
+
+
+            // Settings
+            //      -> id + {field:value}
+            // State
+            //      -> AdGroup State --> id, {state: value} --> url + data
+            //      -> AdGroupSource State --> id, sourceid, state --> url + data
+            //      -> ContentAd State --> id, state, [contentAds]
+
+            // ID -> Endpoint arg
+            // Field: Value - param column
+            // Value - new value
+            //
+            var id = $state.id;
+            column.onSave(id, );
+
         }
     }
 

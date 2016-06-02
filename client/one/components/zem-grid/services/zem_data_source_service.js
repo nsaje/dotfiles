@@ -25,6 +25,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
     // External listeners are registered through dedicated methods (e.g. onLoad)
     var EVENTS = {
         ON_LOAD: 'zem-data-source-on-load',
+        ON_SAVE: 'zem-data-source-on-save',
         ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
     };
 
@@ -52,12 +53,13 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         //
         this.getData = getData;
         this.getMetaData = getMetaData;
+        this.saveData = saveData;
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
         this.setBreakdown = setBreakdown;
         this.onLoad = onLoad;
+        this.onSave = onSave;
         this.onDataUpdated = onDataUpdated;
-
 
         function getMetaData () {
             var deferred = $q.defer();
@@ -115,6 +117,36 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                     breakdown.meta.loading = false;
                 });
             });
+
+            return deferred.promise;
+        }
+
+        function saveData (row, column, newValue) {
+            var deferred = $q.defer();
+            var change = {
+                row: row,
+                column: column,
+                oldValue: row.stats[column.field],
+                newValue: newValue,
+            };
+
+            notifyListeners(EVENTS.ON_SAVE, change);
+
+            row.stats[column.field] = change.newValue;
+            // Use endpoint for save
+
+            // function AdGroupContentAdState ()
+            //      this.save = function (adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+
+            //function AdGroupSettings () {
+            //    this.save = function (settings) { // settings = {adgroup: id, field: value}
+
+            //function AdGroupSourceSettings () {
+            //    this.save = function (adGroupId, sourceId, data) {
+
+            notifyListeners(EVENTS.ON_DATA_UPDATED, ds.data);
+
+            deferred.resolve();
 
             return deferred.promise;
         }
@@ -238,6 +270,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function onLoad (scope, callback) {
             registerListener(EVENTS.ON_LOAD, scope, callback);
+        }
+
+        function onSave (scope, callback) {
+            registerListener(EVENTS.ON_SAVE, scope, callback);
         }
 
         function onDataUpdated (scope, callback) {

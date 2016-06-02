@@ -62,6 +62,13 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             return deferred.promise;
         }
 
+        function updateData (column, row, newValue) {
+            // TODO
+
+            // grid.meta.source.saveData();
+            // Handle stuff here
+        }
+
         function handleSourceDataUpdate (event, data) {
             zemGridParser.parse(grid, data);
             zemGridUIService.resetUIState(grid);
