@@ -36,15 +36,29 @@ ACCOUNT_DUMP_SETTINGS = {
     ],
     'dependents': [  # These are the attributes/methods of the model that we wish to dump.
         'get_current_settings',
+        'credits.all',
+        'conversionpixel_set.all',
         {
             'primary': 'campaign_set.all',
             'dependents': [
                 'get_current_settings',
+                'budgets.all',
+                {
+                    'primary': 'campaigngoal_set.all',
+                    'dependents': [
+                        'values.all'
+                    ]
+                },
                 {
                     'primary': 'adgroup_set.all',
                     'dependents': [
                         'get_current_settings',
-                        'adgroupsource_set.all',
+                        {
+                            'primary': 'adgroupsource_set.all',
+                            'dependents': [
+                                'get_current_settings'
+                            ]
+                        },
                         {
                             'primary': 'contentad_set.all',
                             'dependents': [
@@ -92,7 +106,7 @@ def _create_fake_credit(account):
     return dash.models.CreditLineItem(
         id=1,
         account=account,
-        amount=200.0,
+        amount=5000.0,
         start_date=datetime.date.today(),
         end_date=datetime.date.today() + datetime.timedelta(days=30),
         status=constants.CreditLineItemStatus.SIGNED,
@@ -117,7 +131,7 @@ def prepare_demo_objects(serialize_list, demo_mappings):
             *ACCOUNT_DUMP_SETTINGS['prefetch_related']
         ).get(pk=demo_mapping.real_account_id)
 
-        # create fake credit
+        # create fake credit so each account has at least some
         fake_credit = _create_fake_credit(account)
 
         # set demo users as the users of the future demo account
