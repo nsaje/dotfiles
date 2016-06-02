@@ -8,6 +8,8 @@ import dash.constants
 import dash.bcm_helpers
 import reports.models
 
+from utils import converters
+
 create_credit = dash.models.CreditLineItem.objects.create
 create_budget = dash.models.BudgetLineItem.objects.create
 create_statement = reports.models.BudgetDailyStatement.objects.create
@@ -41,17 +43,17 @@ class AccountCampaignBudgetData(TestCase):
         create_statement(
             budget=self.b,
             date=self.end_date - datetime.timedelta(1),
-            media_spend_nano=200 * dash.models.TO_NANO_MULTIPLIER,
-            data_spend_nano=50 * dash.models.TO_NANO_MULTIPLIER,
-            license_fee_nano=25 * dash.models.TO_NANO_MULTIPLIER,
+            media_spend_nano=200 * converters.DOLAR_TO_NANO,
+            data_spend_nano=50 * converters.DOLAR_TO_NANO,
+            license_fee_nano=25 * converters.DOLAR_TO_NANO,
         )
 
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=200 * dash.models.TO_NANO_MULTIPLIER,
-            data_spend_nano=50 * dash.models.TO_NANO_MULTIPLIER,
-            license_fee_nano=25 * dash.models.TO_NANO_MULTIPLIER,
+            media_spend_nano=200 * converters.DOLAR_TO_NANO,
+            data_spend_nano=50 * converters.DOLAR_TO_NANO,
+            license_fee_nano=25 * converters.DOLAR_TO_NANO,
         )
 
     def test_campaign_budget_data(self):

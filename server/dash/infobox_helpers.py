@@ -15,7 +15,10 @@ import reports.models
 import utils.dates_helper
 import utils.lc_helper
 
+from utils import converters
+
 from decimal import Decimal
+
 
 MAX_PREVIEW_REGIONS = 1
 
@@ -262,7 +265,7 @@ def calculate_allocated_and_available_credit(account):
         credit__in=credits
     ).aggregate(
         amount_sum=Sum('amount'),
-        freed_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('freed_cc')
+        freed_sum=converters.CC_TO_DECIMAL_DOLAR * Sum('freed_cc')
     )
     allocated = (budget_total['amount_sum'] or 0) - (budget_total['freed_sum'] or 0)
     return allocated, \

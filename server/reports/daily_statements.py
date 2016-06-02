@@ -8,9 +8,9 @@ from django.db.models import Sum
 
 import dash.models
 import reports.models
-from utils import dates_helper
 
-CC_TO_NANO = 100000
+from utils import dates_helper
+from utils import converters
 
 
 def _generate_statements(date, campaign):
@@ -32,8 +32,9 @@ def _generate_statements(date, campaign):
         per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.data_spend_nano
         per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.license_fee_nano
 
-    total_media_nano = (stats['cost_cc_sum'] if stats['cost_cc_sum'] is not None else 0) * CC_TO_NANO
-    total_data_nano = (stats['data_cost_cc_sum'] if stats['data_cost_cc_sum'] is not None else 0) * CC_TO_NANO
+    total_media_nano = (stats['cost_cc_sum'] if stats['cost_cc_sum'] is not None else 0) * converters.CC_TO_NANO
+    total_data_nano = (stats['data_cost_cc_sum'] if stats['data_cost_cc_sum'] is not None else 0) * \
+                      converters.CC_TO_NANO
 
     for budget in budgets.order_by('created_dt'):
         budget_amount_nano = budget.amount * (10**9)
@@ -122,7 +123,8 @@ def get_effective_spend_pcts(date, campaign):
             media_cc=Sum('cost_cc'),
             data_cc=Sum('data_cost_cc')
         )
-    actual_spend_nano = (actual_spends['media_cc'] or 0) * CC_TO_NANO + (actual_spends['data_cc'] or 0) * CC_TO_NANO
+    actual_spend_nano = (actual_spends['media_cc'] or 0) * converters.CC_TO_NANO + \
+                        (actual_spends['data_cc'] or 0) * converters.CC_TO_NANO
     attributed_spend_nano = (attributed_spends['media_nano'] or 0) + (attributed_spends['data_nano'] or 0)
     license_fee_nano = attributed_spends['license_fee_nano'] or 0
 
