@@ -54,8 +54,12 @@ def fake_url():
     return _fake_factory.url()
 
 
-def fake_domain_name():
-    return _fake_factory.domain_name()
+def fake_content_ad_url():
+    return 'https://www.example.com/p/' + _fake_factory.uuid4()
+
+
+def fake_display_url():
+    return _fake_factory.domain_name()[-25:].lstrip('-')
 
 
 def fake_brand():

@@ -186,11 +186,14 @@ def _add_to_serialize_list(serialize_list, objs):
         if obj._meta.proxy:
             obj = obj._meta.proxy_for_model.objects.get(pk=obj.pk)
 
+        # explanation: django ORM hashes model objects by PK so we need to save
+        # the object as well, since it might hold anonymization changes
         if obj not in serialize_list:
-            serialize_list[obj] = None
+            serialize_list[obj] = obj
         else:  # move to end
+            obj = serialize_list[obj]
             del serialize_list[obj]
-            serialize_list[obj] = None
+            serialize_list[obj] = obj
 
 
 def _add_object_dependencies(serialize_list, obj, dependencies):

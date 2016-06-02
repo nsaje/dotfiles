@@ -1710,9 +1710,10 @@ class AdGroupSource(models.Model):
 
 class AdGroupSettings(SettingsBase):
     _demo_fields = {
-        'display_url': utils.demo_anonymizer.fake_domain_name,
+        'display_url': utils.demo_anonymizer.fake_display_url,
         'ad_group_name': utils.demo_anonymizer.ad_group_name_from_pool,
         'brand_name': utils.demo_anonymizer.fake_brand,
+        'description': utils.demo_anonymizer.fake_sentence,
     }
     _settings_fields = [
         'state',
@@ -2169,11 +2170,12 @@ class UploadBatch(models.Model):
 
 class ContentAd(models.Model):
     _demo_fields = {
-        'url': utils.demo_anonymizer.fake_url,
-        'display_url': utils.demo_anonymizer.fake_domain_name,
+        'url': utils.demo_anonymizer.fake_content_ad_url,
+        'display_url': utils.demo_anonymizer.fake_display_url,
         'brand_name': utils.demo_anonymizer.fake_brand,
+        'redirect_id': lambda: 'u1jvpq0wthxc',
     }
-    
+
     label = models.CharField(max_length=25, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
