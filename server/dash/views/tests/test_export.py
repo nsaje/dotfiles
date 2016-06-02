@@ -723,6 +723,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
                 'content_ad': 1,
                 'ad_group': 1,
                 'campaign': 1,
+                'account': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
                 'cpc': 10.23,
