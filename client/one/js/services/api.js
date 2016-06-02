@@ -1607,15 +1607,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignAgency () {
-        function convertSettingsFromApi (settings) {
-            return {
-                id: settings.id,
-                campaignManager: settings.campaign_manager,
-                IABCategory: settings.iab_category
-            };
-        }
-
+    function CampaignHistory () {
         function convertHistoryFromApi (history) {
             return history.map(function (item) {
                 return {
@@ -1646,28 +1638,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             });
         }
 
-        function convertSettingsToApi (settings) {
-            return {
-                id: settings.id,
-                campaign_manager: settings.campaignManager,
-                iab_category: settings.IABCategory
-            };
-        }
-
-        function convertValidationErrorFromApi (errors) {
-            var result = {
-                id: errors.id,
-                campaignManager: errors.campaign_manager,
-                IABCategory: errors.iab_category
-            };
-
-            return result;
-        }
-
-
         this.get = function (id) {
             var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/agency/';
+            var url = '/api/campaigns/' + id + '/history/';
 
             $http.get(url).
                 success(function (data, status) {
@@ -1675,49 +1648,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         deferred.reject(data);
                     }
                     deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings),
-                        campaignManagers: data.data.campaign_managers,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
                         history: convertHistoryFromApi(data.data.history)
                     });
                 }).
                 error(function (data, status, headers) {
                     deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (settings) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + settings.id + '/agency/';
-            var config = {
-                params: {}
-            };
-
-            var data = {
-                'settings': convertSettingsToApi(settings)
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings),
-                        history: convertHistoryFromApi(data.data.history),
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore
-                    });
-                }).
-                error(function (data, status, headers, config) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
-                    }
-                    deferred.reject(resource);
                 });
 
             return deferred.promise;
@@ -1733,6 +1668,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 goalQuantity: settings.goal_quantity,
                 targetDevices: convertTargetDevicesFromApi(settings.target_devices),
                 targetRegions: settings.target_regions,
+                campaignManager: settings.campaign_manager,
+                IABCategory: settings.iab_category,
             };
         }
 
@@ -1743,7 +1680,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 campaign_goal: settings.campaignGoal,
                 goal_quantity: settings.goalQuantity,
                 target_devices: convertTargetDevicesToApi(settings.targetDevices),
-                target_regions: settings.targetRegions
+                target_regions: settings.targetRegions,
+                campaign_manager: settings.campaignManager,
+                iab_category: settings.IABCategory,
             };
         }
 
@@ -1755,7 +1694,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 goals: errors.goals,
                 goalQuantity: errors.goal_quantity,
                 targetDevices: errors.target_devices,
-                targetRegions: errors.target_regions
+                targetRegions: errors.target_regions,
+                campaignManager: errors.campaign_manager,
+                IABCategory: errors.iab_category,
             };
 
             return result;
@@ -1818,7 +1759,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        goals: convertCampaignGoalsFromApi(data.data.goals)
+                        goals: convertCampaignGoalsFromApi(data.data.goals),
+                        campaignManagers: data.data.campaign_managers,
+                        canArchive: data.data.can_archive,
+                        canRestore: data.data.can_restore,
                     });
                 }).
                 error(function (data, status, headers) {
@@ -3152,7 +3096,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
-        campaignAgency: new CampaignAgency(),
+        campaignHistory: new CampaignHistory(),
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),

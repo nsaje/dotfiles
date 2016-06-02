@@ -1,7 +1,6 @@
 /* globals oneApp,constants */
 oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
-    $scope.isInLanding = false;
     $scope.contentInsights = {
         summary: null,
         metric: null,
@@ -39,26 +38,19 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 internal: false,
             },
             {
-                heading: 'Agency',
-                route: 'main.campaigns.agency',
-                active: false,
-                hidden: !$scope.hasPermission('zemauth.campaign_agency_view'),
-                internal: $scope.isPermissionInternal('zemauth.campaign_agency_view'),
-            },
-            // this tab is only shown for archived campaigns
-            {
-                heading: 'Settings',
-                route: 'main.campaigns.archived',
-                active: false,
-                hidden: !$scope.campaign || !$scope.campaign.archived,
-                internal: false,
-            },
-            {
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
                 hidden: $scope.campaign && $scope.campaign.archived,
                 internal: false,
+            },
+            {
+                heading: 'History',
+                route: 'main.campaigns.history',
+                active: false,
+                hidden: $scope.campaign && $scope.campaign.archived ||
+                    !$scope.hasPermission('zemauth.campaign_history_view'),
+                internal: $scope.isPermissionInternal('zemauth.campaign_history_view'),
             },
             {
                 heading: 'Budget',
@@ -96,7 +88,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     };
 
     $scope.isInLanding = function () {
-        return !!$scope.campaign.landingMode;
+        return $scope.campaign && !!$scope.campaign.landingMode;
     };
 
     $scope.manageBudget = function () {
@@ -134,11 +126,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.setActiveTab();
 
     if ($scope.campaign && $scope.campaign.archived) {
-        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
-            $state.go('main.campaigns.agency', {id: $scope.campaign.id});
-        }
-
-        $state.go('main.campaigns.settings', {id: $scope.campaign.id});
+        $state.go('main.campaigns.archived', {id: $scope.campaign.id});
     }
 
     zemNavigationService.onUpdate($scope, function () {

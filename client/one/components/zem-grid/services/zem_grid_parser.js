@@ -98,7 +98,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
 
     function parseSeconds (value) {
         if (value !== 0 && !value) return 'N/A';
-        return $filter('number')(value, 1);
+        return $filter('number')(value, 1) + ' s';
     }
 
     function parseDateTime (value) {

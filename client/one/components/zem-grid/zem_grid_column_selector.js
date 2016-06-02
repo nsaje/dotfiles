@@ -1,4 +1,4 @@
-/* global oneApp, $ */
+/* global oneApp */
 'use strict';
 
 oneApp.directive('zemGridColumnSelector', [function () {
@@ -10,12 +10,6 @@ oneApp.directive('zemGridColumnSelector', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_column_selector.html',
-        link: function (scope, tElement) {
-            // Prevent closing of dropdown-menu when checkbox is clicked.
-            $(tElement).on('click', function (e) {
-                e.stopPropagation();
-            });
-        },
         controller: ['zemGridStorageService', function (zemGridStorageService) {
             var vm = this;
 

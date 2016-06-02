@@ -32,9 +32,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             heading: 'History',
             route: 'main.adGroups.history',
             active: false,
-            hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view') ||
+            hidden: !$scope.hasPermission('zemauth.ad_group_history_view') ||
                 ($scope.adGroup && $scope.adGroup.archived),
-            internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view'),
+            internal: $scope.isPermissionInternal('zemauth.ad_group_history_view'),
         }];
 
         return tabs;

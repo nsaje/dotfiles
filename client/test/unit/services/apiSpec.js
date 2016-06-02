@@ -1,4 +1,5 @@
 'use strict';
+/* eslint-disable camelcase */
 
 describe('api', function () {
     var $httpBackend, api;
@@ -48,6 +49,8 @@ describe('api', function () {
                 goal_quantity: '0.04',
                 target_devices: ['mobile'],
                 target_regions: ['NC', '501'],
+                campaign_manager: 1,
+                iab_category: 'IAB-24',
             },
             goals: [],
         };
@@ -59,6 +62,8 @@ describe('api', function () {
                 goal_quantity: '0.04',
                 target_devices: ['mobile'],
                 target_regions: ['NC', '501'],
+                campaign_manager: 1,
+                iab_category: 'IAB-24',
             },
             goals: {
                 primary: null,
@@ -72,6 +77,8 @@ describe('api', function () {
             name: 'Test Campaign',
             campaignGoal: 3,
             goalQuantity: '0.04',
+            campaignManager: 1,
+            IABCategory: 'IAB-24',
             targetDevices: [{
                 name: 'Desktop',
                 value: constants.adTargetDevice.DESKTOP,
@@ -124,6 +131,8 @@ describe('api', function () {
                         goal_quantity: ['Goal quantity is wrong'],
                         target_devices: ['Target devices are wrong'],
                         target_regions: ['Target regions are wrong'],
+                        iab_category: ['Invalid IAB category'],
+                        campaign_manager: ['Invalid campaign manager'],
                     }
                 };
 
@@ -141,6 +150,8 @@ describe('api', function () {
                     targetRegions: ['Target regions are wrong'],
                     noGoals: ['At least one goal must be defined'],
                     goals: ['CPA goal cannot be set as primary because ...'],
+                    IABCategory: ['Invalid IAB category'],
+                    campaignManager: ['Invalid campaign manager'],
                 });
             });
         });

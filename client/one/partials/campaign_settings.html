@@ -12,6 +12,35 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!errors.campaignManager}" ng-if="hasPermission('zemauth.can_modify_campaign_manager')">
+            <label for="account-manager-select" class="col-xs-3 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_manager')" popover-placement="right"></zem-internal-feature>Campaign Manager
+                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.campaignManager">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="manager.id as manager in campaignManagers | orderBy:getName | filter:$select.search">
+                        <div ng-bind-html="manager.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
+            <label for="iab-category-select" class="col-xs-3 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_iab_category')" popover-placement="right"></zem-internal-feature>IAB Category
+                <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
+                    <option ng-repeat="category in iabCategories" value="{{category.value}}">{{category.name}}</option>
+                </select>
+            </div>
+            <label ng-repeat="error in errors.IABCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': !!errors.campaignGoal}" ng-if="!hasPermission('zemauth.can_see_campaign_goals')">>
             <label for="goal-input-label" class="col-xs-3 control-label">
                 Campaign goal
@@ -88,6 +117,11 @@
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
 
+        <div class="pull-right" ng-if="hasPermission('zemauth.archive_restore_entity')">
+            <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
+            <button type="button" class="btn btn-default" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.') || ''}}" ng-click="archiveCampaign()">Archive campaign</button>
+        </div>
+
         <div class="loader" ng-show="requestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
@@ -101,4 +135,19 @@
         zem-account="account"
 		ng-if="!hasPermission('zemauth.can_see_campaign_goals')">
     </zem-conversion-goals>
+</div>
+
+<div class="page page-campaign-settings" ng-if="!!campaign.archived">
+    <p>
+        <strong>This campaign is archived.</strong>
+    </p>
+
+    <p ng-if="!hasPermission('zemauth.archive_restore_entity')">
+        Contact <a class="contact" href="mailto:help@zemanta.com?Subject=Archived%20Campaign%20Issue">Zemanta client services</a> if you need assistance.
+    </p>
+
+    <div class="settings-restore-container" ng-if="hasPermission('zemauth.archive_restore_entity')">
+        <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
+        <button type="button" class="btn btn-default" ng-class="{'disabled': !canRestore}" ng-click="restoreCampaign()" title="{{ (!canRestore && 'In order to restore a campaign, it\'s account must be restored first.') || '' }}">Restore campaign</button>
+    </div>
 </div>
