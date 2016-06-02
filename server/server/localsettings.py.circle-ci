@@ -16,8 +16,7 @@ else:
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-STATS_DB_NAME = 'k1'
-
+STATS_DB_NAME = 'stats'
 STATS_E2E_DB_NAME = 'stats_e2e'
 
 DATABASES = {

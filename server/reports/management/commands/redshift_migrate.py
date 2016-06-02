@@ -2,10 +2,9 @@ import os
 import sys
 import logging
 
-from django.core.management.base import BaseCommand
-
 from utils.command_helpers import set_logger_verbosity, ExceptionCommand
-from reports import redshift
+from django.conf import settings
+from django.db import connections
 
 logger = logging.getLogger(__name__)
 
@@ -15,20 +14,14 @@ def migrate_db(start_index=0):
 
     migration_files = _get_migrations(start_index)
 
-    cursor = redshift.get_cursor()
-
-    logger.info('Applying migrations')
-    try:
+    with connections[settings.STATS_DB_NAME].cursor() as cursor:
+        logger.info('Applying migrations')
         for i, mf in enumerate(migration_files):
             with open(mf, 'r') as f:
                 logger.info('Applying migration {} {}/{} {}'.format(start_index + i, i + 1, len(migration_files), mf))
                 cursor.execute(f.read(), [])
-    except Exception as e:
-        logger.exception(e)
-    finally:
-        cursor.close()
 
-    logger.info('Done, database migrated.')
+        logger.info('Done, database migrated.')
 
 
 def list_migrations(start_index=0, show_sql=False):
