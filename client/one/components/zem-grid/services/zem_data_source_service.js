@@ -1,7 +1,7 @@
 /* globals oneApp,angular */
 'use strict';
 
-oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
+oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
     //
     // DataSource is responsible for fetching data with help of passed Endpoint and
@@ -25,20 +25,22 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
     // External listeners are registered through dedicated methods (e.g. onLoad)
     var EVENTS = {
         ON_LOAD: 'zem-data-source-on-load',
+        ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
     };
 
     function DataSource (endpoint) {
         var ds = this;
 
         this.data = null;
-        this.config = {};
+
+        this.config = {
+            order: '-clicks',
+        };
         this.endpoint = endpoint;
 
-        // Available breakdowns are all breakdowns supported by endpoint
-        // while selectedBreakdown defines currently configured breakdown
-        // TODO: default values will be defined by Breakdown selector (TBD)
-        this.availableBreakdowns = endpoint.availableBreakdowns;
-        this.selectedBreakdown = endpoint.defaultBreakdown;
+        // selectedBreakdown defines currently configured breakdown
+        // Default value is configured after retrieving metadata
+        this.selectedBreakdown = null;
 
         // Define default pagination (limits) for all levels when
         // size is not passed when requesting new data
@@ -50,13 +52,23 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
         //
         this.getData = getData;
         this.getMetaData = getMetaData;
+        this.setDateRange = setDateRange;
+        this.setOrder = setOrder;
+        this.setBreakdown = setBreakdown;
         this.onLoad = onLoad;
+        this.onDataUpdated = onDataUpdated;
+
 
         function getMetaData () {
-            var config = {
-                selectedBreakdown: ds.selectedBreakdown,
-            };
-            return ds.endpoint.getMetaData(config);
+            var deferred = $q.defer();
+            ds.endpoint.getMetaData().then(function (metaData) {
+                // Base level always defines only one breakdown and
+                // is available as first element in breakdownGroups
+                var baseLevelBreakdown = metaData.breakdownGroups[0];
+                ds.selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
+                deferred.resolve(metaData);
+            });
+            return deferred.promise;
         }
 
         function getData (breakdown, size) {
@@ -68,7 +80,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
                 offset = breakdown.pagination.limit;
                 limit = size;
                 breakdowns = [breakdown];
+            } else {
+                initializeRoot();
             }
+
             return getDataByLevel(level, breakdowns, offset, limit);
         }
 
@@ -87,7 +102,6 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             var deferred = $q.defer();
             ds.endpoint.getData(config).then(function (breakdowns) {
                 applyBreakdowns(breakdowns);
-                deferred.notify(ds.data);
                 if (level < ds.selectedBreakdown.length) {
                     // Chain request for each successive level
                     var childBreakdowns = getChildBreakdowns(breakdowns);
@@ -103,6 +117,19 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             });
 
             return deferred.promise;
+        }
+
+        function setDateRange (dateRange) {
+            ds.config.startDate = dateRange.startDate;
+            ds.config.endDate = dateRange.endDate;
+        }
+
+        function setOrder (order) {
+            ds.config.order = order;
+        }
+
+        function setBreakdown (breakdown) {
+            ds.selectedBreakdown = breakdown;
         }
 
         function prepareConfig (level, breakdowns, offset, limit) {
@@ -138,6 +165,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             breakdowns.forEach(function (breakdown) {
                 applyBreakdown(breakdown);
             });
+            notifyListeners(EVENTS.ON_DATA_UPDATED, ds.data);
         }
 
         function applyBreakdown (breakdown) {
@@ -147,7 +175,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             notifyListeners(EVENTS.ON_LOAD, breakdown);
             initializeRowsData(breakdown);
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
-                initializeData(breakdown);
+                ds.data.breakdown = breakdown;
+                ds.data.stats = breakdown.totals;
                 return;
             }
 
@@ -176,16 +205,14 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
             return null;
         }
 
-        function initializeData (breakdown) {
-            // Tree starts with L0 data representing
-            // base level breakdown and totals data
-            ds.data = {
-                breakdown: breakdown,
-                stats: breakdown.totals,
+        function initializeRoot () {
+            ds.data = { // Root node - L0
+                breakdown: null,
+                stats: null,
                 level: 0,
+                meta: {},
             };
-            breakdown.meta = {};
-            delete breakdown.stats;
+            notifyListeners(EVENTS.ON_DATA_UPDATED, ds.data);
         }
 
         function initializeRowsData (breakdown) {
@@ -210,6 +237,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemGridSer
 
         function onLoad (scope, callback) {
             registerListener(EVENTS.ON_LOAD, scope, callback);
+        }
+
+        function onDataUpdated (scope, callback) {
+            registerListener(EVENTS.ON_DATA_UPDATED, scope, callback);
         }
 
         function registerListener (event, scope, callback) {

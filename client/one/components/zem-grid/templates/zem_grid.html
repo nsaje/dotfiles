@@ -1,10 +1,11 @@
 <div>
-    <div class="zem-grid-debug-container" ng-if="ctrl.grid">
-        <zem-grid-debug grid="ctrl.grid"></zem-grid-debug>
+    <div class="zem-grid-button-bar">
+        <zem-grid-column-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" grid="ctrl.grid"></zem-grid-column-selector>
+        <zem-grid-breakdown-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" grid="ctrl.grid"></zem-grid-breakdown-selector>
     </div>
     <div class="zem-grid-container loader-container">
-        <div class="loader" ng-show="ctrl.grid.ui.loading"></div>
-        <div class="zem-grid" ng-if="ctrl.grid">
+        <div class="loader" ng-show="ctrl.grid.meta.loading"></div>
+        <div class="zem-grid" ng-if="ctrl.grid.meta.initialized">
             <zem-grid-header grid="ctrl.grid"></zem-grid-header>
             <zem-grid-body grid="ctrl.grid"></zem-grid-body>
             <zem-grid-footer grid="ctrl.grid"></zem-grid-footer>

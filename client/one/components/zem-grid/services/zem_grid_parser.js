@@ -12,11 +12,14 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
     //
 
     function parse (grid, data) {
-        if (data.level === 0) {
+        if (data.level > 0) throw 'Inplace parsing not supported yet.';
+
+        if (data.breakdown) {
             grid.footer = createRow(grid, data, 0);
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
-            throw 'Inplace parsing not supported yet.';
+            grid.body.rows = [];
+            grid.footer.stats = null;
         }
     }
 
@@ -44,7 +47,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
         var emptyStats = {};
-        grid.header.columns.forEach(function (col) {
+        grid.meta.data.columns.forEach(function (col) {
             emptyStats[col.field] = '';
         });
         row.data.stats = emptyStats;
@@ -73,7 +76,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         // need for filters in the templates (huge performance gain). If field can't be parsed
         // here just use the same value as in data stats
         var parsedStats = {};
-        grid.header.columns.forEach(function (col) {
+        grid.meta.data.columns.forEach(function (col) {
             var parsedValue;
             switch (col.type) {
             case 'percent': parsedValue = parsePercent(stats[col.field], col); break;
@@ -95,7 +98,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
 
     function parseSeconds (value) {
         if (value !== 0 && !value) return 'N/A';
-        return $filter('number')(value, 1);
+        return $filter('number')(value, 1) + ' s';
     }
 
     function parseDateTime (value) {

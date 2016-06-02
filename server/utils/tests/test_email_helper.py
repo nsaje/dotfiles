@@ -95,7 +95,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [campaign_manager.email, account_manager.email])
+        self.assertEqual(mail.outbox[0].to, [account_manager.email, campaign_manager.email])
 
         self.request.user = campaign_manager
         email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
@@ -156,7 +156,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [campaign_manager.email, account_manager.email])
+        self.assertEqual(mail.outbox[0].to, [account_manager.email, campaign_manager.email])
 
         self.request.user = campaign_manager
         email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
@@ -214,7 +214,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [campaign_manager.email, account_manager.email])
+        self.assertEqual(mail.outbox[0].to, [account_manager.email, campaign_manager.email])
 
         self.request.user = campaign_manager
         email_helper.send_budget_notification_email(campaign, self.request, 'Test')

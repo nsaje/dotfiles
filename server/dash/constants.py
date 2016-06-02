@@ -1397,6 +1397,22 @@ class SystemUserType(ConstantBase):
     }
 
 
+class FacebookPageRequestType(ConstantBase):
+    EMPTY = 1
+    CONNECTED = 2
+    PENDING = 3
+    INVALID_PAGE = 4
+    UNKNOWN = 5
+
+    _VALUES = {
+        EMPTY: 'Empty',
+        CONNECTED: 'Connected',
+        PENDING: 'Pending',
+        INVALID_PAGE: 'Invalid page',
+        UNKNOWN: 'Unknown'
+    }
+
+
 class AsyncUploadJobStatus(ConstantBase):
     PENDING_START = 1
     WAITING_RESPONSE = 2
@@ -1510,4 +1526,39 @@ class ConversionWindows(ConstantBase):
         LEQ_1_DAY: '1 day',
         LEQ_7_DAYS: '7 days',
         LEQ_30_DAYS: '30 days',
+    }
+
+
+class EmailTemplateType(ConstantBase):
+
+    ADGROUP_CHANGE = 1
+    CAMPAIGN_CHANGE = 2
+    BUDGET_CHANGE = 3
+    PIXEL_ADD = 4
+    PASSWORD_RESET = 5
+    USER_NEW = 6
+    SUPPLY_REPORT = 7
+    SCHEDULED_EXPORT_REPORT = 8
+    BUDGET_DEPLETING = 9
+    CAMPAIGN_STOPPED = 10
+    AUTOPILOT_AD_GROUP_CHANGE = 11
+    AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
+    CAMPAIGN_LANDING_MODE_SWITCH = 13
+    CAMPAIGN_BUDGET_LOW = 14
+
+    _VALUES = {
+        ADGROUP_CHANGE: 'Ad group settings change',
+        CAMPAIGN_CHANGE: 'Campaign settings change',
+        BUDGET_CHANGE: 'Budget change',
+        PIXEL_ADD: 'New conversion pixel',
+        PASSWORD_RESET: 'User password reset',
+        USER_NEW: 'New user introduction email',
+        SUPPLY_REPORT: 'Supply report',
+        SCHEDULED_EXPORT_REPORT: 'Scheduled report',
+        BUDGET_DEPLETING: 'Depleting budget notification',
+        CAMPAIGN_STOPPED: 'Campaign stopped notification',
+        AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
+        AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
+        CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
+        CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
     }

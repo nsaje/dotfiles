@@ -66,9 +66,8 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(notif.yesterdays_spend, 150)
 
         mock.assert_called_with(
-            u'Test Campaign 1',
+            campaign,
             'https://one.zemanta.com/campaigns/1/budget',
-            u'Test Account 1',
             ['em@il.com', 'accountmanager@test.com'],
             100, 150,
             decimal.Decimal('60.0000')
@@ -83,10 +82,11 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(budgetdepletion.manager_has_been_notified(camp), True)
 
     def test_send_depleting_budget_notification_email(self):
+        campaign = models.Campaign.objects.get(pk=1)
+
         budgetdepletion._send_depleting_budget_notification_email(
-            'campaign_name',
+            campaign,
             'campaign_url',
-            'account_name',
             ['test@zemanta.com'],
             1000,
             1500,
@@ -99,10 +99,10 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
 
     def test_send_campaign_stopped_notification_email(self):
+        campaign = models.Campaign.objects.get(pk=1)
         budgetdepletion._send_campaign_stopped_notification_email(
-            'campaign_name',
+            campaign,
             'campaign_url',
-            'account_name',
             ['test@zemanta.com']
         )
         self.assertEqual(len(mail.outbox), 1)

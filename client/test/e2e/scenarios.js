@@ -19,7 +19,6 @@ var Tabs = function () {
         ads: element(by.cssContainingText('.nav-tabs .tab-title', 'CONTENT ADS')),
         sources: element(by.cssContainingText('.nav-tabs .tab-title', 'MEDIA SOURCES')),
         settings: element(by.cssContainingText('.nav-tabs .tab-title', 'SETTINGS')),
-        agency: element(by.cssContainingText('.nav-tabs .tab-title', 'AGENCY'))
     },
     this.campaign = {
         adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'AD GROUPS')),

@@ -10,11 +10,13 @@ from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
 from django.contrib.auth import models as authmodels
+from dash.constants import EmailTemplateType
 
 import automation.models
 import automation.settings
 import automation.helpers
 from utils import pagerduty_helper, url_helper
+from utils.email_helper import format_email, email_manager_list
 from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -40,22 +42,16 @@ def _allowed_to_automatically_stop_campaign(campaign):
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
-    emails = []
-    if campaign_manager is not None:
-        emails.append(campaign_manager.email)
+    emails = email_manager_list(campaign)
     if sales_rep is not None:
         emails.append(sales_rep.email)
-    account_settings = campaign.account.get_current_settings()
-    if account_settings.default_account_manager is not None:
-        emails.append(account_settings.default_account_manager.email)
 
     total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
     campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
 
     _send_depleting_budget_notification_email(
-        campaign.name,
+        campaign,
         campaign_url,
-        campaign.account.name,
         emails,
         available_budget,
         yesterdays_spend,
@@ -72,39 +68,26 @@ def budget_is_depleting(available_budget, yesterdays_spend):
 
 
 def _send_depleting_budget_notification_email(
-        campaign_name,
+        campaign,
         campaign_url,
-        account_name,
         emails,
         available_budget,
         yesterdays_spend,
         total_daily_budget
         ):
-    body = u'''Hi account manager of {camp}
+    args = {
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': campaign_url,
+        'available_budget': _round_budget(available_budget),
+        'cap': _round_budget(total_daily_budget),
+        'yesterday_spend': _round_budget(yesterdays_spend)
+    }
+    subject, body = format_email(EmailTemplateType.BUDGET_DEPLETING, **args)
 
-We'd like to notify you that campaign {camp}, {account} is about to run out of available budget.
-
-The available budget remaining today is ${avail}, current daily cap is ${cap} and yesterday's spend was ${yest}.
-
-Please check {camp_url} for details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        camp=campaign_name,
-        account=account_name,
-        camp_url=campaign_url,
-        avail=_round_budget(available_budget),
-        cap=_round_budget(total_daily_budget),
-        yest=_round_budget(yesterdays_spend)
-    )
     try:
         send_mail(
-            u'Campaign budget low - {camp}, {account}'.format(
-                camp=campaign_name,
-                account=account_name
-            ),
+            subject,
             body,
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
@@ -112,10 +95,10 @@ Zemanta
         )
     except Exception as e:
         logger.exception(u'Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
-                         campaign_name,
+                         campaign.name,
                          ', '.join(emails))
         desc = {
-            'campaign_name': campaign_name,
+            'campaign_name': campaign.name,
             'email': ''.join(emails)
         }
         pagerduty_helper.trigger(
@@ -133,31 +116,19 @@ def _round_budget(budget):
 
 
 def _send_campaign_stopped_notification_email(
-        campaign_name,
+        campaign,
         campaign_url,
-        account_name,
         emails
         ):
-    body = u'''Hi account manager of {camp}
-
-We'd like to notify you that campaign {camp}, {account} has run out of available budget and was stopped.
-
-Please check {camp_url} for details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        camp=campaign_name,
-        account=account_name,
-        camp_url=campaign_url
-    )
+    args = {
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': campaign_url,
+    }
+    subject, body = format_email(EmailTemplateType.CAMPAIGN_STOPPED, **args)
     try:
         send_mail(
-            'Campaign stopped - {camp}, {account}'.format(
-                camp=campaign_name,
-                account=account_name
-            ),
+            subject,
             body,
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
@@ -165,10 +136,10 @@ Zemanta
         )
     except Exception as e:
         logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
-                         campaign_name,
+                         campaign.name,
                          ', '.join(emails))
         desc = {
-            'campaign_name': campaign_name,
+            'campaign_name': campaign.name,
             'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
@@ -219,22 +190,16 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
     campaign_manager = campaign.get_current_settings().campaign_manager
     sales_rep = campaign.get_sales_representative()
 
-    emails = []
-    if campaign_manager is not None:
-        emails.append(campaign_manager.email)
+    emails = email_manager_list(campaign)
     if sales_rep is not None:
         emails.append(sales_rep.email)
-    account_settings = campaign.account.get_current_settings()
-    if account_settings.default_account_manager is not None:
-        emails.append(account_settings.default_account_manager.email)
 
     campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
     _send_campaign_stopped_notification_email(
-        campaign.name,
+        campaign,
         campaign_url,
-        campaign.account.name,
         emails
-        )
+    )
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,

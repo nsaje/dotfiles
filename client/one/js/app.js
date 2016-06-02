@@ -158,19 +158,20 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl',
         })
-        .state('main.campaigns.agency', {
-            url: '/agency',
-            templateUrl: '/partials/campaign_agency.html',
-            controller: 'CampaignAgencyCtrl',
-        })
-        .state('main.campaigns.archived', {
-            url: '/archived',
-            templateUrl: '/partials/campaign_archived.html',
-        })
         .state('main.campaigns.settings', {
             url: '/settings',
             templateUrl: '/partials/campaign_settings.html',
             controller: 'CampaignSettingsCtrl',
+        })
+        .state('main.campaigns.archived', {
+            url: '/archived',
+            templateUrl: '/partials/campaign_settings.html',
+            controller: 'CampaignSettingsCtrl',
+        })
+        .state('main.campaigns.history', {
+            url: '/history',
+            templateUrl: '/partials/campaign_history.html',
+            controller: 'CampaignHistoryCtrl',
         })
         .state('main.campaigns.budget', {
             url: '/budget',
@@ -209,10 +210,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl'
         })
-        .state('main.adGroups.agency', {
-            url: '/agency',
-            templateUrl: '/partials/ad_group_agency.html',
-            controller: 'AdGroupAgencyCtrl'
+        .state('main.adGroups.history', {
+            url: '/history',
+            templateUrl: '/partials/ad_group_history.html',
+            controller: 'AdGroupHistoryCtrl'
         })
         .state('main.adGroups.publishers', {
             url: '/publishers',
