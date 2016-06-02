@@ -12,6 +12,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             var deferred = $q.defer();
             deferred.resolve({
                 columns: mockedColumns,
+                categories: mockedCategories,
             });
             return deferred.promise;
         };
@@ -31,80 +32,131 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             name: 'Mocked Level',
             type: 'breakdownName',
             help: 'Mocked level.',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         thumbnail: {
             name: 'Thumbnail',
             type: 'image',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         status: {
             name: 'Status',
             type: 'text',
             help: 'Status of an account (enabled or paused).',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         performance: {
             nameCssClass: 'performance-icon',
             type: 'icon-list',
             help: 'Goal performance indicator',
+            shown: true,
+            checked: true,
+            unselectable: true,
         },
         submission_status: {
             name: 'Submission Status',
             type: 'submissionStatus',
             help: 'Current submission status.',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         default_account_manager: {
             name: 'Account Manager',
             type: 'text',
             help: 'Account manager responsible for the campaign and the communication with the client.',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         cost: {
             name: 'Spend',
             type: 'currency',
             help: 'Amount spent per account',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         pacing: {
             name: 'Pacing',
             type: 'percent',
             help: '',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         clicks: {
             name: 'Clicks',
             type: 'number',
             help: 'The number of times a content ad has been clicked.',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         time_on_site: {
             name: 'Time on Site',
             type: 'seconds',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         last_sync: {
             name: 'Last OK Sync (EST)',
             type: 'datetime',
             help: 'Dashboard reporting data is synchronized on an hourly basis.',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         text_with_popup: {
             name: 'Text with Popup',
             type: 'textWithPopup',
             help: 'Test text with popup.',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         test_link_with_icon: {
             name: 'Link with Icon',
             type: 'link',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         text_visible_link: {
             name: 'Visible Link',
             type: 'visibleLink',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         test_link_text: {
             name: 'Link Text',
             type: 'linkText',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         test_link_nav: {
             name: 'Link Nav',
             type: 'linkNav',
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         test_click_permission_or_text: {
             name: 'Click Permissions',
             type: 'clickPermissionOrText',
             hasPermission: true,
+            shown: true,
+            checked: true,
+            unselectable: false,
         },
         status_setting: {
             name: 'State',
@@ -143,6 +195,37 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         'test_link_nav',
         'test_click_permission_or_text',
     ]);
+
+    var mockedCategories = [
+        {
+            'name': '1st category',
+            fields: [
+                'base_level',
+                'thumbnail',
+                'status',
+                'performance',
+                'submission_status',
+                'status_setting',
+                'default_account_manager',
+                'cost',
+                'pacing',
+                'clicks',
+            ],
+        },
+        {
+            'name': '2nd category',
+            fields: [
+                'time_on_site',
+                'last_sync',
+                'text_with_popup',
+                'test_link_with_icon',
+                'text_visible_link',
+                'test_link_text',
+                'test_link_nav',
+                'test_click_permission_or_text',
+            ],
+        },
+    ];
 
     function getColumnsForFields (fields) {
         var columns = [];
