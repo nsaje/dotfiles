@@ -345,7 +345,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('default', ['ngconstant:prod', 'build', 'dist']);
-    grunt.registerTask('test', ['build', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
+    grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e_debug', ['protractor:debug']);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
