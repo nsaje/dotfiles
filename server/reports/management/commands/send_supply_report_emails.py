@@ -45,7 +45,10 @@ class Command(ExceptionCommand):
 
             for media_source, impressions, spend in c:
                 source = dash.models.Source.objects.get(bidder_slug=media_source)
-                source_stats[source.pk] = {'impressions': impressions, 'cost': Decimal(spend) / converters.DOLAR_TO_MICRO}
+                source_stats[source.pk] = {
+                    'impressions': impressions,
+                    'cost': Decimal(spend) / converters.DOLAR_TO_MICRO,
+                }
 
         for recipient in recipients:
             impressions = 0

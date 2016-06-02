@@ -32,9 +32,8 @@ def _generate_statements(date, campaign):
         per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.data_spend_nano
         per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.license_fee_nano
 
-    total_media_nano = (stats['cost_cc_sum'] if stats['cost_cc_sum'] is not None else 0) * converters.CC_TO_NANO
-    total_data_nano = (stats['data_cost_cc_sum'] if stats['data_cost_cc_sum'] is not None else 0) * \
-                      converters.CC_TO_NANO
+    total_media_nano = (stats['cost_cc_sum'] or 0) * converters.CC_TO_NANO
+    total_data_nano = (stats['data_cost_cc_sum'] or 0) * converters.CC_TO_NANO
 
     for budget in budgets.order_by('created_dt'):
         budget_amount_nano = budget.amount * (10**9)

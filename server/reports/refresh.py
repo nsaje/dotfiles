@@ -397,7 +397,8 @@ def _get_raw_ob_pub_data(s3_keys):
             }
 
             if total_clicks > 0:
-                new_row['cost_nano'] = int(round((float(row['clicks']) / total_clicks) * total_cost * converters.DOLAR_TO_NANO))
+                new_row['cost_nano'] = int(round(
+                    (float(row['clicks']) / total_clicks) * total_cost * converters.DOLAR_TO_NANO))
 
             rows.append(new_row)
 
