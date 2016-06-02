@@ -133,12 +133,16 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if 'source' in dimensions:
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
+    first_stat_date = None
     for stat in stats:
+        if first_stat_date is None and 'date' in stat:
+            first_stat_date = stat['date']
         _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
                        source_names=source_names, user=user, prefetched_data=prefetched_data,
                        budgets=budgets, projections=projections,
                        include_projections=include_projections, include_flat_fees=include_flat_fees,
-                       statuses=statuses, settings=settings, account_settings=account_settings)
+                       statuses=statuses, settings=settings, account_settings=account_settings,
+                       first_stat_date=first_stat_date)
 
     return sort_results(stats, [ordering])
 
@@ -315,7 +319,7 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
 def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None,
                    user=None, prefetched_data=None, budgets=None, projections=None,
                    include_flat_fees=False, include_projections=False, statuses=None,
-                   settings=None, account_settings=None):
+                   settings=None, account_settings=None, first_stat_date=None):
 
     stat['start_date'] = start_date
     stat['end_date'] = end_date
@@ -332,11 +336,11 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
         stat['source'] = source_names[stat['source']]
 
     if 'date' in stat:
-        _adjust_breakdown_by_day(start_date, stat)
+        _adjust_breakdown_by_day(start_date, first_stat_date, stat)
 
 
-def _adjust_breakdown_by_day(start_date, stat):
-    if stat['date'] == start_date or stat['date'].day == 1:
+def _adjust_breakdown_by_day(start_date, first_stat_date, stat):
+    if first_stat_date is not None and stat['date'] == first_stat_date:
         return
     for field in ('allocated_budgets', 'flat_fee', 'total_fee',
                   'spend_projection', 'pacing', 'license_fee_projection',
