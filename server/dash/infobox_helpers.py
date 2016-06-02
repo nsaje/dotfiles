@@ -15,7 +15,10 @@ import reports.models
 import utils.dates_helper
 import utils.lc_helper
 
+from utils import converters
+
 from decimal import Decimal
+
 
 MAX_PREVIEW_REGIONS = 1
 
@@ -259,12 +262,12 @@ def calculate_allocated_and_available_credit(account):
     credits = _retrieve_active_creditlineitems(account, today)
     credit_total = credits.aggregate(
         amount_sum=Sum('amount'),
-        flat_fee_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('flat_fee_cc'))
+        flat_fee_sum=converters.CC_TO_DECIMAL_DOLAR * Sum('flat_fee_cc'))
     budget_total = dash.models.BudgetLineItem.objects.filter(
         credit__in=credits
     ).aggregate(
         amount_sum=Sum('amount'),
-        freed_sum=dash.models.CC_TO_DEC_MULTIPLIER * Sum('freed_cc')
+        freed_sum=converters.CC_TO_DECIMAL_DOLAR * Sum('freed_cc')
     )
     assigned = (credit_total['amount_sum'] or 0) - (credit_total['flat_fee_sum'] or 0)
     allocated = (budget_total['amount_sum'] or 0) - (budget_total['freed_sum'] or 0)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$CONF_ENV" != "demo" || "${DB_PORT_5432_TCP_ADDR}" != "db" ]]; then
+if [[ "$CONF_ENV" != "demo" || "${DB_ENV_POSTGRES_DB}" != "demo-one" ]]; then
     echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
     exit 1
 fi
@@ -30,4 +30,3 @@ python /app/zemanta-eins/manage.py sqlflush | python /app/zemanta-eins/manage.py
 
 echo "Loading dump"
 python /app/zemanta-eins/manage.py loaddata dump.json
-
