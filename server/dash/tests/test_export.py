@@ -387,8 +387,8 @@ class ExportTestCase(test.TestCase):
              'impressions': 200000,
              'start_date': datetime.date(2014, 6, 30),
              'license_fee': 1.0,
-             'total_fee': None,
-             'flat_fee': None,
+             'total_fee': 0,
+             'flat_fee': 0,
              'status': 2,
              }
         ])
