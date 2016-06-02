@@ -155,58 +155,24 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
     projections = None
     statuses = None
     by_source = ('source' in dimensions)
-    level = None
+    level = _level_from_dimensions(dimensions)
     settings = None
     account_settings = None
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
     elif 'ad_group' in dimensions:
-        level = 'ad_group'
-        distinct_ad_groups = set(stat['ad_group'] for stat in stats)
-
-        ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
-        data = {ad_group.id: ad_group for ad_group in ad_group_qs}
-
-        if include_settings:
-            settings_qs = models.AdGroupSettings.objects \
-                .filter(ad_group__in=distinct_ad_groups) \
-                .group_current_settings()
-            settings = {s.ad_group_id: s for s in settings_qs}
-
-        if include_account_settings:
-            account_settings = _prefetch_account_settings(stats)
+        data, settings, account_settings = _prefetch_ad_group_data(
+            stats, include_settings=include_settings,
+            include_account_settings=include_account_settings
+        )
     elif 'campaign' in dimensions:
-        level = 'campaign'
-        distinct_campaigns = set(stat['campaign'] for stat in stats)
-
-        campaign_qs = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
-        data = {c.id: c for c in campaign_qs}
-
-        if include_settings:
-            settings_qs = models.CampaignSettings.objects \
-                .filter(campaign__in=distinct_campaigns) \
-                .group_current_settings() \
-                .select_related('campaign_manager')
-            settings = {s.campaign_id: s for s in settings_qs}
-
-        if include_account_settings:
-            account_settings = _prefetch_account_settings(stats)
+        data, settings, account_settings = _prefetch_campaign_data(
+            stats, include_settings=include_settings,
+            include_account_settings=include_account_settings
+        )
     elif 'account' in dimensions:
-        level = 'account'
-        distinct_accounts = set(stat['account'] for stat in stats)
-        include_settings = include_settings or include_account_settings
-
-        accounts_qs = models.Account.objects.filter(id__in=distinct_accounts)
-        data = {a.id: a for a in accounts_qs}
-
-        if include_settings:
-            settings_qs = models.AccountSettings.objects \
-                .filter(account__in=distinct_accounts) \
-                .group_current_settings() \
-                .select_related('default_account_manager', 'default_sales_representative')
-            settings = {s.account_id: s for s in settings_qs}
+        data, settings = _prefetch_account_data(stats, include_settings=include_settings)
     elif not dimensions:
-        level = 'all_accounts'
         accounts = models.Account.objects.all().filter_by_user(user)
         data = {a.id: a for a in accounts}
 
@@ -217,23 +183,7 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
         budgets = None if not include_budgets \
             else _prefetch_budgets(data, level)
 
-    projections = None
-    if level in ['all_accounts', 'account', 'campaign']:
-        projections_accounts = []
-        if not dimensions:
-            projections_accounts = models.Account.objects.all().filter_by_user(user)
-        else:
-            projections_accounts = models.Account.objects.all().filter(
-                pk__in=set(stat['account'] for stat in stats)
-            )
-
-        projections = BudgetProjections(
-            start_date,
-            end_date,
-            level != 'all_accounts' and level or 'account',
-            accounts=projections_accounts,
-        )
-
+    projections = _prefetch_projections(start_date, end_date, stats, level, user)
     return data, budgets, projections, statuses, settings, account_settings
 
 
@@ -514,6 +464,20 @@ def _get_sources_state(ad_group_sources):
     return constants.ExportStatus.INACTIVE
 
 
+def _level_from_dimensions(dimensions):
+    if 'content_ad' in dimensions:
+        return None
+    elif 'ad_group' in dimensions:
+        return 'ad_group'
+    elif 'campaign' in dimensions:
+        return 'campaign'
+    elif 'account' in dimensions:
+        return 'account'
+    elif not dimensions:
+        return 'all_accounts'
+    return None
+
+
 def _prefetch_content_ad_data(constraints):
     sources = None
     fields = {}
@@ -532,6 +496,84 @@ def _prefetch_content_ad_data(constraints):
     if sources is not None:
         content_ads = content_ads.filter_by_sources(sources)
     return {c.id: c for c in content_ads}
+
+
+def _prefetch_ad_group_data(stats, include_settings=False, include_account_settings=False):
+    distinct_ad_groups = set(stat['ad_group'] for stat in stats)
+
+    ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+    data = {ad_group.id: ad_group for ad_group in ad_group_qs}
+
+    settings = None
+    if include_settings:
+        settings_qs = models.AdGroupSettings.objects \
+            .filter(ad_group__in=distinct_ad_groups) \
+            .group_current_settings()
+        settings = {s.ad_group_id: s for s in settings_qs}
+
+    account_settings = None
+    if include_account_settings:
+        account_settings = _prefetch_account_settings(stats)
+    return data, settings, account_settings
+
+
+def _prefetch_campaign_data(stats, include_settings=False, include_account_settings=False):
+    distinct_campaigns = set(stat['campaign'] for stat in stats)
+
+    campaign_qs = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
+    data = {c.id: c for c in campaign_qs}
+
+    settings = None
+    if include_settings:
+        settings_qs = models.CampaignSettings.objects \
+            .filter(campaign__in=distinct_campaigns) \
+            .group_current_settings() \
+            .select_related('campaign_manager')
+        settings = {s.campaign_id: s for s in settings_qs}
+
+    account_settings = None
+    if include_account_settings:
+        account_settings = _prefetch_account_settings(stats)
+    return data, settings, account_settings
+
+
+def _prefetch_account_data(stats, include_settings=False, include_account_settings=False):
+    distinct_accounts = set(stat['account'] for stat in stats)
+    include_settings = include_settings or include_account_settings
+
+    accounts_qs = models.Account.objects.filter(id__in=distinct_accounts)
+    data = {a.id: a for a in accounts_qs}
+
+    settings = None
+    if include_settings:
+        settings_qs = models.AccountSettings.objects \
+            .filter(account__in=distinct_accounts) \
+            .group_current_settings() \
+            .select_related('default_account_manager', 'default_sales_representative')
+        settings = {s.account_id: s for s in settings_qs}
+
+    return data, settings
+
+
+def _prefetch_projections(start_date, end_date, stats, level, user):
+    projections = None
+    if level not in ['all_accounts', 'account', 'campaign']:
+        return None
+
+    projections_accounts = []
+    if level is None:
+        projections_accounts = models.Account.objects.all().filter_by_user(user)
+    else:
+        projections_accounts = models.Account.objects.all().filter(
+            pk__in=set(stat['account'] for stat in stats)
+        )
+
+    return BudgetProjections(
+        start_date,
+        end_date,
+        level != 'all_accounts' and level or 'account',
+        accounts=projections_accounts,
+    )
 
 
 def _adjust_ordering(order, dimensions):
