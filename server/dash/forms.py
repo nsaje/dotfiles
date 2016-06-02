@@ -1036,6 +1036,10 @@ class ContentAdCandidateForm(forms.Form):
     image_crop = forms.ChoiceField(
         choices=constants.ImageCrop.get_choices(),
         required=False,
+        error_messages={
+            'required': 'Missing image crop',
+            'invalid_choice': 'Image crop %(value)s is not supported'
+        }
     )
     display_url = forms.CharField(
         max_length=25,
