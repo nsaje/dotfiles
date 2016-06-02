@@ -176,6 +176,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             initializeRowsData(breakdown);
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
                 ds.data.breakdown = breakdown;
+                ds.data.breakdown.meta = {};
                 ds.data.stats = breakdown.totals;
                 return;
             }
