@@ -41,7 +41,7 @@ class Command(ExceptionCommand):
             group by media_source
         """.format(date_query=daily_statements_k1._get_redshift_date_query(yesterday.date()))
 
-        with connections[settings.K1_DB_NAME].cursor() as c:
+        with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query)
 
             for media_source, impressions, spend in c:
