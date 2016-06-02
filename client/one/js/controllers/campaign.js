@@ -49,8 +49,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
                 route: 'main.campaigns.history',
                 active: false,
                 hidden: $scope.campaign && $scope.campaign.archived ||
-                    !$scope.hasPermission('zemauth.campaign_agency_view'),
-                internal: $scope.isPermissionInternal('zemauth.campaign_agency_view'),
+                    !$scope.hasPermission('zemauth.campaign_history_view'),
+                internal: $scope.isPermissionInternal('zemauth.campaign_history_view'),
             },
             {
                 heading: 'Budget',

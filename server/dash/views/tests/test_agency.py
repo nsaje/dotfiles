@@ -859,7 +859,7 @@ class AdGroupHistoryTest(TestCase):
             settings.save(request)
 
         add_permissions(self.user, [
-            'ad_group_agency_tab_view',
+            'ad_group_history_view',
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
@@ -1783,7 +1783,7 @@ class CampaignHistoryTest(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get(self):
-        add_permissions(self.user, ['campaign_agency_view'])
+        add_permissions(self.user, ['campaign_history_view'])
         response = self.client.get(
             '/api/campaigns/1/history/'
         )

@@ -304,7 +304,7 @@ class CampaignHistory(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_agency_view'):
+        if not request.user.has_perm('zemauth.campaign_history_view'):
             raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = {
@@ -1175,7 +1175,7 @@ class AdGroupHistory(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
+        if not request.user.has_perm('zemauth.ad_group_history_view'):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
