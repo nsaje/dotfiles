@@ -9,6 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Permission
 from mock import patch
 
+from dash import constants
 from dash import forms
 from dash import models
 from zemauth.models import User
@@ -1008,4 +1009,121 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({
             'tracker_urls': ['Invalid tracker URLs']
+        }, f.errors)
+
+
+class ContentAdFormTestCase(TestCase):
+
+    def _get_valid_data(self):
+        return {
+            'label': 'label',
+            'url': 'http://zemanta.com',
+            'title': 'Title',
+            'image_url': 'http://zemanta.com/img.jpg',
+            'image_crop': 'center',
+            'display_url': 'zemanta.com',
+            'brand_name': 'Zemanta',
+            'description': 'Description',
+            'call_to_action': 'Read more',
+            'tracker_urls': 'https://zemanta.com/px1 https://zemanta.com/px2',
+            'image_id': 'id123',
+            'image_hash': 'imagehash',
+            'image_width': 300,
+            'image_height': 300,
+            'image_status': constants.AsyncUploadJobStatus.OK,
+            'url_status': constants.AsyncUploadJobStatus.OK,
+        }
+
+    def test_form(self):
+        f = forms.ContentAdForm(self._get_valid_data())
+        self.assertTrue(f.is_valid())
+
+    def test_invalid_image_status(self):
+        data = self._get_valid_data()
+        data['image_status'] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Image could not be processed']
+        }, f.errors)
+
+    def test_missing_image_id(self):
+        data = self._get_valid_data()
+        del data['image_id']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Image could not be processed']
+        }, f.errors)
+
+    def test_missing_image_hash(self):
+        data = self._get_valid_data()
+        del data['image_hash']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Image could not be processed']
+        }, f.errors)
+
+    def test_missing_image_width(self):
+        data = self._get_valid_data()
+        del data['image_width']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Image could not be processed']
+        }, f.errors)
+
+    def test_missing_image_height(self):
+        data = self._get_valid_data()
+        del data['image_height']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Image could not be processed']
+        }, f.errors)
+
+    def test_image_min_width(self):
+        data = self._get_valid_data()
+        data['image_width'] = 1
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_width': ['Image too small (min width 2 px)']
+        }, f.errors)
+
+    def test_image_max_width(self):
+        data = self._get_valid_data()
+        data['image_width'] = 40001
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_width': ['Image too big (max width 4000 px)']
+        }, f.errors)
+
+    def test_image_min_height(self):
+        data = self._get_valid_data()
+        data['image_height'] = 1
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_height': ['Image too small (min height 2 px)']
+        }, f.errors)
+
+    def test_image_max_height(self):
+        data = self._get_valid_data()
+        data['image_height'] = 40001
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_height': ['Image too big (max height 3000 px)']
+        }, f.errors)
+
+    def test_invalid_url_status(self):
+        data = self._get_valid_data()
+        data['url_status'] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'url': ['Content unreachable']
         }, f.errors)
