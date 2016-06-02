@@ -37,8 +37,9 @@ def _execute(query, params):
 
 
 def get_cursor(read_only=False):
-    db_name = settings.STATS_READ_DB_NAME if read_only else settings.STATS_DB_NAME
-    return MyCursor(connections[db_name].cursor())
+    if not read_only:
+        raise Exception("This cursor is deprecated and can only be used with read only.")
+    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstatsdiff')
