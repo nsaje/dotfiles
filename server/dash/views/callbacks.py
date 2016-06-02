@@ -20,16 +20,17 @@ def content_upload(request):
 
     callback_data = request.POST
     if callback_data.get('status') != 'ok':
+        logger.warning('Content validation was unsuccessful %s', str(callback_data))
         return JsonResponse({
-            'status': 'fail'
+            'status': 'fail',
         })
     candidate = callback_data.get('candidate')
     if not candidate:
+        logger.warning('Content validation returned no candidate %s', str(callback_data))
         return JsonResponse({
-            'status': 'fail'
+            'status': 'fail',
         })
     dash.upload_plus.process_callback(candidate)
-
     return JsonResponse({
         "status": 'ok'
     })
