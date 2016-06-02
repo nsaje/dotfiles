@@ -218,6 +218,11 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
         projections_accounts = []
         if not dimensions:
             projections_accounts = models.Account.objects.all().filter_by_user(user)
+        else:
+            projections_accounts = models.Account.objects.all().filter(
+                pk__in=set(stat['account'] for stat in stats)
+            )
+
         projections = BudgetProjections(
             start_date,
             end_date,
