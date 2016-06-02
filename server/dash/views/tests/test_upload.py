@@ -335,7 +335,7 @@ class UploadSaveTestCase(TestCase):
 
     def test_invalid_batch_status(self):
         batch_id = 4
-        ad_group_id = 2
+        ad_group_id = 5
 
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
@@ -496,7 +496,7 @@ class UploadErrorReport(TestCase):
                                    'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,'\
                                    'entropy,"Content unreachable., Image could not be processed."\r\n'
         batch_id = 4
-        ad_group_id = 2
+        ad_group_id = 5
 
         response = _get_client().get(
             reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
@@ -510,7 +510,7 @@ class UploadErrorReport(TestCase):
         mock_s3_get.side_effect = boto.exception.S3ResponseError(status=404, reason='')
 
         batch_id = 4
-        ad_group_id = 2
+        ad_group_id = 5
 
         response = _get_client().get(
             reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
@@ -544,7 +544,7 @@ class UploadErrorReport(TestCase):
 
     def test_permission(self):
         batch_id = 4
-        ad_group_id = 2
+        ad_group_id = 5
 
         response = _get_client(superuser=False).get(
             reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),

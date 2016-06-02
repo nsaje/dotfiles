@@ -149,7 +149,7 @@ class PersistCandidatesTestCase(TestCase):
         self.assertEqual(
             'url,title,image_url,tracker_urls,display_url,brand_name,description,call_to_action,label,image_crop,errors'
             '\r\nhttp://zemanta.com/blog,Zemanta blog,http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read'
-            ' more,content ad 1,entropy,"Content unreachable., Image could not be processed."\r\n', content)
+            ' more,content ad 1,entropy,"Content unreachable, Image could not be processed"\r\n', content)
 
         batch.refresh_from_db()
         self.assertEqual(dash.constants.UploadBatchStatus.DONE, batch.status)
@@ -231,7 +231,7 @@ class ValidateCandidatesTestCase(TestCase):
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'image_url': [u'Invalid image URL'],
-                'image_crop': [u'Select a valid choice. landscape is not one of the available choices.'],
+                'image_crop': [u'Image crop landscape is not supported'],
                 'description': [u'Missing description'],
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'brand_name': [u'Missing brand name'],

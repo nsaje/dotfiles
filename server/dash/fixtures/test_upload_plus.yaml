@@ -100,9 +100,18 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
-    name: 'Test AdGroup 2'  # batch with processed and invalid content
+    name: 'Test AdGroup 4'  # batch with processed and invalid content
   model: dash.adgroup
   pk: 4
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 5'  # processed batch
+  model: dash.adgroup
+  pk: 5
 
 # Ad Group Settings
 - fields:
@@ -222,7 +231,7 @@
     created_dt: '2016-05-31T09:00:00'
     name: 'batch 4'
     status: 1  # done
-    ad_group: 2
+    ad_group: 5
     original_filename: 'test_upload.csv'
     error_report_key: 'test_upload_1234abc.csv'
     batch_size: 1
