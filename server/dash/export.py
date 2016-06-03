@@ -635,7 +635,7 @@ def _prefetch_projections(start_date, end_date, stats, level, user):
         projections_accounts = models.Account.objects.all().filter_by_user(user)
     else:
         projections_accounts = models.Account.objects.all().filter(
-            pk__in=set(stat['account'] for stat in stats)
+            pk__in=set(stat['account'] for stat in stats if stat.get('account'))
         )
 
     if level == 'ad_group':
