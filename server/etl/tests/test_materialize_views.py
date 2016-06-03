@@ -179,13 +179,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(view._get_stats(None, date, campaign_factors)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
                       constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
-                      22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None)),
+                      22, 12, 30, 32, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None)),
             ((2, 2), (date, 2, 1, 2, 2, 2, 2, 'Trol', constants.DeviceType.TABLET, 'US', 'FL', 866,
                       constants.AgeGroup.AGE_21_29, constants.Gender.WOMEN, constants.AgeGenderGroup.AGE_21_29_WOMEN,
-                      22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None)),
+                      22, 12, 30, 32, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None)),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'beer', constants.DeviceType.UNDEFINED, 'US', 'MA', 866,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None)),
+                      22, 12, 30, 32, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None)),
         ])
 
     @mock.patch('etl.materialize_views.MasterView._get_postclickstats_query_results')
