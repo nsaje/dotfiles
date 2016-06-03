@@ -170,12 +170,16 @@ def process_callback(callback_data):
         logger.exception('No candidate with id %s', callback_data['id'])
         return
 
+    logger.info('candidate %s', candidate)
+
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
     candidate.url_status = constants.AsyncUploadJobStatus.FAILED
     try:
         if callback_data['image']['id']:
+            logger.info('image ok')
             candidate.image_status = constants.AsyncUploadJobStatus.OK
         if callback_data['url']['valid']:
+            logger.info('url ok')
             candidate.url_status = constants.AsyncUploadJobStatus.OK
         candidate.image_id = callback_data['image']['id']
         candidate.image_width = callback_data['image']['width']
@@ -184,6 +188,7 @@ def process_callback(callback_data):
     except:
         logger.exception('Failed to parse callback data %s', str(callback_data))
 
+    logger.info('saving candidat')
     candidate.save()
 
 
