@@ -10,7 +10,7 @@ from django.db import connections
 import dash.models
 import reports.models
 import reports.api
-from etl import daily_statements_k1
+from etl import helpers
 
 import utils.email_helper
 from utils.command_helpers import ExceptionCommand
@@ -38,7 +38,7 @@ class Command(ExceptionCommand):
             from stats
             where {date_query}
             group by media_source
-        """.format(date_query=daily_statements_k1._get_redshift_date_query(yesterday.date()))
+        """.format(date_query=helpers.get_local_date_query(yesterday.date()))
 
         with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query)
