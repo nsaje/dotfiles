@@ -226,14 +226,9 @@ def _create_objects(data, batch_id, ad_group_id, ad_group_sources):
 
 
 def _clean_row_wrapper(batch, upload_form_cleaned_fields, ad_group, row):
-
-    try:
-        result = _clean_row(batch, upload_form_cleaned_fields, ad_group, row)
-        connection.close()
-        return result
-    except Exception as e:
-        connection.close()
-        raise
+    result = _clean_row(batch, upload_form_cleaned_fields, ad_group, row)
+    connection.close()
+    return result
 
 def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     try:
