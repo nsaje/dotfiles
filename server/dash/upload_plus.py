@@ -32,6 +32,7 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
     return batch, candidates
 
 
+@transaction.atomic
 def invoke_external_validation(candidate):
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
@@ -43,18 +44,12 @@ def invoke_external_validation(candidate):
             'batchID': candidate.batch.pk,
             'imageUrl': candidate.image_url,
             'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL
-        }
+        },
+        async=True,
     )
-    models.ContentAdCandidate.objects.filter(
-        id=candidate.id, image_status=constants.AsyncUploadJobStatus.PENDING_START
-    ).update(
-        image_status=constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-    )
-    models.ContentAdCandidate.objects.filter(
-        id=candidate.id, url_status=constants.AsyncUploadJobStatus.PENDING_START
-    ).update(
-        url_status=constants.AsyncUploadJobStatus.WAITING_RESPONSE,
-    )
+    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    candidate.save()
 
 
 @transaction.atomic
