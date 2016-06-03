@@ -57,8 +57,9 @@ def persist_candidates(batch):
         raise InvalidBatchStatus('Invalid batch status')
 
     new_content_ads, errors = _prepare_candidates(batch)
-    _persist_content_ads(batch, new_content_ads)
+    content_ads = _persist_content_ads(batch, new_content_ads)
     _update_batch_status(batch, errors)
+    return content_ads
 
 
 def _prepare_candidates(batch):
@@ -91,8 +92,11 @@ def _persist_content_ads(batch, new_content_ads):
         if ags.can_manage_content_ads and ags.source.can_manage_content_ads():
             ad_group_sources.append(ags)
 
+    saved_content_ads = []
     for content_ad in new_content_ads:
-        _create_content_ad(content_ad, batch.ad_group_id, batch.id, ad_group_sources)
+        saved_content_ads.append(_create_content_ad(content_ad, batch.ad_group_id, batch.id, ad_group_sources))
+
+    return saved_content_ads
 
 
 def _update_batch_status(batch, errors):
@@ -234,3 +238,5 @@ def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
                 state=constants.ContentAdSourceState.ACTIVE
             )
         )
+
+    return content_ad

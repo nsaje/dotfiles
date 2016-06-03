@@ -3043,6 +3043,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     isCanceled: obj.is_canceled,
                     account: obj.account_id,
                     licenseFee: obj.license_fee,
+                    flatFee: obj.flat_fee,
                     total: obj.total,
                     comment: obj.comment,
                     allocated: obj.allocated,
