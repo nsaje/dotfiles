@@ -189,6 +189,12 @@ def process_callback(callback_data):
         logger.exception('Failed to parse callback data %s', str(callback_data))
 
     logger.info('saving candidat')
+    logger.info('image status: %s', candidate.image_status)
+    logger.info('url status: %s', candidate.url_status)
+    logger.info('image id: %s', candidate.image_id)
+    logger.info('image width: %s', candidate.image_width)
+    logger.info('image height: %s', candidate.image_height)
+    logger.info('image hash: %s', candidate.image_hash)
     candidate.save()
 
 
