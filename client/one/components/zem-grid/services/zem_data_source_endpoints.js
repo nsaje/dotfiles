@@ -34,32 +34,10 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         };
 
         this.saveData = function (value, stats, column) {
-            // TODO: depends on Columns definitions refactorings...
-            // return column.onSave(value, stats);
+            // TODO: actually save value - depends on Columns definitions refactorings...
             var deferred = $q.defer();
             deferred.resolve();
             return deferred.promise;
-
-            //
-            // All endpoints currently used for saving table data
-            //
-
-            // function AdGroupContentAdState ()
-            //      this.save = function (adGroupId, state, contentAdIdsSelected, ...) {
-
-            // function AdGroupSettings () {
-            //    this.save = function (settings) { // settings = {adgroup: id, field: value}
-
-            // function AdGroupSourceSettings () {
-            //    this.save = function (adGroupId, sourceId, data) {
-
-
-            // Settings
-            //      -> id + {field:value}
-            // State
-            //      -> AdGroup State --> id, {state: value} --> url + data
-            //      -> AdGroupSource State --> id, sourceid, state --> url + data
-            //      -> ContentAd State --> id, state, [contentAds]
         };
 
         function createUrl (baseUrl, config) {

@@ -25,14 +25,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
     // External listeners are registered through dedicated methods (e.g. onLoad)
     var EVENTS = {
         ON_LOAD: 'zem-data-source-on-load',
-        ON_SAVE: 'zem-data-source-on-save',
         ON_STATS_UPDATED: 'zem-data-source-on-stats-updated',
         ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
     };
 
     function DataSource (endpoint) {
-        var ds = this;
-
         var data = null;
 
         var config = {
@@ -130,7 +127,6 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         }
 
         function saveData (value, stats, column) {
-            // TODO: Notifications (onSave)
             var oldValue = stats.data[column.field];
             var deferred = $q.defer();
             endpoint.saveData(value, stats, column).then(function () {
