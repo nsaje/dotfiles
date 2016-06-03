@@ -171,6 +171,8 @@ def process_callback(callback_data):
         return
 
     logger.info('candidate %s', candidate)
+    logger.info('image status: %s', candidate.image_status)
+    logger.info('url status: %s', candidate.url_status)
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
     candidate.url_status = constants.AsyncUploadJobStatus.FAILED
