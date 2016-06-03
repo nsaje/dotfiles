@@ -262,7 +262,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             // Configures new breakdown for this DataSource and fetch missing data
             // Compare previous configured breakdown with new one and find out
             // which level levels can stay the same (re-fetching is not needed)
-            var diffLevel = getDiffIndex(breakdown, selectedBreakdown) + 1;
+            var diff = findDifference(breakdown, selectedBreakdown);
+            if (diff < 0) return fetch ? $q.resolve(data) : undefined;
+
+            var diffLevel = diff + 1;
             var parentNodes = getNodesByLevel(diffLevel - 1);
             var fetchSuccessiveLevels = breakdown.length > diffLevel - 1;
             selectedBreakdown = breakdown;
@@ -305,19 +308,6 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             return result;
         }
 
-        function getDiffIndex (arr1, arr2) {
-            var idx;
-            for (idx = 0; idx < arr1.length; idx++) {
-                if (arr1[idx] === arr2[idx]) {
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            return idx;
-        }
-
-
         function getDateRange () {
             return {
                 startDate: config.startDate,
@@ -331,6 +321,23 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getBreakdown () {
             return selectedBreakdown;
+        }
+
+        function findDifference (arr1, arr2) {
+            var diff = -1;
+            for (var i = 0; i < arr1.length; i++) {
+                if (arr1[i] === arr2[i]) {
+                    continue;
+                } else {
+                    diff = i;
+                    break;
+                }
+            }
+
+            if (diff < 0 && arr2.length > arr1.length)
+                return arr1.length;
+
+            return diff;
         }
 
         function onLoad (scope, callback) {
