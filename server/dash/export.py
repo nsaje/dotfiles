@@ -639,8 +639,10 @@ def _prefetch_projections(start_date, end_date, stats, level, user):
 
     if level == 'ad_group':
         projections_level = 'campaign'
+    elif level and level != 'all_accounts':
+        projections_level = level
     else:
-        projections_level = level != 'all_accounts' and level or 'account'
+        level = 'account'
 
     return BudgetProjections(
         start_date,
