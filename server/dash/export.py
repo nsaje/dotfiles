@@ -631,7 +631,7 @@ def _prefetch_projections(start_date, end_date, stats, level, user):
         return None, None
 
     projections_accounts = []
-    if level is None:
+    if level is None or level == 'all_accounts':
         projections_accounts = models.Account.objects.all().filter_by_user(user)
     else:
         projections_accounts = models.Account.objects.all().filter(
@@ -643,7 +643,7 @@ def _prefetch_projections(start_date, end_date, stats, level, user):
     elif level and level != 'all_accounts':
         projections_level = level
     else:
-        level = 'account'
+        projections_level = 'account'
 
     return BudgetProjections(
         start_date,
