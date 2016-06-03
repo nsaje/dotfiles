@@ -9,7 +9,7 @@ import unicodecsv
 from dash import constants
 from dash import forms
 from dash import models
-from utils import s3helpers, lambda_helper
+from utils import s3helpers, lambda_helper, k1_helper
 
 logger = logging.getLogger(__name__)
 
@@ -44,21 +44,27 @@ def invoke_external_validation(candidate):
             'batchID': candidate.batch.pk,
             'imageUrl': candidate.image_url,
             'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL
-        }
+        },
+        async=True,
     )
     candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.save()
 
 
-@transaction.atomic
 def persist_candidates(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         raise InvalidBatchStatus('Invalid batch status')
 
-    new_content_ads, errors = _prepare_candidates(batch)
-    content_ads = _persist_content_ads(batch, new_content_ads)
-    _update_batch_status(batch, errors)
+    with transaction.atomic():
+        new_content_ads, errors = _prepare_candidates(batch)
+        content_ads = _persist_content_ads(batch, new_content_ads)
+        _update_batch_status(batch, errors)
+
+    k1_helper.update_content_ads(
+        batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
+        msg='upload.process_async'
+    )
     return content_ads
 
 

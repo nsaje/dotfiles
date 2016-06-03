@@ -117,7 +117,7 @@
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
 
-        <div class="pull-right" ng-if="hasPermission('zemauth.archive_restore_entity')">
+        <div class="archive-container pull-right" ng-if="hasPermission('zemauth.archive_restore_entity')">
             <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
             <button type="button" class="btn btn-default" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.') || ''}}" ng-click="archiveCampaign()">Archive campaign</button>
         </div>

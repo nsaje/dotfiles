@@ -1,4 +1,5 @@
 import logging
+import json
 
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +19,7 @@ def content_upload(request):
         logger.exception('Invalid signature.')
         raise Http404
 
-    callback_data = request.POST
+    callback_data = json.loads(request.body)
     if callback_data.get('status') != 'ok':
         logger.warning('Content validation was unsuccessful %s', str(callback_data))
         return JsonResponse({
