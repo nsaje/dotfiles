@@ -354,7 +354,8 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
             stat, model, statuses, settings=settings,
             account_settings=account_settings
         )
-        stat = _populate_campaign_projections_fees(stat, model,
+        stat = _populate_campaign_projections_fees(
+            stat, model,
             include_flat_fees=include_flat_fees, include_projections=include_projections,
             projections=projections, account_projections=account_projections,
             account_settings=account_settings
