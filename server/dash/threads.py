@@ -39,7 +39,6 @@ class UpdateUploadBatchThread(Thread):
         self.check_exception()
 
     def finish(self):
-        connection.close()
         self.bump_queue.put_nowait('die')
 
     def _get_upload_batch_attr(self, attr_name):
@@ -66,6 +65,8 @@ class UpdateUploadBatchThread(Thread):
             else:
                 # die
                 break
+
+        connection.close()
 
 
 class CreateUpdateContentAdsActions(Thread):
