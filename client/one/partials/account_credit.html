@@ -40,7 +40,7 @@
                     <td>{{ item.endDate }}</td>
                     <td>{{ item.isSigned ? 'yes' : 'no' }}</td>
                     <td>{{ item.licenseFee  }}</td>
-                    <td>{{ item.flatFee }}</td>
+                    <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
                     <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                     <td>
                         {{ item.allocated | decimalCurrency:"$":2  }} ({{ item.numOfBudgets }} budget
@@ -93,7 +93,7 @@
                     <td>{{ item.endDate }}</td>
                     <td>{{ item.isSigned ? 'yes' : 'no' }}</td>
                     <td>{{ item.licenseFee }}</td>
-                    <td>{{ item.flatFee }}</td>
+                    <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
                     <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                     <td>
                         {{ item.allocated | decimalCurrency:"$":2  }} ({{ item.numOfBudgets }} budget
