@@ -50,7 +50,7 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
 
     pool = ThreadPool(processes=NUM_THREADS)
     pool.map_async(
-        partial(_clean_row, batch, upload_form_cleaned_fields, ad_group),
+        partial(_clean_row_wrapper, batch, upload_form_cleaned_fields, ad_group),
         content_ads_data,
         callback=partial(_process_callback, batch, ad_group, ad_group_sources, filename, request),
     )
@@ -225,6 +225,16 @@ def _create_objects(data, batch_id, ad_group_id, ad_group_sources):
     return content_ad, content_ad_sources
 
 
+def _clean_row_wrapper(batch, upload_form_cleaned_fields, ad_group, row):
+
+    try:
+        result = _clean_row(batch, upload_form_cleaned_fields, ad_group, row)
+        connection.close()
+        return result
+    except Exception as e:
+        connection.close()
+        raise
+
 def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     try:
         errors = []
@@ -248,12 +258,9 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
 
         _bump_nr_processed(batch)
 
-        connection.close()
-
         return row, data, errors
     except Exception as e:
         logger.exception('Exception in upload._clean_row')
-        connection.close()
         raise
 
 
