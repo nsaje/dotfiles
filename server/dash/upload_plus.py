@@ -32,7 +32,6 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
     return batch, candidates
 
 
-@transaction.atomic
 def invoke_external_validation(candidate):
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
@@ -48,7 +47,7 @@ def invoke_external_validation(candidate):
     )
     candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    candidate.save()
+    candidate.save(update_fields=['image_status', 'url_status'])
 
 
 @transaction.atomic
