@@ -6,7 +6,7 @@ import StringIO
 from functools import partial
 from multiprocessing.pool import ThreadPool
 
-from django.db import transaction
+from django.db import transaction, connection
 from django.forms import ValidationError
 from django.core import validators
 from django.db.models import F
@@ -115,6 +115,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
     _save_batch(batch, rows, filename, num_errors, upload_status)
     _signal_changes(ad_group, batch, actions)
+    connection.close()
 
 
 def _signal_changes(ad_group, batch, actions):
@@ -247,9 +248,12 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
 
         _bump_nr_processed(batch)
 
+        connection.close()
+
         return row, data, errors
     except Exception as e:
         logger.exception('Exception in upload._clean_row')
+        connection.close()
         raise
 
 

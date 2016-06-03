@@ -3,6 +3,7 @@ import logging
 import Queue
 
 from django.conf import settings
+from django.db import connection
 from django.db.models import F
 
 from dash import constants
@@ -38,6 +39,7 @@ class UpdateUploadBatchThread(Thread):
         self.check_exception()
 
     def finish(self):
+        connection.close()
         self.bump_queue.put_nowait('die')
 
     def _get_upload_batch_attr(self, attr_name):
