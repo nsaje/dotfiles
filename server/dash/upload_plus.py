@@ -45,9 +45,16 @@ def invoke_external_validation(candidate):
             'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL
         }
     )
-    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    candidate.save(update_fields=['image_status', 'url_status'])
+    models.ContentAdCandidate.objects.filter(
+        id=candidate.id, image_status=constants.AsyncUploadJobStatus.PENDING_START
+    ).update(
+        image_status=constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+    )
+    models.ContentAdCandidate.objects.filter(
+        id=candidate.id, url_status=constants.AsyncUploadJobStatus.PENDING_START
+    ).update(
+        url_status=constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+    )
 
 
 @transaction.atomic
