@@ -1744,18 +1744,25 @@ ul.icon-list li {
 }
 
 .settings-restore-container {
-
     display: inline-block;
     position: relative;
 
-    zem-internal-feature .internal {
-        &:before {
-            content: " ";
-            position: absolute;
-            display: block;
-            border-top: 9px solid @internal-color;
-            border-right: 9px solid transparent;
-            top: 0px;
+    zem-internal-feature {
+        position: absolute;
+        z-index: 1500;
+
+        .internal {
+            margin-right: 0.5em;
+
+            &:before {
+                content: " ";
+                width: 0;
+                height: 0;
+                display: block;
+                border-top: 7px solid @internal-color;
+                border-right: 7px solid transparent;
+                float: left;
+            }
         }
     }
 }
@@ -2614,7 +2621,6 @@ ul.icon-list li {
         }
     }
 }
-
 
 .no-wrap {
     white-space: nowrap;
@@ -3952,6 +3958,27 @@ select.media-source-select {
 
     form {
         margin-bottom: 30px;
+
+        .archive-container {
+            zem-internal-feature {
+                position: absolute;
+                z-index: 1500;
+
+                .internal {
+                    margin-right: 0.5em;
+
+                    &:before {
+                        content: " ";
+                        width: 0;
+                        height: 0;
+                        display: block;
+                        border-top: 7px solid @internal-color;
+                        border-right: 7px solid transparent;
+                        float: left;
+                    }
+                }
+            }
+        }
     }
 }
 
