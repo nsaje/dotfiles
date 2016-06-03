@@ -136,7 +136,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
     first_stat_date = None
-    account_appearances = defaultdict(int)
+    account_appeared = defaultdict(bool)
     for stat in stats:
         if first_stat_date is None and 'date' in stat:
             first_stat_date = stat['date']
@@ -148,9 +148,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                        statuses=statuses, settings=settings, account_settings=account_settings)
 
         if 'date' in stat:
-            _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appearances)
+            _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appeared)
         elif 'campaign' in dimensions or 'account' in dimensions:
-            _adjust_breakdown_by_account(stat, account_appearances)
+            _adjust_breakdown_by_account(stat, account_appeared)
 
     return sort_results(stats, [ordering])
 
@@ -296,10 +296,10 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
         stat['source'] = source_names[stat['source']]
 
 
-def _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appearances):
+def _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appeared):
     if first_stat_date is not None and stat['date'] == first_stat_date:
-        if account_appearances[stat['account']] == 0:
-            account_appearances[stat['account']] += 1
+        if not account_appeared[stat['account']]:
+            account_appeared[stat['account']] = True
             return
     for field in ('allocated_budgets', 'flat_fee', 'total_fee',
                   'spend_projection', 'pacing', 'license_fee_projection',
@@ -308,9 +308,9 @@ def _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appearan
             stat[field] = Decimal(0.0)
 
 
-def _adjust_breakdown_by_account(stat, account_appearances):
-    if account_appearances[stat['account']] == 0:
-        account_appearances[stat['account']] += 1
+def _adjust_breakdown_by_account(stat, account_appeared):
+    if not account_appeared[stat['account']]:
+        account_appeared[stat['account']] = True
         return
 
     for field in ('allocated_budgets', 'flat_fee', 'total_fee',
