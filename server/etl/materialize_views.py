@@ -116,8 +116,8 @@ class MasterView(object):
 
                 row.impressions,
                 row.clicks,
-                row.cost_micro,
-                row.data_cost_micro,
+                converters.micro_to_cc(row.cost_micro),
+                converters.micro_to_cc(row.data_cost_micro),
 
                 0,
                 0,
