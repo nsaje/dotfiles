@@ -343,8 +343,8 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
         )
         stat = _populate_ad_group_projections_fees(
             stat, model,
-            include_flat_fees=include_flat_fees,
             include_projections=include_projections,
+            include_flat_fees=include_flat_fees,
             projections=projections,
             account_projections=account_projections
         )
@@ -352,6 +352,7 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
         model = prefetched_data[stat['campaign']]
         stat = _populate_campaign_stat(
             stat, model, statuses, settings=settings,
+            account_settings=account_settings
         )
         stat = _populate_campaign_projections_fees(stat, model,
             include_flat_fees=include_flat_fees, include_projections=include_projections,
@@ -445,9 +446,11 @@ def _populate_campaign_stat(stat, campaign, statuses,
 
 
 def _populate_campaign_projections_fees(
-        stat, campaign, projections=None,
-        account_projections=None, include_flat_fees=False,
-        include_projections=False, account_settings=None):
+        stat, campaign, include_flat_fees=False,
+        include_projections=False,
+        projections=None,
+        account_projections=None,
+        account_settings=None):
     if include_projections:
         stat['allocated_budgets'] = projections.row(campaign.pk, 'allocated_media_budget')
         stat['pacing'] = projections.row(campaign.pk, 'pacing')
