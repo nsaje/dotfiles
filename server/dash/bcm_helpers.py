@@ -9,6 +9,8 @@ import dash.models
 import dash.constants
 import reports.models
 
+from utils import converters
+
 TWOPLACES = Decimal('0.01')
 SPEND_PROJECTION_DAYS = 3
 
@@ -38,7 +40,7 @@ def get_campaign_media_budget_data(campaign_ids):
         for row in budget_data
     }
     campaign_spend = {
-        row['budget__campaign_id']: dash.models.nano_to_dec(row['media_nano'])
+        row['budget__campaign_id']: converters.nano_to_decimal(row['media_nano'])
         for row in media_spend_data
     }
     return campaign_budget, campaign_spend
@@ -64,7 +66,7 @@ def get_account_media_budget_data(account_ids):
         media_nano=Sum('media_spend_nano')
     )
     account_spend = {
-        row['budget__credit__account_id']: dash.models.nano_to_dec(row['media_nano'])
+        row['budget__credit__account_id']: converters.nano_to_decimal(row['media_nano'])
         for row in media_spend_data
     }
 

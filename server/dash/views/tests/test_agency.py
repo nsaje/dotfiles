@@ -859,7 +859,7 @@ class AdGroupHistoryTest(TestCase):
             settings.save(request)
 
         add_permissions(self.user, [
-            'ad_group_agency_tab_view',
+            'ad_group_history_view',
             'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
@@ -1763,7 +1763,7 @@ class UserActivationTest(TestCase):
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
 
 
-class CampaignAgencyTest(TestCase):
+class CampaignHistoryTest(TestCase):
     fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -1777,25 +1777,19 @@ class CampaignAgencyTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = '/api/campaigns/1/agency/'
+        url = '/api/campaigns/1/history/'
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_get(self):
-        add_permissions(self.user, ['campaign_agency_view'])
+        add_permissions(self.user, ['campaign_history_view'])
         response = self.client.get(
-            '/api/campaigns/1/agency/'
+            '/api/campaigns/1/history/'
         )
 
         content = json.loads(response.content)
         self.assertTrue(content['success'])
-        self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
-        self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
-
         self.assertEqual(content['data']['history'], [{
             'datetime': '2014-06-04T05:58:21',
             'changed_by': 'non_superuser@zemanta.com',
@@ -1815,45 +1809,6 @@ class CampaignAgencyTest(TestCase):
             'show_old_settings': False,
             'changes_text': 'Created settings'
         }])
-
-    @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
-        add_permissions(self.user, ['campaign_agency_view'])
-
-        response = self.client.put(
-            '/api/campaigns/1/agency/',
-            json.dumps({
-                'settings': {
-                    'id': 1,
-                    'campaign_manager': 1,
-                    'iab_category': 'IAB17',
-                    'name': 'ignore name'
-                }
-            }),
-            content_type='application/json',
-        )
-
-        content = json.loads(response.content)
-        self.assertTrue(content['success'])
-
-        self.assertEqual(mock_k1_ping.call_count, 1)
-
-        campaign = models.Campaign.objects.get(pk=1)
-        settings = campaign.get_current_settings()
-
-        self.assertEqual(campaign.name, 'test campaign 1')
-        self.assertEqual(settings.campaign_manager_id, 1)
-        self.assertEqual(settings.iab_category, 'IAB17')
-
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
-            campaign=campaign
-        )
 
 
 class CampaignSettingsTest(TestCase):
@@ -1887,6 +1842,10 @@ class CampaignSettingsTest(TestCase):
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
     def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
+        add_permissions(self.user, [
+            'can_modify_campaign_manager',
+            'can_modify_campaign_iab_category',
+        ])
         campaign = models.Campaign.objects.get(pk=1)
 
         settings = campaign.get_current_settings()
@@ -1908,7 +1867,9 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
+                    'target_regions': ['CA', '502'],
+                    'campaign_manager': 1,
+                    'iab_category': 'IAB17',
                 }
             }),
             content_type='application/json',
@@ -1926,6 +1887,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.campaign_goal, 2)
         self.assertEqual(settings.target_devices, ['desktop'])
         self.assertEqual(settings.target_regions, ['CA', '502'])
+        self.assertEqual(settings.campaign_manager_id, 1)
+        self.assertEqual(settings.iab_category, 'IAB17')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(

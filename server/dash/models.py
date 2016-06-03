@@ -32,12 +32,10 @@ from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
+from utils import converters
 
 
 SHORT_NAME_MAX_LENGTH = 22
-CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
-TO_CC_MULTIPLIER = 10**4
-TO_NANO_MULTIPLIER = 10**9
 
 
 class Round(Func):
@@ -48,14 +46,6 @@ class Round(Func):
 class Coalesce(Func):
     function = 'COALESCE'
     template = '%(function)s(%(expressions)s, 0)'
-
-
-def nano_to_cc(num):
-    return int(round(num * 0.00001))
-
-
-def nano_to_dec(num):
-    return Decimal(nano_to_cc(num) * CC_TO_DEC_MULTIPLIER)
 
 
 def validate(*validators):
@@ -2155,6 +2145,9 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
+    original_filename = models.CharField(max_length=1024, null=True)
+
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
 
@@ -2630,7 +2623,7 @@ class CreditLineItem(FootprintModel):
         return self.status == constants.CreditLineItemStatus.PENDING
 
     def flat_fee(self):
-        return Decimal(self.flat_fee_cc) * CC_TO_DEC_MULTIPLIER
+        return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_DOLAR
 
     def effective_amount(self):
         return Decimal(self.amount) - self.flat_fee()
@@ -2822,10 +2815,10 @@ class BudgetLineItem(FootprintModel):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
     def allocated_amount_cc(self):
-        return self.amount * TO_CC_MULTIPLIER - self.freed_cc
+        return self.amount * converters.DOLAR_TO_CC - self.freed_cc
 
     def allocated_amount(self):
-        return Decimal(self.allocated_amount_cc()) * CC_TO_DEC_MULTIPLIER
+        return Decimal(self.allocated_amount_cc()) * converters.CC_TO_DECIMAL_DOLAR
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -2836,7 +2829,7 @@ class BudgetLineItem(FootprintModel):
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
-        amount_cc = self.amount * TO_CC_MULTIPLIER
+        amount_cc = self.amount * converters.DOLAR_TO_CC
         spend_data = self.get_spend_data()
 
         reserve = self.get_reserve_amount_cc()
@@ -2859,7 +2852,7 @@ class BudgetLineItem(FootprintModel):
             statement = list(self.statements.all().order_by('-date')[:2])[-1]
         except IndexError:
             return None
-        total_cc = nano_to_cc(
+        total_cc = converters.nano_to_cc(
             statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
         )
         return total_cc * (factor_offset + settings.BUDGET_RESERVE_FACTOR)

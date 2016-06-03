@@ -15,6 +15,8 @@ from reports.models import BudgetDailyStatement
 from utils.test_helper import add_permissions, fake_request
 from django.test.client import RequestFactory
 
+from utils import converters
+
 
 class BCMViewTestCase(TestCase):
     fixtures = ['test_bcm.yaml', 'test_agency.yaml']
@@ -67,6 +69,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
                     "comment": "Test case",
@@ -104,6 +107,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "comment": "Test case",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
@@ -131,19 +135,18 @@ class AccountCreditViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 11, 11)
             response = self.client.get(url)
 
-        self.maxDiff = None
-
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['data'], {
             "active": [
                 {
-                    "available": "100000.0000",
+                    "available": "99900.0000",
                     "end_date": "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "agency-master@test.com",
                     "license_fee": "20%",
+                    "flat_fee": "100.0000",
                     "allocated": "0",
-                    "total": "100000.0000",
+                    "total": "99900.0000",
                     "comment": "Agency credit",
                     "id": 1000,
                     "is_signed": False,
@@ -154,9 +157,9 @@ class AccountCreditViewTest(BCMViewTestCase):
             ],
             "past": [],
             "totals": {
-                "available": "100000.0000",
+                "available": "99900.0000",
                 "allocated": "0",
-                "total": "100000.0000",
+                "total": "99900.0000",
                 "past": "0",
             }
         })
@@ -630,13 +633,13 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "start_date": "2015-10-01"
                 },
                 {
-                    'available': u'100000.0000',
+                    'available': u'99900.0000',
                     'comment': u'Agency credit',
                     'end_date': u'2015-11-30',
                     'start_date': u'2015-10-01',
                     'is_available': False,
                     'license_fee': u'20',
-                    'total': u'100000.0000',
+                    'total': u'99900.0000',
                     'id': 1000,
                 }
             ]
@@ -937,9 +940,9 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=300 * models.TO_NANO_MULTIPLIER,
-            data_spend_nano=200 * models.TO_NANO_MULTIPLIER,
-            license_fee_nano=50 * models.TO_NANO_MULTIPLIER,
+            media_spend_nano=300 * converters.DOLAR_TO_NANO,
+            data_spend_nano=200 * converters.DOLAR_TO_NANO,
+            license_fee_nano=50 * converters.DOLAR_TO_NANO,
         )
 
         # Another budget with daily statement
@@ -949,8 +952,8 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=100 * models.TO_NANO_MULTIPLIER,
-            data_spend_nano=100 * models.TO_NANO_MULTIPLIER,
+            media_spend_nano=100 * converters.DOLAR_TO_NANO,
+            data_spend_nano=100 * converters.DOLAR_TO_NANO,
             license_fee_nano=105 * (10**8),
         )
 
@@ -1049,17 +1052,17 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=500 * models.TO_NANO_MULTIPLIER,
+            media_spend_nano=500 * converters.DOLAR_TO_NANO,
             data_spend_nano=0,
-            license_fee_nano=50 * models.TO_NANO_MULTIPLIER,
+            license_fee_nano=50 * converters.DOLAR_TO_NANO,
         )
         for num in range(0, 5):
             BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
-                media_spend_nano=800 * models.TO_NANO_MULTIPLIER,
+                media_spend_nano=800 * converters.DOLAR_TO_NANO,
                 data_spend_nano=0,
-                license_fee_nano=80 * models.TO_NANO_MULTIPLIER,
+                license_fee_nano=80 * converters.DOLAR_TO_NANO,
             )
 
         with patch('utils.dates_helper.local_today') as mock_now:
@@ -1067,7 +1070,6 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-
         self.assertDictEqual(response.json()['data'], {
             "active": [
                 {
@@ -1076,6 +1078,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "10000.0000",
                     "total": "10000.0000",
                     "id": 1001,
@@ -1093,6 +1096,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "100000.0000",
                     "comment": "Test case",
                     "total": "100000.0000",
@@ -1122,6 +1126,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "comment": None,
                     "allocated": "4994.0000",
                     "total": "10000.0000",
@@ -1140,6 +1145,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
                     "id": 1,
@@ -1167,6 +1173,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "allocated": "4950.0000",
                     "comment": None,
                     "total": "10000.0000",
@@ -1185,6 +1192,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "flat_fee": "0.0",
                     "comment": "Test case",
                     "allocated": "100000.0000",
                     "total": "100000.0000",
@@ -1210,6 +1218,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 11, 11)
             budget.free_inactive_allocated_assets()
             response = self.client.get(url)
+
         self.assertEqual(json.loads(response.content)['data'], on_reserve_data)
 
         with patch('utils.dates_helper.local_today') as mock_now:

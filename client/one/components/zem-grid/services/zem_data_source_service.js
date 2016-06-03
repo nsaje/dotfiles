@@ -38,11 +38,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         };
         this.endpoint = endpoint;
 
-        // Available breakdowns are all breakdowns supported by endpoint
-        // while selectedBreakdown defines currently configured breakdown
-        // TODO: default values will be defined by Breakdown selector (TBD)
-        this.availableBreakdowns = endpoint.availableBreakdowns;
-        this.selectedBreakdown = endpoint.defaultBreakdown;
+        // selectedBreakdown defines currently configured breakdown
+        // Default value is configured after retrieving metadata
+        this.selectedBreakdown = null;
 
         // Define default pagination (limits) for all levels when
         // size is not passed when requesting new data
@@ -56,15 +54,21 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         this.getMetaData = getMetaData;
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
+        this.setBreakdown = setBreakdown;
         this.onLoad = onLoad;
         this.onDataUpdated = onDataUpdated;
 
 
         function getMetaData () {
-            var config = {
-                selectedBreakdown: ds.selectedBreakdown,
-            };
-            return ds.endpoint.getMetaData(config);
+            var deferred = $q.defer();
+            ds.endpoint.getMetaData().then(function (metaData) {
+                // Base level always defines only one breakdown and
+                // is available as first element in breakdownGroups
+                var baseLevelBreakdown = metaData.breakdownGroups[0];
+                ds.selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
+                deferred.resolve(metaData);
+            });
+            return deferred.promise;
         }
 
         function getData (breakdown, size) {
@@ -124,6 +128,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             ds.config.order = order;
         }
 
+        function setBreakdown (breakdown) {
+            ds.selectedBreakdown = breakdown;
+        }
+
         function prepareConfig (level, breakdowns, offset, limit) {
             if (!offset) offset = 0;
             if (!limit) limit = defaultPagination[level - 1];
@@ -168,6 +176,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             initializeRowsData(breakdown);
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
                 ds.data.breakdown = breakdown;
+                ds.data.breakdown.meta = {};
                 ds.data.stats = breakdown.totals;
                 return;
             }

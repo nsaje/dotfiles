@@ -12,10 +12,7 @@ DEBUG = False
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK7AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAN3zo4qfYMJ/NkP2AIBEIBNdJszHvK9nhndxS9hIpiLnMWN1vWYUrQbEEudStHg0Q3vl+mKdIvR3rPNcbXj1YLddebdzXlPBxQdVEX1G7ltCC2O333j2N4gU52naF8=').get()
 
-STATS_DB_NAME = 'stats'
-K1_DB_NAME = 'k1'
-K1_VIEWS_DB_NAME = K1_DB_NAME
-STATS_READ_DB_NAME = K1_DB_NAME
+STATS_DB_NAME = 'k1'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -32,15 +29,6 @@ DATABASES = {
         }
     },
     STATS_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'one',
-        'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
-        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'HOST': '172.26.4.104',
-        'PORT': 5439
-    },
-    K1_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'k1',
         'USER': 'eins',
@@ -236,6 +224,8 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 DK_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyhYmJQhFDfCW5k1X8CARCAO0IHlmnLpLAQAFmJJjnN2dlvrMyFqV7e7YlKDNSpbEJupOwov7IKDFSmYjnqxfsbrVNulP6vbSiLssVt').get()
 DK_DEMO_PREPARE_ENDPOINT = 'https://dk.zemanta.com/api/demo/prepare'
 
+LAMBDA_REGION = 'us-east-1'
 LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK/AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACWMIGTBgkqhkiG9w0BBwaggYUwgYICAQAwfQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx7yLKe0tUFVxMxsMMCARCAUFMra/DjBi1zN9BhzOI/C8+JHJA5rBM0tsNGeCZBzYnFgMm951IWfgRr7gqwdnPVqzDdwHwMHYzbR2viuXRMus4bfcdCm2BEqQBnNAgZ/fZt').get()
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = 'p'
-LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test3'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://z1-1452281140.us-east-1.elb.amazonaws.com/api/callbacks/content-upload/'

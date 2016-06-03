@@ -480,7 +480,7 @@ class CampaignAdmin(admin.ModelAdmin):
     settings_.allow_tags = True
 
     def view_on_site(self, obj):
-        return '/campaigns/{}/agency'.format(obj.id)
+        return '/campaigns/{}/ad_groups'.format(obj.id)
 
 
 class SourceAdmin(admin.ModelAdmin):

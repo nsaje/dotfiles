@@ -10,6 +10,8 @@ import dash.models
 import reports.models
 import utils.dates_helper
 
+from utils import converters
+
 
 class BudgetProjections(object):
     PRECISION = 2
@@ -160,7 +162,7 @@ class BudgetProjections(object):
         row['ideal_media_spend'] = row['allocated_media_budget'] / Decimal(self.forecast_days) \
             * Decimal(self.past_days)
 
-        row['attributed_media_spend'] = dash.models.nano_to_dec(sum(
+        row['attributed_media_spend'] = converters.nano_to_decimal(sum(
             statement.media_spend_nano + statement.data_spend_nano
             for budget in budgets
             for statement in budget.statements.all()
@@ -188,7 +190,7 @@ class BudgetProjections(object):
                 s.media_spend_nano + s.data_spend_nano for s in statements_on_date.get(date, [])
             )
         row['media_spend_projection'] = min(
-            dash.models.nano_to_dec(float(media_nano) / self.past_days) * Decimal(self.forecast_days),
+            converters.nano_to_decimal(float(media_nano) / self.past_days) * Decimal(self.forecast_days),
             row['allocated_media_budget']
         )
 
@@ -196,7 +198,7 @@ class BudgetProjections(object):
         if self.breakdown != 'account':
             return
         row['attributed_license_fee'] = sum(
-            dash.models.nano_to_dec(statement.license_fee_nano)
+            converters.nano_to_decimal(statement.license_fee_nano)
             for budget in budgets
             for statement in budget.statements.all()
             if statement.date >= self.start_date and statement.date <= self.projection_date
@@ -242,7 +244,7 @@ class BudgetProjections(object):
                 s.license_fee_nano for s in statements_on_date.get(date, [])
             )
         row['license_fee_projection'] = min(
-            dash.models.nano_to_dec(float(fee_nano) / self.past_days) * Decimal(self.forecast_days),
+            converters.nano_to_decimal(float(fee_nano) / self.past_days) * Decimal(self.forecast_days),
             maximum_fee
         )
 

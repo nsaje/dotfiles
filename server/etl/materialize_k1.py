@@ -7,19 +7,15 @@ from django.db import connections
 from django.conf import settings
 
 import dash.models
-from etl import daily_statements_k1
+
+from utils import converters
+
+from etl import helpers
 
 logger = logging.getLogger(__name__)
 
-CC_TO_MICRO = 100
-MICRO_TO_NANO = 1000
-
 POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
 
-def extract_source_slug(source_slug):
-    if source_slug.startswith('b1_'):
-        return source_slug[3:]
-    return source_slug
 
 class ContentAdStats(object):
     """
@@ -102,7 +98,7 @@ class ContentAdStats(object):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(
@@ -123,8 +119,8 @@ class ContentAdStats(object):
                 row[4],  # impressions
                 row[5],  # clicks
 
-                _micro_to_cc(cost),
-                _micro_to_cc(data_cost),
+                converters.micro_to_cc(cost),
+                converters.micro_to_cc(data_cost),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -133,9 +129,9 @@ class ContentAdStats(object):
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
 
-                _decimal_to_int(effective_cost * MICRO_TO_NANO),
-                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
-                _decimal_to_int(license_fee * MICRO_TO_NANO),
+                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
             )
 
         logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
@@ -250,7 +246,7 @@ class Publishers(object):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
@@ -265,12 +261,12 @@ class Publishers(object):
                 row[5],  # clicks
                 row[4],  # impressions
 
-                cost * MICRO_TO_NANO,
-                data_cost * MICRO_TO_NANO,
+                cost * converters.MICRO_TO_NANO,
+                data_cost * converters.MICRO_TO_NANO,
 
-                _decimal_to_int(effective_cost * MICRO_TO_NANO),
-                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
-                _decimal_to_int(license_fee * MICRO_TO_NANO),
+                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -290,10 +286,10 @@ class Publishers(object):
                 continue
 
             clicks = row[3]
-            cost = _decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
+            cost = converters.decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
-            effective_cost, effective_data_cost, license_fee = _calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
             media_source = source.tracking_slug
@@ -310,12 +306,12 @@ class Publishers(object):
                 clicks,
                 0,
 
-                cost * MICRO_TO_NANO,
-                data_cost * MICRO_TO_NANO,
+                cost * converters.MICRO_TO_NANO,
+                data_cost * converters.MICRO_TO_NANO,
 
-                _decimal_to_int(effective_cost * MICRO_TO_NANO),
-                _decimal_to_int(effective_data_cost * MICRO_TO_NANO),
-                _decimal_to_int(license_fee * MICRO_TO_NANO),
+                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
 
                 post_click.get('visits'),
                 post_click.get('new_visits'),
@@ -348,7 +344,7 @@ class TouchpointConversions(object):
             from conversions
             where date=%s
         """
-        with connections[settings.K1_DB_NAME].cursor() as c:
+        with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query, [date])
             for row in c:
                 yield row
@@ -389,33 +385,21 @@ class Breakdown(object):
 
     def _get_date_query(self):
         if self.table == 'stats':
-            return daily_statements_k1._get_redshift_date_query(self.date)
+            return helpers.get_local_date_query(self.date)
         return "date = '{date}'".format(date=self.date.isoformat())
 
 
 def _query_rows(query):
-    with connections[settings.K1_DB_NAME].cursor() as c:
+    with connections[settings.STATS_DB_NAME].cursor() as c:
         c.execute(query)
         for row in c:
             yield row
 
 
-def _calculate_effective_cost(cost, data_cost, factors):
-    pct_actual_spend, pct_license_fee = factors
-
-    effective_cost = cost * pct_actual_spend
-    effective_data_cost = data_cost * pct_actual_spend
-    license_fee = (effective_cost + effective_data_cost) * pct_license_fee
-
-    return effective_cost, effective_data_cost, license_fee
-
-
-def _decimal_to_int(d):
-    return int(round(d))
-
-
-def _micro_to_cc(d):
-    return _decimal_to_int(Decimal(d) / CC_TO_MICRO)
+def extract_source_slug(source_slug):
+    if source_slug.startswith('b1_'):
+        return source_slug[3:]
+    return source_slug
 
 
 def _sum_conversion(conversion_str):
