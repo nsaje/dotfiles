@@ -52,8 +52,19 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
     pool.map_async(
         partial(_clean_row_wrapper, batch, upload_form_cleaned_fields, ad_group),
         content_ads_data,
-        callback=partial(_process_callback, batch, ad_group, ad_group_sources, filename, request),
+        callback=partial(_process_callback_wrapper, batch, ad_group, ad_group_sources, filename, request),
     )
+
+
+def _process_callback_wrapper(batch, ad_group, ad_group_sources, filename, request, results):
+    """
+    Closes the connection after _process_callback finishes and enables single-threaded
+    testing of the function.
+    """
+
+    results = _process_callback(batch, ad_group, ad_group_sources, filename, request, results)
+    connection.close()
+    return results
 
 
 def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
@@ -225,6 +236,11 @@ def _create_objects(data, batch_id, ad_group_id, ad_group_sources):
 
 
 def _clean_row_wrapper(batch, upload_form_cleaned_fields, ad_group, row):
+    """
+    Closes the connection after _clean_row finishes and enables single-threaded
+    testing of the function.
+    """
+
     result = _clean_row(batch, upload_form_cleaned_fields, ad_group, row)
     connection.close()
     return result
