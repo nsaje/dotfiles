@@ -229,6 +229,7 @@ def _clean_row_wrapper(batch, upload_form_cleaned_fields, ad_group, row):
     connection.close()
     return result
 
+
 def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     try:
         errors = []
