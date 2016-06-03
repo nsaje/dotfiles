@@ -11,6 +11,7 @@ import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
 from utils import url_helper, request_signer
+import dateutil.parser
 
 
 logger = logging.getLogger(__name__)
@@ -591,12 +592,17 @@ def get_ad_groups_exchanges(request):
 def get_content_ads(request):
     _validate_signature(request)
 
+    # TODO matijav 03.06.2016 hack because imgx isn't working
+    cutoff_date = dateutil.parser.parse('2016-06-03T14:20:00.000Z')
+
     content_ad_id = request.GET.get('content_ad_id')
     ad_group_id = request.GET.get('ad_group_id')
     if content_ad_id:
-        content_ads = dash.models.ContentAd.objects.filter(id=content_ad_id).select_related('ad_group')
+        content_ads = dash.models.ContentAd.objects.filter(id=content_ad_id, created_dt__lt=cutoff_date).select_related(
+            'ad_group')
     elif ad_group_id:
-        content_ads = dash.models.ContentAd.objects.filter(ad_group__id=ad_group_id).select_related('ad_group')
+        content_ads = dash.models.ContentAd.objects.filter(ad_group__id=ad_group_id,
+                                                           created_dt__lt=cutoff_date).select_related('ad_group')
     else:
         return _response_error("Must provide content ad id or ad group id.")
 
