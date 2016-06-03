@@ -339,16 +339,21 @@ def _populate_model_stat(stat, dimensions=None, prefetched_data=None,
         model = prefetched_data[stat['ad_group']]
         stat = _populate_ad_group_stat(
             stat, model, statuses, settings=settings,
-            account_settings=account_settings,
+            account_settings=account_settings
+        )
+        stat = _populate_ad_group_projections_fees(
+            stat, model,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
             projections=projections,
-            account_projections=account_projections,
+            account_projections=account_projections
         )
     elif 'campaign' in dimensions:
         model = prefetched_data[stat['campaign']]
         stat = _populate_campaign_stat(
             stat, model, statuses, settings=settings,
+        )
+        stat = _populate_campaign_projections_fees(stat, model,
             include_flat_fees=include_flat_fees, include_projections=include_projections,
             projections=projections, account_projections=account_projections,
             account_settings=account_settings
@@ -385,10 +390,7 @@ def _populate_content_ad_stat(stat, content_ad):
 
 
 def _populate_ad_group_stat(stat, ad_group, statuses, settings=None,
-                            account_settings=None, include_flat_fees=False,
-                            include_projections=False,
-                            projections=None,
-                            account_projections=None):
+                            account_settings=None):
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
     if account_settings and ad_group.campaign.account.id in account_settings:
@@ -402,6 +404,14 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None,
     stat['ad_group'] = ad_group.name
     if ad_group.campaign.account.agency is not None:
         stat['agency'] = ad_group.campaign.account.agency.name
+    return stat
+
+
+def _populate_ad_group_projections_fees(stat, ad_group,
+                                        include_projections=False,
+                                        include_flat_fees=False,
+                                        projections=None,
+                                        account_projections=None):
     if include_projections:
         stat['allocated_budgets'] = projections.row(ad_group.campaign.pk, 'allocated_media_budget')
         stat['pacing'] = projections.row(ad_group.campaign.pk, 'pacing')
@@ -415,9 +425,8 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None,
     return stat
 
 
-def _populate_campaign_stat(stat, campaign, statuses, projections=None,
-                            account_projections=None, include_flat_fees=False,
-                            include_projections=False, settings=None, account_settings=None):
+def _populate_campaign_stat(stat, campaign, statuses,
+                            settings=None, account_settings=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
     if account_settings and campaign.account.id in account_settings:
@@ -430,6 +439,15 @@ def _populate_campaign_stat(stat, campaign, statuses, projections=None,
     stat['status'] = statuses[campaign.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
+    if campaign.account.agency is not None:
+        stat['agency'] = campaign.account.agency.name
+    return stat
+
+
+def _populate_campaign_projections_fees(
+        stat, campaign, projections=None,
+        account_projections=None, include_flat_fees=False,
+        include_projections=False, account_settings=None):
     if include_projections:
         stat['allocated_budgets'] = projections.row(campaign.pk, 'allocated_media_budget')
         stat['pacing'] = projections.row(campaign.pk, 'pacing')
@@ -440,8 +458,6 @@ def _populate_campaign_stat(stat, campaign, statuses, projections=None,
         stat['total_fee'] = account_projections.row(campaign.account.pk, 'total_fee')
         if include_projections:
             stat['total_fee_projection'] = account_projections.row(campaign.account.pk, 'total_fee_projection')
-    if campaign.account.agency is not None:
-        stat['agency'] = campaign.account.agency.name
     return stat
 
 
