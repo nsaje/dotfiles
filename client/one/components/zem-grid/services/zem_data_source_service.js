@@ -26,22 +26,22 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
     var EVENTS = {
         ON_LOAD: 'zem-data-source-on-load',
         ON_SAVE: 'zem-data-source-on-save',
+        ON_STATS_UPDATED: 'zem-data-source-on-stats-updated',
         ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
     };
 
     function DataSource (endpoint) {
         var ds = this;
 
-        this.data = null;
+        var data = null;
 
-        this.config = {
+        var config = {
             order: '-clicks',
         };
-        this.endpoint = endpoint;
 
         // selectedBreakdown defines currently configured breakdown
         // Default value is configured after retrieving metadata
-        this.selectedBreakdown = null;
+        var selectedBreakdown = null;
 
         // Define default pagination (limits) for all levels when
         // size is not passed when requesting new data
@@ -54,20 +54,28 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         this.getData = getData;
         this.getMetaData = getMetaData;
         this.saveData = saveData;
+
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
         this.setBreakdown = setBreakdown;
+        this.getDateRange = getDateRange;
+        this.getOrder = getOrder;
+        this.getBreakdown = getBreakdown;
+
         this.onLoad = onLoad;
-        this.onSave = onSave;
+        this.onStatsUpdated = onStatsUpdated;
         this.onDataUpdated = onDataUpdated;
 
+        //
+        // Definitions
+        //
         function getMetaData () {
             var deferred = $q.defer();
-            ds.endpoint.getMetaData().then(function (metaData) {
+            endpoint.getMetaData().then(function (metaData) {
                 // Base level always defines only one breakdown and
                 // is available as first element in breakdownGroups
                 var baseLevelBreakdown = metaData.breakdownGroups[0];
-                ds.selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
+                selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
                 deferred.resolve(metaData);
             });
             return deferred.promise;
@@ -102,15 +110,15 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             });
 
             var deferred = $q.defer();
-            ds.endpoint.getData(config).then(function (breakdowns) {
+            endpoint.getData(config).then(function (breakdowns) {
                 applyBreakdowns(breakdowns);
-                if (level < ds.selectedBreakdown.length) {
+                if (level < selectedBreakdown.length) {
                     // Chain request for each successive level
                     var childBreakdowns = getChildBreakdowns(breakdowns);
                     var promise = getDataByLevel(level + 1, childBreakdowns);
                     deferred.resolve(promise);
                 } else {
-                    deferred.resolve(ds.data);
+                    deferred.resolve(data);
                 }
             }).finally(function () {
                 breakdowns.forEach(function (breakdown) {
@@ -121,66 +129,38 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             return deferred.promise;
         }
 
-        function saveData (row, column, newValue) {
+        function saveData (value, stats, column) {
+            // TODO: Notifications (onSave)
+            var oldValue = stats.data[column.field];
             var deferred = $q.defer();
-            var change = {
-                row: row,
-                column: column,
-                oldValue: row.stats[column.field],
-                newValue: newValue,
-            };
-
-            notifyListeners(EVENTS.ON_SAVE, change);
-
-            row.stats[column.field] = change.newValue;
-            // Use endpoint for save
-
-            // function AdGroupContentAdState ()
-            //      this.save = function (adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
-
-            //function AdGroupSettings () {
-            //    this.save = function (settings) { // settings = {adgroup: id, field: value}
-
-            //function AdGroupSourceSettings () {
-            //    this.save = function (adGroupId, sourceId, data) {
-
-            notifyListeners(EVENTS.ON_DATA_UPDATED, ds.data);
-
-            deferred.resolve();
-
+            endpoint.saveData(value, stats, column).then(function () {
+                stats.data[column.field] = value;
+                notifyListeners(EVENTS.ON_STATS_UPDATED, stats, column);
+                deferred.resolve();
+            }, function (err) {
+                stats.data[column.field] = oldValue;
+                deferred.reject(err);
+            });
             return deferred.promise;
-        }
-
-        function setDateRange (dateRange) {
-            ds.config.startDate = dateRange.startDate;
-            ds.config.endDate = dateRange.endDate;
-        }
-
-        function setOrder (order) {
-            ds.config.order = order;
-        }
-
-        function setBreakdown (breakdown) {
-            ds.selectedBreakdown = breakdown;
         }
 
         function prepareConfig (level, breakdowns, offset, limit) {
             if (!offset) offset = 0;
             if (!limit) limit = defaultPagination[level - 1];
-            var config = {
+            var newConfig = {
                 level: level,
                 offset: offset,
                 limit: limit,
-                breakdown: ds.selectedBreakdown.slice(0, level),
+                breakdown: selectedBreakdown.slice(0, level),
                 breakdownPage: breakdowns.map(function (breakdown) {
                     return breakdown.breakdownId;
                 }),
             };
 
             // Extend configs with DataSource configuration (dates, orders, etc.)
-            angular.extend(config, ds.config);
+            angular.extend(newConfig, config);
 
-            return config;
+            return newConfig;
         }
 
         function getChildBreakdowns (breakdowns) {
@@ -197,7 +177,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             breakdowns.forEach(function (breakdown) {
                 applyBreakdown(breakdown);
             });
-            notifyListeners(EVENTS.ON_DATA_UPDATED, ds.data);
+            notifyListeners(EVENTS.ON_DATA_UPDATED, data);
         }
 
         function applyBreakdown (breakdown) {
@@ -207,9 +187,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             notifyListeners(EVENTS.ON_LOAD, breakdown);
             initializeRowsData(breakdown);
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
-                ds.data.breakdown = breakdown;
-                ds.data.breakdown.meta = {};
-                ds.data.stats = breakdown.totals;
+                data.breakdown = breakdown;
+                data.breakdown.meta = {};
+                data.stats = breakdown.totals;
                 return;
             }
 
@@ -223,7 +203,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         function findBreakdown (breakdownId, subtree) {
             // Traverse breakdown tree to find breakdown by breakdownId
             // If subtree (breakdown) is not passed start with base one
-            if (!subtree) subtree = ds.data.breakdown;
+            if (!subtree) subtree = data.breakdown;
             if (subtree.breakdownId === breakdownId) {
                 return subtree;
             }
@@ -239,18 +219,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         }
 
         function initializeRoot () {
-            ds.data = { // Root node - L0
+            data = { // Root node - L0
                 breakdown: null,
                 stats: null,
                 level: 0,
                 meta: {},
             };
-            notifyListeners(EVENTS.ON_DATA_UPDATED, ds.data);
+            notifyListeners(EVENTS.ON_DATA_UPDATED, data);
         }
 
         function initializeRowsData (breakdown) {
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
-            if (breakdown.level >= ds.selectedBreakdown.length) return;
+            if (breakdown.level >= selectedBreakdown.length) return;
 
             breakdown.rows.forEach(function (row) {
                 row.breakdown = {
@@ -268,12 +248,40 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             });
         }
 
+        function setDateRange (dateRange) {
+            config.startDate = dateRange.startDate;
+            config.endDate = dateRange.endDate;
+        }
+
+        function setOrder (order) {
+            config.order = order;
+        }
+
+        function setBreakdown (breakdown) {
+            selectedBreakdown = breakdown;
+        }
+
+        function getDateRange () {
+            return {
+                startDate: config.startDate,
+                endDate: config.endDate,
+            };
+        }
+
+        function getOrder () {
+            return config.order;
+        }
+
+        function getBreakdown () {
+            return selectedBreakdown;
+        }
+
         function onLoad (scope, callback) {
             registerListener(EVENTS.ON_LOAD, scope, callback);
         }
 
-        function onSave (scope, callback) {
-            registerListener(EVENTS.ON_SAVE, scope, callback);
+        function onStatsUpdated (scope, callback) {
+            registerListener(EVENTS.ON_STATS_UPDATED, scope, callback);
         }
 
         function onDataUpdated (scope, callback) {
