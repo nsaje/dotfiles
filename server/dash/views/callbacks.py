@@ -20,21 +20,18 @@ def content_upload(request):
         raise Http404
 
     callback_data = json.loads(request.body)
-    logger.info('got lambda callback with data %s', callback_data)
     if callback_data.get('status') != 'ok':
         logger.warning('Content validation was unsuccessful %s', str(callback_data))
         return JsonResponse({
             'status': 'fail',
         })
     candidate = callback_data.get('candidate')
-    logger.info('canidate: %s', candidate)
     if not candidate:
         logger.warning('Content validation returned no candidate %s', str(callback_data))
         return JsonResponse({
             'status': 'fail',
         })
     dash.upload_plus.process_callback(candidate)
-    logger.info('finished updating candidate')
     return JsonResponse({
         "status": 'ok'
     })
