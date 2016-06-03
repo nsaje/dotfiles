@@ -181,7 +181,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             // Notify listeners, to give them chance to modify data,
             // initialize expected data structures
             notifyListeners(EVENTS.ON_LOAD, breakdown);
-            initializeRowsData(breakdown);
+            if (breakdown.level < selectedBreakdown.length) {
+                breakdown.rows.forEach(function (node) {
+                    initializeNodeBreakdown(node, breakdown.level + 1);
+                });
+            }
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
                 data.breakdown = breakdown;
                 data.breakdown.meta = {};
@@ -224,38 +228,95 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             notifyListeners(EVENTS.ON_DATA_UPDATED, data);
         }
 
-        function initializeRowsData (breakdown) {
+        function initializeNodeBreakdown (node, level) {
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
-            if (breakdown.level >= selectedBreakdown.length) return;
-
-            breakdown.rows.forEach(function (row) {
-                row.breakdown = {
-                    level: breakdown.level + 1,
-                    breakdownId: row.breakdownId,
-                    pagination: {
-                        offset: 0,
-                        limit: 0,
-                        count: -1,
-                    },
-                    rows: [],
-                    meta: {},
-                };
-                delete row.breakdownId;
-            });
+            node.breakdown = {
+                level: level,
+                breakdownId: node.breakdownId,
+                pagination: {
+                    offset: 0,
+                    limit: 0,
+                    count: -1,
+                },
+                rows: [],
+                meta: {},
+            };
         }
 
-        function setDateRange (dateRange) {
+        function setDateRange (dateRange, fetch) {
             config.startDate = dateRange.startDate;
             config.endDate = dateRange.endDate;
+            if (fetch) {
+                return getData();
+            }
         }
 
-        function setOrder (order) {
+        function setOrder (order, fetch) {
             config.order = order;
+            if (fetch) {
+                return getData();
+            }
         }
 
-        function setBreakdown (breakdown) {
+        function setBreakdown (breakdown, fetch) {
+            // Configures new breakdown for this DataSource and fetch missing data
+            // Compare previous configured breakdown with new one and find out
+            // which level levels can stay the same (re-fetching is not needed)
+            var diffLevel = getDiffIndex(breakdown, selectedBreakdown) + 1;
+            var parentNodes = getNodesByLevel(diffLevel - 1);
+            var fetchSuccessiveLevels = breakdown.length > diffLevel - 1;
             selectedBreakdown = breakdown;
+
+            // For all levels below remove all nodes and initialize new breakdown object (if needed)
+            var childBreakdowns = [];
+            parentNodes.forEach(function (node) {
+                if (fetchSuccessiveLevels) {
+                    initializeNodeBreakdown(node, diffLevel);
+                    childBreakdowns.push(node.breakdown);
+                } else {
+                    delete node.breakdown;
+                }
+            });
+
+            notifyListeners(EVENTS.ON_DATA_UPDATED, data);
+
+            if (fetch) {
+                if (fetchSuccessiveLevels) {
+                    return getDataByLevel(diffLevel, childBreakdowns);
+                }
+
+                return $q.resolve(data);
+            }
         }
+
+        function getNodesByLevel (level, node, result) {
+            if (!node) node = data;
+            if (!result) result = [];
+            if (!node.breakdown) return result;
+
+            node.breakdown.rows.forEach(function (child) {
+                if (node.breakdown.level === level) {
+                    result.push(child);
+                } else {
+                    getNodesByLevel(level, child, result);
+                }
+            });
+
+            return result;
+        }
+
+        function getDiffIndex (arr1, arr2) {
+            var idx;
+            for (idx = 0; idx < arr1.length; idx++) {
+                if (arr1[idx] === arr2[idx]) {
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            return idx;
+        }
+
 
         function getDateRange () {
             return {

@@ -7,7 +7,7 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSource
         var metadata = zemDataSourceEndpoints.getControllerMetaData($scope, 'AllAccountsAccountsCtrl');
         var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(metadata);
         var dataSource = zemDataSourceService.createInstance(endpoint);
-        dataSource.setDateRange($scope.dateRange);
+        dataSource.setDateRange($scope.dateRange, false);
         return dataSource;
     }
 
@@ -30,7 +30,6 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSource
         if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
             return;
         }
-        $scope.dataSource.setDateRange(newValue);
-        $scope.dataSource.getData();
+        $scope.dataSource.setDateRange(newValue, true);
     });
 }]);
