@@ -115,7 +115,6 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
     _save_batch(batch, rows, filename, num_errors, upload_status)
     _signal_changes(ad_group, batch, actions)
-    connection.close()
 
 
 def _signal_changes(ad_group, batch, actions):
