@@ -3194,7 +3194,7 @@ class HistoryBase(models.Model):
         raise AssertionError('Deleting history object not allowed.')
 
     class Meta:
-        abstract=True
+        abstract = True
 
 
 class AdGroupHistory(HistoryBase):
