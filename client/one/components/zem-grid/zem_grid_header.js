@@ -54,8 +54,8 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                     order = '-' + column.field;
                 }
 
-                this.grid.meta.source.setOrder(order);
-                this.grid.meta.source.getData();
+                this.grid.meta.service.setOrder(order);
+                this.grid.meta.service.loadData();
             };
         }],
     };
