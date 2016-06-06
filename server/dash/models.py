@@ -2124,6 +2124,9 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
+    original_filename = models.CharField(max_length=1024, null=True)
+
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
 

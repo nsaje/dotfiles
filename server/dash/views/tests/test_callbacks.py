@@ -1,3 +1,5 @@
+import json
+
 from mock import patch
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
@@ -23,10 +25,11 @@ class LambdaCallbackApiTest(TestCase):
         }
         response = self.client.post(
             reverse('callbacks.content_upload'),
-            {
+            json.dumps({
                 "status": "ok",
                 "candidate": candidate
-            }
+            }),
+            'application/json'
         )
         mock_verify_wsgi_request.called_with(response.wsgi_request, 'key')
         mock_process_callback.called_with(candidate)
@@ -37,10 +40,11 @@ class LambdaCallbackApiTest(TestCase):
 
         response = self.client.post(
             reverse('callbacks.content_upload'),
-            {
+            json.dumps({
                 "status": "fail",
                 "candidate": candidate
-            }
+            }),
+            'application/json'
         )
         mock_verify_wsgi_request.called_with(response.wsgi_request, 'key')
         self.assertFalse(mock_process_callback.called)
