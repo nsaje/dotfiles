@@ -33,7 +33,7 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = [ 'https://{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
+ALLOWED_HOSTS = [ '{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
 
 BASE_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123'))
 SECURE_SSL_REDIRECT = True
