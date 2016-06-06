@@ -3135,3 +3135,102 @@ class EmailTemplate(models.Model):
 
     class Meta:
         unique_together = ('template_type',)
+
+
+class HistoryQuerySetManager(models.Manager):
+
+    def get_queryset(self):
+        return self.model.QuerySet(self.model)
+
+    def delete(self):
+        raise AssertionError('Deleting history objects not allowed')
+
+
+class HistoryQuerySet(models.QuerySet):
+
+    def update(self, *args, **kwargs):
+        raise AssertionError('Using update not allowed.')
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Using delete not allowed.')
+
+
+class HistoryBase(models.Model):
+
+    changes_text = models.TextField(blank=False, null=False)
+    changes = jsonfield.JSONField(blank=False, null=False)
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created at',
+    )
+    system_user = models.PositiveSmallIntegerField(
+        choices=constants.SystemUserType.get_choices(),
+        null=True,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+
+    objects = HistoryQuerySetManager()
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise AssertionError('Updating history object not alowed.')
+
+        if self.created_by is not None and self.system_user is not None:
+            raise AssertionError('Either created_by or system_user must be set.')
+
+        if self.created_by is None and self.system_user is None:
+            raise AssertionError('Exactly one of created_by or system_user must be set.')
+
+        super(HistoryBase, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Deleting history object not allowed.')
+
+    class Meta:
+        abstract = True
+
+
+class AdGroupHistory(HistoryBase):
+    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.AdGroupHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+    objects = HistoryQuerySetManager()
+
+    class QuerySet(HistoryQuerySet):
+        pass
+
+
+class CampaignHistory(HistoryBase):
+    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.CampaignHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+    objects = HistoryQuerySetManager()
+
+    class QuerySet(HistoryQuerySet):
+        pass
+
+
+class AccountHistory(HistoryBase):
+    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.AccountHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+    objects = HistoryQuerySetManager()
+
+    class QuerySet(HistoryQuerySet):
+        pass
