@@ -1,13 +1,13 @@
 import datetime
 import collections
 import itertools
+import json
 import os
 import urllib
 import urllib2
 import sys
 
 import faker
-
 
 from django.db import models, transaction
 from django.db.models.signals import pre_save
@@ -19,7 +19,7 @@ from dash import constants
 import dash.models
 import zemauth.models
 from utils.command_helpers import ExceptionCommand
-from utils import demo_anonymizer, s3helpers, request_signer
+from utils import demo_anonymizer, s3helpers, request_signer, json_helper
 
 import logging
 logger = logging.getLogger(__name__)
@@ -85,14 +85,18 @@ class Command(ExceptionCommand):
         # perform inside transaction and rollback to be safe
         with transaction.atomic():
             demo_mappings = dash.models.DemoMapping.objects.all()
+            demo_users_set = set(zemauth.models.User.objects.filter(email__endswith='+demo@zemanta.com'))
+
             serialize_list = collections.OrderedDict()
-            prepare_demo_objects(serialize_list, demo_mappings)
-            dump_data = serialize('json', [obj for obj in reversed(serialize_list) if obj is not None], indent=4)
+            prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
+            dump_data = serialize('python', [obj for obj in reversed(serialize_list) if obj is not None])
+            attach_demo_users(dump_data, demo_users_set)
             transaction.set_rollback(True)
 
+        dump_json = json.dumps(dump_data, indent=4, cls=json_helper.JSONEncoder)
         snapshot_id = _get_snapshot_id()
         s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_DEMO)
-        s3_helper.put(os.path.join(snapshot_id, 'dump.json'), dump_data)
+        s3_helper.put(os.path.join(snapshot_id, 'dump.json'), dump_json)
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
@@ -121,11 +125,14 @@ def _create_fake_credit(account):
     )
 
 
-def prepare_demo_objects(serialize_list, demo_mappings):
-    demo_users = zemauth.models.User.objects.filter(email__endswith='+demo@zemanta.com')
-    demo_users_set = set(demo_users)
-
+def prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
     anonymized_objects = set()
+
+    # add demo users
+    _add_to_serialize_list(serialize_list, list(demo_users_set))
+    _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
+
+    # add demo accounts
     for demo_mapping in demo_mappings:
         name_pools = demo_anonymizer.DemoNamePools(
             [demo_mapping.demo_account_name],
@@ -140,14 +147,28 @@ def prepare_demo_objects(serialize_list, demo_mappings):
         # create fake credit so each account has at least some
         fake_credit = _create_fake_credit(account)
 
-        # set demo users as the users of the future demo account
-        account.users = demo_users
-
         # extract dependencies and anonymize
         start_extracting_at = len(serialize_list)
         _add_explicit_object_dependents(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
         _add_to_serialize_list(serialize_list, [fake_credit])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
+
+
+def attach_demo_users(dump_data, demo_users_set):
+    demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
+    demo_account_pks = []
+    demo_users_objs = []
+    demo_account_objs = []
+    for entity in dump_data:
+        if entity['model'] == 'dash.account':
+            demo_account_objs.append(entity)
+            demo_account_pks.append(entity['pk'])
+        if entity['pk'] in demo_users_pks:
+            demo_users_objs.append(entity)
+    for demo_user in demo_users_objs:
+        demo_user['accounts'] = list(demo_account_pks)
+    for demo_account in demo_account_objs:
+        demo_account['users'] = list(demo_users_pks)
 
 
 def _get_fields(obj):
