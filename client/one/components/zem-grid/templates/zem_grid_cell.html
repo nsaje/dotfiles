@@ -1,5 +1,5 @@
 <div class="zem-grid-cell">
-   <span ng-show="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.service.getBreakdown().length">
+   <span ng-show="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel()">
         <a ng-click="ctrl.toggleCollapse()" class="action">
             {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}
         </a>

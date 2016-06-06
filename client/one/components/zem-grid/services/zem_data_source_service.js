@@ -58,6 +58,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         this.getDateRange = getDateRange;
         this.getOrder = getOrder;
         this.getBreakdown = getBreakdown;
+        this.getBreakdownLevel = getBreakdownLevel;
 
         this.onLoad = onLoad;
         this.onStatsUpdated = onStatsUpdated;
@@ -127,14 +128,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         }
 
         function saveData (value, stats, column) {
-            var oldValue = stats.data[column.field];
             var deferred = $q.defer();
             endpoint.saveData(value, stats, column).then(function () {
                 stats.data[column.field] = value;
                 notifyListeners(EVENTS.ON_STATS_UPDATED, stats, column);
                 deferred.resolve();
             }, function (err) {
-                stats.data[column.field] = oldValue;
                 deferred.reject(err);
             });
             return deferred.promise;
@@ -270,6 +269,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getBreakdown () {
             return selectedBreakdown;
+        }
+
+        function getBreakdownLevel () {
+            return selectedBreakdown.length;
         }
 
         function onLoad (scope, callback) {
