@@ -3141,12 +3141,32 @@ class HistoryBase(models.Model):
 
     changes_text = models.TextField(blank=False, null=False)
     changes = jsonfield.JSONField(blank=False, null=False)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created at',
+    )
+    system_user = models.PositiveSmallIntegerField(
+        choices=constants.SystemUserType.get_choices(),
+        null=True,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating history object not alowed.')
+
+        if self.created_by is not None and self.system_user is not None:
+            raise AssertionError('Either created_by or system_user must be set.')
+
+        if self.created_by is None and self.system_user None:
+            raise AssertionError('Exactly one of create_by or system_user must be set.')
 
         super(HistoryBase, self).save(*args, **kwargs)
 

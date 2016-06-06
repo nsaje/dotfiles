@@ -1579,10 +1579,12 @@ class ImageCrop(ConstantBase):
 class AdGroupHistoryType(ConstantBase):
     AD_GROUP = 1
     AD_GROUP_SOURCE = 2
+    AD_GROUP_SOURCE_STATE = 3
 
     _VALUES = {
         AD_GROUP: 'Ad Group History',
         AD_GROUP_SOURCE: 'Ad Group Source History',
+        AD_GROUP_SOURCE_STATE: 'Ad Group Source State History',
     }
 
 
