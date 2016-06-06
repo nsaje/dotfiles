@@ -3135,3 +3135,50 @@ class EmailTemplate(models.Model):
 
     class Meta:
         unique_together = ('template_type',)
+
+
+class HistoryBase(models.Model):
+
+    changes_text = models.TextField(blank=False, null=False)
+    changes = jsonfield.JSONField(blank=False, null=False)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise AssertionError('Updating history object not alowed.')
+
+        super(HistoryBase, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Deleting history object not allowed.')
+
+    class Meta:
+        abstract=True
+
+
+class AdGroupHistory(HistoryBase):
+    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.AdGroupHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+
+
+class CampaignHistory(HistoryBase):
+    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.CampaignHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+
+
+class AccountHistory(HistoryBase):
+    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.AccountHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
