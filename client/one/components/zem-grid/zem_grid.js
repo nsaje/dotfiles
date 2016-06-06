@@ -12,7 +12,7 @@ oneApp.directive('zemGrid', [function () {
             gridApi: '=', // onSelectionChanged, ... interaction service
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', function ($scope, zemGridObject, zemGridPubSub, zemGridDataService) { // eslint-disable-line max-len
+        controller: ['$scope', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridApiService', function ($scope, zemGridObject, zemGridPubSub, zemGridDataService, zemGridApiService) { // eslint-disable-line max-len
 
             this.grid = new zemGridObject.createInstance();
             this.grid.meta.scope = $scope;
@@ -23,14 +23,26 @@ oneApp.directive('zemGrid', [function () {
             initialize(this.grid);
 
             function initialize (grid) {
-                initializeApi(grid);
+                zemGridApiService.initializeApi(grid);
                 grid.meta.service.initialize();
             }
 
             function initializeApi (grid) {
-                // Initialize API with mocked functions if not provided
+                // Initialize Grid API
+
+                // Zem-Grid Getters
+                grid.meta.api.getSelectedRows = function () {
+                    return zemGridApiService.getSelectedRows(grid);
+                };
+
+                grid.meta.api.getSelectedColumns = function (){
+                    return zemGridApiService.getSelectedColumns(grid);
+                };
+
+                // Initialize notification hooks with noops if not provided
                 grid.meta.api = grid.meta.api || {};
                 grid.meta.api.onSelectionChanged = grid.meta.api.onSelectionChanged || angular.noop;
+                grid.meta.api.onColumnSelectionChanged = grid.meta.api.onColumnSelectionChanged || angular.noop;
             }
         }],
     };

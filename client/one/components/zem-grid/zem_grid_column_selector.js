@@ -10,9 +10,10 @@ oneApp.directive('zemGridColumnSelector', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_column_selector.html',
-        controller: ['zemGridStorageService', function (zemGridStorageService) {
+        controller: ['zemGridStorageService', 'zemGridApiService', function (zemGridStorageService, zemGridApiService) {
             var vm = this;
 
+            vm.columns = vm.grid.meta.data.columns;
             vm.categories = [];
             vm.columnChecked = columnChecked;
 
@@ -24,10 +25,10 @@ oneApp.directive('zemGridColumnSelector', [function () {
 
             function columnChecked () {
                 zemGridStorageService.saveColumns(vm.grid);
-                vm.grid.header.columns = vm.grid.meta.data.columns.filter(function (column) {
+                var selectedColumns = vm.columns.filter(function (column) {
                     return column.shown && column.checked;
                 });
-                vm.grid.meta.pubsub.notify(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED);
+                zemGridApiService.setSelectedColumns(vm.grid, selectedColumns);
             }
 
             function initCategories () {
@@ -35,7 +36,7 @@ oneApp.directive('zemGridColumnSelector', [function () {
                 // If column is un-selectable (always visible) or not shown skip it
                 vm.categories = [];
                 vm.grid.meta.data.categories.forEach(function (cat) {
-                    var cols = vm.grid.meta.data.columns.filter(function (col) {
+                    var cols = vm.columns.filter(function (col) {
                         return cat.fields.indexOf(col.field) !== -1 && col.shown && !col.unselectable;
                     });
 
