@@ -23,12 +23,14 @@ oneApp.directive('zemGrid', [function () {
             initialize(this.grid);
 
             function initialize (grid) {
+                initializeApi(grid);
+                grid.meta.service.initialize();
+            }
+
+            function initializeApi (grid) {
                 // Initialize API with mocked functions if not provided
                 grid.meta.api = grid.meta.api || {};
                 grid.meta.api.onSelectionChanged = grid.meta.api.onSelectionChanged || angular.noop;
-
-                // Initialize Grid data service
-                grid.meta.service.initialize();
             }
         }],
     };
