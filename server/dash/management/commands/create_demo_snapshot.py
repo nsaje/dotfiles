@@ -9,9 +9,8 @@ import sys
 import faker
 
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.conf import settings
 from django.core.serializers import serialize
 from django.template import Variable, VariableDoesNotExist
@@ -73,7 +72,6 @@ ACCOUNT_DUMP_SETTINGS = {
 }
 
 
-@receiver(pre_save)
 def pre_save_handler(sender, instance, *args, **kwargs):
     raise Exception("Do not save inside the demo data dump command!")
 
@@ -82,19 +80,27 @@ class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     def handle(self, *args, **options):
-        demo_mappings = dash.models.DemoMapping.objects.all()
+        pre_save.connect(pre_save_handler)
 
-        serialize_list = collections.OrderedDict()
-        prepare_demo_objects(serialize_list, demo_mappings)
-        dump_data = serialize('json', [obj for obj in reversed(serialize_list) if obj is not None], indent=4)
+        # perform inside transaction and rollback to be safe
+        with transaction.atomic():
+            demo_mappings = dash.models.DemoMapping.objects.all()
+            serialize_list = collections.OrderedDict()
+            prepare_demo_objects(serialize_list, demo_mappings)
+            dump_data = serialize('json', [obj for obj in reversed(serialize_list) if obj is not None], indent=4)
+            transaction.set_rollback(True)
 
-        snapshot_id = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H%M")
+        snapshot_id = _get_snapshot_id()
         s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_DEMO)
         s3_helper.put(os.path.join(snapshot_id, 'dump.json'), dump_data)
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
         _deploykitty_prepare(snapshot_id)
+
+
+def _get_snapshot_id():
+    return datetime.datetime.utcnow().strftime("%Y-%m-%d_%H%M")
 
 
 def _deploykitty_prepare(snapshot_id):
@@ -158,28 +164,16 @@ def _get_many_to_many_fields(obj):
         return []
 
 
-def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_at=0):
-    for obj in itertools.islice(serialize_list, start_at, None):
-        anonymize = getattr(obj, '_demo_fields', {})
-        if obj in demo_users_set or obj in anonymized_objects:  # don't anonymize demo users
-            anonymize = {}
-
-        for field in _get_fields(obj):
-            if field.name in anonymize:
-                setattr(obj, field.name, anonymize[field.name]())
-                anonymized_objects.add(obj)
-            if isinstance(field, models.ForeignKey):
-                _add_to_serialize_list(serialize_list, [obj.__getattribute__(field.name)])
-        for field in _get_many_to_many_fields(obj):
-            _add_to_serialize_list(serialize_list, obj.__getattribute__(field.name).all())
-
-
 def _add_to_serialize_list(serialize_list, objs):
     for obj in objs:
         if obj is None:
             continue
         if not hasattr(obj, '_meta'):
             _add_to_serialize_list(serialize_list, obj)
+            continue
+
+        # ignore newly created objects (for example by get_current_settings)
+        if obj.pk is None:
             continue
 
         # Proxy models don't serialize well in Django.
@@ -216,3 +210,19 @@ def _add_explicit_object_dependents(serialize_list, obj, dependencies):
 
     if not dependencies:
         _add_to_serialize_list(serialize_list, [obj])
+
+
+def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_at=0):
+    for obj in itertools.islice(serialize_list, start_at, None):
+        anonymize = getattr(obj, '_demo_fields', {})
+        if obj in demo_users_set or obj in anonymized_objects:  # don't anonymize demo users
+            anonymize = {}
+
+        for field in _get_fields(obj):
+            if field.name in anonymize:
+                setattr(obj, field.name, anonymize[field.name]())
+                anonymized_objects.add(obj)
+            if isinstance(field, models.ForeignKey):
+                _add_to_serialize_list(serialize_list, [obj.__getattribute__(field.name)])
+        for field in _get_many_to_many_fields(obj):
+            _add_to_serialize_list(serialize_list, obj.__getattribute__(field.name).all())
