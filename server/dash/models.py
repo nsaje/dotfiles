@@ -674,9 +674,8 @@ class AccountSettings(SettingsBase):
             self.created_by = request.user
 
         snapshot_type = kwargs.get('type')
-        snapshot = kwargs.get('snapshot')
         previous_snapshot = kwargs.get('previous_snapshot')
-        create_account_history(self, snapshot_type, snapshot, previous_snapshot)
+        create_account_history(self, snapshot_type, self, previous_snapshot)
         super(AccountSettings, self).save(*args, **kwargs)
 
     class Meta:
@@ -1945,9 +1944,8 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = request.user
 
         snapshot_type = kwargs.get('type')
-        snapshot = kwargs.get('snapshot')
         previous_snapshot = kwargs.get('previous_snapshot')
-        create_ad_group_history(self, snapshot_type, snapshot, previosu_snapshot)
+        create_ad_group_history(self, snapshot_type, self, previous_snapshot)
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
@@ -2072,9 +2070,13 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
             self.created_by = request.user
 
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP_SOURCE
-        snapshot_instance = model_to_dict(self)
         previous_snapshot = kwargs.get('previous_snapshot')  # TODO
-        create_ad_group_history(self, snapshot_type, snapshot, previous_snapshot)
+        create_ad_group_history(
+            self.ad_group_source.ad_group.get_current_settings(),
+            snapshot_type,
+            self,
+            previous_snapshot
+        )
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
 
@@ -2576,8 +2578,8 @@ class CreditLineItem(FootprintModel):
         elif self.agency is not None:
             accounts = self.agency.account_set.all()
         for account in accounts:
-            snapshot_type = constants.CampaignHistoryType.CREDIT
-            snapshot =  model_to_dict(self)
+            snapshot_type = constants.AccountHistoryType.CREDIT
+            snapshot =  self
             previous_snapshots = kwargs.get('previous_snapshots', {})
             create_account_history(
                 account.get_current_settings(),
@@ -2756,7 +2758,7 @@ class BudgetLineItem(FootprintModel):
         create_campaign_history(
             self.campaign.get_current_settings(),
             constants.CampaignHistoryType.BUDGET,
-            model_to_dict(self),
+            self,
             kwargs.get('previous_snapshot')
         )
 
@@ -3258,7 +3260,7 @@ def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous
         changes_text=ad_group_settings.changes_text or "",
     )
     if snapshot_type is not None:
-        history.type = shapshot_type
+        history.type = snapshot_type
         history.changes = model_to_dict(snapshot)
     else:
         history.type = constants.AdGroupHistoryType.AD_GROUP
@@ -3273,7 +3275,7 @@ def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous
         changes_text=campaign_settings.changes_text or "",
     )
     if snapshot_type is not None:
-        history.type = shapshot_type
+        history.type = snapshot_type
         history.changes = model_to_dict(snapshot)
     else:
         history.type = constants.CampaignHistoryType.CAMPAIGN
@@ -3283,12 +3285,11 @@ def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous
 def create_account_history(account_settings, snapshot_type, snapshot, previous_snapshot):
     history = AccountHistory(
         account=account_settings.account,
-        created_by=account_settings.created_by,
-        system_user=account_settings.system_user,
+        created_by=account_settings.created_by if account_settings.created_by_id else None,
         changes_text=account_settings.changes_text or "",
     )
     if snapshot_type is not None:
-        history.type = shapshot_type
+        history.type = snapshot_type
         history.changes = model_to_dict(snapshot)
     else:
         history.type = constants.AccountHistoryType.ACCOUNT
