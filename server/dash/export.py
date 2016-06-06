@@ -137,6 +137,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     first_stat_date = None
     account_appeared = defaultdict(bool)
+    previous_stat = {}
     for stat in stats:
         if first_stat_date is None and 'date' in stat:
             first_stat_date = stat['date']
@@ -148,9 +149,13 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                        statuses=statuses, settings=settings, account_settings=account_settings)
 
         if 'date' in stat:
+            if stat['date'].day == 1 and\
+                    (not previous_stat or previous_stat and previous_stat['date'].day != 1):
+                account_appeared = defaultdict(bool)
             _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appeared)
         elif 'campaign' in dimensions or 'account' in dimensions:
             _adjust_breakdown_by_account(stat, account_appeared)
+        previous_stat = stat
 
     return sort_results(stats, [ordering])
 
