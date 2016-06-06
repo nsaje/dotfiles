@@ -139,15 +139,17 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     account_appeared = defaultdict(bool)
     previous_stat = {}
     for stat in stats:
-        if first_stat_date is None and 'date' in stat:
-            first_stat_date = stat['date']
-
         _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
                        source_names=source_names, user=user, prefetched_data=prefetched_data,
                        budgets=budgets, projections=projections, account_projections=account_projections,
                        include_projections=include_projections, include_flat_fees=include_flat_fees,
                        statuses=statuses, settings=settings, account_settings=account_settings)
 
+    sorted_ret = sort_results(stats, [ordering])
+
+    for stat in sorted_ret:
+        if first_stat_date is None and 'date' in stat:
+            first_stat_date = stat['date']
         if 'date' in stat:
             if stat['date'].day == 1 and\
                     (not previous_stat or previous_stat and previous_stat['date'].day != 1):
@@ -157,7 +159,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             _adjust_breakdown_by_account(stat, account_appeared)
         previous_stat = stat
 
-    return sort_results(stats, [ordering])
+    return sorted_ret
 
 
 def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_date, include_settings=False,
@@ -302,7 +304,7 @@ def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source
 
 
 def _adjust_breakdown_by_day(start_date, first_stat_date, stat, account_appeared):
-    if first_stat_date is not None and stat['date'] == first_stat_date:
+    if first_stat_date is not None and stat['date'] == first_stat_date or stat['date'].day == 1:
         if not account_appeared[stat['account']]:
             account_appeared[stat['account']] = True
             return
