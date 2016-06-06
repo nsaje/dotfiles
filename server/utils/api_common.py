@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.views.generic import View
 from django.conf import settings
 
@@ -96,5 +96,7 @@ class BaseApiView(View):
     def dispatch(self, request, *args, **kwargs):
         try:
             return super(BaseApiView, self).dispatch(request, *args, **kwargs)
+        except Http404:
+            raise  # django's default 404, will use template found in templates/404.html
         except Exception as e:
             return self.get_exception_response(request, e)

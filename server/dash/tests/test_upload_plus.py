@@ -29,7 +29,8 @@ class UploadPlusTest(TestCase):
         _, candidates = dash.upload_plus.insert_candidates(
             content_ads_data,
             ad_group,
-            'Test batch'
+            'Test batch',
+            'test_upload.csv',
         )
         for candidate in candidates:
             dash.upload_plus.invoke_external_validation(candidate)
@@ -64,7 +65,8 @@ class UploadPlusTest(TestCase):
 
             }],
             ad_group,
-            'Test batch'
+            'Test batch',
+            'test_upload.csv',
         )
         dash.upload_plus.process_callback({
             "id": candidates[0].pk,
@@ -74,6 +76,7 @@ class UploadPlusTest(TestCase):
                 "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
             },
             "image": {
+                "valid": True,
                 "width": 1500,
                 "hash": "0000000000000000",
                 "id": "demo/demo-123/srv/some-batch/31eb9a632e3547039169d1b650155e14",
