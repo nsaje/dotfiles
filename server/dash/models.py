@@ -3165,7 +3165,7 @@ class HistoryBase(models.Model):
         if self.created_by is not None and self.system_user is not None:
             raise AssertionError('Either created_by or system_user must be set.')
 
-        if self.created_by is None and self.system_user None:
+        if self.created_by is None and self.system_user is None:
             raise AssertionError('Exactly one of create_by or system_user must be set.')
 
         super(HistoryBase, self).save(*args, **kwargs)
