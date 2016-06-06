@@ -1937,6 +1937,22 @@ class AdGroupSettings(SettingsBase):
             else:
                 self.created_by = request.user
 
+        snapshot_type = kwargs.get('type')
+        snapshot_instance = kwargs.get('instance')
+
+        history = AdGroupHistory(
+            ad_group=self.ad_group,
+            created_by=self.created_by,
+            system_user=self.system_user,
+            changes_text=self.changes_text or "",
+        )
+        if snapshot_type is not None:
+            history.type = shapshot_type
+            history.changes = model_to_dict(snapshot_instance)
+        else:
+            history.type = constants.AdGroupHistoryType.AD_GROUP
+        history.save()
+
         super(AdGroupSettings, self).save(*args, **kwargs)
 
     class QuerySet(SettingsQuerySet):
@@ -3185,8 +3201,8 @@ class HistoryBase(models.Model):
         if self.created_by is not None and self.system_user is not None:
             raise AssertionError('Either created_by or system_user must be set.')
 
-        if self.created_by is None and self.system_user is None:
-            raise AssertionError('Exactly one of create_by or system_user must be set.')
+        #if self.created_by is None and self.system_user is None:
+        #    raise AssertionError('Exactly one of created_by or system_user must be set.')
 
         super(HistoryBase, self).save(*args, **kwargs)
 

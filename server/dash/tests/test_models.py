@@ -758,17 +758,18 @@ class HistoryTest(TestCase):
         )
         self.assertEqual(1, models.AccountHistory.objects.all().count())
 
+    def test_save_no_creds(self):
+        models.AccountHistory.objects.create(
+            account=self.acc,
+            type=constants.AccountHistoryType.ACCOUNT,
+        )
+        self.assertEqual(1, models.AccountHistory.objects.all().count())
+
     def test_save_fail(self):
         with self.assertRaises(AssertionError):
             models.AccountHistory.objects.create(
                 created_by=self.u,
                 system_user=self.su,
-                account=self.acc,
-                type=constants.AccountHistoryType.ACCOUNT,
-            )
-
-        with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.create(
                 account=self.acc,
                 type=constants.AccountHistoryType.ACCOUNT,
             )
