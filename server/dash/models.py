@@ -3137,6 +3137,24 @@ class EmailTemplate(models.Model):
         unique_together = ('template_type',)
 
 
+class HistoryQuerySetManager(models.Manager):
+
+    def get_queryset(self):
+        return self.model.QuerySet(self.model)
+
+    def delete(self):
+        raise AssertionError('Deleting history objects not allowed')
+
+
+class HistoryQuerySet(models.QuerySet):
+
+    def update(self, *args, **kwargs):
+        raise AssertionError('Using update not allowed.')
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Using delete not allowed.')
+
+
 class HistoryBase(models.Model):
 
     changes_text = models.TextField(blank=False, null=False)
@@ -3157,6 +3175,8 @@ class HistoryBase(models.Model):
         null=True,
         blank=True,
     )
+
+    objects = HistoryQuerySetManager()
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
@@ -3184,6 +3204,9 @@ class AdGroupHistory(HistoryBase):
         null=False,
         blank=False,
     )
+    objects = HistoryQuerySetManager()
+    class QuerySet(HistoryQuerySet):
+        pass
 
 
 class CampaignHistory(HistoryBase):
@@ -3193,6 +3216,9 @@ class CampaignHistory(HistoryBase):
         null=False,
         blank=False,
     )
+    objects = HistoryQuerySetManager()
+    class QuerySet(HistoryQuerySet):
+        pass
 
 
 class AccountHistory(HistoryBase):
@@ -3202,3 +3228,7 @@ class AccountHistory(HistoryBase):
         null=False,
         blank=False,
     )
+    objects = HistoryQuerySetManager()
+    class QuerySet(HistoryQuerySet):
+        pass
+
