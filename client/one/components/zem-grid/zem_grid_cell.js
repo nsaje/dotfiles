@@ -20,6 +20,10 @@ oneApp.directive('zemGridCell', [function () {
             this.toggleCollapse = function () {
                 zemGridUIService.toggleCollapse(this.grid, this.row);
             };
+
+            this.toggleSelection = function () {
+                zemGridUIService.toggleSelection(this.grid, this.row);
+            };
         }],
     };
 }]);

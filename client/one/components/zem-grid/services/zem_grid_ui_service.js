@@ -4,14 +4,14 @@
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($timeout, zemGridConstants) {
 
     var requestAnimationFrame = (function () {
-        return window.requestAnimationFrame       ||
-               window.webkitRequestAnimationFrame ||
-               window.mozRequestAnimationFrame    ||
-               window.oRequestAnimationFrame      ||
-               window.msRequestAnimationFrame     ||
-               function (callback) {
-                   window.setTimeout(callback, 1000 / 60);
-               };
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
     })();
 
     function resetUIState (grid) {
@@ -147,6 +147,16 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     }
 
+    function toggleSelection (grid, gridRow) {
+        gridRow.selected = !gridRow.selected;
+
+        var selectedData = grid.body.rows
+            .filter(function (row) { return row.selected; })
+            .map(function (row) { return row.data; });
+
+        grid.meta.api.onSelectionChanged(selectedData);
+    }
+
     return {
         requestAnimationFrame: requestAnimationFrame,
         resetUIState: resetUIState,
@@ -156,5 +166,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
         toggleCollapse: toggleCollapse,
         toggleCollapseLevel: toggleCollapseLevel,
+        toggleSelection: toggleSelection,
     };
 }]);
