@@ -18,6 +18,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
 
         this.setBreakdown = dataSource.setBreakdown;
         this.getBreakdown = dataSource.getBreakdown;
+        this.getBreakdownLevel = dataSource.getBreakdownLevel;
         this.setOrder = dataSource.setOrder;
         this.getOrder = dataSource.getOrder;
 
