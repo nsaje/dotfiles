@@ -3205,6 +3205,7 @@ class AdGroupHistory(HistoryBase):
         blank=False,
     )
     objects = HistoryQuerySetManager()
+
     class QuerySet(HistoryQuerySet):
         pass
 
@@ -3217,6 +3218,7 @@ class CampaignHistory(HistoryBase):
         blank=False,
     )
     objects = HistoryQuerySetManager()
+
     class QuerySet(HistoryQuerySet):
         pass
 
@@ -3229,6 +3231,6 @@ class AccountHistory(HistoryBase):
         blank=False,
     )
     objects = HistoryQuerySetManager()
+
     class QuerySet(HistoryQuerySet):
         pass
-
