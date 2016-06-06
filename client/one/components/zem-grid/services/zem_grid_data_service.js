@@ -57,12 +57,14 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             }
             var deferred = $q.defer();
             dataSource.getData(breakdown, size).then(
-                function (data) {
-                    zemGridParser.parse(grid, data);
+                function () {
+                    // Data is already been processed
+                    // on source data update event
                     deferred.resolve();
                 },
-                function () {
+                function (err) {
                     // TODO: Handle errors
+                    deferred.reject(err);
                 }
             );
             return deferred.promise;

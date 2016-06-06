@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($timeout, zemGridConstants) {
+oneApp.factory('zemGridInteractionService', [function () {
 
     function setRowCollapsed (grid, gridRow, collapsed) {
         gridRow.collapsed = collapsed;
@@ -34,9 +34,12 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
     function toggleSelection (grid, gridRow) {
         gridRow.selected = !gridRow.selected;
 
-        var selectedData = grid.body.rows
-            .filter(function (row) { return row.selected; })
-            .map(function (row) { return row.data; });
+        var selectedData = [];
+        grid.body.rows.forEach (function (row) {
+            if (row.selected) {
+                selectedData.push(row.data);
+            }
+        });
 
         grid.meta.api.onSelectionChanged(selectedData);
     }

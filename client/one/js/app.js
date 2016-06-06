@@ -89,7 +89,7 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.allAccounts.accounts_breakdowns', {
             url: '/accounts-tablebreakdowns',
-            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
+            template: '<zem-grid data-data-source="dataSource" grid-api="gridApi"></zem-grid>',
             controller: 'AllAccountsAccountsBreakdownsCtrl',
         });
 

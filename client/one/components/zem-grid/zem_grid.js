@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 'use strict';
 
 oneApp.directive('zemGrid', [function () {
@@ -20,7 +20,16 @@ oneApp.directive('zemGrid', [function () {
             this.grid.meta.pubsub = zemGridPubSub.createInstance($scope);
             this.grid.meta.service = zemGridDataService.createInstance(this.grid, this.dataSource);
 
-            this.grid.meta.service.initialize();
+            initialize(this.grid);
+
+            function initialize (grid) {
+                // Initialize API with mocked functions if not provided
+                grid.meta.api = grid.meta.api || {};
+                grid.meta.api.onSelectionChanged = grid.meta.api.onSelectionChanged || angular.noop;
+
+                // Initialize Grid data service
+                grid.meta.service.initialize();
+            }
         }],
     };
 }]);

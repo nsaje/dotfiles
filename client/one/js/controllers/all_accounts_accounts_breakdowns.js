@@ -1,6 +1,12 @@
 /* globals oneApp */
 oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
     $scope.dataSource = createDataSource();
+    $scope.gridApi = {
+        onSelectionChanged: function (selectedData) {
+            debugger;
+            console.log('Selection changed: ' + selectedData);
+        },
+    };
 
     function createDataSource () {
         // Temporary workaround for retrieving columns defined in original controller
