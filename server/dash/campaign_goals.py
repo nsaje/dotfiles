@@ -8,7 +8,7 @@ from utils import exc
 from dash import models, constants, forms
 from dash.views import helpers
 import dash.stats_helper
-import dash.history_helper
+import dash.history_helpers
 import utils.lc_helper
 
 

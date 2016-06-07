@@ -463,7 +463,7 @@ class CampaignAdGroups(TestCase):
         request.META['SERVER_PORT'] = 1234
         request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text, actions = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
@@ -474,7 +474,7 @@ class CampaignAdGroups(TestCase):
         request = HttpRequest()
         request.user = User.objects.get(pk=2)
         view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text, actions = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
@@ -487,7 +487,7 @@ class CampaignAdGroups(TestCase):
         request = None
 
         view = views.CampaignAdGroups()
-        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+        actions, changes_text = view._add_media_sources(ad_group, ad_group_settings, request)
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
@@ -502,7 +502,7 @@ class CampaignAdGroups(TestCase):
         self.assertEqual(waiting_ad_group_sources, [])
 
         self.assertEqual(
-            ad_group_settings.changes_text,
+            changes_text,
             'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
 
@@ -945,7 +945,7 @@ class AdGroupArchiveRestoreTest(TestCase):
             status=constants.PublisherStatus.BLACKLISTED
         )
 
-        # do some blacklisting inbetween
+        # do some blacklisting in between
         ad_group = models.AdGroup.objects.get(pk=1)
         self.assertTrue(ad_group.is_archived())
 
