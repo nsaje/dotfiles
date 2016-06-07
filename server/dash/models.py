@@ -19,6 +19,7 @@ from django.forms.models import model_to_dict
 from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
+from django.db.models.signals import post_init
 
 import utils.string_helper
 
@@ -675,7 +676,7 @@ class AccountSettings(SettingsBase):
 
         snapshot_type = kwargs.get('type')
         previous_snapshot = kwargs.get('previous_snapshot')
-        create_account_history(self, snapshot_type, self, previous_snapshot)
+        create_account_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
         super(AccountSettings, self).save(*args, **kwargs)
 
     class Meta:
@@ -758,9 +759,8 @@ class CampaignSettings(SettingsBase):
             else:
                 self.created_by = request.user
         snapshot_type = kwargs.get('type')
-        snapshot = kwargs.get('snapshot')
-        previous_snapshot = kwargs.get('previous_snapshot')
-        create_campaign_history(self, snapshot_type, snapshot, previous_snapshot)
+        previous_snapshot = self.post_init_state
+        create_campaign_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
         super(CampaignSettings, self).save(*args, **kwargs)
 
     @classmethod
@@ -1944,8 +1944,8 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = request.user
 
         snapshot_type = kwargs.get('type')
-        previous_snapshot = kwargs.get('previous_snapshot')
-        create_ad_group_history(self, snapshot_type, self, previous_snapshot)
+        previous_snapshot = self.post_init_state
+        create_ad_group_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
@@ -2070,11 +2070,11 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
             self.created_by = request.user
 
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP_SOURCE
-        previous_snapshot = kwargs.get('previous_snapshot')  # TODO
+        previous_snapshot = self.post_init_state
         create_ad_group_history(
             self.ad_group_source.ad_group.get_current_settings(),
             snapshot_type,
-            self,
+            model_to_dict(self),
             previous_snapshot
         )
 
@@ -2579,12 +2579,11 @@ class CreditLineItem(FootprintModel):
             accounts = self.agency.account_set.all()
         for account in accounts:
             snapshot_type = constants.AccountHistoryType.CREDIT
-            snapshot =  self
             previous_snapshots = kwargs.get('previous_snapshots', {})
             create_account_history(
                 account.get_current_settings(),
                 snapshot_type,
-                snapshot,
+                model_to_dict(self),
                 previous_snapshots.get(account.id)
             )
 
@@ -2754,11 +2753,10 @@ class BudgetLineItem(FootprintModel):
             snapshot=model_to_dict(self),
             budget=self,
         )
-
         create_campaign_history(
             self.campaign.get_current_settings(),
             constants.CampaignHistoryType.BUDGET,
-            self,
+            model_to_dict(self),
             kwargs.get('previous_snapshot')
         )
 
@@ -3261,7 +3259,7 @@ def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous
     )
     if snapshot_type is not None:
         history.type = snapshot_type
-        history.changes = model_to_dict(snapshot)
+        history.changes = dict_diff(previous_snapshot, snapshot)
     else:
         history.type = constants.AdGroupHistoryType.AD_GROUP
     history.save()
@@ -3276,7 +3274,7 @@ def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous
     )
     if snapshot_type is not None:
         history.type = snapshot_type
-        history.changes = model_to_dict(snapshot)
+        history.changes = dict_diff(previous_snapshot, snapshot)
     else:
         history.type = constants.CampaignHistoryType.CAMPAIGN
     history.save()
@@ -3290,7 +3288,7 @@ def create_account_history(account_settings, snapshot_type, snapshot, previous_s
     )
     if snapshot_type is not None:
         history.type = snapshot_type
-        history.changes = model_to_dict(snapshot)
+        history.changes = dict_diff(previous_snapshot, snapshot)
     else:
         history.type = constants.AccountHistoryType.ACCOUNT
     history.save()
@@ -3320,3 +3318,25 @@ class AccountHistory(HistoryBase):
 
     class QuerySet(HistoryQuerySet):
         pass
+
+
+def dict_diff(d1, d2):
+    if not d1:
+        return d2
+
+    diff = {}
+    for key, value in d1.iteritems():
+        if key in d2 and value != d2[key]:
+            diff[key] = d2[key]
+    return diff
+
+
+def funkyTest(sender, **kwargs):
+    instance = kwargs.get('instance', {})
+    sender.post_init_state = model_to_dict(instance) if instance != {} else None
+
+
+post_init.connect(funkyTest, AdGroupSettings)
+post_init.connect(funkyTest, CampaignSettings)
+post_init.connect(funkyTest, AccountSettings)
+post_init.connect(funkyTest, AdGroupSourceSettings)
