@@ -4,13 +4,12 @@ import os
 from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
-STATS_DB_NAME = 'stats'
-STATS_E2E_DB_NAME = 'stats_e2e'
+STATS_DB_NAME = 'k1'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -23,36 +22,23 @@ DATABASES = {
         'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
         'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
-    'e2e': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': ''
-    },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
-        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
-        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
-        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
-    },
-    STATS_E2E_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
+        'NAME': 'k1',
+        'USER': 'eins',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
+        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
     }
 }
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ '{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
 
-BASE_URL = 'https://one.zemanta.com'
-
-SECURE_SSL_REDIRECT = False
+BASE_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123'))
+SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REDIRECT_EXEMPT = []
 
 # Email settings
 EMAIL_USE_TLS = True
@@ -62,7 +48,10 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = Secret('').get()
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+SEND_NOTIFICATION_MAIL = False
 FROM_EMAIL = 'help-test@zemanta.com'
+
+MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
 
 # Path to log file
 LOG_FILE = '/app/logs/eins-log.log'
@@ -154,7 +143,7 @@ USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 
 Z3_API_IMAGE_URL = ''
-IMAGE_THUMBNAIL_URL = ''
+IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 # QUEUES
 BROKER_TRANSPORT = 'sqs'
@@ -166,12 +155,15 @@ BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
 
-SQS_REGION = 'us-east-1'
-SQS_QUEUE_PREFIX = 'test'
+SQS_REGION = ''
+SQS_QUEUE_PREFIX = 'demo'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
 
 CAMPAIGN_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-campaign_change'
 DAILY_STATEMENTS_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-budget-change'
+
+CELERY_DEFAULT_CONVAPI_QUEUE = SQS_QUEUE_PREFIX + '-convapi'
+CELERY_DEFAULT_CONVAPI_V2_QUEUE = SQS_QUEUE_PREFIX + '-' + 'convapi_v2'
 
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
@@ -179,14 +171,14 @@ BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 10,
 }
 
-R1_DEMO_MODE = False
+R1_DEMO_MODE = True
 R1_API_SIGN_KEY = Secret('').get()
-R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
-R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
-R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
-R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
-R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
-R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
+R1_REDIRECTS_API_URL = ''
+R1_REDIRECTS_ADGROUP_API_URL = ''
+R1_VALIDATE_API_URL = ''
+R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/'
+R1_CONVERSION_STATS_URL = ''
+R1_CONVERSION_STATS_RESULT_URL = ''
 
 BIDDER_API_SIGN_KEY = ''
 
@@ -197,8 +189,12 @@ BIDDER_API_SIGN_KEY = Secret('').get()
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
 
+# Google Analytics authentication
+GA_CLIENT_EMAIL = ''
+GA_PRIVATE_KEY = ''
+
 # k1
-K1_DEMO_MODE = False
+K1_DEMO_MODE = True
 K1_CONSISTENCY_SYNC = False
 
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
@@ -209,9 +205,8 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 DK_API_KEY = Secret('').get()
 DK_DEMO_PREPARE_ENDPOINT = ''
 
-# l1
 LAMBDA_REGION = 'us-east-1'
-LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
-LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
-LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
-LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK/AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACWMIGTBgkqhkiG9w0BBwaggYUwgYICAQAwfQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx7yLKe0tUFVxMxsMMCARCAUFMra/DjBi1zN9BhzOI/C8+JHJA5rBM0tsNGeCZBzYnFgMm951IWfgRr7gqwdnPVqzDdwHwMHYzbR2viuXRMus4bfcdCm2BEqQBnNAgZ/fZt').get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = os.environ.get('INSTANCE_NAME', 'demo123')
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com/api/callbacks/content-upload/'.format(INSTANCE_NAME=LAMBDA_CONTENT_UPLOAD_NAMESPACE)
