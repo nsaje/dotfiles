@@ -264,9 +264,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             var diff = findDifference(breakdown, selectedBreakdown);
             if (diff < 0) return fetch ? $q.resolve(data) : undefined;
 
-            // Breakdown levels are 1-based therefor (diff + 1) is level 
+            // Breakdown levels are 1-based therefor (diff + 1) is level
             // that is different and needs to be replaced
-            var equalLevel = diff; 
+            var equalLevel = diff;
             var parentNodes = getNodesByLevel(equalLevel);
             var fetchSuccessiveLevels = breakdown.length > equalLevel;
             selectedBreakdown = breakdown;
