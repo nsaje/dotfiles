@@ -126,7 +126,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     tp_conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'tp_conversions'}, AGGREGATES)
 
     @classmethod
-    def get_aggregates(cls):
+    def get_ordered_aggregates(cls):
         """
         Returns aggregates in default order as it is used in materialized view table definitions.
         """

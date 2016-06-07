@@ -28,33 +28,56 @@ class Materialize(object):
     def table_name(self):
         raise NotImplementedError()
 
-    def generate(self, date, *args, **kwargs):
-        del_sql, del_params = self.prepare_delete_query(date)
-        ins_sql, ins_params = self.prepare_insert_query(date)
+    def generate(self, date_from, date_to, *args, **kwargs):
+        del_sql, del_params = self.prepare_delete_query(date_from, date_to)
+        ins_sql, ins_params = self.prepare_insert_query(date_from, date_to)
 
-        logger.info("Materializing table %s for date %s", self.table_name(), date)
+        logger.info("Materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
         with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
             with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
                 c.execute(del_sql, del_params)
                 c.execute(ins_sql, ins_params)
 
-        logger.info("Done materializing table %s for date %s", self.table_name(), date)
+        logger.info("Done materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
 
-    def prepare_delete_query(self, date):
-        sql = backtosql.generate_sql('etl_delete_simple_one_day.sql', {
+    def prepare_delete_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_delete.sql', {
             'table': self.table_name(),
         })
 
-        return sql, {'date': date}
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
 
-    def prepare_insert_query(self, date):
+    def prepare_insert_query(self, date_from, date_to):
         raise NotImplementedError()
 
 
 class TransformAndMaterialize(Materialize):
-    def generate(self, date, daily_campaign_spend_factors, *args, **kwargs):
-        logger.info("Materializing table %s for date %s", self.table_name(), date)
 
+    def generate(self, date_from, date_to, campaign_spend_factors):
+
+        s3_paths = []
+        for date, daily_campaign_spend_factors in sorted(campaign_spend_factors.iteritems(), key=lambda x: x[0]):
+            s3_path = self.generate_daily_csv(date, daily_campaign_spend_factors)
+            s3_paths.append(s3_path)
+
+        del_sql, del_params = self.prepare_delete_query(date_from, date_to)
+
+        logger.info("Materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
+        with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
+            with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
+
+                c.execute(del_sql, del_params)
+
+                for s3_path in s3_paths:
+                    ins_sql, ins_params = self.prepare_insert_query(s3_path)
+                    c.execute(ins_sql, ins_params)
+
+        logger.info("Done materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
+
+    def generate_daily_csv(self, date, daily_campaign_spend_factors):
         s3_path = os.path.join(
             MATERIALIZED_VIEWS_S3_PREFIX,
             self.table_name(),
@@ -67,20 +90,14 @@ class TransformAndMaterialize(Materialize):
         with io.BytesIO() as csvfile:
             writer = csv.writer(csvfile, dialect='excel', delimiter=CSV_DELIMITER)
 
-            for line in self.generate_rows(date, campaign_factors):
+            for line in self.generate_rows(date, daily_campaign_spend_factors):
                 writer.writerow(line)
 
             bucket.put(s3_path, csvfile.getvalue())
 
-        del_sql, del_params = self.prepare_delete_query(date)
-        ins_sql, ins_params = self.prepare_insert_query(date, s3_path)
+        return s3_path
 
-        with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
-            with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
-                c.execute(del_sql, del_params)
-                c.execute(ins_sql, ins_params)
-
-    def prepare_insert_query(self, date, s3_path):
+    def prepare_insert_query(self, s3_path):
         sql = backtosql.generate_sql('etl_copy_csv.sql', {
             'table': self.table_name(),
         })
@@ -101,7 +118,7 @@ class TransformAndMaterialize(Materialize):
             'delimiter': CSV_DELIMITER,
         }
 
-    def generate_rows(self):
+    def generate_rows(self, date, campaign_factors):
         raise NotImplementedError()
 
 

@@ -1,6 +1,6 @@
 {% autoescape off %}
 
 DELETE FROM {{ table }}
-WHERE date=%(date)s;
+WHERE date BETWEEN %(date_from)s AND %(date_to)s;
 
 {% endautoescape %}

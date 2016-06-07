@@ -22,19 +22,19 @@ class MVAccount(materialize_helpers.Materialize):
     def table_name(self):
         return 'mv_account'
 
-    def prepare_insert_query(self, date):
-        sql = backtosql.generate_sql('etl_select_insert_one_day.sql', {
+    def prepare_insert_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
             ]),
-            'aggregates': models.MVMaster.get_aggregates(),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
             'source_table': 'mv_master',
         })
 
-        print len(models.MVMaster.get_aggregates())
         return sql, {
-            'date': date,
+            'date_from': date_from,
+            'date_to': date_to,
         }
 
 
@@ -43,19 +43,20 @@ class MVAccountDelivery(materialize_helpers.Materialize):
     def table_name(self):
         return 'mv_account_delivery'
 
-    def prepare_insert_query(self, date):
-        sql = backtosql.generate_sql('etl_select_insert_one_day.sql', {
+    def prepare_insert_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
-            'aggregates': models.MVMaster.get_aggregates(),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
             'source_table': 'mv_master',
         })
 
         return sql, {
-            'date': date,
+            'date_from': date_from,
+            'date_to': date_to,
         }
 
 

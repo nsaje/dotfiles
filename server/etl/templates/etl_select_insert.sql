@@ -9,7 +9,7 @@ INSERT INTO {{ destination_table }}
     FROM
         {{ source_table }}
     WHERE
-        date=%(date)s
+        date BETWEEN %(date_from)s AND %(date_to)s
     GROUP BY
         {{ breakdown|only_alias }}
 );
