@@ -790,21 +790,27 @@ def get_outbrain_marketer_id(request):
 
 
 @csrf_exempt
-def get_facebook_accounts(request):
+def get_facebook_account(request):
     _validate_signature(request)
 
-    query_facebook_accounts = (
-        dash.models.FacebookAccount.objects
-            .filter(status=constants.FacebookPageRequestType.CONNECTED)
-            .all()
+    ad_group_id = request.GET.get('ad_group_id')
+    if not ad_group_id:
+        return _response_error("Must provide content ad id or ad group id.")
+
+    query_account = (
+        dash.models.Account.objects.get(campaign__adgroup__id=ad_group_id)
     )
 
-    facebook_accounts = []
-    for facebook_account in query_facebook_accounts:
-        facebook_accounts.append({
-            'account_id': facebook_account.account_id,
-            'ad_account_id': facebook_account.ad_account_id,
-            'page_id': facebook_account.get_page_id()
-        })
-
-    return _response_ok(facebook_accounts)
+    try:
+        query_facebook_account = (
+            dash.models.FacebookAccount.objects
+                .get(status=constants.FacebookPageRequestType.CONNECTED, account__id=query_account.id)
+        )
+        facebook_account = {
+            'account_id': query_facebook_account.account_id,
+            'ad_account_id': query_facebook_account.ad_account_id,
+            'page_id': query_facebook_account.get_page_id()
+        }
+    except dash.models.FacebookAccount.DoesNotExist:
+        facebook_account = None
+    return _response_ok(facebook_account)
