@@ -18,7 +18,7 @@ class CreateDemoSnapshotTest(TransactionTestCase):
         self.mock_s3 = {}
 
     def tearDown(self):
-        pre_save.disconnect(create_demo_snapshot.pre_save_handler)
+        pre_save.disconnect(create_demo_snapshot._pre_save_handler)
 
     def mock_put(self, key, contents):
         self.mock_s3[key] = contents

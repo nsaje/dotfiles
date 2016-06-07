@@ -75,22 +75,12 @@ ACCOUNT_DUMP_SETTINGS = {
 }
 
 
-def pre_save_handler(sender, instance, *args, **kwargs):
-    raise Exception("Do not save inside the demo data dump command!")
-
-
-def _set_postgres_read_only(db_settings):
-    db_options = db_settings.setdefault('OPTIONS', {})
-    existing_pg_options = db_options.setdefault('options', '')
-    db_options['options'] = ' '.join(['-c default_transaction_read_only=on', existing_pg_options])
-
-
 class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     def handle(self, *args, **options):
         # prevent explicit model saves
-        pre_save.connect(pre_save_handler)
+        pre_save.connect(_pre_save_handler)
         # put connection in read-only mode
         _set_postgres_read_only(settings.DATABASES['default'])
 
@@ -115,6 +105,16 @@ class Command(ExceptionCommand):
         s3_helper.put('latest.txt', snapshot_id)
 
         _deploykitty_prepare(snapshot_id)
+
+
+def _pre_save_handler(sender, instance, *args, **kwargs):
+    raise Exception("Do not save inside the demo data dump command!")
+
+
+def _set_postgres_read_only(db_settings):
+    db_options = db_settings.setdefault('OPTIONS', {})
+    existing_pg_options = db_options.setdefault('options', '')
+    db_options['options'] = ' '.join(['-c default_transaction_read_only=on', existing_pg_options])
 
 
 def _get_snapshot_id():
