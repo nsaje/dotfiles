@@ -238,14 +238,7 @@ class UploadStatusTestCase(TestCase):
             }
         }, json.loads(response.content))
 
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_ok(self, mock_insert_redirect):
-        mock_insert_redirect.return_value = {
-            'redirect': {
-                'url': 'http://example.com',
-            },
-            'redirectid': 'abc123',
-        }
+    def test_ok(self):
         batch_id = 2
         ad_group_id = 3
 
@@ -304,7 +297,14 @@ class UploadSaveTestCase(TestCase):
     fixtures = ['test_upload_plus.yaml']
 
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_ok(self, mock_s3_put):
+    @patch('utils.redirector_helper.insert_redirect')
+    def test_ok(self, mock_insert_redirect, mock_s3_put):
+        mock_insert_redirect.return_value = {
+            'redirect': {
+                'url': 'http://example.com',
+            },
+            'redirectid': 'abc123',
+        }
         batch_id = 2
         ad_group_id = 3
 
