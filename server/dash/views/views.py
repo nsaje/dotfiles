@@ -56,6 +56,7 @@ from dash import forms
 from dash import upload
 from dash import infobox_helpers
 from dash import publisher_helpers
+from dash import history_helpers
 
 import reports.api_publishers
 import reports.projections
@@ -484,8 +485,11 @@ class CampaignAdGroups(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
+        ad_group_settings.changes_text = changes_text
         ad_group_settings.save(request)
+
+        history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
 
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
         actionlog.zwei_actions.send(actions)
@@ -502,6 +506,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
     def _create_ad_group(self, campaign, request):
         actions = []
+        changes_text = None
         with transaction.atomic():
             ad_group = models.AdGroup(
                 name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
@@ -510,13 +515,13 @@ class CampaignAdGroups(api_common.BaseApiView):
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
             if request.user.has_perm('zemauth.add_media_sources_automatically'):
-                media_sources_actions = self._add_media_sources(ad_group, ad_group_settings, request)
+                media_sources_actions, changes_text = self._add_media_sources(ad_group, ad_group_settings, request)
                 actions.extend(media_sources_actions)
 
         k1_helper.update_ad_group(ad_group.pk,
                                   msg='CampaignAdGroups.put')
 
-        return ad_group, ad_group_settings, actions
+        return ad_group, ad_group_settings, changes_text, actions
 
     def _create_new_settings(self, ad_group, request):
         current_settings = ad_group.get_current_settings()  # get default ad group settings
@@ -546,12 +551,12 @@ class CampaignAdGroups(api_common.BaseApiView):
             added_sources.append(source)
             actions.append(action)
 
+        changes_text = None
         if added_sources:
             changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
                 len(added_sources), ', '.join([source.name for source in added_sources]))
-            ad_group_settings.changes_text = changes_text
 
-        return actions
+        return actions, changes_text
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         ad_group = ad_group_settings.ad_group
@@ -994,6 +999,13 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+        history_helpers.write_ad_group_history(
+            ad_group_source.ad_group,
+            changes_text,
+            user=request.user,
+            history_type=constants.AdGroupHistoryType.AD_GROUP_SOURCE
+        )
 
 
 class Account(api_common.BaseApiView):
@@ -2010,6 +2022,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         settings = ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+        history_helpers.write_ad_group_history(
+            ad_group,
+            changes_text,
+            user=request.user,
+        )
 
         # at the moment we only have the publishers view on adgroup level
         # which means all blacklisting actions are stored in the settings
