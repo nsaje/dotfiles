@@ -36,6 +36,7 @@ from utils import converters
 
 
 SHORT_NAME_MAX_LENGTH = 22
+HISTORY_EXCLUDED_FIELDS = ['id']
 
 
 class Round(Func):
@@ -2579,12 +2580,11 @@ class CreditLineItem(FootprintModel):
             accounts = self.agency.account_set.all()
         for account in accounts:
             snapshot_type = constants.AccountHistoryType.CREDIT
-            previous_snapshots = kwargs.get('previous_snapshots', {})
             create_account_history(
                 account.get_current_settings(),
                 snapshot_type,
                 model_to_dict(self),
-                previous_snapshots.get(account.id)
+                self.post_init_state,
             )
 
     def __unicode__(self):
@@ -3259,7 +3259,11 @@ def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous
     )
     if snapshot_type is not None:
         history.type = snapshot_type
-        history.changes = dict_diff(previous_snapshot, snapshot)
+        history.changes = dict_diff(
+            previous_snapshot,
+            snapshot,
+            exclude_keys=HISTORY_EXCLUDED_FIELDS
+        )
     else:
         history.type = constants.AdGroupHistoryType.AD_GROUP
     history.save()
@@ -3274,7 +3278,11 @@ def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous
     )
     if snapshot_type is not None:
         history.type = snapshot_type
-        history.changes = dict_diff(previous_snapshot, snapshot)
+        history.changes = dict_diff(
+            previous_snapshot,
+            snapshot,
+            exclude_keys=HISTORY_EXCLUDED_FIELDS
+        )
     else:
         history.type = constants.CampaignHistoryType.CAMPAIGN
     history.save()
@@ -3288,7 +3296,11 @@ def create_account_history(account_settings, snapshot_type, snapshot, previous_s
     )
     if snapshot_type is not None:
         history.type = snapshot_type
-        history.changes = dict_diff(previous_snapshot, snapshot)
+        history.changes = dict_diff(
+            previous_snapshot,
+            snapshot,
+            exclude_keys=HISTORY_EXCLUDED_FIELDS
+        )
     else:
         history.type = constants.AccountHistoryType.ACCOUNT
     history.save()
@@ -3320,12 +3332,14 @@ class AccountHistory(HistoryBase):
         pass
 
 
-def dict_diff(d1, d2):
+def dict_diff(d1, d2, exclude_keys=[]):
     if not d1:
         return d2
 
     diff = {}
     for key, value in d1.iteritems():
+        if key in exclude_keys:
+            continue
         if key in d2 and value != d2[key]:
             diff[key] = d2[key]
     return diff
@@ -3340,3 +3354,6 @@ post_init.connect(funkyTest, AdGroupSettings)
 post_init.connect(funkyTest, CampaignSettings)
 post_init.connect(funkyTest, AccountSettings)
 post_init.connect(funkyTest, AdGroupSourceSettings)
+
+post_init.connect(funkyTest, BudgetLineItem)
+post_init.connect(funkyTest, CreditLineItem)
