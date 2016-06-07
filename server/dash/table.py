@@ -1017,7 +1017,7 @@ class AccountsAccountsTable(object):
                 row['last_sync'] = row['last_sync']
 
             if user.has_perm('zemauth.can_view_account_agency_information'):
-                row['agency'] = account.agency.name if account.agency else 'N/A'
+                row['agency'] = account.agency.name if account.agency else ''
 
             row.update(account_data)
 
@@ -1273,6 +1273,7 @@ class AdGroupAdsTable(object):
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
                 },
+                'image_hash': content_ad.image_hash,
                 'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)

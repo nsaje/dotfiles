@@ -135,6 +135,16 @@ def get_campaign(user, campaign_id, sources=None):
         raise exc.MissingDataError('Campaign does not exist')
 
 
+def get_upload_batch(user, batch_id):
+    try:
+        batch = models.UploadBatch.objects.all().filter_by_user(user).\
+            filter(id=int(batch_id))
+
+        return batch.get()
+    except models.UploadBatch.DoesNotExist:
+        raise exc.MissingDataError('Upload batch does not exist')
+
+
 def get_user_agency(user):
     try:
         return user.agency_set.get()

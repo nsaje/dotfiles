@@ -13,6 +13,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.minEndDate = new Date();
     $scope.retargetableAdGroups = [];
     $scope.warnings = {};
+    $scope.canArchive = false;
+    $scope.canRestore = false;
 
     // isOpen has to be an object property instead
     // of being directly on $scope because
@@ -39,6 +41,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
 
         api.adGroupSettings.get(id).then(
             function (data) {
+                $scope.canArchive = data.canArchive;
+                $scope.canRestore = data.canRestore;
                 $scope.settings = data.settings;
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
@@ -61,8 +65,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
 
         if ($scope.warnings.retargeting !== undefined) {
-            $scope.warnings.retargeting.text = 'You have some active media sources that don\'t support retargeting. ' +
-               'To start using it please disable/pause these media sources:';
+            $scope.warnings.retargeting.text = 'You have some active media sources that ' +
+                'don\'t support retargeting. ' +
+                'To start using it please disable/pause these media sources:';
+            $scope.warnings.retargeting.sourcesText = $scope.warnings.retargeting.sources.join(', ');
         }
 
         if ($scope.warnings.endDate !== undefined) {
@@ -122,6 +128,30 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 zemNavigationService.notifyAdGroupReloading($state.params.id, false);
             }
         );
+    };
+
+    $scope.archiveAdGroup = function () {
+        $scope.saveRequestInProgress = true;
+        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
+        api.adGroupArchive.archive($scope.adGroup.id).then(function () {
+            $scope.refreshPage();
+            $scope.saveRequestInProgress = false;
+        }, function () {
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
+            $scope.saveRequestInProgress = false;
+        });
+    };
+
+    $scope.restoreAdGroup = function () {
+        $scope.saveRequestInProgress = true;
+        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
+        api.adGroupArchive.restore($scope.adGroup.id).then(function () {
+            $scope.refreshPage();
+            $scope.saveRequestInProgress = false;
+        }, function () {
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
+            $scope.saveRequestInProgress = false;
+        });
     };
 
     function getDeviceItemByValue (devices, value) {
@@ -203,10 +233,13 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
     });
 
+    $scope.refreshPage = function () {
+        zemNavigationService.reloadAdGroup($state.params.id);
+        $scope.getSettings($state.params.id);
+    };
+
     var init = function () {
-        if (!$scope.adGroup.archived) {
-            $scope.getSettings($state.params.id);
-        }
+        $scope.getSettings($state.params.id);
     };
 
     init();

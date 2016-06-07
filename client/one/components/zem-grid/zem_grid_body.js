@@ -1,6 +1,9 @@
 /* globals oneApp */
 'use strict';
 
+// TODO:
+// - refactor grid object
+
 oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
     return {
@@ -65,111 +68,19 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
 
             var prevFirstRow = 0;
             function handleVerticalScroll (scrollTop) {
-                var currFirstRow = Math.max(
-                    Math.floor(scrollTop / zemGridConstants.gridBodyRendering.ROW_HEIGHT),
-                    0
-                );
-
-                var delta = currFirstRow - prevFirstRow;
-                if (Math.abs(delta) >= numberOfRenderedRows) {
-                    // Rows can't be reused, reinitialize visible rows
-                    initRenderedRows(currFirstRow, true);
-                } else if (delta) {
-                    // Some rows can be reused, update visible rows
-                    updateRenderedRows(currFirstRow, delta, true);
+                var currFirstRow = Math.floor(scrollTop / zemGridConstants.gridBodyRendering.ROW_HEIGHT);
+                if (currFirstRow !== prevFirstRow) {
+                    updateRenderedRows(currFirstRow, true);
+                    prevFirstRow = currFirstRow;
                 }
             }
 
-            function updateRenderedRows (firstRow, delta, digest) {
+            function updateRenderedRows (firstRow, digest) {
                 requestUpdate(function () {
-                    var lastRow, i, row;
-                    var renderedRows = [];
-                    var availableIndexes = [];
-
-                    if (delta > 0) {
-                        // Add new rows to the bottom and reuse indexes from the top
-                        scope.state.renderedRows.slice(0, delta).forEach(function (row) {
-                            availableIndexes.push(row.index);
-                        });
-                        renderedRows = scope.state.renderedRows.slice(delta);
-                        if (visibleRows.length <= firstRow + numberOfRenderedRows) {
-                            lastRow = numberOfRenderedRows;
-                        } else {
-                            lastRow = firstRow + numberOfRenderedRows;
-                        }
-                        for (i = lastRow - delta; i < lastRow; i++) {
-                            row = visibleRows[i];
-                            if (!row.isDummy) {
-                                row.style = getTranslateYStyle(i * zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                            }
-                            row.index = availableIndexes.shift();
-                            renderedRows.push(row);
-                        }
-                    } else {
-                        // Add new rows to the top and reuse indexes from the bottom
-                        scope.state.renderedRows.slice(delta).forEach(function (row) {
-                            availableIndexes.push(row.index);
-                        });
-                        renderedRows = scope.state.renderedRows.slice(0, delta);
-                        if (visibleRows.length <= firstRow + numberOfRenderedRows) {
-                            lastRow = Math.abs(delta) - 1;
-                        } else {
-                            lastRow = firstRow + Math.abs(delta) - 1;
-                        }
-                        for (i = lastRow; i >= firstRow; i--) {
-                            row = visibleRows[i];
-                            if (!row.isDummy) {
-                                row.style = getTranslateYStyle(i * zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                            }
-                            row.index = availableIndexes.shift();
-                            renderedRows.unshift(row);
-                        }
-                    }
-
-                    scope.state.renderedRows = renderedRows;
+                    scope.state.renderedRows = visibleRows.slice(firstRow, firstRow + numberOfRenderedRows);
                     if (digest) {
                         scope.$digest();
                     }
-
-                    prevFirstRow = firstRow;
-                    updateInProgress = false;
-                });
-            }
-
-            function initRenderedRows (firstRow, digest) {
-                // Reset scrolling position to 0 when initializing rendered rows from first row on - happens when
-                // rows are collapsed or after grid has been reloaded
-                if (firstRow === 0) {
-                    // FIXME: If rows are collapsed and element[0].scrollTop < 'ROW_HEIGHT', the position should not be
-                    // reset to 0
-                    element[0].scrollTop = 0;
-                }
-                requestUpdate(function () {
-                    var row;
-                    var renderedRows = [];
-                    var index = 0;
-                    var lastRow;
-                    if (visibleRows.length <= firstRow + numberOfRenderedRows) {
-                        lastRow = numberOfRenderedRows;
-                    } else {
-                        lastRow = firstRow + numberOfRenderedRows;
-                    }
-
-                    for (var i = firstRow; i < lastRow; i++) {
-                        row = visibleRows[i];
-                        if (!row.isDummy) {
-                            row.style = getTranslateYStyle(i * zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                        }
-                        row.index = index++;
-                        renderedRows.push(row);
-                    }
-
-                    scope.state.renderedRows = renderedRows;
-                    if (digest) {
-                        scope.$digest();
-                    }
-
-                    prevFirstRow = firstRow;
                     updateInProgress = false;
                 });
             }
@@ -180,23 +91,25 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 visibleRowsCount = 0;
                 scope.ctrl.grid.body.rows.forEach(function (row) {
                     if (row.visible) {
+                        row.style = getTranslateYStyle(
+                            visibleRowsCount * zemGridConstants.gridBodyRendering.ROW_HEIGHT
+                        );
                         visibleRows.push(row);
                         visibleRowsCount++;
                     }
                 });
 
-                var dummyRow = Object.create(visibleRows[0]);
-                dummyRow.isDummy = true;
-                dummyRow.style = {'display': 'none'};
-
-                // Always have at least 'NUM_OF_ROWS_PER_PAGE' rows in visibleRows
-                while (visibleRows.length < zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE) {
-                    visibleRows.push(Object.create(dummyRow));
+                if (visibleRowsCount > zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE) {
+                    var dummyRow;
+                    for (var j = 0; j < zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS; j++) {
+                        dummyRow = Object.create(visibleRows[0]);
+                        dummyRow.style = {'display': 'none'};
+                        visibleRows.push(dummyRow);
+                    }
                 }
-                // Append additional hidden dummy rows so that 'NUM_OF_ROWS_PER_PAGE' + 'NUM_OF_PRERENDERED_ROWS' DOM
-                // elements are always rendered
-                for (var i = 0; i < zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS; i++) {
-                    visibleRows.push(Object.create(dummyRow));
+
+                for (var i = 0; i < visibleRows.length; i++) {
+                    visibleRows[i].index = i % numberOfRenderedRows;
                 }
             }
 
@@ -215,7 +128,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                     prevFirstRow = Math.max((visibleRowsCount - numberOfRenderedRows), 0);
                 }
 
-                initRenderedRows(prevFirstRow, true);
+                updateRenderedRows(prevFirstRow, true);
 
                 $timeout(function () {
                     scope.ctrl.grid.ui.state.bodyRendered = true;

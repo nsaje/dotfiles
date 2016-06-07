@@ -18,15 +18,15 @@ oneApp.directive('zemGridRow', [function () {
                 element.css(style);
             });
         },
-        controller: ['$scope', 'zemGridConstants', 'zemGridService', 'zemGridUIService',
-            function ($scope, zemGridConstants, zemGridService, zemGridUIService) {
+        controller: ['$scope', 'zemGridConstants', 'zemGridUIService',
+            function ($scope, zemGridConstants, zemGridUIService) {
                 $scope.constants = zemGridConstants;
 
                 this.loadMore = function (size) {
                     if (!size) {
                         size = this.row.data.pagination.count - this.row.data.pagination.limit;
                     }
-                    zemGridService.loadData(this.grid, this.row, size);
+                    this.grid.meta.service.loadData(this.row, size);
                 };
 
                 this.getRowClass = function () {

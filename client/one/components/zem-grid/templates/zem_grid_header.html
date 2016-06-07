@@ -5,7 +5,7 @@
             <zem-internal-feature ng-if="col.internal"></zem-internal-feature>
             <span ng-switch="col.order">
                 <a ng-switch-when='true' href class="col-title order" ng-class="col.nameCssClass"
-                   ng-click="callOrderCallback((col.orderField || col.field))">{{ col.name }}</a>
+                   ng-click="ctrl.setOrder(col)">{{ col.name }}</a>
                 <span ng-switch-default class="col-title" ng-class="col.nameCssClass">{{ col.name }}</span>
             </span>
             <zem-help-popover ng-if="col.help" content="{{ col.help }}" placement="{{ $last ? 'left' : 'top' }}"></zem-help-popover>
