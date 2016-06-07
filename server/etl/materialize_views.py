@@ -6,8 +6,6 @@ import logging
 import dash.models
 import dash.constants
 
-import redshiftapi.models
-
 from redshiftapi import db
 from utils import converters
 
@@ -26,14 +24,15 @@ class MVAccount(materialize_helpers.Materialize):
 
     def prepare_insert_query(self, date):
         sql = backtosql.generate_sql('etl_select_insert_one_day.sql', {
-            'breakdown': redshiftapi.models.MVMaster.get_breakdown([
-                'date', 'source', 'agency_id', 'account',
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
             ]),
-            'aggregates': redshiftapi.models.MVMaster.get_aggregates(),
+            'aggregates': models.MVMaster.get_aggregates(),
             'destination_table': self.table_name(),
             'source_table': 'mv_master',
         })
 
+        print len(models.MVMaster.get_aggregates())
         return sql, {
             'date': date,
         }
@@ -46,11 +45,11 @@ class MVAccountDelivery(materialize_helpers.Materialize):
 
     def prepare_insert_query(self, date):
         sql = backtosql.generate_sql('etl_select_insert_one_day.sql', {
-            'breakdown': redshiftapi.models.MVMaster.get_breakdown([
-                'date', 'source', 'agency_id', 'account',
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
-            'aggregates': redshiftapi.models.MVMaster.get_aggregates(),
+            'aggregates': models.MVMaster.get_aggregates(),
             'destination_table': self.table_name(),
             'source_table': 'mv_master',
         })
