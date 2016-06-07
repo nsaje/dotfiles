@@ -7,7 +7,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
     // It prepares data suitable for Grid component along with data states (initializing, loading, etc.) used
     // to communicate current data source status
 
-    function GridDataService(grid, dataSource) {
+    function GridDataService (grid, dataSource) {
 
         //
         // Public API
@@ -25,7 +25,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
         this.getDateRange = dataSource.getDateRange;
 
 
-        function initialize() {
+        function initialize () {
             dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
             loadMetaData().then(function () {
                 grid.meta.initialized = true;
@@ -33,25 +33,19 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             });
         }
 
-        function loadMetaData() {
+        function loadMetaData () {
             var deferred = $q.defer();
             dataSource.getMetaData().then(
                 function (data) {
                     grid.meta.data = data;
-                    // TODO: find better solution for loading columns (api??)
-                    zemGridStorageService.loadColumns(grid);
-                    grid.header.columns = grid.meta.data.columns.filter(function (column){
-                        return column.visible;
-                    });
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
-
                     deferred.resolve();
                 }
             );
             return deferred.promise;
         }
 
-        function loadData(row, size) {
+        function loadData (row, size) {
             var breakdown;
             if (row) {
                 // When additional data (load more...) is requested
@@ -73,7 +67,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             return deferred.promise;
         }
 
-        function saveData(value, row, column) {
+        function saveData (value, row, column) {
             var deferred = $q.defer();
             dataSource.saveData(value, row.data, column).then(function () {
                 deferred.resolve();
@@ -83,7 +77,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             return deferred.promise;
         }
 
-        function handleSourceDataUpdate(event, data) {
+        function handleSourceDataUpdate (event, data) {
             zemGridParser.parse(grid, data);
             zemGridUIService.resetUIState(grid);
             grid.meta.loading = !data.breakdown;

@@ -1,23 +1,23 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($rootScope, zemGridStorageService) { // eslint-disable-line max-length
-    
+oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($rootScope, zemGridStorageService) { // eslint-disable-line max-len
+
     //
     // GridApi provides interface for interaction with zem-grid
     // Reference can be sent to non-grid components (e.g. zem-grid-column-selector, zem-grid-breakdown-selector),
     // or may be passed back to calling controller to enable interaction between them.
     //
-    
+
     // Definition of events used internally in GridApi
     // External listeners are registered through dedicated methods
     var EVENTS = {
-        ROWS_SELECTION_CHANGED: 'zem-grid-api-on-rows-selection-change',
-        ROWS_COLLAPSE_CHANGED: 'zem-grid-api-on-rows-collapse-change',
-        COLUMNS_VISIBILITY_CHANGED: 'zem-grid-api-on-columns-visibility-change',
+        ROWS_SELECTION_CHANGED: 'zem-grid-api-rows-selection-changed',
+        ROWS_COLLAPSE_CHANGED: 'zem-grid-api-rows-collapse-changed',
+        COLUMNS_VISIBILITY_CHANGED: 'zem-grid-api-columns-visibility-changed',
     };
 
-    function GridApi(grid) {
+    function GridApi (grid) {
         //
         // Public API
         //
@@ -27,7 +27,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.getColumns = getColumns;
         this.getVisibleColumns = getVisibleColumns;
         this.getSelectedRows = getSelectedRows;
-        
+
         this.setCollapsedRows = setCollapsedRows;
         this.setCollapsedLevel = setCollapsedLevel;
         this.setSelectedRows = setSelectedRows;
@@ -37,10 +37,24 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.onRowsSelectionChanged = onRowsSelectionChanged;
         this.onColumnsVisibilityChanged = onColumnsVisibilityChanged;
 
-        function setCollapsedRows(rows, collapsed) {
+        // Start initialization procedure
+        initialize();
+
+        function initialize () {
+            // Configure visible columns based on stored data (previously visible) and default values
+            // TODO: find better solution for loading columns
+            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
+                zemGridStorageService.loadColumns(grid);
+                grid.header.columns = grid.meta.data.columns.filter(function (column) {
+                    return column.visible;
+                });
+            });
+        }
+
+        function setCollapsedRows (rows, collapsed) {
             if (!Array.isArray(rows)) rows = [rows];
 
-            rows.forEach (function (row) {
+            rows.forEach(function (row) {
                 row.collapsed = collapsed;
                 var idx = grid.body.rows.indexOf(row);
                 while (++idx < grid.body.rows.length) {
@@ -56,14 +70,14 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             notifyListeners(EVENTS.ROWS_COLLAPSE_CHANGED, rows);
         }
 
-        function setCollapsedLevel(level, collapsed) {
-            var rows = grid.body.rows.filter (function (row) {
+        function setCollapsedLevel (level, collapsed) {
+            var rows = grid.body.rows.filter(function (row) {
                 return row.level === level;
             });
             setCollapsedRows(rows, collapsed);
         }
 
-        function setSelectedRows(rows, selected) {
+        function setSelectedRows (rows, selected) {
             if (!Array.isArray(rows)) rows = [rows];
 
             rows.forEach(function (row) {
@@ -73,34 +87,34 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             notifyListeners(EVENTS.ROWS_SELECTION_CHANGED, rows);
         }
 
-        function setVisibleColumns(columns, visible) {
+        function setVisibleColumns (columns, visible) {
             if (!Array.isArray(columns)) columns = [columns];
 
             columns.forEach(function (column) {
                 column.visible = visible;
             });
 
-            grid.header.columns = grid.meta.data.columns.filter(function (column){
+            grid.header.columns = grid.meta.data.columns.filter(function (column) {
                 return column.shown && column.visible;
             });
 
             zemGridStorageService.saveColumns(grid);
             notifyListeners(EVENTS.COLUMNS_VISIBILITY_CHANGED, columns);
         }
-        
+
         function getMetaData () {
             return grid.meta.data;
         }
-        
+
         function getDataService () {
             return grid.meta.service;
         }
 
-        function getRows() {
+        function getRows () {
             return grid.body.rows;
         }
-        
-        function getSelectedRows() {
+
+        function getSelectedRows () {
             var selectedData = [];
             grid.body.rows.forEach(function (row) {
                 if (row.selected) {
@@ -109,12 +123,12 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             });
             return selectedData;
         }
-        
-        function getColumns() {
+
+        function getColumns () {
             return grid.meta.data.columns;
         }
-        
-        function getVisibleColumns() {
+
+        function getVisibleColumns () {
             return grid.header.columns;
         }
 
