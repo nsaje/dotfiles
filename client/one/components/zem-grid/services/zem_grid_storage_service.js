@@ -9,9 +9,9 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
         var columns = zemLocalStorageService.get(key, namespace);
         grid.meta.data.columns.forEach(function (column) {
             if (columns) {
-                column.visible = column.shown && columns.indexOf(column.field) > -1;
+                column.visible = column.shown && (columns.indexOf(column.field) > -1 || column.unselectable);
             } else {
-                column.visible = column.shown && column.checked;
+                column.visible = column.shown && (column.checked || column.unselectable);
             }
         });
     }

@@ -41,7 +41,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         initialize();
 
         function initialize () {
-            // Configure visible columns based on stored data (previously visible) and default values
+            // Initialize header columns based on the stored data and default values
             // TODO: find better solution for loading columns
             grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
                 zemGridStorageService.loadColumns(grid);
@@ -64,9 +64,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
                 }
             });
 
-
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-
             notifyListeners(EVENTS.ROWS_COLLAPSE_CHANGED, rows);
         }
 
@@ -95,7 +93,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             });
 
             grid.header.columns = grid.meta.data.columns.filter(function (column) {
-                return column.shown && column.visible;
+                return column.visible;
             });
 
             zemGridStorageService.saveColumns(grid);

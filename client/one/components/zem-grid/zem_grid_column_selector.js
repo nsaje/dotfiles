@@ -18,20 +18,15 @@ oneApp.directive('zemGridColumnSelector', [function () {
 
             init();
 
-            function init() {
+            function init () {
                 initCategories();
             }
 
-            function columnChecked(column) {
-                // zemGridStorageService.saveColumns(vm.grid);
+            function columnChecked (column) {
                 vm.api.setVisibleColumns(column, column.visible);
-                // var selectedColumns = vm.columns.filter(function (column) {
-                //     return column.shown && column.checked;
-                // });
-                // zemGridApiService.setSelectedColumns(vm.grid, selectedColumns);
             }
 
-            function initCategories() {
+            function initCategories () {
                 // Place columns in a corresponding category
                 // If column is un-selectable (always visible) or not shown skip it
                 var columns = vm.api.getColumns();
