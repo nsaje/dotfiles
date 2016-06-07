@@ -174,6 +174,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_campaign_iab_category', 'Can view and set campaign IAB category on campaign settings tab.'),
             ('ad_group_history_view', "Can view ad group's history tab."),
             ('campaign_history_view', "Can view campaign's history tab."),
+            ('can_view_new_history_backend', 'Can view history from new history models.'),
         )
 
     def get_full_name(self):
