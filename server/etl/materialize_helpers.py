@@ -32,10 +32,13 @@ class Materialize(object):
         del_sql, del_params = self.prepare_delete_query(date)
         ins_sql, ins_params = self.prepare_insert_query(date)
 
+        logger.info("Materializing table %s for date %s", self.table_name(), date)
         with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
             with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
                 c.execute(del_sql, del_params)
                 c.execute(ins_sql, ins_params)
+
+        logger.info("Done materializing table %s for date %s", self.table_name(), date)
 
     def prepare_delete_query(self, date):
         sql = backtosql.generate_sql('etl_delete_simple_one_day.sql', {
