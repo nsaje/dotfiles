@@ -3,6 +3,7 @@ import datetime
 from decimal import Decimal
 
 import pytz
+from mock import patch
 from django.db.models.signals import pre_save
 from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
@@ -905,3 +906,73 @@ class HistoryTest(TestCase):
 
         self.assertEqual(account, hist.account)
         self.assertEqual({'archived': True}, hist.changes)
+
+    @patch('dash.models.BudgetLineItem.state')
+    def test_create_budget_history(self, mock_state):
+        mock_state.return_value = constants.BudgetLineItemState.PENDING
+
+        r = test_helper.fake_request(User.objects.get(pk=1))
+
+        start_date = datetime.date(2014, 6, 4)
+        end_date = datetime.date(2014, 6, 5)
+        campaign = models.Campaign.objects.get(pk=1)
+        credit = models.CreditLineItem(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=10000,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=r.user,
+        )
+        credit.save()
+        bud = models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=User.objects.get(pk=1),
+        )
+
+        bud.amount = 200
+        bud.save()
+
+        hist = models.create_campaign_history(
+            campaign.get_current_settings(),
+            constants.CampaignHistoryType.BUDGET,
+            model_to_dict(bud),
+            bud.post_init_state)
+
+        self.assertEqual(campaign, hist.campaign)
+        self.assertEqual({'amount': 200}, hist.changes)
+
+    def test_create_credit_history(self):
+        r = test_helper.fake_request(User.objects.get(pk=1))
+
+        account = models.Account.objects.get(pk=1)
+        start_date = datetime.date(2014, 6, 4)
+        end_date = datetime.date(2014, 6, 5)
+        campaign = models.Campaign.objects.get(pk=1)
+        credit = models.CreditLineItem(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=10000,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=r.user,
+        )
+        credit.save()
+
+
+        credit.amount = 20000
+        credit.save()
+
+        hist = models.create_account_history(
+            account.get_current_settings(),
+            constants.AccountHistoryType.CREDIT,
+            model_to_dict(credit),
+            credit.post_init_state
+        )
+
+        self.assertEqual(account, hist.account)
+        self.assertDictEqual({'amount': 20000}, hist.changes)
