@@ -2627,13 +2627,13 @@ class AccountSettingsTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
+        changes_text = view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
             3: {'allowed': True}
         }))
 
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
@@ -2650,7 +2650,7 @@ class AccountSettingsTest(TestCase):
 
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        view.set_allowed_sources(
+        changes_text = view.set_allowed_sources(
             account_settings,
             account,
             False,  # no permission to remove unreleased source 3
@@ -2659,7 +2659,7 @@ class AccountSettingsTest(TestCase):
                 2: {'allowed': False},
                 3: {'allowed': False}
             }))
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([3, ])
@@ -2675,7 +2675,7 @@ class AccountSettingsTest(TestCase):
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
         view = agency.AccountSettings()
-        view.set_allowed_sources(
+        changes_text = view.set_allowed_sources(
             account_settings,
             account,
             False,  # no permission to add unreleased source 3
@@ -2684,7 +2684,7 @@ class AccountSettingsTest(TestCase):
                 2: {'allowed': True},
                 3: {'allowed': True}
             }))
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2, ])
