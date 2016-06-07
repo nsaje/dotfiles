@@ -1395,3 +1395,19 @@ class SystemUserType(ConstantBase):
         CAMPAIGN_STOP: 'Campaign Stop',
         AUTOPILOT: 'Zemanta Autopilot'
     }
+
+
+class FacebookPageRequestType(ConstantBase):
+    EMPTY = 1
+    CONNECTED = 2
+    PENDING = 3
+    INVALID_PAGE = 4
+    UNKNOWN = 5
+
+    _VALUES = {
+        EMPTY: 'Empty',
+        CONNECTED: 'Connected',
+        PENDING: 'Pending',
+        INVALID_PAGE: 'Invalid page',
+        UNKNOWN: 'Unknown'
+    }

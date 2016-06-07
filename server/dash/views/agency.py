@@ -22,6 +22,7 @@ from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
 from dash import stats_helper
+from dash import facebook_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -990,6 +991,8 @@ class AccountSettings(api_common.BaseApiView):
             settings = account.get_current_settings().copy_settings()
             self.set_settings(settings, account, form.cleaned_data)
 
+            facebook_account = self.get_facebook_account(account)
+
             if 'allowed_sources' in form.cleaned_data and\
                     form.cleaned_data['allowed_sources'] is not None and\
                     not request.user.has_perm('zemauth.can_modify_allowed_sources'):
@@ -1009,8 +1012,14 @@ class AccountSettings(api_common.BaseApiView):
                     form
                 )
 
+            if 'facebook_page' in form.cleaned_data and form.cleaned_data['facebook_page']:
+                if not request.user.has_perm('zemauth.can_modify_facebook_page'):
+                    raise exc.AuthorizationError()
+                self.set_facebook_page(facebook_account, form)
+
             account.save(request)
             settings.save(request)
+            facebook_account.save()
             return settings
 
     def _validate_essential_account_settings(self, user, form):
@@ -1097,6 +1106,23 @@ class AccountSettings(api_common.BaseApiView):
             account.allowed_sources.add(*list(to_be_added))
             account.allowed_sources.remove(*list(to_be_removed))
 
+    def get_facebook_account(self, account):
+        try:
+            facebook_account = account.facebookaccount
+        except models.FacebookAccount.DoesNotExist:
+            facebook_account = models.FacebookAccount.objects.create(
+                account=account,
+                status=constants.FacebookPageRequestType.EMPTY,
+            )
+        return facebook_account
+
+    def set_facebook_page(self, facebook_account, form):
+        new_url = form.cleaned_data['facebook_page']
+        if True or new_url != facebook_account.page_url:    # TODO matijav 27.05.2016 remove true
+            facebook_account.page_url = new_url
+            page_id = facebook_account.get_page_id()
+            facebook_account.status = facebook_helper.send_page_access_request(page_id)
+
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()
         if not can_see_all_available_sources:
@@ -1172,6 +1198,12 @@ class AccountSettings(api_common.BaseApiView):
                 request.user.has_perm('zemauth.can_see_all_available_sources'),
                 [source.id for source in account.allowed_sources.all()]
             )
+        if request.user.has_perm('zemauth.can_modify_facebook_page'):
+            try:
+                result['facebook_page'] = account.facebookaccount.page_url
+                result['facebook_status'] = account.facebookaccount.status
+            except models.FacebookAccount.DoesNotExist:
+                pass
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):

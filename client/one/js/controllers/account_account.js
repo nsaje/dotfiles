@@ -24,6 +24,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
             $scope.hasPermission('zemauth.can_modify_account_name') ||
+            $scope.hasPermission('zemauth.can_modify_facebook_page') ||
             $scope.hasPermission('zemauth.can_modify_account_type') ||
             $scope.hasPermission('zemauth.can_set_account_sales_representative') ||
             $scope.hasPermission('zemauth.can_modify_account_manager');
