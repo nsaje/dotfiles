@@ -264,16 +264,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             var diff = findDifference(breakdown, selectedBreakdown);
             if (diff < 0) return fetch ? $q.resolve(data) : undefined;
 
-            var diffLevel = diff + 1;
-            var parentNodes = getNodesByLevel(diffLevel - 1);
-            var fetchSuccessiveLevels = breakdown.length > diffLevel - 1;
+            // Breakdown levels are 1-based therefor (diff + 1) is level
+            // that is different and needs to be replaced
+            var equalLevel = diff;
+            var parentNodes = getNodesByLevel(equalLevel);
+            var fetchSuccessiveLevels = breakdown.length > equalLevel;
             selectedBreakdown = breakdown;
 
             // For all levels below remove all nodes and initialize new breakdown object (if needed)
             var childBreakdowns = [];
             parentNodes.forEach(function (node) {
                 if (fetchSuccessiveLevels) {
-                    initializeNodeBreakdown(node, diffLevel);
+                    initializeNodeBreakdown(node, equalLevel + 1);
                     childBreakdowns.push(node.breakdown);
                 } else {
                     delete node.breakdown;
@@ -284,7 +286,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
             if (fetch) {
                 if (fetchSuccessiveLevels) {
-                    return getDataByLevel(diffLevel, childBreakdowns);
+                    return getDataByLevel(equalLevel + 1, childBreakdowns);
                 }
 
                 return $q.resolve(data);
