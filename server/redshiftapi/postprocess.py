@@ -1,7 +1,7 @@
 import collections
 import copy
 import datetime
-import dateutil
+from dateutil import rrule, relativedelta
 
 from stats import constants
 
@@ -63,18 +63,18 @@ def _get_representative_dates(time_dimension, constraints):
         end_date = constraints['date__lt'] - datetime.timedelta(days=1)
 
     if time_dimension == constants.TimeDimension.DAY:
-        dates = dateutil.rrule.rrule(dateutil.rrule.DAILY, start_date, until=end_date)
+        dates = rrule.rrule(rrule.DAILY, start_date, until=end_date)
     elif time_dimension == constants.TimeDimension.WEEK:
         # all weeks in the span starting monday
-        dates = dateutil.rrule.rrule(
-            dateutil.rrule.WEEKLY,
-            start_date + dateutil.relativedelta.relativedelta(weekday=dateutil.relativedelta.MO(-1)),
-            until=end_date, byweekday=dateutil.rrule.MO)
+        dates = rrule.rrule(
+            rrule.WEEKLY,
+            start_date + relativedelta.relativedelta(weekday=relativedelta.MO(-1)),
+            until=end_date, byweekday=rrule.MO)
     else:
         # all months starting 1st
-        dates = dateutil.rrule.rrule(
-            dateutil.rrule.MONTHLY,
-            start_date + dateutil.relativedelta.relativedelta(day=1),
+        dates = rrule.rrule(
+            rrule.MONTHLY,
+            start_date + relativedelta.relativedelta(day=1),
             until=end_date
         )
 
