@@ -1,4 +1,4 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
 oneApp.directive('zemGrid', [function () {
@@ -17,7 +17,7 @@ oneApp.directive('zemGrid', [function () {
             this.grid.meta.scope = $scope;
             this.grid.meta.pubsub = zemGridPubSub.createInstance($scope);
             this.grid.meta.service = zemGridDataService.createInstance(this.grid, this.dataSource);
-            
+
             // Define Grid API and assign to api variable to enable binding between zem-grid and controller
             this.grid.meta.api = zemGridApi.createInstance(this.grid);
             this.api = this.grid.meta.api;

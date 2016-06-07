@@ -1,7 +1,8 @@
 /* globals oneApp */
+
 oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
     $scope.dataSource = createDataSource();
-    
+
     // GridApi is defined by zem-grid in initialization, therefor
     // it will be available in the next cycle; postpone initialization using $timeout
     $scope.gridApi = undefined;
@@ -10,7 +11,7 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', '$timeout', 'z
     function initializeGridApi () {
         // TODO: Initialize GridApi listeners
     }
-    
+
     function createDataSource () {
         // Temporary workaround for retrieving columns defined in original controller
         var metadata = zemDataSourceEndpoints.getControllerMetaData($scope, 'AllAccountsAccountsCtrl');

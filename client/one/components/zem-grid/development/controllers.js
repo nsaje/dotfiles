@@ -9,14 +9,14 @@ oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $sta
     });
 }]);
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceService', 'zemDataSourceDebugEndpoints', function ($scope, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-length
+oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceService', 'zemDataSourceDebugEndpoints', function ($scope, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-len
     $scope.dataSource = zemDataSourceService.createInstance(zemDataSourceEndpoints.createMockEndpoint());
 
     // GridApi is defined by zem-grid in initialization, therefor
     // it will be available in the next cycle; postpone initialization using $timeout
     $scope.gridApi = undefined;
     $timeout(initializeGridApi, 0);
-    
+
     function initializeGridApi () {
         // TODO: Initialize GridApi listeners
     }

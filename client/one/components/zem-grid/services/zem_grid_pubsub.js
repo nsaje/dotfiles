@@ -2,7 +2,7 @@
 'use strict';
 
 oneApp.factory('zemGridPubSub', [function () {
-    
+
     //
     // Grid PubSub is an internal message chanel through which child directives and
     // services notifies each other about zem-grid specific events (e.g. scrolling, data updated, etc.)
@@ -16,17 +16,17 @@ oneApp.factory('zemGridPubSub', [function () {
         DATA_UPDATED: 'zem-grid-pubsub-dataUpdated',
     };
 
-    function PubSub(scope) {
+    function PubSub (scope) {
         this.EVENTS = EVENTS;
 
         this.register = register;
         this.notify = notify;
 
-        function register(event, listener) {
+        function register (event, listener) {
             scope.$on(event, listener);
         }
 
-        function notify(event, data) {
+        function notify (event, data) {
             scope.$broadcast(event, data);
         }
     }

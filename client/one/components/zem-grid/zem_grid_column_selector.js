@@ -10,7 +10,7 @@ oneApp.directive('zemGridColumnSelector', [function () {
             api: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_column_selector.html',
-        controller: ['zemGridStorageService', 'zemGridApi', function (zemGridStorageService, zemGridApiService) {
+        controller: [function () {
             var vm = this;
 
             vm.categories = [];
