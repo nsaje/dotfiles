@@ -1,5 +1,7 @@
 import backtosql
 
+from stats import constants
+
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 
@@ -69,7 +71,13 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         Selects the most suitable materialized view for the selected breakdown.
         """
 
-        if breakdown[0] == 'account':
+        base = constants.get_base_dimension(breakdown)
+        structure = constants.get_structure_dimension(breakdown)
+        delivery = constants.get_delivery_dimension(breakdown)
+
+        if base == 'account' and structure != 'publisher':
+            if delivery:
+                return 'mv_account_delivery'
             return 'mv_account'
 
         return 'mv_master'
