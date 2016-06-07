@@ -15,7 +15,6 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-
         this.getData = function (config) {
             var url = createUrl(baseUrl, config);
             convertToApi(config);
@@ -31,6 +30,13 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                 deferred.reject(data);
             });
 
+            return deferred.promise;
+        };
+
+        this.saveData = function (value, stats, column) {
+            // TODO: actually save value - depends on Columns definitions refactorings...
+            var deferred = $q.defer();
+            deferred.resolve();
             return deferred.promise;
         };
 
