@@ -25,13 +25,9 @@ MATERIALIZED_VIEWS = [
 ]
 
 
-
 def refresh_k1_reports(update_since):
     effective_spend_factors = daily_statements_k1.reprocess_daily_statements(update_since.date())
-    generate_views(effective_spend_factors)
 
-
-def generate_views(effective_spend_factors):
     for date, campaigns in sorted(effective_spend_factors.iteritems(), key=lambda x: x[0]):
         for mv in MATERIALIZED_VIEWS:
             mv.generate(date, campaigns)
