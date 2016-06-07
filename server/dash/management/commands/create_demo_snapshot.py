@@ -2,6 +2,7 @@ import datetime
 import collections
 import itertools
 import json
+import functools
 import os
 import urllib
 import urllib2
@@ -9,7 +10,7 @@ import sys
 
 import faker
 
-from django.db import models, transaction
+from django.db import models, transaction, connections
 from django.db.models.signals import pre_save
 from django.conf import settings
 from django.core.serializers import serialize
@@ -75,14 +76,33 @@ ACCOUNT_DUMP_SETTINGS = {
 }
 
 
+def _postgres_read_only(using='default'):
+    def decorator(func):
+        @functools.wraps(func)
+        def f(*args, **kwargs):
+            db_settings = settings.DATABASES[using]
+            db_options = db_settings.setdefault('OPTIONS', {})
+            old_pg_options = db_options.setdefault('options', '')
+            readonly_option = '-c default_transaction_read_only=on'
+            db_options['options'] = ' '.join([readonly_option, old_pg_options])
+            try:
+                ret = func(*args, **kwargs)
+            finally:
+                db_options['options'] = old_pg_options
+                connections[using].close()
+            return ret
+        return f
+    return decorator
+
+
 class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
+    # put connection in read-only mode
+    @_postgres_read_only(using='default')
     def handle(self, *args, **options):
         # prevent explicit model saves
         pre_save.connect(_pre_save_handler)
-        # put connection in read-only mode
-        _set_postgres_read_only(settings.DATABASES['default'])
 
         # perform inside transaction and rollback to be safe
         with transaction.atomic():
@@ -90,9 +110,9 @@ class Command(ExceptionCommand):
             demo_users_set = set(zemauth.models.User.objects.filter(email__endswith='+demo@zemanta.com'))
 
             serialize_list = collections.OrderedDict()
-            prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
+            _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
             dump_data = serialize('python', [obj for obj in reversed(serialize_list) if obj is not None])
-            attach_demo_users(dump_data, demo_users_set)
+            _attach_demo_users(dump_data, demo_users_set)
 
             # roll back any changes we might have made (shouldn't be any)
             transaction.set_rollback(True)
@@ -111,12 +131,6 @@ def _pre_save_handler(sender, instance, *args, **kwargs):
     raise Exception("Do not save inside the demo data dump command!")
 
 
-def _set_postgres_read_only(db_settings):
-    db_options = db_settings.setdefault('OPTIONS', {})
-    existing_pg_options = db_options.setdefault('options', '')
-    db_options['options'] = ' '.join(['-c default_transaction_read_only=on', existing_pg_options])
-
-
 def _get_snapshot_id():
     return datetime.datetime.utcnow().strftime("%Y-%m-%d_%H%M")
 
@@ -126,20 +140,7 @@ def _deploykitty_prepare(snapshot_id):
     request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
 
 
-def _create_fake_credit(account):
-    return dash.models.CreditLineItem(
-        id=1,
-        account=account,
-        amount=5000.0,
-        start_date=datetime.date.today(),
-        end_date=datetime.date.today() + datetime.timedelta(days=30),
-        status=constants.CreditLineItemStatus.SIGNED,
-        created_dt=datetime.datetime.utcnow(),
-        modified_dt=datetime.datetime.utcnow(),
-    )
-
-
-def prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
+def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
     anonymized_objects = set()
 
     # add demo users
@@ -168,7 +169,20 @@ def prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
 
 
-def attach_demo_users(dump_data, demo_users_set):
+def _create_fake_credit(account):
+    return dash.models.CreditLineItem(
+        id=1,
+        account=account,
+        amount=5000.0,
+        start_date=datetime.date.today(),
+        end_date=datetime.date.today() + datetime.timedelta(days=30),
+        status=constants.CreditLineItemStatus.SIGNED,
+        created_dt=datetime.datetime.utcnow(),
+        modified_dt=datetime.datetime.utcnow(),
+    )
+
+
+def _attach_demo_users(dump_data, demo_users_set):
     demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
     demo_account_pks = []
     demo_users_objs = []
@@ -183,20 +197,6 @@ def attach_demo_users(dump_data, demo_users_set):
         demo_user['accounts'] = list(demo_account_pks)
     for demo_account in demo_account_objs:
         demo_account['users'] = list(demo_users_pks)
-
-
-def _get_fields(obj):
-    try:
-        return obj._meta.fields
-    except AttributeError:
-        return []
-
-
-def _get_many_to_many_fields(obj):
-    try:
-        return obj._meta.many_to_many
-    except AttributeError:
-        return []
 
 
 def _add_to_serialize_list(serialize_list, objs):
@@ -261,3 +261,17 @@ def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymiz
                 _add_to_serialize_list(serialize_list, [obj.__getattribute__(field.name)])
         for field in _get_many_to_many_fields(obj):
             _add_to_serialize_list(serialize_list, obj.__getattribute__(field.name).all())
+
+
+def _get_fields(obj):
+    try:
+        return obj._meta.fields
+    except AttributeError:
+        return []
+
+
+def _get_many_to_many_fields(obj):
+    try:
+        return obj._meta.many_to_many
+    except AttributeError:
+        return []
