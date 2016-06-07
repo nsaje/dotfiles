@@ -419,8 +419,7 @@ class DeleteOnEmptyReportTestCase(test.TestCase):
 class ContentAdStatsUpdateTest(test.TestCase):
     fixtures = ['test_api.yaml']
 
-    @patch('reports.refresh.notify_contentadstats_change')
-    def test_update_content_ads_source_traffic_stats(self, mock_notify_contentadstats_change):
+    def test_update_content_ads_source_traffic_stats(self):
         date = datetime.date(2015, 4, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         source = dash.models.Source.objects.get(pk=1)
@@ -444,4 +443,3 @@ class ContentAdStatsUpdateTest(test.TestCase):
         self.assertEqual(stats[0].clicks, 100)
         self.assertEqual(stats[0].cost_cc, 300)
         self.assertEqual(stats[0].data_cost_cc, 200)
-        mock_notify_contentadstats_change.assert_called_once_with(date, ad_group.campaign_id)
