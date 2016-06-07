@@ -37,6 +37,7 @@ from utils import converters
 
 SHORT_NAME_MAX_LENGTH = 22
 HISTORY_EXCLUDED_FIELDS = ['id']
+HISTORY_IGNORE_FROM_NULL_FIELDS = ['ad_group', 'campaign', 'account', 'created_by']
 
 
 class Round(Func):
@@ -3225,9 +3226,6 @@ class HistoryBase(models.Model):
         if self.created_by is not None and self.system_user is not None:
             raise AssertionError('Either created_by or system_user must be set.')
 
-        #if self.created_by is None and self.system_user is None:
-        #    raise AssertionError('Exactly one of created_by or system_user must be set.')
-
         super(HistoryBase, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -3262,11 +3260,13 @@ def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous
         history.changes = dict_diff(
             previous_snapshot,
             snapshot,
-            exclude_keys=HISTORY_EXCLUDED_FIELDS
+            exclude_keys=HISTORY_EXCLUDED_FIELDS,
+            exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
         )
     else:
         history.type = constants.AdGroupHistoryType.AD_GROUP
     history.save()
+    return history
 
 
 def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous_snapshot):
@@ -3281,11 +3281,13 @@ def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous
         history.changes = dict_diff(
             previous_snapshot,
             snapshot,
-            exclude_keys=HISTORY_EXCLUDED_FIELDS
+            exclude_keys=HISTORY_EXCLUDED_FIELDS,
+            exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
         )
     else:
         history.type = constants.CampaignHistoryType.CAMPAIGN
     history.save()
+    return history
 
 
 def create_account_history(account_settings, snapshot_type, snapshot, previous_snapshot):
@@ -3299,11 +3301,13 @@ def create_account_history(account_settings, snapshot_type, snapshot, previous_s
         history.changes = dict_diff(
             previous_snapshot,
             snapshot,
-            exclude_keys=HISTORY_EXCLUDED_FIELDS
+            exclude_keys=HISTORY_EXCLUDED_FIELDS,
+            exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
         )
     else:
         history.type = constants.AccountHistoryType.ACCOUNT
     history.save()
+    return history
 
 
 class CampaignHistory(HistoryBase):
@@ -3332,13 +3336,15 @@ class AccountHistory(HistoryBase):
         pass
 
 
-def dict_diff(d1, d2, exclude_keys=[]):
+def dict_diff(d1, d2, exclude_keys=[], exclude_from_null_keys=[]):
     if not d1:
         return d2
 
     diff = {}
     for key, value in d1.iteritems():
         if key in exclude_keys:
+            continue
+        if key in exclude_from_null_keys and value is None and d2[key] is not None:
             continue
         if key in d2 and value != d2[key]:
             diff[key] = d2[key]

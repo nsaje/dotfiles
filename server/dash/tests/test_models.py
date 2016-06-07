@@ -8,12 +8,13 @@ from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.forms.models import model_to_dict
 
 from dash import models, constants
 from dash.constants import GATrackingType
 from zemauth import models as zemauthmodels
 from zemauth.models import User
-from utils import exc
+from utils import exc, test_helper
 
 
 class AdGroupSettingsTest(TestCase):
@@ -794,4 +795,113 @@ class HistoryTest(TestCase):
         with self.assertRaises(AssertionError):
             models.AccountHistory.objects.update(changes_text='Something different')
 
+    def test_create_ad_group_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        adgss = models.AdGroupSettings(
+            ad_group=ad_group,
+            cpc_cc=4999,
+        )
+        adgss.save(None)
 
+        hist = models.create_ad_group_history(
+            adgss,
+            constants.AdGroupHistoryType.AD_GROUP,
+            model_to_dict(adgss),
+            {})
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual(4999, hist.changes['cpc_cc'])
+
+        adgss = adgss.copy_settings()
+        adgss.cpc_cc = 5100
+        adgss.save(None)
+
+        hist = models.create_ad_group_history(
+            adgss,
+            constants.AdGroupHistoryType.AD_GROUP,
+            model_to_dict(adgss),
+            adgss.post_init_state)
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual({'cpc_cc': 5100}, hist.changes)
+
+    def test_create_ad_group_source_history(self):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        source = models.Source.objects.get(pk=1)
+        adgs = models.AdGroupSource.objects.filter(ad_group=ad_group, source=source).first()
+        adgss = models.AdGroupSourceSettings(
+            ad_group_source=adgs,
+            daily_budget_cc=10000,
+        )
+        adgss.save(None)
+
+        hist = models.create_ad_group_history(
+            adgss.ad_group_source.ad_group.get_current_settings(),
+            constants.AdGroupHistoryType.AD_GROUP_SOURCE,
+            model_to_dict(adgss),
+            {})
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual(10000, hist.changes['daily_budget_cc'])
+
+    def test_create_campaign_history(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        adgss = models.CampaignSettings(
+            campaign=campaign,
+            name='Awesome',
+        )
+        adgss.save(None)
+
+        hist = models.create_campaign_history(
+            adgss,
+            constants.CampaignHistoryType.CAMPAIGN,
+            model_to_dict(adgss),
+            {})
+
+        self.assertEqual(campaign, hist.campaign)
+        self.assertEqual('Awesome', hist.changes['name'])
+
+        adgss = adgss.copy_settings()
+        adgss.name = 'Awesomer'
+        adgss.save(None)
+
+        hist = models.create_campaign_history(
+            adgss,
+            constants.CampaignHistoryType.CAMPAIGN,
+            model_to_dict(adgss),
+            adgss.post_init_state)
+
+        self.assertEqual(campaign, hist.campaign)
+        self.assertEqual({'name': 'Awesomer'}, hist.changes)
+
+    def test_create_account_history(self):
+        r = test_helper.fake_request(User.objects.get(pk=1))
+
+        account = models.Account.objects.get(pk=1)
+        adgss = models.AccountSettings(
+            account=account,
+            archived=False,
+        )
+        adgss.save(r)
+
+        hist = models.create_account_history(
+            adgss,
+            constants.AccountHistoryType.ACCOUNT,
+            model_to_dict(adgss),
+            {})
+
+        self.assertEqual(account, hist.account)
+        self.assertFalse(hist.changes['archived'])
+
+        adgss = adgss.copy_settings()
+        adgss.archived = True
+        adgss.save(r)
+
+        hist = models.create_account_history(
+            adgss,
+            constants.AccountHistoryType.ACCOUNT,
+            model_to_dict(adgss),
+            adgss.post_init_state)
+
+        self.assertEqual(account, hist.account)
+        self.assertEqual({'archived': True}, hist.changes)
