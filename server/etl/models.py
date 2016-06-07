@@ -119,7 +119,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     total_time_on_site = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, AGGREGATES)
 
     effective_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_cost_nano'}, AGGREGATES)
-    effective_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_data_cost_nano'}, AGGREGATES)
+    effective_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_data_cost_nano'},
+                                                        AGGREGATES)
     license_fee_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'license_fee_nano'}, AGGREGATES)
 
     conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'conversions'}, AGGREGATES)

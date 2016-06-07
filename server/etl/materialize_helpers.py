@@ -7,12 +7,10 @@ import boto
 import boto.s3
 
 from django.conf import settings
-from django.db import connections, transaction
+from django.db import transaction
 
 from utils import s3helpers
 from redshiftapi.db import get_write_stats_cursor
-
-from etl import daily_statements_k1
 
 
 logger = logging.getLogger(__name__)

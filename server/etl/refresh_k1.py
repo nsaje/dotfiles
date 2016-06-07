@@ -1,20 +1,6 @@
-import logging
-import os.path
-import io
-import unicodecsv as csv
-import boto
-import boto.s3
-
-from django.conf import settings
-from django.db import connections, transaction
-
-from utils import s3helpers
-
 from etl import daily_statements_k1
 from etl import materialize_k1
 from etl import materialize_views
-
-logger = logging.getLogger(__name__)
 
 
 MATERIALIZED_VIEWS = [
