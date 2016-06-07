@@ -39,7 +39,27 @@ def refresh_k1_reports(update_since):
 def generate_views(effective_spend_factors):
     for date, campaigns in sorted(effective_spend_factors.iteritems(), key=lambda x: x[0]):
         for mv in MATERIALIZED_VIEWS:
-            _generate_table(date, mv, campaigns)
+            mv.generate(date, campaigns)
+
+
+class InDBMaterialization(object):
+    def generate(self, date, *args, **kwargs):
+        sqls, paramss = self.prepare_queries(date)
+        with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
+            with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
+                for sql, params in zip(sqls, paramss):
+                    c.execute(sql, params)
+
+
+class LoadAndTransformMaterialization(object):
+    def generate(self, date, daily_campaign_spend_factors, *args, **kwargs):
+        _generate_table(date, self, daily_campaign_spend_factors)
+
+    def generate_rows(self):
+        raise NotImplementedError()
+
+    def table_name(self):
+        raise NotImplementedError()
 
 
 def _generate_table(date, materialized_view, campaign_factors):
