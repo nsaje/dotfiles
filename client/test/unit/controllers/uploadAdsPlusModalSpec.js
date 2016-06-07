@@ -1,259 +1,219 @@
-// /* globals describe, beforeEach, module, inject, constants, it, spyOn, expect */
-// 'use strict';
+/* globals describe, beforeEach, module, inject, constants, it, spyOn, expect */
+'use strict';
 
-// describe('UploadAdsPlusModalCtrl', function () {
-//     var $scope, $modalInstance, api, $state, $q, $timeout, openedDeferred;
+describe('UploadAdsPlusModalCtrl', function () {
+    var $scope, $modalInstance, api, $state, $q, $interval, openedDeferred;
 
-//     beforeEach(module('one'));
-//     beforeEach(module('stateMock'));
+    beforeEach(module('one'));
+    beforeEach(module('stateMock'));
 
-//     beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$state_) {
-//         $q = _$q_;
-//         $timeout = _$timeout_;
-//         $scope = $rootScope.$new();
-//         $scope.$dismiss = function () {};
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_, _$state_) {
+        $q = _$q_;
+        $interval = _$interval_;
+        $scope = $rootScope.$new();
+        $scope.$dismiss = function () {};
 
-//         openedDeferred = $q.defer();
-//         $modalInstance = {
-//             close: function () {},
-//             opened: openedDeferred.promise,
-//         };
-//         api = {
-//             adGroupAdsUpload: {
-//                 upload: function () {},
-//                 checkStatus: function () {},
-//                 cancel: function () {},
-//                 getDefaults: function () {
-//                     return {
-//                         then: function () {},
-//                     };
-//                 },
-//             },
-//         };
+        openedDeferred = $q.defer();
+        $modalInstance = {
+            close: function () {},
+            opened: openedDeferred.promise,
+        };
+        api = {
+            uploadPlus: {
+                uploadCsv: function () {},
+                checkStatus: function () {},
+                save: function () {},
+                cancel: function () {},
+                getDefaults: function () {
+                    return {
+                        then: function () {},
+                    };
+                },
+            },
+        };
 
-//         $scope.user = {
-//             timezoneOffset: 0,
-//         };
+        $state = _$state_;
+        $state.params = {id: 123};
 
-//         $state = _$state_;
-//         $state.params = {id: 123};
+        $controller(
+            'UploadAdsPlusModalCtrl',
+            {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state, errors: {}}
+        );
+    }));
 
-//         $controller(
-//             'UploadAdsPlusModalCtrl',
-//             {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state, errors: {}}
-//         );
-//     }));
+    describe('upload', function () {
+        it('calls api and polls for updates on success', function () {
+            var deferred = $q.defer();
+            var batchId = 123;
+            var candidates = [1, 2, 3, 4];
 
-//     describe('upload', function () {
-//         it('calls api and polls for updates on success', function () {
-//             var deferred = $q.defer();
-//             var batchId = 123;
+            $scope.formData = {
+                file: 'testfile',
+                batchName: 'testname',
+            };
 
-//             $scope.formData = {
-//                 file: 'testfile',
-//                 batchName: 'testname',
-//             };
+            spyOn(api.uploadPlus, 'uploadCsv').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($scope, 'pollBatchStatus');
 
-//             spyOn(api.adGroupAdsUpload, 'upload').and.callFake(function () {
-//                 return deferred.promise;
-//             });
-//             spyOn($scope, 'pollBatchStatus');
+            $scope.upload();
 
-//             $scope.upload();
+            expect(api.uploadPlus.uploadCsv).toHaveBeenCalledWith(
+                $state.params.id, {file: $scope.formData.file, batchName: $scope.formData.batchName}
+            );
+            deferred.resolve({
+                batchId: batchId,
+                candidates: [1, 2, 3, 4],
+                errors: {},
+            });
+            $scope.$root.$digest();
 
-//             expect(api.adGroupAdsUpload.upload).toHaveBeenCalledWith(
-//                 $state.params.id, {file: $scope.formData.file, batchName: $scope.formData.batchName}
-//             );
-//             deferred.resolve(batchId);
-//             $scope.$root.$digest();
+            expect($scope.pollBatchStatus).toHaveBeenCalledWith(batchId);
+            expect($scope.batchSize).toBe(candidates.length);
+            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.IN_PROGRESS);
+            expect($scope.count).toBe(0);
+            expect($scope.batchId).toBe(batchId);
+        });
 
-//             expect($scope.pollBatchStatus).toHaveBeenCalledWith(batchId);
-//             expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.IN_PROGRESS);
-//             expect($scope.step).toBe(1);
-//             expect($scope.batchId).toBe(batchId);
-//         });
+        it('sets errors in case of validation error', function () {
+            var deferred = $q.defer();
+            var data = {
+                errors: {'batchName': ['This is required']},
+            };
 
-//         it('sets errors in case of validation error', function () {
-//             var deferred = $q.defer();
-//             var data = {
-//                 errors: {'batchName': ['This is required']},
-//             };
+            spyOn(api.uploadPlus, 'uploadCsv').and.callFake(function () {
+                return deferred.promise;
+            });
 
-//             spyOn(api.adGroupAdsUpload, 'upload').and.callFake(function () {
-//                 return deferred.promise;
-//             });
+            $scope.upload();
+            deferred.reject(data);
+            $scope.$root.$digest();
 
-//             $scope.upload();
-//             deferred.reject(data);
-//             $scope.$root.$digest();
+            expect($scope.errors).toEqual(data.errors);
+        });
+    });
 
-//             expect($scope.errors).toEqual(data.errors);
-//         });
-//     });
+    describe('pollBatchStatus', function () {
+        it('does nothing if polling is not in progress', function () {
+            $scope.uploadStatus = null;
+            spyOn(api.uploadPlus, 'checkStatus');
 
-//     describe('pollBatchStatus', function () {
-//         it('does nothing if polling is not in progress', function () {
-//             $scope.uploadStatus = null;
-//             spyOn(api.adGroupAdsUpload, 'checkStatus');
+            $scope.pollBatchStatus();
 
-//             $scope.pollBatchStatus();
+            expect(api.uploadPlus.checkStatus).not.toHaveBeenCalled();
+        });
 
-//             expect(api.adGroupAdsUpload.checkStatus).not.toHaveBeenCalled();
-//         });
+        it('stops polling in case of error', function () {
+            var deferred = $q.defer();
 
-//         it('stops polling in case of error', function () {
-//             var deferred = $q.defer();
+            spyOn(api.uploadPlus, 'checkStatus').and.callFake(function () {
+                return deferred.promise;
+            });
 
-//             spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
-//                 return deferred.promise;
-//             });
+            spyOn($interval, 'cancel');
 
-//             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-//             $scope.pollBatchStatus();
+            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.pollBatchStatus();
 
-//             $timeout.flush();
-//             deferred.reject();
-//             $scope.$root.$digest();
+            $interval.flush(1001);
+            deferred.reject();
+            $scope.$root.$digest();
 
-//             expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.FAILED);
-//         });
+            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.FAILED);
+            expect($interval.cancel).toHaveBeenCalled();
+        });
 
-//         it('schedules another poll', function () {
-//             var deferred = $q.defer();
+        it('calls save upload on finished polling', function () {
+            var deferred = $q.defer();
+            var batchId = 123;
 
-//             spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
-//                 return deferred.promise;
-//             });
+            var statuses = {
+                '1': {
+                    imageStatus: constants.asyncUploadJobStatus.OK,
+                    urlStatus: constants.asyncUploadJobStatus.OK,
+                },
+                '2': {
+                    imageStatus: constants.asyncUploadJobStatus.FAILED,
+                    urlStatus: constants.asyncUploadJobStatus.FAILED,
+                },
+            };
 
-//             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-//             $scope.pollBatchStatus();
+            spyOn(api.uploadPlus, 'checkStatus').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($scope, 'saveUpload');
+            spyOn($modalInstance, 'close');
+            spyOn($interval, 'cancel');
 
-//             spyOn($scope, 'pollBatchStatus');
+            $scope.batchSize = 2;
+            $scope.candidates = ['1', '2'];
+            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.pollBatchStatus(batchId);
+            $interval.flush(1001);
 
-//             $timeout.flush();
-//             deferred.resolve({status: constants.uploadBatchStatus.IN_PROGRESS});
-//             $scope.$root.$digest();
+            expect(api.uploadPlus.checkStatus).toHaveBeenCalledWith(
+                $state.params.id, batchId
+            );
+            deferred.resolve({candidates: statuses});
+            $scope.$root.$digest();
 
-//             expect($scope.pollBatchStatus).toHaveBeenCalled();
-//         });
+            expect($scope.saveUpload).toHaveBeenCalled();
+            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($interval.cancel).toHaveBeenCalled();
+        });
 
-//         it('saves success on success', function () {
-//             var deferred = $q.defer();
-//             var batchId = 123;
+        it('sets number of errors and error report on saving content ads', function () {
+            var deferred = $q.defer();
+            var batchId = 123;
+            var data = {
+                numErrors: 2,
+                errorReport: 'http://zemanta.com/error-report',
+            };
 
-//             spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
-//                 return deferred.promise;
-//             });
-//             spyOn($modalInstance, 'close');
-//             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-//             $scope.pollBatchStatus(batchId);
-//             $timeout.flush();
+            spyOn(api.uploadPlus, 'save').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($modalInstance, 'close');
 
-//             expect(api.adGroupAdsUpload.checkStatus).toHaveBeenCalledWith(
-//                 $state.params.id, batchId
-//             );
-//             deferred.resolve({status: constants.uploadBatchStatus.DONE});
-//             $scope.$root.$digest();
+            $scope.batchId = batchId;
+            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.saveUpload();
 
-//             expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.DONE);
-//             expect($modalInstance.close).not.toHaveBeenCalled();
-//         });
+            expect(api.uploadPlus.save).toHaveBeenCalledWith(
+                $state.params.id, batchId
+            );
+            deferred.resolve(data);
+            $scope.$root.$digest();
 
-//         it('sets errors in case of failed upload', function () {
-//             var deferred = $q.defer();
-//             var batchId = 123;
-//             var data = {
-//                 status: 2,
-//                 errors: ['some error'],
-//             };
+            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.DONE);
+            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.numErrors).toEqual(2);
+            expect($scope.errorReport).toEqual(data.errorReport);
+        });
 
-//             spyOn(api.adGroupAdsUpload, 'checkStatus').and.callFake(function () {
-//                 return deferred.promise;
-//             });
-//             spyOn($modalInstance, 'close');
+        it ('sets upload status on cancel', function () {
+            var deferred = $q.defer();
+            var batchId = 123;
+            $scope.batchId = batchId;
 
-//             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-//             $scope.pollBatchStatus(batchId);
-//             $timeout.flush();
+            spyOn(api.uploadPlus, 'cancel').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($scope, '$dismiss');
 
-//             expect(api.adGroupAdsUpload.checkStatus).toHaveBeenCalledWith(
-//                 $state.params.id, batchId
-//             );
-//             deferred.resolve(data);
-//             $scope.$root.$digest();
+            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.cancel();
 
-//             expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.FAILED);
-//             expect($modalInstance.close).not.toHaveBeenCalled();
-//             expect($scope.errors).toEqual(data.errors);
-//         });
+            expect(api.uploadPlus.cancel).toHaveBeenCalledWith(
+                $state.params.id, batchId
+            );
 
-//         it ('sets errors in case cancel failed', function () {
-//             var deferred = $q.defer();
-//             var batchId = 123;
-//             $scope.batchId = batchId;
+            deferred.resolve();
+            $scope.$root.$digest();
 
-//             var data = {
-//                 data: {
-//                     errors: {
-//                         cancel: 'Some message about error',
-//                     },
-//                 },
-//             };
-
-//             spyOn(api.adGroupAdsUpload, 'cancel').and.callFake(function () {
-//                 return deferred.promise;
-//             });
-//             spyOn($scope, '$dismiss');
-
-//             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-//             $scope.cancel();
-
-//             expect(api.adGroupAdsUpload.cancel).toHaveBeenCalledWith(
-//                 $state.params.id, batchId
-//             );
-//             deferred.reject(data);
-//             $scope.$root.$digest();
-
-//             expect($scope.$dismiss).not.toHaveBeenCalled();
-//             expect($scope.cancelErrors).toEqual(data.data.errors);
-//         });
-
-//         it ('sets cancel in progress parameters', function () {
-//             var deferred = $q.defer();
-//             var batchId = 123;
-//             $scope.batchId = batchId;
-
-//             spyOn(api.adGroupAdsUpload, 'cancel').and.callFake(function () {
-//                 return deferred.promise;
-//             });
-//             spyOn($scope, '$dismiss');
-
-//             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-//             $scope.cancel();
-
-//             expect(api.adGroupAdsUpload.cancel).toHaveBeenCalledWith(
-//                 $state.params.id, batchId
-//             );
-
-//             deferred.resolve();
-//             $scope.$root.$digest();
-
-//             expect($scope.$dismiss).not.toHaveBeenCalled();
-//             expect($scope.cancelErrors).toBe(null);
-//         });
-
-//         it ('close modal when canceling upload that is not in progress', function () {
-//             spyOn(api.adGroupAdsUpload, 'cancel');
-//             spyOn($scope, '$dismiss');
-
-//             $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
-//             $scope.cancel();
-
-//             expect(api.adGroupAdsUpload.cancel).not.toHaveBeenCalled();
-
-//             $scope.$root.$digest();
-
-//             expect($scope.$dismiss).toHaveBeenCalled();
-//         });
-//     });
-// });
+            expect($scope.$dismiss).not.toHaveBeenCalled();
+            expect($scope.uploadStatus, constants.uploadBatchStatus.CANCELLED);
+        });
+    });
+});
