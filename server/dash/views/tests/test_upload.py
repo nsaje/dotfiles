@@ -238,7 +238,14 @@ class UploadStatusTestCase(TestCase):
             }
         }, json.loads(response.content))
 
-    def test_ok(self):
+    @patch('utils.redirector_helper.insert_redirect')
+    def test_ok(self, mock_insert_redirect):
+        mock_insert_redirect.return_value = {
+            'redirect': {
+                'url': 'http://example.com',
+            },
+            'redirectid': 'abc123',
+        }
         batch_id = 2
         ad_group_id = 3
 
