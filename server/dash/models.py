@@ -3345,15 +3345,15 @@ def dict_diff(d1, d2, exclude_keys=[]):
     return diff
 
 
-def funkyTest(sender, **kwargs):
+def post_init_store_state(sender, **kwargs):
     instance = kwargs.get('instance', {})
     sender.post_init_state = model_to_dict(instance) if instance != {} else None
 
 
-post_init.connect(funkyTest, AdGroupSettings)
-post_init.connect(funkyTest, CampaignSettings)
-post_init.connect(funkyTest, AccountSettings)
-post_init.connect(funkyTest, AdGroupSourceSettings)
+post_init.connect(post_init_store_state, AdGroupSettings)
+post_init.connect(post_init_store_state, CampaignSettings)
+post_init.connect(post_init_store_state, AccountSettings)
+post_init.connect(post_init_store_state, AdGroupSourceSettings)
 
-post_init.connect(funkyTest, BudgetLineItem)
-post_init.connect(funkyTest, CreditLineItem)
+post_init.connect(post_init_store_state, BudgetLineItem)
+post_init.connect(post_init_store_state, CreditLineItem)

@@ -793,3 +793,5 @@ class HistoryTest(TestCase):
         )
         with self.assertRaises(AssertionError):
             models.AccountHistory.objects.update(changes_text='Something different')
+
+
