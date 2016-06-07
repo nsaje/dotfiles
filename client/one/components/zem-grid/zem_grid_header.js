@@ -14,11 +14,10 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function postLink (scope, element) {
             var pubsub = scope.ctrl.grid.meta.pubsub;
+            scope.ctrl.grid.header.ui.element = element;
 
-            function updateHeader () {
+            function resizeColumns () {
                 $timeout(function () {
-                    scope.ctrl.grid.ui.state.headerRendered = true;
-                    scope.ctrl.grid.header.element = element;
                     zemGridUIService.resizeGridColumns(scope.ctrl.grid);
                 }, 0, false);
             }
@@ -34,7 +33,8 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 });
             }
 
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateHeader);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);
+            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, resizeColumns);
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);

@@ -79,7 +79,6 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
 
         function handleSourceDataUpdate (event, data) {
             zemGridParser.parse(grid, data);
-            zemGridUIService.resetUIState(grid);
             grid.meta.loading = !data.breakdown;
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         }

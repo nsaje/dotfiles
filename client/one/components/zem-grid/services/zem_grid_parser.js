@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
+oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject', function ($filter, zemGridConstants, zemGridObject) { // eslint-disable-line max-len
 
     //
     // Service responsible for parsing Breakdown data (tree) to Grid rows
@@ -15,7 +15,8 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         if (data.level > 0) throw 'Inplace parsing not supported yet.';
 
         if (data.breakdown) {
-            grid.footer = createRow(grid, data, 0);
+            grid.footer.row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, 0);
+            grid.footer.row.stats = parseStats(grid, data.stats);
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
             grid.body.rows = [];
@@ -28,7 +29,8 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         var level = breakdown.level;
 
         breakdown.rows.forEach(function (data) {
-            var row = createRow(grid, data, level);
+            var row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, level);
+            row.stats = parseStats(grid, data.stats);
             rows.push(row);
             if (data.breakdown) {
                 var breakdownRows = parseBreakdown(grid, row, data.breakdown);
@@ -36,13 +38,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
             }
         });
 
-        var row = {
-            type: zemGridConstants.gridRowType.BREAKDOWN,
-            level: level,
-            data: breakdown,
-            parent: parent,
-            visible: true,
-        };
+        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, level);
 
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)

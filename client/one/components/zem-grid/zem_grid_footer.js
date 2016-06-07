@@ -14,14 +14,7 @@ oneApp.directive('zemGridFooter', ['$timeout', 'zemGridUIService', function ($ti
         templateUrl: '/components/zem-grid/templates/zem_grid_footer.html',
         link: function postLink (scope, element) {
             var pubsub = scope.ctrl.grid.meta.pubsub;
-
-            function updateFooter () {
-                $timeout(function () {
-                    scope.ctrl.grid.ui.state.footerRendered = true;
-                    scope.ctrl.grid.footer.element = element;
-                    zemGridUIService.resizeGridColumns(scope.ctrl.grid);
-                }, 0, false);
-            }
+            scope.ctrl.grid.footer.ui.element = element;
 
             function handleHorizontalScroll (leftOffset) {
                 leftOffset = -1 * leftOffset;
@@ -33,8 +26,6 @@ oneApp.directive('zemGridFooter', ['$timeout', 'zemGridUIService', function ($ti
                     'transform': translateCssProperty,
                 });
             }
-
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateFooter);
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);

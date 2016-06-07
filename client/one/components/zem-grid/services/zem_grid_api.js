@@ -98,6 +98,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
 
             zemGridStorageService.saveColumns(grid);
             notifyListeners(EVENTS.COLUMNS_VISIBILITY_CHANGED, columns);
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         }
 
         function getMetaData () {
