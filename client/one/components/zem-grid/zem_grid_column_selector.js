@@ -7,43 +7,44 @@ oneApp.directive('zemGridColumnSelector', [function () {
         scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            grid: '=',
+            api: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_column_selector.html',
-        controller: ['zemGridStorageService', 'zemGridApiService', function (zemGridStorageService, zemGridApiService) {
+        controller: ['zemGridStorageService', 'zemGridApi', function (zemGridStorageService, zemGridApiService) {
             var vm = this;
 
-            vm.columns = vm.grid.meta.data.columns;
             vm.categories = [];
             vm.columnChecked = columnChecked;
 
             init();
 
-            function init () {
+            function init() {
                 initCategories();
             }
 
-            function columnChecked () {
-                zemGridStorageService.saveColumns(vm.grid);
-                var selectedColumns = vm.columns.filter(function (column) {
-                    return column.shown && column.checked;
-                });
-                zemGridApiService.setSelectedColumns(vm.grid, selectedColumns);
+            function columnChecked(column) {
+                // zemGridStorageService.saveColumns(vm.grid);
+                vm.api.setVisibleColumns(column, column.visible);
+                // var selectedColumns = vm.columns.filter(function (column) {
+                //     return column.shown && column.checked;
+                // });
+                // zemGridApiService.setSelectedColumns(vm.grid, selectedColumns);
             }
 
-            function initCategories () {
+            function initCategories() {
                 // Place columns in a corresponding category
                 // If column is un-selectable (always visible) or not shown skip it
+                var columns = vm.api.getColumns();
                 vm.categories = [];
-                vm.grid.meta.data.categories.forEach(function (cat) {
-                    var cols = vm.columns.filter(function (col) {
+                vm.api.getMetaData().categories.forEach(function (cat) {
+                    var categoryColumns = columns.filter(function (col) {
                         return cat.fields.indexOf(col.field) !== -1 && col.shown && !col.unselectable;
                     });
 
-                    if (cols.length > 0) {
+                    if (categoryColumns.length > 0) {
                         vm.categories.push({
                             'name': cat.name,
-                            'columns': cols,
+                            'columns': categoryColumns,
                         });
                     }
                 });

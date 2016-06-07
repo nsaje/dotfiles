@@ -42,7 +42,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
         },
         controller: [function () {
             this.setOrder = function (column) {
-                var order = this.grid.meta.source.config.order;
+                var order = this.grid.meta.service.getOrder();
 
                 if (order === column.field) {
                     order = '-' + column.field;

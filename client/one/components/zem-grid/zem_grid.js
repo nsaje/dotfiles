@@ -9,41 +9,21 @@ oneApp.directive('zemGrid', [function () {
         controllerAs: 'ctrl',
         bindToController: {
             dataSource: '=',
-            gridApi: '=', // onSelectionChanged, ... interaction service
+            api: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridApiService', function ($scope, zemGridObject, zemGridPubSub, zemGridDataService, zemGridApiService) { // eslint-disable-line max-len
-
+        controller: ['$scope', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridApi', function ($scope, zemGridObject, zemGridPubSub, zemGridDataService, zemGridApi) { // eslint-disable-line max-len
             this.grid = new zemGridObject.createInstance();
             this.grid.meta.scope = $scope;
-            this.grid.meta.api = this.gridApi;
             this.grid.meta.pubsub = zemGridPubSub.createInstance($scope);
             this.grid.meta.service = zemGridDataService.createInstance(this.grid, this.dataSource);
+            
+            // Define Grid API and assign to api variable to enable binding between zem-grid and controller
+            this.grid.meta.api = zemGridApi.createInstance(this.grid);
+            this.api = this.grid.meta.api;
 
-            initialize(this.grid);
-
-            function initialize (grid) {
-                zemGridApiService.initializeApi(grid);
-                grid.meta.service.initialize();
-            }
-
-            function initializeApi (grid) {
-                // Initialize Grid API
-
-                // Zem-Grid Getters
-                grid.meta.api.getSelectedRows = function () {
-                    return zemGridApiService.getSelectedRows(grid);
-                };
-
-                grid.meta.api.getSelectedColumns = function (){
-                    return zemGridApiService.getSelectedColumns(grid);
-                };
-
-                // Initialize notification hooks with noops if not provided
-                grid.meta.api = grid.meta.api || {};
-                grid.meta.api.onSelectionChanged = grid.meta.api.onSelectionChanged || angular.noop;
-                grid.meta.api.onColumnSelectionChanged = grid.meta.api.onColumnSelectionChanged || angular.noop;
-            }
+            // Initialize data service; starts loading data
+            this.grid.meta.service.initialize();
         }],
     };
 }]);
