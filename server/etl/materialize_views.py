@@ -6,16 +6,61 @@ import logging
 import dash.models
 import dash.constants
 
+import redshiftapi.models
+
 from redshiftapi import db
 from utils import converters
 
 from etl import models
 from etl import helpers
+from etl import materialize_helpers
+
 
 logger = logging.getLogger(__name__)
 
 
-class MasterView(object):
+class MVAccount(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account'
+
+    def prepare_insert_query(self, date):
+        sql = backtosql.generate_sql('etl_select_insert_one_day.sql', {
+            'breakdown': redshiftapi.models.MVMaster.get_breakdown([
+                'date', 'source', 'agency_id', 'account',
+            ]),
+            'aggregates': redshiftapi.models.MVMaster.get_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date': date,
+        }
+
+
+class MVAccountDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account_delivery'
+
+    def prepare_insert_query(self, date):
+        sql = backtosql.generate_sql('etl_select_insert_one_day.sql', {
+            'breakdown': redshiftapi.models.MVMaster.get_breakdown([
+                'date', 'source', 'agency_id', 'account',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': redshiftapi.models.MVMaster.get_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date': date,
+        }
+
+
+class MasterView(materialize_helpers.TransformAndMaterialize):
     """
     Represents breakdown by all dimensions available. It containts preclick, postclick, conversions
     and tochpoint conversions data.
