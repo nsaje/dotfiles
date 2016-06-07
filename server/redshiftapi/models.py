@@ -75,7 +75,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         structure = constants.get_structure_dimension(breakdown)
         delivery = constants.get_delivery_dimension(breakdown)
 
-        if base == 'account' and structure != 'publisher':
+        if base == 'account_id' and structure != 'publisher':
             if delivery:
                 return 'mv_account_delivery'
             return 'mv_account'
