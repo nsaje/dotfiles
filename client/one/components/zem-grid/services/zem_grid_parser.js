@@ -29,7 +29,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         var level = breakdown.level;
 
         breakdown.rows.forEach(function (data) {
-            var row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, level);
+            var row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, level, parent);
             row.stats = parseStats(grid, data.stats);
             rows.push(row);
             if (data.breakdown) {
@@ -38,7 +38,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
             }
         });
 
-        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, level);
+        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, level, parent);
 
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
@@ -50,21 +50,6 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         rows.push(row);
 
         return rows;
-    }
-
-    function createRow (grid, data, level) {
-        var row = {
-            type: zemGridConstants.gridRowType.STATS,
-            level: level,
-            data: data,
-            parent: parent,
-            visible: true,
-            collapsed: false,
-        };
-
-        row.stats = parseStats(grid, data.stats);
-
-        return row;
     }
 
     function parseStats (grid, stats) {

@@ -50,11 +50,12 @@ oneApp.factory('zemGridObject', ['zemGridConstants', function (zemGridConstants)
         return new Grid();
     }
 
-    function createRow (type, data, level) {
+    function createRow (type, data, level, parent) {
         return {
             type: type,         // Type of a row (STATS, BREAKDOWN)
             data: data,         // Data that corresponds to this row (stats or breakdown object - see DataSource)
             level: level,       // Level of data in breakdown tree which this row represents
+            parent: parent,     // Parent row - row on which breakdown has been made
             collapsed: false,   // Collapse flag used by collapsing feature
             visible: true,      // Visibility flag - row can be hidden for different reasons (e.g. collapsed parent)
         };
