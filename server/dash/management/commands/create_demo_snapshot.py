@@ -33,7 +33,10 @@ ACCOUNT_DUMP_SETTINGS = {
         'campaign_set__adgroup_set__adgroupsource_set__source__source_type',
         'campaign_set__adgroup_set__adgroupsource_set__source_credentials',
     ],
-    'dependents': [  # These are the attributes/methods of the model that we wish to dump.
+    # These are the attributes/methods of the model that we wish to dump.
+    # We only need to list one-to-many and many-to-many fields, foreign key
+    # dependencies are fetched automatically.
+    'dependents': [
         'get_current_settings',
         'credits.all',
         'conversionpixel_set.all',
@@ -76,11 +79,20 @@ def pre_save_handler(sender, instance, *args, **kwargs):
     raise Exception("Do not save inside the demo data dump command!")
 
 
+def _set_postgres_read_only(db_settings):
+    db_options = db_settings.setdefault('OPTIONS', {})
+    existing_pg_options = db_options.setdefault('options', '')
+    db_options['options'] = ' '.join(['-c default_transaction_read_only=on', existing_pg_options])
+
+
 class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     def handle(self, *args, **options):
+        # prevent explicit model saves
         pre_save.connect(pre_save_handler)
+        # put connection in read-only mode
+        _set_postgres_read_only(settings.DATABASES['default'])
 
         # perform inside transaction and rollback to be safe
         with transaction.atomic():
@@ -91,6 +103,8 @@ class Command(ExceptionCommand):
             prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
             dump_data = serialize('python', [obj for obj in reversed(serialize_list) if obj is not None])
             attach_demo_users(dump_data, demo_users_set)
+
+            # roll back any changes we might have made (shouldn't be any)
             transaction.set_rollback(True)
 
         dump_json = json.dumps(dump_data, indent=4, cls=json_helper.JSONEncoder)
