@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import connections, transaction
 
 from utils import s3helpers
+from redshiftapi.db import get_write_stats_cursor
 
 from etl import daily_statements_k1
 
@@ -34,7 +35,7 @@ class Materialize(object):
 
         logger.info("Materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
         with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
-            with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
+            with get_write_stats_cursor() as c:
                 c.execute(del_sql, del_params)
                 c.execute(ins_sql, ins_params)
 
@@ -67,7 +68,7 @@ class TransformAndMaterialize(Materialize):
 
         logger.info("Materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
         with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
-            with connections[settings.K1_VIEWS_DB_NAME].cursor() as c:
+            with get_write_stats_cursor() as c:
 
                 c.execute(del_sql, del_params)
 
