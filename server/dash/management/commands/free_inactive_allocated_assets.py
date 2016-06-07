@@ -6,6 +6,7 @@ from django.conf import settings
 
 import dash.models
 from utils.command_helpers import parse_id_list
+from utils import converters
 
 
 class Command(BaseCommand):
@@ -34,7 +35,7 @@ class Command(BaseCommand):
                 budget.free_inactive_allocated_assets()
                 if is_verbose:
                     self.stdout.write('Budget has ${} assets freed.\n'.format(
-                        budget.freed_cc * dash.models.CC_TO_DEC_MULTIPLIER
+                        budget.freed_cc * converters.CC_TO_DECIMAL_DOLAR
                     ))
             except AssertionError:
                 if is_verbose:

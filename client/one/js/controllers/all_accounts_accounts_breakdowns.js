@@ -1,18 +1,15 @@
 /* globals oneApp */
 oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line
-    // Temporary workaround for retrieving columns defined in original controller
-    var columns = zemDataSourceEndpoints.getControllerColumns($scope, 'AllAccountsAccountsCtrl');
-    var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(columns);
-    $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+    $scope.dataSource = createDataSource();
 
-    $scope.configureDataSource = function () {
-        // TODO: propagate configuration to automatically request Grid reload
-        $scope.dataSource.config = {
-            start_date: $scope.dateRange.startDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
-            end_date: $scope.dateRange.endDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
-            order: '-clicks', // TODO: support ordering
-        };
-    };
+    function createDataSource () {
+        // Temporary workaround for retrieving columns defined in original controller
+        var metadata = zemDataSourceEndpoints.getControllerMetaData($scope, 'AllAccountsAccountsCtrl');
+        var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(metadata);
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange);
+        return dataSource;
+    }
 
     $scope.dataSource.onLoad($scope, function (event, breakdown) {
         var rows = breakdown.rows;
@@ -29,11 +26,11 @@ oneApp.controller('AllAccountsAccountsBreakdownsCtrl', ['$scope', 'zemDataSource
         }
     });
 
-    $scope.configureDataSource();
     $scope.$watch('dateRange', function (newValue, oldValue) {
         if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
             return;
         }
-        $scope.configureDataSource();
+        $scope.dataSource.setDateRange(newValue);
+        $scope.dataSource.getData();
     });
 }]);

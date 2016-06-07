@@ -159,30 +159,15 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.campaignAgency.get = resetIfErrorWrapper(
+        $delegate.campaignHistory.get = resetIfErrorWrapper(
             defaultGetWrapper(
-                '/api/campaigns/{id}/agency/',
-                $delegate.campaignAgency.get,
+                '/api/campaigns/{id}/history/',
+                $delegate.campaignHistory.get,
                 function () { return function () {
                     resetDemo();
                 }; }
             )
         );
-        $delegate.campaignAgency.save = function demo (settings) {
-            var deferred = $q.defer(),
-                cacheId = '/api/campaigns/' + settings.id + '/agency/',
-                history = (zemDemoCacheService.get(cacheId) || {}).history,
-                response = {
-                    settings: settings,
-                    history: history,
-                    canArchive: false,
-                    canRestore: false
-                };
-            response.history.push({changedBy: 'test.account@zemanta.si', changesText: 'Updated settings', showOldSettings: false, datetime: (new Date()).toISOString()});
-            deferred.resolve(response);
-            zemDemoCacheService.update(cacheId, 'settings', settings);
-            return deferred.promise;
-        };
 
         /* ADD ADGROUP */
         $delegate.campaignAdGroups.create = function demo (id) {
@@ -284,7 +269,7 @@ oneApp.config(['$provide', function ($provide) {
         $delegate.adGroupSettings.save = function demo (settings) {
             var deferred = $q.defer(),
                 cacheId = '/api/ad_groups/' + settings.id + '/settings/',
-                cacheHistoryId = '/api/ad_groups/' + settings.id + '/agency/',
+                cacheHistoryId = '/api/ad_groups/' + settings.id + '/history/',
                 cacheStateId = '/api/ad_groups/' + settings.id + '/state/',
                 oldSettings = zemDemoCacheService.get(cacheHistoryId),
                 agency = oldSettings || {
@@ -328,8 +313,8 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.adGroupAgency.get = resetIfErrorWrapper(
-            defaultGetWrapper('/api/ad_groups/{id}/agency/', $delegate.adGroupAgency.get)
+        $delegate.adGroupHistory.get = resetIfErrorWrapper(
+            defaultGetWrapper('/api/ad_groups/{id}/history/', $delegate.adGroupHistory.get)
         );
 
         /* Ad group media sources */

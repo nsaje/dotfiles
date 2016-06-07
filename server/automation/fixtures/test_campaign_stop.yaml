@@ -20,7 +20,7 @@
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    name: 'Test Account 1'
+    name: 'Test Account 1ž'
   model: dash.account
   pk: 1
 
@@ -30,7 +30,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
-    name: 'Test Campaign 1'
+    name: 'Test Campaign 1ž'
   model: dash.campaign
   pk: 1
 
@@ -159,7 +159,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
-    name: 'Test AdGroup 1'
+    name: 'Test AdGroup 1ž'
   model: dash.adgroup
   pk: 1
 

@@ -7,13 +7,8 @@ from django.db.models import Sum
 from reports import refresh
 import reports.models
 import reports.update
-from reports import constants
-from reports import update
 
 import dash.models
-
-from convapi import parse_v2
-from convapi import ga_api
 
 
 class StatsUpdateTestCase(test.TestCase):

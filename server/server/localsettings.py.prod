@@ -12,10 +12,7 @@ DEBUG = False
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK7AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAN3zo4qfYMJ/NkP2AIBEIBNdJszHvK9nhndxS9hIpiLnMWN1vWYUrQbEEudStHg0Q3vl+mKdIvR3rPNcbXj1YLddebdzXlPBxQdVEX1G7ltCC2O333j2N4gU52naF8=').get()
 
-STATS_DB_NAME = 'stats'
-K1_DB_NAME = 'k1'
-K1_VIEWS_DB_NAME = K1_DB_NAME
-STATS_READ_DB_NAME = K1_DB_NAME
+STATS_DB_NAME = 'k1'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -32,15 +29,6 @@ DATABASES = {
         }
     },
     STATS_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'one',
-        'USER': 'eins',
-        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
-        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'HOST': '172.26.4.104',
-        'PORT': 5439
-    },
-    K1_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'k1',
         'USER': 'eins',
@@ -69,8 +57,6 @@ EMAIL_HOST_PASSWORD = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZ
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
 SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help@zemanta.com'
-
-MAILGUN_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKsAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACDMIGABgkqhkiG9w0BBwagczBxAgEAMGwGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMB6ReHxK8dHsgDDsWAgEQgD9FrHCKTLoFFDsJoY7H8xakPwfy0bifTZoRH6ppPdNcKvILHk0CI2hiHHsGFDjJTnEdi2aOlfVPfoL5Ac8+L3E=').get()  # mustn't be unicode
 
 # Path to log file
 LOG_FILE = '/app/logs/zemanta-eins.server.log'
@@ -147,6 +133,7 @@ AWS_SECRET_ACCESS_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2
 # S3 related settings
 S3_BUCKET = 'zemantaone'
 S3_BUCKET_STATS = 'z1-stats'
+S3_BUCKET_DEMO = 'z1-demo'
 USE_S3 = True
 
 # adgroup-level reports aggregations
@@ -192,15 +179,13 @@ SQS_QUEUE_PREFIX = 'prod'
 SQS_REGION = 'us-east-1'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
 
-CELERY_DEFAULT_CONVAPI_QUEUE = SQS_QUEUE_PREFIX + '-' +'convapi'
-CELERY_DEFAULT_CONVAPI_V2_QUEUE = SQS_QUEUE_PREFIX + '-' + 'convapi_v2'
-
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
     'region': SQS_REGION,
     'polling_interval': 10,
 }
 
+R1_DEMO_MODE = False
 R1_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMM+bIgTk3Vp2WIweQAgEQgEdO7/pZM+yJASejQtrIp3IorKcBbqqBZzI8y+M9/XCYsr2RH/GZ7KxanjNCjLwG8uJb07vRwdOBZkku/z695V0UPUNXcKFGRg==').get()
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
@@ -222,9 +207,6 @@ SEND_NOTIFICATION_MAIL = True
 #BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMUp4fTNfsoQXvcN/2AgEQgEeK1YVDW481cJcjPEcejHo02KokiSKwmn+c3BiYkuYwwdCB7yzmLd7U8PyK/Ay46O67ZLrBdDtUmqhJCrpJneJiqe/+qnnOBQ==').get()
 BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMsbpTkX9V2jgJO4YFAgEQgEfLNjTOPiu5cdWeiSoaNuRCM5aXCIJbWUopbdCjGZ2mrTpQozlt8czEE8zyaHNaLoIEPLx0p5Tc1zjur7bodCCsj1oIYNsORQ==').get()
 
-GA_CLIENT_EMAIL = 'account-1@zemanta-api.iam.gserviceaccount.com'
-GA_PRIVATE_KEY = Secret('kms:region=us-east-1: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').get()
-
 BUDGET_RESERVE_FACTOR = 0.05
 
 # k1
@@ -235,4 +217,12 @@ K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 
-LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get() # TODO: generate key
+# DeployKitty
+DK_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyhYmJQhFDfCW5k1X8CARCAO0IHlmnLpLAQAFmJJjnN2dlvrMyFqV7e7YlKDNSpbEJupOwov7IKDFSmYjnqxfsbrVNulP6vbSiLssVt').get()
+DK_DEMO_PREPARE_ENDPOINT = 'https://dk.zemanta.com/api/demo/prepare'
+
+LAMBDA_REGION = 'us-east-1'
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK/AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACWMIGTBgkqhkiG9w0BBwaggYUwgYICAQAwfQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx7yLKe0tUFVxMxsMMCARCAUFMra/DjBi1zN9BhzOI/C8+JHJA5rBM0tsNGeCZBzYnFgMm951IWfgRr7gqwdnPVqzDdwHwMHYzbR2viuXRMus4bfcdCm2BEqQBnNAgZ/fZt').get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = 'p'
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://z1-1452281140.us-east-1.elb.amazonaws.com/api/callbacks/content-upload/'

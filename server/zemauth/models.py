@@ -8,6 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.core import validators
 from django.core.exceptions import ValidationError
 
+import utils.demo_anonymizer
+
 
 class UserManager(auth_models.BaseUserManager):
 
@@ -53,6 +55,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     IMPORTANT: Default unique constraint on the email created by Django is deleted and
     replaced by case-insensitive unique index created by one of migrations.
     '''
+    _demo_fields = {
+        'email': utils.demo_anonymizer.fake_email,
+        'username': utils.demo_anonymizer.fake_username,
+        'first_name': utils.demo_anonymizer.fake_first_name,
+        'last_name': utils.demo_anonymizer.fake_last_name,
+    }
     email = models.EmailField(_('email address'), max_length=255, unique=True)
     username = models.CharField(
         _('username'),
@@ -96,10 +104,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         verbose_name_plural = _('users')
 
         permissions = (
-            ('campaign_agency_view', "Can view campaign's agency tab."),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
             ('supply_dash_link_view', 'Can view supply dash link.'),
-            ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
             ('account_campaigns_view', "Can view accounts's campaigns tab."),
             ('account_credit_view', "Can view accounts's credit tab."),
@@ -172,6 +178,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_improved_ads_upload', 'Can use improved content ads upload'),
             ('can_view_sidetabs', 'Can view sidetabs.'),
             ('can_view_campaign_content_insights_side_tab', 'Can view content insights side tab on campaign level.'),
+            ('can_modify_campaign_manager', 'Can view and set campaign manager on campaign settings tab.'),
+            ('can_modify_campaign_iab_category', 'Can view and set campaign IAB category on campaign settings tab.'),
+            ('ad_group_history_view', "Can view ad group's history tab."),
+            ('campaign_history_view', "Can view campaign's history tab."),
+            ('can_view_new_history_backend', 'Can view history from new history models.'),
         )
 
     def get_full_name(self):

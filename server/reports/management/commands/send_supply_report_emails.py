@@ -10,14 +10,13 @@ from django.db import connections
 import dash.models
 import reports.models
 import reports.api
-from reports import daily_statements_k1
+from etl import helpers
+
 import utils.email_helper
 from utils.command_helpers import ExceptionCommand
+from utils import converters
 
 logger = logging.getLogger(__name__)
-
-
-DOLLAR_TO_MICRO = int(1e6)
 
 
 class Command(ExceptionCommand):
@@ -39,14 +38,17 @@ class Command(ExceptionCommand):
             from stats
             where {date_query}
             group by media_source
-        """.format(date_query=daily_statements_k1._get_redshift_date_query(yesterday.date()))
+        """.format(date_query=helpers.get_local_date_query(yesterday.date()))
 
-        with connections[settings.K1_DB_NAME].cursor() as c:
+        with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query)
 
             for media_source, impressions, spend in c:
                 source = dash.models.Source.objects.get(bidder_slug=media_source)
-                source_stats[source.pk] = {'impressions': impressions, 'cost': Decimal(spend) / DOLLAR_TO_MICRO}
+                source_stats[source.pk] = {
+                    'impressions': impressions,
+                    'cost': Decimal(spend) / converters.DOLAR_TO_MICRO,
+                }
 
         for recipient in recipients:
             impressions = 0

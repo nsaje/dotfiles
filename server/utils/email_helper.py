@@ -1,5 +1,6 @@
 import logging
 import traceback
+import string
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -8,9 +9,33 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMessage
 
+from dash.constants import EmailTemplateType
+import dash.models
+
 from utils import pagerduty_helper
 
 logger = logging.getLogger(__name__)
+
+
+def format_email(template_type, **kwargs):
+    # since editing through admin is currently unavailable no validation takes
+    # place
+    template = dash.models.EmailTemplate.objects.get(template_type=template_type)
+    return template.subject.format(**kwargs), template.body.format(**kwargs)
+
+
+def email_manager_list(campaign):
+    '''
+    Fetch campaign manager and account manager emails if they exist
+    '''
+    campaign_manager = campaign.get_current_settings().campaign_manager
+    account_manager = campaign.account.get_current_settings().default_account_manager
+    ret = set([])
+    if account_manager is not None:
+        ret.add(account_manager.email)
+    if campaign_manager is not None:
+        ret.add(campaign_manager.email)
+    return list(ret)
 
 
 def send_notification_mail(to_emails, subject, body, settings_url=None):
@@ -23,7 +48,10 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
             fail_silently=False
         )
     except Exception as e:
-        logger.exception('Account manager email notification was not sent because an exception was raised')
+        logger.exception(
+            'Account manager email notification was not sent because '
+            'an exception was raised'
+        )
 
         desc = {}
         if settings_url:
@@ -32,7 +60,8 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='account_manager_notification_mail_failed',
-            description='Account manager email notification was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            description='Account manager email notification was not sent because '
+            'an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc,
         )
 
@@ -41,191 +70,101 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     if not should_send_notification_mail(ad_group.campaign, request.user, request):
         return
 
-    subject = u'Settings change - ad group {}, campaign {}, account {}'.format(
-        ad_group.name,
-        ad_group.campaign.name,
-        ad_group.campaign.account.name
-    )
-
     link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
     link_url = link_url.replace('http://', 'https://')
+    args = {
+        'user': request.user,
+        'ad_group': ad_group,
+        'campaign': ad_group.campaign,
+        'account': ad_group.campaign.account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text)
+    }
 
-    body = u'''Hi account manager of ad group {ad_group.name}
-
-We'd like to notify you that {user.email} has made the following change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}:
-
-{changes_text}
-
-Please check {link_url} for further details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        ad_group=ad_group,
-        campaign=ad_group.campaign,
-        account=ad_group.campaign.account,
-        link_url=link_url,
-        changes_text=_format_changes_text(changes_text)
-    )
-
-    campaign_settings = ad_group.campaign.get_current_settings()
-
+    subject, body = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
+    emails = email_manager_list(ad_group.campaign)
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, ad_group.campaign.get_campaign_url(request))
+        emails, subject, body, ad_group.campaign.get_campaign_url(request))
 
 
 def send_campaign_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    subject = u'Settings change - campaign {}, account {}'.format(
-        campaign.name,
-        campaign.account.name
-    )
-
     link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
 
-    body = u'''Hi account manager of campaign {campaign.name}
+    args = {
+        'user': request.user,
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text)
+    }
 
-We'd like to notify you that {user.email} has made the following change in the settings of campaign {campaign.name}, account {account.name}:
-
-{changes_text}
-
-Please check {link_url} for further details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        campaign=campaign,
-        account=campaign.account,
-        link_url=link_url,
-        changes_text=_format_changes_text(changes_text)
-    )
-
-    campaign_settings = campaign.get_current_settings()
-
+    subject, body = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
+    emails = email_manager_list(campaign)
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request))
 
 
 def send_budget_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    subject = u'Settings change - campaign {}, account {}'.format(
-        campaign.name,
-        campaign.account.name
-    )
-
     link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
-
-    body = u'''Hi account manager of campaign {campaign.name}
-
-We'd like to notify you that {user.email} has made the following change in the budget of campaign {campaign.name}, account {account.name}:
-
-{changes_text}
-
-Please check {link_url} for further details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        campaign=campaign,
-        account=campaign.account,
-        link_url=link_url,
-        changes_text=_format_changes_text(changes_text)
-    )
-
-    campaign_settings = campaign.get_current_settings()
-
+    args = {
+        'user': request.user,
+        'campaign': campaign,
+        'account': campaign.account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text),
+    }
+    subject, body = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
+    emails = email_manager_list(campaign)
     send_notification_mail(
-        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
+        emails, subject, body, campaign.get_campaign_url(request))
 
 
 def send_account_pixel_notification(account, request):
     if not should_send_account_notification_mail(account, request.user, request):
         return
-
-    subject = u'Conversion pixel added - account {}'.format(account.name)
-
     link_url = request.build_absolute_uri('/accounts/{}/settings'.format(account.pk))
     link_url = link_url.replace('http://', 'https://')
-
-    body = u'''Hi default account manager of {account.name},
-
-We'd like to notify you that {user.email} has added a conversion pixel on account {account.name}. Please check {link_url} for details.
-
-Yours truly,
-Zemanta
-    '''
-    body = body.format(
-        user=request.user,
-        account=account,
-        link_url=link_url
-    )
-
+    args = {
+        'user': request.user,
+        'account': account,
+        'link_url': link_url
+    }
+    subject, body = format_email(EmailTemplateType.PIXEL_ADD, **args)
     account_settings = account.get_current_settings()
 
     send_notification_mail(
-        [account_settings.default_account_manager.email], subject, body, account.get_account_url(request))
+        [account_settings.default_account_manager.email],
+        subject,
+        body,
+        account.get_account_url(request)
+    )
 
 
 def send_password_reset_email(user, request):
-    body = u'''<p>Hi {name},</p>
-<p>You told us you forgot your password. If you really did, click here to choose a new one:</p>
-<a href="{link_url}">Choose a New Password</a>
-<p>If you didn't mean to reset your password, then you can just ignore this email; your password will not change.</p>
-<p>
-As always, please don't hesitate to contact help@zemanta.com with any questions.
-</p>
-<p>
-Thanks,<br/>
-Zemanta Client Services
-</p>
-    '''
+    args = {
+        'user': user,
+        'link_url': _generate_password_reset_url(user, request),
+    }
 
-    body = body.format(
-        name=user.first_name,
-        link_url=_generate_password_reset_url(user, request)
-    )
-
-    _send_email_to_user(user, request, 'Recover Password', body)
+    subject, body = format_email(EmailTemplateType.PASSWORD_RESET, **args)
+    _send_email_to_user(user, request, subject, body)
 
 
 def send_email_to_new_user(user, request):
-    body = u'''<p>Hi {name},</p>
-<p>
-Welcome to Zemanta's Content DSP!
-</p>
-<p>
-We're excited to promote your quality content across our extended network. Through our reporting dashboard, you can monitor campaign performance across multiple supply channels.
-</p>
-<p>
-Click <a href="{link_url}">here</a> to create a password to log into your Zemanta account.
-</p>
-<p>
-As always, please don't hesitate to contact help@zemanta.com with any questions.
-</p>
-<p>
-Thanks,<br/>
-Zemanta Client Services
-</p>
-    '''
-
-    body = body.format(
-        name=user.first_name,
-        link_url=_generate_password_reset_url(user, request)
-    )
-
-    return _send_email_to_user(user, request, 'Welcome to Zemanta!', body)
+    args = {
+        'user': user,
+        'link_url': _generate_password_reset_url(user, request),
+    }
+    subject, body = format_email(EmailTemplateType.USER_NEW, **args)
+    return _send_email_to_user(user, request, subject, body)
 
 
 def _generate_password_reset_url(user, request):
@@ -255,11 +194,12 @@ def _send_email_to_user(user, request, subject, body):
                 traceback.format_exc(e))
             desc = {}
         else:
-            message = 'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
-                user.get_full_name(),
-                user.email,
-                traceback.format_exc(e)
-            )
+            message =\
+                'Email for user {} ({}) was not sent because an exception was raised: {}'.format(
+                    user.get_full_name(),
+                    user.email,
+                    traceback.format_exc(e)
+                )
 
             user_url = request.build_absolute_uri(
                 reverse('admin:zemauth_user_change', args=(user.pk,))
@@ -282,27 +222,12 @@ def _send_email_to_user(user, request, subject, body):
 
 def send_supply_report_email(email, date, impressions, cost):
     date_str = '%d/%d/%d' % (date.month, date.day, date.year)
-    subject = u'Zemanta Report for {}'.format(date_str)
-    body = u'''
-Hello,
-
-Here are the impressions and spend for {date}.
-
-Impressions: {impressions}
-Spend: {cost}
-
-Yours truly,
-Zemanta
-
----
-The reporting data is an estimate. Final amounts are tallied and should be invoiced per your agreement with Zemanta.
-* All times are in Eastern Standard Time (EST).
-    '''
-    body = body.format(
-        date=date_str,
-        impressions=impressions,
-        cost=cost
-    )
+    args = {
+        'date': date_str,
+        'impressions': impressions,
+        'cost': cost,
+    }
+    subject, body = format_email(EmailTemplateType.SUPPLY_REPORT, **args)
 
     try:
         send_mail(
@@ -313,7 +238,10 @@ The reporting data is an estimate. Final amounts are tallied and should be invoi
             fail_silently=False
         )
     except Exception as e:
-        logger.error('Supply report e-mail to %s was not sent because an exception was raised: %s', email, traceback.format_exc(e))
+        logger.error(
+            'Supply report e-mail to %s was not sent because an exception was raised: %s',
+            email,
+            traceback.format_exc(e))
 
 
 def should_send_account_notification_mail(account, user, request):
@@ -324,7 +252,8 @@ def should_send_account_notification_mail(account, user, request):
 
     if not account_settings or not account_settings.default_account_manager:
         logger.error(
-            'Could not send e-mail because there is no default account manager set for account with id %s.',
+            'Could not send e-mail because there is no default account '
+            'manager set for account with id %s.',
             account.pk
         )
 
@@ -334,7 +263,8 @@ def should_send_account_notification_mail(account, user, request):
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
             incident_key='notification_mail_failed',
-            description='E-mail notification was not sent because default account manager is not set.',
+            description='E-mail notification was not sent because '
+            'default account manager is not set.',
             details=desc,
         )
         return False
@@ -353,7 +283,8 @@ def should_send_notification_mail(campaign, user, request):
 
     if not campaign_settings or not campaign_settings.campaign_manager:
         logger.error(
-            'Could not send e-mail because there is no account manager set for campaign with id %s.',
+            'Could not send e-mail because there is no account manager '
+            'set for campaign with id %s.',
             campaign.pk
         )
 
@@ -363,7 +294,8 @@ def should_send_notification_mail(campaign, user, request):
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
             incident_key='notification_mail_failed',
-            description='E-mail notification was not sent because account manager is not set.',
+            description='E-mail notification was not sent because '
+            'account manager is not set.',
             details=desc,
         )
         return False
@@ -374,32 +306,25 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_scheduled_export_report(report_name, frequency, granularity, entity_level, entity_name, scheduled_by, email_adresses, report_contents, report_filename):
-    subject = u'Zemanta Scheduled Report: {}'.format(
-        report_name
-    )
-    body = u'''Hi,
+def send_scheduled_export_report(report_name, frequency, granularity,
+                                 entity_level, entity_name, scheduled_by,
+                                 email_adresses, report_contents, report_filename):
+    args = {
+        'frequency': frequency.lower(),
+        'report_name': report_name,
+        'entity_level': entity_level,
+        'entity_name': ' ' + entity_name if entity_name != entity_level else '',
+        'granularity': ' by ' + granularity if granularity != entity_level else '',
+        'scheduled_by': scheduled_by,
+    }
 
-Please find attached Your {frequency} scheduled report "{report_name}" for {entity_level}{entity_name}{granularity}.
+    subject, body = format_email(EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
 
-Yours truly,
-Zemanta
-
-----------
-
-Report was scheduled by {scheduled_by}.
-    '''
-    body = body.format(
-        frequency=frequency.lower(),
-        report_name=report_name,
-        entity_level=entity_level,
-        entity_name=' ' + entity_name if entity_name != entity_level else '',
-        granularity=' by ' + granularity if granularity != entity_level else '',
-        scheduled_by=scheduled_by
-    )
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
-    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(settings.FROM_EMAIL), email_adresses)
+    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
     email.send(fail_silently=False)
 

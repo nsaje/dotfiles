@@ -21,6 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
 
 import utils.string_helper
+import utils.demo_anonymizer
 
 from dash import constants
 from dash import region_targeting_helper
@@ -31,12 +32,10 @@ from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
+from utils import converters
 
 
 SHORT_NAME_MAX_LENGTH = 22
-CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
-TO_CC_MULTIPLIER = 10**4
-TO_NANO_MULTIPLIER = 10**9
 
 
 class Round(Func):
@@ -47,14 +46,6 @@ class Round(Func):
 class Coalesce(Func):
     function = 'COALESCE'
     template = '%(function)s(%(expressions)s, 0)'
-
-
-def nano_to_cc(num):
-    return int(round(num * 0.00001))
-
-
-def nano_to_dec(num):
-    return Decimal(nano_to_cc(num) * CC_TO_DEC_MULTIPLIER)
 
 
 def validate(*validators):
@@ -261,6 +252,8 @@ class Agency(models.Model):
 
 
 class Account(models.Model):
+    _demo_fields = {'name': utils.demo_anonymizer.account_name_from_pool}
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -417,6 +410,8 @@ class Account(models.Model):
 
 
 class Campaign(models.Model, PermissionMixin):
+    _demo_fields = {'name': utils.demo_anonymizer.campaign_name_from_pool}
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -640,6 +635,9 @@ class SettingsBase(models.Model, CopySettingsMixin):
 
 
 class AccountSettings(SettingsBase):
+    _demo_fields = {
+        'name': utils.demo_anonymizer.account_name_from_pool
+    }
     _settings_fields = [
         'name',
         'archived',
@@ -695,6 +693,9 @@ class AccountSettings(SettingsBase):
 
 
 class CampaignSettings(SettingsBase):
+    _demo_fields = {
+        'name': utils.demo_anonymizer.campaign_name_from_pool
+    }
     _settings_fields = [
         'name',
         'campaign_manager',
@@ -1299,6 +1300,8 @@ class DefaultSourceSettings(models.Model):
 
 
 class AdGroup(models.Model):
+    _demo_fields = {'name': utils.demo_anonymizer.ad_group_name_from_pool}
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -1696,6 +1699,12 @@ class AdGroupSource(models.Model):
 
 
 class AdGroupSettings(SettingsBase):
+    _demo_fields = {
+        'display_url': utils.demo_anonymizer.fake_display_url,
+        'ad_group_name': utils.demo_anonymizer.ad_group_name_from_pool,
+        'brand_name': utils.demo_anonymizer.fake_brand,
+        'description': utils.demo_anonymizer.fake_sentence,
+    }
     _settings_fields = [
         'state',
         'start_date',
@@ -2128,12 +2137,17 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
 
 
 class UploadBatch(models.Model):
+    _demo_fields = {'name': lambda: 'upload.csv'}
+
     name = models.CharField(max_length=1024)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     status = models.IntegerField(
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
+    original_filename = models.CharField(max_length=1024, null=True)
+
     error_report_key = models.CharField(max_length=1024, null=True, blank=True)
     num_errors = models.PositiveIntegerField(null=True)
 
@@ -2148,6 +2162,13 @@ class UploadBatch(models.Model):
 
 
 class ContentAd(models.Model):
+    _demo_fields = {
+        'url': utils.demo_anonymizer.fake_content_ad_url,
+        'display_url': utils.demo_anonymizer.fake_display_url,
+        'brand_name': utils.demo_anonymizer.fake_brand,
+        'redirect_id': lambda: 'u1jvpq0wthxc',
+    }
+
     label = models.CharField(max_length=25, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
@@ -2403,6 +2424,35 @@ class DemoAdGroupRealAdGroup(models.Model):
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
 
 
+class DemoMapping(models.Model):
+    real_account = models.OneToOneField(Account, on_delete=models.PROTECT, related_name='+')
+    demo_account_name = models.CharField(
+        max_length=127,
+        editable=True,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    demo_campaign_name_pool = ArrayField(
+        models.CharField(
+            max_length=127,
+            editable=True,
+            unique=True,
+            blank=False,
+            null=False
+        )
+    )
+    demo_ad_group_name_pool = ArrayField(
+        models.CharField(
+            max_length=127,
+            editable=True,
+            unique=True,
+            blank=False,
+            null=False
+        )
+    )
+
+
 class UserActionLog(models.Model):
 
     id = models.AutoField(primary_key=True)
@@ -2471,6 +2521,9 @@ class PublisherBlacklist(models.Model):
 
 
 class CreditLineItem(FootprintModel):
+    _demo_fields = {
+        'comment': utils.demo_anonymizer.fake_sentence,
+    }
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
@@ -2570,7 +2623,7 @@ class CreditLineItem(FootprintModel):
         return self.status == constants.CreditLineItemStatus.PENDING
 
     def flat_fee(self):
-        return Decimal(self.flat_fee_cc) * CC_TO_DEC_MULTIPLIER
+        return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_DOLAR
 
     def effective_amount(self):
         return Decimal(self.amount) - self.flat_fee()
@@ -2689,6 +2742,9 @@ class CreditLineItem(FootprintModel):
 
 
 class BudgetLineItem(FootprintModel):
+    _demo_fields = {
+        'comment': utils.demo_anonymizer.fake_sentence,
+    }
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
@@ -2759,10 +2815,10 @@ class BudgetLineItem(FootprintModel):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
     def allocated_amount_cc(self):
-        return self.amount * TO_CC_MULTIPLIER - self.freed_cc
+        return self.amount * converters.DOLAR_TO_CC - self.freed_cc
 
     def allocated_amount(self):
-        return Decimal(self.allocated_amount_cc()) * CC_TO_DEC_MULTIPLIER
+        return Decimal(self.allocated_amount_cc()) * converters.CC_TO_DECIMAL_DOLAR
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -2773,7 +2829,7 @@ class BudgetLineItem(FootprintModel):
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
-        amount_cc = self.amount * TO_CC_MULTIPLIER
+        amount_cc = self.amount * converters.DOLAR_TO_CC
         spend_data = self.get_spend_data()
 
         reserve = self.get_reserve_amount_cc()
@@ -2796,7 +2852,7 @@ class BudgetLineItem(FootprintModel):
             statement = list(self.statements.all().order_by('-date')[:2])[-1]
         except IndexError:
             return None
-        total_cc = nano_to_cc(
+        total_cc = converters.nano_to_cc(
             statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
         )
         return total_cc * (factor_offset + settings.BUDGET_RESERVE_FACTOR)
@@ -3109,5 +3165,135 @@ class GAAnalyticsAccount(models.Model):
 
 class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
-    ad_account_id = models.CharField(max_length=127)
+    ad_account_id = models.CharField(max_length=127, blank=True)
     page_url = models.CharField(max_length=255)
+    status = models.IntegerField(
+        default=constants.FacebookPageRequestType.EMPTY,
+        choices=constants.FacebookPageRequestType.get_choices()
+    )
+
+    def get_page_id(self):
+        if not self.page_url:
+            return None
+
+        url = self.page_url.strip('/')
+        page_id = url[url.rfind('/') + 1:]
+        dash_index = page_id.rfind('-')
+        if dash_index != -1:
+            page_id = url[dash_index + 1:]
+        return page_id
+
+    def __unicode__(self):
+        return self.account.name
+
+
+class EmailTemplate(models.Model):
+    template_type = models.PositiveSmallIntegerField(
+        choices=constants.EmailTemplateType.get_choices(), null=True, blank=True)
+    subject = models.CharField(blank=True, null=False, max_length=255)
+    body = models.TextField(blank=True, null=False)
+
+    def __unicode__(self):
+        return constants.EmailTemplateType.get_text(self.template_type) if self.template_type else 'Unassigned'
+
+    class Meta:
+        unique_together = ('template_type',)
+
+
+class HistoryQuerySetManager(models.Manager):
+
+    def get_queryset(self):
+        return self.model.QuerySet(self.model)
+
+    def delete(self):
+        raise AssertionError('Deleting history objects not allowed')
+
+
+class HistoryQuerySet(models.QuerySet):
+
+    def update(self, *args, **kwargs):
+        raise AssertionError('Using update not allowed.')
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Using delete not allowed.')
+
+
+class HistoryBase(models.Model):
+
+    changes_text = models.TextField(blank=False, null=False)
+    changes = jsonfield.JSONField(blank=False, null=False)
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created at',
+    )
+    system_user = models.PositiveSmallIntegerField(
+        choices=constants.SystemUserType.get_choices(),
+        null=True,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+
+    objects = HistoryQuerySetManager()
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise AssertionError('Updating history object not alowed.')
+
+        if self.created_by is not None and self.system_user is not None:
+            raise AssertionError('Either created_by or system_user must be set.')
+
+        if self.created_by is None and self.system_user is None:
+            raise AssertionError('Exactly one of created_by or system_user must be set.')
+
+        super(HistoryBase, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Deleting history object not allowed.')
+
+    class Meta:
+        abstract = True
+
+
+class AdGroupHistory(HistoryBase):
+    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.AdGroupHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+    objects = HistoryQuerySetManager()
+
+    class QuerySet(HistoryQuerySet):
+        pass
+
+
+class CampaignHistory(HistoryBase):
+    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.CampaignHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+    objects = HistoryQuerySetManager()
+
+    class QuerySet(HistoryQuerySet):
+        pass
+
+
+class AccountHistory(HistoryBase):
+    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.AccountHistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
+    objects = HistoryQuerySetManager()
+
+    class QuerySet(HistoryQuerySet):
+        pass

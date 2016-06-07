@@ -1,10 +1,12 @@
 import logging
+import json
 
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
 from utils import request_signer
+import dash.upload_plus
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +19,19 @@ def content_upload(request):
         logger.exception('Invalid signature.')
         raise Http404
 
-    # TODO: mark processed candidates
-
+    callback_data = json.loads(request.body)
+    if callback_data.get('status') != 'ok':
+        logger.error('Content upload validation failed. data: %s', str(callback_data))
+        return JsonResponse({
+            'status': 'fail',
+        })
+    candidate = callback_data.get('candidate')
+    if not candidate:
+        logger.error('Content upload validation returned no candidate. data: %s', str(callback_data))
+        return JsonResponse({
+            'status': 'fail',
+        })
+    dash.upload_plus.process_callback(candidate)
     return JsonResponse({
         "status": 'ok'
     })

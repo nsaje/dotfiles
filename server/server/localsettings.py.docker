@@ -64,8 +64,6 @@ EMAIL_HOST_PASSWORD = Secret('').get()
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
 FROM_EMAIL = 'help-test@zemanta.com'
 
-MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
-
 # Path to log file
 LOG_FILE = '/app/logs/eins-log.log'
 
@@ -136,6 +134,7 @@ AWS_SECRET_ACCESS_KEY = Secret('').get()
 # S3 related settings
 S3_BUCKET = ''
 S3_BUCKET_STATS = ''
+S3_BUCKET_DEMO = ''
 USE_S3 = False
 
 # adgroup-level reports aggregations
@@ -171,15 +170,13 @@ SQS_REGION = 'us-east-1'
 SQS_QUEUE_PREFIX = 'test'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
 
-CELERY_DEFAULT_CONVAPI_QUEUE = SQS_QUEUE_PREFIX + '-convapi'
-CELERY_DEFAULT_CONVAPI_V2_QUEUE = SQS_QUEUE_PREFIX + '-' + 'convapi_v2'
-
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
     'region': SQS_REGION,
     'polling_interval': 10,
 }
 
+R1_DEMO_MODE = False
 R1_API_SIGN_KEY = Secret('').get()
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
@@ -197,10 +194,6 @@ BIDDER_API_SIGN_KEY = Secret('').get()
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
 
-# Google Analytics authentication
-GA_CLIENT_EMAIL = ''
-GA_PRIVATE_KEY = ''
-
 # k1
 K1_DEMO_MODE = False
 K1_CONSISTENCY_SYNC = False
@@ -208,3 +201,14 @@ K1_CONSISTENCY_SYNC = False
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
+
+# DeployKitty
+DK_API_KEY = Secret('').get()
+DK_DEMO_PREPARE_ENDPOINT = ''
+
+# l1
+LAMBDA_REGION = 'us-east-1'
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''

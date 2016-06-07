@@ -487,26 +487,6 @@ class CampaignAdminForm(forms.ModelForm):
         )
 
 
-class CampaignAgencyForm(forms.Form):
-    id = forms.IntegerField()
-    campaign_manager = forms.IntegerField()
-    iab_category = forms.ChoiceField(
-        choices=constants.IABCategory.get_choices(),
-    )
-
-    def clean_campaign_manager(self):
-        campaign_manager_id = self.cleaned_data.get('campaign_manager')
-
-        err_msg = 'Invalid campaign manager.'
-
-        try:
-            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
-        except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
-
-        return campaign_manager
-
-
 class CampaignSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
@@ -529,6 +509,26 @@ class CampaignSettingsForm(forms.Form):
         required=False,
         choices=constants.AdTargetLocation.get_choices()
     )
+
+    campaign_manager = forms.IntegerField(required=False)
+    iab_category = forms.ChoiceField(
+        choices=constants.IABCategory.get_choices(),
+        required=False,
+    )
+
+    def clean_campaign_manager(self):
+        campaign_manager_id = self.cleaned_data.get('campaign_manager')
+        if campaign_manager_id is None:
+            return
+
+        err_msg = 'Invalid campaign manager.'
+
+        try:
+            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return campaign_manager
 
 
 class UserForm(forms.Form):
@@ -1033,8 +1033,8 @@ class ContentAdCandidateForm(forms.Form):
             'required': 'Missing image URL',
         }
     )
-    image_crop = forms.CharField(
-        max_length=25,
+    image_crop = forms.ChoiceField(
+        choices=constants.ImageCrop.get_choices(),
         required=False,
     )
     display_url = forms.CharField(
@@ -1120,9 +1120,14 @@ class ContentAdCandidateForm(forms.Form):
 
 
 class ContentAdForm(ContentAdCandidateForm):
-    image_id = forms.CharField()
-    image_hash = forms.CharField()
+    image_id = forms.CharField(
+        required=False,
+    )
+    image_hash = forms.CharField(
+        required=False,
+    )
     image_width = forms.IntegerField(
+        required=False,
         min_value=2,
         max_value=4000,
         error_messages={
@@ -1131,6 +1136,7 @@ class ContentAdForm(ContentAdCandidateForm):
         },
     )
     image_height = forms.IntegerField(
+        required=False,
         min_value=2,
         max_value=3000,
         error_messages={
@@ -1144,8 +1150,13 @@ class ContentAdForm(ContentAdCandidateForm):
 
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
-        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK:
-            self.add_error('image_url', 'Image could not be processed')
+
+        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
+           not cleaned_data['image_id'] or\
+           not cleaned_data['image_hash'] or\
+           not cleaned_data['image_width'] or\
+           not cleaned_data['image_height']:
+            self.add_error('image_url', 'Image could not be processed.')
 
         if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
-            self.add_error('url', 'Content unreachable')
+            self.add_error('url', 'Content unreachable.')
