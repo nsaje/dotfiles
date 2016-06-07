@@ -151,10 +151,9 @@ def get_ad_group_sources_for_source_type(request):
     try:
         ad_group_sources = (
             dash.models.AdGroupSource.objects
-                .select_related(
-                'source_credentials', 'source', 'source__source_type',
-                'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
-            ).filter(source__source_type__type=source_type)
+                .select_related('source_credentials', 'source', 'source__source_type',
+                                'ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                .filter(source__source_type__type=source_type)
         )
     except dash.models.AdGroupSource.DoesNotExist:
         return _response_error("No ad group exists for source %s" % source_type, status=404)
