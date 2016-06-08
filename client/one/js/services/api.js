@@ -1366,7 +1366,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 accountType: settings.account_type,
                 allowedSources: settings.allowed_sources,
                 facebookPage: settings.facebook_page,
-                facebookStatus: settings.facebook_status,
+                facebookStatus: 'Pending',
+//                facebookStatus: settings.facebook_status,
             };
         }
 
@@ -1379,7 +1380,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 account_type: settings.accountType,
                 allowed_sources: settings.allowedSources,
                 facebook_page: settings.facebookPage,
-                facebook_status: settings.facebook_status,
+                facebook_status: settings.facebookStatus,
             };
         }
 
@@ -1392,7 +1393,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 accountType: data.errors.account_type,
                 allowedSources: data.errors.allowed_sources,
                 allowedSourcesData: data.data.allowed_sources,
-                facebookPage: data.errors.facebookPage,
+                facebookPage: data.errors.facebook_page,
             };
         }
 

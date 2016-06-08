@@ -1169,9 +1169,11 @@ class AccountSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_modify_facebook_page'):
             try:
                 result['facebook_page'] = account.facebookaccount.page_url
-                result['facebook_status'] = account.facebookaccount.status
+                result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                    account.facebookaccount.status)
             except models.FacebookAccount.DoesNotExist:
-                pass
+                result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                    models.constants.FacebookPageRequestType.EMPTY)
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):

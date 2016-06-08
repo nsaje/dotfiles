@@ -109,13 +109,37 @@
                 Facebook page
                 <zem-help-popover content="Link to the facebook page." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-3">
-                <div class="input-group fb-logo">
-                    <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg"></i>
-                    <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage">
+            <div class="col-xs-4">
+                <div class="row">
+                    <div class="col-xs-10 input-group fb-logo" ng-if="settings.facebookStatus !== undefined && settings.facebookStatus != 'Connected' && settings.facebookStatus != 'Pending'">
+                        <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg"></i>
+                        <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage">
+                    </div>
+                </div>
+                <div ng-if="settings.facebookStatus == 'Connected' || settings.facebookStatus == 'Pending'" class="row">
+                    <div class="col-xs-1 fb-page">
+                        <img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg">
+                    </div>
+                    <div class="col-xs-10 fb-page">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <p>{{settings.facebookPage}}</p>
+                            </div>
+                            <div class="col-xs-12">
+                                <p ng-class="settings.facebookStatus | lowercase">{{settings.facebookStatus}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="settings.facebookStatus == 'Pending'" class="col-xs-12 alert alert-info form-alert-box fb-warning">
+                        <div class="form-alert-exclamation">
+                            <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg">
+                        </div>
+                        <div class="form-alert-body">
+                            Please contact your Facebook page manager to approve access.
+                        </div>
+                    </div>
                 </div>
             </div>
-
             <label ng-repeat="error in errors.facebookPage" class="control-label error" for="fb-page-input">{{ error }}</label>
         </div>
 
