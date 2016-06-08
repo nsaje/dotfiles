@@ -1,0 +1,4 @@
+- model: dash.demomapping
+  pk: 1
+  fields: {real_account: 1, demo_account_name: My demo account name, demo_campaign_name_pool: '["My campaign 1",
+    "My Campaign 2"]', demo_ad_group_name_pool: '["My AG 1", "My AG 2"]'}

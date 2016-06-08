@@ -1,0 +1,31 @@
+eins:
+  image: z1-bundle:current
+  working_dir: /app/zemanta-eins/
+  entrypoint: /bin/bash
+  command: /start-server.sh
+  links:
+    - postgres:db
+  expose:
+    - 8000
+  extra_hosts:
+    - "gemini.yahoo.com:0.0.0.0"
+    - "my.outbrain.com:0.0.0.0"
+    - "api.outbrain.com:0.0.0.0"
+    - "p1.zemanta.com:0.0.0.0"
+  mem_limit: 256m
+  labels:
+    traefik.backend: ${INSTANCE_NAME}
+    traefik.frontend.rule: "Host:${INSTANCE_NAME}.demo.zemanta.com"
+  environment:
+    - "INSTANCE_NAME=${INSTANCE_NAME}"
+    - "CONF_ENV=demo"
+    - "ZWEI_CALLBACK_BASE_URL=http://0.0.0.0"
+    - "GUNICORN_WORKERS=1"
+    - "STATSD_PORT_8125_UDP_ADDR=localhost"
+    - "TELEGRAF_PORT_8135_UDP_ADDR=localhost"
+
+postgres:
+  image: demopostgres:current
+  labels:
+      traefik.enable: "false"
+
