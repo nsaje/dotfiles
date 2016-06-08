@@ -22,7 +22,7 @@ MATERIALIZED_VIEWS = [
     materialize_k1.ContentAdStats(),
     materialize_k1.Publishers(),
     materialize_k1.TouchpointConversions(),
-    materialize_views.MasterView(),
+    # materialize_views.MasterView(),
 ]
 
 MATERIALIZED_VIEWS_S3_PREFIX = 'materialized_views'
