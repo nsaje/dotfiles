@@ -396,12 +396,6 @@ def _query_rows(query):
             yield row
 
 
-def extract_source_slug(source_slug):
-    if source_slug.startswith('b1_'):
-        return source_slug[3:]
-    return source_slug
-
-
 def _sum_conversion(conversion_str):
     conv = defaultdict(int)
 
