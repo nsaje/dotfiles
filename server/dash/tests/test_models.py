@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import textwrap
 from decimal import Decimal
 
 import pytz
@@ -744,6 +745,15 @@ class HistoryTest(TestCase):
         self.acc = models.Account.objects.get(pk=1)
         self.su = constants.SystemUserType.AUTOPILOT
 
+    def _latest_ad_group_history(self):
+        return models.AdGroupHistory.objects.all().order_by('-created_dt').first()
+
+    def _latest_campaign_history(self):
+        return models.CampaignHistory.objects.all().order_by('-created_dt').first()
+
+    def _latest_account_history(self):
+        return models.AccountHistory.objects.all().order_by('-created_dt').first()
+
     def test_save(self):
         models.AccountHistory.objects.create(
             created_by=self.u,
@@ -766,6 +776,33 @@ class HistoryTest(TestCase):
             type=constants.AccountHistoryType.ACCOUNT,
         )
         self.assertEqual(1, models.AccountHistory.objects.all().count())
+
+
+    def test_save_no_changes(self):
+        self.assertIsNone(
+            models.create_ad_group_history(
+                None, constants.AdGroupHistoryType.AD_GROUP,
+                {}, ''
+            )
+        )
+
+        self.assertIsNone(
+            models.create_campaign_history(
+                None, constants.CampaignHistoryType.CAMPAIGN,
+                {}, ''
+            )
+        )
+
+        self.assertIsNone(
+            models.create_account_history(
+                None, constants.AccountHistoryType.ACCOUNT,
+                {}, ''
+            )
+        )
+
+        self.assertEquals(0, models.AdGroupHistory.objects.all().count())
+        self.assertEquals(0, models.CampaignHistory.objects.all().count())
+        self.assertEquals(0, models.AccountHistory.objects.all().count())
 
     def test_save_fail(self):
         with self.assertRaises(AssertionError):
@@ -798,11 +835,59 @@ class HistoryTest(TestCase):
 
     def test_create_ad_group_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
+
         adgss = models.AdGroupSettings(
             ad_group=ad_group,
             cpc_cc=4999,
         )
         adgss.save(None)
+
+        adg_hist = self._latest_ad_group_history()
+        self.maxDiff = None
+        self.assertEqual(1, adg_hist.ad_group.id)
+        self.assertDictEqual(
+            {
+                'ad_group_name': '',
+                'adobe_tracking_param': '',
+                'archived': False,
+                'autopilot_daily_budget': 0,
+                'autopilot_state': 2,
+                'brand_name': '',
+                'call_to_action': '',
+                'cpc_cc': 4999,
+                'description': '',
+                'display_url': '',
+                'enable_adobe_tracking': False,
+                'enable_ga_tracking': True,
+                'ga_tracking_type': 1,
+                'landing_mode': False,
+                'retargeting_ad_groups': [],
+                'state': 2,
+                'target_devices': [],
+                'target_regions': [],
+                'tracking_code': ''
+            } , adg_hist.changes)
+        self.assertEqual(
+            textwrap.dedent("""
+            State set to "Paused"
+            , Max CPC bid set to "$4999.00"
+            , Device targeting set to ""
+            , Locations set to "worldwide"
+            , Retargeting ad groups set to ""
+            , Tracking code set to ""
+            , Archived set to "False"
+            , Display URL set to ""
+            , Brand name set to ""
+            , Description set to ""
+            , Call to action set to ""
+            , Ad group name set to ""
+            , Enable GA tracking set to "True"
+            , GA tracking type (via API or e-mail). set to "Email"
+            , Enable Adobe tracking set to "False"
+            , Adobe tracking parameter set to ""
+            , Autopilot set to "Disabled", Autopilot's Daily Budget set to "$0.00"
+            , Landing Mode set to "False"
+            """).replace("\n", ""), adg_hist.changes_text)
 
         hist = models.create_ad_group_history(
             adgss,
@@ -816,6 +901,19 @@ class HistoryTest(TestCase):
         adgss = adgss.copy_settings()
         adgss.cpc_cc = 5100
         adgss.save(None)
+
+        adg_hist = self._latest_ad_group_history()
+        self.maxDiff = None
+        self.assertEqual(1, adg_hist.ad_group.id)
+        self.assertDictEqual(
+            {
+                'cpc_cc': 5100,
+            } , adg_hist.changes
+        )
+        self.assertEqual(
+            'Max CPC bid set to "$5100.00"',
+            adg_hist.changes_text
+        )
 
         hist = models.create_ad_group_history(
             adgss,
@@ -836,14 +934,37 @@ class HistoryTest(TestCase):
         )
         adgss.save(None)
 
-        hist = models.create_ad_group_history(
-            adgss.ad_group_source.ad_group.get_current_settings(),
-            constants.AdGroupHistoryType.AD_GROUP_SOURCE,
-            model_to_dict(adgss),
-            {})
+        adgs_hist = self._latest_ad_group_history()
+        self.assertEqual(constants.AdGroupHistoryType.AD_GROUP_SOURCE, adgs_hist.type)
+        self.assertDictEqual(
+            {
+                'daily_budget_cc': 10000,
+                'landing_mode': False,
+                'state': 2
+            }
+            , adgs_hist.changes)
+        self.assertEqual(
+            textwrap.dedent("""
+            State set to "Paused"
+            , Daily Budget set to "$10000.00"
+            , Landing Mode set to "False"
+            """).replace('\n', ''), adgs_hist.changes_text)
 
-        self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(10000, hist.changes['daily_budget_cc'])
+        adgss = adgss.copy_settings()
+        adgss.daily_budget_cc = 50000
+        adgss.save(None)
+
+        adgs_hist = self._latest_ad_group_history()
+        self.assertEqual(constants.AdGroupHistoryType.AD_GROUP_SOURCE, adgs_hist.type)
+        self.assertDictEqual(
+            {
+                'daily_budget_cc': 50000,
+            }
+            , adgs_hist.changes)
+        self.assertEqual(
+            textwrap.dedent("""
+            Daily Budget set to "$50000.00"
+            """).replace('\n', ''), adgs_hist.changes_text)
 
     def test_create_campaign_history(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -852,6 +973,37 @@ class HistoryTest(TestCase):
             name='Awesome',
         )
         adgss.save(None)
+
+        camp_hist = self._latest_campaign_history()
+        self.assertEqual(constants.CampaignHistoryType.CAMPAIGN, camp_hist.type)
+        self.assertDictEqual(
+            {
+                'archived': False,
+                'automatic_campaign_stop': True,
+                'campaign_goal': 3,
+                'goal_quantity': 0,
+                'iab_category': u'IAB24',
+                'landing_mode': False,
+                'name': u'Awesome',
+                'promotion_goal': 1,
+                'target_devices': [],
+                'target_regions': []
+            }
+            , camp_hist.changes)
+        self.assertEqual(
+            textwrap.dedent("""
+            Name set to "Awesome"
+            , IAB Category set to "Uncategorized"
+            , Campaign Goal set to "new unique visitors"
+            , Goal Quantity set to "0"
+            , Promotion Goal set to "Brand Building"
+            , Archived set to "False"
+            , Device targeting set to ""
+            , Locations set to "worldwide"
+            , Automatic Campaign Stop set to "True"
+            , Landing Mode set to "False"
+            """).replace('\n', '')
+            , camp_hist.changes_text)
 
         hist = models.create_campaign_history(
             adgss,
@@ -865,6 +1017,17 @@ class HistoryTest(TestCase):
         adgss = adgss.copy_settings()
         adgss.name = 'Awesomer'
         adgss.save(None)
+
+
+        camp_hist = self._latest_campaign_history()
+        self.assertEqual(constants.CampaignHistoryType.CAMPAIGN, camp_hist.type)
+        self.assertDictEqual(
+            {
+                'name': 'Awesomer'
+            },
+            camp_hist.changes
+        )
+        self.assertEqual('Name set to "Awesomer"', camp_hist.changes_text)
 
         hist = models.create_campaign_history(
             adgss,

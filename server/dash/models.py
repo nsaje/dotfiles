@@ -4,6 +4,7 @@ import binascii
 import datetime
 import urlparse
 import newrelic.agent
+from collections import OrderedDict
 
 from decimal import Decimal
 import pytz
@@ -139,6 +140,8 @@ class CopySettingsMixin(object):
             new_settings.ad_group = self.ad_group
         elif type(self) == AdGroupSourceSettings or type(self) == AdGroupSourceState:
             new_settings.ad_group_source = self.ad_group_source
+
+        post_init_store_state(new_settings, **{'instance': self})
 
         return new_settings
 
@@ -640,6 +643,18 @@ class SettingsBase(models.Model, CopySettingsMixin):
         return changes
 
     @classmethod
+    def get_model_state_changes(self, current_settings_dict, new_settings_dict, settings_fields):
+        changes = OrderedDict()
+        for field_name in settings_fields:
+            new_value = new_settings_dict[field_name]
+            if not current_settings_dict.get('id') and new_value is not None:
+                changes[field_name] = new_value
+
+            if current_settings_dict[field_name] != new_value:
+                changes[field_name] = new_value
+        return changes
+
+    @classmethod
     def get_default_value(cls, prop_name):
         return cls.get_defaults_dict().get(prop_name)
 
@@ -719,7 +734,8 @@ class AccountSettings(SettingsBase):
             self.created_by = request.user
 
         snapshot_type = constants.AccountHistoryType.ACCOUNT
-        changes = SettingsBase.get_dict_changes(
+
+        changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
             self._settings_fields,
@@ -808,7 +824,7 @@ class CampaignSettings(SettingsBase):
             else:
                 self.created_by = request.user
         snapshot_type = constants.CampaignHistoryType.CAMPAIGN
-        changes = SettingsBase.get_dict_changes(
+        changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
             self._settings_fields,
@@ -1975,7 +1991,7 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = request.user
 
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP
-        changes = SettingsBase.get_dict_changes(
+        changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
             self._settings_fields,
@@ -2132,7 +2148,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
 
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP_SOURCE
-        changes = SettingsBase.get_dict_changes(
+        changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
             self._settings_fields,
@@ -2664,6 +2680,9 @@ class CreditLineItem(FootprintModel):
             value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         return value
 
+    def get_settings_dict(self):
+        return {history_key: getattr(self, history_key) for history_key in self._history_fields}
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2682,7 +2701,7 @@ class CreditLineItem(FootprintModel):
             accounts = self.agency.account_set.all()
         for account in accounts:
             snapshot_type = constants.AccountHistoryType.CREDIT
-            changes = SettingsBase.get_dict_changes(
+            changes = SettingsBase.get_model_state_changes(
                 self.post_init_state,
                 model_to_dict(self),
                 self._history_fields,
@@ -2880,6 +2899,9 @@ class BudgetLineItem(FootprintModel):
             value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         return value
 
+    def get_settings_dict(self):
+        return {history_key: getattr(self, history_key) for history_key in self._history_fields}
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2891,7 +2913,7 @@ class BudgetLineItem(FootprintModel):
             budget=self,
         )
 
-        changes = SettingsBase.get_dict_changes(
+        changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),
             self._history_fields,
@@ -3478,7 +3500,8 @@ class AccountHistory(HistoryBase):
 
 def post_init_store_state(sender, **kwargs):
     instance = kwargs.get('instance', {})
-    sender.post_init_state = model_to_dict(instance) if instance != {} else None
+    sender.post_init_state = instance.get_settings_dict() if instance != {} else None
+    sender.post_init_state['id'] = instance.id
 
 
 post_init.connect(post_init_store_state, AdGroupSettings)
