@@ -19,8 +19,6 @@
 # should we update this? 0 11 * * *          /home/ubuntu/docker-manage-py.sh vacuum_stats_db
 #45 * * * *          /home/ubuntu/docker-manage-py.sh update_touchpoint_conversions_full
 #30 5,9,11 * * *     /home/ubuntu/docker-manage-py.sh fetch_reports_by_publisher
-#*/5 * * * *         /home/ubuntu/docker-manage-py.sh refresh_changed_contentadstats
-#*/5 * * * *         /home/ubuntu/docker-manage-py.sh refresh_changed_daily_statements
 #29 6,18 * * *       /home/ubuntu/docker-manage-py.sh schedule_old_data_refresh
 #30 6,10,12,14 * * * /home/ubuntu/docker-manage-py.sh refresh_publishers
 #40 6,10,12 * * *    /home/ubuntu/docker-manage-py.sh update_content_ad_stats_from_ga_api
@@ -29,3 +27,4 @@
 #10 * * * *          /home/ubuntu/docker-manage-py.sh monitor_ga_reports
 #20,50 * * * *       /home/ubuntu/docker-manage-py.sh monitor_aggregate_discrepancy
 #20,50 * * * *       /home/ubuntu/docker-manage-py.sh monitor_redshift_discrepancy
+0 8 * * *            /home/ubuntu/docker-manage-py.sh create_demo_snapshot

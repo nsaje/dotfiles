@@ -193,9 +193,9 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         date = datetime.date(2016, 5, 1)
 
         mock_get_postclickstats_query_results.return_value = [
-            PostclickstatsResults(1, 'gaapi', 1, 'b1_outbrain', 'bla.com', 12, '{einpix: 2}', 22, 100, 20, 2),
+            PostclickstatsResults(1, 'gaapi', 1, 'outbrain', 'bla.com', 12, '{einpix: 2}', 22, 100, 20, 2),
             # this one should be left out as its from lower priority postclick source
-            PostclickstatsResults(1, 'ga_mail', 2, 'b1_outbrain', 'beer.com', 12, '{einpix: 2}', 22, 100, 20, 2),
+            PostclickstatsResults(1, 'ga_mail', 2, 'outbrain', 'beer.com', 12, '{einpix: 2}', 22, 100, 20, 2),
             PostclickstatsResults(3, 'gaapi', 3, 'adblade', 'nesto.com', 12, '{einpix: 2}', 22, 100, 20, 2),
             PostclickstatsResults(2, 'gaapi', 4, 'outbrain', 'trol', 12, '{einpix: 2}', 22, 100, 20, 2),
         ]

@@ -109,7 +109,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         var classes = [];
         classes.push('level-' + row.level);
 
-        if (row.level === grid.meta.source.selectedBreakdown.length) {
+        if (row.level === grid.meta.service.getBreakdownLevel()) {
             classes.push('level-last');
         }
 

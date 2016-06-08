@@ -1,15 +1,19 @@
 from collections import namedtuple
 
 from django.conf import settings
-from django.db import connections
+from django.db import connections, transaction
 
 
 def get_stats_cursor():
-    return connections[settings.K1_DB_NAME].cursor()
+    return connections[settings.STATS_DB_NAME].cursor()
 
 
 def get_write_stats_cursor():
-    return connections[settings.K1_DB_NAME].cursor()
+    return connections[settings.STATS_DB_NAME].cursor()
+
+
+def get_write_stats_transaction():
+    return transaction.atomic(using=settings.STATS_DB_NAME)
 
 
 def get_empty_row_dict(cursor_description):
@@ -43,7 +47,7 @@ def namedtuplefetchall(cursor):
 
 def xnamedtuplefetchall(cursor):
     """
-    Return all rows from a cursor as a namedtuple
+    Returns a generator of rows as a namedtuple
     """
 
     desc = cursor.description

@@ -7,10 +7,9 @@ import boto
 import boto.s3
 
 from django.conf import settings
-from django.db import transaction
 
 from utils import s3helpers
-from redshiftapi.db import get_write_stats_cursor
+from redshiftapi.db import get_write_stats_cursor, get_write_stats_transaction
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ class Materialize(object):
         ins_sql, ins_params = self.prepare_insert_query(date_from, date_to)
 
         logger.info("Materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
-        with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
+        with get_write_stats_transaction():
             with get_write_stats_cursor() as c:
                 c.execute(del_sql, del_params)
                 c.execute(ins_sql, ins_params)
@@ -65,7 +64,7 @@ class TransformAndMaterialize(Materialize):
         del_sql, del_params = self.prepare_delete_query(date_from, date_to)
 
         logger.info("Materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
-        with transaction.atomic(using=settings.K1_VIEWS_DB_NAME):
+        with get_write_stats_transaction():
             with get_write_stats_cursor() as c:
 
                 c.execute(del_sql, del_params)

@@ -17,10 +17,6 @@ else:
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 STATS_DB_NAME = 'stats'
-K1_DB_NAME = 'k1'
-K1_VIEWS_DB_NAME = K1_DB_NAME
-STATS_READ_DB_NAME = STATS_DB_NAME
-
 STATS_E2E_DB_NAME = 'stats_e2e'
 
 DATABASES = {
@@ -37,14 +33,6 @@ DATABASES = {
         'PASSWORD': ''
     },
     STATS_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': 5439,
-    },
-    K1_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
@@ -134,6 +122,7 @@ AWS_SECRET_ACCESS_KEY = Secret('').get()
 # S3 related settings
 S3_BUCKET = ''
 S3_BUCKET_STATS = ''
+S3_BUCKET_DEMO = ''
 USE_S3 = False
 
 # fallback dir when S3 is not used
@@ -175,15 +164,13 @@ SQS_REGION = 'us-east-1'
 SQS_QUEUE_PREFIX = 'test'
 SQS_VISIBILITY_TIMEOUT = 10 * 60
 
-CAMPAIGN_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-campaign_change'
-DAILY_STATEMENTS_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-budget-change'
-
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
     'region': SQS_REGION,
     'polling_interval': 10,
 }
 
+R1_DEMO_MODE = False
 R1_API_SIGN_KEY = Secret('').get()
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
@@ -209,7 +196,15 @@ K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 
+DEMO_MODE = False
+
+# DeployKitty
+DK_API_KEY = Secret('').get()
+DK_DEMO_PREPARE_ENDPOINT = ''
+
 # l1
+LAMBDA_REGION = 'us-east-1'
 LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://z1-1452281140.us-east-1.elb.amazonaws.com/api/callbacks/content-upload/'

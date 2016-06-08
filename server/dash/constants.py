@@ -1562,3 +1562,45 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
         CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
     }
+
+
+class ImageCrop(ConstantBase):
+    CENTER = 'center'
+    FACES = 'faces'
+    ENTROPY = 'entropy'
+
+    _VALUES = {
+        CENTER: 'Center',
+        FACES: 'Faces',
+        ENTROPY: 'Entropy',
+    }
+
+
+class AdGroupHistoryType(ConstantBase):
+    AD_GROUP = 1
+    AD_GROUP_SOURCE = 2
+
+    _VALUES = {
+        AD_GROUP: 'Ad Group History',
+        AD_GROUP_SOURCE: 'Ad Group Source History',
+    }
+
+
+class CampaignHistoryType(ConstantBase):
+    CAMPAIGN = 1
+    BUDGET = 2
+
+    _VALUES = {
+        CAMPAIGN: 'Campaign History',
+        BUDGET: 'Budget History',
+    }
+
+
+class AccountHistoryType(ConstantBase):
+    ACCOUNT = 1
+    CREDIT = 2
+
+    _VALUES = {
+        ACCOUNT: 'Account History',
+        CREDIT: 'Credit History',
+    }

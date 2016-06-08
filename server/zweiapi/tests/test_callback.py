@@ -518,7 +518,6 @@ class FetchReportsTestCase(TestCase):
         self.cursor_mock = cursor_patcher.start()
         self.addCleanup(cursor_patcher.stop)
 
-    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports(self):
         article_row = {
             'id': '987654321',
@@ -543,7 +542,6 @@ class FetchReportsTestCase(TestCase):
         self._assert_article_stats(ad_group_source, article_row)
 
     @override_settings(USE_HASH_CACHE=True)
-    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports_hash_cache(self):
         zweiapi.views.cache.clear()
 
@@ -578,7 +576,6 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=True)
-    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports_hash_cache_changed_data(self):
         zweiapi.views.cache.clear()
         zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
@@ -736,7 +733,6 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=False)
-    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports_delete_empty_rows(self):
         zwei_response_data = {
             'status': 'success',

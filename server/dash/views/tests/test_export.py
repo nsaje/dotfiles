@@ -12,12 +12,15 @@ from django.contrib.auth.models import Permission
 
 from dash.views import export
 import dash.models
+import reports.models
 from dash import constants
 from utils.test_helper import add_permissions
 
 from zemauth import models
 from utils import exc
 from utils import test_helper
+
+from django.test.client import RequestFactory
 
 
 class AssertRowMixin(object):
@@ -581,6 +584,92 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
+    def test_get_by_ad_group_agency_flat_fee(self):
+        rf = RequestFactory()
+        r = rf.get('')
+        r.user = models.User.objects.get(pk=2)
+        agency = dash.models.Agency(
+            name="test agency"
+        )
+        agency.save(r)
+
+        start_date, end_date = datetime.date(2014, 6, 30), datetime.date(2014, 7, 1)
+
+        credit = dash.models.CreditLineItem(
+            agency=agency,
+            start_date=start_date,
+            end_date=end_date,
+            amount=10000,
+            flat_fee_cc=5000 * 1e4,
+            flat_fee_start_date=start_date,
+            flat_fee_end_date=end_date,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=r.user,
+        )
+        credit.save()
+
+        acc = dash.models.Account.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(r)
+
+        # account must have spend something in the relevatn period for it to be
+        # counted among attributed agency flat fee
+
+        budget = dash.models.BudgetLineItem.objects.create(
+            campaign=dash.models.Campaign.objects.get(pk=1),
+            credit=credit,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=start_date,
+            media_spend_nano=1000,
+            data_spend_nano=0,
+            license_fee_nano=0
+        )
+
+        add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
+
+        request = http.HttpRequest()
+        request.GET['type'] = 'adgroup-csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions,flat_fee'
+        request.GET['order'] = 'impressions'
+
+        user = models.User.objects.get(pk=2)
+        request.user = user
+
+        response = export.AllAccountsExport().get(request)
+
+        expected_content = (
+            'Start Date,End Date,Account,Campaign,Ad Group,Status ('
+            '' + time.strftime('%Y-%m-%d') + '),Account Type,Average CPC,Clicks,'
+            'Impressions,Recognized Flat Fee\r\n2014-06-30,2014-07-01,'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
+            ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1'
+            ',test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1'
+            ',Inactive,Self-managed,10.230,103,100000,5000.00\r\n2014-06-30,2014-07-01'
+            ',test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
+            ',test campaign 2,test adgroup 2,Inactive,Self-managed,20.230,203,200000,0\r\n'
+        )
+        expected_content = test_helper.format_csv_content(expected_content)
+
+        filename = 'ZemantaOne_-_by_ad_group_report_2014-06-30_2014-07-01.csv'
+
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s"' % filename
+        )
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
     def test_get_by_account_with_ids(self):
         request = http.HttpRequest()
         request.GET['type'] = 'account-csv'
@@ -625,6 +714,85 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
+    def test_get_by_account_agency_flat_fee(self):
+        rf = RequestFactory()
+        r = rf.get('')
+        r.user = models.User.objects.get(pk=2)
+        agency = dash.models.Agency(
+            name="test agency"
+        )
+        agency.save(r)
+
+        start_date, end_date = datetime.date(2014, 6, 30), datetime.date(2014, 7, 1)
+
+        credit = dash.models.CreditLineItem(
+            agency=agency,
+            start_date=start_date,
+            end_date=end_date,
+            amount=10000,
+            flat_fee_cc=5000 * 1e4,
+            flat_fee_start_date=start_date,
+            flat_fee_end_date=end_date,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=r.user,
+        )
+        credit.save()
+
+        acc = dash.models.Account.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(r)
+
+        # account must have spend something in the relevatn period for it to be
+        # counted among attributed agency flat fee
+
+        budget = dash.models.BudgetLineItem.objects.create(
+            campaign=dash.models.Campaign.objects.get(pk=1),
+            credit=credit,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=start_date,
+            media_spend_nano=1000,
+            data_spend_nano=0,
+            license_fee_nano=0
+        )
+
+        add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
+
+        request = http.HttpRequest()
+        request.GET['type'] = 'account-csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions,flat_fee'
+
+        user = models.User.objects.get(pk=2)
+        request.user = user
+
+        response = export.AllAccountsExport().get(request)
+
+        expected_content = (
+            'Start Date,End Date,Account,Status (' + time.strftime('%Y-%m-%d') + ')'
+            ',Account Type,Average CPC,Clicks,Impressions,Recognized Flat Fee\r\n2014-06-30,2014-07-01,'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Self-managed,20.230,203,200000,5000.00\r\n'
+        )
+        expected_content = test_helper.format_csv_content(expected_content)
+
+        filename = 'ZemantaOne_-_by_account_report_2014-06-30_2014-07-01.csv'
+
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s"' % filename
+        )
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
 
 class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
@@ -636,6 +804,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
+                'account': 1,
                 'content_ad': 1,
                 'ad_group': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -647,6 +816,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
                 'some_random_metric': 12,
                 'source': 4
             }, {
+                'account': 1,
                 'content_ad': 2,
                 'ad_group': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -723,6 +893,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
                 'content_ad': 1,
                 'ad_group': 1,
                 'campaign': 1,
+                'account': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
                 'cpc': 10.23,

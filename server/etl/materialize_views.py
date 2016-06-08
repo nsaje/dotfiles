@@ -62,7 +62,7 @@ class MVAccountDelivery(materialize_helpers.Materialize):
 
 class MasterView(materialize_helpers.TransformAndMaterialize):
     """
-    Represents breakdown by all dimensions available. It containts preclick, postclick, conversions
+    Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.
 
     NOTE: It excludes outbrain publishers as those are currently not linked to content ads and so
@@ -76,23 +76,23 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
         self._prefetch()
 
         with db.get_stats_cursor() as c:
-            breakdown_keys_with_preclick_stats = set()
+            breakdown_keys_with_traffic_stats = set()
 
             for breakdown_key, row in self._get_stats(c, date, campaign_factors):
-                breakdown_keys_with_preclick_stats.add(breakdown_key)
+                breakdown_keys_with_traffic_stats.add(breakdown_key)
                 yield row
 
             skipped_postclick_stats = set()
             # only return those rows for which we have
             for breakdown_key, row in self._get_postclickstats(c, date):
-                if breakdown_key in breakdown_keys_with_preclick_stats:
+                if breakdown_key in breakdown_keys_with_traffic_stats:
                     yield row
                 else:
                     skipped_postclick_stats.add(breakdown_key)
 
             skipped_tpconversions = set()
             for breakdown_key, row in self._get_touchpoint_conversions(c, date):
-                if breakdown_key in breakdown_keys_with_preclick_stats:
+                if breakdown_key in breakdown_keys_with_traffic_stats:
                     yield row
                 else:
                     skipped_tpconversions.add(breakdown_key)

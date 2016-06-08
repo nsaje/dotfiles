@@ -1033,9 +1033,13 @@ class ContentAdCandidateForm(forms.Form):
             'required': 'Missing image URL',
         }
     )
-    image_crop = forms.CharField(
-        max_length=25,
+    image_crop = forms.ChoiceField(
+        choices=constants.ImageCrop.get_choices(),
         required=False,
+        error_messages={
+            'required': 'Missing image crop',
+            'invalid_choice': 'Image crop %(value)s is not supported'
+        }
     )
     display_url = forms.CharField(
         max_length=25,
@@ -1120,9 +1124,14 @@ class ContentAdCandidateForm(forms.Form):
 
 
 class ContentAdForm(ContentAdCandidateForm):
-    image_id = forms.CharField()
-    image_hash = forms.CharField()
+    image_id = forms.CharField(
+        required=False,
+    )
+    image_hash = forms.CharField(
+        required=False,
+    )
     image_width = forms.IntegerField(
+        required=False,
         min_value=2,
         max_value=4000,
         error_messages={
@@ -1131,6 +1140,7 @@ class ContentAdForm(ContentAdCandidateForm):
         },
     )
     image_height = forms.IntegerField(
+        required=False,
         min_value=2,
         max_value=3000,
         error_messages={
@@ -1144,7 +1154,16 @@ class ContentAdForm(ContentAdCandidateForm):
 
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
-        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK:
+
+        if 'image_width' not in cleaned_data or 'image_height' not in cleaned_data:
+            # didn't validate
+            return
+
+        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
+           not cleaned_data['image_id'] or\
+           not cleaned_data['image_hash'] or\
+           not cleaned_data['image_width'] or\
+           not cleaned_data['image_height']:
             self.add_error('image_url', 'Image could not be processed')
 
         if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:

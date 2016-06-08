@@ -124,6 +124,8 @@ def _call_api_retry(url, data=None, method='POST'):
 
 
 def _call_api(url, data, method='POST'):
+    if settings.R1_DEMO_MODE:
+        return {}
     request = urllib2.Request(url, data)
     request.get_method = lambda: method
     response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)
