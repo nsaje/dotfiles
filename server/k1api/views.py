@@ -11,7 +11,6 @@ import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
 from utils import url_helper, request_signer
-import dateutil.parser
 
 
 logger = logging.getLogger(__name__)
@@ -50,13 +49,12 @@ def get_ad_group_source_ids(request):
     elif source_type:
         ad_group_source_ids = _get_ad_group_source_ids_by_source_type(source_type)
     else:
-        _response_error("Missing credentials ID and source type")
+        return _response_error("Missing credentials ID and source type")
 
     res = []
     for ags in ad_group_source_ids:
         res.append({'ad_group_id': ags.ad_group_id, 'source_campaign_key': ags.source_campaign_key})
     return _response_ok(list(res))
-    return _response_ok(list(ad_group_source_ids))
 
 
 def _get_ad_group_source_ids_by_credentials_id(credentials_id):
@@ -111,7 +109,7 @@ def _add_settings_to_ad_group_source(ad_group_source):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
     if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
-                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+            ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
         source_state = constants.AdGroupSettingsState.ACTIVE
     else:
         source_state = constants.AdGroupSettingsState.INACTIVE
