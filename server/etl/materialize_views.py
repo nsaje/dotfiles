@@ -63,8 +63,10 @@ class MasterView(object):
         self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
         self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.all()}
         self.accounts_map = {x.id: x for x in dash.models.Account.objects.all()}
-        self.sources_slug_map = {
-            helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
+        self.sources_bidder_slug_map = {
+            x.bidder_slug: x for x in dash.models.Source.objects.all()}
+        self.sources_tracking_slug_map = {
+            x.tracking_slug: x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
     def _get_stats(self, cursor, date, campaign_factors):
@@ -75,15 +77,14 @@ class MasterView(object):
                 logger.error("Got spend for unknown ad group: %s", row.ad_group_id)
                 continue
 
-            source_slug = helpers.extract_source_slug(row.source_slug)
-            if source_slug not in self.sources_slug_map:
+            if row.source_slug not in self.sources_bidder_slug_map:
                 logger.error("Got spend for unknown media source: %s", row.source_slug)
                 continue
 
             ad_group = self.ad_groups_map[row.ad_group_id]
             campaign = self.campaigns_map[ad_group.campaign_id]
             account = self.accounts_map[campaign.account_id]
-            source = self.sources_slug_map[source_slug]
+            source = self.sources_bidder_slug_map[row.source_slug]
 
             if campaign not in campaign_factors:
                 logger.error("Missing cost factors for campaign %s", campaign.id)
@@ -150,8 +151,7 @@ class MasterView(object):
             rows = helpers.get_highest_priority_postclick_source(rows_by_postclick_source)
 
             for row in rows:
-                source_slug = helpers.extract_source_slug(row.source_slug)
-                if source_slug not in self.sources_slug_map:
+                if row.source_slug not in self.sources_tracking_slug_map:
                     logger.error("Got postclick stats for unknown source: %s", row.source_slug)
                     continue
 
@@ -159,7 +159,7 @@ class MasterView(object):
                     logger.error("Got postclick stats for unknown ad group: %s", row.ad_group_id)
                     continue
 
-                source = self.sources_slug_map[source_slug]
+                source = self.sources_tracking_slug_map[row.source_slug]
                 ad_group = self.ad_groups_map[row.ad_group_id]
                 campaign = self.campaigns_map[ad_group.campaign_id]
                 account = self.accounts_map[campaign.account_id]
