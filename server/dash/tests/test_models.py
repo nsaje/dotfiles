@@ -1018,7 +1018,6 @@ class HistoryTest(TestCase):
         adgss.name = 'Awesomer'
         adgss.save(None)
 
-
         camp_hist = self._latest_campaign_history()
         self.assertEqual(constants.CampaignHistoryType.CAMPAIGN, camp_hist.type)
         self.assertDictEqual(
@@ -1048,6 +1047,20 @@ class HistoryTest(TestCase):
         )
         adgss.save(r)
 
+        acc_hist = self._latest_account_history()
+        self.assertEqual(constants.AccountHistoryType.ACCOUNT, acc_hist.type)
+        self.assertDictEqual(
+            {
+                'archived': False,
+                'account_type': 1,
+                'name': ''
+            },
+            acc_hist.changes)
+        self.assertEqual(
+            'Name set to "", Archived set to "False", Account Type set to "Unknown"',
+            acc_hist.changes_text
+        )
+
         hist = models.create_account_history(
             adgss,
             constants.AccountHistoryType.ACCOUNT,
@@ -1066,6 +1079,22 @@ class HistoryTest(TestCase):
         self.assertEqual(account, hist.account)
         self.assertEqual({'archived': True}, hist.changes)
 
+        adgss = adgss.copy_settings()
+        adgss.name = 'Wacky account'
+        adgss.save(r)
+
+        acc_hist = self._latest_account_history()
+        self.assertEqual(constants.AccountHistoryType.ACCOUNT, acc_hist.type)
+        self.assertDictEqual(
+            {
+                'name': 'Wacky account'
+            },
+            acc_hist.changes)
+        self.assertEqual(
+            'Name set to "Wacky account"',
+            acc_hist.changes_text
+        )
+
     @patch('dash.models.BudgetLineItem.state')
     def test_create_budget_history(self, mock_state):
         mock_state.return_value = constants.BudgetLineItemState.PENDING
@@ -1078,6 +1107,53 @@ class HistoryTest(TestCase):
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'amount': 200}, hist.changes)
+
+        user = User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=100)
+
+        credit = models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=30,
+            freed_cc=1000,
+            start_date=start_date,
+            end_date=start_date + datetime.timedelta(days=29),
+            created_by=user,
+            comment="Random remark"
+        )
+
+        camp_hist = self._latest_campaign_history()
+        self.assertEqual(constants.CampaignHistoryType.BUDGET, camp_hist.type)
+        self.assertDictEqual(
+            {
+                'amount': 30,
+                'end_date': '2016-07-07',
+                'freed_cc': 1000,
+                'start_date': '2016-06-08',
+                'comment': 'Random remark'
+            },
+            camp_hist.changes
+        )
+        self.assertEqual(
+            textwrap.dedent("""
+            Start Date set to "2016-06-08"
+            , End Date set to "2016-07-07"
+            , Amount set to "$30.00"
+            , Freed (cc) set to "$0.10"
+            , Comment set to "Random remark"
+            """).replace('\n', ''),
+            camp_hist.changes_text
+        )
 
     def test_create_credit_history(self):
         r = test_helper.fake_request(User.objects.get(pk=1))

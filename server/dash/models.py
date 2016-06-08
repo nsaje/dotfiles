@@ -2677,7 +2677,7 @@ class CreditLineItem(FootprintModel):
         elif prop_name == 'license_fee' and value is not None:
             value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(value/10000, 2, 3)
         return value
 
     def get_settings_dict(self):
@@ -2894,9 +2894,9 @@ class BudgetLineItem(FootprintModel):
         if prop_name == 'amount' and value is not None:
             value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         elif prop_name == 'freed_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(value/10000.0, 2, 3)
         elif prop_name == 'flat_fee_cc':
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(value/10000.0, 2, 3)
         return value
 
     def get_settings_dict(self):
