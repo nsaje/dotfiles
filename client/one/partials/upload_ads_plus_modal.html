@@ -101,8 +101,8 @@
             </div>
 
             <div class="progress-result" ng-if="uploadStatus === uploadBatchStatusConstants.DONE">
-                <h4 class="title" ng-if="numErrors < batchSize" class="success">Uploading successfuly completed</h4>
-                <h4 class="title" ng-if="numErrors === batchSize">Uploading completed</h4>
+                <h4 class="title" ng-if="!numErrors" class="success">Uploading successfuly completed</h4>
+                <h4 class="title" ng-if="numErrors">Uploading completed</h4>
                 <p ng-if="!numErrors">All content ads were added to the list.</p>
                 <p ng-if="!!numErrors">{{ numErrors }} content ads failed to upload.</p>
                 <div class="form-group" ng-if="errorReport">
