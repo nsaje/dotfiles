@@ -40,22 +40,40 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 handleHorizontalScroll(leftOffset);
             });
         },
-        controller: [function () {
-            this.setOrder = function (column) {
-                var order = this.grid.meta.service.getOrder();
+        controller: ['zemGridStorageService', function (zemGridStorageService) {
+            var vm = this;
+            vm.setOrder = setOrder;
+
+            initialize();
+
+            function initialize () {
+                // Initialize header columns based on the stored data and default values
+                zemGridStorageService.loadColumns(vm.grid);
+                initVisibleColumns();
+                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED, initVisibleColumns);
+            }
+
+            function initVisibleColumns () {
+                vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
+                    return column.visible;
+                });
+            }
+
+            function setOrder (column) {
+                var order = vm.grid.meta.service.getOrder();
 
                 if (order === column.field) {
                     order = '-' + column.field;
                 } else if (order === '-' + column.field) {
                     order = column.field;
-                } else if (column.initialOrder === 'asc') {
+                } else if (column.data.initialOrder === 'asc') {
                     order = column.field;
                 } else {
                     order = '-' + column.field;
                 }
 
-                this.grid.meta.service.setOrder(order, true);
-            };
+                vm.grid.meta.service.setOrder(order, true);
+            }
         }],
     };
 }]);

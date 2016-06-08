@@ -11,6 +11,13 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
     //    types: number, currency, percent, seconds, datetime
     //
 
+    function parseMetaData (grid, metadata) {
+        grid.meta.data = metadata;
+        grid.header.columns = metadata.columns.map (function (data) {
+            return zemGridObject.createColumn(data);
+        });
+    }
+
     function parse (grid, data) {
         if (data.level > 0) throw 'Inplace parsing not supported yet.';
 
@@ -101,5 +108,6 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
 
     return {
         parse: parse,
+        parseMetaData: parseMetaData,
     };
 }]);

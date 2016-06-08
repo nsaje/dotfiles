@@ -22,6 +22,12 @@ oneApp.directive('zemGridRow', [function () {
             function ($scope, zemGridConstants, zemGridUIService) {
                 $scope.constants = zemGridConstants;
 
+                this.grid.meta.pubsub.register(this.grid.meta.pubsub.EVENTS.DATA_UPDATED, function () {
+                    this.visibleColumns = this.grid.header.columns.filter(function (column) {
+                        return column.visible;
+                    });
+                }.bind(this));
+
                 this.loadMore = function (size) {
                     if (!size) {
                         size = this.row.data.pagination.count - this.row.data.pagination.limit;

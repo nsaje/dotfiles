@@ -61,8 +61,17 @@ oneApp.factory('zemGridObject', ['zemGridConstants', function (zemGridConstants)
         };
     }
 
+    function createColumn (data) {
+        return {
+            field: data.field,
+            data: data,
+            visible: true,
+        };
+    }
+
     return {
         createGrid: createGrid,
         createRow: createRow,
+        createColumn: createColumn,
     };
 }]);
