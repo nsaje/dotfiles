@@ -35,3 +35,14 @@ def namedtuplefetchall(cursor):
     desc = cursor.description
     nt_result = namedtuple('Result', [col[0] for col in desc])
     return [nt_result(*row) for row in cursor.fetchall()]
+
+
+def xnamedtuplefetchall(cursor):
+    """
+    Returns a generator of rows as a namedtuple
+    """
+
+    desc = cursor.description
+    nt_result = namedtuple('Result', [col[0] for col in desc])
+    for row in cursor:
+        yield nt_result(*row)

@@ -8,9 +8,12 @@ from backtosql import helpers
 class TestSQLMixin(object):
 
     def assertSQLEquals(self, first, second):
-        first = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
-        second = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
-        self.assertEqual(first, second)
+        first_norm = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
+        second_norm = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
+
+        if first_norm != second_norm:
+            raise AssertionError('"{} \n\n != \n\n "{}"'.format(
+                backtosql.clean_sql(first), backtosql.clean_sql(second)))
 
 
 class TestRenderMixin(object):

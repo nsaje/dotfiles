@@ -1,4 +1,3 @@
-{% autoescape off %}
 -- table definition for the master materialized view table
 CREATE TABLE mv_master (
        date date not null encode delta,
@@ -37,5 +36,3 @@ CREATE TABLE mv_master (
        conversions varchar(2048) encode lzo,
        tp_conversions varchar(4092) encode lzo
 ) distkey(date) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);
-
-{% endautoescape %}
