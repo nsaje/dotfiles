@@ -1108,6 +1108,8 @@ class HistoryTest(TestCase):
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'amount': 200}, hist.changes)
 
+    def test_budget_and_credit_history(self):
+        campaign = models.Campaign.objects.get(pk=1)
         user = User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=100)
@@ -1119,6 +1121,45 @@ class HistoryTest(TestCase):
             amount=100,
             status=constants.CreditLineItemStatus.SIGNED,
             created_by=user,
+            flat_fee_cc=10000,
+            flat_fee_start_date=start_date,
+            flat_fee_end_date=end_date,
+            comment="No comment"
+        )
+
+        acc_hist = self._latest_account_history()
+        self.assertEqual(constants.AccountHistoryType.CREDIT, acc_hist.type)
+        self.assertDictEqual(
+            {
+                'account': 1,
+                'amount': 100,
+                'end_date': '2016-09-16',
+                'flat_fee_cc': 0,
+                'license_fee': '0.2000',
+                'start_date': '2016-06-08',
+                'status': 1,
+                'flat_fee_cc': 10000,
+                'flat_fee_start_date': start_date.isoformat(),
+                'flat_fee_end_date': end_date.isoformat(),
+                'comment': 'No comment',
+            },
+            acc_hist.changes
+        )
+        self.assertEqual(
+            textwrap.dedent("""
+            Account set to "1"
+            , Start Date set to "{sd}"
+            , End Date set to "{ed}"
+            , Amount set to "$100.00"
+            , License Fee set to "20.00%"
+            , Flat Fee (cc) set to "$1.00"
+            , Flat Fee Start Date set to "{sd}"
+            , Flat Fee End Date set to "{ed}"
+            , Status set to "Signed"
+            , Comment set to "No comment"
+            """.format(sd=start_date.isoformat(), ed=end_date.isoformat())
+                            ).replace('\n', ''),
+            acc_hist.changes_text
         )
 
         models.BudgetLineItem.objects.create(

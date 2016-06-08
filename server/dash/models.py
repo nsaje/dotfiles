@@ -2678,6 +2678,8 @@ class CreditLineItem(FootprintModel):
             value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = '$' + utils.string_helper.format_decimal(value/10000, 2, 3)
+        elif prop_name == 'status':
+            value = constants.CreditLineItemStatus.get_text(value)
         return value
 
     def get_settings_dict(self):
