@@ -72,12 +72,12 @@ class MasterView(object):
         for row in self._get_stats_query_results(cursor, date):
 
             if row.ad_group_id not in self.ad_groups_map:
-                logger.error("Got spend for unknown ad group: %s", row.ad_group_id)
+                logger.warning("Got spend for unknown ad group: %s", row.ad_group_id)
                 continue
 
             source_slug = helpers.extract_source_slug(row.source_slug)
             if source_slug not in self.sources_slug_map:
-                logger.error("Got spend for unknown media source: %s", row.source_slug)
+                logger.warning("Got spend for unknown media source: %s", row.source_slug)
                 continue
 
             ad_group = self.ad_groups_map[row.ad_group_id]
@@ -86,7 +86,7 @@ class MasterView(object):
             source = self.sources_slug_map[source_slug]
 
             if campaign not in campaign_factors:
-                logger.error("Missing cost factors for campaign %s", campaign.id)
+                logger.warning("Missing cost factors for campaign %s", campaign.id)
                 continue
 
             effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
@@ -152,11 +152,11 @@ class MasterView(object):
             for row in rows:
                 source_slug = helpers.extract_source_slug(row.source_slug)
                 if source_slug not in self.sources_slug_map:
-                    logger.error("Got postclick stats for unknown source: %s", row.source_slug)
+                    logger.warning("Got postclick stats for unknown source: %s", row.source_slug)
                     continue
 
                 if row.ad_group_id not in self.ad_groups_map:
-                    logger.error("Got postclick stats for unknown ad group: %s", row.ad_group_id)
+                    logger.warning("Got postclick stats for unknown ad group: %s", row.ad_group_id)
                     continue
 
                 source = self.sources_slug_map[source_slug]
@@ -211,11 +211,11 @@ class MasterView(object):
             ad_group_id, content_ad_id, source_id, publisher = breakdown_key
 
             if source_id not in self.sources_map:
-                logger.error("Got conversion for unknown media source: %s", source_id)
+                logger.warning("Got conversion for unknown media source: %s", source_id)
                 continue
 
             if ad_group_id not in self.ad_groups_map:
-                logger.error("Got conversion for unknown ad group: %s", ad_group_id)
+                logger.warning("Got conversion for unknown ad group: %s", ad_group_id)
                 continue
 
             ad_group = self.ad_groups_map[ad_group_id]
