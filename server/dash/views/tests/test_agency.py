@@ -76,9 +76,8 @@ class AdGroupSettingsTest(TestCase):
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
         )
-        self.maxDiff = None
-
-        self.assertDictEqual(json.loads(response.content), {
+        json_blob = json.loads(response.content)
+        self.assertDictEqual(json_blob, {
             'data': {
                 'can_archive': True,
                 'can_restore': True,
@@ -122,7 +121,7 @@ class AdGroupSettingsTest(TestCase):
                     'start_date': '2015-03-02',
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
-                    'target_regions': ['UK', 'US', 'CA'],
+                    'target_regions': ['GB', 'US', 'CA'],
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_state': 1,
                     'autopilot_daily_budget': '50.00',
