@@ -297,7 +297,8 @@ class Account(models.Model):
         if not settings:
             settings = AccountSettings(
                 account=self,
-                name=self.name
+                name=self.name,
+                created_by=None,
             )
 
         return settings
@@ -676,7 +677,7 @@ class AccountSettings(SettingsBase):
         if self.pk is None:
             self.created_by = request.user
 
-        snapshot_type = kwargs.get('type')
+        snapshot_type = constants.AccountHistoryType.ACCOUNT
         previous_snapshot = kwargs.get('previous_snapshot')
         create_account_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
         super(AccountSettings, self).save(*args, **kwargs)
@@ -760,7 +761,7 @@ class CampaignSettings(SettingsBase):
                 self.created_by = None
             else:
                 self.created_by = request.user
-        snapshot_type = kwargs.get('type')
+        snapshot_type = constants.CampaignHistoryType.CAMPAIGN
         previous_snapshot = self.post_init_state
         create_campaign_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
         super(CampaignSettings, self).save(*args, **kwargs)
@@ -1945,7 +1946,7 @@ class AdGroupSettings(SettingsBase):
             else:
                 self.created_by = request.user
 
-        snapshot_type = kwargs.get('type')
+        snapshot_type = constants.AdGroupHistoryType.AD_GROUP
         previous_snapshot = self.post_init_state
         create_ad_group_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
 
@@ -3249,65 +3250,68 @@ class AdGroupHistory(HistoryBase):
 
 
 def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous_snapshot):
-    history = AdGroupHistory(
+    changes = dict_diff(
+        previous_snapshot,
+        snapshot,
+        exclude_keys=HISTORY_EXCLUDED_FIELDS,
+        exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
+    )
+    if not changes:
+        # don't write history in case of no changes
+        return None
+
+    history = AdGroupHistory.objects.create(
         ad_group=ad_group_settings.ad_group,
         created_by=ad_group_settings.created_by,
         system_user=ad_group_settings.system_user,
         changes_text=ad_group_settings.changes_text or "",
+        type=snapshot_type,
+        changes=changes,
     )
-    if snapshot_type is not None:
-        history.type = snapshot_type
-        history.changes = dict_diff(
-            previous_snapshot,
-            snapshot,
-            exclude_keys=HISTORY_EXCLUDED_FIELDS,
-            exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
-        )
-    else:
-        history.type = constants.AdGroupHistoryType.AD_GROUP
-    history.save()
     return history
 
 
 def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous_snapshot):
-    history = CampaignHistory(
+    changes = dict_diff(
+        previous_snapshot,
+        snapshot,
+        exclude_keys=HISTORY_EXCLUDED_FIELDS,
+        exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
+    )
+    if not changes:
+        # don't write history in case of no changes
+        return None
+
+    return CampaignHistory.objects.create(
         campaign=campaign_settings.campaign,
         created_by=campaign_settings.created_by,
         system_user=campaign_settings.system_user,
         changes_text=campaign_settings.changes_text or "",
+        type=snapshot_type,
+        changes=changes,
     )
-    if snapshot_type is not None:
-        history.type = snapshot_type
-        history.changes = dict_diff(
-            previous_snapshot,
-            snapshot,
-            exclude_keys=HISTORY_EXCLUDED_FIELDS,
-            exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
-        )
-    else:
-        history.type = constants.CampaignHistoryType.CAMPAIGN
-    history.save()
-    return history
 
 
 def create_account_history(account_settings, snapshot_type, snapshot, previous_snapshot):
-    history = AccountHistory(
-        account=account_settings.account,
-        created_by=account_settings.created_by if account_settings.created_by_id else None,
-        changes_text=account_settings.changes_text or "",
+    changes = dict_diff(
+        previous_snapshot,
+        snapshot,
+        exclude_keys=HISTORY_EXCLUDED_FIELDS,
+        exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
     )
-    if snapshot_type is not None:
-        history.type = snapshot_type
-        history.changes = dict_diff(
-            previous_snapshot,
-            snapshot,
-            exclude_keys=HISTORY_EXCLUDED_FIELDS,
-            exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
-        )
-    else:
-        history.type = constants.AccountHistoryType.ACCOUNT
-    history.save()
-    return history
+    if not changes:
+        # don't write history in case of no changes
+        return None
+
+    # if account doesn't yet have any settings - defaults have created_by none
+    created_by = account_settings.created_by if account_settings.created_by_id else None
+    return AccountHistory.objects.create(
+        account=account_settings.account,
+        created_by=created_by,
+        changes_text=account_settings.changes_text or "",
+        type=snapshot_type,
+        changes=changes,
+    )
 
 
 class CampaignHistory(HistoryBase):
