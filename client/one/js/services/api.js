@@ -2534,6 +2534,175 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
+    function UploadPlus () {
+        this.getDefaults = function (adGroupId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/csv/';
+
+            $http.get(url).
+                success(function (data) {
+                    var result = {};
+
+                    if (data && data.data) {
+                        result.status = data.data.status;
+
+                        if (data.data.defaults) {
+                            result.defaults = {
+                                displayUrl: data.data.defaults.display_url,
+                                brandName: data.data.defaults.brand_name,
+                                description: data.data.defaults.description,
+                                callToAction: data.data.defaults.call_to_action,
+                            };
+                        }
+                    }
+                    deferred.resolve(result);
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+
+        };
+
+        this.uploadCsv = function (adGroupId, data) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/csv/';
+
+            var formData = new FormData();
+            formData.append('content_ads', data.file);
+            formData.append('batch_name', data.batchName ? data.batchName : '');
+            formData.append('display_url', data.displayUrl ? data.displayUrl : '');
+            formData.append('brand_name', data.brandName ? data.brandName : '');
+            formData.append('description', data.description ? data.description : '');
+            formData.append('call_to_action', data.callToAction ? data.callToAction : '');
+
+            $http.post(url, formData, {
+                transformRequest: angular.identity,
+                headers: {'Content-Type': undefined},
+            }).success(function (data) {
+                deferred.resolve({
+                    batchId: data.data.batch_id,
+                    candidates: data.data.candidates,
+                    errors: convertCandidateErrorsFromApi(data.data.errors),
+                });
+            }).error(function (data, status) {
+                var result = {};
+                if (status === '413') {
+                    data = {
+                        'data': {
+                            'status': constants.uploadBatchStatus.FAILED,
+                            'errors': {
+                                'content_ads': ['File too large (max 1MB).'],
+                            },
+                        },
+                        'success': false,
+                    };
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                } else if (data && data.data && data.data.errors) {
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                }
+
+                deferred.reject(result);
+            });
+
+            return deferred.promise;
+        };
+
+        this.checkStatus = function (adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/status/';
+
+            $http.get(url).
+                success(function (data) {
+                    var result = {
+                        candidates: convertStatusFromApi(data.data.candidates),
+                    };
+                    deferred.resolve(result);
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.save = function (adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/save/';
+
+            $http.post(url).
+                success(function (data) {
+                    var result = {
+                        numErrors: data.data.num_errors,
+                        errorReport: data.data.error_report,
+                    };
+                    deferred.resolve(result);
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.cancel = function (adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/cancel/';
+
+            $http.post(url).success(deferred.resolve).error(deferred.reject);
+
+            return deferred.promise;
+        };
+
+        function convertCandidateErrorsFromApi (errors) {
+            var result = {};
+            angular.forEach(errors, function (candidateErrors, candidateId) {
+                result[candidateId] = {
+                    label: candidateErrors.label,
+                    title: candidateErrors.title,
+                    url: candidateErrors.url,
+                    imageUrl: candidateErrors.image_url,
+                    imageCrop: candidateErrors.image_crop,
+                    displayUrl: candidateErrors.display_url,
+                    brandName: candidateErrors.brand_name,
+                    description: candidateErrors.description,
+                    callToAction: candidateErrors.call_to_action,
+                    trackerUrls: candidateErrors.tracker_urls,
+                };
+            });
+            return result;
+        }
+
+        function convertStatusFromApi (statuses) {
+            var result = [];
+            angular.forEach(statuses, function (candidateStatus, candidateId) {
+                result[candidateId] = {
+                    imageStatus: candidateStatus.image_status,
+                    urlStatus: candidateStatus.url_status,
+                };
+            });
+            return result;
+        }
+
+        function convertValidationErrorsFromApi (errors) {
+            var converted = {
+                file: errors.content_ads,
+                batchName: errors.batch_name,
+                displayUrl: errors.display_url,
+                brandName: errors.brand_name,
+                description: errors.description,
+                callToAction: errors.call_to_action,
+            };
+
+            if (errors.details) {
+                converted.details = {
+                    reportUrl: errors.details && errors.details.report_url,
+                    description: errors.details && errors.details.description,
+                };
+            }
+
+            return converted;
+        }
+    }
+
     function AdGroupContentAdState () {
         this.save = function (adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
             var deferred = $q.defer();
@@ -2851,6 +3020,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     isCanceled: obj.is_canceled,
                     account: obj.account_id,
                     licenseFee: obj.license_fee,
+                    flatFee: obj.flat_fee,
                     total: obj.total,
                     comment: obj.comment,
                     allocated: obj.allocated,
@@ -3125,6 +3295,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
         adGroupAdsUpload: new AdGroupAdsUpload(),
+        uploadPlus: new UploadPlus(),
         availableSources: new AvailableSources(),
         conversionPixel: new ConversionPixel(),
         conversionGoal: new ConversionGoal(),

@@ -732,3 +732,63 @@ class CreditLineItemTestCase(TestCase):
 
         with self.assertRaises(ValidationError):
             credit.save()
+
+
+class HistoryTest(TestCase):
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.u = User.objects.get(pk=1)
+        self.acc = models.Account.objects.get(pk=1)
+        self.su = constants.SystemUserType.AUTOPILOT
+
+    def test_save(self):
+        models.AccountHistory.objects.create(
+            created_by=self.u,
+            account=self.acc,
+            type=constants.AccountHistoryType.ACCOUNT,
+        )
+        self.assertEqual(1, models.AccountHistory.objects.all().count())
+
+    def test_save_system(self):
+        models.AccountHistory.objects.create(
+            system_user=self.su,
+            account=self.acc,
+            type=constants.AccountHistoryType.ACCOUNT,
+        )
+        self.assertEqual(1, models.AccountHistory.objects.all().count())
+
+    def test_save_fail(self):
+        with self.assertRaises(AssertionError):
+            models.AccountHistory.objects.create(
+                created_by=self.u,
+                system_user=self.su,
+                account=self.acc,
+                type=constants.AccountHistoryType.ACCOUNT,
+            )
+
+        with self.assertRaises(AssertionError):
+            models.AccountHistory.objects.create(
+                account=self.acc,
+                type=constants.AccountHistoryType.ACCOUNT,
+            )
+
+        entry = models.AccountHistory.objects.create(
+            created_by=self.u,
+            account=self.acc,
+            type=constants.AccountHistoryType.ACCOUNT,
+        )
+        with self.assertRaises(AssertionError):
+            entry.delete()
+
+        with self.assertRaises(AssertionError):
+            models.AccountHistory.objects.all().delete()
+
+    def test_update_fail(self):
+        models.AccountHistory.objects.create(
+            created_by=self.u,
+            account=self.acc,
+            type=constants.AccountHistoryType.ACCOUNT,
+        )
+        with self.assertRaises(AssertionError):
+            models.AccountHistory.objects.update(changes_text='Something different')

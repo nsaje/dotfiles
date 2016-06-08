@@ -3,6 +3,7 @@ import logging
 import Queue
 
 from django.conf import settings
+from django.db import connection
 from django.db.models import F
 
 from dash import constants
@@ -64,6 +65,8 @@ class UpdateUploadBatchThread(Thread):
             else:
                 # die
                 break
+
+        connection.close()
 
 
 class CreateUpdateContentAdsActions(Thread):

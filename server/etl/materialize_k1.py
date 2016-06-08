@@ -344,7 +344,7 @@ class TouchpointConversions(object):
             from conversions
             where date=%s
         """
-        with connections[settings.K1_DB_NAME].cursor() as c:
+        with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query, [date])
             for row in c:
                 yield row
@@ -390,10 +390,16 @@ class Breakdown(object):
 
 
 def _query_rows(query):
-    with connections[settings.K1_DB_NAME].cursor() as c:
+    with connections[settings.STATS_DB_NAME].cursor() as c:
         c.execute(query)
         for row in c:
             yield row
+
+
+def extract_source_slug(source_slug):
+    if source_slug.startswith('b1_'):
+        return source_slug[3:]
+    return source_slug
 
 
 def _sum_conversion(conversion_str):

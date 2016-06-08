@@ -68,24 +68,26 @@ class AccountCreditView(api_common.BaseApiView):
 
         return self.create_api_response(item.instance.pk)
 
-    def _prepare_item(self, item):
-        allocated = item.get_allocated_amount()
+    def _prepare_credit(self, credit):
+        flat_fee = credit.get_flat_fee_on_date_range(credit.start_date, credit.end_date)
+        allocated = credit.get_allocated_amount()
         return {
-            'id': item.pk,
-            'created_by': str(item.created_by or 'Zemanta One'),
-            'created_on': item.created_dt.date(),
-            'start_date': item.start_date,
-            'end_date': item.end_date,
-            'is_signed': item.status == constants.CreditLineItemStatus.SIGNED,
-            'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
-            'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
-            'total': item.effective_amount(),
+            'id': credit.pk,
+            'created_by': str(credit.created_by or 'Zemanta One'),
+            'created_on': credit.created_dt.date(),
+            'start_date': credit.start_date,
+            'end_date': credit.end_date,
+            'is_signed': credit.status == constants.CreditLineItemStatus.SIGNED,
+            'is_canceled': credit.status == constants.CreditLineItemStatus.CANCELED,
+            'license_fee': helpers.format_decimal_to_percent(credit.license_fee) + '%',
+            'flat_fee': flat_fee,
+            'total': credit.effective_amount(),
             'allocated': allocated,
-            'comment': item.comment,
+            'comment': credit.comment,
             'budgets': [
-                {'id': b.pk, 'amount': b.amount} for b in item.budgets.all()
+                {'id': b.pk, 'amount': b.amount} for b in credit.budgets.all()
             ],
-            'available': item.effective_amount() - allocated,
+            'available': credit.effective_amount() - allocated,
         }
 
     def _get_response(self, account_id, agency):
@@ -106,13 +108,13 @@ class AccountCreditView(api_common.BaseApiView):
 
     def _get_active_credit(self, account_id, credit_items):
         return [
-            self._prepare_item(item)
+            self._prepare_credit(item)
             for item in credit_items if not item.is_past()
         ]
 
     def _get_past_credit(self, account_id, credit_items):
         return [
-            self._prepare_item(item)
+            self._prepare_credit(item)
             for item in credit_items if item.is_past()
         ]
 

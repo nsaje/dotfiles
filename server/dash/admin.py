@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
+from django.template.defaultfilters import truncatechars
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -479,7 +480,7 @@ class CampaignAdmin(admin.ModelAdmin):
     settings_.allow_tags = True
 
     def view_on_site(self, obj):
-        return '/campaigns/{}/agency'.format(obj.id)
+        return '/campaigns/{}/ad_groups'.format(obj.id)
 
 
 class SourceAdmin(admin.ModelAdmin):
@@ -1017,6 +1018,38 @@ class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
         return u'|'.join([account_name, campaign_name, ad_group_name])
 
 
+class DemoMappingAdminForm(forms.ModelForm):
+    real_account = forms.ModelChoiceField(queryset=models.Account.objects.order_by('name'))
+    demo_campaign_name_pool = SimpleArrayField(
+        forms.CharField(),
+        delimiter='\n',
+        widget=forms.Textarea,
+        help_text='Put every demo name in a separate line'
+    )
+    demo_ad_group_name_pool = SimpleArrayField(
+        forms.CharField(),
+        delimiter='\n',
+        widget=forms.Textarea,
+        help_text='Put every demo name in a separate line'
+    )
+
+
+class DemoMappingAdmin(admin.ModelAdmin):
+    list_display = (
+        'real_account',
+        'demo_account_name',
+        'demo_campaign_name_pool_',
+        'demo_ad_group_name_pool_',
+    )
+    form = DemoMappingAdminForm
+
+    def demo_campaign_name_pool_(self, obj):
+        return truncatechars(', '.join(obj.demo_campaign_name_pool), 70)
+
+    def demo_ad_group_name_pool_(self, obj):
+        return truncatechars(', '.join(obj.demo_ad_group_name_pool), 70)
+
+
 class OutbrainAccountAdmin(admin.ModelAdmin):
     list_display = (
         'marketer_id',
@@ -1443,6 +1476,7 @@ admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
+admin.site.register(models.DemoMapping, DemoMappingAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
 admin.site.register(models.UserActionLog, UserActionLogAdmin)

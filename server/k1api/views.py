@@ -11,7 +11,7 @@ import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
 from utils import url_helper, request_signer
-from utils import k1_helper
+import dateutil.parser
 
 
 logger = logging.getLogger(__name__)
@@ -240,8 +240,7 @@ def get_source_credentials_for_reports_sync(request):
             .filter(source__source_type__type__in=source_types)
             .annotate(
                 source_type=F('source__source_type__type'),
-            )
-            .values(
+            ).values(
                 'id',
                 'credentials',
                 'source_type',
@@ -268,8 +267,7 @@ def get_content_ad_source_mapping(request):
                 ad_group_id=F('content_ad__ad_group_id'),
                 source_name=F('source__name'),
                 slug=F('source__bidder_slug'),
-            )
-            .values(
+            ).values(
                 'source_content_ad_id',
                 'content_ad_id',
                 'ad_group_id',
