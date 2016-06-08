@@ -74,7 +74,7 @@ def extract_country(country):
 
 
 def extract_state(state):
-    if state:
+    if state and len(state) <= 5:
         return state.upper()
     return None
 
