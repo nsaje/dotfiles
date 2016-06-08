@@ -63,9 +63,9 @@ oneApp.factory('zemGridObject', ['zemGridConstants', function (zemGridConstants)
 
     function createColumn (data) {
         return {
-            field: data.field,
-            data: data,
-            visible: true,
+            field: data.field,  // Reuse data field - some kind of id  (data retrieval, storage, etc.)
+            data: data,         // Column meta-data retrieved from endpoint
+            visible: true,      // Visibility flag
         };
     }
 

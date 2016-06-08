@@ -37,20 +37,6 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.onRowsSelectionChanged = onRowsSelectionChanged;
         this.onColumnsVisibilityChanged = onColumnsVisibilityChanged;
 
-        // Start initialization procedure
-        initialize();
-
-        function initialize () {
-            //// Initialize header columns based on the stored data and default values
-            //// TODO: find better solution for loading columns
-            //grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
-            //    zemGridStorageService.loadColumns(grid);
-            //    grid.header.visibleColumns = grid.header.columns.filter(function (column) {
-            //        return column.visible;
-            //    });
-            //});
-        }
-
         function setCollapsedRows (rows, collapsed) {
             if (!Array.isArray(rows)) rows = [rows];
 
@@ -124,7 +110,9 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         }
 
         function getVisibleColumns () {
-            return grid.header.visibleColumns;
+            return grid.header.columns.filter(function (columns) {
+                return column.visible;
+            });
         }
 
         function onRowsSelectionChanged (scope, callback) {
