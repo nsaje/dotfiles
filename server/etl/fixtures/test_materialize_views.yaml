@@ -98,6 +98,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         bidder_slug: 'adblade'
+        tracking_slug: 'adblade'
         source_type: 1
         supports_retargeting: true
         default_cpc_cc: 0.11
