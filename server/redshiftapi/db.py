@@ -39,7 +39,7 @@ def namedtuplefetchall(cursor):
 
 def xnamedtuplefetchall(cursor):
     """
-    Return all rows from a cursor as a namedtuple
+    Returns a generator of rows as a namedtuple
     """
 
     desc = cursor.description
