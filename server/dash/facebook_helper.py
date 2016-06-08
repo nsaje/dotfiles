@@ -15,7 +15,18 @@ ERROR_ALREADY_PENDING = 'There is already pending client request for page'
 ERROR_ALREADY_CONNECTED = 'You Already Have Access To This Page'
 
 
-def send_page_access_request(page_id):
+def update_facebook_account(facebook_account, new_url):
+    if new_url != facebook_account.page_url:
+        facebook_account.page_url = new_url
+        if new_url:
+            facebook_account.status = _send_page_access_request(facebook_account)
+        else:
+            facebook_account.status = constants.FacebookPageRequestType.EMPTY
+
+
+def _send_page_access_request(facebook_account):
+    page_id = facebook_account.get_page_id()
+
     params = {'page_id': page_id,
               'access_type': ACCESS_TYPE,
               'permitted_roles': PERMITTED_ROLES,
@@ -32,8 +43,7 @@ def send_page_access_request(page_id):
             if error.get('error_user_title') and error['error_user_title'].find(ERROR_ALREADY_CONNECTED) >= 0:
                 return constants.FacebookPageRequestType.CONNECTED
             elif error.get('message') and error['message'].find(ERROR_INVALID_PAGE) >= 0:
-                return constants.FacebookPageRequestType.INVALID_PAGE
+                return constants.FacebookPageRequestType.INVALID
             elif error.get('message') and error['message'].find(ERROR_ALREADY_PENDING) >= 0:
                 return constants.FacebookPageRequestType.PENDING
     return constants.FacebookPageRequestType.UNKNOWN
-

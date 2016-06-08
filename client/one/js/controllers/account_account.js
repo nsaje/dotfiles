@@ -149,6 +149,11 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         });
     };
 
+    $scope.clearFacebookPage = function () {
+        $scope.settings.facebookPage = null;
+        $scope.settings.facebookStatus = "Empty";
+    }
+
     $scope.refreshPage = function () {
         zemNavigationService.reload();
         $scope.getSettings();

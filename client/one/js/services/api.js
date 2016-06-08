@@ -1366,8 +1366,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 accountType: settings.account_type,
                 allowedSources: settings.allowed_sources,
                 facebookPage: settings.facebook_page,
-                facebookStatus: 'Pending',
-//                facebookStatus: settings.facebook_status,
+                facebookStatus: settings.facebook_status,
             };
         }
 

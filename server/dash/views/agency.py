@@ -980,7 +980,7 @@ class AccountSettings(api_common.BaseApiView):
                     form
                 )
 
-            if 'facebook_page' in form.cleaned_data and form.cleaned_data['facebook_page']:
+            if 'facebook_page' in form.cleaned_data:
                 if not request.user.has_perm('zemauth.can_modify_facebook_page'):
                     raise exc.AuthorizationError()
                 self.set_facebook_page(facebook_account, form)
@@ -1086,10 +1086,7 @@ class AccountSettings(api_common.BaseApiView):
 
     def set_facebook_page(self, facebook_account, form):
         new_url = form.cleaned_data['facebook_page']
-        if True or new_url != facebook_account.page_url:    # TODO matijav 27.05.2016 remove true
-            facebook_account.page_url = new_url
-            page_id = facebook_account.get_page_id()
-            facebook_account.status = facebook_helper.send_page_access_request(page_id)
+        facebook_helper.update_facebook_account(facebook_account, new_url)
 
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()
