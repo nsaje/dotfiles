@@ -49,6 +49,9 @@ def calculate_effective_cost(cost, data_cost, factors):
 
 
 def extract_source_slug(source_slug):
+    if not source_slug:
+        return None
+
     if source_slug.startswith('b1_'):
         return source_slug[3:]
     return source_slug
@@ -65,7 +68,7 @@ def extract_device_type(device_type):
 
 
 def extract_country(country):
-    if len(country) == 2:
+    if country and len(country) == 2:
         return country.upper()
     return None
 
@@ -83,6 +86,9 @@ def extract_dma(dma):
 
 
 def extract_age(age):
+    if not age:
+        return constants.AgeGroup.UNDEFINED
+
     age = age.strip()
     if age == '18-20':
         return constants.AgeGroup.AGE_18_20
@@ -100,6 +106,9 @@ def extract_age(age):
 
 
 def extract_gender(gender):
+    if not gender:
+        return constants.Gender.UNDEFINED
+
     gender = gender.strip()
     if gender == 'female':
         return constants.Gender.WOMEN
