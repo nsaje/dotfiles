@@ -129,10 +129,9 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     @classmethod
     def get_ordered_aggregates(cls):
         """
-        Returns aggregates in default order as it is used in materialized view table definitions.
+        Returns aggregates in order as it is used in materialized view table definitions.
         """
 
-        # TODO test count == nr aggregates
         return cls.select_columns(subset=[
             'impressions', 'clicks', 'cost', 'data_cost', 'visits', 'new_visits',
             'bounced_visits', 'pageviews', 'total_time_on_site', 'effective_cost_nano',

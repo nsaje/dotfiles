@@ -27,3 +27,10 @@ class ColumnsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertSQLEquals(column.column_as_alias('T'),
                              "json_dict_sum(listagg(T.conversions, ';'), ';') as conversions")
+
+
+class MVMasterTest(TestCase):
+
+    def test_get_ordered_aggregates(self):
+        # items should be equal, just order can differ
+        self.assertItemsEqual(models.MVMaster.get_aggregates(), models.MVMaster.get_ordered_aggregates())
