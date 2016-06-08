@@ -80,6 +80,19 @@ def shorten_name(name):
     return name
 
 
+def get_changes_text_from_dict(cls, changes, separator=', '):
+    if changes is None:
+        return 'Created settings'
+    change_strings = []
+    for key, value in changes.iteritems():
+        prop = cls.get_human_prop_name(key)
+        val = cls.get_human_value(key, value)
+        change_strings.append(
+            u'{} set to "{}"'.format(prop, val)
+        )
+    return separator.join(change_strings)
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -609,15 +622,20 @@ class SettingsBase(models.Model, CopySettingsMixin):
         return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
     def get_setting_changes(self, new_settings):
-        changes = {}
-
         current_settings_dict = self.get_settings_dict()
         new_settings_dict = new_settings.get_settings_dict()
+        return SettingsBase.get_dict_changes(
+            current_settings_dict,
+            new_settings_dict,
+            self._settings_fields
+        )
 
-        for field_name in self._settings_fields:
+    @classmethod
+    def get_dict_changes(self, current_settings_dict, new_settings_dict, settings_fields):
+        changes = {}
+        for field_name in settings_fields:
             if current_settings_dict[field_name] != new_settings_dict[field_name]:
                 changes[field_name] = new_settings_dict[field_name]
-
         return changes
 
     @classmethod
@@ -672,13 +690,41 @@ class AccountSettings(SettingsBase):
 
     objects = QuerySetManager()
 
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'name': 'Name',
+            'archived': 'Archived',
+            'default_account_manager': 'Account Manager',
+            'default_sales_representative': 'Sales Representative',
+            'account_type': 'Account Type',
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'archived':
+            value = str(value)
+        elif prop_name == 'default_account_manager':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+        elif prop_name == 'default_sales_representative':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+        elif prop_name == 'account_type':
+            value = constants.AccountType.get_text(value)
+        return value
+
     def save(self, request, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
 
         snapshot_type = constants.AccountHistoryType.ACCOUNT
-        previous_snapshot = kwargs.get('previous_snapshot')
-        create_account_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
+        changes = SettingsBase.get_dict_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+            self._settings_fields
+        )
+        changes_text = get_changes_text_from_dict(AccountSettings, changes)
+        create_account_history(self, snapshot_type, changes, changes_text)
         super(AccountSettings, self).save(*args, **kwargs)
 
     class Meta:
@@ -761,31 +807,21 @@ class CampaignSettings(SettingsBase):
             else:
                 self.created_by = request.user
         snapshot_type = constants.CampaignHistoryType.CAMPAIGN
-        previous_snapshot = self.post_init_state
-        create_campaign_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
+        changes = SettingsBase.get_dict_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+            self._settings_fields
+        )
+        changes_text = get_changes_text_from_dict(CampaignSettings, changes)
+        create_campaign_history(self, snapshot_type, changes, self.changes_text or changes_text)
         super(CampaignSettings, self).save(*args, **kwargs)
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-
         if new_settings.changes_text is not None:
             return new_settings.changes_text
-
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
-
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key, value in changes.iteritems():
-            prop = cls.get_human_prop_name(key)
-            val = cls.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return separator.join(change_strings)
+        return get_changes_text_from_dict(cls, changes, separator=separator)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -1908,29 +1944,21 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-
         if new_settings.changes_text is not None:
             return new_settings.changes_text
 
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
-
         if changes is None:
             return 'Created settings'
 
-        change_strings = []
-
+        valid_changes = {}
         for key, value in changes.iteritems():
             if key == 'retargeting_ad_groups' and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
                 continue
+            valid_changes[key] = value
 
-            prop = cls.get_human_prop_name(key)
-            val = cls.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return separator.join(change_strings)
+        return get_changes_text_from_dict(cls, changes, separator=separator)
 
     objects = QuerySetManager()
 
@@ -1946,8 +1974,13 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = request.user
 
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP
-        previous_snapshot = self.post_init_state
-        create_ad_group_history(self, snapshot_type, model_to_dict(self), previous_snapshot)
+        changes = SettingsBase.get_dict_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+            self._settings_fields
+        )
+        changes_text = get_changes_text_from_dict(AdGroupSettings, changes)
+        create_ad_group_history(self, snapshot_type, changes, self.changes_text or changes_text)
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
@@ -2064,6 +2097,31 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
 
     objects = QuerySetManager()
 
+    def get_settings_dict(self):
+        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
+
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'state': 'State',
+            'cpc_cc': 'CPC',
+            'daily_budget_cc': 'Daily Budget',
+            'landing_mode': 'Landing Mode',
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'state':
+            value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'cpc_cc' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+        elif prop_name == 'daily_budget_cc' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
+        elif prop_name == 'landing_mode':
+            value = str(value)
+        return value
+
     def save(self, request, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating settings object not allowed.')
@@ -2071,14 +2129,15 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         if self.pk is None and request is not None:
             self.created_by = request.user
 
+        current_settings = self.ad_group_source.ad_group.get_current_settings()
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP_SOURCE
-        previous_snapshot = self.post_init_state
-        create_ad_group_history(
-            self.ad_group_source.ad_group.get_current_settings(),
-            snapshot_type,
-            model_to_dict(self),
-            previous_snapshot
+        changes = SettingsBase.get_dict_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+            self._settings_fields
         )
+        changes_text = get_changes_text_from_dict(AdGroupSourceSettings, changes)
+        create_ad_group_history(current_settings, snapshot_type, changes, changes_text)
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
 
@@ -2485,6 +2544,20 @@ class PublisherBlacklist(models.Model):
 
 
 class CreditLineItem(FootprintModel):
+    _history_fields = [
+        'account',
+        'agency',
+        'start_date',
+        'end_date',
+        'amount',
+        'license_fee',
+        'flat_fee_cc',
+        'flat_fee_start_date',
+        'flat_fee_end_date',
+        'status',
+        'comment'
+    ]
+
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
@@ -2563,6 +2636,37 @@ class CreditLineItem(FootprintModel):
             raise AssertionError('Credit item is not pending')
         super(CreditLineItem, self).delete()
 
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'account': 'Account',
+            'agency': 'Agency',
+            'start_date': 'Start Date',
+            'end_date': 'End Date',
+            'amount': 'Amount',
+            'license_fee': 'License Fee',
+            'flat_fee_cc': 'Flat Fee (cc)',
+            'flat_fee_start_date': 'Flat Fee Start Date',
+            'flat_fee_end_date': 'Flat Fee End Date',
+            'status': 'Status',
+            'comment': 'Comment'
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'account':
+            value = str(value.name)
+        elif prop_name == 'agency':
+            value = str(value.name)
+        elif prop_name == 'amount' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+        elif prop_name == 'license_fee' and value is not None:
+            value = '{}%'.format(value *  + utils.string_helper.format_decimal(value, 2, 3))
+        elif prop_name == 'flat_fee_cc':
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+        return value
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2581,11 +2685,17 @@ class CreditLineItem(FootprintModel):
             accounts = self.agency.account_set.all()
         for account in accounts:
             snapshot_type = constants.AccountHistoryType.CREDIT
+            changes = SettingsBase.get_dict_changes(
+                self.post_init_state,
+                model_to_dict(self),
+                self._history_fields,
+            )
+            changes_text = get_changes_text_from_dict(CreditLineItem, changes)
             create_account_history(
                 account.get_current_settings(),
                 snapshot_type,
-                model_to_dict(self),
-                self.post_init_state,
+                changes,
+                changes_text,
             )
 
     def __unicode__(self):
@@ -2717,6 +2827,14 @@ class CreditLineItem(FootprintModel):
 
 
 class BudgetLineItem(FootprintModel):
+    _history_fields = [
+        'start_date',
+        'end_date',
+        'amount',
+        'freed_cc',
+        'comment',
+    ]
+
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
@@ -2744,6 +2862,27 @@ class BudgetLineItem(FootprintModel):
             unicode(self.campaign),
         )
 
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'start_date': 'Start Date',
+            'end_date': 'End Date',
+            'amount': 'Amount',
+            'freed_cc': 'Freed (cc)',
+            'comment': 'Comment',
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'amount' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+        elif prop_name == 'freed_cc' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+        elif prop_name == 'flat_fee_cc':
+            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+        return value
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2754,11 +2893,18 @@ class BudgetLineItem(FootprintModel):
             snapshot=model_to_dict(self),
             budget=self,
         )
+
+        changes = SettingsBase.get_dict_changes(
+            self.post_init_state,
+            model_to_dict(self),
+            self._history_fields,
+        )
+        changes_text = get_changes_text_from_dict(BudgetLineItem, changes)
         create_campaign_history(
             self.campaign.get_current_settings(),
             constants.CampaignHistoryType.BUDGET,
-            model_to_dict(self),
-            kwargs.get('previous_snapshot')
+            changes,
+            changes_text
         )
 
     def db_state(self, date=None):
@@ -3248,13 +3394,7 @@ class AdGroupHistory(HistoryBase):
         pass
 
 
-def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous_snapshot):
-    changes = dict_diff(
-        previous_snapshot,
-        snapshot,
-        exclude_keys=HISTORY_EXCLUDED_FIELDS,
-        exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
-    )
+def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_text):
     if not changes:
         # don't write history in case of no changes
         return None
@@ -3263,20 +3403,14 @@ def create_ad_group_history(ad_group_settings, snapshot_type, snapshot, previous
         ad_group=ad_group_settings.ad_group,
         created_by=ad_group_settings.created_by,
         system_user=ad_group_settings.system_user,
-        changes_text=ad_group_settings.changes_text or "",
-        type=snapshot_type,
         changes=changes,
+        changes_text=changes_text or "",
+        type=snapshot_type,
     )
     return history
 
 
-def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous_snapshot):
-    changes = dict_diff(
-        previous_snapshot,
-        snapshot,
-        exclude_keys=HISTORY_EXCLUDED_FIELDS,
-        exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
-    )
+def create_campaign_history(campaign_settings, snapshot_type, changes, changes_text):
     if not changes:
         # don't write history in case of no changes
         return None
@@ -3285,19 +3419,13 @@ def create_campaign_history(campaign_settings, snapshot_type, snapshot, previous
         campaign=campaign_settings.campaign,
         created_by=campaign_settings.created_by,
         system_user=campaign_settings.system_user,
-        changes_text=campaign_settings.changes_text or "",
-        type=snapshot_type,
         changes=changes,
+        changes_text=changes_text or "",
+        type=snapshot_type,
     )
 
 
-def create_account_history(account_settings, snapshot_type, snapshot, previous_snapshot):
-    changes = dict_diff(
-        previous_snapshot,
-        snapshot,
-        exclude_keys=HISTORY_EXCLUDED_FIELDS,
-        exclude_from_null_keys=HISTORY_IGNORE_FROM_NULL_FIELDS,
-    )
+def create_account_history(account_settings, snapshot_type, changes, changes_text):
     if not changes:
         # don't write history in case of no changes
         return None
@@ -3307,9 +3435,9 @@ def create_account_history(account_settings, snapshot_type, snapshot, previous_s
     return AccountHistory.objects.create(
         account=account_settings.account,
         created_by=created_by,
-        changes_text=account_settings.changes_text or "",
-        type=snapshot_type,
         changes=changes,
+        changes_text=changes_text or "",
+        type=snapshot_type,
     )
 
 
@@ -3337,21 +3465,6 @@ class AccountHistory(HistoryBase):
 
     class QuerySet(HistoryQuerySet):
         pass
-
-
-def dict_diff(d1, d2, exclude_keys=[], exclude_from_null_keys=[]):
-    if not d1:
-        return d2
-
-    diff = {}
-    for key, value in d1.iteritems():
-        if key in exclude_keys:
-            continue
-        if key in exclude_from_null_keys and value is None and d2[key] is not None:
-            continue
-        if key in d2 and value != d2[key]:
-            diff[key] = d2[key]
-    return diff
 
 
 def post_init_store_state(sender, **kwargs):
