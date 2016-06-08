@@ -66,18 +66,18 @@ def extract_device_type(device_type):
 
 def extract_country(country):
     if len(country) == 2:
-        return country
+        return country.upper()
     return None
 
 
 def extract_state(state):
-    if len(state) == 2:
-        return state
+    if state:
+        return state.upper()
     return None
 
 
 def extract_dma(dma):
-    if 400 < dma < 1000:
+    if 499 < dma < 1000:
         return dma
     return None
 
