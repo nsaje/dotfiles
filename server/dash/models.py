@@ -298,7 +298,6 @@ class Account(models.Model):
             settings = AccountSettings(
                 account=self,
                 name=self.name,
-                created_by=None,
             )
 
         return settings
