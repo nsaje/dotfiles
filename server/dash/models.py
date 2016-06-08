@@ -635,7 +635,8 @@ class SettingsBase(models.Model, CopySettingsMixin):
         changes = {}
         for field_name in settings_fields:
             if current_settings_dict[field_name] != new_settings_dict[field_name]:
-                changes[field_name] = new_settings_dict[field_name]
+                value = new_settings_dict[field_name]
+                changes[field_name] = value
         return changes
 
     @classmethod
@@ -721,7 +722,7 @@ class AccountSettings(SettingsBase):
         changes = SettingsBase.get_dict_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields
+            self._settings_fields,
         )
         changes_text = get_changes_text_from_dict(AccountSettings, changes)
         create_account_history(self, snapshot_type, changes, changes_text)
@@ -810,7 +811,7 @@ class CampaignSettings(SettingsBase):
         changes = SettingsBase.get_dict_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields
+            self._settings_fields,
         )
         changes_text = get_changes_text_from_dict(CampaignSettings, changes)
         create_campaign_history(self, snapshot_type, changes, self.changes_text or changes_text)
@@ -1977,7 +1978,7 @@ class AdGroupSettings(SettingsBase):
         changes = SettingsBase.get_dict_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields
+            self._settings_fields,
         )
         changes_text = get_changes_text_from_dict(AdGroupSettings, changes)
         create_ad_group_history(self, snapshot_type, changes, self.changes_text or changes_text)
@@ -2134,7 +2135,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         changes = SettingsBase.get_dict_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields
+            self._settings_fields,
         )
         changes_text = get_changes_text_from_dict(AdGroupSourceSettings, changes)
         create_ad_group_history(current_settings, snapshot_type, changes, changes_text)
@@ -2655,14 +2656,10 @@ class CreditLineItem(FootprintModel):
 
     @classmethod
     def get_human_value(cls, prop_name, value):
-        if prop_name == 'account':
-            value = str(value.name)
-        elif prop_name == 'agency':
-            value = str(value.name)
-        elif prop_name == 'amount' and value is not None:
+        if prop_name == 'amount' and value is not None:
             value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         elif prop_name == 'license_fee' and value is not None:
-            value = '{}%'.format(value *  + utils.string_helper.format_decimal(value, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = '$' + utils.string_helper.format_decimal(value, 2, 3)
         return value
@@ -3394,6 +3391,18 @@ class AdGroupHistory(HistoryBase):
         pass
 
 
+def json_serializable_changes(changes):
+    # this is needed only because settings changes for user models
+    # are stored as user model in changes and are as such not json serializable
+    ret = {}
+    for key, value in changes.iteritems():
+        if hasattr(value, 'id'):
+            ret[key] = value.id
+        else:
+            ret[key] = value
+    return ret
+
+
 def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_text):
     if not changes:
         # don't write history in case of no changes
@@ -3403,7 +3412,7 @@ def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_t
         ad_group=ad_group_settings.ad_group,
         created_by=ad_group_settings.created_by,
         system_user=ad_group_settings.system_user,
-        changes=changes,
+        changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
     )
@@ -3419,7 +3428,7 @@ def create_campaign_history(campaign_settings, snapshot_type, changes, changes_t
         campaign=campaign_settings.campaign,
         created_by=campaign_settings.created_by,
         system_user=campaign_settings.system_user,
-        changes=changes,
+        changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
     )
@@ -3435,7 +3444,7 @@ def create_account_history(account_settings, snapshot_type, changes, changes_tex
     return AccountHistory.objects.create(
         account=account_settings.account,
         created_by=created_by,
-        changes=changes,
+        changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
     )

@@ -808,7 +808,7 @@ class HistoryTest(TestCase):
             adgss,
             constants.AdGroupHistoryType.AD_GROUP,
             model_to_dict(adgss),
-            {})
+            '')
 
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual(4999, hist.changes['cpc_cc'])
@@ -820,8 +820,8 @@ class HistoryTest(TestCase):
         hist = models.create_ad_group_history(
             adgss,
             constants.AdGroupHistoryType.AD_GROUP,
-            model_to_dict(adgss),
-            adgss.post_init_state)
+            {'cpc_cc': 5100},
+            '')
 
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual({'cpc_cc': 5100}, hist.changes)
@@ -857,7 +857,7 @@ class HistoryTest(TestCase):
             adgss,
             constants.CampaignHistoryType.CAMPAIGN,
             model_to_dict(adgss),
-            {})
+            '')
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual('Awesome', hist.changes['name'])
@@ -869,8 +869,8 @@ class HistoryTest(TestCase):
         hist = models.create_campaign_history(
             adgss,
             constants.CampaignHistoryType.CAMPAIGN,
-            model_to_dict(adgss),
-            adgss.post_init_state)
+            {'name': 'Awesomer'},
+            '')
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'name': 'Awesomer'}, hist.changes)
@@ -888,21 +888,17 @@ class HistoryTest(TestCase):
         hist = models.create_account_history(
             adgss,
             constants.AccountHistoryType.ACCOUNT,
-            model_to_dict(adgss),
-            {})
+            adgss.get_settings_dict(),
+            "")
 
         self.assertEqual(account, hist.account)
         self.assertFalse(hist.changes['archived'])
 
-        adgss = adgss.copy_settings()
-        adgss.archived = True
-        adgss.save(r)
-
         hist = models.create_account_history(
             adgss,
             constants.AccountHistoryType.ACCOUNT,
-            model_to_dict(adgss),
-            adgss.post_init_state)
+            {'archived': True},
+            '')
 
         self.assertEqual(account, hist.account)
         self.assertEqual({'archived': True}, hist.changes)
@@ -910,38 +906,12 @@ class HistoryTest(TestCase):
     @patch('dash.models.BudgetLineItem.state')
     def test_create_budget_history(self, mock_state):
         mock_state.return_value = constants.BudgetLineItemState.PENDING
-
-        r = test_helper.fake_request(User.objects.get(pk=1))
-
-        start_date = datetime.date(2014, 6, 4)
-        end_date = datetime.date(2014, 6, 5)
         campaign = models.Campaign.objects.get(pk=1)
-        credit = models.CreditLineItem(
-            account=campaign.account,
-            start_date=start_date,
-            end_date=end_date,
-            amount=10000,
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by=r.user,
-        )
-        credit.save()
-        bud = models.BudgetLineItem.objects.create(
-            campaign=campaign,
-            credit=credit,
-            amount=100,
-            start_date=start_date,
-            end_date=end_date,
-            created_by=User.objects.get(pk=1),
-        )
-
-        bud.amount = 200
-        bud.save()
-
         hist = models.create_campaign_history(
             campaign.get_current_settings(),
             constants.CampaignHistoryType.BUDGET,
-            model_to_dict(bud),
-            bud.post_init_state)
+            {'amount': 200},
+            "")
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'amount': 200}, hist.changes)
@@ -963,15 +933,14 @@ class HistoryTest(TestCase):
         )
         credit.save()
 
-
         credit.amount = 20000
         credit.save()
 
         hist = models.create_account_history(
             account.get_current_settings(),
             constants.AccountHistoryType.CREDIT,
-            model_to_dict(credit),
-            credit.post_init_state
+            {'amount': 20000},
+            ''
         )
 
         self.assertEqual(account, hist.account)
