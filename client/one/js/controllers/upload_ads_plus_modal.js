@@ -49,6 +49,8 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
                 $scope.numErrors = data.numErrors;
                 $scope.errorReport = data.errorReport;
                 $scope.uploadStatus = constants.uploadBatchStatus.DONE;
+                $scope.formData.file = undefined;
+                $scope.formData.batchName = '';
             },
             function () {
                 $scope.uploadStatus = constants.uploadBatchStatus.FAILED;

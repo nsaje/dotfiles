@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 'use strict';
 
 oneApp.directive('zemFileInput', ['$parse', function ($parse) {
@@ -10,8 +10,17 @@ oneApp.directive('zemFileInput', ['$parse', function ($parse) {
             position: 'absolute',
             padding: 0,
             margin: 0,
-            opacity: 0
+            opacity: 0,
         }).attr('accept', '.csv');
+    }
+
+    function bindInputElement (inputElement, scope, model) {
+        inputElement.unbind('change');
+        inputElement.bind('change', function () {
+            scope.$apply(function () {
+                model.assign(scope, inputElement[0].files[0]);
+            });
+        });
     }
 
     return {
@@ -21,16 +30,15 @@ oneApp.directive('zemFileInput', ['$parse', function ($parse) {
             var inputElement = createInputElement();
 
             element.after(inputElement);
-
-            inputElement.bind('change', function () {
-                scope.$apply(function () {
-                    model.assign(scope, inputElement[0].files[0]);
-                });
-            });
+            bindInputElement(inputElement, scope, model);
 
             element.bind('click', function () {
                 inputElement.click();
             });
-        }
+
+            scope.$watch(attrs.zemFileInput, function () {
+                bindInputElement(inputElement, scope, model);
+            });
+        },
     };
 }]);
