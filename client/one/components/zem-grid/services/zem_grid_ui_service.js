@@ -78,6 +78,44 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         });
     }
 
+    function resizeGridColumnsOptimized (grid) {
+        grid.ui.columnsWidths = [];
+
+        grid.header.visibleColumns.forEach(function (column, i) {
+
+            var width = getTextWidth(column.data.name, 'bold 13pt Roboto,sans-serif');
+            if (column.data.help) width += 20;
+
+            grid.body.rows.forEach(function (row) {
+                if (row.type > 1) return;
+                var valueWidth = getTextWidth(row.stats[column.field], '13pt Roboto,sans-serif');
+                width = Math.max(width, valueWidth);
+            });
+
+            if (grid.footer.row) {
+                var valueWidth = getTextWidth(grid.footer.row.stats[column.field], '13pt Roboto,sans-serif');
+                width = Math.max(width, valueWidth);
+            }
+            grid.ui.columnsWidths[i] = width;
+        });
+
+        resizeCells(grid, grid.header.ui.element);
+        resizeCells(grid, grid.body.ui.element);
+        resizeCells(grid, grid.footer.ui.element);
+    }
+
+    function getTextWidth (text, font) {
+        if (typeof text !== 'string') return -1;
+
+        // re-use canvas object for better performance
+        var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+        var context = canvas.getContext("2d");
+        context.font = font;
+        var metrics = context.measureText(text);
+        return metrics.width;
+    }
+
+
     function getRowClass (grid, row) {
         var classes = [];
         classes.push('level-' + row.level);
@@ -94,7 +132,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
     return {
         requestAnimationFrame: requestAnimationFrame,
-        resizeGridColumns: resizeGridColumns,
+        resizeGridColumns: resizeGridColumnsOptimized,
         getRowClass: getRowClass,
     };
 }]);
