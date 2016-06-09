@@ -872,7 +872,7 @@ class HistoryTest(TestCase):
             , Max CPC bid set to "$4999.00"
             , Device targeting set to ""
             , Locations set to "worldwide"
-            , Retargeting ad groups set to "[]"
+            , Retargeting ad groups set to ""
             , Tracking code set to ""
             , Archived set to "False"
             , Display URL set to ""
