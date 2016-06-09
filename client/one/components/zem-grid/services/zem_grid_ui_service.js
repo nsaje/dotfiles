@@ -4,14 +4,14 @@
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($timeout, zemGridConstants) {
 
     var requestAnimationFrame = (function () {
-        return window.requestAnimationFrame       ||
-               window.webkitRequestAnimationFrame ||
-               window.mozRequestAnimationFrame    ||
-               window.oRequestAnimationFrame      ||
-               window.msRequestAnimationFrame     ||
-               function (callback) {
-                   window.setTimeout(callback, 1000 / 60);
-               };
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
     })();
 
     function resetUIState (grid) {
@@ -119,42 +119,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         return classes;
     }
 
-    function setRowCollapsed (grid, gridRow, collapsed) {
-        gridRow.collapsed = collapsed;
-        var idx = grid.body.rows.indexOf(gridRow);
-        while (++idx < grid.body.rows.length) {
-            var child = grid.body.rows[idx];
-            if (child.level <= gridRow.level) break;
-            child.visible = !gridRow.collapsed && !child.parent.collapsed;
-        }
-    }
-
-    function toggleCollapse (grid, gridRow) {
-        setRowCollapsed(grid, gridRow, !gridRow.collapsed);
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-    }
-
-    function toggleCollapseLevel (grid, level) {
-        var collapsed = null;
-        for (var i = 0; i < grid.body.rows.length; ++i) {
-            var row = grid.body.rows[i];
-            if (row.level === level) {
-                if (collapsed === null)
-                    collapsed = !row.collapsed;
-                setRowCollapsed(grid, row, collapsed);
-            }
-        }
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-    }
-
     return {
         requestAnimationFrame: requestAnimationFrame,
         resetUIState: resetUIState,
         showLoader: showLoader,
         resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
-
-        toggleCollapse: toggleCollapse,
-        toggleCollapseLevel: toggleCollapseLevel,
     };
 }]);
