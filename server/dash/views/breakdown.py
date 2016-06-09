@@ -71,9 +71,9 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     offset = form_data.get('offset', DEFAULT_OFFSET)
     limit = form_data.get('limit', DEFAULT_LIMIT)
 
-    # this mapping is not precise, for the demo it will suffice
-    size = limit
-    page = int(offset / size) + 1
+    # this way the whole requested range is fetched, with possibly some extra that is cut off later
+    size = limit * 2
+    page = int(offset / size)
     order = form_data.get('order')
 
     show_archived = form_data.get('show_archived', False)
@@ -90,15 +90,16 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
         **kwargs
     )
 
-    # TODO only take rows from limit
+    # only take rows from limit
+    rows = response['rows'][offset:offset + limit]
     return [{
         'breakdown_id': None,
-        'rows': response['rows'],
+        'rows': rows,
         'totals': response['totals'],
         'pagination': {
-            'offset': response['pagination']['startIndex'] - 1,  # offset is 0-based
-            'limit': len(response['rows']),
-            'count': response['pagination']['count'],
+            'offset': offset,  # offset is 0-based
+            'limit': len(rows),
+            'count': response.get('pagination', {}).get('count'),  # TODO some views dont support pagination
         }
     }]
 
