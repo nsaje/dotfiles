@@ -22,7 +22,6 @@ from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
 from dash import facebook_helper
-from dash import facebook_helper
 from dash import content_insights_helper
 import automation.settings
 from reports import redshift
