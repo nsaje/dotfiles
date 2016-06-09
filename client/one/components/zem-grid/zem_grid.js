@@ -15,9 +15,8 @@ oneApp.directive('zemGrid', [function () {
 
             this.grid = new zemGridObject.createInstance();
             this.grid.meta.scope = $scope;
-            this.grid.meta.source = this.dataSource;
             this.grid.meta.pubsub = zemGridPubSub.createInstance($scope);
-            this.grid.meta.service = zemGridDataService.createInstance(this.grid);
+            this.grid.meta.service = zemGridDataService.createInstance(this.grid, this.dataSource);
 
             this.grid.meta.service.initialize();
         }],

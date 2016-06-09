@@ -1,6 +1,6 @@
 // Variables
 
-@default-font-family: "proxima-nova", arial, sans-serif;
+@default-font-family: 'Roboto', sans-serif;
 
 @default-color: #2fa8c7;
 
@@ -165,7 +165,7 @@ a:visited {
 
         label.control-label {
             color: #c70000;
-            font-weight: normal;
+            font-weight: 400;
 
             a {
                 color: #c70000;
@@ -177,7 +177,7 @@ a:visited {
     .form-title,
     label.control-label {
         font-size: 15px;
-        font-weight: 600;
+        font-weight: 500;
         color: #414141;
 
         .sidenote {
@@ -416,7 +416,7 @@ a:visited {
                 & > a:hover,
                 & > a:active,
                 & > a:visited {
-                    font-weight: bold;
+                    font-weight: 500;
                     margin-bottom: -1px;
                     padding-top: 9px;
                     padding-bottom: 11px;
@@ -448,7 +448,7 @@ a:visited {
                     display: block;
                     padding: 10px 15px;
                     text-decoration: none;
-                    font-weight: normal;
+                    font-weight: 400;
                     font-size: 13px;
                     color: #414141;
                     text-transform: uppercase;
@@ -601,7 +601,7 @@ div[datepicker] {
 
         .text-info {
             color: #414141;
-            font-weight: 600;
+            font-weight: 500;
         }
     }
 }
@@ -710,7 +710,7 @@ div[datepicker] {
     }
 
     .calendar-label {
-        font-weight: bold;
+        font-weight: 500;
     }
 }
 
@@ -723,21 +723,21 @@ div[datepicker] {
     & > li+li:before {
         content: ">";
         font-size: 15px;
-        font-weight: normal;
+        font-weight: 400;
         color: white;
     }
 
     & > li a,
     & > li span {
         font-size: 15px;
-        font-weight: normal;
+        font-weight: 400;
         color: white;
 
         &.active {
             font-size: 15px;
-            font-weight: normal;
+            font-weight: 400;
             color: white;
-            font-weight: bold;
+            font-weight: 500;
         }
     }
 }
@@ -1081,12 +1081,12 @@ img.zem-icon {
 .infobox-title {
     color: @infobox-black;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 20px;
 }
 
 .infobox-title-level {
-    font-weight: normal;
+    font-weight: 400;
     color: @infobox-dark-gray;
 }
 
@@ -1162,7 +1162,7 @@ img.zem-icon {
     line-height: 16px;
     vertical-align: text-top;
     &.primary .infobox-setting-value {
-        font-weight: bold;
+        font-weight: 500;
     }
 }
 
@@ -1178,7 +1178,7 @@ img.zem-icon {
     display: inline;
     vertical-align: top;
     color: #454545;
-    font-weight: normal;
+    font-weight: 400;
 }
 
 .infobox-setting-value-comment {
@@ -1328,7 +1328,7 @@ img.zem-icon {
                     padding: 2px 5px;
                     text-transform: uppercase;
                     font-size: 12px;
-                    font-weight: 600;
+                    font-weight: 500;
                 }
             }
         }
@@ -1340,7 +1340,7 @@ img.zem-icon {
 
     .tooltip-header {
         padding-bottom: 10px;
-        font-weight: bold;
+        font-weight: 500;
         text-align: center;
     }
 
@@ -1527,7 +1527,7 @@ img.zem-icon {
                 & > .select2-result-label {
                     text-transform: uppercase;
                     font-size: 12px;
-                    font-weight: bold;
+                    font-weight: 500;
                     padding-bottom: 0px;
                 }
 
@@ -1668,7 +1668,7 @@ ul.icon-list li {
     height: 13px;
     &:after {
         color: #888;
-        font-weight: bold;
+        font-weight: 500;
         content: "?";
     }
 }
@@ -1683,7 +1683,7 @@ ul.icon-list li {
         .border-radius(0%);
         &:after {
             color: #888;
-            font-weight: bold;
+            font-weight: 500;
             content: "!";
         }
     }
@@ -1744,18 +1744,25 @@ ul.icon-list li {
 }
 
 .settings-restore-container {
-
     display: inline-block;
     position: relative;
 
-    zem-internal-feature .internal {
-        &:before {
-            content: " ";
-            position: absolute;
-            display: block;
-            border-top: 9px solid @internal-color;
-            border-right: 9px solid transparent;
-            top: 0px;
+    zem-internal-feature {
+        position: absolute;
+        z-index: 1500;
+
+        .internal {
+            margin-right: 0.5em;
+
+            &:before {
+                content: " ";
+                width: 0;
+                height: 0;
+                display: block;
+                border-top: 7px solid @internal-color;
+                border-right: 7px solid transparent;
+                float: left;
+            }
         }
     }
 }
@@ -1840,7 +1847,7 @@ ul.icon-list li {
             a.contact:active,
             a.contact:visited {
                 font-size: 15px;
-                font-weight: bold;
+                font-weight: 500;
                 color: white;
             }
 
@@ -1992,7 +1999,7 @@ ul.icon-list li {
                     }
 
                     &.campaign-name {
-                        font-weight: 600;
+                        font-weight: 500;
                     }
                 }
             }
@@ -2145,7 +2152,7 @@ ul.icon-list li {
                         color: #454545;
                         font-size: 15px;
                         line-height: 15px;
-                        font-weight: 600;
+                        font-weight: 500;
                     }
 
                     .checkbox {
@@ -2294,7 +2301,7 @@ ul.icon-list li {
         .name {
             float: left;
             width: 80%;
-            font-weight: 600;
+            font-weight: 500;
             margin: 0;
             padding: 2px 0;
             text-align: left;
@@ -2319,7 +2326,7 @@ ul.icon-list li {
 
         .title {
             padding: 3px 0;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 15px;
         }
 
@@ -2337,7 +2344,7 @@ ul.icon-list li {
         thead, tfoot {
             background-color: #f6f6f6;
             td, th {
-                font-weight: 600;
+                font-weight: 500;
             }
             th {
                 border-top: 2px solid @default-color;
@@ -2362,10 +2369,6 @@ ul.icon-list li {
                     cursor: pointer;
                     text-decoration: underline;
                 }
-            }
-
-            &.outline {
-                font-weight: 900 !important;
             }
 
             &.text-row {
@@ -2425,7 +2428,7 @@ ul.icon-list li {
             border: 1px solid #d2d2d2;
             background-color: #fff;
             color: #d2d2d2;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 13px;
             .box-shadow(none);
             .border-radius(0 2px 2px 0);
@@ -2534,7 +2537,7 @@ ul.icon-list li {
 
     .title {
         padding: 3px 0;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 15px;
     }
 
@@ -2609,12 +2612,11 @@ ul.icon-list li {
     .table-access-permissions {
         .title {
             padding: 3px 0;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 15px;
         }
     }
 }
-
 
 .no-wrap {
     white-space: nowrap;
@@ -2859,7 +2861,7 @@ ul.icon-list li {
     }
 
     tfoot {
-        font-weight: 600;
+        font-weight: 500;
 
         .number {
             font-weight: 500;
@@ -2868,6 +2870,7 @@ ul.icon-list li {
 
     thead > tr > th {
         border-bottom: 0;
+        font-weight: 500;
     }
 
     th:last-child, td:last-child {
@@ -3228,7 +3231,7 @@ ul.icon-list li {
         .category-name {
             color: grey;
             margin-left: 8px;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 16px;
         }
     }
@@ -3301,7 +3304,7 @@ ul.icon-list li {
 
     .title {
         padding: 3px 0;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 15px;
     }
 
@@ -3469,7 +3472,7 @@ zem-editable-currency-field {
                 margin-bottom: 20px;
 
                 .title {
-                    font-weight: bold;
+                    font-weight: 500;
                     font-size: 20px;
                     padding-bottom: 25px;
                     padding-top: 10px;
@@ -3544,7 +3547,7 @@ zem-editable-currency-field {
 
             .add-scheduled-report-form {
                 .title {
-                    font-weight: bold;
+                    font-weight: 500;
                     font-size: 20px;
                     padding-bottom: 20px;
                     padding-top: 10px;
@@ -3629,7 +3632,7 @@ zem-editable-currency-field {
 
 zem-submission-status {
     .popover{
-        max-width: 600px;
+        max-width: 500px;
     }
 }
 
@@ -3689,7 +3692,7 @@ zem-submission-status {
                 white-space: nowrap;
 
                 &.bold {
-                    font-weight: 600;
+                    font-weight: 500;
                 }
 
                 hr {
@@ -3703,7 +3706,7 @@ zem-submission-status {
             }
 
             .submission-status-label {
-                font-weight: 600;
+                font-weight: 500;
                 color: #25a8c9;
             }
         }
@@ -3769,7 +3772,7 @@ zem-submission-status {
 
     .ui-select-dropdown {
         .ui-select-highlight {
-            font-weight: normal;
+            font-weight: 400;
             text-decoration: underline;
         }
     }
@@ -3794,7 +3797,7 @@ zem-submission-status {
     float: right;
     font-size: 10px;
     color: #d2d2d2;
-    font-weight: 600;
+    font-weight: 500;
     margin-left: 5px;
     margin-top: 4px;
 }
@@ -3952,6 +3955,27 @@ select.media-source-select {
 
     form {
         margin-bottom: 30px;
+
+        .archive-container {
+            zem-internal-feature {
+                position: absolute;
+                z-index: 1500;
+
+                .internal {
+                    margin-right: 0.5em;
+
+                    &:before {
+                        content: " ";
+                        width: 0;
+                        height: 0;
+                        display: block;
+                        border-top: 7px solid @internal-color;
+                        border-right: 7px solid transparent;
+                        float: left;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -4118,7 +4142,7 @@ select.media-source-select {
     .progress-step-box {
         background-color: @default-color;
         color: #fff;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 18px;
         text-align: center;
         padding: 4px 12px;
@@ -4134,7 +4158,7 @@ select.media-source-select {
     .progress-step-description {
         padding-top: 8px;
         font-size: 15px;
-        font-weight: 600;
+        font-weight: 500;
         color: #414141;
     }
 
@@ -4238,7 +4262,7 @@ select.media-source-select {
                 border-bottom: 1px solid @insights-table-header;
 
                 color: @insights-table-header;
-                font-weight: normal;
+                font-weight: 400;
             }
 
             td:first-child {

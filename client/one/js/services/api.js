@@ -2608,48 +2608,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        function convertCandidateErrorsFromApi (errors) {
-            var result = {};
-
-            angular.forEach(errors, function (candidateErrors, candidateId) {
-                var newErrors = angular.copy(candidateErrors);
-
-                if (newErrors.hasOwnProperty('image_url')) {
-                    newErrors.imageUrl = newErrors.image_url;
-                    delete newErrors.image_url;
-                }
-
-                if (newErrors.hasOwnProperty('image_crop')) {
-                    newErrors.imageCrop = newErrors.image_crop;
-                    delete newErrors.image_crop;
-                }
-
-                if (newErrors.hasOwnProperty('display_url')) {
-                    newErrors.displayUrl = newErrors.display_url;
-                    delete newErrors.display_url;
-                }
-
-                if (newErrors.hasOwnProperty('brand_name')) {
-                    newErrors.brandName = newErrors.brand_name;
-                    delete newErrors.brand_name;
-                }
-
-                if (newErrors.hasOwnProperty('call_to_action')) {
-                    newErrors.callToAction = newErrors.call_to_action;
-                    delete newErrors.call_to_action;
-                }
-
-                if (newErrors.hasOwnProperty('tracker_urls')) {
-                    newErrors.trackerUrls = newErrors.tracker_urls;
-                    delete newErrors.tracker_urls;
-                }
-
-                result[candidateId] = newErrors;
-            });
-
-            return result;
-        }
-
         this.checkStatus = function (adGroupId, batchId) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/status/';
@@ -2693,6 +2651,25 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+        function convertCandidateErrorsFromApi (errors) {
+            var result = {};
+            angular.forEach(errors, function (candidateErrors, candidateId) {
+                result[candidateId] = {
+                    label: candidateErrors.label,
+                    title: candidateErrors.title,
+                    url: candidateErrors.url,
+                    imageUrl: candidateErrors.image_url,
+                    imageCrop: candidateErrors.image_crop,
+                    displayUrl: candidateErrors.display_url,
+                    brandName: candidateErrors.brand_name,
+                    description: candidateErrors.description,
+                    callToAction: candidateErrors.call_to_action,
+                    trackerUrls: candidateErrors.tracker_urls,
+                };
+            });
+            return result;
+        }
 
         function convertStatusFromApi (statuses) {
             var result = [];
@@ -3043,6 +3020,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     isCanceled: obj.is_canceled,
                     account: obj.account_id,
                     licenseFee: obj.license_fee,
+                    flatFee: obj.flat_fee,
                     total: obj.total,
                     comment: obj.comment,
                     allocated: obj.allocated,

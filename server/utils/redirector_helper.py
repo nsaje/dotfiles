@@ -24,6 +24,14 @@ def validate_url(url, ad_group_id):
 
 
 def insert_redirect(url, content_ad_id, ad_group_id):
+    # Demo V3 hack
+    if settings.R1_DEMO_MODE:
+        data = {
+            'redirect': { 'url': 'http://example.com/FAKE'},
+            'redirectid': 'XXXXXXXXXXXXX'
+        }
+        return data
+
     try:
         data = json.dumps({
             'url': url,
@@ -124,6 +132,8 @@ def _call_api_retry(url, data=None, method='POST'):
 
 
 def _call_api(url, data, method='POST'):
+    if settings.R1_DEMO_MODE:
+        return {}
     request = urllib2.Request(url, data)
     request.get_method = lambda: method
     response = request_signer.urllib2_secure_open(request, settings.R1_API_SIGN_KEY)

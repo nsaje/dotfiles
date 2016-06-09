@@ -1,0 +1,212 @@
+#!/usr/bin/env python
+
+import os
+from secretcrypt import Secret
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
+
+STATS_DB_NAME = 'k1'
+
+# Database
+# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+    },
+    STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'k1',
+        'USER': 'eins',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
+        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'PORT': 5439
+    }
+}
+
+ALLOWED_HOSTS = [ '{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123')), ]
+
+BASE_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com'.format(INSTANCE_NAME=os.environ.get('INSTANCE_NAME', 'demo123'))
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REDIRECT_EXEMPT = []
+
+# Email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = ''
+EMAIL_PORT = 587
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = Secret('').get()
+
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+SEND_NOTIFICATION_MAIL = False
+FROM_EMAIL = 'help-test@zemanta.com'
+
+MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
+
+# Path to log file
+LOG_FILE = '/app/logs/eins-log.log'
+
+# Stats
+STATSD_HOST = os.environ.get('STATSD_PORT_8125_UDP_ADDR', 'statsd')
+STATSD_PORT = int(os.environ.get('STATSD_PORT_8125_UDP_PORT', '8125'))
+
+STATSD_INFLUX_HOST = os.environ.get('TELEGRAF_PORT_8135_UDP_ADDR', 'telegraf')
+STATSD_INFLUX_PORT = int(os.environ.get('TELEGRAF_PORT_8135_UDP_PORT', '8135'))
+
+# Saucelabs
+SAUCELABS_USERNAME = ''
+SAUCELABS_ACCESS_KEY = Secret('').get()
+
+# Auth
+GOOGLE_OAUTH_ENABLED = False
+GOOGLE_OAUTH_CLIENT_ID = ''
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
+
+# Static files
+BUILD_NUMBER = None
+
+if os.environ.get('BUILD'):
+    BUILD_NUMBER = os.environ.get('BUILD')
+elif os.path.isfile('build_number.txt'):
+    with open('build_number.txt', 'r') as build_number:
+        BUILD_NUMBER = build_number.read().strip()
+
+if BUILD_NUMBER:
+    ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
+    SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
+    CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
+else:
+    SERVER_STATIC_URL = '/static'
+    CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(  hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
+                                                            port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'))
+
+# Zwei callback base URL
+ZWEI_CALLBACK_BASE_URL = ''
+
+# Zwei API
+ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
+ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
+ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+
+# K1 API
+K1_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+
+# Source credentials encryption key
+CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
+
+# Pagerduty settings
+PAGER_DUTY_ENABLED = False
+PAGER_DUTY_URL = ''
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
+
+# Sentry config
+RAVEN_CONFIG = {
+    'dsn': '',
+}
+
+# Amazon AWS keys
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = Secret('').get()
+
+# S3 related settings
+S3_BUCKET = ''
+S3_BUCKET_STATS = ''
+S3_BUCKET_DEMO = ''
+USE_S3 = False
+
+# adgroup-level reports aggregations
+QUERY_AGGREGATE_REPORTS=False
+
+# email of the demo user
+DEMO_USER_EMAIL = 'test.account@zemanta.si'
+DEMO_USER_PASSWORD = 'zemantadsp'
+
+# cache settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    }
+}
+USE_HASH_CACHE = False
+HASH_CACHE_TTL = 24 * 60 * 60
+
+Z3_API_IMAGE_URL = ''
+IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
+
+# QUEUES
+BROKER_TRANSPORT = 'sqs'
+BROKER_USER = AWS_ACCESS_KEY_ID
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
+
+BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
+
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
+
+SQS_REGION = ''
+SQS_QUEUE_PREFIX = 'demo'
+SQS_VISIBILITY_TIMEOUT = 10 * 60
+
+CAMPAIGN_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-campaign_change'
+DAILY_STATEMENTS_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-budget-change'
+
+CELERY_DEFAULT_CONVAPI_QUEUE = SQS_QUEUE_PREFIX + '-convapi'
+CELERY_DEFAULT_CONVAPI_V2_QUEUE = SQS_QUEUE_PREFIX + '-' + 'convapi_v2'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
+    'region': SQS_REGION,
+    'polling_interval': 10,
+}
+
+R1_DEMO_MODE = True
+R1_API_SIGN_KEY = Secret('').get()
+R1_REDIRECTS_API_URL = ''
+R1_REDIRECTS_ADGROUP_API_URL = ''
+R1_VALIDATE_API_URL = ''
+R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/'
+R1_CONVERSION_STATS_URL = ''
+R1_CONVERSION_STATS_RESULT_URL = ''
+
+BIDDER_API_SIGN_KEY = ''
+
+SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
+
+BIDDER_API_SIGN_KEY = Secret('').get()
+
+# BCM
+BUDGET_RESERVE_FACTOR = 0.05
+
+# Google Analytics authentication
+GA_CLIENT_EMAIL = ''
+GA_PRIVATE_KEY = ''
+
+# k1
+K1_DEMO_MODE = True
+K1_CONSISTENCY_SYNC = False
+
+K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
+K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
+K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
+
+# DeployKitty
+DK_API_KEY = Secret('').get()
+DK_DEMO_PREPARE_ENDPOINT = ''
+
+LAMBDA_REGION = 'us-east-1'
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK/AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACWMIGTBgkqhkiG9w0BBwaggYUwgYICAQAwfQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx7yLKe0tUFVxMxsMMCARCAUFMra/DjBi1zN9BhzOI/C8+JHJA5rBM0tsNGeCZBzYnFgMm951IWfgRr7gqwdnPVqzDdwHwMHYzbR2viuXRMus4bfcdCm2BEqQBnNAgZ/fZt').get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = os.environ.get('INSTANCE_NAME', 'demo123')
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload'
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com/api/callbacks/content-upload/'.format(INSTANCE_NAME=LAMBDA_CONTENT_UPLOAD_NAMESPACE)

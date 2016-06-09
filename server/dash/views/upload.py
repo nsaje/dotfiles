@@ -174,8 +174,10 @@ class UploadCancel(api_common.BaseApiView):
 
         try:
             upload_plus.cancel_upload(batch)
-        except upload_plus.InvalidBatchStatus as e:
-            raise exc.ValidationError(message=e.message)
+        except upload_plus.InvalidBatchStatus:
+            raise exc.ValidationError(errors={
+                'cancel': 'Cancel action unsupported at this stage',
+            })
 
         return self.create_api_response({})
 
