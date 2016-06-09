@@ -4,6 +4,7 @@ import io
 import unicodecsv as csv
 import boto
 import boto.s3
+import influx
 
 from django.conf import settings
 from django.db import connections, transaction
@@ -12,6 +13,7 @@ from utils import s3helpers
 
 from etl import daily_statements_k1
 from etl import materialize_k1
+from etl import materialize_views
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ MATERIALIZED_VIEWS = [
     materialize_k1.ContentAdStats(),
     materialize_k1.Publishers(),
     materialize_k1.TouchpointConversions(),
+    # materialize_views.MasterView(),
 ]
 
 MATERIALIZED_VIEWS_S3_PREFIX = 'materialized_views'
@@ -30,6 +33,8 @@ CSV_DELIMITER = '\t'
 
 
 def refresh_k1_reports(update_since):
+    influx.incr('etl.refresh_k1.refresh_k1_reports', 1)
+
     effective_spend_factors = daily_statements_k1.reprocess_daily_statements(update_since.date())
     generate_views(effective_spend_factors)
 
@@ -37,7 +42,8 @@ def refresh_k1_reports(update_since):
 def generate_views(effective_spend_factors):
     for date, campaigns in sorted(effective_spend_factors.iteritems(), key=lambda x: x[0]):
         for mv in MATERIALIZED_VIEWS:
-            _generate_table(date, mv, campaigns)
+            with influx.block_timer('etl.refresh_k1.generate_table', table=mv.table_name()):
+                _generate_table(date, mv, campaigns)
 
 
 def _generate_table(date, materialized_view, campaign_factors):

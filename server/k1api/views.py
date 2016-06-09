@@ -11,7 +11,6 @@ import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
 from utils import url_helper, request_signer
-import dateutil.parser
 
 
 logger = logging.getLogger(__name__)
@@ -50,13 +49,12 @@ def get_ad_group_source_ids(request):
     elif source_type:
         ad_group_source_ids = _get_ad_group_source_ids_by_source_type(source_type)
     else:
-        _response_error("Missing credentials ID and source type")
+        return _response_error("Missing credentials ID and source type")
 
     res = []
     for ags in ad_group_source_ids:
         res.append({'ad_group_id': ags.ad_group_id, 'source_campaign_key': ags.source_campaign_key})
     return _response_ok(list(res))
-    return _response_ok(list(ad_group_source_ids))
 
 
 def _get_ad_group_source_ids_by_credentials_id(credentials_id):
@@ -102,6 +100,11 @@ def get_ad_group_source(request):
         return _response_error("The ad group %s is not present on source %s" %
                                (ad_group_id, source_type), status=404)
 
+    ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
+    return _response_ok(ad_group_source_with_settings)
+
+
+def _add_settings_to_ad_group_source(ad_group_source):
     ad_group_source_settings = ad_group_source.get_current_settings()
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
@@ -132,8 +135,32 @@ def get_ad_group_source(request):
         'tracking_code': tracking_code,
         'tracking_slug': ad_group_source.source.tracking_slug,
     }
+    return data
 
-    return _response_ok(data)
+
+@csrf_exempt
+def get_ad_group_sources_for_source_type(request):
+    _validate_signature(request)
+
+    source_type = request.GET.get('source_type')
+    if not source_type:
+        return _response_error("Must provide source type.")
+
+    try:
+        ad_group_sources = (
+            dash.models.AdGroupSource.objects
+                .select_related('source_credentials', 'source', 'source__source_type',
+                                'ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                .filter(source__source_type__type=source_type)
+        )
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_error("No ad group exists for source %s" % source_type, status=404)
+
+    ad_group_sources_with_settings = []
+    for ad_group_source in ad_group_sources:
+        ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
+        ad_group_sources_with_settings.append(ad_group_source_with_settings)
+    return _response_ok(ad_group_sources_with_settings)
 
 
 @csrf_exempt
@@ -757,3 +784,30 @@ def get_outbrain_marketer_id(request):
     if ad_group.campaign.account.outbrain_marketer_id:
         return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
     # TODO(nsaje): implement logic for assigning new Outbrain account (server/actionlog/api.py#L840)
+
+
+@csrf_exempt
+def get_facebook_account(request):
+    _validate_signature(request)
+
+    ad_group_id = request.GET.get('ad_group_id')
+    if not ad_group_id:
+        return _response_error("Must provide content ad id or ad group id.")
+
+    query_account = (
+        dash.models.Account.objects.get(campaign__adgroup__id=ad_group_id)
+    )
+
+    try:
+        query_facebook_account = (
+            dash.models.FacebookAccount.objects
+                .get(status=constants.FacebookPageRequestType.CONNECTED, account__id=query_account.id)
+        )
+        facebook_account = {
+            'account_id': query_facebook_account.account_id,
+            'ad_account_id': query_facebook_account.ad_account_id,
+            'page_id': query_facebook_account.get_page_id()
+        }
+    except dash.models.FacebookAccount.DoesNotExist:
+        facebook_account = None
+    return _response_ok(facebook_account)
