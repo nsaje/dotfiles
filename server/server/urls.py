@@ -555,6 +555,11 @@ urlpatterns += [
         name='k1api.get_ad_group_source',
     ),
     url(
+        r'k1api/get_ad_group_sources_for_source_type$',
+        k1api.views.get_ad_group_sources_for_source_type,
+        name='k1api.get_ad_group_sources_for_source_type'
+    ),
+    url(
         r'^k1api/ad_group_source_ids$',
         k1api.views.get_ad_group_source_ids,
         name='k1api.get_ad_group_source_ids',
@@ -643,6 +648,11 @@ urlpatterns += [
         r'^k1api/get_outbrain_marketer_id$',
         k1api.views.get_outbrain_marketer_id,
         name='k1api.get_outbrain_marketer_id',
+    ),
+    url(
+        r'^k1api/get_facebook_account$',
+        k1api.views.get_facebook_account,
+        name='k1api.get_facebook_account',
     ),
 ]
 

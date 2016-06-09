@@ -780,3 +780,13 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.publisherblacklist
     pk: 10
+
+# test Facebook account
+
+-   fields:
+        account_id: 1
+        ad_account_id: 'act_123'
+        page_url: 'https://business.facebook.com/test/'
+        status: 2
+    model: dash.facebookaccount
+    pk: 1
