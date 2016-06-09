@@ -732,9 +732,11 @@ class AccountSettings(SettingsBase):
     def save(self, request, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
+        super(AccountSettings, self).save(*args, **kwargs)
+        self.add_to_history()
 
+    def add_to_history(self):
         snapshot_type = constants.AccountHistoryType.ACCOUNT
-
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -742,7 +744,6 @@ class AccountSettings(SettingsBase):
         )
         changes_text = get_changes_text_from_dict(AccountSettings, changes)
         create_account_history(self, snapshot_type, changes, changes_text)
-        super(AccountSettings, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -823,6 +824,10 @@ class CampaignSettings(SettingsBase):
                 self.created_by = None
             else:
                 self.created_by = request.user
+        super(CampaignSettings, self).save(*args, **kwargs)
+        self.add_to_history()
+
+    def add_to_history(self):
         snapshot_type = constants.CampaignHistoryType.CAMPAIGN
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
@@ -831,7 +836,6 @@ class CampaignSettings(SettingsBase):
         )
         changes_text = get_changes_text_from_dict(CampaignSettings, changes)
         create_campaign_history(self, snapshot_type, changes, self.changes_text or changes_text)
-        super(CampaignSettings, self).save(*args, **kwargs)
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
@@ -1949,9 +1953,12 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'retargeting_ad_groups' and value:
-            names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
-            value = ', '.join(names)
+        elif prop_name == 'retargeting_ad_groups':
+            if not value:
+                value = ''
+            else:
+                names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
         elif prop_name == 'ga_tracking_type':
@@ -1989,7 +1996,10 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = None
             else:
                 self.created_by = request.user
+        super(AdGroupSettings, self).save(*args, **kwargs)
+        self.add_to_history()
 
+    def add_to_history(self):
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
@@ -1998,8 +2008,6 @@ class AdGroupSettings(SettingsBase):
         )
         changes_text = get_changes_text_from_dict(AdGroupSettings, changes)
         create_ad_group_history(self, snapshot_type, changes, self.changes_text or changes_text)
-
-        super(AdGroupSettings, self).save(*args, **kwargs)
 
     class QuerySet(SettingsQuerySet):
 
@@ -2146,6 +2154,10 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         if self.pk is None and request is not None:
             self.created_by = request.user
 
+        super(AdGroupSourceSettings, self).save(*args, **kwargs)
+        self.add_to_history()
+
+    def add_to_history(self):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         snapshot_type = constants.AdGroupHistoryType.AD_GROUP_SOURCE
         changes = SettingsBase.get_model_state_changes(
@@ -2155,8 +2167,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
         )
         changes_text = get_changes_text_from_dict(AdGroupSourceSettings, changes)
         create_ad_group_history(current_settings, snapshot_type, changes, changes_text)
-
-        super(AdGroupSourceSettings, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
@@ -2695,7 +2705,9 @@ class CreditLineItem(FootprintModel):
             snapshot=model_to_dict(self),
             credit=self,
         )
+        self.add_to_history()
 
+    def add_to_history(self):
         accounts = []
         if self.account is not None:
             accounts = [self.account]
@@ -2914,7 +2926,9 @@ class BudgetLineItem(FootprintModel):
             snapshot=model_to_dict(self),
             budget=self,
         )
+        self.add_to_history()
 
+    def add_to_history(self):
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),

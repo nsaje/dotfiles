@@ -609,7 +609,6 @@ class ActionLogApiTestCase(TestCase):
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
         callback = url_helper.get_zwei_callback_url(action.id)
-        from pudb import set_trace; set_trace()
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,

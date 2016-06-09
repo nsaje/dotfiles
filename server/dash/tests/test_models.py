@@ -777,7 +777,6 @@ class HistoryTest(TestCase):
         )
         self.assertEqual(1, models.AccountHistory.objects.all().count())
 
-
     def test_save_no_changes(self):
         self.assertIsNone(
             models.create_ad_group_history(
@@ -866,7 +865,7 @@ class HistoryTest(TestCase):
                 'target_devices': [],
                 'target_regions': [],
                 'tracking_code': ''
-            } , adg_hist.changes)
+            }, adg_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
             State set to "Paused"
@@ -909,7 +908,7 @@ class HistoryTest(TestCase):
         self.assertDictEqual(
             {
                 'cpc_cc': 5100,
-            } , adg_hist.changes
+            }, adg_hist.changes
         )
         self.assertEqual(
             'Max CPC bid set to "$5100.00"',
@@ -942,8 +941,8 @@ class HistoryTest(TestCase):
                 'daily_budget_cc': 10000,
                 'landing_mode': False,
                 'state': 2
-            }
-            , adgs_hist.changes)
+            },
+            adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
             State set to "Paused"
@@ -960,8 +959,8 @@ class HistoryTest(TestCase):
         self.assertDictEqual(
             {
                 'daily_budget_cc': 50000,
-            }
-            , adgs_hist.changes)
+            },
+            adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
             Daily Budget set to "$50000.00"
@@ -989,8 +988,8 @@ class HistoryTest(TestCase):
                 'promotion_goal': 1,
                 'target_devices': [],
                 'target_regions': []
-            }
-            , camp_hist.changes)
+            },
+            camp_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
             Name set to "Awesome"
@@ -1003,8 +1002,8 @@ class HistoryTest(TestCase):
             , Locations set to "worldwide"
             , Automatic Campaign Stop set to "True"
             , Landing Mode set to "False"
-            """).replace('\n', '')
-            , camp_hist.changes_text)
+            """).replace('\n', ''),
+            camp_hist.changes_text)
 
         hist = models.create_campaign_history(
             adgss,
