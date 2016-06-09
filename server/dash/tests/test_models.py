@@ -873,7 +873,7 @@ class HistoryTest(TestCase):
             , Max CPC bid set to "$4999.00"
             , Device targeting set to ""
             , Locations set to "worldwide"
-            , Retargeting ad groups set to ""
+            , Retargeting ad groups set to "[]"
             , Tracking code set to ""
             , Archived set to "False"
             , Display URL set to ""
@@ -885,7 +885,8 @@ class HistoryTest(TestCase):
             , GA tracking type (via API or e-mail). set to "Email"
             , Enable Adobe tracking set to "False"
             , Adobe tracking parameter set to ""
-            , Autopilot set to "Disabled", Autopilot's Daily Budget set to "$0.00"
+            , Autopilot set to "Disabled"
+            , Autopilot's Daily Budget set to "$0.00"
             , Landing Mode set to "False"
             """).replace("\n", ""), adg_hist.changes_text)
 
@@ -1133,10 +1134,10 @@ class HistoryTest(TestCase):
             {
                 'account': 1,
                 'amount': 100,
-                'end_date': '2016-09-16',
+                'end_date': end_date.isoformat(),
                 'flat_fee_cc': 0,
                 'license_fee': '0.2000',
-                'start_date': '2016-06-08',
+                'start_date': start_date.isoformat(),
                 'status': 1,
                 'flat_fee_cc': 10000,
                 'flat_fee_start_date': start_date.isoformat(),
@@ -1162,13 +1163,14 @@ class HistoryTest(TestCase):
             acc_hist.changes_text
         )
 
+        end_date = start_date + datetime.timedelta(days=29)
         models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=credit,
             amount=30,
             freed_cc=1000,
             start_date=start_date,
-            end_date=start_date + datetime.timedelta(days=29),
+            end_date=end_date,
             created_by=user,
             comment="Random remark"
         )
@@ -1178,21 +1180,24 @@ class HistoryTest(TestCase):
         self.assertDictEqual(
             {
                 'amount': 30,
-                'end_date': '2016-07-07',
+                'end_date': end_date.isoformat(),
                 'freed_cc': 1000,
-                'start_date': '2016-06-08',
+                'start_date': start_date.isoformat(),
                 'comment': 'Random remark'
             },
             camp_hist.changes
         )
         self.assertEqual(
             textwrap.dedent("""
-            Start Date set to "2016-06-08"
-            , End Date set to "2016-07-07"
+            Start Date set to "{}"
+            , End Date set to "{}"
             , Amount set to "$30.00"
             , Freed (cc) set to "$0.10"
             , Comment set to "Random remark"
-            """).replace('\n', ''),
+            """.format(
+                start_date.isoformat(),
+                end_date.isoformat()
+            )).replace('\n', ''),
             camp_hist.changes_text
         )
 

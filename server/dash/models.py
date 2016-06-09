@@ -1939,9 +1939,9 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 3)
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
+            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 2)
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
@@ -1949,7 +1949,7 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'retargeting_ad_groups':
+        elif prop_name == 'retargeting_ad_groups' and value:
             names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
             value = ', '.join(names)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
