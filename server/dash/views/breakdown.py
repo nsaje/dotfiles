@@ -53,7 +53,7 @@ def format_breakdown_response(report_rows, offset, limit, breakdown_page):
     return blocks
 
 
-def get_report_through_table(user, form_data):
+def get_report_through_table(get_fn, user, form_data, **kwargs):
     """
     FIXME: This code is temporary! It will only be used for the prototype.
 
@@ -78,6 +78,32 @@ def get_report_through_table(user, form_data):
 
     show_archived = form_data.get('show_archived', False)
 
+    response = get_fn(
+        user,
+        filtered_sources,
+        start_date,
+        end_date,
+        order,
+        page,
+        size,
+        show_archived,
+        **kwargs
+    )
+
+    # TODO only take rows from limit
+    return [{
+        'breakdown_id': None,
+        'rows': response['rows'],
+        'totals': response['totals'],
+        'pagination': {
+            'offset': response['pagination']['startIndex'] - 1,  # offset is 0-based
+            'limit': len(response['rows']),
+            'count': response['pagination']['count'],
+        }
+    }]
+
+
+def get_response_all_accounts_accounts(user, filtered_sources, start_date, end_date, order, page, size, show_archived, **kwargs):
     response = table.AccountsAccountsTable().get(
         user,
         filtered_sources,
@@ -96,16 +122,28 @@ def get_report_through_table(user, form_data):
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
-    return [{
-        'breakdown_id': None,
-        'rows': response['rows'],
-        'totals': response['totals'],
-        'pagination': {
-            'offset': response['pagination']['startIndex'] - 1,  # offset is 0-based
-            'limit': len(response['rows']),
-            'count': response['pagination']['count'],
-        }
-    }]
+    return response
+
+
+def get_response_account_campaigns(user, filtered_sources, start_date, end_date, order, page, size, show_archived, **kwargs):
+    response = table.AccountCampaignsTable().get(
+        user,
+        filtered_sources=filtered_sources,
+        start_date=start_date,
+        end_date=end_date,
+        order=order,
+        show_archived=show_archived,
+        **kwargs
+    )
+
+    for row in response['rows']:
+        row['campaign_id'] = int(row['campaign'])
+        row['campaign_name'] = row['name']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['campaign'], row)
+        row['breakdown_name'] = row['name']
+        row['parent_breakdown_id'] = None
+
+    return response
 
 
 class AllAccountsBreakdown(api_common.BaseApiView):
