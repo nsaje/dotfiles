@@ -184,6 +184,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('ad_group_history_view', "Can view ad group's history tab."),
             ('campaign_history_view', "Can view campaign's history tab."),
             ('can_view_new_history_backend', 'Can view history from new history models.'),
+            ('can_upload_with_picker', 'Can use upload with content ad picker.'),
         )
 
     def get_full_name(self):

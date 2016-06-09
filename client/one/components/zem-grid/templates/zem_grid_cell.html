@@ -1,4 +1,10 @@
 <div class="zem-grid-cell">
+    <!-- TODO: Appropriate solution for row selection and collapsing -->
+   <span ng-show="ctrl.position === 0 && ctrl.row.level === 1">
+       <a ng-click="ctrl.toggleSelection()" class="action">
+           {{ctrl.row.selected ? "[ * ]" : "[ O ]"}}
+       </a>
+    </span>
    <span ng-show="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel()">
         <a ng-click="ctrl.toggleCollapse()" class="action">
             {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}

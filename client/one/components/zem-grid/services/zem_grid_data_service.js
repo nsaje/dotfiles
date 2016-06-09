@@ -21,6 +21,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
         this.getBreakdownLevel = dataSource.getBreakdownLevel;
         this.setOrder = dataSource.setOrder;
         this.getOrder = dataSource.getOrder;
+        this.setDateRange = dataSource.setDateRange;
+        this.getDateRange = dataSource.getDateRange;
 
 
         function initialize () {
@@ -36,12 +38,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             dataSource.getMetaData().then(
                 function (data) {
                     grid.meta.data = data;
-                    zemGridStorageService.loadColumns(grid);
-                    grid.header.columns = data.columns.filter(function (column) {
-                        return column.shown && column.checked;
-                    });
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
-
                     deferred.resolve();
                 }
             );
@@ -57,12 +54,14 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             }
             var deferred = $q.defer();
             dataSource.getData(breakdown, size).then(
-                function (data) {
-                    zemGridParser.parse(grid, data);
+                function () {
+                    // Data is already been processed
+                    // on source data update event
                     deferred.resolve();
                 },
-                function () {
+                function (err) {
                     // TODO: Handle errors
+                    deferred.reject(err);
                 }
             );
             return deferred.promise;

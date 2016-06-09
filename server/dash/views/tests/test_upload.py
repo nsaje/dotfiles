@@ -443,8 +443,10 @@ class UploadCancelTestCase(TestCase):
             'data': {
                 'data': None,
                 'error_code': 'ValidationError',
-                'errors': None,
-                'message': 'Invalid batch status'
+                'errors': {
+                    'cancel': 'Cancel action unsupported at this stage',
+                },
+                'message': None,
             }
         }, json.loads(response.content))
 
