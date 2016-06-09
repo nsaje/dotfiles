@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridObject', ['zemGridConstants', function (zemGridConstants) {
+oneApp.factory('zemGridObject', [function () {
 
     //
     // This service defines Grid object. It is the main

@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridFooter', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
+oneApp.directive('zemGridFooter', [function () {
 
     return {
         restrict: 'E',
