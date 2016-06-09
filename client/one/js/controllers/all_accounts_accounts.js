@@ -717,8 +717,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.getControllerMetaData($scope, 'AllAccountsAccountsCtrl');
-        var endpoint = zemDataSourceEndpoints.createAllAccountsEndpoint(metadata);
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, null, 'account');
+        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
     }
