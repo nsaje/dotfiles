@@ -1,0 +1,49 @@
+<div class="modal-header">
+    <h4 class="modal-title">Select CSV file</h4>
+</div>
+<div class="modal-body">
+    <form class="file-upload-form form-horizontal">
+        <div class="form-group">
+            <label for="batch-name-input" class="col-xs-2 control-label">
+                Batch name:
+            </label>
+            <div class="col-xs-9">
+                <input type="text" class="form-control" />
+            </div>
+        </div>
+        <hr />
+        <div class="form-group">
+            <label for="file-input" class="col-xs-2 control-label">
+                CSV file:
+            </label>
+            <input type="file" />
+            <div class="col-xs-9 info">
+                <span class="glyphicon glyphicon-info-sign"></span>
+                <span>
+                    If you have trouble with CSV file structure, you can download our example file and start from here.<br />
+                    <a href="#">Download CSV example file</a>
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="file-input" class="col-xs-2 control-label">
+                Description:
+            </label>
+            <div class="col-xs-9">
+                <textarea type="text" class="form-control" rows="3"></textarea>
+                <div class="help-block">
+                    This will be default description for all generated ads. After you generate ads you can edit each description separately.
+                </div>
+            </div>
+            <div class="col-xs-1">
+                <label class="control-label small">
+                    0 / 140
+                </label>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="close()">Cancel</button>
+    <button type="button" class="btn btn-add pull-right" ng-click="nextStep()">Upload file</button>
+</div>
