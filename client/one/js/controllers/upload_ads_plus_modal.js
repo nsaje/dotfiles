@@ -15,6 +15,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     $scope.isCancelDisabled = false;
     $scope.numErrors = 0;
     $scope.errorReport = null;
+    $scope.cancelErrors = null;
 
     var pollInterval;
     var stopPolling = function () {
@@ -150,9 +151,13 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     });
 
     $scope.cancel = function () {
-        api.uploadPlus.cancel($state.params.id, $scope.batchId);
-        $scope.uploadStatus = constants.uploadBatchStatus.CANCELLED;
-        stopPolling();
+        api.uploadPlus.cancel($state.params.id, $scope.batchId).then(function () {
+            $scope.cancelErrors = null;
+            stopPolling();
+            $modalInstance.close();
+        }, function (data) {
+            $scope.cancelErrors = data.data.errors;
+        });
     };
 
     $scope.viewUploadedAds = function () {
