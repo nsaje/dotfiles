@@ -1373,7 +1373,7 @@ class AccountUsers(api_common.BaseApiView):
         if len(account.users.filter(pk=user.pk)):
             account.users.remove(user)
 
-            changes_text =  u'Removed user {} ({})'.format(user.get_full_name(), user.email)
+            changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
             new_settings.changes_text = changes_text

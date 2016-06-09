@@ -2626,7 +2626,11 @@ class AccountSettingsTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        changes_text = view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
+        changes_text = view.set_allowed_sources(
+            account_settings,
+            account,
+            True,
+            self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
             3: {'allowed': True}
