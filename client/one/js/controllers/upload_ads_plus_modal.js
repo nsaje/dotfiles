@@ -15,6 +15,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     $scope.isCancelDisabled = false;
     $scope.numErrors = 0;
     $scope.errorReport = null;
+    $scope.cancelErrors = null;
 
     var pollInterval;
     var stopPolling = function () {
