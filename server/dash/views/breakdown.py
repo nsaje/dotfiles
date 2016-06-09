@@ -104,7 +104,9 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     }]
 
 
-def get_response_all_accounts_accounts(user, filtered_sources, start_date, end_date, order, page, size, show_archived, **kwargs):
+def get_report_all_accounts_accounts(user, filtered_sources, start_date, end_date,
+                                     order, page, size, show_archived,
+                                     **kwargs):
     response = table.AccountsAccountsTable().get(
         user,
         filtered_sources,
@@ -126,7 +128,9 @@ def get_response_all_accounts_accounts(user, filtered_sources, start_date, end_d
     return response
 
 
-def get_response_account_campaigns(user, filtered_sources, start_date, end_date, order, page, size, show_archived, **kwargs):
+def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
+                                 order, page, size, show_archived,
+                                 **kwargs):
     response = table.AccountCampaignsTable().get(
         user,
         filtered_sources=filtered_sources,
