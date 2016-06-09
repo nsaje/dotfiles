@@ -24,6 +24,14 @@ def validate_url(url, ad_group_id):
 
 
 def insert_redirect(url, content_ad_id, ad_group_id):
+    # Demo V3 hack
+    if settings.R1_DEMO_MODE:
+        data = {
+            'redirect': { 'url': 'http://example.com/FAKE'},
+            'redirectid': 'XXXXXXXXXXXXX'
+        }
+        return data
+
     try:
         data = json.dumps({
             'url': url,

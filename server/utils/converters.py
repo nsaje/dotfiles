@@ -11,15 +11,15 @@ CC_TO_DECIMAL_DOLAR = Decimal('0.0001')
 
 
 def decimal_to_int(num):
-    return int(round(num))
+    return int(round(num or 0))
 
 
 def micro_to_cc(num):
-    return decimal_to_int(Decimal(num) / CC_TO_MICRO)
+    return decimal_to_int(Decimal(num or 0) / CC_TO_MICRO)
 
 
 def nano_to_cc(num):
-    return int(round(num * 0.00001))
+    return int(round((num or 0) * 0.00001))
 
 
 def nano_to_decimal(num):

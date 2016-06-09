@@ -180,7 +180,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             // Notify listeners, to give them chance to modify data,
             // initialize expected data structures
             notifyListeners(EVENTS.ON_LOAD, breakdown);
-            initializeRowsData(breakdown);
+            if (breakdown.level < selectedBreakdown.length) {
+                breakdown.rows.forEach(function (node) {
+                    initializeNodeBreakdown(node, breakdown.level + 1);
+                });
+            }
             if (breakdown.level === 1 && breakdown.pagination.offset === 0) {
                 data.breakdown = breakdown;
                 data.breakdown.meta = {};
@@ -223,37 +227,86 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             notifyListeners(EVENTS.ON_DATA_UPDATED, data);
         }
 
-        function initializeRowsData (breakdown) {
+        function initializeNodeBreakdown (node, level) {
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
-            if (breakdown.level >= selectedBreakdown.length) return;
-
-            breakdown.rows.forEach(function (row) {
-                row.breakdown = {
-                    level: breakdown.level + 1,
-                    breakdownId: row.breakdownId,
-                    pagination: {
-                        offset: 0,
-                        limit: 0,
-                        count: -1,
-                    },
-                    rows: [],
-                    meta: {},
-                };
-                delete row.breakdownId;
-            });
+            node.breakdown = {
+                level: level,
+                breakdownId: node.breakdownId,
+                pagination: {
+                    offset: 0,
+                    limit: 0,
+                    count: -1,
+                },
+                rows: [],
+                meta: {},
+            };
         }
 
-        function setDateRange (dateRange) {
+        function setDateRange (dateRange, fetch) {
             config.startDate = dateRange.startDate;
             config.endDate = dateRange.endDate;
+            if (fetch) {
+                return getData();
+            }
         }
 
-        function setOrder (order) {
+        function setOrder (order, fetch) {
             config.order = order;
+            if (fetch) {
+                return getData();
+            }
         }
 
-        function setBreakdown (breakdown) {
+        function setBreakdown (breakdown, fetch) {
+            // Configures new breakdown for this DataSource and fetch missing data
+            // Compare previous configured breakdown with new one and find out
+            // which level levels can stay the same (re-fetching is not needed)
+            var diff = findDifference(breakdown, selectedBreakdown);
+            if (diff < 0) return fetch ? $q.resolve(data) : undefined;
+
+            // Breakdown levels are 1-based therefor (diff + 1) is level
+            // that is different and needs to be replaced
+            var equalLevel = diff;
+            var parentNodes = getNodesByLevel(equalLevel);
+            var fetchSuccessiveLevels = breakdown.length > equalLevel;
             selectedBreakdown = breakdown;
+
+            // For all levels below remove all nodes and initialize new breakdown object (if needed)
+            var childBreakdowns = [];
+            parentNodes.forEach(function (node) {
+                if (fetchSuccessiveLevels) {
+                    initializeNodeBreakdown(node, equalLevel + 1);
+                    childBreakdowns.push(node.breakdown);
+                } else {
+                    delete node.breakdown;
+                }
+            });
+
+            notifyListeners(EVENTS.ON_DATA_UPDATED, data);
+
+            if (fetch) {
+                if (fetchSuccessiveLevels) {
+                    return getDataByLevel(equalLevel + 1, childBreakdowns);
+                }
+
+                return $q.resolve(data);
+            }
+        }
+
+        function getNodesByLevel (level, node, result) {
+            if (!node) node = data;
+            if (!result) result = [];
+            if (!node.breakdown) return result;
+
+            node.breakdown.rows.forEach(function (child) {
+                if (node.breakdown.level === level) {
+                    result.push(child);
+                } else {
+                    getNodesByLevel(level, child, result);
+                }
+            });
+
+            return result;
         }
 
         function getDateRange () {
@@ -273,6 +326,23 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getBreakdownLevel () {
             return selectedBreakdown.length;
+        }
+
+        function findDifference (arr1, arr2) {
+            var diff = -1;
+            for (var i = 0; i < arr1.length; i++) {
+                if (arr1[i] === arr2[i]) {
+                    continue;
+                } else {
+                    diff = i;
+                    break;
+                }
+            }
+
+            if (diff < 0 && arr2.length > arr1.length)
+                return arr1.length;
+
+            return diff;
         }
 
         function onLoad (scope, callback) {

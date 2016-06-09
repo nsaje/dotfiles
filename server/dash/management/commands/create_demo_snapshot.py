@@ -184,19 +184,9 @@ def _create_fake_credit(account):
 
 def _attach_demo_users(dump_data, demo_users_set):
     demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
-    demo_account_pks = []
-    demo_users_objs = []
-    demo_account_objs = []
     for entity in dump_data:
         if entity['model'] == 'dash.account':
-            demo_account_objs.append(entity)
-            demo_account_pks.append(entity['pk'])
-        if entity['pk'] in demo_users_pks:
-            demo_users_objs.append(entity)
-    for demo_user in demo_users_objs:
-        demo_user['accounts'] = list(demo_account_pks)
-    for demo_account in demo_account_objs:
-        demo_account['users'] = list(demo_users_pks)
+            entity['fields']['users'] = list(demo_users_pks)
 
 
 def _add_to_serialize_list(serialize_list, objs):
