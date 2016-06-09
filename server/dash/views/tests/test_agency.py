@@ -2631,10 +2631,11 @@ class AccountSettingsTest(TestCase):
             account,
             True,
             self._get_form_with_allowed_sources_dict({
-            1: {'allowed': True},
-            2: {'allowed': False},
-            3: {'allowed': True}
-        }))
+                1: {'allowed': True},
+                2: {'allowed': False},
+                3: {'allowed': True}
+            })
+        )
 
         self.assertIsNotNone(changes_text)
         self.assertEqual(
