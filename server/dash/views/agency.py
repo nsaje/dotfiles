@@ -21,7 +21,7 @@ from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
-from dash import stats_helper
+from dash import facebook_helper
 from dash import facebook_helper
 from dash import content_insights_helper
 import automation.settings
@@ -980,7 +980,7 @@ class AccountSettings(api_common.BaseApiView):
                     form
                 )
 
-            if 'facebook_page' in form.cleaned_data:
+            if 'facebook_page' in form.data:
                 if not request.user.has_perm('zemauth.can_modify_facebook_page'):
                     raise exc.AuthorizationError()
                 self.set_facebook_page(facebook_account, form)
@@ -1139,6 +1139,15 @@ class AccountSettings(api_common.BaseApiView):
 
         return allowed_sources_dict
 
+    def add_facebook_account_to_result(self, result, account):
+        try:
+            result['facebook_page'] = account.facebookaccount.page_url
+            result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                account.facebookaccount.status)
+        except models.FacebookAccount.DoesNotExist:
+            result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                models.constants.FacebookPageRequestType.EMPTY)
+
     def get_dict(self, request, settings, account):
         if not settings:
             return {}
@@ -1164,13 +1173,7 @@ class AccountSettings(api_common.BaseApiView):
                 [source.id for source in account.allowed_sources.all()]
             )
         if request.user.has_perm('zemauth.can_modify_facebook_page'):
-            try:
-                result['facebook_page'] = account.facebookaccount.page_url
-                result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
-                    account.facebookaccount.status)
-            except models.FacebookAccount.DoesNotExist:
-                result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
-                    models.constants.FacebookPageRequestType.EMPTY)
+            self.add_facebook_account_to_result(result, account)
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
