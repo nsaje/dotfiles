@@ -168,12 +168,12 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
-            report = get_report_through_table(request.user, form.cleaned_data)
+            report = get_report_through_table(get_report_all_accounts_accounts, request.user, form.cleaned_data)
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
             request.user,
-            form.cleaned_data['breakdown'],
+            breakdown,
             extract_constraints(form.cleaned_data),
             breakdown_page,
             form.cleaned_data.get('order', None),
@@ -199,11 +199,18 @@ class AccountBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown = form.cleaned_data.get('breakdown')
         breakdown_page = form.cleaned_data.get('breakdown_page', None)
+
+        # FIXME redirect to table.py if base level request for a breakdown
+        if len(breakdown) == 1:
+            report = get_report_through_table(get_report_account_campaigns, request.user,
+                                              form.cleaned_data, account_id=account.id)
+            return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
             request.user,
-            form.cleaned_data['breakdown'],
+            breakdown,
             extract_constraints(form.cleaned_data, account=account),
             breakdown_page,
             form.cleaned_data.get('order', None),
