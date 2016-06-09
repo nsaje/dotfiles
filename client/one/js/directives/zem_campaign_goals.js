@@ -109,7 +109,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 return $modal.open({
                     templateUrl: '/partials/edit_campaign_goal_modal.html',
                     controller: 'EditCampaignGoalModalCtrl',
-                    windowClass: 'modal',
+                    windowClass: 'modal-default',
                     scope: scope,
                 });
             }
@@ -150,7 +150,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                    windowClass: 'modal',
+                    windowClass: 'modal-default',
                     scope: scope,
                 });
                 modalInstance.result.then(function () {});
