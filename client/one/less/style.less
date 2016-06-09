@@ -3426,179 +3426,177 @@ zem-editable-currency-field {
     }
 }
 
-.modal.modal-content-upload {
-    .modal-dialog {
-        margin-top: 22vh;
-        width: 1210px;
+.modal.modal-content-upload .modal-dialog {
+    margin-top: 22vh;
+    width: 1210px;
 
-        .modal-header {
-            border: none;
-        }
+    .modal-header {
+        border: none;
+    }
 
-        .modal-body {
-            &.contentad-picker {
-                padding: 0;
-                display: flex;  // TODO: this is ie10+, replace with floats
-                flex-direction: row;
-
-                .candidate-table {
-                    -webkit-border-top-right-radius: 4px;
-                    -webkit-border-top-left-radius: 4px;
-                    -moz-border-radius-topright: 4px;
-                    -moz-border-radius-topleft: 4px;
-                    border-top-right-radius: 4px;
-                    border-top-left-radius: 4px;
-                }
-            }
-
-            .control-label.small {
-                font-size: 12px;
-                font-weight: 400;
-                padding-top: 9px;
-            }
-
-            .form-group {
-                .info {
-                    color: #999999;
-                }
-
-                .help-block {
-                    font-style: italic;
-                    font-size: 12px;
-                }
-            }
-
-            h4 {
-                padding-bottom: 10px;
-                border-bottom: 1px solid #e5e5e5;
-            }
-
-            .edit-form {
-                padding: 15px;
-                display: none;
-                order: 2;
-                flex-grow: 2;
-
-                &.expanded {
-                    width: 60%;
-                    display: inline-block;
-                }
-
-                .btn-close {
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                }
-            }
+    .modal-body {
+        &.contentad-picker {
+            padding: 0;
+            display: flex;  // TODO: this is ie10+, replace with floats
+            flex-direction: row;
 
             .candidate-table {
-                padding: 15px 0 15px 0px;
-                background-color: #f4f4f4;
+                -webkit-border-top-right-radius: 4px;
+                -webkit-border-top-left-radius: 4px;
+                -moz-border-radius-topright: 4px;
+                -moz-border-radius-topleft: 4px;
+                border-top-right-radius: 4px;
+                border-top-left-radius: 4px;
+            }
+        }
+
+        .control-label.small {
+            font-size: 12px;
+            font-weight: 400;
+            padding-top: 9px;
+        }
+
+        .form-group {
+            .info {
+                color: #999999;
+            }
+
+            .help-block {
+                font-style: italic;
+                font-size: 12px;
+            }
+        }
+
+        h4 {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .edit-form {
+            padding: 15px;
+            display: none;
+            order: 2;
+            flex-grow: 2;
+
+            &.expanded {
+                width: 60%;
                 display: inline-block;
-                width: 100%;
-                order: 1;
-                flex-grow: 1;
+            }
 
-                h4 {
-                    padding-left: 15px;
-                }
+            .btn-close {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+            }
+        }
 
-                .btn-download {
-                    margin-left: 15px;
-                }
+        .candidate-table {
+            padding: 15px 0 15px 0px;
+            background-color: #f4f4f4;
+            display: inline-block;
+            width: 100%;
+            order: 1;
+            flex-grow: 1;
 
-                &.small {
-                    width: 40%;
+            h4 {
+                padding-left: 15px;
+            }
 
-                    table tr td {
-                        &.errors {
-                            width: 20px;
-                            .error-text{
-                                display: none;
-                            }
+            .btn-download {
+                margin-left: 15px;
+            }
+
+            &.small {
+                width: 40%;
+
+                table tr td {
+                    &.errors {
+                        width: 20px;
+                        .error-text{
+                            display: none;
                         }
+                    }
 
-                        &.action {
-                            width: 20px;
-                            .action-text {
-                                display: none;
-                            }
+                    &.action {
+                        width: 20px;
+                        .action-text {
+                            display: none;
                         }
                     }
                 }
+            }
 
-                table {
+            table {
 
-                    tr {
-                        height: 50px;
+                tr {
+                    height: 50px;
 
-                        &.selected {
-                            background-color: white;
-                        }
+                    &.selected {
+                        background-color: white;
+                    }
 
-                        td {
-                            border-top: none;
-                            border-bottom: 1px solid #e5e5e5;
+                    td {
+                        border-top: none;
+                        border-bottom: 1px solid #e5e5e5;
 
-                            &.status {
-                                padding: 18px 0 18px 0px;
-                                text-align: center;
-                                width: 50px;
-                                line-height: 14px;
+                        &.status {
+                            padding: 18px 0 18px 0px;
+                            text-align: center;
+                            width: 50px;
+                            line-height: 14px;
 
-                                &.red {
-                                    color: red;
-                                }
-
-                                &.green {
-                                    color: green;
-                                }
-
-                                &.blue {
-                                    color: @default-color;
-                                }
-                            }
-
-                            &.image {
-                                padding-top: 2px;
-                                padding-bottom: 2px;
-                                width: 50px;
-
-                                img {
-                                    width: 46px;
-                                    height: 46px;
-                                }
-                            }
-
-                            &.errors {
+                            &.red {
                                 color: red;
                             }
 
-                            &.action {
-                                width: 95px;
+                            &.green {
+                                color: green;
                             }
+
+                            &.blue {
+                                color: @default-color;
+                            }
+                        }
+
+                        &.image {
+                            padding-top: 2px;
+                            padding-bottom: 2px;
+                            width: 50px;
+
+                            img {
+                                width: 46px;
+                                height: 46px;
+                            }
+                        }
+
+                        &.errors {
+                            color: red;
+                        }
+
+                        &.action {
+                            width: 95px;
                         }
                     }
                 }
             }
         }
+    }
 
-        .modal-footer {
-            .error {
-                color: red;
-                padding-top: 8px;
-            }
-
-            border: none;
-            background-color: #d5d5d5;
-            text-align: left;
-            -webkit-border-bottom-right-radius: 4px;
-            -webkit-border-bottom-left-radius: 4px;
-            -moz-border-radius-bottomright: 4px;
-            -moz-border-radius-bottomleft: 4px;
-            border-bottom-right-radius: 4px;
-            border-bottom-left-radius: 4px;
+    .modal-footer {
+        .error {
+            color: red;
+            padding-top: 8px;
         }
+
+        border: none;
+        background-color: #d5d5d5;
+        text-align: left;
+        -webkit-border-bottom-right-radius: 4px;
+        -webkit-border-bottom-left-radius: 4px;
+        -moz-border-radius-bottomright: 4px;
+        -moz-border-radius-bottomleft: 4px;
+        border-bottom-right-radius: 4px;
+        border-bottom-left-radius: 4px;
     }
 }
 
