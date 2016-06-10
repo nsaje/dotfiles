@@ -128,6 +128,8 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
                     'enable_ga_tracking': True,
+                    'ga_property_id': 'UA-123456789-1',
+                    'ga_tracking_type': 1,
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
@@ -258,6 +260,8 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
+                        'ga_property_id': 'UA-123456789-1',
+                        'ga_tracking_type': 1,
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
@@ -421,6 +425,8 @@ class AdGroupSettingsTest(TestCase):
                         'adobe_tracking_param': '',
                         'enable_adobe_tracking': False,
                         'autopilot_state': 2,
+                        'ga_property_id': '',
+                        'ga_tracking_type': 1,
                         'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
@@ -855,6 +861,7 @@ class AdGroupHistoryTest(TestCase):
                 cpc_cc='2.0000',
                 daily_budget_cc='120.0000',
                 tracking_code=tracking_code,
+                ga_property_id='UA-123456789-1'
             )
             settings.save(request)
 
@@ -892,6 +899,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'Ad group name', u'value': u''},
                         {u'name': u'Enable GA tracking', u'value': u'True'},
                         {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
+                        {u'name': u'GA web property ID', u'value': u''},
                         {u'name': u'Enable Adobe tracking', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'value': u''},
                         {u'name': u'Autopilot', u'value': u'Disabled'},
@@ -901,7 +909,7 @@ class AdGroupHistoryTest(TestCase):
                     u'show_old_settings': False
                 }, {
                     u'changed_by': u'non_superuser@zemanta.com',
-                    u'changes_text': u'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
+                    u'changes_text': u'Daily budget set to "$120.00", GA web property ID set to "UA-123456789-1", Max CPC bid set to "$2.00"',
                     u'datetime': u'2015-06-05T09:22:24',
                     u'settings': [
                         {u'name': u'State', u'old_value': u'Paused', u'value': u'Paused'},
@@ -921,6 +929,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'Ad group name', u'old_value': u'', u'value': u''},
                         {u'name': u'Enable GA tracking', u'old_value': u'True', u'value': u'True'},
                         {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
+                        {u'name': u'GA web property ID', u'old_value': u'', u'value': u'UA-123456789-1'},
                         {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
                         {u'name': u'Autopilot', u'old_value': u'Disabled', u'value': u'Disabled'},

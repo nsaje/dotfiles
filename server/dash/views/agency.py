@@ -150,6 +150,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
                 'enable_ga_tracking': settings.enable_ga_tracking,
+                'ga_property_id': settings.ga_property_id,
+                'ga_tracking_type': settings.ga_tracking_type,
                 'enable_adobe_tracking': settings.enable_adobe_tracking,
                 'adobe_tracking_param': settings.adobe_tracking_param,
                 'autopilot_state': settings.autopilot_state,
