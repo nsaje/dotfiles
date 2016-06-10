@@ -81,7 +81,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     $scope.canRetryUpload = function () {
         return $scope.uploadStatus === constants.uploadBatchStatus.FAILED ||
             $scope.uploadStatus === constants.uploadBatchStatus.CANCELLED ||
-            $scope.isBatchPartiallyCompleted();
+            $scope.isUploadPartiallyCompleted();
     };
 
     $scope.callToActionSelect2Config = {
