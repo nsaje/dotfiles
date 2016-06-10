@@ -69,6 +69,20 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
         return $scope.errors.details.description;
     };
 
+    $scope.isUploadSuccessful = function () {
+        return $scope.uploadStatus === constants.uploadBatchStatus.DONE && !$scope.numErrors;
+    };
+
+    $scope.isUploadPartiallyCompleted = function () {
+        return $scope.uploadStatus === constants.uploadBatchStatus.DONE && $scope.numErrors > 0;
+    };
+
+    $scope.canRetryUpload = function () {
+        return $scope.uploadStatus === constants.uploadBatchStatus.FAILED ||
+            $scope.uploadStatus === constants.uploadBatchStatus.CANCELLED ||
+            $scope.isBatchPartiallyCompleted();
+    };
+
     $scope.callToActionSelect2Config = {
         dropdownCssClass: 'service-fee-select2',
         createSearchChoice: function (term, data) {
