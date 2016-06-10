@@ -182,6 +182,31 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
     return response
 
 
+def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
+                                    order, page, size, show_archived,
+                                    **kwargs):
+    response = table.AdGroupAdsTable().get(
+        user,
+        filtered_sources=filtered_sources,
+        start_date=start_date,
+        end_date=end_date,
+        order=order,
+        show_archived=show_archived,
+        page=page,
+        size=size,
+        **kwargs
+    )
+
+    for row in response['rows']:
+        row['content_ad_id'] = int(row['id'])
+        row['content_ad_name'] = row['title']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['content_ad'], row)
+        row['breakdown_name'] = row['title']
+        row['parent_breakdown_id'] = None
+
+    return response
+
+
 class AllAccountsBreakdown(api_common.BaseApiView):
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -305,11 +330,19 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown = form.cleaned_data.get('breakdown')
         breakdown_page = form.cleaned_data.get('breakdown_page', None)
+
+        # FIXME redirect to table.py if base level request for a breakdown
+        if len(breakdown) == 1:
+            report = get_report_through_table(get_report_ad_group_content_ads, request.user,
+                                              form.cleaned_data, account_id=account.id)
+            return self.create_api_response(report)
+
 
         report = stats.api_breakdowns.query(
             request.user,
-            form.cleaned_data['breakdown'],
+            breakdown,
             extract_constraints(form.cleaned_data, ad_group=ad_group),
             breakdown_page,
             form.cleaned_data.get('order', None),
