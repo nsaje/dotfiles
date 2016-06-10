@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 import logging
 import newrelic.agent
 
@@ -88,6 +89,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
+        self._add_ga_account(request.user, ad_group, new_settings)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
@@ -108,6 +110,25 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def _extract_ga_account_id(self, ga_property_id):
+        result = re.search(constants.GA_PROPERTY_ID_REGEX, ga_property_id)
+        return result.group(1)
+
+    def _add_ga_account(self, user, ad_group, settings):
+        if not user.has_perm('zemauth.can_set_ga_api_tracking'):
+            return
+
+        if models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=settings.ga_property_id).exists():
+            return  # no need to add it
+
+        models.GAAnalyticsAccount.objects.create(
+            account=ad_group.campaign.account,
+            ga_web_property_id=settings.ga_property_id,
+            ga_account_id=self._extract_ga_account_id(settings.ga_property_id)
+        )
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}

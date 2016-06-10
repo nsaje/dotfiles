@@ -158,7 +158,7 @@ class AdGroupSettingsForm(forms.Form):
         return self.cleaned_data.get('enable_ga_tracking', True) is not False
 
     def clean_ga_property_id(self):
-        property_id = self.cleaned_data.get('ga_property_id')
+        property_id = self.cleaned_data.get('ga_property_id').strip()
         tracking_type = self.cleaned_data.get('ga_tracking_type')
 
         if tracking_type == constants.GATrackingType.EMAIL:
@@ -167,7 +167,7 @@ class AdGroupSettingsForm(forms.Form):
         if not property_id:
             raise forms.ValidationError('Web property ID is required.')
 
-        if not re.match(r'UA-[0-9]+-*', property_id):
+        if not re.match(constants.GA_PROPERTY_ID_REGEX, property_id):
             raise forms.ValidationError('Web property ID is not valid.')
 
         return property_id
