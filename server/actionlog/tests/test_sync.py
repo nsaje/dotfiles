@@ -395,6 +395,7 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
             7: utcnow,
             8: utcnow,
             9: utcnow,
+            10: utcnow,
         }, last_sync)
 
     def test_get_latest_source_success_archived_campaign(self):
@@ -611,6 +612,7 @@ class CamapaignLastSuccessfulSourceSyncTestCase(TestCase):
             7: utcnow,
             8: utcnow,
             9: utcnow,
+            10: utcnow,
         }, last_sync)
 
     def test_get_latest_source_success_archived_ad_group(self):
@@ -752,6 +754,7 @@ class AdGroupLastSuccessfulSourceSyncTestCase(TestCase):
             7: utcnow,
             8: utcnow,
             9: utcnow,
+            10: utcnow,
         }, last_sync)
 
 
