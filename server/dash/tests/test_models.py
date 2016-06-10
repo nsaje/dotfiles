@@ -862,52 +862,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history()
-        self.maxDiff = None
-        self.assertEqual(1, adg_hist.ad_group.id)
-        self.assertDictEqual(
-            {
-                'ad_group_name': '',
-                'adobe_tracking_param': '',
-                'archived': False,
-                'autopilot_daily_budget': 0,
-                'autopilot_state': 2,
-                'brand_name': '',
-                'call_to_action': '',
-                'cpc_cc': 4999,
-                'description': '',
-                'display_url': '',
-                'enable_adobe_tracking': False,
-                'enable_ga_tracking': True,
-                'ga_tracking_type': 1,
-                'landing_mode': False,
-                'retargeting_ad_groups': [],
-                'state': 2,
-                'target_devices': [],
-                'target_regions': [],
-                'tracking_code': ''
-            }, adg_hist.changes)
-        self.assertEqual(
-            textwrap.dedent("""
-            State set to "Paused"
-            , Max CPC bid set to "$4999.00"
-            , Device targeting set to ""
-            , Locations set to "worldwide"
-            , Retargeting ad groups set to ""
-            , Tracking code set to ""
-            , Archived set to "False"
-            , Display URL set to ""
-            , Brand name set to ""
-            , Description set to ""
-            , Call to action set to ""
-            , Ad group name set to ""
-            , Enable GA tracking set to "True"
-            , GA tracking type (via API or e-mail). set to "Email"
-            , Enable Adobe tracking set to "False"
-            , Adobe tracking parameter set to ""
-            , Autopilot set to "Disabled"
-            , Autopilot's Daily Budget set to "$0.00"
-            , Landing Mode set to "False"
-            """).replace("\n", ""), adg_hist.changes_text)
+        self.assertIsNone(adg_hist)
 
         hist = models.create_ad_group_history(
             adgss,
@@ -955,20 +910,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adgs_hist = self._latest_ad_group_history()
-        self.assertEqual(constants.HistoryType.AD_GROUP_SOURCE, adgs_hist.type)
-        self.assertDictEqual(
-            {
-                'daily_budget_cc': 10000,
-                'landing_mode': False,
-                'state': 2
-            },
-            adgs_hist.changes)
-        self.assertEqual(
-            textwrap.dedent("""
-            State set to "Paused"
-            , Daily Budget set to "$10000.00"
-            , Landing Mode set to "False"
-            """).replace('\n', ''), adgs_hist.changes_text)
+        self.assertIsNone(adgs_hist)
 
         adgss = adgss.copy_settings()
         adgss.daily_budget_cc = 50000
@@ -995,35 +937,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         camp_hist = self._latest_campaign_history()
-        self.assertEqual(constants.HistoryType.CAMPAIGN, camp_hist.type)
-        self.assertDictEqual(
-            {
-                'archived': False,
-                'automatic_campaign_stop': True,
-                'campaign_goal': 3,
-                'goal_quantity': 0,
-                'iab_category': u'IAB24',
-                'landing_mode': False,
-                'name': u'Awesome',
-                'promotion_goal': 1,
-                'target_devices': [],
-                'target_regions': []
-            },
-            camp_hist.changes)
-        self.assertEqual(
-            textwrap.dedent("""
-            Name set to "Awesome"
-            , IAB Category set to "Uncategorized"
-            , Campaign Goal set to "new unique visitors"
-            , Goal Quantity set to "0"
-            , Promotion Goal set to "Brand Building"
-            , Archived set to "False"
-            , Device targeting set to ""
-            , Locations set to "worldwide"
-            , Automatic Campaign Stop set to "True"
-            , Landing Mode set to "False"
-            """).replace('\n', ''),
-            camp_hist.changes_text)
+        self.assertIsNone(camp_hist)
 
         hist = models.create_campaign_history(
             adgss,
@@ -1068,18 +982,7 @@ class HistoryTest(TestCase):
         adgss.save(r)
 
         acc_hist = self._latest_account_history()
-        self.assertEqual(constants.HistoryType.ACCOUNT, acc_hist.type)
-        self.assertDictEqual(
-            {
-                'archived': False,
-                'account_type': 1,
-                'name': ''
-            },
-            acc_hist.changes)
-        self.assertEqual(
-            'Name set to "", Archived set to "False", Account Type set to "Unknown"',
-            acc_hist.changes_text
-        )
+        self.assertIsNone(acc_hist)
 
         hist = models.create_account_history(
             adgss,
@@ -1148,39 +1051,7 @@ class HistoryTest(TestCase):
         )
 
         acc_hist = self._latest_account_history()
-        self.assertEqual(constants.HistoryType.CREDIT, acc_hist.type)
-        self.assertDictEqual(
-            {
-                'account': 1,
-                'amount': 100,
-                'end_date': end_date.isoformat(),
-                'flat_fee_cc': 0,
-                'license_fee': '0.2000',
-                'start_date': start_date.isoformat(),
-                'status': 1,
-                'flat_fee_cc': 10000,
-                'flat_fee_start_date': start_date.isoformat(),
-                'flat_fee_end_date': end_date.isoformat(),
-                'comment': 'No comment',
-            },
-            acc_hist.changes
-        )
-        self.assertEqual(
-            textwrap.dedent("""
-            Account set to "1"
-            , Start Date set to "{sd}"
-            , End Date set to "{ed}"
-            , Amount set to "$100.00"
-            , License Fee set to "20.00%"
-            , Flat Fee (cc) set to "$1.00"
-            , Flat Fee Start Date set to "{sd}"
-            , Flat Fee End Date set to "{ed}"
-            , Status set to "Signed"
-            , Comment set to "No comment"
-            """.format(sd=start_date.isoformat(), ed=end_date.isoformat())
-                            ).replace('\n', ''),
-            acc_hist.changes_text
-        )
+        self.assertIsNone(acc_hist)
 
         end_date = start_date + datetime.timedelta(days=29)
         models.BudgetLineItem.objects.create(
@@ -1195,30 +1066,7 @@ class HistoryTest(TestCase):
         )
 
         camp_hist = self._latest_campaign_history()
-        self.assertEqual(constants.HistoryType.BUDGET, camp_hist.type)
-        self.assertDictEqual(
-            {
-                'amount': 30,
-                'end_date': end_date.isoformat(),
-                'freed_cc': 1000,
-                'start_date': start_date.isoformat(),
-                'comment': 'Random remark'
-            },
-            camp_hist.changes
-        )
-        self.assertEqual(
-            textwrap.dedent("""
-            Start Date set to "{}"
-            , End Date set to "{}"
-            , Amount set to "$30.00"
-            , Freed (cc) set to "$0.10"
-            , Comment set to "Random remark"
-            """.format(
-                start_date.isoformat(),
-                end_date.isoformat()
-            )).replace('\n', ''),
-            camp_hist.changes_text
-        )
+        self.assertIsNone(camp_hist)
 
     def test_create_credit_history(self):
         r = test_helper.fake_request(User.objects.get(pk=1))
