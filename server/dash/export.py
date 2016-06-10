@@ -323,7 +323,14 @@ def _adjust_breakdown_by_day(first_stat_date, stat):
 
 
 def _adjust_breakdown_by_account(stat, account_appeared):
-    if not account_appeared[stat['account']]:
+    if account_appeared[stat['account']]:
+        # This account was already processed, but total fee should be
+        # present and we want it to be just the license fee
+        if 'license_fee' in stat and 'total_fee' in stat:
+            stat['total_fee'] = stat['license_fee']
+        if 'license_fee_projection' in stat and 'total_fee_projection' in stat:
+            stat['total_fee_projection'] = stat['license_fee_projection']
+    else:
         account_appeared[stat['account']] = True
         return
 
