@@ -51,15 +51,15 @@ oneApp.directive('zemExport', function () {
                     modalInstance = $modal.open({
                         templateUrl: '/partials/add_scheduled_report_modal.html',
                         controller: 'AddScheduledReportModalCtrl',
-                        windowClass: 'modal',
-                        scope: $scope
+                        windowClass: 'modal-default',
+                        scope: $scope,
                     });
                 } else {
                     modalInstance = $modal.open({
                         templateUrl: '/partials/download_export_report_modal.html',
                         controller: 'DownloadExportReportModalCtrl',
-                        windowClass: 'modal',
-                        scope: $scope
+                        windowClass: 'modal-default',
+                        scope: $scope,
                     });
                 }
                 return modalInstance;

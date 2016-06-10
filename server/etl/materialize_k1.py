@@ -7,7 +7,7 @@ from django.db import connections
 from django.conf import settings
 
 import dash.models
-
+import reports.constants
 from utils import converters
 
 from etl import helpers
@@ -67,7 +67,7 @@ class ContentAdStats(object):
             "bounced_visits": post_click[5],
             "pageviews": post_click[6],
             "time_on_site": post_click[7],
-            "conversions": json.dumps(_sum_conversion(post_click[8])),
+            "conversions": json.dumps(_sum_conversion(post_click[1], post_click[8])),
         }
 
     def generate_rows(self, date, campaign_factors):
@@ -211,7 +211,7 @@ class Publishers(object):
             "bounced_visits": post_click[6],
             "pageviews": post_click[7],
             "time_on_site": post_click[8],
-            "conversions": json.dumps(_sum_conversion(post_click[9])),
+            "conversions": json.dumps(_sum_conversion(post_click[1], post_click[9])),
         }
 
     def generate_rows(self, date, campaign_factors):
@@ -396,7 +396,15 @@ def _query_rows(query):
             yield row
 
 
-def _sum_conversion(conversion_str):
+def _get_conversion_prefix(postclick_source, k):
+    if postclick_source in ('gaapi', 'ga_mail'):
+        return reports.constants.ReportType.GOOGLE_ANALYTICS + '__' + k
+    if postclick_source in ('omniture', ):
+        return reports.constants.ReportType.OMNITURE + '__' + k
+    return k
+
+
+def _sum_conversion(postclick_source, conversion_str):
     conv = defaultdict(int)
 
     for line in conversion_str.split('\n'):
@@ -405,6 +413,6 @@ def _sum_conversion(conversion_str):
             continue
         c = json.loads(line)
         for k, v in c.iteritems():
-            conv[k] += v
+            conv[_get_conversion_prefix(postclick_source, k)] += v
 
     return dict(conv)

@@ -16,7 +16,7 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$modal',  'api', f
         var modalInstance = $modal.open({
             templateUrl: '/partials/campaign_budget_item_modal.html',
             controller: 'CampaignBudgetItemModalCtrl',
-            windowClass: 'modal',
+            windowClass: 'modal-default',
             backdrop: 'static',
             scope: $scope,
             size: 'wide',
