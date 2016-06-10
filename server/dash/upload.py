@@ -24,7 +24,8 @@ from dash import constants
 from dash import exceptions
 from dash import image_helper
 from dash import threads
-from dash.forms import AdGroupAdsUploadExtendedForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
+from dash.forms import AdGroupAdsUploadExtendedForm, MANDATORY_CSV_FIELDS,\
+    OPTIONAL_CSV_FIELDS  # to get fields & validators
 
 logger = logging.getLogger(__name__)
 

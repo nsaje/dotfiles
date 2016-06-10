@@ -2,7 +2,6 @@ import logging
 import StringIO
 
 from django.db import transaction
-from django.forms.models import model_to_dict
 from django.conf import settings
 import unicodecsv
 
@@ -80,7 +79,7 @@ def _prepare_candidates(batch):
     new_content_ads = []
     errors = []
     for candidate in candidates:
-        f = forms.ContentAdForm(model_to_dict(candidate))
+        f = forms.ContentAdForm(candidate.get_dict())
         if not f.is_valid():
             # f.errors is a dict of lists of messages
             errors.append({
@@ -130,7 +129,7 @@ def _save_error_report(batch_id, filename, errors):
 
     writer.writeheader()
     for error_dict in errors:
-        row = {_get_mapped_field(k): v for k, v in model_to_dict(error_dict['candidate']).items() if k in fields}
+        row = {_get_mapped_field(k): v for k, v in error_dict['candidate'].get_dict().items() if k in fields}
         row['errors'] = error_dict['errors']
         writer.writerow(row)
 
@@ -172,7 +171,7 @@ def cancel_upload(batch):
 def validate_candidates(candidates):
     errors = {}
     for candidate in candidates:
-        f = forms.ContentAdCandidateForm(model_to_dict(candidate))
+        f = forms.ContentAdCandidateForm(candidate.get_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
     return errors
