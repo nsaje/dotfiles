@@ -3535,9 +3535,6 @@ class History(models.Model):
         if self.pk is not None:
             raise AssertionError('Updating history object not alowed.')
 
-        if self.created_by is not None and self.system_user is not None:
-            raise AssertionError('Either created_by or system_user must be set.')
-
         fk_defined = [self.ad_group_id is None,
                       self.campaign_id is None,
                       self.account_id is None,
@@ -3553,6 +3550,8 @@ class History(models.Model):
 
 
 def json_serializable_changes(changes):
+    if not changes:
+        return
     # this is needed only because settings changes for user models
     # are stored as user model in changes and are as such not json serializable
     ret = {}

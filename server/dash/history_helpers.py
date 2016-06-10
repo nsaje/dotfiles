@@ -18,7 +18,7 @@ def write_ad_group_history(ad_group,
         None,
         changes_text,
         user=user,
-        system_user=user
+        system_user=system_user
     )
 
 
@@ -36,7 +36,7 @@ def write_campaign_history(campaign,
         None,
         changes_text,
         user=user,
-        system_user=user
+        system_user=system_user
     )
 
 
@@ -54,5 +54,5 @@ def write_account_history(account,
         None,
         changes_text,
         user=user,
-        system_user=user
+        system_user=system_user
     )
