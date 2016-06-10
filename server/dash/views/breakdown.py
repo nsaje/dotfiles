@@ -74,7 +74,7 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
 
     # this way the whole requested range is fetched, with possibly some extra that is cut off later
     size = limit * 2
-    page = int(offset / size)
+    page = int(offset / size) + 1
     order = form_data.get('order')
 
     show_archived = form_data.get('show_archived', False)
