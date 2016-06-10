@@ -813,15 +813,6 @@ class HistoryTest(TestCase):
         self.assertEquals(0, models.History.objects.all().count())
 
     def test_save_fail(self):
-        with self.assertRaises(AssertionError):
-            models.History.objects.create(
-                created_by=self.u,
-                system_user=self.su,
-                account=self.acc,
-                type=constants.HistoryType.ACCOUNT,
-                level=constants.HistoryLevel.ACCOUNT,
-            )
-
         entry = models.History.objects.create(
             created_by=self.u,
             account=self.acc,
@@ -833,14 +824,6 @@ class HistoryTest(TestCase):
 
         with self.assertRaises(AssertionError):
             models.History.objects.all().delete()
-
-        with self.assertRaises(AssertionError):
-            models.History.objects.create(
-                created_by=self.u,
-                system_user=self.su,
-                type=constants.HistoryType.ACCOUNT,
-                level=constants.HistoryLevel.ACCOUNT,
-            )
 
     def test_update_fail(self):
         models.History.objects.create(
