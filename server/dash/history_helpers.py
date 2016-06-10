@@ -6,12 +6,12 @@ def write_ad_group_history(ad_group,
                            changes_text,
                            user=None,
                            system_user=None,
-                           history_type=dash.constants.AdGroupHistoryType.AD_GROUP
+                           history_type=dash.constants.HistoryType.AD_GROUP
                            ):
     if not changes_text:
         return  # nothing to write
 
-    history = dash.models.AdGroupHistory(
+    history = dash.models.History(
         ad_group=ad_group,
         system_user=system_user,
         created_by=user,
@@ -25,12 +25,12 @@ def write_campaign_history(campaign,
                            changes_text,
                            user=None,
                            system_user=None,
-                           history_type=dash.constants.CampaignHistoryType.CAMPAIGN
+                           history_type=dash.constants.HistoryType.CAMPAIGN
                            ):
     if not changes_text:
         return   # nothing to write
 
-    history = dash.models.CampaignHistory(
+    history = dash.models.History(
         campaign=campaign,
         created_by=user,
         system_user=system_user,
@@ -44,12 +44,12 @@ def write_account_history(account,
                           changes_text,
                           user=None,
                           system_user=None,
-                          history_type=dash.constants.AccountHistoryType.ACCOUNT
+                          history_type=dash.constants.HistoryType.ACCOUNT
                           ):
     if not changes_text:
         return   # nothing to write
 
-    history = dash.models.AccountHistory(
+    history = dash.models.History(
         account=account,
         created_by=user,
         system_user=system_user,

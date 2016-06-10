@@ -746,13 +746,19 @@ class HistoryTest(TestCase):
         self.su = constants.SystemUserType.AUTOPILOT
 
     def _latest_ad_group_history(self):
-        return models.AdGroupHistory.objects.all().order_by('-created_dt').first()
+        return models.History.objects.all().filter(
+            level=constants.HistoryLevel.AD_GROUP
+        ).order_by('-created_dt').first()
 
     def _latest_campaign_history(self):
-        return models.CampaignHistory.objects.all().order_by('-created_dt').first()
+        return models.History.objects.all().filter(
+            level=constants.HistoryLevel.CAMPAIGN
+        ).order_by('-created_dt').first()
 
     def _latest_account_history(self):
-        return models.AccountHistory.objects.all().order_by('-created_dt').first()
+        return models.History.objects.all().filter(
+            level=constants.HistoryLevel.ACCOUNT
+        ).order_by('-created_dt').first()
 
     def test_save(self):
         models.History.objects.create(
@@ -773,37 +779,38 @@ class HistoryTest(TestCase):
         self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_no_creds(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
-        self.assertEqual(1, models.AccountHistory.objects.all().count())
+        self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_no_changes(self):
         self.assertIsNone(
             models.create_ad_group_history(
-                None, constants.AdGroupHistoryType.AD_GROUP,
+                None, constants.HistoryType.AD_GROUP,
                 {}, ''
             )
         )
 
         self.assertIsNone(
             models.create_campaign_history(
-                None, constants.CampaignHistoryType.CAMPAIGN,
+                None, constants.HistoryType.CAMPAIGN,
                 {}, ''
             )
         )
 
         self.assertIsNone(
             models.create_account_history(
-                None, constants.AccountHistoryType.ACCOUNT,
+                None, constants.HistoryType.ACCOUNT,
                 {}, ''
             )
         )
 
-        self.assertEquals(0, models.AdGroupHistory.objects.all().count())
-        self.assertEquals(0, models.CampaignHistory.objects.all().count())
-        self.assertEquals(0, models.AccountHistory.objects.all().count())
+        self.assertEquals(0, models.History.objects.all().count())
+        self.assertEquals(0, models.History.objects.all().count())
+        self.assertEquals(0, models.History.objects.all().count())
 
     def test_save_fail(self):
         with self.assertRaises(AssertionError):
@@ -904,7 +911,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_ad_group_history(
             adgss,
-            constants.AdGroupHistoryType.AD_GROUP,
+            constants.HistoryType.AD_GROUP,
             model_to_dict(adgss),
             '')
 
@@ -930,7 +937,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_ad_group_history(
             adgss,
-            constants.AdGroupHistoryType.AD_GROUP,
+            constants.HistoryType.AD_GROUP,
             {'cpc_cc': 5100},
             '')
 
@@ -948,7 +955,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adgs_hist = self._latest_ad_group_history()
-        self.assertEqual(constants.AdGroupHistoryType.AD_GROUP_SOURCE, adgs_hist.type)
+        self.assertEqual(constants.HistoryType.AD_GROUP_SOURCE, adgs_hist.type)
         self.assertDictEqual(
             {
                 'daily_budget_cc': 10000,
@@ -968,7 +975,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adgs_hist = self._latest_ad_group_history()
-        self.assertEqual(constants.AdGroupHistoryType.AD_GROUP_SOURCE, adgs_hist.type)
+        self.assertEqual(constants.HistoryType.AD_GROUP_SOURCE, adgs_hist.type)
         self.assertDictEqual(
             {
                 'daily_budget_cc': 50000,
@@ -988,7 +995,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         camp_hist = self._latest_campaign_history()
-        self.assertEqual(constants.CampaignHistoryType.CAMPAIGN, camp_hist.type)
+        self.assertEqual(constants.HistoryType.CAMPAIGN, camp_hist.type)
         self.assertDictEqual(
             {
                 'archived': False,
@@ -1020,7 +1027,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_campaign_history(
             adgss,
-            constants.CampaignHistoryType.CAMPAIGN,
+            constants.HistoryType.CAMPAIGN,
             model_to_dict(adgss),
             '')
 
@@ -1032,7 +1039,7 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         camp_hist = self._latest_campaign_history()
-        self.assertEqual(constants.CampaignHistoryType.CAMPAIGN, camp_hist.type)
+        self.assertEqual(constants.HistoryType.CAMPAIGN, camp_hist.type)
         self.assertDictEqual(
             {
                 'name': 'Awesomer'
@@ -1043,7 +1050,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_campaign_history(
             adgss,
-            constants.CampaignHistoryType.CAMPAIGN,
+            constants.HistoryType.CAMPAIGN,
             {'name': 'Awesomer'},
             '')
 
@@ -1061,7 +1068,7 @@ class HistoryTest(TestCase):
         adgss.save(r)
 
         acc_hist = self._latest_account_history()
-        self.assertEqual(constants.AccountHistoryType.ACCOUNT, acc_hist.type)
+        self.assertEqual(constants.HistoryType.ACCOUNT, acc_hist.type)
         self.assertDictEqual(
             {
                 'archived': False,
@@ -1076,7 +1083,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_account_history(
             adgss,
-            constants.AccountHistoryType.ACCOUNT,
+            constants.HistoryType.ACCOUNT,
             adgss.get_settings_dict(),
             "")
 
@@ -1085,7 +1092,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_account_history(
             adgss,
-            constants.AccountHistoryType.ACCOUNT,
+            constants.HistoryType.ACCOUNT,
             {'archived': True},
             '')
 
@@ -1097,7 +1104,7 @@ class HistoryTest(TestCase):
         adgss.save(r)
 
         acc_hist = self._latest_account_history()
-        self.assertEqual(constants.AccountHistoryType.ACCOUNT, acc_hist.type)
+        self.assertEqual(constants.HistoryType.ACCOUNT, acc_hist.type)
         self.assertDictEqual(
             {
                 'name': 'Wacky account'
@@ -1114,7 +1121,7 @@ class HistoryTest(TestCase):
         campaign = models.Campaign.objects.get(pk=1)
         hist = models.create_campaign_history(
             campaign.get_current_settings(),
-            constants.CampaignHistoryType.BUDGET,
+            constants.HistoryType.BUDGET,
             {'amount': 200},
             "")
 
@@ -1141,7 +1148,7 @@ class HistoryTest(TestCase):
         )
 
         acc_hist = self._latest_account_history()
-        self.assertEqual(constants.AccountHistoryType.CREDIT, acc_hist.type)
+        self.assertEqual(constants.HistoryType.CREDIT, acc_hist.type)
         self.assertDictEqual(
             {
                 'account': 1,
@@ -1188,7 +1195,7 @@ class HistoryTest(TestCase):
         )
 
         camp_hist = self._latest_campaign_history()
-        self.assertEqual(constants.CampaignHistoryType.BUDGET, camp_hist.type)
+        self.assertEqual(constants.HistoryType.BUDGET, camp_hist.type)
         self.assertDictEqual(
             {
                 'amount': 30,
@@ -1235,7 +1242,7 @@ class HistoryTest(TestCase):
 
         hist = models.create_account_history(
             account.get_current_settings(),
-            constants.AccountHistoryType.CREDIT,
+            constants.HistoryType.CREDIT,
             {'amount': 20000},
             ''
         )

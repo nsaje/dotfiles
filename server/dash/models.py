@@ -617,7 +617,7 @@ class SettingsBase(models.Model, CopySettingsMixin):
         if self.pk is not None:
             raise AssertionError('Updating settings object not alowed.')
 
-        super(SettingsBase, self).save(*args, **kwargsSettingsBase.)
+        super(SettingsBase, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
@@ -744,7 +744,7 @@ class AccountSettings(SettingsBase):
         self.add_to_history()
 
     def add_to_history(self):
-        snapshot_type = constants.AccountHistoryType.ACCOUNT
+        snapshot_type = constants.HistoryType.ACCOUNT
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -839,7 +839,7 @@ class CampaignSettings(SettingsBase):
         self.add_to_history()
 
     def add_to_history(self):
-        snapshot_type = constants.CampaignHistoryType.CAMPAIGN
+        snapshot_type = constants.HistoryType.CAMPAIGN
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -2019,7 +2019,7 @@ class AdGroupSettings(SettingsBase):
         self.add_to_history()
 
     def add_to_history(self):
-        snapshot_type = constants.AdGroupHistoryType.AD_GROUP
+        snapshot_type = constants.HistoryType.AD_GROUP
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -2178,7 +2178,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
 
     def add_to_history(self):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
-        snapshot_type = constants.AdGroupHistoryType.AD_GROUP_SOURCE
+        snapshot_type = constants.HistoryType.AD_GROUP_SOURCE
         changes = SettingsBase.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -2774,7 +2774,7 @@ class CreditLineItem(FootprintModel):
         elif self.agency is not None:
             accounts = self.agency.account_set.all()
         for account in accounts:
-            snapshot_type = constants.AccountHistoryType.CREDIT
+            snapshot_type = constants.HistoryType.CREDIT
             changes = SettingsBase.get_model_state_changes(
                 self.post_init_state,
                 model_to_dict(self),
@@ -3000,7 +3000,7 @@ class BudgetLineItem(FootprintModel):
         changes_text = get_changes_text_from_dict(BudgetLineItem, changes)
         create_campaign_history(
             self.campaign.get_current_settings(),
-            constants.CampaignHistoryType.BUDGET,
+            constants.HistoryType.BUDGET,
             changes,
             changes_text
         )
@@ -3526,6 +3526,7 @@ def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_t
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
+        level=constants.HistoryLevel.AD_GROUP,
     )
     return history
 
@@ -3542,6 +3543,7 @@ def create_campaign_history(campaign_settings, snapshot_type, changes, changes_t
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
+        level=constants.HistoryLevel.CAMPAIGN,
     )
 
 
@@ -3558,6 +3560,7 @@ def create_account_history(account_settings, snapshot_type, changes, changes_tex
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
+        level=constants.HistoryLevel.ACCOUNT,
     )
 
 
