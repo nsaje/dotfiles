@@ -226,6 +226,26 @@ class HistoryMixin(object):
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
 
+    def get_model_state_changes(self, current_dict, new_dict):
+        changes = OrderedDict()
+        for field_name in self.history_fields:
+            new_value = new_dict[field_name]
+            if current_dict[field_name] != new_value:
+                changes[field_name] = new_value
+        return changes
+
+    def get_changes_text_from_dict(self, changes, separator=', '):
+        if changes is None:
+            return 'Created settings'
+        change_strings = []
+        for key, value in changes.iteritems():
+            prop = self.get_human_prop_name(key)
+            val = self.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+        return separator.join(change_strings)
+
 
 class HistoryModel(models.Model):
     snapshot = jsonfield.JSONField(blank=False, null=False)
@@ -662,15 +682,6 @@ class SettingsBase(models.Model, CopySettingsMixin, HistoryMixin):
         return changes
 
     @classmethod
-    def get_model_state_changes(cls, current_settings_dict, new_settings_dict, settings_fields):
-        changes = OrderedDict()
-        for field_name in settings_fields:
-            new_value = new_settings_dict[field_name]
-            if current_settings_dict[field_name] != new_value:
-                changes[field_name] = new_value
-        return changes
-
-    @classmethod
     def get_default_value(cls, prop_name):
         return cls.get_defaults_dict().get(prop_name)
 
@@ -757,12 +768,11 @@ class AccountSettings(SettingsBase, HistoryMixin):
 
     def add_to_history(self):
         snapshot_type = constants.HistoryType.ACCOUNT
-        changes = SettingsBase.get_model_state_changes(
+        changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields,
         )
-        changes_text = get_changes_text_from_dict(AccountSettings, changes)
+        changes_text = self.get_changes_text_from_dict(changes)
         create_account_history(self, snapshot_type, changes, changes_text)
 
     class Meta:
@@ -853,12 +863,11 @@ class CampaignSettings(SettingsBase, HistoryMixin):
 
     def add_to_history(self):
         snapshot_type = constants.HistoryType.CAMPAIGN
-        changes = SettingsBase.get_model_state_changes(
+        changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields,
         )
-        changes_text = get_changes_text_from_dict(CampaignSettings, changes)
+        changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(self, snapshot_type, changes, self.changes_text or changes_text)
 
     @classmethod
@@ -2034,12 +2043,11 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
 
     def add_to_history(self):
         snapshot_type = constants.HistoryType.AD_GROUP
-        changes = SettingsBase.get_model_state_changes(
+        changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields,
         )
-        changes_text = get_changes_text_from_dict(AdGroupSettings, changes)
+        changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(self, snapshot_type, changes, self.changes_text or changes_text)
 
     class QuerySet(SettingsQuerySet):
@@ -2194,12 +2202,11 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
     def add_to_history(self):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         snapshot_type = constants.HistoryType.AD_GROUP_SOURCE
-        changes = SettingsBase.get_model_state_changes(
+        changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
-            self._settings_fields,
         )
-        changes_text = get_changes_text_from_dict(AdGroupSourceSettings, changes)
+        changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(current_settings, snapshot_type, changes, changes_text)
 
     def delete(self, *args, **kwargs):
@@ -2782,12 +2789,11 @@ class CreditLineItem(FootprintModel, HistoryMixin):
 
     def add_to_history(self, created_by=None):
         snapshot_type = constants.HistoryType.CREDIT
-        changes = SettingsBase.get_model_state_changes(
+        changes = self.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),
-            self.history_fields,
         )
-        changes_text = get_changes_text_from_dict(CreditLineItem, changes)
+        changes_text = self.get_changes_text_from_dict(changes)
 
         if self.account is not None:
             create_account_history(
@@ -3009,12 +3015,11 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         self.add_to_history()
 
     def add_to_history(self):
-        changes = SettingsBase.get_model_state_changes(
+        changes = self.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),
-            self.history_fields,
         )
-        changes_text = get_changes_text_from_dict(BudgetLineItem, changes)
+        changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
             self.campaign.get_current_settings(),
             constants.HistoryType.BUDGET,
@@ -3536,8 +3541,12 @@ def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_t
         # don't write history in case of no changes
         return None
 
+    campaign, account, agency = _fill_history_ids(ad_group=ad_group_settings.ad_group)
     history = History.objects.create(
         ad_group=ad_group_settings.ad_group,
+        campaign=campaign,
+        account=account,
+        agency=agency,
         created_by=ad_group_settings.created_by,
         system_user=ad_group_settings.system_user,
         changes=json_serializable_changes(changes),
@@ -3549,12 +3558,15 @@ def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_t
 
 
 def create_campaign_history(campaign_settings, snapshot_type, changes, changes_text):
-    if not changes:
+    if not changes and not changes_text:
         # don't write history in case of no changes
         return None
 
+    _, account, agency = _fill_history_ids(campaign=campaign_settings.campaign)
     return History.objects.create(
         campaign=campaign_settings.campaign,
+        account=account,
+        agency=agency,
         created_by=campaign_settings.created_by,
         system_user=campaign_settings.system_user,
         changes=json_serializable_changes(changes),
@@ -3565,14 +3577,16 @@ def create_campaign_history(campaign_settings, snapshot_type, changes, changes_t
 
 
 def create_account_history(account_settings, snapshot_type, changes, changes_text):
-    if not changes:
+    if not changes and not changes_text:
         # don't write history in case of no changes
         return None
 
+    _, _, agency = _fill_history_ids(account=account_settings.account)
     # if account doesn't yet have any settings - defaults have created_by none
     created_by = account_settings.created_by if account_settings.created_by_id else None
     return History.objects.create(
         account=account_settings.account,
+        agency=agency,
         created_by=created_by,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
@@ -3582,7 +3596,7 @@ def create_account_history(account_settings, snapshot_type, changes, changes_tex
 
 
 def create_agency_history(agency, snapshot_type, changes, changes_text, created_by=None):
-    if not changes:
+    if not changes and not changes_text:
         # don't write history in case of no changes
         return None
     return History.objects.create(
@@ -3594,18 +3608,8 @@ def create_agency_history(agency, snapshot_type, changes, changes_text, created_
         level=constants.HistoryLevel.AGENCY,
     )
 
-"""
-def post_init_store_state(sender, **kwargs):
-    instance = kwargs.get('instance', {})
-    sender.post_init_state = instance.get_settings_dict() if instance != {} else None
-    sender.post_init_state['id'] = instance.id
-
-
-post_init.connect(post_init_store_state, AdGroupSettings)
-post_init.connect(post_init_store_state, CampaignSettings)
-post_init.connect(post_init_store_state, AccountSettings)
-post_init.connect(post_init_store_state, AdGroupSourceSettings)
-
-post_init.connect(post_init_store_state, BudgetLineItem)
-post_init.connect(post_init_store_state, CreditLineItem)
-"""
+def _fill_history_ids(ad_group=None, campaign=None, account=None, agency=None):
+    campaign = campaign or ad_group and ad_group.campaign
+    account = account or campaign and campaign.account
+    agency = agency or account and account.agency
+    return campaign, account, agency
