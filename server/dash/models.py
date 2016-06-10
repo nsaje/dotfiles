@@ -38,8 +38,6 @@ from utils import converters
 
 
 SHORT_NAME_MAX_LENGTH = 22
-HISTORY_EXCLUDED_FIELDS = ['id']
-HISTORY_IGNORE_FROM_NULL_FIELDS = ['ad_group', 'campaign', 'account', 'created_by']
 
 
 class Round(Func):
