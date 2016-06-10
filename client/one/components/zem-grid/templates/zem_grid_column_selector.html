@@ -9,8 +9,8 @@
               <div class="checkbox">
                   <label>
                       <input type="checkbox" ng-model="column.visible" ng-change="ctrl.columnChecked(column)">
-                      <zem-internal-feature ng-if="column.internal"></zem-internal-feature>
-                      {{ column.name }}
+                      <zem-internal-feature ng-if="column.data.internal"></zem-internal-feature>
+                      {{ column.data.name }}
                   </label>
               </div>
           </li>

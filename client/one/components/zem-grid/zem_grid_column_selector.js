@@ -31,14 +31,15 @@ oneApp.directive('zemGridColumnSelector', [function () {
                 // If column is un-selectable (always visible) or not shown skip it
                 var columns = vm.api.getColumns();
                 vm.categories = [];
-                vm.api.getMetaData().categories.forEach(function (cat) {
-                    var categoryColumns = columns.filter(function (col) {
-                        return cat.fields.indexOf(col.field) !== -1 && col.shown && !col.unselectable;
+                vm.api.getMetaData().categories.forEach(function (category) {
+                    var categoryColumns = columns.filter(function (column) {
+                        var inCategory = category.fields.indexOf(column.field) !== -1;
+                        return  inCategory && column.data.shown && !column.data.unselectable;
                     });
 
                     if (categoryColumns.length > 0) {
                         vm.categories.push({
-                            'name': cat.name,
+                            'name': category.name,
                             'columns': categoryColumns,
                         });
                     }

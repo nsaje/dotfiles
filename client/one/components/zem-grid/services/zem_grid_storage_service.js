@@ -7,11 +7,23 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
     function loadColumns (grid) {
         var namespace = grid.meta.data.localStoragePrefix;
         var columns = zemLocalStorageService.get(key, namespace);
-        grid.meta.data.columns.forEach(function (column) {
+        grid.header.columns.forEach(function (column) {
+            if (!column.data.shown) {
+                // If column shouldn't be shown (e.g. permissions) set visibility to false
+                column.visible = false;
+                return;
+            }
+            if (column.data.unselectable) {
+                // Always visible columns
+                column.visible = true;
+                return;
+            }
             if (columns) {
-                column.visible = column.shown && (columns.indexOf(column.field) > -1 || column.unselectable);
+                // Check if it was stored as visible
+                column.visible = columns.indexOf(column.field) > -1;
             } else {
-                column.visible = column.shown && (column.checked || column.unselectable);
+                // When no storage available use default value
+                column.visible = column.data.checked;
             }
         });
     }
@@ -19,9 +31,9 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
     function saveColumns (grid) {
         var namespace = grid.meta.data.localStoragePrefix;
         var columns = [];
-        grid.meta.data.columns.forEach(function (x) {
-            if (x.visible) {
-                columns.push(x.field);
+        grid.header.columns.forEach(function (column) {
+            if (column.visible) {
+                columns.push(column.field);
             }
         });
         zemLocalStorageService.set(key, columns, namespace);
