@@ -10,6 +10,7 @@ from utils import exc
 
 import stats.api_breakdowns
 import stats.helpers
+import stats.constants
 
 
 DEFAULT_OFFSET = 0
@@ -207,7 +208,131 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
     return response
 
 
+def get_report_all_accounts_sources(user, filtered_sources, start_date, end_date,
+                                    order, page, size, show_archived,
+                                    **kwargs):
+    response = table.AllAccountsSourcesTable().get(
+        user,
+        'all_accounts',
+        filtered_sources,
+        start_date,
+        end_date,
+        order
+    )
+
+    for row in response['rows']:
+        row['source_id'] = int(row['id'])
+        row['source_name'] = row['name']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_name'] = row['name']
+        row['parent_breakdown_id'] = None
+
+    return response
+
+
+def get_report_account_sources(user, filtered_sources, start_date, end_date,
+                               order, page, size, show_archived,
+                               **kwargs):
+    response = table.AccountSourcesTable().get(
+        user,
+        'accounts',
+        filtered_sources,
+        start_date,
+        end_date,
+        order,
+        id_=kwargs['account_id']
+    )
+
+    for row in response['rows']:
+        row['source_id'] = int(row['id'])
+        row['source_name'] = row['name']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_name'] = row['name']
+        row['parent_breakdown_id'] = None
+
+    return response
+
+
+def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
+                                order, page, size, show_archived,
+                                **kwargs):
+    response = table.CampaignSourcesTable().get(
+        user,
+        'campaigns',
+        filtered_sources,
+        start_date,
+        end_date,
+        order,
+        id_=kwargs['campaign_id']
+    )
+
+    for row in response['rows']:
+        row['source_id'] = int(row['id'])
+        row['source_name'] = row['name']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_name'] = row['name']
+        row['parent_breakdown_id'] = None
+
+    return response
+
+
+def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
+                                order, page, size, show_archived,
+                                **kwargs):
+    response = table.AdGroupSourcesTable().get(
+        user,
+        'ad_groups',
+        filtered_sources,
+        start_date,
+        end_date,
+        order,
+        id_=kwargs['ad_group_id']
+    )
+
+    for row in response['rows']:
+        row['source_id'] = int(row['id'])
+        row['source_name'] = row['name']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_name'] = row['name']
+        row['parent_breakdown_id'] = None
+
+    return response
+
+
+def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
+                                   order, page, size, show_archived,
+                                   **kwargs):
+    response = table.PublishersTable().get(
+        user,
+        'ad_groups',
+        filtered_sources,
+        start_date,
+        kwargs['show_blacklisted_publishers'],
+        end_date,
+        order,
+        page,
+        size,
+        id_=kwargs['ad_group_id']
+    )
+
+    for row in response['rows']:
+        row['publisher'] = row['domain']
+        row['publisher_name'] = row['domain']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['publisher'], row)
+        row['breakdown_name'] = row['domain']
+        row['parent_breakdown_id'] = None
+
+    return response
+
+
 class AllAccountsBreakdown(api_common.BaseApiView):
+
+    def _get_workaround_fn(self, base_dimension):
+        return {
+            stats.constants.StructureDimension.ACCOUNT: get_report_all_accounts_accounts,
+            stats.constants.StructureDimension.SOURCE: get_report_all_accounts_sources,
+        }[base_dimension]
+
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
@@ -224,7 +349,11 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
-            report = get_report_through_table(get_report_all_accounts_accounts, request.user, form.cleaned_data)
+            report = get_report_through_table(
+                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
+                request.user,
+                form.cleaned_data
+            )
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
@@ -242,6 +371,13 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
 
 class AccountBreakdown(api_common.BaseApiView):
+
+    def _get_workaround_fn(self, base_dimension):
+        return {
+            stats.constants.StructureDimension.CAMPAIGN: get_report_account_campaigns,
+            stats.constants.StructureDimension.SOURCE: get_report_account_sources,
+        }[base_dimension]
+
     def post(self, request, account_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
@@ -260,8 +396,12 @@ class AccountBreakdown(api_common.BaseApiView):
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
-            report = get_report_through_table(get_report_account_campaigns, request.user,
-                                              form.cleaned_data, account_id=account.id)
+            report = get_report_through_table(
+                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
+                request.user,
+                form.cleaned_data,
+                account_id=account.id
+            )
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
@@ -279,6 +419,13 @@ class AccountBreakdown(api_common.BaseApiView):
 
 
 class CampaignBreakdown(api_common.BaseApiView):
+
+    def _get_workaround_fn(self, base_dimension):
+        return {
+            stats.constants.StructureDimension.AD_GROUP: get_report_campaign_ad_groups,
+            stats.constants.StructureDimension.SOURCE: get_report_campaign_sources,
+        }[base_dimension]
+
     def post(self, request, campaign_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
@@ -297,8 +444,12 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
-            report = get_report_through_table(get_report_campaign_ad_groups, request.user,
-                                              form.cleaned_data, campaign_id=campaign.id)
+            report = get_report_through_table(
+                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
+                request.user,
+                form.cleaned_data,
+                campaign_id=campaign.id
+            )
             return self.create_api_response(report)
 
 
@@ -317,6 +468,14 @@ class CampaignBreakdown(api_common.BaseApiView):
 
 
 class AdGroupBreakdown(api_common.BaseApiView):
+
+    def _get_workaround_fn(self, base_dimension):
+        return {
+            stats.constants.StructureDimension.CONTENT_AD: get_report_ad_group_content_ads,
+            stats.constants.StructureDimension.SOURCE: get_report_ad_group_sources,
+            stats.constants.StructureDimension.PUBLISHER: get_report_ad_group_publishers,
+        }[base_dimension]
+
     def post(self, request, ad_group_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
@@ -335,8 +494,13 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
-            report = get_report_through_table(get_report_ad_group_content_ads, request.user,
-                                              form.cleaned_data, ad_group_id=ad_group.id)
+            report = get_report_through_table(
+                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
+                request.user,
+                form.cleaned_data,
+                ad_group_id=ad_group.id,
+                show_blacklisted_publishers=form.cleaned_data.get('show_blacklisted_publishers'),
+            )
             return self.create_api_response(report)
 
 
