@@ -102,9 +102,14 @@
             </div>
 
             <div class="progress-result" ng-if="uploadStatus === uploadBatchStatusConstants.DONE">
-                <h4 class="title" ng-class="{'success': !numErrors}">Uploading successfuly completed</h4>
-                <p ng-if="!numErrors">All content ads were added to the list.</p>
-                <p ng-if="!!numErrors">{{ numErrors }} content ads failed to upload.</p>
+                <div ng-if="isUploadSuccessful()">
+                    <h4 class="title" class="success">Uploading successfuly completed</h4>
+                    <p>All content ads were added to the list.</p>
+                </div>
+                <div ng-if="isUploadPartiallyCompleted()">
+                    <h4 class="title">Uploading completed</h4>
+                    <p>{{ numErrors }} content ads failed to upload.</p>
+                </div>
                 <div class="form-group" ng-if="errorReport">
                     <div class="col-xs-6">
                         <a class="btn btn-default btn-sm" href="{{ errorReport }}}">Download CSV file with errors</a>
@@ -126,10 +131,10 @@
             <div class="col-xs-4" ng-if="!uploadStatus">
                 <button type="button" class="btn btn-add" ng-click="upload()">Upload</button>
             </div>
-            <div class="col-xs-4" ng-if="uploadStatus === uploadBatchStatusConstants.DONE">
+            <div class="col-xs-4" ng-if="isUploadSuccessful()">
                 <button type="button" class="btn btn-add" ng-click="viewUploadedAds()">View uploaded ads</button>
             </div>
-            <div class="col-xs-4" ng-if="uploadStatus === uploadBatchStatusConstants.FAILED || uploadStatus === uploadBatchStatusConstants.CANCELLED">
+            <div class="col-xs-4" ng-if="canRetryUpload()">
                 <button type="button" class="btn btn-add" ng-click="upload()">Try again</button>
             </div>
             <div class="col-xs-4" ng-if="uploadStatus && uploadStatus !== uploadBatchStatusConstants.DONE">
