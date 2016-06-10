@@ -886,7 +886,12 @@ def adg_setting_manual_update(
 ):
     source = ad_group_source.source
 
-    if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param', 'ga_property_id']:
+    if field_name in [
+            'enable_ga_tracking',
+            'enable_adobe_tracking',
+            'adobe_tracking_param',
+            'ga_tracking_type',
+            'ga_property_id']:
         # do not create an action - only used for our redirector
         return
 

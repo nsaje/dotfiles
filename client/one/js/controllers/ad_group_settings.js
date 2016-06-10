@@ -50,9 +50,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
-
-                // TODO
-                $scope.settings.gaTrackingType = 1;
             },
             function () {
                 // error

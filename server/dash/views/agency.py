@@ -183,6 +183,12 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
 
+        if user.has_perm('zemauth.can_set_ga_api_tracking'):
+            settings.ga_tracking_type = resource['ga_tracking_type']
+
+            if settings.ga_tracking_type == constants.GATrackingType.API:
+                settings.ga_property_id = resource['ga_property_id']
+
         if user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
