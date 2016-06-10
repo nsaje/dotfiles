@@ -764,10 +764,10 @@ class AccountSettings(SettingsBase, HistoryMixin):
         if self.pk is None:
             self.created_by = request.user
         super(AccountSettings, self).save(*args, **kwargs)
-        self.add_to_history(created_by=request and request.user)
+        self.add_to_history(user=request and request.user)
 
-    def add_to_history(self, created_by=None):
-        snapshot_type = constants.HistoryType.ACCOUNT
+    def add_to_history(self, user=None):
+        history_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -775,10 +775,10 @@ class AccountSettings(SettingsBase, HistoryMixin):
         changes_text = self.get_changes_text_from_dict(changes)
         create_account_history(
             self.account,
-            snapshot_type,
+            history_type,
             changes,
             changes_text,
-            user=created_by
+            user=user
         )
 
     class Meta:
@@ -868,7 +868,7 @@ class CampaignSettings(SettingsBase, HistoryMixin):
         self.add_to_history()
 
     def add_to_history(self):
-        snapshot_type = constants.HistoryType.CAMPAIGN
+        history_type = constants.HistoryType.CAMPAIGN
         changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -876,7 +876,7 @@ class CampaignSettings(SettingsBase, HistoryMixin):
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
             self.campaign,
-            snapshot_type,
+            history_type,
             changes,
             self.changes_text or changes_text,
             user=self.created_by,
@@ -2055,7 +2055,7 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
         self.add_to_history()
 
     def add_to_history(self):
-        snapshot_type = constants.HistoryType.AD_GROUP
+        history_type = constants.HistoryType.AD_GROUP
         changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -2063,7 +2063,7 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             self.ad_group,
-            snapshot_type,
+            history_type,
             changes,
             self.changes_text or changes_text,
             user=self.created_by,
@@ -2221,7 +2221,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
 
     def add_to_history(self):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
-        snapshot_type = constants.HistoryType.AD_GROUP_SOURCE
+        history_type = constants.HistoryType.AD_GROUP_SOURCE
         changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
@@ -2229,7 +2229,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             current_settings.ad_group,
-            snapshot_type,
+            history_type,
             changes,
             changes_text,
             user=self.created_by
@@ -2811,10 +2811,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             credit=self,
         )
-        self.add_to_history(created_by=request and request.user)
+        self.add_to_history(user=request and request.user)
 
-    def add_to_history(self, created_by=None):
-        snapshot_type = constants.HistoryType.CREDIT
+    def add_to_history(self, user=None):
+        history_type = constants.HistoryType.CREDIT
         changes = self.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),
@@ -2824,18 +2824,18 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if self.account is not None:
             create_account_history(
                 self.account,
-                snapshot_type,
+                history_type,
                 changes,
                 changes_text,
-                user=created_by
+                user=user
             )
         elif self.agency is not None:
             create_agency_history(
                 self.account.agency,
-                snapshot_type,
+                history_type,
                 changes,
                 changes_text,
-                user=created_by
+                user=user
             )
 
     def __unicode__(self):
@@ -3039,9 +3039,9 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             budget=self,
         )
-        self.add_to_history(created_by=request and request.user)
+        self.add_to_history(user=request and request.user)
 
-    def add_to_history(self, created_by=None):
+    def add_to_history(self, user=None):
         changes = self.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),
@@ -3052,7 +3052,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             constants.HistoryType.BUDGET,
             changes,
             changes_text,
-            user=created_by
+            user=user
         )
 
     def db_state(self, date=None):
@@ -3564,7 +3564,7 @@ def json_serializable_changes(changes):
     return ret
 
 
-def create_ad_group_history(ad_group, snapshot_type, changes, changes_text, user=None, system_user=None):
+def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
     if not changes:
         # don't write history in case of no changes
         return None
@@ -3579,13 +3579,13 @@ def create_ad_group_history(ad_group, snapshot_type, changes, changes_text, user
         system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
-        type=snapshot_type,
+        type=history_type,
         level=constants.HistoryLevel.AD_GROUP,
     )
     return history
 
 
-def create_campaign_history(campaign, snapshot_type, changes, changes_text, user=None, system_user=None):
+def create_campaign_history(campaign, history_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
@@ -3599,12 +3599,12 @@ def create_campaign_history(campaign, snapshot_type, changes, changes_text, user
         system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
-        type=snapshot_type,
+        type=history_type,
         level=constants.HistoryLevel.CAMPAIGN,
     )
 
 
-def create_account_history(account, snapshot_type, changes, changes_text, user=None, system_user=None):
+def create_account_history(account, history_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
@@ -3617,22 +3617,22 @@ def create_account_history(account, snapshot_type, changes, changes_text, user=N
         system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
-        type=snapshot_type,
+        type=history_type,
         level=constants.HistoryLevel.ACCOUNT,
     )
 
 
-def create_agency_history(agency, snapshot_type, changes, changes_text, user=None, system_user=None):
+def create_agency_history(agency, history_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
     return History.objects.create(
         agency=agency,
-        created_by=created_by,
+        created_by=user,
         system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
-        type=snapshot_type,
+        type=history_type,
         level=constants.HistoryLevel.AGENCY,
     )
 
