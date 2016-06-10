@@ -110,7 +110,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         }
 
         function getVisibleColumns () {
-            return grid.header.columns.filter(function (columns) {
+            return grid.header.columns.filter(function (column) {
                 return column.visible;
             });
         }

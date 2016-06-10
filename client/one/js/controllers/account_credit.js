@@ -16,7 +16,7 @@ oneApp.controller('AccountCreditCtrl',
             var modalInstance = $modal.open({
                 templateUrl: '/partials/account_credit_item_modal.html',
                 controller: 'AccountCreditItemModalCtrl',
-                windowClass: 'modal',
+                windowClass: 'modal-default',
                 scope: $scope,
                 backdrop: 'static',
                 size: 'wide',

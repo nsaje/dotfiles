@@ -1,0 +1,58 @@
+<div class="modal-body contentad-picker">
+    <div class="candidate-table" ng-class="{small: !!selectedCandidate}">
+        <h4>{{ batchName }}</h4>
+        <table class="table">
+            <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate}">
+                <td class="status" ng-class="colorMap[candidate.status]">
+                    <ng-switch on="candidate.status">
+                        <span ng-switch-when="1" class="glyphicon glyphicon-option-horizontal">
+                        </span>
+                        <span ng-switch-when="2" class="glyphicon glyphicon-ok">
+                        </span>
+                        <span ng-switch-when="3" class="glyphicon glyphicon-warning-sign">
+                        </span>
+                    </ng-switch>
+                </td>
+                <td class="image">
+                    <img src="{{candidate.imageUrl}}" ng-if="candidate.imageUrl" />
+                </td>
+                <td class="title">
+                    {{ candidate.title }}
+                </td>
+                <td></td>
+                <td class="errors">
+                    <div ng-repeat="error in candidate.errors" class="candidate-error">
+                        <span class="glyphicon glyphicon-{{  error.type }}"> </span>
+                        <span class="error-text">{{ error.text }}</span>
+                    </div>
+                </td>
+                <td class="action">
+                    <a href ng-click="openEditForm(candidate)">
+                        <span class="glyphicon glyphicon-edit"></span>
+                        <span class="action-text">Edit</span>
+                    </a>
+                </td>
+                <td class="action">
+                    <a href ng-click="removeCandidate(candidate)">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        <span class="action-text">Remove</span>
+                    </a>
+                </td>
+            </tr>
+        </table>
+        <button type="button" class="btn btn-default btn-download"><span class="glyphicon glyphicon-save"></span> Download</button>
+    </div>
+
+    <div class="edit-form" ng-class="{expanded: !!selectedCandidate}">
+        <h4>
+            Edit content ad
+        </h4>
+        <button type="button" class="btn btn-default btn-close" ng-click="closeEditForm()">Close <span class="glyphicon glyphicon-chevron-right"></span></button>
+    </div>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="close()">Cancel</button>
+    <button type="button" class="btn btn-add pull-right" ng-click="nextStep()">Upload</button>
+    <span class="error pull-right">You need to fix all errors before you can upload batch.</span>
+</div>

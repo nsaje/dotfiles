@@ -504,10 +504,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasInfoboxPermission()) {
-            return;
-        }
-
         api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;

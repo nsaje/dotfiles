@@ -38,8 +38,8 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/add_conversion_pixel_modal.html',
                     controller: 'AddConversionPixelModalCtrl',
-                    windowClass: 'modal',
-                    scope: $scope
+                    windowClass: 'modal-default',
+                    scope: $scope,
                 });
 
                 modalInstance.result.then(function (conversionPixel) {
@@ -85,7 +85,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
 
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                    windowClass: 'modal',
+                    windowClass: 'modal-default',
                     scope: scope
                 });
 

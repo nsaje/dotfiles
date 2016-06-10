@@ -9,7 +9,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
             campaign: '=zemCampaign',
-            account: '=zemAccount'
+            account: '=zemAccount',
         },
         templateUrl: '/partials/zem_conversion_goals.html',
         controller: ['$scope', '$modal', 'api', function ($scope, $modal, api) {
@@ -23,8 +23,8 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
                     id: row.id,
                     rows: [
                         {title: 'Name', value: row.name},
-                        {title: 'Type', value: constants.conversionGoalTypeText[row.type]}
-                    ]
+                        {title: 'Type', value: constants.conversionGoalTypeText[row.type]},
+                    ],
                 };
 
                 if (row.type === constants.conversionGoalType.PIXEL) {
@@ -41,13 +41,13 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
 
                                     var modalInstance = $modal.open({
                                         templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                                        windowClass: 'modal',
-                                        scope: scope
+                                        windowClass: 'modal-default',
+                                        scope: scope,
                                     });
 
                                     return modalInstance;
-                                }
-                            }
+                                },
+                            },
                         }
                     );
                 } else if (row.type === constants.conversionGoalType.GA) {
@@ -83,8 +83,8 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/add_conversion_goal_modal.html',
                     controller: 'AddConversionGoalModalCtrl',
-                    windowClass: 'modal',
-                    scope: $scope
+                    windowClass: 'modal-default',
+                    scope: $scope,
                 });
 
                 modalInstance.result.then(function () {
