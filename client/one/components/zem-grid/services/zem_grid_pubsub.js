@@ -2,6 +2,13 @@
 'use strict';
 
 oneApp.factory('zemGridPubSub', [function () {
+
+    //
+    // Grid PubSub is an internal message chanel through which child directives and
+    // services notifies each other about zem-grid specific events (e.g. scrolling, data updated, etc.)
+    // It helps to reduce number of $watches, which boosts component performance.
+    //
+
     var EVENTS = {
         BODY_HORIZONTAL_SCROLL: 'zem-grid-pubsub-bodyHorizontalScroll',
         BODY_VERTICAL_SCROLL: 'zem-grid-pubsub-bodyVerticalScroll',
@@ -10,23 +17,23 @@ oneApp.factory('zemGridPubSub', [function () {
     };
 
     function PubSub (scope) {
-        this.scope = scope;
         this.EVENTS = EVENTS;
 
-        this.register = function (event, listener) {
-            this.scope.$on(event, listener);
-        };
+        this.register = register;
+        this.notify = notify;
 
-        this.notify = function (event, data) {
-            this.scope.$broadcast(event, data);
-        };
-    }
+        function register (event, listener) {
+            scope.$on(event, listener);
+        }
 
-    function createInstance ($scope) {
-        return new PubSub($scope);
+        function notify (event, data) {
+            scope.$broadcast(event, data);
+        }
     }
 
     return {
-        createInstance: createInstance,
+        createInstance: function (scope) {
+            return new PubSub(scope);
+        },
     };
 }]);

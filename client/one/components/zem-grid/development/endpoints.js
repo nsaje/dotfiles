@@ -11,6 +11,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
                 columns: getMockedColumns(),
                 categories: getMockedCategories(),
                 breakdownGroups: getMockedBreakdownGroups(),
+                localStoragePrefix: 'zem-data-source-debug-endpoint',
             });
             return deferred.promise;
         };
