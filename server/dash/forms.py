@@ -588,38 +588,12 @@ class AdGroupAdsUploadForm(forms.Form):
             'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
         }
     )
-    display_url = DisplayURLField(
-        required=True,
-        label="Display URL",
-        # max_length is should be validated _after_ http:// has been stripped out
-        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
-        error_messages={
-            'invalid': 'Display URL is invalid.',
-            'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    brand_name = forms.CharField(
-        required=True,
-        max_length=25,
-        label="Brand name",
-        error_messages={
-            'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
     description = forms.CharField(
         required=True,
         max_length=140,
         label="Description",
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    call_to_action = forms.CharField(
-        required=True,
-        label="Call to action",
-        max_length=25,
-        error_messages={
-            'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
         }
     )
 
@@ -743,10 +717,43 @@ class AdGroupAdsUploadForm(forms.Form):
 
         return data
 
+
+class AdGroupAdsUploadExtendedForm(AdGroupAdsUploadForm):
+    """
+    This form supports old content upload where more brand name, display url and call to action fields were
+    required.
+    """
+    display_url = DisplayURLField(
+        required=True,
+        label="Display URL",
+        # max_length is should be validated _after_ http:// has been stripped out
+        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
+        error_messages={
+            'invalid': 'Display URL is invalid.',
+            'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    brand_name = forms.CharField(
+        required=True,
+        max_length=25,
+        label="Brand name",
+        error_messages={
+            'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    call_to_action = forms.CharField(
+        required=True,
+        label="Call to action",
+        max_length=25,
+        error_messages={
+            'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+
     # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
-        super(AdGroupAdsUploadForm, self).clean()
+        super(AdGroupAdsUploadExtendedForm, self).clean()
 
         if self.errors:
             return
@@ -757,8 +764,13 @@ class AdGroupAdsUploadForm(forms.Form):
         for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
                 if column_and_field_name not in self.csv_column_names:  # and is not present as a CSV column
-                    self.add_error(column_and_field_name, forms.ValidationError(
-                        "{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
+                    self.add_error(
+                        column_and_field_name,
+                        forms.ValidationError(
+                            "{0} has to be present here or as a column in CSV.".format(
+                                self.fields[column_and_field_name].label)
+                        )
+                    )
 
 
 class CreditLineItemForm(forms.ModelForm):
