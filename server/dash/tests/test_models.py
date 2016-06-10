@@ -865,7 +865,7 @@ class HistoryTest(TestCase):
         self.assertIsNone(adg_hist)
 
         hist = models.create_ad_group_history(
-            adgss,
+            ad_group,
             constants.HistoryType.AD_GROUP,
             model_to_dict(adgss),
             '')
@@ -891,7 +891,7 @@ class HistoryTest(TestCase):
         )
 
         hist = models.create_ad_group_history(
-            adgss,
+            ad_group,
             constants.HistoryType.AD_GROUP,
             {'cpc_cc': 5100},
             '')
@@ -940,7 +940,7 @@ class HistoryTest(TestCase):
         self.assertIsNone(camp_hist)
 
         hist = models.create_campaign_history(
-            adgss,
+            campaign,
             constants.HistoryType.CAMPAIGN,
             model_to_dict(adgss),
             '')
@@ -963,7 +963,7 @@ class HistoryTest(TestCase):
         self.assertEqual('Name set to "Awesomer"', camp_hist.changes_text)
 
         hist = models.create_campaign_history(
-            adgss,
+            campaign,
             constants.HistoryType.CAMPAIGN,
             {'name': 'Awesomer'},
             '')
@@ -985,7 +985,7 @@ class HistoryTest(TestCase):
         self.assertIsNone(acc_hist)
 
         hist = models.create_account_history(
-            adgss,
+            account,
             constants.HistoryType.ACCOUNT,
             adgss.get_settings_dict(),
             "")
@@ -994,7 +994,7 @@ class HistoryTest(TestCase):
         self.assertFalse(hist.changes['archived'])
 
         hist = models.create_account_history(
-            adgss,
+            account,
             constants.HistoryType.ACCOUNT,
             {'archived': True},
             '')
@@ -1023,7 +1023,7 @@ class HistoryTest(TestCase):
         mock_state.return_value = constants.BudgetLineItemState.PENDING
         campaign = models.Campaign.objects.get(pk=1)
         hist = models.create_campaign_history(
-            campaign.get_current_settings(),
+            campaign,
             constants.HistoryType.BUDGET,
             {'amount': 200},
             "")
@@ -1089,7 +1089,7 @@ class HistoryTest(TestCase):
         credit.save()
 
         hist = models.create_account_history(
-            account.get_current_settings(),
+            account,
             constants.HistoryType.CREDIT,
             {'amount': 20000},
             ''

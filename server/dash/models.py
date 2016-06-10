@@ -764,16 +764,22 @@ class AccountSettings(SettingsBase, HistoryMixin):
         if self.pk is None:
             self.created_by = request.user
         super(AccountSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(created_by=request and request.user)
 
-    def add_to_history(self):
+    def add_to_history(self, created_by=None):
         snapshot_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
             self.post_init_state,
             self.get_settings_dict(),
         )
         changes_text = self.get_changes_text_from_dict(changes)
-        create_account_history(self, snapshot_type, changes, changes_text)
+        create_account_history(
+            self.account,
+            snapshot_type,
+            changes,
+            changes_text,
+            user=created_by
+        )
 
     class Meta:
         ordering = ('-created_dt',)
@@ -868,7 +874,14 @@ class CampaignSettings(SettingsBase, HistoryMixin):
             self.get_settings_dict(),
         )
         changes_text = self.get_changes_text_from_dict(changes)
-        create_campaign_history(self, snapshot_type, changes, self.changes_text or changes_text)
+        create_campaign_history(
+            self.campaign,
+            snapshot_type,
+            changes,
+            self.changes_text or changes_text,
+            user=self.created_by,
+            system_user=self.system_user,
+        )
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
@@ -2048,7 +2061,14 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
             self.get_settings_dict(),
         )
         changes_text = self.get_changes_text_from_dict(changes)
-        create_ad_group_history(self, snapshot_type, changes, self.changes_text or changes_text)
+        create_ad_group_history(
+            self.ad_group,
+            snapshot_type,
+            changes,
+            self.changes_text or changes_text,
+            user=self.created_by,
+            system_user=self.system_user
+        )
 
     class QuerySet(SettingsQuerySet):
 
@@ -2207,7 +2227,13 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.get_settings_dict(),
         )
         changes_text = self.get_changes_text_from_dict(changes)
-        create_ad_group_history(current_settings, snapshot_type, changes, changes_text)
+        create_ad_group_history(
+            current_settings.ad_group,
+            snapshot_type,
+            changes,
+            changes_text,
+            user=self.created_by
+        )
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
@@ -2797,18 +2823,19 @@ class CreditLineItem(FootprintModel, HistoryMixin):
 
         if self.account is not None:
             create_account_history(
-                self.account.get_current_settings(),
+                self.account,
                 snapshot_type,
                 changes,
                 changes_text,
+                user=created_by
             )
         elif self.agency is not None:
             create_agency_history(
-                self.account.get_current_settings(),
+                self.account.agency,
                 snapshot_type,
                 changes,
                 changes_text,
-                created_by=created_by
+                user=created_by
             )
 
     def __unicode__(self):
@@ -3012,19 +3039,20 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             budget=self,
         )
-        self.add_to_history()
+        self.add_to_history(created_by=request and request.user)
 
-    def add_to_history(self):
+    def add_to_history(self, created_by=None):
         changes = self.get_model_state_changes(
             self.post_init_state,
             model_to_dict(self),
         )
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
-            self.campaign.get_current_settings(),
+            self.campaign,
             constants.HistoryType.BUDGET,
             changes,
-            changes_text
+            changes_text,
+            user=created_by
         )
 
     def db_state(self, date=None):
@@ -3536,19 +3564,19 @@ def json_serializable_changes(changes):
     return ret
 
 
-def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_text):
+def create_ad_group_history(ad_group, snapshot_type, changes, changes_text, user=None, system_user=None):
     if not changes:
         # don't write history in case of no changes
         return None
 
-    campaign, account, agency = _fill_history_ids(ad_group=ad_group_settings.ad_group)
+    campaign, account, agency = _fill_history_ids(ad_group=ad_group)
     history = History.objects.create(
-        ad_group=ad_group_settings.ad_group,
+        ad_group=ad_group,
         campaign=campaign,
         account=account,
         agency=agency,
-        created_by=ad_group_settings.created_by,
-        system_user=ad_group_settings.system_user,
+        created_by=user,
+        system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
@@ -3557,18 +3585,18 @@ def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_t
     return history
 
 
-def create_campaign_history(campaign_settings, snapshot_type, changes, changes_text):
+def create_campaign_history(campaign, snapshot_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
 
-    _, account, agency = _fill_history_ids(campaign=campaign_settings.campaign)
+    _, account, agency = _fill_history_ids(campaign=campaign)
     return History.objects.create(
-        campaign=campaign_settings.campaign,
+        campaign=campaign,
         account=account,
         agency=agency,
-        created_by=campaign_settings.created_by,
-        system_user=campaign_settings.system_user,
+        created_by=user,
+        system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
@@ -3576,18 +3604,17 @@ def create_campaign_history(campaign_settings, snapshot_type, changes, changes_t
     )
 
 
-def create_account_history(account_settings, snapshot_type, changes, changes_text):
+def create_account_history(account, snapshot_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
 
-    _, _, agency = _fill_history_ids(account=account_settings.account)
-    # if account doesn't yet have any settings - defaults have created_by none
-    created_by = account_settings.created_by if account_settings.created_by_id else None
+    _, _, agency = _fill_history_ids(account=account)
     return History.objects.create(
-        account=account_settings.account,
+        account=account,
         agency=agency,
-        created_by=created_by,
+        created_by=user,
+        system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
@@ -3595,13 +3622,14 @@ def create_account_history(account_settings, snapshot_type, changes, changes_tex
     )
 
 
-def create_agency_history(agency, snapshot_type, changes, changes_text, created_by=None):
+def create_agency_history(agency, snapshot_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
     return History.objects.create(
         agency=agency,
         created_by=created_by,
+        system_user=system_user,
         changes=json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=snapshot_type,
