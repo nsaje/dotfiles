@@ -5,10 +5,19 @@ from reports import redshift
 from utils.command_helpers import ExceptionCommand
 from utils.statsd_helper import statsd_gauge
 
+from etl import redshift
 
 class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
-        redshift.vacuum_publishers()
-        redshift.analyze_publishers()
-        statsd_gauge('reports.redshift.vacuum_stats', 1)
+        redshift.vacuum_and_analyze('publishers_1')
+        redshift.vacuum_and_analyze('contentadstats')
+        redshift.vacuum_and_analyze('touchpointconversions')
+
+
+
+
+
+
+
+
