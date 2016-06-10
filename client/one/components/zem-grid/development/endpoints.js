@@ -48,7 +48,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         },
         thumbnail: {
             name: 'Thumbnail',
-            type: 'image',
+            type: 'thumbnail',
             shown: true,
             checked: true,
             unselectable: false,
@@ -63,7 +63,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         },
         performance: {
             nameCssClass: 'performance-icon',
-            type: 'icon-list',
+            type: 'performanceIndicator',
             help: 'Goal performance indicator',
             shown: true,
             checked: true,
@@ -92,6 +92,8 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             shown: true,
             checked: true,
             unselectable: false,
+            fractionSize: 2,
+            isEdtable: true,
         },
         pacing: {
             name: 'Pacing',
@@ -274,7 +276,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
     //
 
     var mockedColumns = getMockedColumns();
-    var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft']; // eslint-disable-line max-len
+    var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft']; // eslint-disable-line max-len
     var TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '99+'];
     var TEST_BREAKDOWNS_SEX = ['man', 'woman'];
     var TEST_BREAKDOWNS_DATES = [];
@@ -348,6 +350,7 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         var row = {
             stats: generateStats(key),
             breakdownId: JSON.stringify(position),
+            archived: (Math.random() < 0.3),
         };
 
         if (level <= breakdowns.length) {
@@ -414,76 +417,76 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         var stats = {};
 
         mockedColumns.forEach(function (column) {
-            var value;
+            var data;
             if (column.type === 'breakdownName') {
-                value = key;
+                data = key;
             } else {
-                value = generateRandomValue(column.type, column.field, key);
+                data = generateRandomData(column.type, column.field, key);
             }
-            stats[column.field] = value;
+            stats[column.field] = data;
         });
 
         return stats;
     }
 
     /* eslint-disable complexity */
-    function generateRandomValue (type, field, key) {
-        var value;
+    function generateRandomData (type, field, key) {
+        var data;
 
         switch (type) {
         case 'text':
             if (field === 'status') {
-                value = getMockedStatus();
+                data = getMockedStatus();
             } else if (field === 'default_account_manager') {
-                value = getMockedAccountManager();
+                data = getMockedAccountManager();
             } else {
-                value = 'abcde';
+                data = 'abcde';
             }
             break;
         case 'number':
-            value = getMockedNumber(key === 'Total');
+            data = getMockedNumber(key === 'Total');
             break;
         case 'currency':
-            value = getMockedCurrency(key === 'Total');
+            data = getMockedCurrency(key === 'Total');
             break;
         case 'percent':
-            value = getMockedPercentage();
+            data = getMockedPercentage();
             break;
         case 'seconds':
-            value = getMockedSeconds();
+            data = getMockedSeconds();
             break;
         case 'datetime':
-            value = getMockedDateTime();
+            data = getMockedDateTime();
             break;
         case 'link':
         case 'visibleLink':
         case 'linkText':
-            value = getMockedExternalLink(type);
+            data = getMockedExternalLink(type);
             break;
         case 'linkNav':
-            value = getMockedInternalLink();
+            data = getMockedInternalLink();
             break;
         case 'clickPermissionOrText':
-            value = getMockedAction();
+            data = getMockedAction();
             break;
-        case 'image':
-            value = getMockedImage();
+        case 'thumbnail':
+            data = getMockedThumbnail();
             break;
         case 'submissionStatus':
-            value = getMockedSubmissionStatus();
+            data = getMockedSubmissionStatus();
             break;
-        case 'icon-list':
-            value = getMockedIcon();
+        case 'performanceIndicator':
+            data = getMockedPerformance();
             break;
         case 'state':
-            value = getMockedState();
+            data = getMockedState();
             break;
         case 'textWithPopup':
-            value = getMockedTextWithPopup();
+            data = getMockedFieldWithPopup();
             break;
         }
 
-        return value;
+        return data;
     }
     /* eslint-enable complexity */
 
@@ -503,7 +506,9 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             if (isTotal) {
                 randomNumber *= 10000;
             }
-            return randomNumber;
+            return {
+                value: randomNumber,
+            };
         }
     }
 
@@ -513,25 +518,33 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             if (isTotal) {
                 randomNumber *= 10000;
             }
-            return randomNumber;
+            return {
+                value: randomNumber,
+            };
         }
     }
 
     function getMockedPercentage () {
         if (Math.random() < 0.6) {
-            return Math.random() * 400;
+            return {
+                value: Math.random() * 400,
+            };
         }
     }
 
     function getMockedSeconds () {
         if (Math.random() < 0.6) {
-            return Math.random() * 100;
+            return {
+                value: Math.random() * 100,
+            };
         }
     }
 
     function getMockedDateTime () {
         if (Math.random() < 0.6) {
-            return getRandomTimestamp(new Date(2016, 0, 1), new Date());
+            return {
+                value: getRandomTimestamp(new Date(2016, 0, 1), new Date()),
+            };
         }
     }
 
@@ -615,8 +628,8 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return 'Test click permission or text';
     }
 
-    function getMockedImage () {
-        var images = [
+    function getMockedThumbnail () {
+        var thumbnails = [
             'ff36fcbc-64b0-419c-bf56-346778f6fd4b.jpg',
             '725f638c-e8a4-4ff9-a2f2-3783971d98d3.jpg',
             '2fbbf448-8988-4617-854b-53d3ab2260e0.jpg',
@@ -628,31 +641,45 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
             'e325b27c-2330-4c0e-ba4b-c5d76c742439.jpg',
             '18b47c2f-ac70-4e75-a9d5-82b6f7a79d6e.jpg',
         ];
-        var randomImage = images[Math.floor(Math.random() * images.length)];
-        return {
-            square: 'https://images2.zemanta.com/' + randomImage + '?w=160&h=160&fit=crop&crop=faces&fm=jpg',
-            landscape: 'https://images2.zemanta.com/' + randomImage + '?w=256&h=160&fit=crop&crop=faces&fm=jpg',
-        };
+        if (Math.random() < 0.6) {
+            var randomThumbnail = thumbnails[Math.floor(Math.random() * thumbnails.length)];
+            return {
+                square: 'https://images2.zemanta.com/' + randomThumbnail + '?w=160&h=160&fit=crop&crop=faces&fm=jpg',
+                landscape: 'https://images2.zemanta.com/' + randomThumbnail + '?w=256&h=160&fit=crop&crop=faces&fm=jpg',
+            };
+        }
     }
 
+    var submissionStatusIndex = 0;
     function getMockedSubmissionStatus () {
-        return {
-            statusItems: [
-                {status: 1, text: 'Pending', name: 'Sharethrough', source_state: ''},
-                {status: 2, text: 'Approved', name: 'TripleLift', source_state: ''},
-                {status: 3, text: 'Rejected (Title too long)', name: 'Yahoo', source_state: ''},
-            ],
-        };
+        var statuses = [];
+        for (var i = 0; i < submissionStatusIndex; i++) {
+            statuses.push({status: 2, text: 'Approved', name: 'Source ' + i, source_state: ''});
+        }
+        statuses.push({status: 1, text: 'Pending', name: 'Pending Source', source_state: ''});
+        statuses.push({status: 3, text: 'Rejected (Title too long)', name: 'Rejected Source', source_state: ''});
+        submissionStatusIndex++;
+        return statuses;
     }
 
-    function getMockedIcon () {
+    var performanceIndicatorIndex = 0;
+    function getMockedPerformance () {
         var rnd = Math.random();
         if (rnd < 0.25) {
-            return {list: [{emoticon: 1, text: '$0.201 CPC (planned $0.350)'}], overall: 1};
+            return {
+                list: [{emoticon: 1, text: '$0.201 CPC (planned $0.350), index: ' + (performanceIndicatorIndex++)}],
+                overall: 1,
+            };
         } else if (rnd < 0.5) {
-            return {list: [{emoticon: 2, text: 'N/A CPC (planned $0.350)'}], overall: 2};
+            return {
+                list: [{emoticon: 2, text: 'N/A CPC (planned $0.350), index: ' + (performanceIndicatorIndex++)}],
+                overall: 2,
+            };
         } else if (rnd < 0.75) {
-            return {list: [{emoticon: 3, text: 'N/A CPC (planned $0.350)'}], overall: 3};
+            return {
+                list: [{emoticon: 3, text: 'N/A CPC (planned $0.350), index: ' + (performanceIndicatorIndex++)}],
+                overall: 3,
+            };
         }
     }
 
@@ -660,10 +687,11 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return Math.floor(Math.random() * 3 + 1);
     }
 
-    function getMockedTextWithPopup () {
+    var fieldWithPopupIndex = 0;
+    function getMockedFieldWithPopup () {
         return {
-            text: 'Random text',
-            popupContent: 'ಠᴗಠ',
+            fieldContent: '<span style="color: blue;">Random text ' + (fieldWithPopupIndex++) + '</span>',
+            popupContent: '<span style="font-size: 30px;">ಠᴗಠ</span>',
         };
     }
 
