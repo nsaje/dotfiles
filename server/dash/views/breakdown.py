@@ -298,7 +298,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
             report = get_report_through_table(get_report_campaign_ad_groups, request.user,
-                                              form.cleaned_data, account_id=account.id)
+                                              form.cleaned_data, campaign_id=campaign.id)
             return self.create_api_response(report)
 
 
@@ -336,7 +336,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
             report = get_report_through_table(get_report_ad_group_content_ads, request.user,
-                                              form.cleaned_data, account_id=account.id)
+                                              form.cleaned_data, ad_group_id=ad_group.id)
             return self.create_api_response(report)
 
 
