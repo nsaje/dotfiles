@@ -452,7 +452,6 @@ class CampaignBreakdown(api_common.BaseApiView):
             )
             return self.create_api_response(report)
 
-
         report = stats.api_breakdowns.query(
             request.user,
             breakdown,
@@ -502,7 +501,6 @@ class AdGroupBreakdown(api_common.BaseApiView):
                 show_blacklisted_publishers=form.cleaned_data.get('show_blacklisted_publishers'),
             )
             return self.create_api_response(report)
-
 
         report = stats.api_breakdowns.query(
             request.user,
