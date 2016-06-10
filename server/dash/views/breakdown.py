@@ -148,6 +148,10 @@ def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
+    response['pagination'] = {
+        'count': len(response['rows'])
+    }
+
     return response
 
 
