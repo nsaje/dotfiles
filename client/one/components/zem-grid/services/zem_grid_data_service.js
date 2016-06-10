@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageService', 'zemGridUIService', function ($q, zemGridParser, zemGridStorageService, zemGridUIService) { // eslint-disable-line max-len
+oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGridParser) { // eslint-disable-line max-len
 
     // GridDataService is responsible to request data from DataSource and listen to any DataSource changes
     // It prepares data suitable for Grid component along with data states (initializing, loading, etc.) used
@@ -21,6 +21,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
         this.getBreakdownLevel = dataSource.getBreakdownLevel;
         this.setOrder = dataSource.setOrder;
         this.getOrder = dataSource.getOrder;
+        this.setDateRange = dataSource.setDateRange;
+        this.getDateRange = dataSource.getDateRange;
 
 
         function initialize () {
@@ -35,13 +37,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             var deferred = $q.defer();
             dataSource.getMetaData().then(
                 function (data) {
-                    grid.meta.data = data;
-                    zemGridStorageService.loadColumns(grid);
-                    grid.header.columns = data.columns.filter(function (column) {
-                        return column.shown && column.checked;
-                    });
+                    zemGridParser.parseMetaData(grid, data);
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
-
                     deferred.resolve();
                 }
             );
@@ -57,12 +54,14 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
             }
             var deferred = $q.defer();
             dataSource.getData(breakdown, size).then(
-                function (data) {
-                    zemGridParser.parse(grid, data);
+                function () {
+                    // Data is already been processed
+                    // on source data update event
                     deferred.resolve();
                 },
-                function () {
+                function (err) {
                     // TODO: Handle errors
+                    deferred.reject(err);
                 }
             );
             return deferred.promise;
@@ -80,7 +79,6 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', 'zemGridStorageServ
 
         function handleSourceDataUpdate (event, data) {
             zemGridParser.parse(grid, data);
-            zemGridUIService.resetUIState(grid);
             grid.meta.loading = !data.breakdown;
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         }

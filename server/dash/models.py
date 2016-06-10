@@ -23,6 +23,7 @@ from timezone_field import TimeZoneField
 from django.db.models.signals import post_init
 
 import utils.string_helper
+import utils.demo_anonymizer
 
 from dash import constants
 from dash import region_targeting_helper
@@ -270,6 +271,8 @@ class Agency(models.Model):
 
 
 class Account(models.Model):
+    _demo_fields = {'name': utils.demo_anonymizer.account_name_from_pool}
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -426,6 +429,8 @@ class Account(models.Model):
 
 
 class Campaign(models.Model, PermissionMixin):
+    _demo_fields = {'name': utils.demo_anonymizer.campaign_name_from_pool}
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -667,6 +672,9 @@ class SettingsBase(models.Model, CopySettingsMixin):
 
 
 class AccountSettings(SettingsBase):
+    _demo_fields = {
+        'name': utils.demo_anonymizer.account_name_from_pool
+    }
     _settings_fields = [
         'name',
         'archived',
@@ -755,6 +763,9 @@ class AccountSettings(SettingsBase):
 
 
 class CampaignSettings(SettingsBase):
+    _demo_fields = {
+        'name': utils.demo_anonymizer.campaign_name_from_pool
+    }
     _settings_fields = [
         'name',
         'campaign_manager',
@@ -1354,6 +1365,8 @@ class DefaultSourceSettings(models.Model):
 
 
 class AdGroup(models.Model):
+    _demo_fields = {'name': utils.demo_anonymizer.ad_group_name_from_pool}
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(
         max_length=127,
@@ -1751,6 +1764,12 @@ class AdGroupSource(models.Model):
 
 
 class AdGroupSettings(SettingsBase):
+    _demo_fields = {
+        'display_url': utils.demo_anonymizer.fake_display_url,
+        'ad_group_name': utils.demo_anonymizer.ad_group_name_from_pool,
+        'brand_name': utils.demo_anonymizer.fake_brand,
+        'description': utils.demo_anonymizer.fake_sentence,
+    }
     _settings_fields = [
         'state',
         'start_date',
@@ -2225,6 +2244,8 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
 
 
 class UploadBatch(models.Model):
+    _demo_fields = {'name': lambda: 'upload.csv'}
+
     name = models.CharField(max_length=1024)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     status = models.IntegerField(
@@ -2248,6 +2269,13 @@ class UploadBatch(models.Model):
 
 
 class ContentAd(models.Model):
+    _demo_fields = {
+        'url': utils.demo_anonymizer.fake_content_ad_url,
+        'display_url': utils.demo_anonymizer.fake_display_url,
+        'brand_name': utils.demo_anonymizer.fake_brand,
+        'redirect_id': lambda: 'u1jvpq0wthxc',
+    }
+
     label = models.CharField(max_length=25, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
@@ -2503,6 +2531,35 @@ class DemoAdGroupRealAdGroup(models.Model):
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
 
 
+class DemoMapping(models.Model):
+    real_account = models.OneToOneField(Account, on_delete=models.PROTECT, related_name='+')
+    demo_account_name = models.CharField(
+        max_length=127,
+        editable=True,
+        unique=True,
+        blank=False,
+        null=False
+    )
+    demo_campaign_name_pool = ArrayField(
+        models.CharField(
+            max_length=127,
+            editable=True,
+            unique=True,
+            blank=False,
+            null=False
+        )
+    )
+    demo_ad_group_name_pool = ArrayField(
+        models.CharField(
+            max_length=127,
+            editable=True,
+            unique=True,
+            blank=False,
+            null=False
+        )
+    )
+
+
 class UserActionLog(models.Model):
 
     id = models.AutoField(primary_key=True)
@@ -2585,6 +2642,9 @@ class CreditLineItem(FootprintModel):
         'comment'
     ]
 
+    _demo_fields = {
+        'comment': utils.demo_anonymizer.fake_sentence,
+    }
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
@@ -2865,6 +2925,9 @@ class BudgetLineItem(FootprintModel):
         'comment',
     ]
 
+    _demo_fields = {
+        'comment': utils.demo_anonymizer.fake_sentence,
+    }
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()

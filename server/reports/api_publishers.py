@@ -25,6 +25,9 @@ FORMULA_BILLING_COST = '({} + {} + {})'.format(
 
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
+DEFAULT_PUBLISHERS_DATA_ORDER = ['-cost']
+DEFAULT_PUBLISHERS_DATA_LIMIT = 1000
+
 
 class RSPublishersModel(redshift.RSModel):
     TABLE_NAME = 'publishers_1'
@@ -117,9 +120,9 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         cursor,
         returned_fields,
         breakdown_fields,
-        order_fields,
+        order_fields or DEFAULT_PUBLISHERS_DATA_ORDER,
         offset,
-        limit,
+        limit or DEFAULT_PUBLISHERS_DATA_LIMIT,
         constraints,
         constraints_list=constraints_list
     )

@@ -98,6 +98,7 @@
                     <div class="progress-text inverted" style="width:{{ getProgressPercentage() }}%;">{{ count }} / {{ batchSize }}</div>
                 </div>
                 <p>Please keep the window open while the upload is in progress.</p>
+                <p ng-if="cancelErrors.cancel" class="error small">{{ cancelErrors.cancel }}</p>
             </div>
 
             <div class="progress-result" ng-if="uploadStatus === uploadBatchStatusConstants.DONE">

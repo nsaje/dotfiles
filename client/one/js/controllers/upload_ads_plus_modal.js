@@ -15,26 +15,14 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     $scope.isCancelDisabled = false;
     $scope.numErrors = 0;
     $scope.errorReport = null;
+    $scope.cancelErrors = null;
 
     var pollInterval;
     var stopPolling = function () {
         if (angular.isDefined(pollInterval)) {
             $interval.cancel(pollInterval);
+            pollInterval = undefined;
         }
-        pollInterval = undefined;
-    };
-
-    var saveUpload = function () {
-        api.uploadPlus.save($state.params.id, $scope.batchId).then(
-            function (data) {
-                $scope.numErrors = data.numErrors;
-                $scope.errorReport = data.errorReport;
-                $scope.uploadStatus = constants.uploadBatchStatus.DONE;
-            },
-            function () {
-                $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
-            }
-        );
     };
 
     var updateUploadStatus = function (candidates) {
@@ -52,8 +40,21 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
         if ($scope.count === $scope.batchSize) {
             $scope.isCancelDisabled = true;
             stopPolling();
-            saveUpload();
+            $scope.saveUpload();
         }
+    };
+
+    $scope.saveUpload = function () {
+        api.uploadPlus.save($state.params.id, $scope.batchId).then(
+            function (data) {
+                $scope.numErrors = data.numErrors;
+                $scope.errorReport = data.errorReport;
+                $scope.uploadStatus = constants.uploadBatchStatus.DONE;
+            },
+            function () {
+                $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
+            }
+        );
     };
 
     $scope.getProgressPercentage = function () {
@@ -88,6 +89,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
                     },
                     function () {
                         $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
+                        stopPolling();
                     }
                 );
             }, 1000);
@@ -149,9 +151,13 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     });
 
     $scope.cancel = function () {
-        api.uploadPlus.cancel($state.params.id, $scope.batchId);
-        $scope.uploadStatus = constants.uploadBatchStatus.CANCELLED;
-        stopPolling();
+        api.uploadPlus.cancel($state.params.id, $scope.batchId).then(function () {
+            $scope.cancelErrors = null;
+            stopPolling();
+            $modalInstance.close();
+        }, function (data) {
+            $scope.cancelErrors = data.data.errors;
+        });
     };
 
     $scope.viewUploadedAds = function () {
