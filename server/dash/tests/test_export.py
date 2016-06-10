@@ -122,7 +122,7 @@ class ExportTestCase(test.TestCase):
             ('cost', 'Cost'),
             ('data_cost', 'Data Cost'),
             ('clicks', 'Clicks'),
-            ('ctr', 'CTR')
+            ('ctr', 'CTR'),
         ])
 
         content = export.get_csv_content(fieldnames, self.data)
@@ -357,7 +357,7 @@ class ExportTestCase(test.TestCase):
             ignore_diff_rows=True,
             account=accounts,
         )
-        self.maxDiff = None
+
         self.assertEqual(rows, [
             {'account_id': 1,
              'account': u'test account 1 \u010c\u017e\u0161',
@@ -394,7 +394,23 @@ class ExportTestCase(test.TestCase):
         ])
 
     @patch('reports.api_contentads.query')
-    def test_generate_rows_budget(self, mock_query):
+    @patch('dash.export._prefetch_projections')
+    def test_generate_rows_budget(self, mock_proj, mock_query):
+        class Projection:
+
+            def __init__(self):
+                pass
+
+            def row(self, i, *args):
+                return {
+                    1: 111,
+                    2: 222,
+                }[i]
+
+        mock_proj.return_value = (
+            Projection(),
+            Projection(),
+        )
         mock_query.return_value = [{
             'campaign': 1,
             'account': 1,
@@ -417,6 +433,17 @@ class ExportTestCase(test.TestCase):
             'impressions': 200000,
             'ctr': 2.03,
             'some_random_metric': 13,
+        }, {
+            'campaign': 2,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
         }]
 
         dimensions = ['campaign']
@@ -424,7 +451,8 @@ class ExportTestCase(test.TestCase):
         end_date = datetime.date(2014, 7, 2)
         user = User.objects.get(id=1)
 
-        campaign = models.Campaign.objects.get(pk=1)
+        campaign1 = models.Campaign.objects.get(pk=1)
+        campaign2 = models.Campaign.objects.get(pk=2)
 
         rows = export._generate_rows(
             dimensions,
@@ -434,8 +462,8 @@ class ExportTestCase(test.TestCase):
             'impressions',
             True,
             [],
+            include_projections=True,
             include_budgets=True,
-            campaign=campaign
         )
         mock_query.assert_called_with(
             start_date,
@@ -444,13 +472,13 @@ class ExportTestCase(test.TestCase):
             order=[],
             conversion_goals=[],
             ignore_diff_rows=True,
-            campaign=campaign,
         )
+        self.maxDiff = None
         self.assertEqual(rows, [
             {'account_id': 1,
              'campaign_id': 1,
              'account': u'test account 1 \u010c\u017e\u0161',
-             'campaign': campaign,
+             'campaign': campaign1,
              'clicks': 203,
              'cost': 2000.12,
              'cpc': 20.23,
@@ -461,6 +489,223 @@ class ExportTestCase(test.TestCase):
              'impressions': 200000,
              'start_date': datetime.date(2014, 6, 30),
              'status': 2,
+             'allocated_budgets': 111,
+             'spend_projection': 111,
+             'license_fee_projection': 111,
+             'pacing': 111,
+             },
+            {'account_id': 1,
+             'campaign_id': 2,
+             'account': u'test account 1 \u010c\u017e\u0161',
+             'campaign': campaign2,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'allocated_budgets': 222,
+             'spend_projection': 222,
+             'license_fee_projection': 222,
+             'pacing': 222,
+             }
+        ])
+
+    @patch('reports.api_contentads.query')
+    @patch('dash.export._prefetch_projections')
+    def test_generate_rows_budget_breakdown_by_date(self, mock_proj, mock_query):
+        class Projection:
+
+            def __init__(self):
+                pass
+
+            def row(self, i, *args):
+                return {
+                    1: 111,
+                    2: 222,
+                }[i]
+
+        mock_proj.return_value = (
+            Projection(),
+            Projection(),
+        )
+        mock_query.return_value = [{
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 1000.12,
+            'data_cost': 10.10,
+            'cpc': 10.23,
+            'clicks': 103,
+            'impressions': 100000,
+            'ctr': 1.03,
+            'some_random_metric': 12,
+        }, {
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        }, {
+            'campaign': 2,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        },
+            {
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 2),
+            'cost': 1000.12,
+            'data_cost': 10.10,
+            'cpc': 10.23,
+            'clicks': 103,
+            'impressions': 100000,
+            'ctr': 1.03,
+            'some_random_metric': 12,
+        }, {
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 2),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        }, {
+            'campaign': 2,
+            'account': 1,
+            'date': datetime.date(2014, 7, 2),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        }]
+
+        dimensions = ['campaign', 'date']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        campaign1 = models.Campaign.objects.get(pk=1)
+        campaign2 = models.Campaign.objects.get(pk=2)
+
+        rows = export._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            [],
+            include_projections=True,
+            include_budgets=True,
+        )
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+        )
+
+        self.assertEqual(rows, [
+            {'account_id': 1,
+             'campaign_id': 1,
+             'account': u'test account 1 \u010c\u017e\u0161',
+             'campaign': campaign1,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'allocated_budgets': 111,
+             'spend_projection': 111,
+             'license_fee_projection': 111,
+             'pacing': 111,
+             },
+            {'account_id': 1,
+             'campaign_id': 2,
+             'account': u'test account 1 \u010c\u017e\u0161',
+             'campaign': campaign2,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'allocated_budgets': 222,
+             'spend_projection': 222,
+             'license_fee_projection': 222,
+             'pacing': 222,
+             },
+            {'account_id': 1,
+             'campaign_id': 1,
+             'account': u'test account 1 \u010c\u017e\u0161',
+             'campaign': campaign1,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 2),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'allocated_budgets': Decimal(0),
+             'spend_projection': Decimal(0),
+             'license_fee_projection': Decimal(0),
+             'pacing': Decimal(0),
+             },
+            {'account_id': 1,
+             'campaign_id': 2,
+             'account': u'test account 1 \u010c\u017e\u0161',
+             'campaign': campaign2,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 2),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'allocated_budgets': Decimal(0),
+             'spend_projection': Decimal(0),
+             'license_fee_projection': Decimal(0),
+             'pacing': Decimal(0),
              }
         ])
 

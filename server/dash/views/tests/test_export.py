@@ -584,7 +584,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-    def test_get_by_ad_group_agency_flat_fee(self):
+    def test_get_agency_flat_fee(self):
         rf = RequestFactory()
         r = rf.get('')
         r.user = models.User.objects.get(pk=2)
@@ -634,7 +634,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
 
         request = http.HttpRequest()
-        request.GET['type'] = 'adgroup-csv'
+        request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions,flat_fee'
@@ -646,19 +646,15 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
-            'Start Date,End Date,Account,Campaign,Ad Group,Status ('
+            'Start Date,End Date,Account,Status ('
             '' + time.strftime('%Y-%m-%d') + '),Account Type,Average CPC,Clicks,'
             'Impressions,Recognized Flat Fee\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',Inactive,Self-managed,10.230,103,100000,5000.00\r\n2014-06-30,2014-07-01'
-            ',test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test campaign 2,test adgroup 2,Inactive,Self-managed,20.230,203,200000,0\r\n'
+            ',Inactive,Self-managed,20.230,203,200000,5000.00\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
-        filename = 'ZemantaOne_-_by_ad_group_report_2014-06-30_2014-07-01.csv'
+        filename = 'ZemantaOne_-_by_account_report_2014-06-30_2014-07-01.csv'
 
         self.assertEqual(
             response['Content-Type'],

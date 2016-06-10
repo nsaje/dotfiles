@@ -488,8 +488,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         var modalInstance = $modal.open({
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
-            windowClass: 'modal',
-            scope: $scope
+            windowClass: 'modal-default',
+            scope: $scope,
         });
 
         modalInstance.result.then(function () {
@@ -503,7 +503,22 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         var modalInstance = $modal.open({
             templateUrl: '/partials/upload_ads_plus_modal.html',
             controller: 'UploadAdsPlusModalCtrl',
-            windowClass: 'modal',
+            windowClass: 'modal-default',
+            scope: $scope,
+        });
+
+        modalInstance.result.then(function () {
+            getTableData();
+        });
+
+        return modalInstance;
+    };
+
+    $scope.addContentAdsPlusMultiple = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/upload_ads_plus_multiple_modal.html',
+            controller: 'UploadAdsPlusMultipleModalCtrl',
+            windowClass: 'modal-content-upload',
             scope: $scope,
         });
 
