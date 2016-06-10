@@ -617,7 +617,7 @@ class SettingsBase(models.Model, CopySettingsMixin):
         if self.pk is not None:
             raise AssertionError('Updating settings object not alowed.')
 
-        super(SettingsBase, self).save(*args, **kwargs)
+        super(SettingsBase, self).save(*args, **kwargsSettingsBase.)
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
@@ -3440,7 +3440,23 @@ class HistoryQuerySet(models.QuerySet):
         raise AssertionError('Using delete not allowed.')
 
 
-class HistoryBase(models.Model):
+class History(models.Model):
+
+    agency = models.ForeignKey(Agency, related_name='history', on_delete=models.PROTECT, null=True)
+    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT, null=True)
+    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT, null=True)
+
+    level = models.PositiveSmallIntegerField(
+        choices=constants.HistoryLevel.get_choices(),
+        null=False,
+        blank=False,
+    )
+    type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
 
     changes_text = models.TextField(blank=False, null=False)
     changes = jsonfield.JSONField(blank=False, null=False)
@@ -3462,6 +3478,8 @@ class HistoryBase(models.Model):
     )
 
     objects = HistoryQuerySetManager()
+    class QuerySet(HistoryQuerySet):
+        pass
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
@@ -3470,26 +3488,18 @@ class HistoryBase(models.Model):
         if self.created_by is not None and self.system_user is not None:
             raise AssertionError('Either created_by or system_user must be set.')
 
-        super(HistoryBase, self).save(*args, **kwargs)
+        fk_defined = [self.ad_group_id is None,
+                      self.campaign_id is None,
+                      self.account_id is None,
+                      self.agency_id is None]
+        if not any(fk_defined):
+            raise AssertionError('At least one of ad_group, campaign, account or agency'
+                                 'fields must be set')
+
+        super(History, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting history object not allowed.')
-
-    class Meta:
-        abstract = True
-
-
-class AdGroupHistory(HistoryBase):
-    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.AdGroupHistoryType.get_choices(),
-        null=False,
-        blank=False,
-    )
-    objects = HistoryQuerySetManager()
-
-    class QuerySet(HistoryQuerySet):
-        pass
 
 
 def json_serializable_changes(changes):
@@ -3509,7 +3519,7 @@ def create_ad_group_history(ad_group_settings, snapshot_type, changes, changes_t
         # don't write history in case of no changes
         return None
 
-    history = AdGroupHistory.objects.create(
+    history = History.objects.create(
         ad_group=ad_group_settings.ad_group,
         created_by=ad_group_settings.created_by,
         system_user=ad_group_settings.system_user,
@@ -3525,7 +3535,7 @@ def create_campaign_history(campaign_settings, snapshot_type, changes, changes_t
         # don't write history in case of no changes
         return None
 
-    return CampaignHistory.objects.create(
+    return History.objects.create(
         campaign=campaign_settings.campaign,
         created_by=campaign_settings.created_by,
         system_user=campaign_settings.system_user,
@@ -3542,7 +3552,7 @@ def create_account_history(account_settings, snapshot_type, changes, changes_tex
 
     # if account doesn't yet have any settings - defaults have created_by none
     created_by = account_settings.created_by if account_settings.created_by_id else None
-    return AccountHistory.objects.create(
+    return History.objects.create(
         account=account_settings.account,
         created_by=created_by,
         changes=json_serializable_changes(changes),
@@ -3550,31 +3560,6 @@ def create_account_history(account_settings, snapshot_type, changes, changes_tex
         type=snapshot_type,
     )
 
-
-class CampaignHistory(HistoryBase):
-    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.CampaignHistoryType.get_choices(),
-        null=False,
-        blank=False,
-    )
-    objects = HistoryQuerySetManager()
-
-    class QuerySet(HistoryQuerySet):
-        pass
-
-
-class AccountHistory(HistoryBase):
-    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.AccountHistoryType.get_choices(),
-        null=False,
-        blank=False,
-    )
-    objects = HistoryQuerySetManager()
-
-    class QuerySet(HistoryQuerySet):
-        pass
 
 
 def post_init_store_state(sender, **kwargs):

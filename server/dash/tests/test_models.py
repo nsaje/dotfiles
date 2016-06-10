@@ -755,20 +755,22 @@ class HistoryTest(TestCase):
         return models.AccountHistory.objects.all().order_by('-created_dt').first()
 
     def test_save(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
-        self.assertEqual(1, models.AccountHistory.objects.all().count())
+        self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_system(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             system_user=self.su,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
-        self.assertEqual(1, models.AccountHistory.objects.all().count())
+        self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_no_creds(self):
         models.AccountHistory.objects.create(
@@ -805,32 +807,43 @@ class HistoryTest(TestCase):
 
     def test_save_fail(self):
         with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.create(
+            models.History.objects.create(
                 created_by=self.u,
                 system_user=self.su,
                 account=self.acc,
-                type=constants.AccountHistoryType.ACCOUNT,
+                type=constants.HistoryType.ACCOUNT,
+                level=constants.HistoryLevel.ACCOUNT,
             )
 
-        entry = models.AccountHistory.objects.create(
+        entry = models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
         with self.assertRaises(AssertionError):
             entry.delete()
 
         with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.all().delete()
+            models.History.objects.all().delete()
+
+        with self.assertRaises(AssertionError):
+            models.History.objects.create(
+                created_by=self.u,
+                system_user=self.su,
+                type=constants.HistoryType.ACCOUNT,
+                level=constants.HistoryLevel.ACCOUNT,
+            )
 
     def test_update_fail(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
         with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.update(changes_text='Something different')
+            models.History.objects.update(changes_text='Something different')
 
     def test_create_ad_group_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
