@@ -14,7 +14,9 @@ oneApp.directive('zemFileInput', ['$parse', function ($parse) {
         }).attr('accept', '.csv');
     }
 
-    function bindInputElement (inputElement, scope, model) {
+    function bindInputElement (inputElement, scope, varName) {
+        var model = $parse(varName);
+
         inputElement.unbind('change');
         inputElement.bind('change', function () {
             scope.$apply(function () {
@@ -26,18 +28,17 @@ oneApp.directive('zemFileInput', ['$parse', function ($parse) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
-            var model = $parse(attrs.zemFileInput);
             var inputElement = createInputElement();
 
             element.after(inputElement);
-            bindInputElement(inputElement, scope, model);
+            bindInputElement(inputElement, scope, attrs.zemFileInput);
 
             element.bind('click', function () {
                 inputElement.click();
             });
 
             scope.$watch(attrs.zemFileInput, function () {
-                bindInputElement(inputElement, scope, model);
+                bindInputElement(inputElement, scope, attrs.zemFileInput);
             });
         },
     };
