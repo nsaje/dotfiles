@@ -16,8 +16,9 @@ def write_ad_group_history(ad_group,
         system_user=system_user,
         created_by=user,
         changes_text=changes_text,
+        type=history_type,
+        level=dash.constants.HistoryLevel.AD_GROUP
     )
-    history.type = history_type
     history.save()
 
 
@@ -35,8 +36,9 @@ def write_campaign_history(campaign,
         created_by=user,
         system_user=system_user,
         changes_text=changes_text,
+        type=history_type,
+        level=dash.constants.HistoryLevel.CAMPAIGN
     )
-    history.type = history_type
     history.save()
 
 
@@ -54,6 +56,7 @@ def write_account_history(account,
         created_by=user,
         system_user=system_user,
         changes_text=changes_text,
+        type=history_type,
+        level=dash.constants.HistoryLevel.ACCOUNT
     )
-    history.type = history_type
     history.save()
