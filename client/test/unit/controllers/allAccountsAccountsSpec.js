@@ -3,7 +3,7 @@
 
 describe('AllAccountsAccountsCtrl', function () {
     var $scope, $state, $q, api;
-    var revokedPermissions = [];
+    var revokedPermissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -35,6 +35,7 @@ describe('AllAccountsAccountsCtrl', function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
+            revokedPermissions = [];
 
             $scope.isPermissionInternal = function () {
                 return true;
