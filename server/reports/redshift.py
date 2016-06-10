@@ -177,13 +177,11 @@ def vacuum_touchpoint_conversions():
     _execute(query, [])
 
 
-@statsd_timer('reports.redshift', 'vacuum_publishers')
 def vacuum_publishers():
     query = 'VACUUM FULL publishers_1'
     _execute(query, [])
 
 
-@statsd_timer('reports.redshift', 'analyze_publishers')
 def analyze_publishers():
     query = 'ANALYZE publishers_1'
     _execute(query, [])
