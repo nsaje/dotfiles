@@ -9,6 +9,6 @@ from utils.statsd_helper import statsd_gauge
 class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
-        redshift.vacuum_contentadstats()
-        redshift.vacuum_touchpoint_conversions()
+        redshift.vacuum_publishers()
+        redshift.analyze_publishers()
         statsd_gauge('reports.redshift.vacuum_stats', 1)

@@ -177,6 +177,18 @@ def vacuum_touchpoint_conversions():
     _execute(query, [])
 
 
+@statsd_timer('reports.redshift', 'vacuum_publishers')
+def vacuum_publishers():
+    query = 'VACUUM FULL publishers_1'
+    _execute(query, [])
+
+
+@statsd_timer('reports.redshift', 'analyze_publishers')
+def analyze_publishers():
+    query = 'ANALYZE publishers_1'
+    _execute(query, [])
+
+
 @statsd_timer('reports.redshift', 'delete_publishers')
 def delete_publishers(date):
     query = 'DELETE FROM publishers_1 WHERE date = %s'
@@ -500,8 +512,8 @@ class RSModel(object):
     def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
                            offset=None, having_constraints=None):
         cmd = 'SELECT {fields} FROM {table}'.format(
-                fields=','.join(fields),
-                table=table,
+            fields=','.join(fields),
+            table=table,
         )
 
         if constraint_str:
