@@ -24,7 +24,6 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
         allowed_sources: [100,200]
-        users: [1]
         name: 'test account 100'
     model: dash.account
     pk: 100
@@ -33,7 +32,6 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 100
-        users: [100]
         name: 'test account 200'
     model: dash.account
     pk: 200
