@@ -16,7 +16,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
         link: function (scope, element) {
-            scope.ctrl.grid.body.element = element;
+            scope.ctrl.grid.body.ui.element = element;
             scope.state = {
                 renderedRows: [],
             };
@@ -129,17 +129,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 }
 
                 updateRenderedRows(prevFirstRow, true);
-
-                $timeout(function () {
-                    scope.ctrl.grid.ui.state.bodyRendered = true;
-                    scope.ctrl.grid.body.element = element;
-                    zemGridUIService.resizeGridColumns(scope.ctrl.grid);
-                }, 0, false);
             }
-
-            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, function () {
-                prevFirstRow = 0;
-            });
 
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateBody);
 

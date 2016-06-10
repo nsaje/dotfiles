@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
+oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject', function ($filter, zemGridConstants, zemGridObject) { // eslint-disable-line max-len
 
     //
     // Service responsible for parsing Breakdown data (tree) to Grid rows
@@ -11,11 +11,19 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
     //    types: number, currency, percent, seconds, datetime
     //
 
+    function parseMetaData (grid, metadata) {
+        grid.meta.data = metadata;
+        grid.header.columns = metadata.columns.map (function (data) {
+            return zemGridObject.createColumn(data);
+        });
+    }
+
     function parse (grid, data) {
         if (data.level > 0) throw 'Inplace parsing not supported yet.';
 
         if (data.breakdown) {
-            grid.footer = createRow(grid, data, 0);
+            grid.footer.row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, 0);
+            grid.footer.row.stats = parseStats(grid, data.stats);
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
             grid.body.rows = [];
@@ -28,7 +36,8 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         var level = breakdown.level;
 
         breakdown.rows.forEach(function (data) {
-            var row = createRow(grid, data, level);
+            var row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, level, parent);
+            row.stats = parseStats(grid, data.stats);
             rows.push(row);
             if (data.breakdown) {
                 var breakdownRows = parseBreakdown(grid, row, data.breakdown);
@@ -36,13 +45,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
             }
         });
 
-        var row = {
-            type: zemGridConstants.gridRowType.BREAKDOWN,
-            level: level,
-            data: breakdown,
-            parent: parent,
-            visible: true,
-        };
+        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, level, parent);
 
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
@@ -54,21 +57,6 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
         rows.push(row);
 
         return rows;
-    }
-
-    function createRow (grid, data, level) {
-        var row = {
-            type: zemGridConstants.gridRowType.STATS,
-            level: level,
-            data: data,
-            parent: parent,
-            visible: true,
-            collapsed: false,
-        };
-
-        row.stats = parseStats(grid, data.stats);
-
-        return row;
     }
 
     function parseStats (grid, stats) {
@@ -120,5 +108,6 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', function ($filte
 
     return {
         parse: parse,
+        parseMetaData: parseMetaData,
     };
 }]);

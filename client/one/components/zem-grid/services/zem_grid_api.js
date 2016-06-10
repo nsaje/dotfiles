@@ -37,20 +37,6 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.onRowsSelectionChanged = onRowsSelectionChanged;
         this.onColumnsVisibilityChanged = onColumnsVisibilityChanged;
 
-        // Start initialization procedure
-        initialize();
-
-        function initialize () {
-            // Initialize header columns based on the stored data and default values
-            // TODO: find better solution for loading columns
-            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
-                zemGridStorageService.loadColumns(grid);
-                grid.header.columns = grid.meta.data.columns.filter(function (column) {
-                    return column.visible;
-                });
-            });
-        }
-
         function setCollapsedRows (rows, collapsed) {
             if (!Array.isArray(rows)) rows = [rows];
 
@@ -92,12 +78,9 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
                 column.visible = visible;
             });
 
-            grid.header.columns = grid.meta.data.columns.filter(function (column) {
-                return column.visible;
-            });
-
             zemGridStorageService.saveColumns(grid);
             notifyListeners(EVENTS.COLUMNS_VISIBILITY_CHANGED, columns);
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         }
 
         function getMetaData () {
@@ -123,11 +106,13 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         }
 
         function getColumns () {
-            return grid.meta.data.columns;
+            return grid.header.columns;
         }
 
         function getVisibleColumns () {
-            return grid.header.columns;
+            return grid.header.columns.filter(function (column) {
+                return column.visible;
+            });
         }
 
         function onRowsSelectionChanged (scope, callback) {

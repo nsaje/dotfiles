@@ -589,9 +589,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     $scope.getInfoboxData = function () {
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            if (!$scope.hasInfoboxPermission()) {
-                return;
-            }
             api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
                 function (data) {
                     updateInfoboxData(data);

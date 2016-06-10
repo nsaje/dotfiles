@@ -5,7 +5,7 @@
            {{ctrl.row.selected ? "[ * ]" : "[ O ]"}}
        </a>
     </span>
-   <span ng-show="ctrl.position === 0 && ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel()">
+   <span ng-show="ctrl.position === 0 && ctrl.row.level > 0 && ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel()">
         <a ng-click="ctrl.toggleCollapse()" class="action">
             {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}
         </a>
