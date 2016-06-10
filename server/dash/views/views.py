@@ -1004,7 +1004,7 @@ class AdGroupSources(api_common.BaseApiView):
             ad_group_source.ad_group,
             changes_text,
             user=request.user,
-            history_type=constants.AdGroupHistoryType.AD_GROUP_SOURCE
+            history_type=constants.HistoryType.AD_GROUP_SOURCE
         )
 
 
