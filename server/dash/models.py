@@ -648,7 +648,7 @@ class SettingsBase(models.Model, CopySettingsMixin):
         return changes
 
     @classmethod
-    def get_model_state_changes(self, current_settings_dict, new_settings_dict, settings_fields):
+    def get_model_state_changes(cls, current_settings_dict, new_settings_dict, settings_fields):
         changes = OrderedDict()
         for field_name in settings_fields:
             new_value = new_settings_dict[field_name]
