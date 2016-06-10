@@ -1518,4 +1518,3 @@ class UtilityHelpers(TestCase):
 
         result = helpers.check_facebook_source(fb_ad_group_source)
         self.assertFalse(result)
-
