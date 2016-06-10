@@ -6,6 +6,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.errors = {};
     $scope.regions = regions;
     $scope.options = options;
+    $scope.constants = constants;
     $scope.alerts = [];
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
@@ -49,6 +50,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
+
+                // TODO
+                $scope.settings.gaTrackingType = 1;
             },
             function () {
                 // error
@@ -236,6 +240,18 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.refreshPage = function () {
         zemNavigationService.reloadAdGroup($state.params.id);
         $scope.getSettings($state.params.id);
+    };
+
+    $scope.getGaTrackingTypeByValue = function (value) {
+        var result;
+        options.gaTrackingType.forEach(function (type) {
+            if (type.value === value) {
+                result = type;
+                return;
+            }
+        });
+
+        return result;
     };
 
     var init = function () {

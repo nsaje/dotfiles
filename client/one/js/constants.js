@@ -592,6 +592,10 @@ var constants = {
         OK: 3,
         FAILED: 4,
     },
+    gaTrackingType: {
+        EMAIL: 1,
+        API: 2,
+    },
 };
 
 var options = {
@@ -1167,6 +1171,10 @@ var options = {
         {name: 'Daily', value: constants.exportFrequency.DAILY},
         {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
         {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY},
+    ],
+    gaTrackingType: [
+        {name: 'Email', value: constants.gaTrackingType.EMAIL},
+        {name: 'API', value: constants.gaTrackingType.API},
     ],
 };
 
