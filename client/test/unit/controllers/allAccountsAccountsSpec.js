@@ -22,9 +22,6 @@ describe('AllAccountsAccountsCtrl', function () {
             $scope.hasPermission = function () {
                 return true;
             };
-            $scope.hasInfoboxPermission = function () {
-                return false;
-            };
             $scope.getTableData = function () {
                 return;
             };
@@ -77,18 +74,8 @@ describe('AllAccountsAccountsCtrl', function () {
         });
     });
 
-    describe('no permission for infobox data', function () {
-        it('fetch infobox data without permission', function () {
-            $scope.getInfoboxData();
-            $scope.$digest();
-            expect($scope.infoboxHeader).toEqual(
-                null
-            );
-        });
-    });
-
     describe('getInfoboxData', function () {
-        it('fetch infobox data with permission', function () {
+        it('fetch infobox data', function () {
             spyOn(api.allAccountsOverview, 'get').and.callFake(function () {
                 var deferred = $q.defer();
                 deferred.resolve(
@@ -103,9 +90,6 @@ describe('AllAccountsAccountsCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.hasInfoboxPermission = function () {
-                return true;
-            };
             $scope.getInfoboxData();
             $scope.$digest();
             expect($scope.infoboxHeader).toEqual(

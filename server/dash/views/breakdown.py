@@ -53,7 +53,7 @@ def format_breakdown_response(report_rows, offset, limit, breakdown_page):
     return blocks
 
 
-def get_report_through_table(user, form_data):
+def get_report_through_table(get_fn, user, form_data, **kwargs):
     """
     FIXME: This code is temporary! It will only be used for the prototype.
 
@@ -71,13 +71,42 @@ def get_report_through_table(user, form_data):
     offset = form_data.get('offset', DEFAULT_OFFSET)
     limit = form_data.get('limit', DEFAULT_LIMIT)
 
-    # this mapping is not precise, for the demo it will suffice
-    size = limit
-    page = int(offset / size) + 1
+    # this way the whole requested range is fetched, with possibly some extra that is cut off later
+    size = limit * 2
+    page = int(offset / size)
     order = form_data.get('order')
 
     show_archived = form_data.get('show_archived', False)
 
+    response = get_fn(
+        user,
+        filtered_sources,
+        start_date,
+        end_date,
+        order,
+        page,
+        size,
+        show_archived,
+        **kwargs
+    )
+
+    # only take rows from limit
+    rows = response['rows'][offset:offset + limit]
+    return [{
+        'breakdown_id': None,
+        'rows': rows,
+        'totals': response['totals'],
+        'pagination': {
+            'offset': offset,  # offset is 0-based
+            'limit': len(rows),
+            'count': response.get('pagination', {}).get('count'),  # TODO some views dont support pagination
+        }
+    }]
+
+
+def get_report_all_accounts_accounts(user, filtered_sources, start_date, end_date,
+                                     order, page, size, show_archived,
+                                     **kwargs):
     response = table.AccountsAccountsTable().get(
         user,
         filtered_sources,
@@ -96,16 +125,30 @@ def get_report_through_table(user, form_data):
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
-    return [{
-        'breakdown_id': None,
-        'rows': response['rows'],
-        'totals': response['totals'],
-        'pagination': {
-            'offset': response['pagination']['startIndex'] - 1,  # offset is 0-based
-            'limit': len(response['rows']),
-            'count': response['pagination']['count'],
-        }
-    }]
+    return response
+
+
+def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
+                                 order, page, size, show_archived,
+                                 **kwargs):
+    response = table.AccountCampaignsTable().get(
+        user,
+        filtered_sources=filtered_sources,
+        start_date=start_date,
+        end_date=end_date,
+        order=order,
+        show_archived=show_archived,
+        **kwargs
+    )
+
+    for row in response['rows']:
+        row['campaign_id'] = int(row['campaign'])
+        row['campaign_name'] = row['name']
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['campaign'], row)
+        row['breakdown_name'] = row['name']
+        row['parent_breakdown_id'] = None
+
+    return response
 
 
 class AllAccountsBreakdown(api_common.BaseApiView):
@@ -125,12 +168,12 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
-            report = get_report_through_table(request.user, form.cleaned_data)
+            report = get_report_through_table(get_report_all_accounts_accounts, request.user, form.cleaned_data)
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
             request.user,
-            form.cleaned_data['breakdown'],
+            breakdown,
             extract_constraints(form.cleaned_data),
             breakdown_page,
             form.cleaned_data.get('order', None),
@@ -156,11 +199,18 @@ class AccountBreakdown(api_common.BaseApiView):
 
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
+        breakdown = form.cleaned_data.get('breakdown')
         breakdown_page = form.cleaned_data.get('breakdown_page', None)
+
+        # FIXME redirect to table.py if base level request for a breakdown
+        if len(breakdown) == 1:
+            report = get_report_through_table(get_report_account_campaigns, request.user,
+                                              form.cleaned_data, account_id=account.id)
+            return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
             request.user,
-            form.cleaned_data['breakdown'],
+            breakdown,
             extract_constraints(form.cleaned_data, account=account),
             breakdown_page,
             form.cleaned_data.get('order', None),
