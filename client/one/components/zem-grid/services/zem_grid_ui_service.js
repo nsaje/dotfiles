@@ -25,7 +25,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         padding = parseInt(padding) || 0;
 
         var columnWidths = [];
-        var computedHeaderWidth = 0;
+        var maxColumnWidths = [];
         grid.header.visibleColumns.forEach(function (column, i) {
             var width = getTextWidth(column.data.name, font);
             if (column.data.help) width += 20; // TODO: find better solution for icon widths
@@ -50,21 +50,36 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
             width = Math.min(maxWidth, width);
             width = Math.max(minWidth, width);
 
-            computedHeaderWidth += width;
+            maxColumnWidths[i] = maxWidth;
             columnWidths[i] = width;
         });
 
-        // Stretch columns to fill available space, if there is any (keep ratio)
         var scrollerWidth = 20; // TODO: find exact value (based on browser version)
         var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
-        if (headerWidth > computedHeaderWidth) {
-            var ratio = headerWidth / computedHeaderWidth;
-            columnWidths.forEach(function (width, i) {
-                columnWidths[i] *= ratio;
+        keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
+
+        grid.ui.columnsWidths = columnWidths;
+    }
+
+    function keepAspectRatio (columnWidths, maxColumnWidths, headerWidth) {
+        // Stretch columns to fill available space, if there is any (keep ratio)
+        while (true) { // eslint-disable-line no-constant-condition
+            var computedColumnsWidth = 0;
+            var maxedColumnsWidth = 0;
+            columnWidths.forEach(function (w, i) {
+                computedColumnsWidth += w;
+                if (w >= maxColumnWidths[i]) maxedColumnsWidth += w;
+            });
+
+            if (maxedColumnsWidth === computedColumnsWidth || headerWidth <= computedColumnsWidth) break;
+
+            var ratio = (headerWidth - maxedColumnsWidth) / (computedColumnsWidth - maxedColumnsWidth);
+            columnWidths.forEach(function (w, i) {
+                if (w < maxColumnWidths[i]) {
+                    columnWidths[i] = Math.min(maxColumnWidths[i], w * ratio);
+                }
             });
         }
-
-        return columnWidths;
     }
 
     function getTextWidth (text, font) {
@@ -79,7 +94,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
     }
 
     function resizeCells (grid, element) {
-        // TODO: Optimize element querying
+        var loadMoreColumnWidth = grid.ui.columnsWidths.reduce(function (sum, w, i) {
+            if (i === 0) return 0; // Skip over first column
+            return w + sum;
+        }, 0);
+
         var rows = element.find('.zem-grid-row');
         rows.each(function (rowIndex, row) {
             row = angular.element(row);
@@ -95,17 +114,14 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
             });
             var loadMoreCell = row.find('.zem-grid-cell.load-more-cell');
             loadMoreCell.css({
-                'width': 'auto',
+                'width': loadMoreColumnWidth + 'px',
             });
         });
     }
 
-    function resizeGridColumnsOptimized (grid) {
-        grid.ui.columnsWidths = calculateColumnWidths(grid);
-
-        resizeCells(grid, grid.header.ui.element);
-        resizeCells(grid, grid.body.ui.element);
-        resizeCells(grid, grid.footer.ui.element);
+    function resizeGridColumns (grid) {
+        calculateColumnWidths(grid);
+        resizeCells(grid, grid.ui.element);
     }
 
     function getRowClass (grid, row) {
@@ -124,7 +140,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
     return {
         requestAnimationFrame: requestAnimationFrame,
-        resizeGridColumns: resizeGridColumnsOptimized,
+        resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
     };
 }]);

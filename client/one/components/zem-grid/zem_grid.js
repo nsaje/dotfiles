@@ -12,8 +12,9 @@ oneApp.directive('zemGrid', [function () {
             api: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridApi', function ($scope, zemGridObject, zemGridPubSub, zemGridDataService, zemGridApi) { // eslint-disable-line max-len
+        controller: ['$scope', '$element', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridApi', function ($scope, $element, zemGridObject, zemGridPubSub, zemGridDataService, zemGridApi) { // eslint-disable-line max-len
             this.grid = new zemGridObject.createGrid();
+            this.grid.ui.element = $element;
             this.grid.meta.scope = $scope;
             this.grid.meta.pubsub = zemGridPubSub.createInstance($scope);
             this.grid.meta.service = zemGridDataService.createInstance(this.grid, this.dataSource);
