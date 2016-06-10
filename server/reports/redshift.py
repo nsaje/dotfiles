@@ -177,16 +177,6 @@ def vacuum_touchpoint_conversions():
     _execute(query, [])
 
 
-def vacuum_publishers():
-    query = 'VACUUM FULL publishers_1'
-    _execute(query, [])
-
-
-def analyze_publishers():
-    query = 'ANALYZE publishers_1'
-    _execute(query, [])
-
-
 @statsd_timer('reports.redshift', 'delete_publishers')
 def delete_publishers(date):
     query = 'DELETE FROM publishers_1 WHERE date = %s'
