@@ -2831,7 +2831,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             )
         elif self.agency is not None:
             create_agency_history(
-                self.account.agency,
+                self.agency,
                 history_type,
                 changes,
                 changes_text,
@@ -3564,7 +3564,7 @@ def json_serializable_changes(changes):
 
 
 def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
-    if not changes:
+    if not changes and not changes_text:
         # don't write history in case of no changes
         return None
 

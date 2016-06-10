@@ -10,8 +10,6 @@ def write_ad_group_history(ad_group,
                            ):
     if not changes_text:
         return  # nothing to write
-    if not changes_text:
-        return   # nothing to write
     dash.models.create_ad_group_history(
         ad_group,
         history_type,
