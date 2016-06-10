@@ -3,24 +3,48 @@
 
 describe('MediaSourcesCtrl', function () {
     var $scope, $state, $q, api;
+    var revokedPermissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(module(function ($provide) {
-        $provide.value('zemLocalStorageService', {get: function () {}});
+        $provide.value('zemLocalStorageService', {
+            get: function () {
+            }
+        });
     }));
+
+    // Replace DataSource Endpoint service with mocked one
+    beforeEach(function () {
+        var zemDataSourceDebugEndpoints;
+        module(function ($provide) {
+            $provide.value('zemDataSourceEndpoints', {
+                createMetaData: function () {
+                    return {};
+                },
+                createEndpoint: function () {
+                    return zemDataSourceDebugEndpoints.createMockEndpoint();
+                },
+            });
+        });
+
+        inject(function (_zemDataSourceDebugEndpoints_) {
+            zemDataSourceDebugEndpoints = _zemDataSourceDebugEndpoints_;
+        });
+    });
 
     beforeEach(function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
+            revokedPermissions = [];
 
             $scope.isPermissionInternal = function () {
                 return true;
             };
-            $scope.hasPermission = function () {
-                return true;
+            $scope.hasPermission = function (permission) {
+                return revokedPermissions.indexOf(permission) === -1;
             };
             $scope.getTableData = function () {
                 return;
@@ -33,10 +57,12 @@ describe('MediaSourcesCtrl', function () {
             };
             $scope.dateRange = {
                 startDate: {
-                    isSame: function () {},
+                    isSame: function () {
+                    },
                 },
                 endDate: {
-                    isSame: function () {},
+                    isSame: function () {
+                    },
                 },
             };
             $scope.level = constants.level.ALL_ACCOUNTS;
@@ -45,10 +71,12 @@ describe('MediaSourcesCtrl', function () {
                 return {
                     then: function () {
                         return {
-                            finally: function () {},
+                            finally: function () {
+                            },
                         };
                     },
-                    abort: function () {},
+                    abort: function () {
+                    },
                 };
             };
 
@@ -70,6 +98,11 @@ describe('MediaSourcesCtrl', function () {
             $state = _$state_;
             $state.params = {id: 1};
 
+        });
+    });
+
+    function initializeController () {
+        inject(function ($controller) {
             $controller('MediaSourcesCtrl',
                 {
                     $scope: $scope,
@@ -77,10 +110,24 @@ describe('MediaSourcesCtrl', function () {
                 }
             );
         });
+    }
+
+    describe('Zem-Grid DataSource', function () {
+        it('check with no permission', function () {
+            revokedPermissions.push('zemauth.can_access_table_breakdowns_development_features');
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
+        });
     });
 
     describe('getInfoboxData', function () {
         it('fetch infobox data', function () {
+            initializeController();
             spyOn(api.allAccountsOverview, 'get').and.callFake(function () {
                 var deferred = $q.defer();
                 deferred.resolve(

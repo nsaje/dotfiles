@@ -17,10 +17,10 @@ describe('AllAccountsAccountsCtrl', function () {
         var zemDataSourceDebugEndpoints;
         module(function ($provide) {
             $provide.value('zemDataSourceEndpoints', {
-                getControllerMetaData: function () {
+                createMetaData: function () {
                     return {};
                 },
-                createAllAccountsEndpoint: function () {
+                createEndpoint: function () {
                     return zemDataSourceDebugEndpoints.createMockEndpoint();
                 },
             });
