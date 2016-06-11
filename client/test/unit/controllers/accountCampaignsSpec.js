@@ -13,9 +13,6 @@ describe('AccountCampaignsCtrl', function () {
         $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
     }));
 
-    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
-    }));
-
     beforeEach(function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;

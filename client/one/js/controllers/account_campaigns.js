@@ -654,7 +654,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         pollSyncStatus();
         getDailyStats();
         $scope.getInfoboxData();
-        
+
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
             initializeDataSource();
         }

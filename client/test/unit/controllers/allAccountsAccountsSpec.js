@@ -18,7 +18,7 @@ describe('AllAccountsAccountsCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
             permissions = {};
-            
+
             $scope.isPermissionInternal = function () {
                 return true;
             };
