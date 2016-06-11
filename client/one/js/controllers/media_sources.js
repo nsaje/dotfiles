@@ -753,7 +753,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, null, 'source');
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'source');
         var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
