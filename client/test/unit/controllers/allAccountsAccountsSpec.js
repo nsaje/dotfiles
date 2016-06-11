@@ -8,17 +8,8 @@ describe('AllAccountsAccountsCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
-        $provide.value('zemLocalStorageService', {get: function () {}});
-
-        // Replace DataSource Endpoint service with mocked one
-        $provide.factory('zemDataSourceEndpoints', function (zemDataSourceDebugEndpoints) {
-            return zemDataSourceDebugEndpoints();
-        });
-    }));
-
-    // Replace DataSource Endpoint service with mocked one
     beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
+        $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
     }));
 
@@ -115,7 +106,7 @@ describe('AllAccountsAccountsCtrl', function () {
         });
     });
 
-    describe('permissions suite', function () {
+    describe('Zem-Grid DataSource', function () {
         it('check without can_access_table_breakdowns_development_features permission', function () {
             permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
             initializeController();

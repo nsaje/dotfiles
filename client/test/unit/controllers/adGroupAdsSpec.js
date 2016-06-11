@@ -9,7 +9,7 @@ describe('AdGroupAdsCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
         zemFilterServiceMock = {
             getShowArchived: function () {
                 return true;
@@ -19,6 +19,7 @@ describe('AdGroupAdsCtrl', function () {
 
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', zemFilterServiceMock);
+        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
         $provide.value('zemCustomTableColsService', {
             load: function () {
                 return [];

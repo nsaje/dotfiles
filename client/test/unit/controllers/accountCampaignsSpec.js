@@ -7,8 +7,12 @@ describe('AccountCampaignsCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
+        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
+    }));
+
+    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
     }));
 
     beforeEach(function () {

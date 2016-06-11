@@ -8,31 +8,10 @@ describe('MediaSourcesCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
-        $provide.value('zemLocalStorageService', {
-            get: function () {
-            }
-        });
+    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
+        $provide.value('zemLocalStorageService', {get: function () { }});
+        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
     }));
-
-    // Replace DataSource Endpoint service with mocked one
-    beforeEach(function () {
-        var zemDataSourceDebugEndpoints;
-        module(function ($provide) {
-            $provide.value('zemDataSourceEndpoints', {
-                createMetaData: function () {
-                    return {};
-                },
-                createEndpoint: function () {
-                    return zemDataSourceDebugEndpoints.createMockEndpoint();
-                },
-            });
-        });
-
-        inject(function (_zemDataSourceDebugEndpoints_) {
-            zemDataSourceDebugEndpoints = _zemDataSourceDebugEndpoints_;
-        });
-    });
 
     beforeEach(function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
