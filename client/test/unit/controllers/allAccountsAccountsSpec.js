@@ -3,46 +3,40 @@
 
 describe('AllAccountsAccountsCtrl', function () {
     var $scope, $state, $q, api;
-    var revokedPermissions;
+    var permissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(module(function ($provide) {
         $provide.value('zemLocalStorageService', {get: function () {}});
+
+        // Replace DataSource Endpoint service with mocked one
+        $provide.factory('zemDataSourceEndpoints', function (zemDataSourceDebugEndpoints) {
+            return zemDataSourceDebugEndpoints();
+        });
     }));
 
     // Replace DataSource Endpoint service with mocked one
-    beforeEach(function () {
-        var zemDataSourceDebugEndpoints;
-        module(function ($provide) {
-            $provide.value('zemDataSourceEndpoints', {
-                createMetaData: function () {
-                    return {};
-                },
-                createEndpoint: function () {
-                    return zemDataSourceDebugEndpoints.createMockEndpoint();
-                },
-            });
-        });
-
-        inject(function (_zemDataSourceDebugEndpoints_) {
-            zemDataSourceDebugEndpoints = _zemDataSourceDebugEndpoints_;
-        });
-    });
+    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
+        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
+    }));
 
     beforeEach(function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
-            revokedPermissions = [];
 
+            permissions = {};
             $scope.isPermissionInternal = function () {
                 return true;
             };
+
             $scope.hasPermission = function (permission) {
-                return revokedPermissions.indexOf(permission) === -1;
+                if (!permissions.hasOwnProperty(permission)) return true;
+                return permissions[permission];
             };
+
             $scope.getTableData = function () {
                 return;
             };
@@ -85,32 +79,14 @@ describe('AllAccountsAccountsCtrl', function () {
 
             $state = _$state_;
             $state.params = {id: 1};
-
         });
     });
 
     function initializeController () {
         inject(function ($controller) {
-            $controller('AllAccountsAccountsCtrl',
-                {
-                    $scope: $scope,
-                    api: api,
-                });
+            $controller('AllAccountsAccountsCtrl', {$scope: $scope, api: api});
         });
     }
-
-    describe('Zem-Grid DataSource', function () {
-        it('check with no permission', function () {
-            revokedPermissions.push('zemauth.can_access_table_breakdowns_development_features');
-            initializeController();
-            expect($scope.dataSource).toBe(undefined);
-        });
-
-        it('check with permission', function () {
-            initializeController();
-            expect($scope.dataSource).not.toBe(undefined);
-        });
-    });
 
     describe('getInfoboxData', function () {
         it('fetch infobox data', function () {
@@ -136,6 +112,19 @@ describe('AllAccountsAccountsCtrl', function () {
                     title: 'Test',
                 }
             );
+        });
+    });
+
+    describe('permissions suite', function () {
+        it('check without can_access_table_breakdowns_development_features permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with can_access_table_breakdowns_development_features permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
         });
     });
 });
