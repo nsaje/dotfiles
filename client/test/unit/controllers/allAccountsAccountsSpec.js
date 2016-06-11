@@ -17,8 +17,8 @@ describe('AllAccountsAccountsCtrl', function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
-
             permissions = {};
+            
             $scope.isPermissionInternal = function () {
                 return true;
             };
@@ -107,13 +107,13 @@ describe('AllAccountsAccountsCtrl', function () {
     });
 
     describe('Zem-Grid DataSource', function () {
-        it('check without can_access_table_breakdowns_development_features permission', function () {
+        it('check without permission', function () {
             permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
             initializeController();
             expect($scope.dataSource).toBe(undefined);
         });
 
-        it('check with can_access_table_breakdowns_development_features permission', function () {
+        it('check with permission', function () {
             initializeController();
             expect($scope.dataSource).not.toBe(undefined);
         });

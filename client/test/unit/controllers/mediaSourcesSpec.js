@@ -3,7 +3,7 @@
 
 describe('MediaSourcesCtrl', function () {
     var $scope, $state, $q, api;
-    var revokedPermissions;
+    var permissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -17,13 +17,14 @@ describe('MediaSourcesCtrl', function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
-            revokedPermissions = [];
+            permissions = {};
 
             $scope.isPermissionInternal = function () {
                 return true;
             };
             $scope.hasPermission = function (permission) {
-                return revokedPermissions.indexOf(permission) === -1;
+                if (!permissions.hasOwnProperty(permission)) return true;
+                return permissions[permission];
             };
             $scope.getTableData = function () {
                 return;
@@ -91,19 +92,6 @@ describe('MediaSourcesCtrl', function () {
         });
     }
 
-    describe('Zem-Grid DataSource', function () {
-        it('check with no permission', function () {
-            revokedPermissions.push('zemauth.can_access_table_breakdowns_development_features');
-            initializeController();
-            expect($scope.dataSource).toBe(undefined);
-        });
-
-        it('check with permission', function () {
-            initializeController();
-            expect($scope.dataSource).not.toBe(undefined);
-        });
-    });
-
     describe('getInfoboxData', function () {
         it('fetch infobox data', function () {
             initializeController();
@@ -127,6 +115,19 @@ describe('MediaSourcesCtrl', function () {
                     title: 'Test',
                 }
             );
+        });
+    });
+
+    describe('Zem-Grid DataSource', function () {
+        it('check without permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
         });
     });
 });

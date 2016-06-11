@@ -3,6 +3,7 @@
 
 describe('AdGroupPublishersCtrl', function () {
     var $scope, $state, $q, api;
+    var permissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -21,15 +22,17 @@ describe('AdGroupPublishersCtrl', function () {
             $scope.infoboxHeader = null;
             $scope.infoboxBasicSettings = null;
             $scope.infoboxPerformanceSettings = null;
+            permissions = {};
 
-            $scope.setInfoboxHeader = function (data) {
-                $scope.infoboxHeader = data;
-            };
             $scope.isPermissionInternal = function () {
                 return true;
             };
-            $scope.hasPermission = function () {
-                return true;
+            $scope.hasPermission = function (permission) {
+                if (!permissions.hasOwnProperty(permission)) return true;
+                return permissions[permission];
+            };
+            $scope.setInfoboxHeader = function (data) {
+                $scope.infoboxHeader = data;
             };
             $scope.getTableData = function () {
                 return;
@@ -76,18 +79,18 @@ describe('AdGroupPublishersCtrl', function () {
 
             $state = _$state_;
             $state.params = {id: 1};
-
-            $controller('AdGroupPublishersCtrl',
-                {
-                    $scope: $scope,
-                    api: api,
-                }
-            );
         });
     });
 
+    function initializeController () {
+        inject(function ($controller) {
+            $controller('AdGroupPublishersCtrl', {$scope: $scope, api: api});
+        });
+    }
+
     describe('getInfoboxData', function () {
         it('fetch infobox data with permission', function () {
+            initializeController();
             spyOn(api.adGroupOverview, 'get').and.callFake(function () {
                 var deferred = $q.defer();
                 deferred.resolve(
@@ -109,6 +112,19 @@ describe('AdGroupPublishersCtrl', function () {
                     title: 'Test',
                 }
             );
+        });
+    });
+
+    describe('Zem-Grid DataSource', function () {
+        it('check without permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
         });
     });
 });
