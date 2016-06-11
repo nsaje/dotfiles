@@ -752,6 +752,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
     };
 
+    function initializeDataSource () {
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, null, 'source');
+        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
+
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
             pollSyncStatus();
@@ -779,13 +786,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.dataSource.setDateRange(newValue, true);
         }
     });
-
-    function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, null, 'source');
-        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
-    }
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {

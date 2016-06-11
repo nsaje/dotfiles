@@ -180,12 +180,14 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         };
     }
 
+    function createEndpoint (metaData) {
+        var url = getUrl(metaData.level, metaData.id);
+        return new StatsEndpoint(url, metaData);
+    }
+
 
     return {
-        createEndpoint: function (metaData) {
-            var url = getUrl(metaData.level, metaData.id);
-            return new StatsEndpoint(url, metaData);
-        },
+        createEndpoint: createEndpoint,
         createMetaData: createMetaData,
     };
 }]);
