@@ -722,7 +722,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'adgroup');
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'ad_group');
         var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
