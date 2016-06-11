@@ -685,9 +685,9 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         getTableData();
         getDailyStats();
-        
+
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
-            initializeDataSource();
+            $scope.dataSource.setDateRange(newValue, true);
         }
     });
 

@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemDataSourceEndpoints) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -719,6 +719,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     var getTableData = function (showWaiting) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            // Data displayed and handled by zem-grid and DataSource
+            return;
+        }
         $scope.loadRequestInProgress = true;
 
         api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -918,6 +922,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            $scope.dataSource.setDateRange($scope.dateRange, true);
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -985,8 +992,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
+        
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            initializeDataSource();
+        }
     };
 
+    function initializeDataSource () {
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'publisher');
+        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
 
     $scope.loadPage = function (page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {
