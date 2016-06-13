@@ -18,7 +18,9 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+
 from utils import exc
+from utils.test_helper import add_permissions
 
 from reports import redshift
 import reports.models
@@ -3192,6 +3194,32 @@ class AllAccountsOverviewTest(TestCase):
 
     def test_run_empty(self):
         response = self._get_all_accounts_overview(1)
+        self.assertTrue(response['success'])
+
+
+class HistoryTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = zemauth.models.User.objects.get(pk=2)
+
+    def get_history(self, campaign_id):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse(
+            'history',
+            kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def test_permission(self):
+        response = self.get_history(1)
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_view_new_history_backend'])
+        response = self.get_history(1)
         self.assertTrue(response['success'])
 
 

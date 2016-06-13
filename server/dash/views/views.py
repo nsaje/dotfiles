@@ -2144,6 +2144,17 @@ class AllAccountsOverview(api_common.BaseApiView):
         return [setting.as_dict() for setting in settings]
 
 
+class History(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_view_new_history_backend'):
+            raise exc.AuthorizationError()
+
+        response = {}
+
+        return self.create_api_response(response)
+
+
 class Demo(api_common.BaseApiView):
 
     def get(self, request):
