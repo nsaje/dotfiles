@@ -54,7 +54,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         {name: 'By Content Ad', query: 'content_ad'},
     ];
 
-    function createInstance (baseLevel, baseLevelBreakdown) {
+    function createBreakdownGroups (baseLevel, baseLevelBreakdown) {
         var breakdownGroups = angular.copy(BREAKDOWN_GROUPS);
 
         // Find requested base level breakdown
@@ -74,6 +74,6 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
     }
 
     return {
-        createInstance: createInstance,
+        createBreakdownGroups: createBreakdownGroups,
     };
 }]);

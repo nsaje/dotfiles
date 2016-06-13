@@ -94,7 +94,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         // FIXME: find appropriate solution for this problem (special type)
         var columns = zemGridEndpointColumns.createColumns(scope, level, breakdown);
         var categories = zemGridEndpointColumns.createCategories(columns);
-        var breakdownGroups = zemGridEndpointBreakdowns.createInstance(level, breakdown);
+        var breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(level, breakdown);
 
         columns[0].field = 'breakdownName';
         columns[0].type = 'text';

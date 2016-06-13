@@ -7,12 +7,10 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
     //  COLUMNS
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // FIXME: help content
     // FIXME: permissions
     // FIXME: status, state refactoring
-    // FIXME: help content
-    // TODO: split COLUMNS - stats, object, status, etc.
-    // TODO: categories
-    // TODO: conversion goals
+    // TODO: conversion goals, metrics, ..
     // TODO: default values : unselectable, checked, shown, totalRow, order, orderField==field, initialOrder
 
 
@@ -1029,6 +1027,9 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
         // TODO: zemOptimisationMetricsService.createColumnCategories(),
     ];
 
+    // //////////////V////////////////////////////////////////////////////////////////////////////////////
+    // Service stuff
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function convertPermission (permission, checkFn) {
         var result = false;
@@ -1060,38 +1061,23 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
 
     function getColumns (level, breakdown) {
         var columns;
-
         if (breakdown === 'source') {
             switch (level) {
-            case 'ad_groups':
-                columns = AD_GROUP_MEDIA_SOURCE;
-                break;
-            default:
-                columns = MEDIA_SOURCE;
-                break;
+            case 'ad_groups': columns = AD_GROUP_MEDIA_SOURCE; break;
+            default: columns = MEDIA_SOURCE; break;
             }
         } else if (breakdown === 'publisher') {
             switch (level) {
-            case 'ad_groups':
-                columns = AD_GROUP_PUBLISHERS;
-                break;
-            default:
-                throw 'Not supported.';
+            case 'ad_groups': columns = AD_GROUP_PUBLISHERS; break;
+            default: throw 'Not supported.';
             }
         } else {
             switch (level) {
-            case 'all_accounts':
-                columns = ALL_ACCOUNTS_ACCOUNTS;
-                break;
-            case 'account':
-                columns = ACCOUNT_CAMPAIGNS;
-                break;
-            case 'campaign':
-                columns = CAMPAIGN_AD_GROUPS;
-                break;
-            case 'ad_group':
-                columns = AD_GROUP_CONTENT_ADS;
-                break;
+            case 'all_accounts': columns = ALL_ACCOUNTS_ACCOUNTS; break;
+            case 'accounts': columns = ACCOUNT_CAMPAIGNS; break;
+            case 'campaigns': columns = CAMPAIGN_AD_GROUPS; break;
+            case 'ad_groups': columns = AD_GROUP_CONTENT_ADS; break;
+            default: throw 'Not supported.';
             }
         }
 
