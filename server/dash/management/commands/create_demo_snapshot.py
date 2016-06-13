@@ -255,7 +255,10 @@ def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymiz
 
 def _get_fields(obj):
     try:
-        return obj._meta.fields
+        fields = list(obj._meta.fields)
+        # include one-to-one relations
+        fields.extend(f for f in obj._meta.get_fields() if f.one_to_one)
+        return fields
     except AttributeError:
         return []
 

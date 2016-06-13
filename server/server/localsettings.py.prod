@@ -220,6 +220,7 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 # DeployKitty
 DK_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyhYmJQhFDfCW5k1X8CARCAO0IHlmnLpLAQAFmJJjnN2dlvrMyFqV7e7YlKDNSpbEJupOwov7IKDFSmYjnqxfsbrVNulP6vbSiLssVt').get()
 DK_DEMO_PREPARE_ENDPOINT = 'https://dk.zemanta.com/api/demo/prepare'
+DK_DEMO_UP_ENDPOINT = 'https://dk.zemanta.com/api/demo/up'
 
 LAMBDA_REGION = 'us-east-1'
 LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK/AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACWMIGTBgkqhkiG9w0BBwaggYUwgYICAQAwfQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx7yLKe0tUFVxMxsMMCARCAUFMra/DjBi1zN9BhzOI/C8+JHJA5rBM0tsNGeCZBzYnFgMm951IWfgRr7gqwdnPVqzDdwHwMHYzbR2viuXRMus4bfcdCm2BEqQBnNAgZ/fZt').get()
