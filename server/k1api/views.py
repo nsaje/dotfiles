@@ -185,7 +185,7 @@ def get_content_ad_sources_for_ad_group(request):
     if len(ad_group_source) == 0:
         return _response_ok([])
     if len(ad_group_source) > 1:
-        return _response_error("%d object retrieved instead of 1", len(ad_group_source))
+        return _response_error("%d object retrieved instead of 1" % len(ad_group_source))
     ad_group_source = list(ad_group_source)[0]
 
     content_ad_sources = (
