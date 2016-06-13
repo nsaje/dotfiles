@@ -18,35 +18,24 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         // Calculate rendered column widths, based on grid contents,
         // and configured styles (font, min/max widths, padding, etc.)
         // Solution is sub-optimal, since it can only calculate text fields (including parsed values)
-
-        var headerCells = grid.header.ui.element.find('.zem-grid-cell');
-        var font = window.getComputedStyle(headerCells[0], null).getPropertyValue('font');
-        var padding = window.getComputedStyle(headerCells[0], null).getPropertyValue('padding-left');
-        padding = parseInt(padding) || 0;
-
         var columnWidths = [];
         var maxColumnWidths = [];
         grid.header.visibleColumns.forEach(function (column, i) {
-            var width = getTextWidth(column.data.name, font);
-            if (column.data.help) width += 20; // TODO: find better solution for icon widths
+            // Retrieve properties that affects column width
+            var headerCell = grid.header.ui.element.find('.zem-grid-cell')[i];
+            var font = window.getComputedStyle(headerCell, null).getPropertyValue('font');
+            var padding = window.getComputedStyle(headerCell, null).getPropertyValue('padding-left');
+            var maxWidth = window.getComputedStyle(headerCell, null).getPropertyValue('max-width');
+            var minWidth = window.getComputedStyle(headerCell, null).getPropertyValue('min-width');
+            maxWidth = parseInt(maxWidth) || Number.MAX_VALUE;
+            minWidth = parseInt(minWidth) || 0;
+            padding = parseInt(padding) || 0;
 
-            grid.body.rows.forEach(function (row) {
-                if (row.type !== zemGridConstants.gridRowType.STATS) return;
-                var valueWidth = getTextWidth(row.stats[column.field], font);
-                width = Math.max(width, valueWidth);
-            });
+            // Calculate column column width without constraints (use only font)
+            var width = calculateColumnWidth(grid, column, font);
 
-            if (grid.footer.row) {
-                var valueWidth = getTextWidth(grid.footer.row.stats[column.field], font);
-                width = Math.max(width, valueWidth);
-            }
-
-            // Final touch - use padding and check against min and max widths
+            // Apply constraints to column width (padding, max/min size)
             width += 2 * padding;
-            var maxWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('max-width');
-            var minWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('min-width');
-            maxWidth = parseInt(maxWidth) || width;
-            minWidth = parseInt(minWidth) || width;
             width = Math.min(maxWidth, width);
             width = Math.max(minWidth, width);
 
@@ -59,6 +48,24 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
 
         grid.ui.columnsWidths = columnWidths;
+    }
+
+    function calculateColumnWidth (grid, column, font) {
+        var width = getTextWidth(column.data.name, font);
+        if (column.data.help) width += 20; // TODO: find better solution for icon widths
+
+        grid.body.rows.forEach(function (row) {
+            if (row.type !== zemGridConstants.gridRowType.STATS) return;
+            var valueWidth = getTextWidth(row.stats[column.field], font);
+            width = Math.max(width, valueWidth);
+        });
+
+        if (grid.footer.row) {
+            var valueWidth = getTextWidth(grid.footer.row.stats[column.field], font);
+            width = Math.max(width, valueWidth);
+        }
+
+        return width;
     }
 
     function keepAspectRatio (columnWidths, maxColumnWidths, headerWidth) {
@@ -118,7 +125,13 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
     }
 
     function resizeGridColumns (grid) {
+        var start = new Date().getTime();
         calculateColumnWidths(grid);
+
+        var end = new Date().getTime();
+        var time = end - start;
+        console.log(time);
+
         resizeCells(grid, grid.ui.element);
     }
 
