@@ -3553,7 +3553,7 @@ def create_ad_group_history(ad_group, history_type, changes, changes_text, user=
         # don't write history in case of no changes
         return None
 
-    campaign, account, agency = _fill_history_ids(ad_group=ad_group)
+    campaign, account, agency = _generate_parents(ad_group=ad_group)
     history = History.objects.create(
         ad_group=ad_group,
         campaign=campaign,
@@ -3574,7 +3574,7 @@ def create_campaign_history(campaign, history_type, changes, changes_text, user=
         # don't write history in case of no changes
         return None
 
-    _, account, agency = _fill_history_ids(campaign=campaign)
+    _, account, agency = _generate_parents(campaign=campaign)
     return History.objects.create(
         campaign=campaign,
         account=account,
@@ -3593,7 +3593,7 @@ def create_account_history(account, history_type, changes, changes_text, user=No
         # don't write history in case of no changes
         return None
 
-    _, _, agency = _fill_history_ids(account=account)
+    _, _, agency = _generate_parents(account=account)
     return History.objects.create(
         account=account,
         agency=agency,
@@ -3620,7 +3620,11 @@ def create_agency_history(agency, history_type, changes, changes_text, user=None
         level=constants.HistoryLevel.AGENCY,
     )
 
-def _fill_history_ids(ad_group=None, campaign=None, account=None, agency=None):
+def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
+    """
+    For first given entity in order check if it has any parents and return them.
+    E.g. given and ad group return also it's campaign, account and agency if any
+    """
     campaign = campaign or ad_group and ad_group.campaign
     account = account or campaign and campaign.account
     agency = agency or account and account.agency
