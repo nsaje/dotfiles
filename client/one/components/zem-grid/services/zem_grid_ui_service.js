@@ -43,8 +43,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
             // Final touch - use padding and check against min and max widths
             width += 2 * padding;
-            var maxWidth = window.getComputedStyle(headerCells[0], null).getPropertyValue('max-width');
-            var minWidth = window.getComputedStyle(headerCells[0], null).getPropertyValue('min-width');
+            var maxWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('max-width');
+            var minWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('min-width');
             maxWidth = parseInt(maxWidth) || width;
             minWidth = parseInt(minWidth) || width;
             width = Math.min(maxWidth, width);
