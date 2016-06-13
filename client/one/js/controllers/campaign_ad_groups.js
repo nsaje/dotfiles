@@ -575,7 +575,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getTableData = function () {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             // Data displayed and handled by zem-grid and DataSource
             return;
         }
@@ -716,7 +716,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.getContentInsights();
         $scope.getInfoboxData();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             initializeDataSource();
         }
     };
@@ -749,7 +749,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         $scope.getContentInsights();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             $scope.dataSource.setDateRange(newValue, true);
         }
     });

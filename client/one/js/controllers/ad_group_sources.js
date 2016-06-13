@@ -560,7 +560,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getTableData = function (showWaiting) {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             // Data displayed and handled by zem-grid and DataSource
             return;
         }
@@ -790,7 +790,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.getDailyStats();
         getTableData();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             $scope.dataSource.setDateRange(newValue, true);
         }
     });
@@ -842,7 +842,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         getSources();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             initializeDataSource();
         }
     };

@@ -528,7 +528,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     var getTableData = function () {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             // Data displayed and handled by zem-grid and DataSource
             return;
         }
@@ -655,7 +655,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         getDailyStats();
         $scope.getInfoboxData();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             initializeDataSource();
         }
     };
@@ -686,7 +686,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         getTableData();
         getDailyStats();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             $scope.dataSource.setDateRange(newValue, true);
         }
     });
