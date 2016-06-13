@@ -31,7 +31,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
             if (column.data.help) width += 20; // TODO: find better solution for icon widths
 
             grid.body.rows.forEach(function (row) {
-                if (row.type > 1) return;
+                if (row.type !== zemGridConstants.gridRowType.STATS) return;
                 var valueWidth = getTextWidth(row.stats[column.field], font);
                 width = Math.max(width, valueWidth);
             });
