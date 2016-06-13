@@ -125,13 +125,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
     }
 
     function resizeGridColumns (grid) {
-        var start = new Date().getTime();
         calculateColumnWidths(grid);
-
-        var end = new Date().getTime();
-        var time = end - start;
-        console.log(time);
-
         resizeCells(grid, grid.ui.element);
     }
 
