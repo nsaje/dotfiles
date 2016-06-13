@@ -3539,14 +3539,6 @@ class History(models.Model):
         if self.pk is not None:
             raise AssertionError('Updating history object not alowed.')
 
-        fk_defined = [self.ad_group_id is None,
-                      self.campaign_id is None,
-                      self.account_id is None,
-                      self.agency_id is None]
-        if not any(fk_defined):
-            raise AssertionError('At least one of ad_group, campaign, account or agency'
-                                 'fields must be set')
-
         super(History, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
