@@ -43,6 +43,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         {name: 'By Account', query: 'account'},
         {name: 'By Campaign', query: 'campaign'},
         {name: 'By Ad Group', query: 'ad_group'},
+        {name: 'By Content Ad', query: 'content_ad'},
         {name: 'By Source', query: 'source'},
         {name: 'By Publisher', query: 'publisher'},
     ];

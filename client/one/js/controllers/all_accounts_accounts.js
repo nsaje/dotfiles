@@ -520,7 +520,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getTableData = function (showWaiting) {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             // Data displayed and handled by zem-grid and DataSource
             return;
         }
@@ -573,7 +573,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getDailyStats();
         getTableData();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             $scope.dataSource.setDateRange(newValue, true);
         }
     });
@@ -603,10 +603,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
-            // TODO: filter
-        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -615,9 +611,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
 
         getTableData();
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
-            // TODO: set filter
-        }
     });
 
     var pollSyncStatus = function () {
@@ -707,7 +700,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getTableData();
         initColumns();
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             initializeDataSource();
         }
     };

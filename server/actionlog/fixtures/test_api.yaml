@@ -294,7 +294,7 @@
         ad_group: 1
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
-        target_regions: ['UK', 'US', 'CA']
+        target_regions: ['GB', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'
         description: 'Example description'

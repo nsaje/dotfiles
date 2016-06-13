@@ -85,7 +85,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         if (level === 'all_accounts') {
             return '/api/all_accounts/breakdown/';
         }
-        return '/api/' + level + '/' + id + '/breakdowns/';
+        return '/api/' + level + '/' + id + '/breakdown/';
     }
 
     function createMetaData (scope, level, id, breakdown) {

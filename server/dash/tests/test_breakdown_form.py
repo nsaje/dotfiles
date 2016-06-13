@@ -44,6 +44,7 @@ class BreakdownFormTest(TestCase):
             'offset': 12,
             'limit': 20,
             'order': '-clicks',
+            'show_blacklisted_publishers': False,
         })
 
     def test_required_fields(self):

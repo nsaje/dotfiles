@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    <div class="section table-sources" ng-if="!hasPermission('zemauth.can_access_table_breakdowns_development_features')">
+    <div class="section table-sources" ng-if="!hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <div class="button-bar">
             <div class="button-bar-item pull-right">
                 <zem-export
@@ -56,5 +56,5 @@
         </div>
     </div>
 
-    <zem-grid data-data-source="dataSource" api="gridApi" ng-if="hasPermission('zemauth.can_access_table_breakdowns_development_features')"></zem-grid>
+    <zem-grid data-data-source="dataSource" api="gridApi" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')"></zem-grid>
 </div>

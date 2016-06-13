@@ -463,7 +463,7 @@ class CampaignAdGroups(TestCase):
         request.META['SERVER_PORT'] = 1234
         request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text, actions = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
@@ -474,7 +474,7 @@ class CampaignAdGroups(TestCase):
         request = HttpRequest()
         request.user = User.objects.get(pk=2)
         view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text, actions = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
@@ -487,7 +487,7 @@ class CampaignAdGroups(TestCase):
         request = None
 
         view = views.CampaignAdGroups()
-        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+        actions, changes_text = view._add_media_sources(ad_group, ad_group_settings, request)
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
@@ -502,7 +502,7 @@ class CampaignAdGroups(TestCase):
         self.assertEqual(waiting_ad_group_sources, [])
 
         self.assertEqual(
-            ad_group_settings.changes_text,
+            changes_text,
             'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
 
@@ -527,7 +527,7 @@ class CampaignAdGroups(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         ad_group_settings = ad_group_settings.copy_settings()
-        ad_group_settings.retargeting_ad_groups = 1
+        ad_group_settings.retargeting_ad_groups = [1]
         ad_group_settings.save(request)
         request = None
 
@@ -945,7 +945,7 @@ class AdGroupArchiveRestoreTest(TestCase):
             status=constants.PublisherStatus.BLACKLISTED
         )
 
-        # do some blacklisting inbetween
+        # do some blacklisting in between
         ad_group = models.AdGroup.objects.get(pk=1)
         self.assertTrue(ad_group.is_archived())
 
@@ -2676,7 +2676,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
     @patch('reports.redshift.get_cursor')
     def test_post_outbrain_over_quota(self, cursor):
-        for i in xrange(10):
+        for i in xrange(30):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),
                 source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
@@ -2716,7 +2716,7 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
 
-        self.assertEqual(10, models.PublisherBlacklist.objects.count())
+        self.assertEqual(30, models.PublisherBlacklist.objects.count())
 
 
 class AdGroupOverviewTest(TestCase):
@@ -2809,7 +2809,7 @@ class AdGroupOverviewTest(TestCase):
 
         region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
         self.assertEqual('Location:', region_setting['value'])
-        self.assertEqual('UK, US, CA', region_setting['details_content'])
+        self.assertEqual('GB, US, CA', region_setting['details_content'])
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
@@ -3193,3 +3193,63 @@ class AllAccountsOverviewTest(TestCase):
     def test_run_empty(self):
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response['success'])
+
+
+class DemoTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def _get_client(self, has_permission=True):
+        user = User.objects.get(pk=2)
+        if has_permission:
+            permission = Permission.objects.get(codename='can_request_demo_v3')
+            user.user_permissions.add(permission)
+            user.save()
+
+        client = Client()
+        client.login(username=user.username, password='secret')
+        return client
+
+    @patch.object(views.Demo, '_start_instance')
+    @patch('dash.views.views.send_mail')
+    @patch('dash.views.views.email_helper')
+    def test_get(self, email_helper_mock, send_mail_mock, start_instance_mock):
+        start_instance_mock.return_value = 'test-url'
+        email_helper_mock.format_email.return_value = ('test-subject', 'test-body')
+
+        reversed_url = reverse('demov3')
+        response = self._get_client().get(reversed_url, follow=True)
+        self.assertEqual(200, response.status_code)
+
+        start_instance_mock.assert_called_once_with()
+        email_helper_mock.format_email.assert_called_once_with(15, url='test-url')
+        send_mail_mock.assert_called_once_with(
+            'test-subject',
+            'test-body',
+            'Zemanta <help-test@zemanta.com>',
+            ['mad.max@zemanta.com'],
+            fail_silently=False,
+        )
+
+        data = json.loads(response.content)
+        self.assertEqual({'data': 'test-url', 'success': True}, data)
+
+    def test_get_permission(self):
+        reversed_url = reverse('demov3')
+        response = self._get_client(has_permission=False).get(reversed_url, follow=True)
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+    @patch('dash.views.views.request_signer')
+    def test_start_instance(self, request_signer_mock):
+        data = {
+            'status': 'success',
+            'instance_url': 'test-url',
+        }
+
+        request_signer_mock.urllib2_secure_open.return_value.getcode.return_value = 200
+        request_signer_mock.urllib2_secure_open.return_value.read.return_value = json.dumps(data)
+
+        demo = views.Demo()
+        instance = demo._start_instance()
+
+        self.assertEqual(instance, 'test-url')
