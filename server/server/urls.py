@@ -221,7 +221,7 @@ urlpatterns += [
     ),
     url(
         r'^api/history/',
-        login_required(dash.views.views.History.as_view()),
+        login_required(dash.views.agency.History.as_view()),
         name='history'
     ),
     url(

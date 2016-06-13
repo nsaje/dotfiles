@@ -25,6 +25,7 @@ from django.db.models.signals import post_init
 import utils.string_helper
 import utils.demo_anonymizer
 
+import automation.settings
 from dash import constants
 from dash import region_targeting_helper
 from dash import views
@@ -3534,6 +3535,14 @@ class History(models.Model):
 
     class QuerySet(HistoryQuerySet):
         pass
+
+    def get_changed_by_text(self):
+        if self.created_by is None and self.system_user is not None:
+            return constants.SystemUserType.get_text(self.system_user)
+        elif self.created_by is None and self.system_user is None:
+            return automation.settings.AUTOMATION_AI_NAME
+        else:
+            return self.created_by.email
 
     def save(self, *args, **kwargs):
         if self.pk is not None:

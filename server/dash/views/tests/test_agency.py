@@ -3175,3 +3175,29 @@ class CampaignContentInsightsTest(TestCase):
                 },
                 'success': True,
             }, json.loads(response.content))
+
+
+class HistoryTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+
+    def get_history(self, campaign_id):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse(
+            'history',
+            kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def test_permission(self):
+        response = self.get_history(1)
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_view_new_history_backend'])
+        response = self.get_history(1)
+        self.assertTrue(response['success'])

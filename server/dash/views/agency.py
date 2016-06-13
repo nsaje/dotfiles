@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import newrelic.agent
+import dateutil.parser
 
 from collections import OrderedDict
 from django.db import transaction
@@ -1455,3 +1456,63 @@ class CampaignContentInsights(api_common.BaseApiView):
             'best_performer_rows': best_performer_rows,
             'worst_performer_rows': worst_performer_rows,
         })
+
+
+class History(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_view_new_history_backend'):
+            raise exc.AuthorizationError()
+        # in case somebody wants to fetch entire history disallow it for the
+        # moment
+        entity_filter = self._extract_entity_filter(request)
+        if not entity_filter:
+            raise exc.AuthorizationError()
+        date_filter = self._extract_date_filter(request)
+
+        response = self.get_history(dict(entity_filter, **date_filter), entity_filter)
+        return self.create_api_response(response)
+
+    def _extract_entity_filter(self, request):
+        entity_filter = {}
+        ad_group_raw = request.GET.get('ad_group')
+        if ad_group_raw:
+            entity_filter['ad_group'] = helpers.get_ad_group(
+                request.user, int(ad_group_raw))
+        campaign_raw = request.GET.get('campaign')
+        if campaign_raw:
+            entity_filter['campaign'] = helpers.get_campaign(
+                request.user, int(campaign_raw))
+        account_raw = request.GET.get('account')
+        if account_raw:
+            entity_filter['account'] = helpers.get_account(
+                request.user, int(account_raw))
+        agency_raw = request.GET.get('agency')
+        if agency_raw:
+            entity_filter['agency'] = helpers.get_agency(request.user, int(agency_raw))
+        return entity_filter
+
+    def _extract_date_filter(self, request):
+        date_filter = {}
+        start_date_raw = request.GET.get('start_date')
+        if start_date_raw:
+            date_filter['start_date__gte'] = dateutil.parser.parse(start_date_raw)
+
+        end_date_raw = request.GET.get('end_date')
+        if end_date_raw:
+            date_filter['end_date__lte'] = dateutil.parser.parse(end_date_raw)
+        return date_filter
+
+    def get_history(self, filters, order=['-created_dt']):
+        history_entries = models.History.objects.filter(
+            **filters
+        ).order_by(*order)
+
+        history = []
+        for history_entry in history_entries:
+            history.append({
+                'datetime': history_entry.created_dt,
+                'changed_by': history_entry.get_changed_by_text(),
+                'changes_text': history_entry.changes_text,
+            })
+        return history
