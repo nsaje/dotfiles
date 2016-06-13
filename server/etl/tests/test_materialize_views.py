@@ -106,7 +106,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.maxDiff = None
 
         view = materialize_views.MasterView()
-        self.assertItemsEqual(list(view.generate_rows(date, {})), [
+        self.assertItemsEqual(list(view.generate_rows(date, date, campaign_factors={})), [
             (
                 date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
                 constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,

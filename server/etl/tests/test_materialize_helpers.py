@@ -51,17 +51,17 @@ class MaterializeTest(TestCase, backtosql.TestSQLMixin):
         })
 
 
-class TransformAndMaterializeTest(TestCase):
+class MaterializeViaCSVTest(TestCase):
 
     @mock.patch('etl.materialize_helpers.get_write_stats_cursor')
     def test_generate(self, mock_cursor):
-        mat = materialize_helpers.TransformAndMaterialize()
+        mat = materialize_helpers.MaterializeViaCSV()
 
         mat.table_name = mock.MagicMock()
         mat.table_name.return_value = 'mv_bla'
 
-        mat.generate_daily_csv = mock.MagicMock()
-        mat.generate_daily_csv.side_effect = [
+        mat.generate_csvs = mock.MagicMock()
+        mat.generate_csvs.return_value = [
             'asd', 'bsd', 'csd',
         ]
 
@@ -77,7 +77,7 @@ class TransformAndMaterializeTest(TestCase):
             datetime.date(2016, 5, 12): 3,
         }
 
-        mat.generate(date_from, date_to, factors)
+        mat.generate(date_from, date_to, factors=factors)
 
         mat.prepare_insert_query.assert_has_calls([
             mock.call("asd"),
@@ -94,7 +94,7 @@ class TransformAndMaterializeTest(TestCase):
 
     @mock.patch('utils.s3helpers.S3Helper')
     def test_generate_daily_csv(self, mock_s3):
-        mat = materialize_helpers.TransformAndMaterialize()
+        mat = materialize_helpers.MaterializeViaCSV()
 
         mat.table_name = mock.MagicMock()
         mat.table_name.return_value = 'mv_bla'
@@ -109,10 +109,10 @@ class TransformAndMaterializeTest(TestCase):
 
         expected_path = 'materialized_views/mv_bla/2016/05/10/view.csv'
 
-        path = mat.generate_daily_csv(date, {})
+        path = mat.generate_csvs(date, date)
 
         mock_s3().put.assert_called_with(
             expected_path,
             """asd\tqwe\t5\r\nfoo\tbar\t2\r\n""")
 
-        self.assertEquals(expected_path, path)
+        self.assertEquals([expected_path], path)
