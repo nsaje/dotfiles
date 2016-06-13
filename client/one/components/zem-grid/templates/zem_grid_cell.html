@@ -12,10 +12,8 @@
     </span>
 
     <!-- TODO: fully support current Table styles -->
-    <span ng-switch="::ctrl.col.type">
-        <span ng-switch-when="linkNav" class="pointer">
-            <a zem-in-link="{{ctrl.value.state}}({id: {{ctrl.value.id}}})">{{ ctrl.value.text }} </a>
-        </span>
+    <span ng-switch="::ctrl.col.data.type|groupColumnTypes">
+        <zem-grid-cell-base-field ng-switch-when="base" data="ctrl.value" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-base-field>
 
         <!--
             All basic data types (number, currency, percent, seconds, datetime) are pre-parsed

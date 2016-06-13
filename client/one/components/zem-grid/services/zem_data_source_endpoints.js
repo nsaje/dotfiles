@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
+oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointApiConverter', function ($rootScope, $controller, $http, $q, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
         this.metaData = metaData;
@@ -15,14 +15,15 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
+        var self = this; // TODO: Remove when column definitions are moved to a service
         this.getData = function (config) {
             var url = createUrl(baseUrl, config);
-            convertToApi(config);
+            config = zemGridEndpointApiConverter.convertToApi(config);
             var deferred = $q.defer();
             $http.post(url, {params: config}).success(function (data) {
                 var breakdowns = data.data;
                 breakdowns.forEach(function (breakdown) {
-                    convertFromApi(config, breakdown);
+                    zemGridEndpointApiConverter.convertFromApi(config, breakdown, self.metaData);
                     checkPaginationCount(config, breakdown);
                 });
                 deferred.resolve(breakdowns);
@@ -45,26 +46,6 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
                 return breakdown.query;
             });
             return baseUrl + queries.join('/') + '/';
-        }
-
-        function convertFromApi (config, breakdown) {
-            breakdown.level = config.level;
-            breakdown.breakdownId = breakdown.breakdown_id;
-            breakdown.rows = breakdown.rows.map(function (row) {
-                row.breakdownName = row.breakdown_name;
-                return {
-                    stats: row,
-                    breakdownId: row.breakdown_id,
-                };
-            });
-        }
-
-        function convertToApi (config) {
-            config.breakdown_page = config.breakdownPage; // eslint-disable-line camelcase
-            config.start_date = config.startDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-            config.end_date = config.endDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-            delete config.breakdownPage;
-            delete config.breakdown;
         }
 
         function checkPaginationCount (config, breakdown) {
