@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
         this.metaData = metaData;
@@ -92,7 +92,10 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns
         // FIXME: find appropriate solution for this problem (special type)
-        var columns = angular.copy(scope.columns);
+        var columns = zemGridEndpointColumns.createColumns(scope, level, breakdown);
+        var categories = zemGridEndpointColumns.createCategories(columns);
+        var breakdownGroups = zemGridEndpointBreakdowns.createInstance(level, breakdown);
+
         columns[0].field = 'breakdownName';
         columns[0].type = 'text';
 
@@ -100,9 +103,9 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             id: id,
             level: level,
             columns: columns,
-            categories: scope.columnCategories,
-            localStoragePrefix: scope.localStoragePrefix,
-            breakdownGroups: zemGridEndpointBreakdowns.createInstance(level, breakdown),
+            categories: categories,
+            breakdownGroups: breakdownGroups,
+            localStoragePrefix: 'zem-grid-endpoint-' + level + '-' + breakdown,
         };
     }
 
