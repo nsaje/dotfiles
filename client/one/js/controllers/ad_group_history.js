@@ -6,25 +6,31 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.orderReverse = true;
     $scope.requestInProgress = false;
 
-    $scope.getSettings = function (id) {
+    $scope.getHistory = function (id) {
         $scope.requestInProgress = true;
-        api.adGroupHistory.get(id).then(
-            function (data) {
-                $scope.history = data.history;
+        if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
+            api.history.get({adGroup: $state.params.id}).then(
+                function (data) {
+                    $scope.history = data.history;
+                }
+            ).finally(function () {
                 $scope.requestInProgress = false;
-            },
-            function () {
-                // error
+            });
+        } else {
+            api.adGroupHistory.get(id).then(
+                function (data) {
+                    $scope.history = data.history;
+                }
+            ).finally(function () {
                 $scope.requestInProgress = false;
-                return;
-            }
-        );
+            });
+        }
     };
 
     $scope.refreshPage = function () {
         zemNavigationService.reloadAdGroup($state.params.id);
-        $scope.getSettings($state.params.id);
+        $scope.getHistory($state.params.id);
     };
 
-    $scope.getSettings($state.params.id);
+    $scope.getHistory($state.params.id);
 }]);

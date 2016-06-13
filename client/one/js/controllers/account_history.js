@@ -2,20 +2,49 @@
 oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.history = [];
     $scope.requestInProgress = false;
+    $scope.order = 'datetime';
+    $scope.orderAsc = false;
+
+    $scope.changeOrder = function(field) {
+        console.log('Change order');
+        $scope.order = field;
+        $scope.orderAsc = !$scope.orderAsc;
+
+        $scope.getHistory();
+    };
+
+    $scope.getOrderClass = function (field) {
+        if ($scope.order !== field) {
+            return '';
+        }
+
+        if ($scope.orderAsc) {
+            return 'ordered-reverse';
+        } else {
+            return 'ordered';  
+        }
+    }
 
     $scope.getHistory = function () {
         $scope.requestInProgress = true;
-        api.accountHistory.get($state.params.id).then(
-            function (data) {
-                $scope.history = data.history;
-            },
-            function (data) {
-                // error
-                return;
-            }
-        ).finally(function () {
-            $scope.requestInProgress = false;
-        });
+
+        if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
+            api.history.get({account: $state.params.id}, (!$scope.orderAsc && '-' || '') + $scope.order).then(
+                function (data) {
+                    $scope.history = data.history;
+                }
+            ).finally(function () {
+                $scope.requestInProgress = false;
+            });
+        } else {
+            api.accountHistory.get($state.params.id).then(
+                function (data) {
+                    $scope.history = data.history;
+                }
+            ).finally(function () {
+                $scope.requestInProgress = false;
+            });
+        }
     };
 
     $scope.refreshPage = function () {

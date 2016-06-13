@@ -25,32 +25,10 @@
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
                         <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
-                        <td zem-lazy-popover-template="'popoverContent.html'" zem-lazy-popover-append-to-body="true" zem-lazy-popover-placement="bottom" zem-lazy-popover-stay-open-on-hover="true" zem-lazy-popover-animation-class="fade" zem-lazy-popover-custom-classes="agency-history-popover-large">{{ item.changesText }}</td>
+                        <td>{{ item.changesText }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-
-<script id="popoverContent.html" type="text/ng-template">
-    <div class="history-popover-table">
-        <div class="history-popover-row">
-            <div ng-if="item.showOldSettings" class="history-popover-cell header-cell left-cell"><strong>Old Settings</strong></div>
-            <div class="history-popover-cell header-cell"><strong>New Settings</strong></div>
-        </div>
-        <div class="history-popover-row" ng-repeat="setting in item.settings">
-            <div ng-if="item.showOldSettings" class="history-popover-cell left-cell">
-                <div><strong>{{setting.name}}</strong></div>
-                <div class="setting-value" ng-bind-html="setting.oldValue"></div>
-            </div>
-            <div class="history-popover-cell">
-                <div><strong>{{setting.name}}</strong></div>
-                <div class="setting-value" ng-bind-html="setting.value"></div>
-            </div>
-        </div>
-    </div>
-</script>
-
-
-

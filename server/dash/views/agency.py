@@ -1,3 +1,4 @@
+import re
 import datetime
 import json
 import logging
@@ -1468,9 +1469,15 @@ class History(api_common.BaseApiView):
         entity_filter = self._extract_entity_filter(request)
         if not entity_filter:
             raise exc.AuthorizationError()
-        date_filter = self._extract_date_filter(request)
 
-        response = self.get_history(dict(entity_filter, **date_filter), entity_filter)
+        order = ['-created_dt']
+        order_raw = request.GET.get('order') or ''
+        if re.match('[-]?(created_dt|created_by)', order_raw):
+            order = [order_raw]
+
+        response = {
+            'history': self.get_history(entity_filter, order=order)
+        }
         return self.create_api_response(response)
 
     def _extract_entity_filter(self, request):
@@ -1491,17 +1498,6 @@ class History(api_common.BaseApiView):
         if agency_raw:
             entity_filter['agency'] = helpers.get_agency(request.user, int(agency_raw))
         return entity_filter
-
-    def _extract_date_filter(self, request):
-        date_filter = {}
-        start_date_raw = request.GET.get('start_date')
-        if start_date_raw:
-            date_filter['start_date__gte'] = dateutil.parser.parse(start_date_raw)
-
-        end_date_raw = request.GET.get('end_date')
-        if end_date_raw:
-            date_filter['end_date__lte'] = dateutil.parser.parse(end_date_raw)
-        return date_filter
 
     def get_history(self, filters, order=['-created_dt']):
         history_entries = models.History.objects.filter(

@@ -6,17 +6,28 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
 
-    $scope.getSettings = function () {
+    $scope.getHistory = function () {
         $scope.requestInProgress = true;
         $scope.errors = {};
-        api.campaignHistory.get($state.params.id).then(
-            function (data) {
-                $scope.history = data.history;
-            }
-        ).finally(function () {
-            $scope.requestInProgress = false;
-        });
+
+        if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
+            api.history.get({campaign: $state.params.id}).then(
+                function (data) {
+                    $scope.history = data.history;
+                }
+            ).finally(function () {
+                $scope.requestInProgress = false;
+            });
+        } else {
+            api.campaignHistory.get($state.params.id).then(
+                function (data) {
+                    $scope.history = data.history;
+                }
+            ).finally(function () {
+                $scope.requestInProgress = false;
+            });
+        }
     };
 
-    $scope.getSettings();
+    $scope.getHistory();
 }]);
