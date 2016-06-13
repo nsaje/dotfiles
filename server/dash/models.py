@@ -3531,6 +3531,7 @@ class History(models.Model):
     )
 
     objects = HistoryQuerySetManager()
+
     class QuerySet(HistoryQuerySet):
         pass
 
@@ -3623,6 +3624,7 @@ def create_agency_history(agency, history_type, changes, changes_text, user=None
         type=history_type,
         level=constants.HistoryLevel.AGENCY,
     )
+
 
 def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
     """

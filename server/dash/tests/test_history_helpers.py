@@ -56,7 +56,7 @@ class HistoryHelperTests(TestCase):
 
     def test_write_campaign(self):
         user = User.objects.get(pk=1)
-        campaign= dash.models.Campaign.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
         dash.history_helpers.write_campaign_history(
             campaign,
             'Funky test',
