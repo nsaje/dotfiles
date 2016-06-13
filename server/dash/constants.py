@@ -1578,31 +1578,33 @@ class ImageCrop(ConstantBase):
     }
 
 
-class AdGroupHistoryType(ConstantBase):
+class HistoryLevel(ConstantBase):
+    AD_GROUP = 1
+    CAMPAIGN = 2
+    ACCOUNT = 3
+    AGENCY = 4
+
+    _VALUES = {
+        AD_GROUP: 'Ad Group Level',
+        CAMPAIGN: 'Campaign Level',
+        ACCOUNT: 'Account Level',
+        AGENCY: 'Agency Level',
+    }
+
+
+class HistoryType(ConstantBase):
     AD_GROUP = 1
     AD_GROUP_SOURCE = 2
+    CAMPAIGN = 2
+    BUDGET = 3
+    ACCOUNT = 4
+    CREDIT = 5
 
     _VALUES = {
         AD_GROUP: 'Ad Group History',
         AD_GROUP_SOURCE: 'Ad Group Source History',
-    }
-
-
-class CampaignHistoryType(ConstantBase):
-    CAMPAIGN = 1
-    BUDGET = 2
-
-    _VALUES = {
         CAMPAIGN: 'Campaign History',
         BUDGET: 'Budget History',
-    }
-
-
-class AccountHistoryType(ConstantBase):
-    ACCOUNT = 1
-    CREDIT = 2
-
-    _VALUES = {
         ACCOUNT: 'Account History',
         CREDIT: 'Credit History',
     }
