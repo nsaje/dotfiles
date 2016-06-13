@@ -88,16 +88,16 @@ def get_ad_group_source(request):
     if not source_type:
         return _response_error("Must provide source type.")
 
-    source_name = request.GET.get("source_name", None)
+    bidder_slug = request.GET.get("bidder_slug", None)
     ad_group_source = dash.models.AdGroupSource.objects.select_related(
                 'source_credentials', 'source', 'source__source_type',
                 'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
             ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
-    if source_name:
-        ad_group_source = ad_group_source.filter(source__name=source_name)
+    if bidder_slug:
+        ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
     if len(ad_group_source) != 1:
-        return _response_error("%d objects retrieved for ad group %s on source %s with source name %s" %
-                               (len(ad_group_source), ad_group_id, source_type, source_name), status=404)
+        return _response_error("%d objects retrieved for ad group %s on source %s with bidder slug %s" %
+                               (len(ad_group_source), ad_group_id, source_type, bidder_slug), status=404)
     ad_group_source = list(ad_group_source)[0]
     ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
     return _response_ok(ad_group_source_with_settings)
