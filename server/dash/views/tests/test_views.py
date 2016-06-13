@@ -3198,14 +3198,16 @@ class AllAccountsOverviewTest(TestCase):
 class DemoTest(TestCase):
     fixtures = ['test_api.yaml']
 
-    def setUp(self):
+    def _get_client(self, has_permission=True):
         user = User.objects.get(pk=2)
-        permission = Permission.objects.get(codename='can_request_demo_v3')
-        user.user_permissions.add(permission)
-        user.save()
+        if has_permission:
+            permission = Permission.objects.get(codename='can_request_demo_v3')
+            user.user_permissions.add(permission)
+            user.save()
 
-        self.client = Client()
-        self.client.login(username=user.username, password='secret')
+        client = Client()
+        client.login(username=user.username, password='secret')
+        return client
 
     @patch.object(views.Demo, '_start_instance')
     @patch('dash.views.views.send_mail')
@@ -3213,16 +3215,29 @@ class DemoTest(TestCase):
     def test_get(self, email_helper_mock, send_mail_mock, start_instance_mock):
         start_instance_mock.return_value = 'test-url'
         email_helper_mock.format_email.return_value = ('test-subject', 'test-body')
-        reversed_url = reverse('demov3')
 
-        response = self.client.get(reversed_url, follow=True)
+        reversed_url = reverse('demov3')
+        response = self._get_client().get(reversed_url, follow=True)
         self.assertEqual(200, response.status_code)
 
         start_instance_mock.assert_called_once_with()
         email_helper_mock.format_email.assert_called_once_with(15, url='test-url')
+        send_mail_mock.assert_called_once_with(
+            'test-subject',
+            'test-body',
+            'Zemanta <help-test@zemanta.com>',
+            ['mad.max@zemanta.com'],
+            fail_silently=False,
+        )
 
         data = json.loads(response.content)
         self.assertEqual({'data': 'test-url', 'success': True}, data)
+
+    def test_get_permission(self):
+        reversed_url = reverse('demov3')
+        response = self._get_client(has_permission=False).get(reversed_url, follow=True)
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
 
     @patch('dash.views.views.request_signer')
     def test_start_instance(self, request_signer_mock):

@@ -24,7 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
@@ -2130,7 +2130,7 @@ class Demo(api_common.BaseApiView):
 
     def get(self, request):
         if not request.user.has_perm('zemauth.can_request_demo_v3'):
-            raise exc.AuthorizationError()
+            raise Http404('Forbidden')
 
         instance = self._start_instance()
 

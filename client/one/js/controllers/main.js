@@ -318,7 +318,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var modalInstance = $modal.open({
             templateUrl: '/partials/request_demo_modal.html',
             controller: 'RequestDemoModalCtrl',
-            windowClass: 'modal',
+            windowClass: 'modal-default',
             scope: $scope,
         });
         return modalInstance;
