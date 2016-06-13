@@ -91,8 +91,10 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
     function getTextWidth (text, font) {
         if (typeof text !== 'string') return -1;
-        var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement('canvas'));
-        var context = canvas.getContext('2d');
+        if (!getTextWidth.canvas) {
+            getTextWidth.canvas = document.createElement('canvas');
+        }
+        var context = getTextWidth.canvas.getContext('2d');
         context.font = font;
         var metrics = context.measureText(text);
         return metrics.width;
