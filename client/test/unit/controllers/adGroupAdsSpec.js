@@ -408,7 +408,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('executeBulkAction', function () {
         beforeEach(function () {
-            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
         });
         it('pauses all selected content ads if executeBulkAction(\'pause\')', function () {
@@ -566,7 +566,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('Zem-Grid DataSource', function () {
         it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
             expect($scope.dataSource).toBe(undefined);
         });

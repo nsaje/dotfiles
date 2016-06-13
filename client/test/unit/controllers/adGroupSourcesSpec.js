@@ -1,4 +1,4 @@
-/* global module,beforeEach,it,describe,expect,inject,spyOn,constants */
+/* global module,beforeEach,it,describe,expect,inject,spyOn */
 'use strict';
 
 describe('AdGroupSourcesCtrlSpec', function () {
@@ -246,7 +246,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
 
     describe('Zem-Grid DataSource', function () {
         it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
             expect($scope.dataSource).toBe(undefined);
         });
