@@ -1,9 +1,11 @@
 from mock import patch
 import datetime
+import StringIO
 from decimal import Decimal
 
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 
 from utils import converters
 
@@ -1456,3 +1458,267 @@ class BudgetReserveTestCase(TestCase):
             campaign_id=1,
         )
         self.assertEqual(len(c.budgets.all()), 2)
+
+
+@patch('utils.dates_helper.local_today', lambda: TODAY)
+class BCMCommandTestCase(TestCase):
+    fixtures = ['test_bcm.yaml']
+
+    def test_update_budget(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b1 = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+        b2 = create_budget(
+            credit=c,
+            amount=500,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+
+        # Update a field
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--amount', '300', '--no-confirm')
+        b1.refresh_from_db()
+        b2.refresh_from_db()
+        self.assertEqual(b1.amount, 300)
+        self.assertEqual(b2.amount, 500)
+
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--start_date', str(TODAY),
+                     '--no-confirm')
+        b1.refresh_from_db()
+        self.assertEqual(b1.start_date, TODAY)
+
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--end_date', str(TODAY),
+                     '--no-confirm')
+        b1.refresh_from_db()
+        self.assertEqual(b1.end_date, TODAY)
+
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--freed_cc', '1234',
+                     '--no-confirm')
+        b1.refresh_from_db()
+        self.assertEqual(b1.freed_cc, 1234)
+
+        call_command('bcm', 'update', 'budgets', '--credits', str(c.pk), '--freed_cc', '4321',
+                     '--no-confirm')
+        b1.refresh_from_db()
+        b2.refresh_from_db()
+        self.assertEqual(b1.freed_cc, 4321)
+        self.assertEqual(b2.freed_cc, 4321)
+
+        # Trigger validation
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--amount', '800', '--no-confirm',
+                     stderr=err)
+        b1.refresh_from_db()
+        b2.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+        self.assertEqual(b1.amount, 300)
+
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--start_date',
+                     str(TODAY - datetime.timedelta(2)), '--no-confirm', stderr=err)
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+        b1.refresh_from_db()
+        self.assertEqual(b1.start_date, TODAY)
+
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--end_date',
+                     str(TODAY - datetime.timedelta(100)), '--no-confirm', stderr=err)
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+        b1.refresh_from_db()
+
+        # Specify wrong field
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--flat_fee_cc', '1500',
+                     '--no-confirm', stderr=err)
+        self.assertEqual(err.getvalue(), 'Wrong fields.\n')
+
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'budgets', str(b1.pk), '--license_fee', '0.20',
+                     '--no-confirm', stderr=err)
+        self.assertEqual(err.getvalue(), 'Wrong fields.\n')
+
+    def test_update_credit(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b1 = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+        b2 = create_budget(
+            credit=c,
+            amount=500,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+
+        # Update fields
+        call_command('bcm', 'update', 'credits', str(c.pk), '--amount', '1500', '--no-confirm')
+        c.refresh_from_db()
+        self.assertEqual(c.amount, 1500)
+
+        date = TODAY - datetime.timedelta(2)
+        call_command('bcm', 'update', 'credits', str(c.pk), '--start_date', str(date),
+                     '--no-confirm')
+        c.refresh_from_db()
+        self.assertEqual(c.start_date, date)
+
+        date = TODAY + datetime.timedelta(2)
+        call_command('bcm', 'update', 'credits', str(c.pk), '--end_date', str(date),
+                     '--no-confirm')
+        c.refresh_from_db()
+        self.assertEqual(c.end_date, date)
+
+        msg = StringIO.StringIO()
+        call_command('bcm', 'update', 'credits', str(c.pk), '--license_fee', '0.3',
+                     '--no-confirm', stdout=msg)
+        c.refresh_from_db()
+        self.assertEqual(c.license_fee, Decimal('0.3'))
+        self.assertIn('WARNING: Daily statements', msg.getvalue())
+
+        call_command('bcm', 'update', 'credits', str(c.pk), '--flat_fee_cc', '1234',
+                     '--no-confirm')
+        c.refresh_from_db()
+        self.assertEqual(c.flat_fee_cc, 1234)
+
+        # Invalid fields
+
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'credits', str(c.pk), '--freed_cc', '1234',
+                     '--no-confirm', stderr=err)
+        c.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Wrong fields.\n')
+
+        # Validation errors
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'credits', str(c.pk), '--amount', '500', '--no-confirm',
+                     stderr=err)
+        c.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+
+        err = StringIO.StringIO()
+        call_command('bcm', 'update', 'credits', str(c.pk), '--flat_fee_cc', '15000000',
+                     '--no-confirm', stderr=err)
+        c.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+
+        err = StringIO.StringIO()
+        date = TODAY - datetime.timedelta(100)
+        call_command('bcm', 'update', 'credits', str(c.pk), '--end_date', str(date),
+                     '--no-confirm', stderr=err)
+        c.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+
+        err = StringIO.StringIO()
+        date = TODAY
+        call_command('bcm', 'update', 'credits', str(c.pk), '--end_date', str(date),
+                     '--no-confirm', stderr=err)
+        c.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+
+        err = StringIO.StringIO()
+        date = TODAY
+        call_command('bcm', 'update', 'credits', str(c.pk), '--start_date', str(date),
+                     '--no-confirm', stderr=err)
+        c.refresh_from_db()
+        self.assertEqual(err.getvalue(), 'Validation failed.\n')
+
+    def test_delete_credit(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+        create_budget(
+            credit=c,
+            amount=500,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+        self.assertTrue(models.CreditLineItem.objects.filter(pk__in=[c.pk]))
+        call_command('bcm', 'delete', 'credits', str(c.pk), '--no-confirm')
+        self.assertFalse(models.CreditLineItem.objects.filter(pk__in=[c.pk]))
+
+    def test_delete_budget(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b1 = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+        b2 = create_budget(
+            credit=c,
+            amount=500,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+
+        self.assertEqual(len(c.budgets.all()), 2)
+        call_command('bcm', 'delete', 'budgets', str(b1.pk), str(b2.pk), '--no-confirm')
+        self.assertEqual(len(c.budgets.all()), 0)
+
+        b1 = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+        b2 = create_budget(
+            credit=c,
+            amount=500,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(1),
+            campaign_id=1,
+        )
+
+        self.assertEqual(len(c.budgets.all()), 2)
+        call_command('bcm', 'delete', 'budgets', '--credits', str(c.pk), '--no-confirm')
+        self.assertEqual(len(c.budgets.all()), 0)
