@@ -2676,7 +2676,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
     @patch('reports.redshift.get_cursor')
     def test_post_outbrain_over_quota(self, cursor):
-        for i in xrange(10):
+        for i in xrange(30):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),
                 source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
@@ -2716,7 +2716,7 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
 
-        self.assertEqual(10, models.PublisherBlacklist.objects.count())
+        self.assertEqual(30, models.PublisherBlacklist.objects.count())
 
 
 class AdGroupOverviewTest(TestCase):
