@@ -1,9 +1,9 @@
 import datetime
 import collections
 import calendar
-
 from decimal import Decimal
 
+import newrelic.agent
 from django.db.models import Prefetch
 
 import dash.models
@@ -20,6 +20,7 @@ class BudgetProjections(object):
         'account': 'campaign__'
     }
 
+    @newrelic.agent.function_trace()
     def __init__(self, start_date, end_date, breakdown, projection_date=None, accounts=[], **constraints):
         assert breakdown in ('account', 'campaign', )
 
@@ -53,6 +54,7 @@ class BudgetProjections(object):
     def total(self, breakdown_value):
         return self.totals[breakdown_value]
 
+    @newrelic.agent.function_trace()
     def _prepare_budgets(self, constraints):
         self.budgets = dash.models.BudgetLineItem.objects.all().exclude(
             end_date__lt=self.confidence_date,
@@ -84,6 +86,7 @@ class BudgetProjections(object):
             for account_id in self.accounts:
                 self.calculation_groups.setdefault(account_id, [])
 
+    @newrelic.agent.function_trace()
     def _calculate_totals(self):
         if self.past_days <= 0:
             self.totals = self._blank_projections()
@@ -98,6 +101,7 @@ class BudgetProjections(object):
             self.totals['pacing'] = self.totals['attributed_media_spend'] / \
                 self.totals['ideal_media_spend'] * Decimal(100)
 
+    @newrelic.agent.function_trace()
     def _calculate_rows(self):
         for key, budgets in self.calculation_groups.iteritems():
             if self.past_days <= 0:

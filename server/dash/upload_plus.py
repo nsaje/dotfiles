@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{batch_id}/{filename}'
 
+MAPPED_ERROR_CSV_FIELD = {
+    'tracker_urls': 'impression_trackers',
+}
+
 
 class InvalidBatchStatus(Exception):
     pass
@@ -117,7 +121,8 @@ def _update_batch_status(batch, errors):
 def _save_error_report(batch_id, filename, errors):
     string = StringIO.StringIO()
 
-    fields = list(forms.MANDATORY_CSV_FIELDS) + list(forms.OPTIONAL_CSV_FIELDS)
+    fields = [_get_mapped_field(field) for field in forms.MANDATORY_CSV_FIELDS]
+    fields += [_get_mapped_field(field) for field in forms.OPTIONAL_CSV_FIELDS]
     fields.remove('crop_areas')  # a hack to ease transition
 
     fields.append('errors')
@@ -125,12 +130,18 @@ def _save_error_report(batch_id, filename, errors):
 
     writer.writeheader()
     for error_dict in errors:
-        row = {k: v for k, v in model_to_dict(error_dict['candidate']).items() if k in fields}
+        row = {_get_mapped_field(k): v for k, v in model_to_dict(error_dict['candidate']).items() if k in fields}
         row['errors'] = error_dict['errors']
         writer.writerow(row)
 
     content = string.getvalue()
     return _upload_error_report_to_s3(batch_id, content, filename)
+
+
+def _get_mapped_field(field):
+    if field not in MAPPED_ERROR_CSV_FIELD:
+        return field
+    return MAPPED_ERROR_CSV_FIELD[field]
 
 
 def _upload_error_report_to_s3(batch_id, content, filename):

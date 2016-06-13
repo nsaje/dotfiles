@@ -16,9 +16,13 @@ oneApp.directive('zemGridCell', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: ['$scope', 'zemGridUIService', function ($scope, zemGridUIService) {
+        controller: [function () {
             this.toggleCollapse = function () {
-                zemGridUIService.toggleCollapse(this.grid, this.row);
+                this.grid.meta.api.setCollapsedRows(this.row, !this.row.collapsed);
+            };
+
+            this.toggleSelection = function () {
+                this.grid.meta.api.setSelectedRows(this.row, !this.row.selected);
             };
         }],
     };

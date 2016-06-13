@@ -9,9 +9,9 @@ MATERIALIZED_VIEWS = [
     materialize_k1.ContentAdStats(),
     materialize_k1.Publishers(),
     materialize_k1.TouchpointConversions(),
-    materialize_views.MasterView(),
-    materialize_views.MVAccount(),
-    materialize_views.MVAccountDelivery(),
+    # materialize_views.MasterView(),
+    # materialize_views.MVAccount(),
+    # materialize_views.MVAccountDelivery(),
 ]
 
 

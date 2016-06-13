@@ -7,10 +7,10 @@ oneApp.directive('zemGridColumnSelector', [function () {
         scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            grid: '=',
+            api: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_column_selector.html',
-        controller: ['zemGridStorageService', function (zemGridStorageService) {
+        controller: [function () {
             var vm = this;
 
             vm.categories = [];
@@ -22,27 +22,25 @@ oneApp.directive('zemGridColumnSelector', [function () {
                 initCategories();
             }
 
-            function columnChecked () {
-                zemGridStorageService.saveColumns(vm.grid);
-                vm.grid.header.columns = vm.grid.meta.data.columns.filter(function (column) {
-                    return column.shown && column.checked;
-                });
-                vm.grid.meta.pubsub.notify(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED);
+            function columnChecked (column) {
+                vm.api.setVisibleColumns(column, column.visible);
             }
 
             function initCategories () {
                 // Place columns in a corresponding category
                 // If column is un-selectable (always visible) or not shown skip it
+                var columns = vm.api.getColumns();
                 vm.categories = [];
-                vm.grid.meta.data.categories.forEach(function (cat) {
-                    var cols = vm.grid.meta.data.columns.filter(function (col) {
-                        return cat.fields.indexOf(col.field) !== -1 && col.shown && !col.unselectable;
+                vm.api.getMetaData().categories.forEach(function (category) {
+                    var categoryColumns = columns.filter(function (column) {
+                        var inCategory = category.fields.indexOf(column.field) !== -1;
+                        return  inCategory && column.data.shown && !column.data.unselectable;
                     });
 
-                    if (cols.length > 0) {
+                    if (categoryColumns.length > 0) {
                         vm.categories.push({
-                            'name': cat.name,
-                            'columns': cols,
+                            'name': category.name,
+                            'columns': categoryColumns,
                         });
                     }
                 });

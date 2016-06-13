@@ -15,6 +15,7 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     $scope.isCancelDisabled = false;
     $scope.numErrors = 0;
     $scope.errorReport = null;
+    $scope.cancelErrors = null;
 
     var pollInterval;
     var stopPolling = function () {
@@ -49,6 +50,8 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
                 $scope.numErrors = data.numErrors;
                 $scope.errorReport = data.errorReport;
                 $scope.uploadStatus = constants.uploadBatchStatus.DONE;
+                $scope.formData.file = undefined;
+                $scope.formData.batchName = '';
             },
             function () {
                 $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
@@ -65,6 +68,20 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
             return '';
         }
         return $scope.errors.details.description;
+    };
+
+    $scope.isUploadSuccessful = function () {
+        return $scope.uploadStatus === constants.uploadBatchStatus.DONE && !$scope.numErrors;
+    };
+
+    $scope.isUploadPartiallyCompleted = function () {
+        return $scope.uploadStatus === constants.uploadBatchStatus.DONE && $scope.numErrors > 0;
+    };
+
+    $scope.canRetryUpload = function () {
+        return $scope.uploadStatus === constants.uploadBatchStatus.FAILED ||
+            $scope.uploadStatus === constants.uploadBatchStatus.CANCELLED ||
+            $scope.isUploadPartiallyCompleted();
     };
 
     $scope.callToActionSelect2Config = {
@@ -150,9 +167,13 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     });
 
     $scope.cancel = function () {
-        api.uploadPlus.cancel($state.params.id, $scope.batchId);
-        $scope.uploadStatus = constants.uploadBatchStatus.CANCELLED;
-        stopPolling();
+        api.uploadPlus.cancel($state.params.id, $scope.batchId).then(function () {
+            $scope.cancelErrors = null;
+            stopPolling();
+            $modalInstance.close();
+        }, function (data) {
+            $scope.cancelErrors = data.data.errors;
+        });
     };
 
     $scope.viewUploadedAds = function () {
