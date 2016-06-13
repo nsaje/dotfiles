@@ -603,10 +603,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
-            // TODO: filter
-        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -615,9 +611,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
 
         getTableData();
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
-            // TODO: set filter
-        }
     });
 
     var pollSyncStatus = function () {
