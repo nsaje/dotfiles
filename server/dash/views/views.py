@@ -1780,7 +1780,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         count_failed_publisher = 0
         source_cache = {}
 
-        # OB currently has a limit of 10 blocked publishers per marketer
+        # OB currently has a limit of blocked publishers per marketer
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             account=ad_group.campaign.account,
             source__source_type__type=constants.SourceType.OUTBRAIN,

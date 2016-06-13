@@ -4,7 +4,9 @@ from dash import regions
 
 # Outbrain supports only 10 blocked publisher per marketer id
 # which corresponds to 10 blacklisted publishers per Z1 account
-MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
+# Experiment 6/13/2016: we can blacklist 30 publishers on OB dashboard, it's not documented
+#                       but we can try to enable 30 via API
+MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 30
 
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
