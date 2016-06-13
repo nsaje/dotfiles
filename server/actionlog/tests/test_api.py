@@ -621,7 +621,7 @@ class ActionLogApiTestCase(TestCase):
                         ad_group_source.get_tracking_ids(),  # should have tracking ids
                     ),
                     'tracking_slug': 'yahoo',
-                    'target_regions': ['UK', 'US', 'CA'],
+                    'target_regions': ['GB', 'US', 'CA'],
                     'target_devices': ['desktop', 'mobile'],
                     'retargeting_ad_groups': [3],
                     'start_date': '2015-03-02',

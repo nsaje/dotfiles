@@ -25,6 +25,7 @@ from dash import region_targeting_helper
 from dash import views
 from dash import publisher_helpers
 from dash import threads
+from dash import history_helpers
 
 import utils.url_helper
 import utils.statsd_helper
@@ -1237,6 +1238,12 @@ def save_change_to_history(ad_group, description, request):
     settings.changes_text = description
     settings.save(request)
 
+    history_helpers.write_ad_group_history(
+        ad_group,
+        description,
+        user=request.user,
+    )
+
 
 def format_bulk_ids_into_description(ids, description_template):
     num_id_limit = 10
@@ -1350,6 +1357,14 @@ class AdGroupSourceSettingsWriter(object):
             settings.system_user = system_user
 
         settings.save(request)
+
+        user = request and request.user
+        history_helpers.write_ad_group_history(
+            self.ad_group_source.ad_group,
+            ','.join(changes_text_parts),
+            user=user,
+            system_user=system_user
+        )
 
         if request:
             email_helper.send_ad_group_notification_email(

@@ -35,3 +35,15 @@ class DateJSONEncoder(json.JSONEncoder):
         if isinstance(obj, datetime.date) and not isinstance(obj, datetime.datetime):
             return obj.isoformat()
         return super(DateJSONEncoder, self).default(obj)
+
+
+def json_serializable_changes(changes):
+    if not changes:
+        return
+    ret = {}
+    for key, value in changes.iteritems():
+        if hasattr(value, 'id'):
+            ret[key] = value.id
+        else:
+            ret[key] = value
+    return ret
