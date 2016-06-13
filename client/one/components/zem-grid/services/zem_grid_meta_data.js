@@ -147,7 +147,7 @@ oneApp.factory('zemGridMetaData', ['$rootScope', '$controller', '$http', '$q', f
             shown: $scope.hasPermission('zemauth.campaign_goal_performance')
         },
 
-        // Status TODO: refactor
+        // Status TODO: refactor (state, status fckdup
         statusAccount: {
             name: 'Status',
             field: 'status',
@@ -183,33 +183,6 @@ oneApp.factory('zemGridMetaData', ['$rootScope', '$controller', '$http', '$q', f
             help: 'Status of an ad group (enabled or paused).',
             order: true,
             initialOrder: 'asc'
-        },
-        statusContentAd: {
-            name: '\u25CF',
-            field: 'status_setting',
-            type: 'state',
-            order: true,
-            initialOrder: 'asc',
-            enabledValue: constants.contentAdSourceState.ACTIVE,
-            pausedValue: constants.contentAdSourceState.INACTIVE,
-            internal: false,
-            shown: true,
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'A setting for enabling and pausing content ads.',
-            onChange: function (contentAdId, state) {
-                api.adGroupContentAdState.save($state.params.id, state, [contentAdId]).then(
-                    function () {
-                        $scope.pollTableUpdates();
-                    }
-                );
-            },
-            getDisabledMessage: function (row) {
-                return 'This ad must be managed manually.';
-            },
-            disabled: false,
-            archivedField: 'archived'
         },
         statusMediaSource: {
             name: 'Status',
