@@ -174,15 +174,19 @@ def get_content_ad_sources_for_ad_group(request):
         return _response_error("Must provide ad group id.")
     content_ad_id = request.GET.get('content_ad_id', None)
 
-    try:
-        ad_group_source = (
-            dash.models.AdGroupSource.objects
-                .select_related('ad_group', 'source')
-                .get(ad_group_id=ad_group_id,
-                     source__source_type__type=source_type)
-        )
-    except dash.models.AdGroupSource.DoesNotExist:
+    bidder_slug = request.GET.get("bidder_slug")
+
+    ad_group_source = dash.models.AdGroupSource.objects.select_related('ad_group', 'source').filter(
+        ad_group_id=ad_group_id, source__source_type__type=source_type)
+
+    if bidder_slug:
+        ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
+
+    if len(ad_group_source) == 0:
         return _response_ok([])
+    if len(ad_group_source) > 1:
+        return _response_error("%d object retrieved instead of 1", len(ad_group_source))
+    ad_group_source = list(ad_group_source)[0]
 
     content_ad_sources = (
         dash.models.ContentAdSource.objects
