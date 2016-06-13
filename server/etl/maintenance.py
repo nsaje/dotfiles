@@ -1,9 +1,8 @@
-from django.db import connections
-from django.conf import settings
+from redshiftapi import db
 
 
 def _execute_query(query, *params):
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with db.get_stats_cursor() as c:
         c.execute(query, params)
 
 

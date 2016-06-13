@@ -2,6 +2,7 @@ from utils.command_helpers import ExceptionCommand
 
 from etl import maintenance
 
+
 class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
