@@ -22,6 +22,28 @@ S3_FILE_URI = 's3://{bucket_name}/{key}'
 CSV_DELIMITER = '\t'
 
 
+class TempTableMixin(object):
+    def clear_data(self, cursor, date_from, date_to, **kwargs):
+        sql, params = self.prepare_drop_query()
+        cursor.execute(sql, params)
+
+        sql, params = self.prepare_create_table_query()
+        cursor.execute(sql, params)
+
+    def prepare_drop_query(self):
+        sql = backtosql.generate_sql('etl_drop_table.sql', {
+            'table': self.table_name(),
+        })
+
+        return sql, {}
+
+    def prepare_create_table_query(self):
+        return backtosql.generate_sql(self.create_table_template_name(), None), {}
+
+    def create_table_template_name(self):
+        raise NotImplementedError()
+
+
 class Materialize(object):
     def table_name(self):
         raise NotImplementedError()
