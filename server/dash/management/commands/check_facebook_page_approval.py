@@ -77,7 +77,8 @@ def _create_ad_account(name, page_id):
     response = requests.post(FB_AD_ACCOUNT_URL % (FB_API_VERSION, settings.FB_BUSINESS_ID), json.dumps(params),
                              headers=headers)
     if response.status_code != 200:
-        logger.error('Error while creating facebook ad account. Status code: %s, Error %s', response.status_code, response.content)
+        logger.error('Error while creating facebook ad account. Status code: %s, Error %s', response.status_code,
+                     response.content)
         raise CommandError('Error while creating facebook account.')
 
     content = json.loads(response.content)
