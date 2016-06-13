@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService, zemDataSourceService, zemDataSourceEndpoints) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -560,6 +560,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getTableData = function (showWaiting) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            // Data displayed and handled by zem-grid and DataSource
+            return;
+        }
         $scope.loadRequestInProgress = true;
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -785,6 +789,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         $scope.getDailyStats();
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            $scope.dataSource.setDateRange(newValue, true);
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -833,7 +841,18 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         getInfoboxData();
 
         getSources();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_development_features')) {
+            initializeDataSource();
+        }
     };
+
+    function initializeDataSource () {
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'source');
+        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
 
     var getSources = function () {
         if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {

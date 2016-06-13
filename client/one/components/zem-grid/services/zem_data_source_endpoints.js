@@ -126,6 +126,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         {name: 'By Account', query: 'account'},
         {name: 'By Campaign', query: 'campaign'},
         {name: 'By Ad Group', query: 'ad_group'},
+        {name: 'By Content Ad', query: 'content_ad'},
         {name: 'By Source', query: 'source'},
         {name: 'By Publisher', query: 'publisher'},
     ];
@@ -159,7 +160,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         if (level === 'all_accounts') {
             return '/api/all_accounts/breakdown/';
         }
-        return '/api/' + level + '/' + id + '/breakdowns/';
+        return '/api/' + level + '/' + id + '/breakdown/';
     }
 
     function createMetaData (scope, level, id, breakdown) {
