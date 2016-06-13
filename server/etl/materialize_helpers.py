@@ -23,7 +23,7 @@ CSV_DELIMITER = '\t'
 
 
 class TempTableMixin(object):
-    def clear_data(self, cursor, date_from, date_to, **kwargs):
+    def clear_data(self, cursor, date_from, date_to):
         sql, params = self.prepare_drop_query()
         cursor.execute(sql, params)
 
@@ -106,12 +106,12 @@ class MaterializeViaCSV(Materialize):
 
         return [s3_path]
 
-    def insert_data(self, cursor, date_from, date_to, s3_paths):
+    def insert_data(self, cursor, date_from, date_to, s3_paths, **kwargs):
         for s3_path in s3_paths:
-            sql, params = self.prepare_insert_query(s3_path)
+            sql, params = self.prepare_insert_query(date_from, date_to, s3_path=s3_path)
             cursor.execute(sql, params)
 
-    def prepare_insert_query(self, s3_path):
+    def prepare_insert_query(self, date_from, date_to, s3_path):
         sql = backtosql.generate_sql('etl_copy_csv.sql', {
             'table': self.table_name(),
         })

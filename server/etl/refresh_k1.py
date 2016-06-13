@@ -6,12 +6,15 @@ from etl import materialize_views
 
 
 MATERIALIZED_VIEWS = [
-    materialize_k1.ContentAdStats(),
-    materialize_k1.Publishers(),
-    materialize_k1.TouchpointConversions(),
+    # materialize_k1.ContentAdStats(),
+    # materialize_k1.Publishers(),
+    # materialize_k1.TouchpointConversions(),
     # materialize_views.MasterView(),
     # materialize_views.MVAccount(),
     # materialize_views.MVAccountDelivery(),
+    materialize_views.MVHelpersAdGroupStructure(),
+    materialize_views.MVHelpersCampaignFactors(),
+    materialize_views.MVHelpersSource(),
 ]
 
 
@@ -24,4 +27,4 @@ def refresh_k1_reports(update_since):
     date_from, date_to = dates[0], dates[-1]
     for mv in MATERIALIZED_VIEWS:
         with influx.block_timer('etl.refresh_k1.generate_table', table=mv.table_name()):
-            mv.generate(date_from, date_to, effective_spend_factors)
+            mv.generate(date_from, date_to, campaign_factors=effective_spend_factors)

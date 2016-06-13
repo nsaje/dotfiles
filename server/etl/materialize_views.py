@@ -16,6 +16,62 @@ from etl import materialize_helpers
 
 logger = logging.getLogger(__name__)
 
+
+class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    def table_name(self):
+        return 'mvh_source'
+
+    def generate_rows(self, date_from, date_to, **kwargs):
+        sources = dash.models.Source.objects.all()
+
+        for source in sources:
+            yield (
+                source.id,
+                helpers.extract_source_slug(source.bidder_slug),
+            )
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_source.sql'
+
+
+class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    def table_name(self):
+        return 'mvh_campaign_factors'
+
+    def generate_rows(self, date_from, date_to, campaign_factors, **kwargs):
+        for date, campaign_dict in campaign_factors.iteritems():
+            for campaign, factors in campaign_dict.iteritems():
+                yield (
+                    date,
+                    campaign.id,
+
+                    factors[0],
+                    factors[1],
+                )
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_campaign_factors.sql'
+
+
+class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    def table_name(self):
+        return 'mvh_adgroup_structure'
+
+    def generate_rows(self, date_from, date_to, **kwargs):
+        ad_groups = dash.models.AdGroup.objects.select_related('campaign', 'campaign__account').all()
+
+        for ad_group in ad_groups:
+            yield (
+                ad_group.campaign.account.agency_id,
+                ad_group.campaign.account_id,
+                ad_group.campaign_id,
+                ad_group.id,
+            )
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_adgroup_structure.sql'
+
+
 class MasterView(materialize_helpers.MaterializeViaCSV):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
