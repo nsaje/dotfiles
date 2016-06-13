@@ -35,7 +35,8 @@ from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters
-from util import json_helper
+from utils import json_helper
+from utils import lc_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
@@ -1993,13 +1994,13 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
         elif prop_name == 'autopilot_state':
             value = constants.AdGroupSettingsAutopilotState.get_text(value)
         elif prop_name == 'autopilot_daily_budget' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 2)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 3)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 2)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
@@ -2201,9 +2202,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 3)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 2)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'landing_mode':
             value = str(value)
         return value
@@ -2788,11 +2789,12 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     @classmethod
     def get_human_value(cls, prop_name, value):
         if prop_name == 'amount' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'license_fee' and value is not None:
             value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
-            value = '$' + utils.string_helper.format_decimal(value/10000, 2, 3)
+            value = lc_helper.default_currency(
+                value * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
         return value
@@ -3018,11 +3020,13 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     @classmethod
     def get_human_value(cls, prop_name, value):
         if prop_name == 'amount' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = lc_helper.default_currency(value)
         elif prop_name == 'freed_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value/10000.0, 2, 3)
+            value = lc_helper.default_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'flat_fee_cc':
-            value = '$' + utils.string_helper.format_decimal(value/10000.0, 2, 3)
+            value = lc_helper.default_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         return value
 
     def get_settings_dict(self):
