@@ -16,51 +16,7 @@ from etl import materialize_helpers
 
 logger = logging.getLogger(__name__)
 
-
-class MVAccount(materialize_helpers.Materialize):
-
-    def table_name(self):
-        return 'mv_account'
-
-    def prepare_insert_query(self, date_from, date_to):
-        sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
-                'date', 'source_id', 'agency_id', 'account_id',
-            ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
-            'source_table': 'mv_master',
-        })
-
-        return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
-        }
-
-
-class MVAccountDelivery(materialize_helpers.Materialize):
-
-    def table_name(self):
-        return 'mv_account_delivery'
-
-    def prepare_insert_query(self, date_from, date_to):
-        sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
-                'date', 'source_id', 'agency_id', 'account_id',
-                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
-            ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
-            'source_table': 'mv_master',
-        })
-
-        return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
-        }
-
-
-class MasterView(materialize_helpers.TransformAndMaterialize):
+class MasterView(materialize_helpers.MaterializeViaCSV):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.
@@ -72,9 +28,22 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
     def table_name(self):
         return 'mv_master'
 
-    def generate_rows(self, date, campaign_factors):
+    def generate_csvs(self, date_from, date_to, campaign_factors, **kwargs):
         self._prefetch()
 
+        s3_paths = []
+        for date, daily_campaign_factors in campaign_factors.iteritems():
+            s3_paths += super(MasterView.self).generate(date, date, campaign_factors=daily_campaign_factors)
+
+    def _prefetch(self):
+        self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
+        self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.all()}
+        self.accounts_map = {x.id: x for x in dash.models.Account.objects.all()}
+        self.sources_slug_map = {
+            helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
+        self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
+
+    def generate_rows(self, _, date, campaign_factors):
         with db.get_stats_cursor() as c:
             breakdown_keys_with_traffic_stats = set()
 
@@ -103,14 +72,6 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
             if skipped_tpconversions:
                 logger.info(
                     'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
-
-    def _prefetch(self):
-        self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
-        self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.all()}
-        self.accounts_map = {x.id: x for x in dash.models.Account.objects.all()}
-        self.sources_slug_map = {
-            helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
-        self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
     def _get_stats(self, cursor, date, campaign_factors):
 
@@ -367,3 +328,47 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
         params = {'date': date}
 
         return sql, params
+
+class MVAccount(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account'
+
+    def prepare_insert_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAccountDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account_delivery'
+
+    def prepare_insert_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
