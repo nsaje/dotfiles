@@ -6,7 +6,16 @@
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">
                 <thead>
-                    <tr>
+                    <tr ng-if="hasPermission('zemauth.can_view_new_history_backend')">
+                        <th class="arrow" ng-class="getOrderClass('datetime')">
+                            <a href class="order" ng-click="changeOrder('datetime')">Date</a>
+                        </th>
+                        <th class="arrow" ng-class="getOrderClass('changedBy')">
+                            <a href class="order" ng-click="changeOrder('changedBy')">User</a>
+                        </th>
+                        <th>Notes</th>
+                    </tr>
+                    <tr ng-if="!hasPermission('zemauth.can_view_new_history_backend')">
                         <th class="arrow" ng-class="{ordered: orderField === 'datetime' && orderReverse, 'ordered-reverse': orderField === 'datetime' && !orderReverse}"><a href class="order" ng-click="orderField = 'datetime'; orderReverse = orderReverse">Date (EST)</a></th>
                         <th class="arrow" ng-class="{ordered: orderField === 'changedBy' && orderReverse, 'ordered-reverse': orderField === 'changedBy' && !orderReverse}"><a href class="order" ng-click="orderField = 'changedBy'; orderReverse = !orderReverse">User</a></th>
                         <th>Notes</th>

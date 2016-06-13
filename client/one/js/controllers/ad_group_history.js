@@ -2,14 +2,33 @@
 oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.alerts = [];
     $scope.history = [];
-    $scope.orderField = 'datetime';
-    $scope.orderReverse = true;
     $scope.requestInProgress = false;
+    $scope.order = 'datetime';
+    $scope.orderAsc = false;
+
+    $scope.changeOrder = function(field) {
+        $scope.order = field;
+        $scope.orderAsc = !$scope.orderAsc;
+
+        $scope.getHistory();
+    };
+
+    $scope.getOrderClass = function (field) {
+        if ($scope.order !== field) {
+            return '';
+        }
+
+        if ($scope.orderAsc) {
+            return 'ordered-reverse';
+        } else {
+            return 'ordered';  
+        }
+    };
 
     $scope.getHistory = function (id) {
         $scope.requestInProgress = true;
         if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
-            api.history.get({adGroup: $state.params.id}).then(
+            api.history.get({adGroup: $state.params.id}, (!$scope.orderAsc && '-' || '') + $scope.order).then(
                 function (data) {
                     $scope.history = data.history;
                 }

@@ -6,7 +6,6 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.orderAsc = false;
 
     $scope.changeOrder = function(field) {
-        console.log('Change order');
         $scope.order = field;
         $scope.orderAsc = !$scope.orderAsc;
 

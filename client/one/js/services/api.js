@@ -1388,15 +1388,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     .replace('changedBy', 'created_by')
                     .replace('datetime', 'created_dt');
             }
-            console.log(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
                     if (!data || !data.data) {
                         deferred.reject(data);
                     }
-                    console.log(data.data);
-                    console.log(convertHistoryFromApi(data.data.history));
                     deferred.resolve({
                         history: convertHistoryFromApi(data.data.history),
                     });
