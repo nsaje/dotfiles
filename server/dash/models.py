@@ -1993,7 +1993,7 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
         elif prop_name == 'autopilot_state':
             value = constants.AdGroupSettingsAutopilotState.get_text(value)
         elif prop_name == 'autopilot_daily_budget' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
+            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 2)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
@@ -2201,9 +2201,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 3)
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
+            value = '$' + utils.string_helper.format_decimal(Decimal(value), 2, 2)
         elif prop_name == 'landing_mode':
             value = str(value)
         return value
