@@ -197,6 +197,8 @@ def get_content_ad_sources_for_ad_group(request):
     )
     if content_ad_id:
         content_ad_sources = content_ad_sources.filter(content_ad_id=content_ad_id)
+    if bidder_slug:
+        content_ad_sources = content_ad_sources.filter(source__bidder_slug=bidder_slug)
 
     ad_group_tracking_codes = None
     if ad_group_source.source.update_tracking_codes_on_content_ads() and \
