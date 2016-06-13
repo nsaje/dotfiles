@@ -3,7 +3,7 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.history = [];
     $scope.requestInProgress = false;
 
-    $scope.getSettings = function () {
+    $scope.getHistory = function () {
         $scope.requestInProgress = true;
         api.accountHistory.get($state.params.id).then(
             function (data) {
@@ -20,10 +20,10 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
 
     $scope.refreshPage = function () {
         zemNavigationService.reload();
-        $scope.getSettings();
+        $scope.getHistory();
     };
 
-    $scope.getSettings();
+    $scope.getHistory();
 
     $scope.getName = function (user) {
         return user.name;
