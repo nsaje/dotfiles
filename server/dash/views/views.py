@@ -21,9 +21,10 @@ from collections import OrderedDict
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
@@ -39,6 +40,7 @@ from utils import exc
 from utils import s3helpers
 from utils import k1_helper
 from utils import email_helper
+from utils import request_signer
 
 from automation import autopilot_plus
 
@@ -1790,7 +1792,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         count_failed_publisher = 0
         source_cache = {}
 
-        # OB currently has a limit of 10 blocked publishers per marketer
+        # OB currently has a limit of blocked publishers per marketer
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             account=ad_group.campaign.account,
             source__source_type__type=constants.SourceType.OUTBRAIN,
@@ -2140,6 +2142,41 @@ class AllAccountsOverview(api_common.BaseApiView):
         ))
 
         return [setting.as_dict() for setting in settings]
+
+
+class Demo(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_request_demo_v3'):
+            raise Http404('Forbidden')
+
+        instance = self._start_instance()
+
+        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, url=instance)
+
+        send_mail(
+            subject,
+            body,
+            'Zemanta <{}>'.format(settings.FROM_EMAIL),
+            [request.user.email],
+            fail_silently=False
+        )
+
+        return self.create_api_response(instance)
+
+    def _start_instance(self):
+        request = urllib2.Request(settings.DK_DEMO_UP_ENDPOINT)
+        response = request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+
+        status_code = response.getcode()
+        if status_code != 200:
+            raise Exception('Invalid response status code. status code: {}'.format(status_code))
+
+        ret = json.loads(response.read())
+        if ret['status'] != 'success':
+            raise Exception('Request not successful. status: {}'.format(ret['status']))
+
+        return ret.get('instance_url')
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
