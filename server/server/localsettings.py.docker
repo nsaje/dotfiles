@@ -212,5 +212,5 @@ LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''
 
 # FB
-FB_APP_ID = ''
+FB_BUSINESS_ID = ''
 FB_ACCESS_TOKEN = Secret('plain::').get()

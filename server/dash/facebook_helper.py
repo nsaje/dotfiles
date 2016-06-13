@@ -33,7 +33,7 @@ def _send_page_access_request(facebook_account):
               'access_token': settings.FB_ACCESS_TOKEN}
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
-    response = requests.post(FB_API_URL % (API_VERSION, settings.FB_APP_ID), data=json.dumps(params), headers=headers)
+    response = requests.post(FB_API_URL % (API_VERSION, settings.FB_BUSINESS_ID), data=json.dumps(params), headers=headers)
 
     if response.status_code == 200:
         return constants.FacebookPageRequestType.PENDING

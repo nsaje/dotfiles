@@ -8,7 +8,7 @@ from dash import facebook_helper, constants, models
 
 
 @override_settings(
-    FB_APP_ID='fake_app_id',
+    FB_BUSINESS_ID='fake_app_id',
     FB_ACCESS_TOKEN='very_fake_token',
 )
 class FacebookPageAccessTest(TestCase):

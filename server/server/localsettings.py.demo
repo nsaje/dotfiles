@@ -210,5 +210,5 @@ LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com/api/callbacks/content-upload/'.format(INSTANCE_NAME=LAMBDA_CONTENT_UPLOAD_NAMESPACE)
 
 # FB
-FB_APP_ID = ''
+FB_BUSINESS_ID = ''
 FB_ACCESS_TOKEN = Secret('plain::').get()
