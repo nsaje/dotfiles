@@ -87,6 +87,9 @@ describe('AdGroupSourcesCtrlSpec', function () {
     }
 
     describe('pollSourcesTableUpdates', function () {
+        beforeEach(function () {
+            initializeController();
+        });
         it('returns early if lastChangeTimeout is set', function () {
             spyOn(api, 'adGroupSourcesUpdates');
             $scope.lastChangeTimeout = 123;
@@ -184,6 +187,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
     });
 
     it('should select default metrics when conversion goals don\'t exist', function () {
+        initializeController();
         $scope.chartMetric1 = 'conversion_goal_1';
         $scope.chartMetric2 = 'conversion_goal_2';
 
@@ -212,6 +216,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
     });
 
     it('should select conversion goal when one exists', function () {
+        initializeController();
         var data = {
             chartData: [],
             conversionGoals: [{id: 'conversion_goal_2', name: 'test conversion goal'}]
