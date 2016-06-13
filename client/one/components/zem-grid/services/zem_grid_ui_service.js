@@ -18,15 +18,15 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         // Calculate rendered column widths, based on grid contents,
         // and configured styles (font, min/max widths, padding, etc.)
         // Solution is sub-optimal, since it can only calculate text fields (including parsed values)
+        var headerCells = grid.header.ui.element.find('.zem-grid-cell');
         var columnWidths = [];
         var maxColumnWidths = [];
         grid.header.visibleColumns.forEach(function (column, i) {
             // Retrieve properties that affects column width
-            var headerCell = grid.header.ui.element.find('.zem-grid-cell')[i];
-            var font = window.getComputedStyle(headerCell, null).getPropertyValue('font');
-            var padding = window.getComputedStyle(headerCell, null).getPropertyValue('padding-left');
-            var maxWidth = window.getComputedStyle(headerCell, null).getPropertyValue('max-width');
-            var minWidth = window.getComputedStyle(headerCell, null).getPropertyValue('min-width');
+            var font = window.getComputedStyle(headerCells[i], null).getPropertyValue('font');
+            var padding = window.getComputedStyle(headerCells[i], null).getPropertyValue('padding-left');
+            var maxWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('max-width');
+            var minWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('min-width');
             maxWidth = parseInt(maxWidth) || Number.MAX_VALUE;
             minWidth = parseInt(minWidth) || 0;
             padding = parseInt(padding) || 0;
