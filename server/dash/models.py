@@ -35,6 +35,7 @@ from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters
+from util import json_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
@@ -3547,20 +3548,6 @@ class History(models.Model):
         raise AssertionError('Deleting history object not allowed.')
 
 
-def json_serializable_changes(changes):
-    if not changes:
-        return
-    # this is needed only because settings changes for user models
-    # are stored as user model in changes and are as such not json serializable
-    ret = {}
-    for key, value in changes.iteritems():
-        if hasattr(value, 'id'):
-            ret[key] = value.id
-        else:
-            ret[key] = value
-    return ret
-
-
 def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
@@ -3574,7 +3561,7 @@ def create_ad_group_history(ad_group, history_type, changes, changes_text, user=
         agency=agency,
         created_by=user,
         system_user=system_user,
-        changes=json_serializable_changes(changes),
+        changes=json_helper.json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.AD_GROUP,
@@ -3594,7 +3581,7 @@ def create_campaign_history(campaign, history_type, changes, changes_text, user=
         agency=agency,
         created_by=user,
         system_user=system_user,
-        changes=json_serializable_changes(changes),
+        changes=json_helper.json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.CAMPAIGN,
@@ -3612,7 +3599,7 @@ def create_account_history(account, history_type, changes, changes_text, user=No
         agency=agency,
         created_by=user,
         system_user=system_user,
-        changes=json_serializable_changes(changes),
+        changes=json_helper.json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.ACCOUNT,
@@ -3627,7 +3614,7 @@ def create_agency_history(agency, history_type, changes, changes_text, user=None
         agency=agency,
         created_by=user,
         system_user=system_user,
-        changes=json_serializable_changes(changes),
+        changes=json_helper.json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.AGENCY,
