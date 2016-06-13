@@ -195,7 +195,7 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
         show_archived=show_archived,
         page=page,
         size=size,
-        **kwargs
+        ad_group_id=kwargs['ad_group_id']
     )
 
     for row in response['rows']:
@@ -211,7 +211,7 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
 def get_report_all_accounts_sources(user, filtered_sources, start_date, end_date,
                                     order, page, size, show_archived,
                                     **kwargs):
-    response = table.AllAccountsSourcesTable().get(
+    response = table.SourcesTable().get(
         user,
         'all_accounts',
         filtered_sources,
@@ -233,7 +233,7 @@ def get_report_all_accounts_sources(user, filtered_sources, start_date, end_date
 def get_report_account_sources(user, filtered_sources, start_date, end_date,
                                order, page, size, show_archived,
                                **kwargs):
-    response = table.AccountSourcesTable().get(
+    response = table.SourcesTable().get(
         user,
         'accounts',
         filtered_sources,
@@ -256,7 +256,7 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
 def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
                                 order, page, size, show_archived,
                                 **kwargs):
-    response = table.CampaignSourcesTable().get(
+    response = table.SourcesTable().get(
         user,
         'campaigns',
         filtered_sources,
@@ -279,7 +279,7 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
                                 order, page, size, show_archived,
                                 **kwargs):
-    response = table.AdGroupSourcesTable().get(
+    response = table.SourcesTable().get(
         user,
         'ad_groups',
         filtered_sources,
@@ -306,8 +306,8 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
         user,
         'ad_groups',
         filtered_sources,
-        start_date,
         kwargs['show_blacklisted_publishers'],
+        start_date,
         end_date,
         order,
         page,
