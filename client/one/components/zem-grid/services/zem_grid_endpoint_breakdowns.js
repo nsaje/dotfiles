@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.factory('zemGridEndpointBreakdowns', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointBreakdowns', [function () {
     var BREAKDOWN_GROUPS = [
         {
             name: 'Base level',
@@ -53,8 +53,7 @@ oneApp.factory('zemGridEndpointBreakdowns', ['$rootScope', '$controller', '$http
         {name: 'By Content Ad', query: 'content_ad'},
     ];
 
-
-    function getBreakdownGroups (baseLevel, baseLevelBreakdown) {
+    function createInstance (baseLevel, baseLevelBreakdown) {
         var breakdownGroups = angular.copy(BREAKDOWN_GROUPS);
 
         // Find requested base level breakdown
@@ -73,25 +72,7 @@ oneApp.factory('zemGridEndpointBreakdowns', ['$rootScope', '$controller', '$http
         return breakdownGroups;
     }
 
-    function createMetaData (scope, level, id, breakdown) {
-        // Replace first column type to text and field breakdown name, to solve
-        // temporary problems with primary column content in level>1 breakdowns
-        // FIXME: find appropriate solution for this problem (special type)
-        var columns = angular.copy(scope.columns);
-        columns[0].field = 'breakdownName';
-        columns[0].type = 'text';
-
-        return {
-            id: id,
-            level: level,
-            columns: columns,
-            categories: scope.columnCategories,
-            localStoragePrefix: scope.localStoragePrefix,
-            breakdownGroups: getBreakdownGroups(level, breakdown),
-        };
-    }
-
     return {
-        createMetaData: createMetaData,
+        createInstance: createInstance,
     };
 }]);
