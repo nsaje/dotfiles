@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-len
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];

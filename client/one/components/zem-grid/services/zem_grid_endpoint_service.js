@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
         this.metaData = metaData;

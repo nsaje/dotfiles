@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemDataSourceEndpoints) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemDataSourceEndpoints) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
