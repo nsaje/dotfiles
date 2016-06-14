@@ -85,12 +85,16 @@ class Materialize(object):
 
 class MaterializeViaCSV(Materialize):
 
-    def generate(self, date_from, date_to, **kwargs):
+    def insert_data(self, cursor, date_from, date_to, **kwargs):
         s3_paths = self.generate_csvs(date_from, date_to, **kwargs)
 
-        super(MaterializeViaCSV, self).generate(date_from, date_to, s3_paths=s3_paths)
+        for s3_path in s3_paths:
+            logger.info('Insert data into table "%s" from CSV "%s"', self.table_name(), s3_path)
+            sql, params = self.prepare_insert_query(date_from, date_to, s3_path=s3_path)
+            cursor.execute(sql, params)
 
     def generate_csvs(self, date_from, date_to, **kwargs):
+        logger.info('Create CSV for table "%s", %s - %s', self.table_name(), date_from, date_to)
         s3_path = os.path.join(
             MATERIALIZED_VIEWS_S3_PREFIX,
             self.table_name(),
@@ -109,11 +113,6 @@ class MaterializeViaCSV(Materialize):
             bucket.put(s3_path, csvfile.getvalue())
 
         return [s3_path]
-
-    def insert_data(self, cursor, date_from, date_to, s3_paths, **kwargs):
-        for s3_path in s3_paths:
-            sql, params = self.prepare_insert_query(date_from, date_to, s3_path=s3_path)
-            cursor.execute(sql, params)
 
     def prepare_insert_query(self, date_from, date_to, s3_path):
         sql = backtosql.generate_sql('etl_copy_csv.sql', {
