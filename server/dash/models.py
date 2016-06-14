@@ -3455,7 +3455,7 @@ class FacebookAccount(models.Model):
         page_id = url[url.rfind('/') + 1:]
         dash_index = page_id.rfind('-')
         if dash_index != -1:
-            page_id = url[dash_index + 1:]
+            page_id = page_id[dash_index + 1:]
         return page_id
 
     def __unicode__(self):
