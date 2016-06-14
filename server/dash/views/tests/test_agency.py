@@ -3286,3 +3286,19 @@ class HistoryTest(TestCase):
         history = response['data']['history'][1]
         self.assertEqual(self.user.email, history['changed_by'])
         self.assertEqual("Name changed to 'test'", history['changes_text'])
+
+    def test_get_account_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'account': 1, 'level': constants.HistoryLevel.ACCOUNT})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
