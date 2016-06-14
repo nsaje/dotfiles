@@ -1374,7 +1374,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 account: filter.account,
                 agency: filter.agency,
                 level: filter.level,
-            }; 
+            };
         }
 
         this.get = function (filter, order) {
@@ -1382,7 +1382,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var url = '/api/history/';
             var config = {
                 params: convertFilterToApi(filter),
-            }
+            };
 
             if (order) {
                 config.params.order = order

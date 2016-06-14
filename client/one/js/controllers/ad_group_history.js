@@ -20,7 +20,7 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
 
         if ($scope.orderAsc) {
             return 'ordered-reverse';
-        } 
+        }
         return 'ordered';
     };
 

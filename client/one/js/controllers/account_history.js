@@ -21,7 +21,7 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
             return 'ordered-reverse';
         }
         return 'ordered';
-    }
+    };
 
     $scope.getHistory = function () {
         $scope.requestInProgress = true;
