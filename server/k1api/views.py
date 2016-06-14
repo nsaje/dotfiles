@@ -88,16 +88,16 @@ def get_ad_group_source(request):
     if not source_type:
         return _response_error("Must provide source type.")
 
-    tracking_slug = request.GET.get("tracking_slug")
+    bidder_slug = request.GET.get("bidder_slug")
     ad_group_source = dash.models.AdGroupSource.objects.select_related(
                 'source_credentials', 'source', 'source__source_type',
                 'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
             ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
-    if tracking_slug:
-        ad_group_source = ad_group_source.filter(source__tracking_slug=tracking_slug)
+    if bidder_slug:
+        ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
     if ad_group_source.count() != 1:
-        return _response_error("%d objects retrieved for ad group %s on source %s with tracking slug %s" %
-                               (ad_group_source.count(), ad_group_id, source_type, tracking_slug), status=400)
+        return _response_error("%d objects retrieved for ad group %s on source %s with bidder slug %s" %
+                               (ad_group_source.count(), ad_group_id, source_type, bidder_slug), status=400)
     ad_group_source = ad_group_source[0]
     ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
     return _response_ok(ad_group_source_with_settings)
@@ -194,13 +194,13 @@ def get_content_ad_sources_for_ad_group(request):
         return _response_error("Must provide ad group id.")
     content_ad_id = request.GET.get('content_ad_id', None)
 
-    tracking_slug = request.GET.get("tracking_slug")
+    bidder_slug = request.GET.get("bidder_slug")
 
     ad_group_source = dash.models.AdGroupSource.objects.select_related('ad_group', 'source').filter(
         ad_group_id=ad_group_id, source__source_type__type=source_type)
 
-    if tracking_slug:
-        ad_group_source = ad_group_source.filter(source__tracking_slug=tracking_slug)
+    if bidder_slug:
+        ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
 
     if ad_group_source.count() == 0:
         return _response_ok([])
@@ -217,8 +217,8 @@ def get_content_ad_sources_for_ad_group(request):
     )
     if content_ad_id:
         content_ad_sources = content_ad_sources.filter(content_ad_id=content_ad_id)
-    if tracking_slug:
-        content_ad_sources = content_ad_sources.filter(source__tracking_slug=tracking_slug)
+    if bidder_slug:
+        content_ad_sources = content_ad_sources.filter(source__bidder_slug=bidder_slug)
 
     ad_group_tracking_codes = _get_ad_group_tracking_codes(ad_group_source)
 
