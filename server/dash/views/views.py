@@ -2152,7 +2152,7 @@ class Demo(api_common.BaseApiView):
 
         instance = self._start_instance()
 
-        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, url=instance)
+        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, **instance)
 
         send_mail(
             subject,
@@ -2176,7 +2176,10 @@ class Demo(api_common.BaseApiView):
         if ret['status'] != 'success':
             raise Exception('Request not successful. status: {}'.format(ret['status']))
 
-        return ret.get('instance_url')
+        return {
+            'url': ret.get('instance_url'),
+            'password': ret.get('instance_password'),
+        }
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
