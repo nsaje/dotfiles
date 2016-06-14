@@ -1524,8 +1524,9 @@ class BCMCommandTestCase(TestCase):
 
     def test_update_budget_amount_with_too_large_value(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '800', '--no-confirm',
-                     stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '800',
+                         '--no-confirm', stderr=err)
         self.b1.refresh_from_db()
         self.b2.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
@@ -1533,29 +1534,33 @@ class BCMCommandTestCase(TestCase):
 
     def test_update_budget_start_date_with_too_early_date(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date',
-                     str(TODAY - datetime.timedelta(2)), '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date',
+                         str(TODAY - datetime.timedelta(2)), '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.start_date, TODAY - datetime.timedelta(1))
 
     def test_update_budget_end_date_with_invalid_date(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date',
-                     str(TODAY - datetime.timedelta(100)), '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date',
+                         str(TODAY - datetime.timedelta(100)), '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
         self.b1.refresh_from_db()
 
         # Specify wrong field
     def test_update_budget_with_nonexisting_fields(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--flat_fee_cc', '1500',
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--flat_fee_cc', '1500',
+                         '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--license_fee', '0.20',
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--license_fee', '0.20',
+                         '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
     def test_update_credit_amount(self):
@@ -1594,46 +1599,52 @@ class BCMCommandTestCase(TestCase):
 
     def test_update_credit_with_nonexisting_fields(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--freed_cc', '1234',
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'credits', str(self.c.pk), '--freed_cc', '1234',
+                         '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
     def test_update_credit_with_too_little_amount(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '50', '--no-confirm',
-                     stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '50',
+                         '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(self.c.amount, 1000)
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_update_credit_with_too_large_flat_fee(self):
         err = StringIO.StringIO()
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--flat_fee_cc', '15000000',
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'credits', str(self.c.pk), '--flat_fee_cc', '15000000',
+                         '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_update_credit_with_too_early_end_date(self):
         err = StringIO.StringIO()
         date = TODAY - datetime.timedelta(100)
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
+                         '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
         err = StringIO.StringIO()
         date = TODAY
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
+                         '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
     def test_update_credit_with_late_start_date(self):
         err = StringIO.StringIO()
         date = TODAY
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--start_date', str(date),
-                     '--no-confirm', stderr=err)
+        with self.assertRaises(SystemExit):
+            call_command('bcm', 'update', 'credits', str(self.c.pk), '--start_date', str(date),
+                         '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
