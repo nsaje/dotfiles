@@ -249,7 +249,6 @@ def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymiz
             anonymize = {}
 
         for field in _get_fields(obj):
-            print obj, field
             if field.name in anonymize:
                 setattr(obj, field.name, anonymize[field.name]())
                 anonymized_objects.add(obj)
