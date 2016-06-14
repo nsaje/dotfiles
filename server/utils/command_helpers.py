@@ -15,8 +15,8 @@ class ExceptionCommand(BaseCommand):
     def execute(self, *args, **options):
         try:
             return super(ExceptionCommand, self).execute(*args, **options)
-        except SystemExit:
-            pass
+        except SystemExit as err:
+            raise err
         except:
             logging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
 
