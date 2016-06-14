@@ -146,4 +146,4 @@ class FacebookPageAccessTest(TestCase):
 
         mock.assert_called_once_with(self._get_fb_api_url() % (self._get_version(), 'fake_app_id'),
                                      data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
-        self.assertEqual(status, constants.FacebookPageRequestType.UNKNOWN)
+        self.assertEqual(status, constants.FacebookPageRequestType.ERROR)

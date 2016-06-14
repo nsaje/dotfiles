@@ -958,8 +958,6 @@ class AccountSettings(api_common.BaseApiView):
             settings = account.get_current_settings().copy_settings()
             self.set_settings(settings, account, form.cleaned_data)
 
-            facebook_account = self.get_facebook_account(account)
-
             if 'allowed_sources' in form.cleaned_data and\
                     form.cleaned_data['allowed_sources'] is not None and\
                     not request.user.has_perm('zemauth.can_modify_allowed_sources'):
@@ -982,11 +980,12 @@ class AccountSettings(api_common.BaseApiView):
             if 'facebook_page' in form.data:
                 if not request.user.has_perm('zemauth.can_modify_facebook_page'):
                     raise exc.AuthorizationError()
+                facebook_account = self.get_or_create_facebook_account(account)
                 self.set_facebook_page(facebook_account, form)
+                facebook_account.save()
 
             account.save(request)
             settings.save(request)
-            facebook_account.save()
             return settings
 
     def _validate_essential_account_settings(self, user, form):
@@ -1073,7 +1072,7 @@ class AccountSettings(api_common.BaseApiView):
             account.allowed_sources.add(*list(to_be_added))
             account.allowed_sources.remove(*list(to_be_removed))
 
-    def get_facebook_account(self, account):
+    def get_or_create_facebook_account(self, account):
         try:
             facebook_account = account.facebookaccount
         except models.FacebookAccount.DoesNotExist:

@@ -1404,14 +1404,14 @@ class FacebookPageRequestType(ConstantBase):
     CONNECTED = 2
     PENDING = 3
     INVALID = 4
-    UNKNOWN = 5
+    ERROR = 5
 
     _VALUES = {
         EMPTY: 'Empty',
         CONNECTED: 'Connected',
         PENDING: 'Pending',
         INVALID: 'Invalid',
-        UNKNOWN: 'Unknown'
+        ERROR: 'Error'
     }
 
 

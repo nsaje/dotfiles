@@ -6,6 +6,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.settings.allowedSources = {};
     $scope.saved = false;
     $scope.errors = {};
+    $scope.constants = constants;
     $scope.requestInProgress = false;
     $scope.mediaSourcesOrderByProp = 'name';
     $scope.accountTypes = options.accountTypes;

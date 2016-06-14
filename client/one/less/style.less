@@ -29,6 +29,10 @@
 
 @white: #fff;
 
+@status-green: #00cc00;
+@status-orange: #ff9900;
+@status-red: #ff0000;
+
 @keyframes show-updated {
     0% { background-color: @updated-color; }
     50% { background-color: @updated-color; }
@@ -4552,44 +4556,39 @@ select.media-source-select {
             left: -2px;
         }
     }
-
-    .input-group-addon {
-        border-right: 0;
-        background-color: transparent;
-    }
 }
 
 .fb-page {
-    padding-left: 0px;
-    padding-right: 0px;
-    margin-left: 0px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
 
     img {
         height: 32px;
     }
     div {
-        padding: 0px;
+        padding: 0;
     }
     p {
         font-size: 11px;
-        margin-bottom: 0px;
+        margin-bottom: 0;
     }
     p:first-child {
         padding-top: 1px;
     }
 
     .connected {
-        color: #00CC00;
+        color: @status-green;
     }
     .pending {
-        color: #FF9900;
+        color: @status-orange;
     }
     .invalid,
-    .unknown {
-        color: red;
+    .error {
+        color: @status-red;
     }
 }
 
 .fb-warning {
-    margin-left: 0px;
+    margin-left: 0;
 }
