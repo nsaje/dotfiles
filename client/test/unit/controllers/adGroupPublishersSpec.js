@@ -2,7 +2,7 @@
 'use strict';
 
 describe('AdGroupPublishersCtrl', function () {
-    var $scope, $state, $q, api;
+    var $scope, $q, api;
     var permissions;
 
     beforeEach(module('one'));
@@ -15,7 +15,7 @@ describe('AdGroupPublishersCtrl', function () {
     }));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
+        inject(function ($rootScope, $controller, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
 
@@ -76,15 +76,17 @@ describe('AdGroupPublishersCtrl', function () {
                     get: mockApiFunc,
                 },
             };
-
-            $state = _$state_;
-            $state.params = {id: 1};
         });
     });
 
     function initializeController () {
-        inject(function ($controller) {
-            $controller('AdGroupPublishersCtrl', {$scope: $scope, api: api});
+        inject(function ($controller, $state) {
+            $state.params = {id: 1};
+            $controller('AdGroupPublishersCtrl', {
+                $scope: $scope,
+                $state: $state,
+                api: api,
+            });
         });
     }
 
@@ -117,7 +119,7 @@ describe('AdGroupPublishersCtrl', function () {
 
     describe('Zem-Grid DataSource', function () {
         it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
             expect($scope.dataSource).toBe(undefined);
         });

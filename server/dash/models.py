@@ -4,6 +4,7 @@ import binascii
 import datetime
 import urlparse
 import newrelic.agent
+from collections import OrderedDict
 
 from decimal import Decimal
 import pytz
@@ -19,6 +20,7 @@ from django.forms.models import model_to_dict
 from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
+from django.db.models.signals import post_init
 
 import utils.string_helper
 import utils.demo_anonymizer
@@ -33,6 +35,8 @@ from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters
+from utils import json_helper
+from utils import lc_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
@@ -78,6 +82,19 @@ def shorten_name(name):
     return name
 
 
+def get_changes_text_from_dict(cls, changes, separator=', '):
+    if changes is None:
+        return 'Created settings'
+    change_strings = []
+    for key, value in changes.iteritems():
+        prop = cls.get_human_prop_name(key)
+        val = cls.get_human_value(key, value)
+        change_strings.append(
+            u'{} set to "{}"'.format(prop, val)
+        )
+    return separator.join(change_strings)
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -118,12 +135,16 @@ class CopySettingsMixin(object):
 
         if type(self) == AccountSettings:
             new_settings.account = self.account
+            new_settings.snapshot()
         elif type(self) == CampaignSettings:
             new_settings.campaign = self.campaign
+            new_settings.snapshot()
         elif type(self) == AdGroupSettings:
             new_settings.ad_group = self.ad_group
+            new_settings.snapshot()
         elif type(self) == AdGroupSourceSettings or type(self) == AdGroupSourceState:
             new_settings.ad_group_source = self.ad_group_source
+            new_settings.snapshot()
 
         return new_settings
 
@@ -192,6 +213,38 @@ class FootprintModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class HistoryMixin(object):
+
+    def __init__(self):
+        self.snapshot()
+
+    def snapshot(self):
+        self.post_init_state = self.get_history_dict()
+
+    def get_history_dict(self):
+        return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
+
+    def get_model_state_changes(self, current_dict, new_dict):
+        changes = OrderedDict()
+        for field_name in self.history_fields:
+            new_value = new_dict[field_name]
+            if current_dict[field_name] != new_value:
+                changes[field_name] = new_value
+        return changes
+
+    def get_changes_text_from_dict(self, changes, separator=', '):
+        if changes is None:
+            return 'Created settings'
+        change_strings = []
+        for key, value in changes.iteritems():
+            prop = self.get_human_prop_name(key)
+            val = self.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+        return separator.join(change_strings)
 
 
 class HistoryModel(models.Model):
@@ -297,7 +350,7 @@ class Account(models.Model):
         if not settings:
             settings = AccountSettings(
                 account=self,
-                name=self.name
+                name=self.name,
             )
 
         return settings
@@ -589,7 +642,7 @@ class Campaign(models.Model, PermissionMixin):
             return self.filter(pk__in=filtered)
 
 
-class SettingsBase(models.Model, CopySettingsMixin):
+class SettingsBase(models.Model, CopySettingsMixin, HistoryMixin):
     _settings_fields = None
 
     objects = QuerySetManager()
@@ -611,15 +664,21 @@ class SettingsBase(models.Model, CopySettingsMixin):
         return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
 
     def get_setting_changes(self, new_settings):
-        changes = {}
-
         current_settings_dict = self.get_settings_dict()
         new_settings_dict = new_settings.get_settings_dict()
+        return SettingsBase.get_dict_changes(
+            current_settings_dict,
+            new_settings_dict,
+            self._settings_fields
+        )
 
-        for field_name in self._settings_fields:
+    @classmethod
+    def get_dict_changes(self, current_settings_dict, new_settings_dict, settings_fields):
+        changes = {}
+        for field_name in settings_fields:
             if current_settings_dict[field_name] != new_settings_dict[field_name]:
-                changes[field_name] = new_settings_dict[field_name]
-
+                value = new_settings_dict[field_name]
+                changes[field_name] = value
         return changes
 
     @classmethod
@@ -634,7 +693,7 @@ class SettingsBase(models.Model, CopySettingsMixin):
         abstract = True
 
 
-class AccountSettings(SettingsBase):
+class AccountSettings(SettingsBase, HistoryMixin):
     _demo_fields = {
         'name': utils.demo_anonymizer.account_name_from_pool
     }
@@ -645,6 +704,7 @@ class AccountSettings(SettingsBase):
         'default_sales_representative',
         'account_type',
     ]
+    history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
     account = models.ForeignKey(Account, related_name='settings', on_delete=models.PROTECT)
@@ -677,11 +737,49 @@ class AccountSettings(SettingsBase):
 
     objects = QuerySetManager()
 
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'name': 'Name',
+            'archived': 'Archived',
+            'default_account_manager': 'Account Manager',
+            'default_sales_representative': 'Sales Representative',
+            'account_type': 'Account Type',
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'archived':
+            value = str(value)
+        elif prop_name == 'default_account_manager':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+        elif prop_name == 'default_sales_representative':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+        elif prop_name == 'account_type':
+            value = constants.AccountType.get_text(value)
+        return value
+
     def save(self, request, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
-
         super(AccountSettings, self).save(*args, **kwargs)
+        self.add_to_history(user=request and request.user)
+
+    def add_to_history(self, user=None):
+        history_type = constants.HistoryType.ACCOUNT
+        changes = self.get_model_state_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+        )
+        changes_text = self.get_changes_text_from_dict(changes)
+        create_account_history(
+            self.account,
+            history_type,
+            changes,
+            changes_text,
+            user=user
+        )
 
     class Meta:
         ordering = ('-created_dt',)
@@ -692,7 +790,7 @@ class AccountSettings(SettingsBase):
             return self.order_by('account_id', '-created_dt').distinct('account')
 
 
-class CampaignSettings(SettingsBase):
+class CampaignSettings(SettingsBase, HistoryMixin):
     _demo_fields = {
         'name': utils.demo_anonymizer.campaign_name_from_pool
     }
@@ -709,6 +807,7 @@ class CampaignSettings(SettingsBase):
         'automatic_campaign_stop',
         'landing_mode'
     ]
+    history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -765,30 +864,31 @@ class CampaignSettings(SettingsBase):
                 self.created_by = None
             else:
                 self.created_by = request.user
-
         super(CampaignSettings, self).save(*args, **kwargs)
+        self.add_to_history()
+
+    def add_to_history(self):
+        history_type = constants.HistoryType.CAMPAIGN
+        changes = self.get_model_state_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+        )
+        changes_text = self.get_changes_text_from_dict(changes)
+        create_campaign_history(
+            self.campaign,
+            history_type,
+            changes,
+            self.changes_text or changes_text,
+            user=self.created_by,
+            system_user=self.system_user,
+        )
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-
         if new_settings.changes_text is not None:
             return new_settings.changes_text
-
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
-
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key, value in changes.iteritems():
-            prop = cls.get_human_prop_name(key)
-            val = cls.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return separator.join(change_strings)
+        return get_changes_text_from_dict(cls, changes, separator=separator)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -1698,7 +1798,7 @@ class AdGroupSource(models.Model):
         return unicode(self).encode('ascii', 'ignore')
 
 
-class AdGroupSettings(SettingsBase):
+class AdGroupSettings(SettingsBase, HistoryMixin):
     _demo_fields = {
         'display_url': utils.demo_anonymizer.fake_display_url,
         'ad_group_name': utils.demo_anonymizer.ad_group_name_from_pool,
@@ -1729,6 +1829,7 @@ class AdGroupSettings(SettingsBase):
         'autopilot_daily_budget',
         'landing_mode',
     ]
+    history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
@@ -1893,13 +1994,13 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'autopilot_state':
             value = constants.AdGroupSettingsAutopilotState.get_text(value)
         elif prop_name == 'autopilot_daily_budget' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 3)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'daily_budget_cc' and value is not None:
-            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'target_devices':
             value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
         elif prop_name == 'target_regions':
@@ -1908,8 +2009,11 @@ class AdGroupSettings(SettingsBase):
             else:
                 value = 'worldwide'
         elif prop_name == 'retargeting_ad_groups':
-            names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
-            value = ', '.join(names)
+            if not value:
+                value = ''
+            else:
+                names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
         elif prop_name == 'ga_tracking_type':
@@ -1919,29 +2023,21 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-
         if new_settings.changes_text is not None:
             return new_settings.changes_text
 
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
-
         if changes is None:
             return 'Created settings'
 
-        change_strings = []
-
+        valid_changes = {}
         for key, value in changes.iteritems():
             if key == 'retargeting_ad_groups' and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
                 continue
+            valid_changes[key] = value
 
-            prop = cls.get_human_prop_name(key)
-            val = cls.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return separator.join(change_strings)
+        return get_changes_text_from_dict(cls, changes, separator=separator)
 
     objects = QuerySetManager()
 
@@ -1955,8 +2051,24 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = None
             else:
                 self.created_by = request.user
-
         super(AdGroupSettings, self).save(*args, **kwargs)
+        self.add_to_history()
+
+    def add_to_history(self):
+        history_type = constants.HistoryType.AD_GROUP
+        changes = self.get_model_state_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+        )
+        changes_text = self.get_changes_text_from_dict(changes)
+        create_ad_group_history(
+            self.ad_group,
+            history_type,
+            changes,
+            self.changes_text or changes_text,
+            user=self.created_by,
+            system_user=self.system_user
+        )
 
     class QuerySet(SettingsQuerySet):
 
@@ -2022,13 +2134,14 @@ class AdGroupSourceState(models.Model, CopySettingsMixin):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
 
-class AdGroupSourceSettings(models.Model, CopySettingsMixin):
+class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
     _settings_fields = [
         'state',
         'cpc_cc',
         'daily_budget_cc',
         'landing_mode'
     ]
+    history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
 
@@ -2071,6 +2184,31 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
 
     objects = QuerySetManager()
 
+    def get_settings_dict(self):
+        return {settings_key: getattr(self, settings_key) for settings_key in self._settings_fields}
+
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'state': 'State',
+            'cpc_cc': 'CPC',
+            'daily_budget_cc': 'Daily Budget',
+            'landing_mode': 'Landing Mode',
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'state':
+            value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'cpc_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'daily_budget_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'landing_mode':
+            value = str(value)
+        return value
+
     def save(self, request, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating settings object not allowed.')
@@ -2079,6 +2217,23 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin):
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
+        self.add_to_history()
+
+    def add_to_history(self):
+        current_settings = self.ad_group_source.ad_group.get_current_settings()
+        history_type = constants.HistoryType.AD_GROUP_SOURCE
+        changes = self.get_model_state_changes(
+            self.post_init_state,
+            self.get_settings_dict(),
+        )
+        changes_text = self.get_changes_text_from_dict(changes)
+        create_ad_group_history(
+            current_settings.ad_group,
+            history_type,
+            changes,
+            changes_text,
+            user=self.created_by
+        )
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
@@ -2520,7 +2675,19 @@ class PublisherBlacklist(models.Model):
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
 
-class CreditLineItem(FootprintModel):
+class CreditLineItem(FootprintModel, HistoryMixin):
+    history_fields = [
+        'start_date',
+        'end_date',
+        'amount',
+        'license_fee',
+        'flat_fee_cc',
+        'flat_fee_start_date',
+        'flat_fee_end_date',
+        'status',
+        'comment'
+    ]
+
     _demo_fields = {
         'comment': utils.demo_anonymizer.fake_sentence,
     }
@@ -2602,6 +2769,39 @@ class CreditLineItem(FootprintModel):
             raise AssertionError('Credit item is not pending')
         super(CreditLineItem, self).delete()
 
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'account': 'Account',
+            'agency': 'Agency',
+            'start_date': 'Start Date',
+            'end_date': 'End Date',
+            'amount': 'Amount',
+            'license_fee': 'License Fee',
+            'flat_fee_cc': 'Flat Fee (cc)',
+            'flat_fee_start_date': 'Flat Fee Start Date',
+            'flat_fee_end_date': 'Flat Fee End Date',
+            'status': 'Status',
+            'comment': 'Comment'
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'amount' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'license_fee' and value is not None:
+            value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
+        elif prop_name == 'flat_fee_cc':
+            value = lc_helper.default_currency(
+                value * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'status':
+            value = constants.CreditLineItemStatus.get_text(value)
+        return value
+
+    def get_settings_dict(self):
+        return {history_key: getattr(self, history_key) for history_key in self.history_fields}
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2612,6 +2812,32 @@ class CreditLineItem(FootprintModel):
             snapshot=model_to_dict(self),
             credit=self,
         )
+        self.add_to_history(user=request and request.user)
+
+    def add_to_history(self, user=None):
+        history_type = constants.HistoryType.CREDIT
+        changes = self.get_model_state_changes(
+            self.post_init_state,
+            model_to_dict(self),
+        )
+        changes_text = self.get_changes_text_from_dict(changes)
+
+        if self.account is not None:
+            create_account_history(
+                self.account,
+                history_type,
+                changes,
+                changes_text,
+                user=user
+            )
+        elif self.agency is not None:
+            create_agency_history(
+                self.agency,
+                history_type,
+                changes,
+                changes_text,
+                user=user
+            )
 
     def __unicode__(self):
         parent = self.agency or self.account
@@ -2741,7 +2967,15 @@ class CreditLineItem(FootprintModel):
             super(CreditLineItem.QuerySet, self).delete()
 
 
-class BudgetLineItem(FootprintModel):
+class BudgetLineItem(FootprintModel, HistoryMixin):
+    history_fields = [
+        'start_date',
+        'end_date',
+        'amount',
+        'freed_cc',
+        'comment',
+    ]
+
     _demo_fields = {
         'comment': utils.demo_anonymizer.fake_sentence,
     }
@@ -2772,6 +3006,32 @@ class BudgetLineItem(FootprintModel):
             unicode(self.campaign),
         )
 
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'start_date': 'Start Date',
+            'end_date': 'End Date',
+            'amount': 'Amount',
+            'freed_cc': 'Freed (cc)',
+            'comment': 'Comment',
+        }
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'amount' and value is not None:
+            value = lc_helper.default_currency(value)
+        elif prop_name == 'freed_cc' and value is not None:
+            value = lc_helper.default_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'flat_fee_cc':
+            value = lc_helper.default_currency(
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        return value
+
+    def get_settings_dict(self):
+        return {history_key: getattr(self, history_key) for history_key in self.history_fields}
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2781,6 +3041,21 @@ class BudgetLineItem(FootprintModel):
             created_by=request.user if request else None,
             snapshot=model_to_dict(self),
             budget=self,
+        )
+        self.add_to_history(user=request and request.user)
+
+    def add_to_history(self, user=None):
+        changes = self.get_model_state_changes(
+            self.post_init_state,
+            model_to_dict(self),
+        )
+        changes_text = self.get_changes_text_from_dict(changes)
+        create_campaign_history(
+            self.campaign,
+            constants.HistoryType.BUDGET,
+            changes,
+            changes_text,
+            user=user
         )
 
     def db_state(self, date=None):
@@ -3218,7 +3493,23 @@ class HistoryQuerySet(models.QuerySet):
         raise AssertionError('Using delete not allowed.')
 
 
-class HistoryBase(models.Model):
+class History(models.Model):
+
+    agency = models.ForeignKey(Agency, related_name='history', on_delete=models.PROTECT, null=True)
+    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT, null=True)
+    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT, null=True)
+
+    level = models.PositiveSmallIntegerField(
+        choices=constants.HistoryLevel.get_choices(),
+        null=False,
+        blank=False,
+    )
+    type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryType.get_choices(),
+        null=False,
+        blank=False,
+    )
 
     changes_text = models.TextField(blank=False, null=False)
     changes = jsonfield.JSONField(blank=False, null=False)
@@ -3241,59 +3532,98 @@ class HistoryBase(models.Model):
 
     objects = HistoryQuerySetManager()
 
+    class QuerySet(HistoryQuerySet):
+        pass
+
     def save(self, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating history object not alowed.')
 
-        if self.created_by is not None and self.system_user is not None:
-            raise AssertionError('Either created_by or system_user must be set.')
-
-        if self.created_by is None and self.system_user is None:
-            raise AssertionError('Exactly one of created_by or system_user must be set.')
-
-        super(HistoryBase, self).save(*args, **kwargs)
+        super(History, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting history object not allowed.')
 
-    class Meta:
-        abstract = True
 
+def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
+    if not changes and not changes_text:
+        # don't write history in case of no changes
+        return None
 
-class AdGroupHistory(HistoryBase):
-    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.AdGroupHistoryType.get_choices(),
-        null=False,
-        blank=False,
+    campaign, account, agency = _generate_parents(ad_group=ad_group)
+    history = History.objects.create(
+        ad_group=ad_group,
+        campaign=campaign,
+        account=account,
+        agency=agency,
+        created_by=user,
+        system_user=system_user,
+        changes=json_helper.json_serializable_changes(changes),
+        changes_text=changes_text or "",
+        type=history_type,
+        level=constants.HistoryLevel.AD_GROUP,
     )
-    objects = HistoryQuerySetManager()
-
-    class QuerySet(HistoryQuerySet):
-        pass
+    return history
 
 
-class CampaignHistory(HistoryBase):
-    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.CampaignHistoryType.get_choices(),
-        null=False,
-        blank=False,
+def create_campaign_history(campaign, history_type, changes, changes_text, user=None, system_user=None):
+    if not changes and not changes_text:
+        # don't write history in case of no changes
+        return None
+
+    _, account, agency = _generate_parents(campaign=campaign)
+    return History.objects.create(
+        campaign=campaign,
+        account=account,
+        agency=agency,
+        created_by=user,
+        system_user=system_user,
+        changes=json_helper.json_serializable_changes(changes),
+        changes_text=changes_text or "",
+        type=history_type,
+        level=constants.HistoryLevel.CAMPAIGN,
     )
-    objects = HistoryQuerySetManager()
-
-    class QuerySet(HistoryQuerySet):
-        pass
 
 
-class AccountHistory(HistoryBase):
-    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.AccountHistoryType.get_choices(),
-        null=False,
-        blank=False,
+def create_account_history(account, history_type, changes, changes_text, user=None, system_user=None):
+    if not changes and not changes_text:
+        # don't write history in case of no changes
+        return None
+
+    _, _, agency = _generate_parents(account=account)
+    return History.objects.create(
+        account=account,
+        agency=agency,
+        created_by=user,
+        system_user=system_user,
+        changes=json_helper.json_serializable_changes(changes),
+        changes_text=changes_text or "",
+        type=history_type,
+        level=constants.HistoryLevel.ACCOUNT,
     )
-    objects = HistoryQuerySetManager()
 
-    class QuerySet(HistoryQuerySet):
-        pass
+
+def create_agency_history(agency, history_type, changes, changes_text, user=None, system_user=None):
+    if not changes and not changes_text:
+        # don't write history in case of no changes
+        return None
+    return History.objects.create(
+        agency=agency,
+        created_by=user,
+        system_user=system_user,
+        changes=json_helper.json_serializable_changes(changes),
+        changes_text=changes_text or "",
+        type=history_type,
+        level=constants.HistoryLevel.AGENCY,
+    )
+
+
+def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
+    """
+    For first given entity in order check if it has any parents and return them.
+    E.g. given and ad group return also it's campaign, account and agency if any
+    """
+    campaign = campaign or ad_group and ad_group.campaign
+    account = account or campaign and campaign.account
+    agency = agency or account and account.agency
+    return campaign, account, agency

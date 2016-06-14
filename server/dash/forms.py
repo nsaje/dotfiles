@@ -984,6 +984,7 @@ class BreakdownForm(forms.Form):
     )
 
     show_archived = forms.BooleanField(required=False)
+    show_blacklisted_publishers = forms.BooleanField(required=False)
 
     offset = forms.IntegerField(min_value=0, required=True)
     limit = forms.IntegerField(min_value=0, max_value=100, required=True)

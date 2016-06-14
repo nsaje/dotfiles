@@ -205,6 +205,7 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 # DeployKitty
 DK_API_KEY = Secret('').get()
 DK_DEMO_PREPARE_ENDPOINT = ''
+DK_DEMO_UP_ENDPOINT = ''
 
 # l1
 LAMBDA_REGION = 'us-east-1'

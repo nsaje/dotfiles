@@ -34,6 +34,7 @@ describe('AdGroupAdsCtrl', function () {
     beforeEach(inject(function ($controller, $rootScope, _$state_, _$window_, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
+        $state = _$state_;
         permissions = {};
 
         $scope.isPermissionInternal = function () {
@@ -96,15 +97,17 @@ describe('AdGroupAdsCtrl', function () {
             },
         };
 
-        $state = _$state_;
-        $state.params = {id: 1};
-
         $window = _$window_;
     }));
 
     function initializeController () {
-        inject(function ($controller) {
-            $controller('AdGroupAdsCtrl', {$scope: $scope, api: api});
+        inject(function ($controller, $state) {
+            $state.params = {id: 1};
+            $controller('AdGroupAdsCtrl', {
+                $scope: $scope,
+                $state: $state,
+                api: api,
+            });
         });
     }
 
@@ -405,6 +408,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('executeBulkAction', function () {
         beforeEach(function () {
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
         });
         it('pauses all selected content ads if executeBulkAction(\'pause\')', function () {
@@ -562,20 +566,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('Zem-Grid DataSource', function () {
         it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
-            initializeController();
-            expect($scope.dataSource).toBe(undefined);
-        });
-
-        it('check with permission', function () {
-            initializeController();
-            expect($scope.dataSource).not.toBe(undefined);
-        });
-    });
-
-    describe('Zem-Grid DataSource', function () {
-        it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_development_features'] = false;
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
             expect($scope.dataSource).toBe(undefined);
         });
