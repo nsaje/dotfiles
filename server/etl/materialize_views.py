@@ -72,6 +72,23 @@ class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_
         return 'etl_create_table_mvh_adgroup_structure.sql'
 
 
+class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_helpers.Materialize):
+    def table_name(self):
+        return 'mvh_clean_stats'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        params = helpers.get_local_multiday_date_context(date_from, date_to)
+
+        sql = backtosql.generate_sql('etl_insert_mvh_clean_stats.sql', {
+            'date_ranges': params.pop('date_ranges'),
+        })
+
+        return sql, params
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_clean_stats.sql'
+
+
 class MasterView(materialize_helpers.MaterializeViaCSV):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
