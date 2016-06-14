@@ -8,9 +8,9 @@ describe('MediaSourcesCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
+    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
         $provide.value('zemLocalStorageService', {get: function () { }});
-        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
+        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
     }));
 
     beforeEach(function () {
