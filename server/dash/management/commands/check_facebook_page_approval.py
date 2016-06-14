@@ -1,6 +1,7 @@
 from __future__ import print_function
 import json
 import logging
+import httplib
 
 import requests
 from django.core.management import CommandError
@@ -15,6 +16,9 @@ FB_API_VERSION = "v2.6"
 FB_PAGES_URL = "https://graph.facebook.com/%s/%s/pages"
 FB_PAGE_ID_URL = "https://graph.facebook.com/%s/%s?fields=id"
 FB_AD_ACCOUNT_URL = "https://graph.facebook.com/%s/%s/adaccount"
+
+TZ_AMERICA_NEW_YORK = 7
+CURRENCY_USD = 'USD'
 
 
 class Command(ExceptionCommand):
@@ -39,12 +43,12 @@ def _get_page_id(facebook_account):
     params = {'access_token': settings.FB_ACCESS_TOKEN}
     response = requests.get(FB_PAGE_ID_URL % (FB_API_VERSION, page_id), params=params)
 
-    if response.status_code != 200:
+    if response.status_code != httplib.OK:
         logger.error('Error while retrieving facebook page id. Status code: %s, Error %s', response.status_code,
                      response.content)
         raise CommandError('Error while retrieving facebook page id.')
 
-    content = json.loads(response.content)
+    content = response.json()
     return content['id']
 
 
@@ -52,12 +56,12 @@ def _get_all_pages():
     params = {'access_token': settings.FB_ACCESS_TOKEN}
     response = requests.get(FB_PAGES_URL % (FB_API_VERSION, settings.FB_BUSINESS_ID), params=params)
 
-    if response.status_code != 200:
+    if response.status_code != httplib.OK:
         logger.error('Error while accessing facebook page api. Status code: %s, Error %s', response.status_code,
                      response.content)
         raise CommandError('Error while accessing facebook page api.')
 
-    content = json.loads(response.content)
+    content = response.json()
     pages_dict = {}
     for page in content.get('data'):
         pages_dict[page['id']] = page['access_status']
@@ -67,8 +71,8 @@ def _get_all_pages():
 
 def _create_ad_account(name, page_id):
     params = {'name': name,
-              'currency': 'USD',
-              'timezone_id': 7,
+              'currency': CURRENCY_USD,
+              'timezone_id': TZ_AMERICA_NEW_YORK,
               'end_advertiser': page_id,
               'media_agency': 'NONE',
               'partner': page_id,
@@ -76,10 +80,10 @@ def _create_ad_account(name, page_id):
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     response = requests.post(FB_AD_ACCOUNT_URL % (FB_API_VERSION, settings.FB_BUSINESS_ID), json.dumps(params),
                              headers=headers)
-    if response.status_code != 200:
+    if response.status_code != httplib.OK:
         logger.error('Error while creating facebook ad account. Status code: %s, Error %s', response.status_code,
                      response.content)
         raise CommandError('Error while creating facebook account.')
 
-    content = json.loads(response.content)
+    content = response.json()
     return content['id']
