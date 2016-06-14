@@ -52,5 +52,7 @@ def _send_page_access_request(facebook_account):
                            error.get('message'))
             return constants.FacebookPageRequestType.INVALID
 
-    logger.error('FB api returned and unknown error for pageId: {}. Error message: {}', error)
+    error = json.loads(response.content).get('error', {})
+    logger.error('FB api returned and unknown error for pageId: {}. Status code: {}, error message: {}',
+                 response.status_code, error)
     return constants.FacebookPageRequestType.ERROR

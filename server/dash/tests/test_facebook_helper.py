@@ -56,6 +56,11 @@ class FacebookPageAccessTest(TestCase):
 
     @patch('requests.post')
     def test_changed_page(self, mock):
+        mock.return_value = self._create_response(
+            200,
+            '{"response":"All clear"}'
+        )
+
         page_id = 'new_page_id'
         fb_account = self._get_fb_account('old_page_id')
         facebook_helper.update_facebook_account(fb_account, page_id)
