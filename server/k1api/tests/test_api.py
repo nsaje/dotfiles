@@ -235,7 +235,7 @@ class K1ApiTest(TestCase):
             {'source_type': 'nonexistingsource',
              'ad_group_id': 1},
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
     def _test_get_content_ad_sources_for_ad_group(self, mock_verify_wsgi_request, ad_group_id, content_ad_id):
         response = self.client.get(

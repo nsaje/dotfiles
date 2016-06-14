@@ -96,8 +96,9 @@ def get_ad_group_source(request):
     if tracking_slug:
         ad_group_source = ad_group_source.filter(source__tracking_slug=tracking_slug)
     if ad_group_source.count() != 1:
+        status = 404 if ad_group_source.count() == 0 else 400
         return _response_error("%d objects retrieved for ad group %s on source %s with tracking slug %s" %
-                               (ad_group_source.count(), ad_group_id, source_type, tracking_slug), status=400)
+                               (ad_group_source.count(), ad_group_id, source_type, tracking_slug), status=status)
     ad_group_source = ad_group_source[0]
     ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
     return _response_ok(ad_group_source_with_settings)
