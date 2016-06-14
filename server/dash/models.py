@@ -2804,7 +2804,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if prop_name == 'amount' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'license_fee' and value is not None:
-            value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 value * converters.CC_TO_DECIMAL_DOLAR)
@@ -3555,7 +3555,7 @@ class History(models.Model):
         if self.created_by is None and self.system_user is not None:
             return constants.SystemUserType.get_text(self.system_user)
         elif self.created_by is None and self.system_user is None:
-            return automation.settings.AUTOMATION_AI_NAME
+            return ''
         else:
             return self.created_by.email
 
