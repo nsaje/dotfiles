@@ -95,10 +95,10 @@ def get_ad_group_source(request):
             ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
     if tracking_slug:
         ad_group_source = ad_group_source.filter(source__tracking_slug=tracking_slug)
-    if len(ad_group_source) != 1:
+    if ad_group_source.count() != 1:
         return _response_error("%d objects retrieved for ad group %s on source %s with tracking slug %s" %
-                               (len(ad_group_source), ad_group_id, source_type, tracking_slug), status=400)
-    ad_group_source = list(ad_group_source)[0]
+                               (ad_group_source.count(), ad_group_id, source_type, tracking_slug), status=400)
+    ad_group_source = ad_group_source[0]
     ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
     return _response_ok(ad_group_source_with_settings)
 
@@ -162,6 +162,28 @@ def get_ad_group_sources_for_source_type(request):
     return _response_ok(ad_group_sources_with_settings)
 
 
+def _get_ad_group_tracking_codes(ad_group_source):
+    ad_group_tracking_codes = None
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and \
+            ad_group_source.can_manage_content_ads:
+        ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
+    return ad_group_tracking_codes
+
+
+def _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source):
+    if ad_group_tracking_codes:
+        url = content_ad_source.content_ad.url_with_tracking_codes(
+            url_helper.combine_tracking_codes(
+                ad_group_tracking_codes,
+                ad_group_source.get_tracking_ids(),
+            )
+        )
+    else:
+        url = content_ad_source.content_ad.url
+    return url
+
+
+
 @csrf_exempt
 def get_content_ad_sources_for_ad_group(request):
     _validate_signature(request)
@@ -182,11 +204,11 @@ def get_content_ad_sources_for_ad_group(request):
     if tracking_slug:
         ad_group_source = ad_group_source.filter(source__tracking_slug=tracking_slug)
 
-    if len(ad_group_source) == 0:
+    if ad_group_source.count() == 0:
         return _response_ok([])
-    if len(ad_group_source) > 1:
-        return _response_error("%d object retrieved instead of 1" % len(ad_group_source))
-    ad_group_source = list(ad_group_source)[0]
+    elif ad_group_source.count() > 1:
+        return _response_error("%d object retrieved instead of 1" % ad_group_source.count())
+    ad_group_source = ad_group_source[0]
 
     content_ad_sources = (
         dash.models.ContentAdSource.objects
@@ -200,22 +222,11 @@ def get_content_ad_sources_for_ad_group(request):
     if tracking_slug:
         content_ad_sources = content_ad_sources.filter(source__tracking_slug=tracking_slug)
 
-    ad_group_tracking_codes = None
-    if ad_group_source.source.update_tracking_codes_on_content_ads() and \
-            ad_group_source.can_manage_content_ads:
-        ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
+    ad_group_tracking_codes = _get_ad_group_tracking_codes(ad_group_source)
 
     content_ads = []
     for content_ad_source in content_ad_sources:
-        if ad_group_tracking_codes:
-            url = content_ad_source.content_ad.url_with_tracking_codes(
-                url_helper.combine_tracking_codes(
-                    ad_group_tracking_codes,
-                    ad_group_source.get_tracking_ids(),
-                )
-            )
-        else:
-            url = content_ad_source.content_ad.url
+        url = _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source)
 
         content_ads.append({
             'content_ad_source_id': content_ad_source.id,
@@ -240,7 +251,7 @@ def get_content_ad_sources_for_ad_group(request):
             'tracking_slug': ad_group_source.source.tracking_slug,
             'tracker_urls': content_ad_source.content_ad.tracker_urls
         })
-    return _response_ok(list(content_ads))
+    return _response_ok(content_ads)
 
 
 @csrf_exempt
