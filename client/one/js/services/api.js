@@ -3253,6 +3253,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function Demo () {
+        this.request = function () {
+            var url = '/api/demov3/';
+            return $http.get(url);
+        };
+    }
+
     return {
         navigation: new Navigation(),
         user: new User(),
@@ -3309,6 +3316,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountCredit: new AccountCredit(),
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
+        demo: new Demo(),
         // Also, don't forget to add me to DEMO!
     };
 }]);

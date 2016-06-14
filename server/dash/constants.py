@@ -4,7 +4,9 @@ from dash import regions
 
 # Outbrain supports only 10 blocked publisher per marketer id
 # which corresponds to 10 blacklisted publishers per Z1 account
-MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
+# Experiment 6/13/2016: we can blacklist 30 publishers on OB dashboard, it's not documented
+#                       but we can try to enable 30 via API
+MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 30
 
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
@@ -1547,6 +1549,7 @@ class EmailTemplateType(ConstantBase):
     AUTOPILOT_AD_GROUP_BUDGET_INIT = 12
     CAMPAIGN_LANDING_MODE_SWITCH = 13
     CAMPAIGN_BUDGET_LOW = 14
+    DEMO_RUNNING = 15
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1563,6 +1566,7 @@ class EmailTemplateType(ConstantBase):
         AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
         CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
         CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
+        DEMO_RUNNING: 'Demo is running',
     }
 
 
@@ -1578,31 +1582,33 @@ class ImageCrop(ConstantBase):
     }
 
 
-class AdGroupHistoryType(ConstantBase):
+class HistoryLevel(ConstantBase):
+    AD_GROUP = 1
+    CAMPAIGN = 2
+    ACCOUNT = 3
+    AGENCY = 4
+
+    _VALUES = {
+        AD_GROUP: 'Ad Group Level',
+        CAMPAIGN: 'Campaign Level',
+        ACCOUNT: 'Account Level',
+        AGENCY: 'Agency Level',
+    }
+
+
+class HistoryType(ConstantBase):
     AD_GROUP = 1
     AD_GROUP_SOURCE = 2
+    CAMPAIGN = 2
+    BUDGET = 3
+    ACCOUNT = 4
+    CREDIT = 5
 
     _VALUES = {
         AD_GROUP: 'Ad Group History',
         AD_GROUP_SOURCE: 'Ad Group Source History',
-    }
-
-
-class CampaignHistoryType(ConstantBase):
-    CAMPAIGN = 1
-    BUDGET = 2
-
-    _VALUES = {
         CAMPAIGN: 'Campaign History',
         BUDGET: 'Budget History',
-    }
-
-
-class AccountHistoryType(ConstantBase):
-    ACCOUNT = 1
-    CREDIT = 2
-
-    _VALUES = {
         ACCOUNT: 'Account History',
         CREDIT: 'Credit History',
     }

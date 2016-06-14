@@ -869,7 +869,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         response_data = json.loads(response.content)
         self.assertEqual(
             response_data['data']['errors']['amount'],
-            ['Budget exceeds the minimum budget amount by $5000.00.']
+            ['Budget amount has to be at least $95000.00.']
         )
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
@@ -905,7 +905,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         response_data = json.loads(response.content)
         self.assertEqual(
             response_data['data']['errors']['amount'],
-            ['You cannot lower the amount on an active budget line item at this time.']
+            ['You can lower the amount on an active budget line item after 12:00 UTC.']
         )
 
     @patch('automation.campaign_stop.perform_landing_mode_check')

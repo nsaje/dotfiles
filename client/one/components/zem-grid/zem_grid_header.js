@@ -35,6 +35,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
 
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);
             pubsub.register(pubsub.EVENTS.METADATA_UPDATED, resizeColumns);
+            resizeColumns();
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);

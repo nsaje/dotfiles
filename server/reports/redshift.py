@@ -500,8 +500,8 @@ class RSModel(object):
     def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
                            offset=None, having_constraints=None):
         cmd = 'SELECT {fields} FROM {table}'.format(
-                fields=','.join(fields),
-                table=table,
+            fields=','.join(fields),
+            table=table,
         )
 
         if constraint_str:

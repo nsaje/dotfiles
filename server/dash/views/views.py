@@ -21,9 +21,10 @@ from collections import OrderedDict
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
@@ -39,6 +40,7 @@ from utils import exc
 from utils import s3helpers
 from utils import k1_helper
 from utils import email_helper
+from utils import request_signer
 
 from automation import autopilot_plus
 
@@ -56,6 +58,7 @@ from dash import forms
 from dash import upload
 from dash import infobox_helpers
 from dash import publisher_helpers
+from dash import history_helpers
 
 import reports.api_publishers
 import reports.projections
@@ -484,8 +487,11 @@ class CampaignAdGroups(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
+        ad_group_settings.changes_text = changes_text
         ad_group_settings.save(request)
+
+        history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
 
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
         actionlog.zwei_actions.send(actions)
@@ -502,6 +508,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
     def _create_ad_group(self, campaign, request):
         actions = []
+        changes_text = None
         with transaction.atomic():
             ad_group = models.AdGroup(
                 name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
@@ -510,13 +517,13 @@ class CampaignAdGroups(api_common.BaseApiView):
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
             if request.user.has_perm('zemauth.add_media_sources_automatically'):
-                media_sources_actions = self._add_media_sources(ad_group, ad_group_settings, request)
+                media_sources_actions, changes_text = self._add_media_sources(ad_group, ad_group_settings, request)
                 actions.extend(media_sources_actions)
 
         k1_helper.update_ad_group(ad_group.pk,
                                   msg='CampaignAdGroups.put')
 
-        return ad_group, ad_group_settings, actions
+        return ad_group, ad_group_settings, changes_text, actions
 
     def _create_new_settings(self, ad_group, request):
         current_settings = ad_group.get_current_settings()  # get default ad group settings
@@ -546,12 +553,12 @@ class CampaignAdGroups(api_common.BaseApiView):
             added_sources.append(source)
             actions.append(action)
 
+        changes_text = None
         if added_sources:
             changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
                 len(added_sources), ', '.join([source.name for source in added_sources]))
-            ad_group_settings.changes_text = changes_text
 
-        return actions
+        return actions, changes_text
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         ad_group = ad_group_settings.ad_group
@@ -994,6 +1001,13 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+        history_helpers.write_ad_group_history(
+            ad_group_source.ad_group,
+            changes_text,
+            user=request.user,
+            history_type=constants.HistoryType.AD_GROUP_SOURCE
+        )
 
 
 class Account(api_common.BaseApiView):
@@ -1784,7 +1798,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         count_failed_publisher = 0
         source_cache = {}
 
-        # OB currently has a limit of 10 blocked publishers per marketer
+        # OB currently has a limit of blocked publishers per marketer
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             account=ad_group.campaign.account,
             source__source_type__type=constants.SourceType.OUTBRAIN,
@@ -2017,6 +2031,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         settings.changes_text = changes_text
         settings.save(request)
 
+        history_helpers.write_ad_group_history(
+            ad_group,
+            changes_text,
+            user=request.user,
+        )
+
         # at the moment we only have the publishers view on adgroup level
         # which means all blacklisting actions are stored in the settings
         # changes text of the current adgroup
@@ -2128,6 +2148,44 @@ class AllAccountsOverview(api_common.BaseApiView):
         ))
 
         return [setting.as_dict() for setting in settings]
+
+
+class Demo(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_request_demo_v3'):
+            raise Http404('Forbidden')
+
+        instance = self._start_instance()
+
+        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, **instance)
+
+        send_mail(
+            subject,
+            body,
+            'Zemanta <{}>'.format(settings.FROM_EMAIL),
+            [request.user.email],
+            fail_silently=False
+        )
+
+        return self.create_api_response(instance)
+
+    def _start_instance(self):
+        request = urllib2.Request(settings.DK_DEMO_UP_ENDPOINT)
+        response = request_signer.urllib2_secure_open(request, settings.DK_API_KEY)
+
+        status_code = response.getcode()
+        if status_code != 200:
+            raise Exception('Invalid response status code. status code: {}'.format(status_code))
+
+        ret = json.loads(response.read())
+        if ret['status'] != 'success':
+            raise Exception('Request not successful. status: {}'.format(ret['status']))
+
+        return {
+            'url': ret.get('instance_url'),
+            'password': ret.get('instance_password'),
+        }
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
