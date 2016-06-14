@@ -694,7 +694,7 @@ class SettingsBase(models.Model, CopySettingsMixin, HistoryMixin):
         abstract = True
 
 
-class AccountSettings(SettingsBase, HistoryMixin):
+class AccountSettings(SettingsBase):
     _demo_fields = {
         'name': utils.demo_anonymizer.account_name_from_pool
     }
@@ -794,7 +794,7 @@ class AccountSettings(SettingsBase, HistoryMixin):
             return self.order_by('account_id', '-created_dt').distinct('account')
 
 
-class CampaignSettings(SettingsBase, HistoryMixin):
+class CampaignSettings(SettingsBase):
     _demo_fields = {
         'name': utils.demo_anonymizer.campaign_name_from_pool
     }
@@ -1805,7 +1805,7 @@ class AdGroupSource(models.Model):
         return unicode(self).encode('ascii', 'ignore')
 
 
-class AdGroupSettings(SettingsBase, HistoryMixin):
+class AdGroupSettings(SettingsBase):
     _demo_fields = {
         'display_url': utils.demo_anonymizer.fake_display_url,
         'ad_group_name': utils.demo_anonymizer.ad_group_name_from_pool,
