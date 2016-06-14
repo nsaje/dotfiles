@@ -97,7 +97,7 @@ def get_ad_group_source(request):
         ad_group_source = ad_group_source.filter(source__tracking_slug=tracking_slug)
     if len(ad_group_source) != 1:
         return _response_error("%d objects retrieved for ad group %s on source %s with tracking slug %s" %
-                               (len(ad_group_source), ad_group_id, source_type, tracking_slug), status=404)
+                               (len(ad_group_source), ad_group_id, source_type, tracking_slug), status=400)
     ad_group_source = list(ad_group_source)[0]
     ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
     return _response_ok(ad_group_source_with_settings)
