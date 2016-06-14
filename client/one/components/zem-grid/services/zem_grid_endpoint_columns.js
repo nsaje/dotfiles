@@ -2,17 +2,20 @@
 'use strict';
 
 oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', '$q', function ($rootScope, $controller, $http, $q) { // eslint-disable-line max-len
-
-    // //////////////////////////////////////////////////////////////////////////////////////////////////
-    //  COLUMNS
-    // //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // FIXME: help content
-    // FIXME: permissions
-    // FIXME: status, state refactoring
+    // removed extraTdCss
     // TODO: conversion goals, metrics, ..
     // TODO: default values : unselectable, checked, shown, totalRow, order, orderField==field, initialOrder
+    // TODO: column merging - status, state, ...
 
+    // TODO - actions - clickCallback: zemFilterService.exclusivelyFilterSource
+
+    // TODO: state - saveData, constants, messages, archived - move to directives
+    // TODO: settings - saveData, constants, autopilotOn
+    // FIXME: Categories -- Diff conflict in ad_group_publishers
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    //  COLUMN DEFINITIONS
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     var COLUMNS = {
         account: {
@@ -22,7 +25,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             checked: true,
             type: 'linkNav',
             shown: true,
-            hasTotalsLabel: true, // FIXME: is it needed?
             totalRow: false,
             help: 'A partner account.',
             order: true,
@@ -36,7 +38,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             checked: true,
             type: 'linkNav',
             shown: true,
-            hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the campaign.',
             order: true,
@@ -49,7 +50,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             checked: true,
             type: 'linkNav',
             shown: true,
-            hasTotalsLabel: true,
             totalRow: false,
             help: 'Name of the ad group.',
             order: true,
@@ -61,14 +61,12 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             unselectable: true,
             checked: true,
             type: 'clickPermissionOrText',
-            hasPermission: 'zemauth.can_filter_sources_through_table', // FIXME
-            // clickCallback: zemFilterService.exclusivelyFilterSource, FIXME
-            shown: true,
-            hasTotalsLabel: true,
             totalRow: false,
             help: 'A media source where your content is being promoted.',
             order: true,
             initialOrder: 'asc',
+            hasPermission: 'zemauth.can_filter_sources_through_table',
+            shown: true,
         },
         agency: {
             name: 'Agency',
@@ -145,7 +143,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             shown: 'zemauth.campaign_goal_performance',
         },
 
-        // Status TODO: refactor
+        // Status columns
         statusAccount: {
             name: 'Status',
             field: 'status',
@@ -154,7 +152,8 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             type: 'text',
             shown: true,
             totalRow: false,
-            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns are paused too; otherwise the account is enabled.',
+            help: 'Status of an account (enabled or paused). An account is paused only if all its campaigns ' +
+                  'are paused too; otherwise the account is enabled.',
             order: true,
             orderField: 'status',
             initialOrder: 'asc',
@@ -166,7 +165,8 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             type: 'text',
             shown: true,
             totalRow: false,
-            help: 'Status of a campaign (enabled or paused). A campaign is paused only if all its ad groups are paused too; otherwise, the campaign is enabled.',
+            help: 'Status of a campaign (enabled or paused). A campaign is paused only if all its ad groups ' +
+                  'are paused too; otherwise, the campaign is enabled.',
             order: true,
             initialOrder: 'asc',
         },
@@ -211,7 +211,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             unselectable: true,
             checked: true,
             type: 'notification',
-            extraTdCss: 'notification',
             shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
@@ -223,7 +222,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             name: 'Status',
             field: 'blacklisted',
             checked: true,
-            extraTdCss: 'no-wrap',
             type: 'textWithPopup',
             popupField: 'blacklisted_level_description',
             help: 'Blacklisted status of a publisher.',
@@ -241,18 +239,13 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             order: true,
             editable: true,
             initialOrder: 'asc',
-            // enabledValue: constants.adGroupSourceSettingsState.ACTIVE, // FIXME
-            // pausedValue: constants.adGroupSourceSettingsState.INACTIVE, // FIXME
-            internal: 'zemauth.can_control_ad_group_state_in_table',
-            shown: 'zemauth.can_control_ad_group_state_in_table',
             checked: true,
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing Ad Groups.',
-            // onChange: function (adgroupId, state) { FIXME
-            // getDisabledMessage: function (row) { FIXME
             disabled: false,
-            archivedField: 'archived',
+            internal: 'zemauth.can_control_ad_group_state_in_table',
+            shown: 'zemauth.can_control_ad_group_state_in_table',
         },
         stateContentAd: {
             name: '\u25CF',
@@ -260,16 +253,12 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             type: 'state',
             order: true,
             initialOrder: 'asc',
-            // enabledValue: constants.contentAdSourceState.ACTIVE, // FIXME
-            // pausedValue: constants.contentAdSourceState.INACTIVE, // FIXME
             internal: false,
             shown: true,
             checked: true,
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing content ads.',
-            // onChange: function (contentAdId, state) { // FIXME
-            // getDisabledMessage: function (row) { // FIXME
             disabled: false,
             archivedField: 'archived',
         },
@@ -359,7 +348,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             shown: 'zemauth.supply_dash_link_view',
         },
 
-        // AdGroup Media Sources FIXME
+        // AdGroup Media Sources
         bidCpcEdit: {
             name: 'Bid CPC',
             field: 'bid_cpc',
@@ -372,9 +361,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             order: true,
             settingsField: true,
             initialOrder: 'desc',
-            // statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
-            // onSave: function (sourceId, value, onSuccess, onError) { // FIXME
-            // adGroupAutopilotOn: function () { // FIXME
         },
         bidCpcCurrent: {
             name: 'Current Bid CPC',
@@ -401,9 +387,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             order: true,
             settingsField: true,
             initialOrder: 'desc',
-            // statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE, // FIXME
-            // onSave: function (sourceId, value, onSuccess, onError) { // FIXME
-            // adGroupAutopilotOn: function () { // FIXME
         },
         dailyBudgetCurrent: {
             name: 'Current Daily Budget',
@@ -427,7 +410,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             checked: true,
             type: 'clickPermissionOrText',
             shown: true,
-            hasTotalsLabel: true,
             totalRow: false,
             help: 'A publisher where your content is being promoted.',
             order: true,
@@ -443,7 +425,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             totalRow: false,
             help: 'Link to a publisher where your content is being promoted.',
             order: false,
-            initialOrder: 'asc'
+            initialOrder: 'asc',
         },
         exchange: {
             name: 'Media Source',
@@ -458,7 +440,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             initialOrder: 'asc',
         },
 
-
         // ContentAd fields
         thumbnail: {
             name: 'Thumbnail',
@@ -472,14 +453,13 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             orderField: 'image_hash',
             initialOrder: 'asc',
         },
-        notification: { // FIXME: ?
+        notification: {
             name: '',
             unselectable: true,
             checked: true,
             type: 'notification',
             shown: true,
             totalRow: false,
-            extraTdCss: 'notification-no-text',
         },
         title: {
             name: 'Title',
@@ -489,7 +469,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             shown: true,
             totalRow: false,
             help: 'The creative title/headline of a content ad. The link to landing page includes tracking codes.',
-            extraTdCss: 'trimmed title',
             titleField: 'title',
             order: true,
             orderField: 'title',
@@ -502,7 +481,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             type: 'linkText',
             shown: true,
             help: 'The web address of the content ad.',
-            extraTdCss: 'trimmed url',
             totalRow: false,
             titleField: 'url',
             order: true,
@@ -524,7 +502,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             name: 'Batch Name',
             field: 'batch_name',
             checked: true,
-            extraTdCss: 'no-wrap',
             type: 'text',
             shown: true,
             help: 'The name of the upload batch.',
@@ -538,7 +515,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             name: 'Display URL',
             field: 'display_url',
             checked: false,
-            extraTdCss: 'no-wrap',
             type: 'text',
             shown: true,
             help: 'Advertiser\'s display URL.',
@@ -552,7 +528,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             name: 'Brand Name',
             field: 'brand_name',
             checked: false,
-            extraTdCss: 'no-wrap',
             type: 'text',
             shown: true,
             help: 'Advertiser\'s brand name',
@@ -566,7 +541,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             name: 'Description',
             field: 'description',
             checked: false,
-            extraTdCss: 'no-wrap',
             type: 'text',
             shown: true,
             help: 'Description of a content ad.',
@@ -580,7 +554,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             name: 'Call to action',
             field: 'call_to_action',
             checked: false,
-            extraTdCss: 'no-wrap',
             type: 'text',
             shown: true,
             help: 'Call to action text.',
@@ -601,7 +574,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-            shown: ['!zemauth.can_view_effective_costs', '!zemauth.can_view_actual_costs'], // FIXME
+            shown: ['!zemauth.can_view_effective_costs', '!zemauth.can_view_actual_costs'],
         },
         actualMediaCost: {
             name: 'Actual Media Spend',
@@ -757,7 +730,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             order: true,
             initialOrder: 'desc',
             internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees']
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees'],
         },
         cpc: {
             name: 'Avg. CPC',
@@ -805,30 +778,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
             order: true,
             initialOrder: 'desc',
         },
-
-        // data status
-        dataStaus: {
-            name: '',
-            nameCssClass: 'data-status-icon',
-            type: 'dataStatus',
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'Status of third party data accuracy.',
-            disabled: false,
-            internal: 'zemauth.data_status_column',
-            shown: false,
-        },
-        lastSync: {
-            name: 'Last OK Sync (EST)',
-            field: 'last_sync',
-            checked: false,
-            type: 'datetime',
-            shown: false,
-            help: 'Dashboard reporting data is synchronized on an hourly basis. This is when the most recent synchronization occurred (in Eastern Standard Time).',
-            order: true,
-            initialOrder: 'desc'
-        }
     };
 
     var STATS = [
@@ -930,7 +879,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
     //  COLUMN CATEGORIES
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // FIXME: Diff conflict in ad_group_publishers
     var CATEGORIES = [
         {
             name: 'Costs',
@@ -952,12 +900,10 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
         }, {
             name: 'Content Sync',
             columns: [
-                // ad_selected ?? checkbox // FIXME
                 COLUMNS.thumbnail,
                 COLUMNS.title,
                 COLUMNS.url,
                 COLUMNS.statusContentAd,
-                // checked ?? // FIXME
                 COLUMNS.uploadTime,
                 COLUMNS.batchName,
                 COLUMNS.displayUrl,
@@ -1017,12 +963,12 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
         {
             name: 'Conversions',
             columns: [ // FIXME: conversion goals
-                // conversion_goal_1 
+                // conversion_goal_1
                 // conversion_goal_2
-                // conversion_goal_3 
-                // conversion_goal_4 
+                // conversion_goal_3
+                // conversion_goal_4
                 // conversion_goal_5
-            ]
+            ],
         },
         // TODO: zemOptimisationMetricsService.createColumnCategories(),
     ];
@@ -1032,6 +978,8 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function convertPermission (permission, checkFn) {
+        // Convert Column definitions permissions to boolean value using passed function
+        // 3 versions are possible: boolean, string, array
         var result = false;
         if (typeof permission === 'boolean') {
             result = permission;
@@ -1053,6 +1001,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
     }
 
     function checkPermissions ($scope, columns) {
+        // Go trough all columns and convert permissions to boolean, when needed
         columns.forEach(function (column) {
             column.internal = convertPermission(column.internal, $scope.isPermissionInternal);
             column.shown = convertPermission(column.shown, $scope.hasPermission);
@@ -1060,6 +1009,7 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
     }
 
     function getColumns (level, breakdown) {
+        // TODO: use constants
         var columns;
         if (breakdown === 'source') {
             switch (level) {
@@ -1084,7 +1034,16 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
         return columns;
     }
 
+    function createColumns ($scope, level, breakdown) {
+        // Create columns definitions array based on base level and breakdown
+        var columns = getColumns(level, breakdown);
+        columns = angular.copy(columns);
+        checkPermissions($scope, columns);
+        return columns;
+    }
+
     function createCategories (columns) {
+        // Create categories in correct format
         // TODO: check if column is required in category
         return CATEGORIES.map(function (category) {
             var fields = category.columns.map(function (column) {
@@ -1095,13 +1054,6 @@ oneApp.factory('zemGridEndpointColumns', ['$rootScope', '$controller', '$http', 
                 fields: fields,
             };
         });
-    }
-
-    function createColumns ($scope, level, breakdown) {
-        var columns = getColumns(level, breakdown);
-        columns = angular.copy(columns);
-        checkPermissions($scope, columns);
-        return columns;
     }
 
     return {
