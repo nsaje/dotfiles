@@ -171,6 +171,7 @@ def _get_ad_group_tracking_codes(ad_group_source):
 
 
 def _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source):
+    url = content_ad_source.content_ad.url
     if ad_group_tracking_codes:
         url = content_ad_source.content_ad.url_with_tracking_codes(
             url_helper.combine_tracking_codes(
@@ -178,8 +179,6 @@ def _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source):
                 ad_group_source.get_tracking_ids(),
             )
         )
-    else:
-        url = content_ad_source.content_ad.url
     return url
 
 
