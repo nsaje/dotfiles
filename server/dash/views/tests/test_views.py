@@ -3215,7 +3215,7 @@ class DemoTest(TestCase):
     @patch('dash.views.views.send_mail')
     @patch('dash.views.views.email_helper')
     def test_get(self, email_helper_mock, send_mail_mock, start_instance_mock):
-        start_instance_mock.return_value = 'test-url'
+        start_instance_mock.return_value = {'url': 'test-url', 'password': 'test-password'}
         email_helper_mock.format_email.return_value = ('test-subject', 'test-body')
 
         reversed_url = reverse('demov3')
@@ -3223,7 +3223,7 @@ class DemoTest(TestCase):
         self.assertEqual(200, response.status_code)
 
         start_instance_mock.assert_called_once_with()
-        email_helper_mock.format_email.assert_called_once_with(15, url='test-url')
+        email_helper_mock.format_email.assert_called_once_with(15, url='test-url', password='test-password')
         send_mail_mock.assert_called_once_with(
             'test-subject',
             'test-body',
@@ -3233,7 +3233,7 @@ class DemoTest(TestCase):
         )
 
         data = json.loads(response.content)
-        self.assertEqual({'data': 'test-url', 'success': True}, data)
+        self.assertEqual({'data': {'url': 'test-url', 'password': 'test-password'}, 'success': True}, data)
 
     def test_get_permission(self):
         reversed_url = reverse('demov3')
@@ -3246,6 +3246,7 @@ class DemoTest(TestCase):
         data = {
             'status': 'success',
             'instance_url': 'test-url',
+            'instance_password': 'test-password',
         }
 
         request_signer_mock.urllib2_secure_open.return_value.getcode.return_value = 200
@@ -3254,4 +3255,4 @@ class DemoTest(TestCase):
         demo = views.Demo()
         instance = demo._start_instance()
 
-        self.assertEqual(instance, 'test-url')
+        self.assertEqual(instance, {'url': 'test-url', 'password': 'test-password'})
