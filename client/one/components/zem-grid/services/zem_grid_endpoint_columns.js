@@ -3,19 +3,18 @@
 
 oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemPostclickMetricsService', function (zemOptimisationMetricsService, zemPostclickMetricsService) { // eslint-disable-line max-len
     // removed extraTdCss
-    // TODO: conversion goals, metrics, ..
     // TODO: default values : unselectable, checked, shown, totalRow, order, orderField==field, initialOrder
-    // TODO: column merging - status, state, ...
 
-    // TODO - actions - clickCallback: zemFilterService.exclusivelyFilterSource
+    // TODO: conversion goals/optimisation metrics names, visibility, etc. -- update columns based on goals data
 
     // TODO: state - saveData, constants, messages, archived - move to directives
     // TODO: settings - saveData, constants, autopilotOn
+    // TODO - actions - clickCallback: zemFilterService.exclusivelyFilterSource
     // FIXME: Categories -- Diff conflict in ad_group_publishers
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
-    //  COLUMN DEFINITIONS
-    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // BASE COLUMNS DEFINITIONS
+    //
 
     var COLUMNS = {
         account: {
@@ -529,477 +528,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         }
     };
 
-    var COST_METRICS = {
-        mediaCost: {
-            name: 'Actual Media Spend',
-            field: 'media_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Amount spent per media source, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_actual_costs',
-            shown: 'zemauth.can_view_actual_costs',
-        },
-        eMediaCost: {
-            name: 'Media Spend',
-            field: 'e_media_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Amount spent per media source.',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
-        },
-        dataCost: {
-            name: 'Actual Data Cost',
-            field: 'data_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Additional targeting/segmenting costs, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_actual_costs',
-            shown: 'zemauth.can_view_actual_costs',
-        },
-        eDataCost: {
-            name: 'Data Cost',
-            field: 'e_data_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Additional targeting/segmenting costs.',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
-        },
-        licenseFee: {
-            name: 'License Fee',
-            field: 'license_fee',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Zemanta One platform usage cost.',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
-        },
-        flatFee: {
-            name: 'Recognized Flat Fee',
-            field: 'flat_fee',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_flat_fees',
-            shown: 'zemauth.can_view_flat_fees',
-        },
-        totalFee: {
-            name: 'Total Fee',
-            field: 'total_fee',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_flat_fees',
-            shown: 'zemauth.can_view_flat_fees',
-        },
-        billingCost: {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
-        },
-        cpc: {
-            name: 'Avg. CPC',
-            field: 'cpc',
-            checked: true,
-            type: 'currency',
-            shown: true,
-            fractionSize: 3,
-            help: 'The average CPC.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-    };
-
-    var YESTERDAY_COST_METRICS = {
-        yesterdayCost: {
-            name: 'Actual Yesterday Spend',
-            field: 'yesterday_cost',
-            checked: false,
-            type: 'currency',
-            help: 'Amount that you have spent yesterday for promotion on specific ad group, including overspend.',
-            totalRow: true,
-            order: true,
-            internal: 'zemauth.can_view_actual_costs',
-            initialOrder: 'desc',
-            shown: 'zemauth.can_view_actual_costs',
-        },
-        eYesterdayCost: {
-            name: 'Yesterday Spend',
-            field: 'e_yesterday_cost',
-            checked: false,
-            type: 'currency',
-            help: 'Amount that you have spent yesterday for promotion on specific ad group.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
-        },
-    };
-
-    var PROJECTION_METRICS = {
-        allocatedBudgets: {
-            name: 'Media budgets',
-            field: 'allocated_budgets',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
-        },
-        pacing: {
-            name: 'Pacing',
-            field: 'pacing',
-            checked: false,
-            type: 'percent',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
-        },
-        spendProjection: {
-            name: 'Spend Projection',
-            field: 'spend_projection',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
-        },
-        licenseFeeProjection: {
-            name: 'License Fee Projection',
-            field: 'license_fee_projection',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
-        },
-        totalFeeProjection: {
-            name: 'Total Fee Projection',
-            field: 'total_fee_projection',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: '',
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees'],
-        },
-    };
-
-    var CLICK_METRICS = {
-        clicks: {
-            name: 'Clicks',
-            field: 'clicks',
-            checked: true,
-            type: 'number',
-            shown: true,
-            help: 'The number of times a content ad has been clicked.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        impressions: {
-            name: 'Impressions',
-            field: 'impressions',
-            checked: true,
-            type: 'number',
-            shown: true,
-            totalRow: true,
-            help: 'The number of times content ads have been displayed.',
-            order: true,
-            initialOrder: 'desc',
-        },
-        ctr: {
-            name: 'CTR',
-            field: 'ctr',
-            checked: true,
-            type: 'percent',
-            shown: true,
-            defaultValue: '0.0%',
-            totalRow: true,
-            help: 'The number of clicks divided by the number of impressions.',
-            order: true,
-            initialOrder: 'desc',
-        },
-    };
-
-    var OPTIMISATION_METRICS = {
-        totalSeconds: {
-            name: 'Total Seconds',
-            field: 'total_seconds',
-            checked: true,
-            type: 'number',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Total time spend on site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        unbouncedVisits: {
-            name: 'Unbounced Visitors',
-            field: 'unbounced_visits',
-            checked: false,
-            type: 'number',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Percent of visitors that navigate to more than one page on the site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        totalPageviews: {
-            name: 'Total Pageviews',
-            field: 'total_pageviews',
-            checked: true,
-            type: 'number',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Total pageviews.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        avgCostPerSecond: {
-            name: 'Avg. Cost per Second',
-            field: 'avg_cost_per_second',
-            checked: true,
-            type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per time spent on site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        avgCostPerPageview: {
-            name: 'Avg. Cost per Pageview',
-            field: 'avg_cost_per_pageview',
-            checked: true,
-            type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per pageview.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        avgCostPerNonBouncedVisitor: {
-            name: 'Avg. Cost for Unbounced Visitor',
-            field: 'avg_cost_per_non_bounced_visitor',
-            checked: true,
-            type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per non-bounced visitors.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        avgCostForNewVisitor: {
-            name: 'Avg. Cost for New Visitor',
-            field: 'avg_cost_for_new_visitor',
-            checked: true,
-            type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost for new visitor.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-    };
-
-    var POSTCLICK_ENGAGEMENT_METRICS = {
-        percentNewUsers: {
-            name: '% New Users',
-            field: 'percent_new_users',
-            checked: false,
-            type: 'percent',
-            shown: 'zemauth.aggregate_postclick_engagement',
-            internal: 'zemauth.aggregate_postclick_engagement',
-            help: 'An estimate of first time visits during the selected date range.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        bounceRate: {
-            name: 'Bounce Rate',
-            field: 'bounce_rate',
-            checked: false,
-            type: 'percent',
-            shown: 'zemauth.aggregate_postclick_engagement',
-            internal: 'zemauth.aggregate_postclick_engagement',
-            help: 'Percentage of visits that resulted in only one page view.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        pvPerVisit: {
-            name: 'Pageviews per Visit',
-            field: 'pv_per_visit',
-            checked: false,
-            type: 'number',
-            fractionSize: 2,
-            shown: 'zemauth.aggregate_postclick_engagement',
-            internal: 'zemauth.aggregate_postclick_engagement',
-            help: 'Average number of pageviews per visit.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        avgTos: {
-            name: 'Time on Site',
-            field: 'avg_tos',
-            checked: false,
-            type: 'seconds',
-            shown: 'zemauth.aggregate_postclick_engagement',
-            internal: 'zemauth.aggregate_postclick_engagement',
-            help: 'Average time spent on site in seconds during the selected date range.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-    };
-
-    var POSTCLICK_ACQUISITION_METRICS = {
-        visits: {
-            name: 'Visits',
-            field: 'visits',
-            checked: true,
-            type: 'number',
-            shown: 'zemauth.aggregate_postclick_acquisition',
-            internal: 'zemauth.aggregate_postclick_acquisition',
-            help: 'Total number of sessions within a date range. A session is the period of time in which a user ' +
-            'is actively engaged with your site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        clickDiscrepancy: {
-            name: 'Click Discrepancy',
-            field: 'click_discrepancy',
-            checked: false,
-            type: 'percent',
-            shown: 'zemauth.aggregate_postclick_acquisition',
-            internal: 'zemauth.aggregate_postclick_acquisition',
-            help: 'Clicks detected only by media source as a percentage of total clicks.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-        pageviews: {
-            name: 'Pageviews',
-            field: 'pageviews',
-            checked: true,
-            type: 'number',
-            shown: 'zemauth.aggregate_postclick_acquisition',
-            internal: 'zemauth.aggregate_postclick_acquisition',
-            help: 'Total number of pageviews made during the selected date range. A pageview is a view of ' +
-            'a single page. Repeated views are counted.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
-    };
-
-    var POSTCLICK_CONVERSION_GOALS_METRICS = {};
-
-    for (var i = 1; i <= 5; i++) {
-        POSTCLICK_CONVERSION_GOALS_METRICS['conversionGoal' + i] = {
-            name: 'Conversion Goal ' + i,
-            field: 'conversion_goal_' + i,
-            checked: false,
-            type: 'number',
-            help: 'Number of completions of the conversion goal',
-            shown: false,
-            internal: false,
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        };
-    }
-
-    for (i = 0; i < 6; i++) {
-        OPTIMISATION_METRICS['avgCostPerConversionGoal' + i] = {
-            name: 'Avg. CPA',
-            field: 'avg_cost_per_conversion_goal_' + i,
-            checked: true,
-            type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per acquisition.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        };
-    }
-    ////////////////////////////////////////
-
-    var STATS = [
-        COLUMNS.mediaCost,
-        COLUMNS.eMediaCost,
-        COLUMNS.dataCost,
-        COLUMNS.eDataCost,
-        COLUMNS.licenseFee,
-        COLUMNS.flatFee,
-        COLUMNS.totalFee,
-        COLUMNS.billingCost,
-        COLUMNS.allocatedBudgets,
-        COLUMNS.pacing,
-        COLUMNS.spendProjection,
-        COLUMNS.licenseFeeProjection,
-        COLUMNS.totalFeeProjection,
-        COLUMNS.cpc,
-        COLUMNS.clicks,
-        COLUMNS.impressions,
-        COLUMNS.ctr,
-    ];
-
     var MEDIA_SOURCE = [
         COLUMNS.mediaSource,
         COLUMNS.performance,
@@ -1007,7 +535,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         COLUMNS.minBidCpc,
         COLUMNS.maxBidCpc,
         COLUMNS.dailyBudget,
-    ].concat(STATS);
+    ];
 
     var ALL_ACCOUNTS_ACCOUNTS = [
         COLUMNS.account,
@@ -1016,22 +544,20 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         COLUMNS.defaultAccountManager,
         COLUMNS.defaultSalesRepresentative,
         COLUMNS.accountType,
-    ].concat(STATS);
+    ];
 
     var ACCOUNT_CAMPAIGNS = [
         COLUMNS.campaign,
         COLUMNS.performance,
         COLUMNS.statusCampaign,
         COLUMNS.campaignManager,
-    ].concat(STATS);
+    ];
 
     var CAMPAIGN_AD_GROUPS = [
         COLUMNS.adgroup,
         COLUMNS.performance,
         COLUMNS.statusAdGroup,
-        COLUMNS.yesterdayCost,
-        COLUMNS.eYesterdayCost,
-    ].concat(STATS);
+    ];
 
     var AD_GROUP_CONTENT_ADS = [
         COLUMNS.imageUrls,
@@ -1047,7 +573,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         COLUMNS.brandName,
         COLUMNS.description,
         COLUMNS.callToAction,
-    ].concat(STATS);
+    ];
 
     var AD_GROUP_MEDIA_SOURCE = [
         COLUMNS.mediaSource,
@@ -1059,9 +585,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         COLUMNS.currentBidCpc,
         COLUMNS.dailyBudgetSetting,
         COLUMNS.currentDailyBudget,
-        COLUMNS.yesterdayCost,
-        COLUMNS.eYesterdayCost,
-    ].concat(STATS);
+    ];
 
     var AD_GROUP_PUBLISHERS = [
         COLUMNS.statusPublisher,
@@ -1069,29 +593,476 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         COLUMNS.domain,
         COLUMNS.domainLink,
         COLUMNS.exchange,
-    ].concat(STATS);
+    ];
+
+    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    // METRICS COLUMNS DEFINITIONS
+    //
+
+    var COST_METRICS = [
+        {
+            name: 'Actual Media Spend',
+            field: 'media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_actual_costs',
+            shown: 'zemauth.can_view_actual_costs',
+        },
+        {
+            name: 'Media Spend',
+            field: 'e_media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source.',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_effective_costs',
+            shown: 'zemauth.can_view_effective_costs',
+        },
+        {
+            name: 'Actual Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_actual_costs',
+            shown: 'zemauth.can_view_actual_costs',
+        },
+        {
+            name: 'Data Cost',
+            field: 'e_data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_effective_costs',
+            shown: 'zemauth.can_view_effective_costs',
+        },
+        {
+            name: 'License Fee',
+            field: 'license_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_effective_costs',
+            shown: 'zemauth.can_view_effective_costs',
+        },
+        {
+            name: 'Recognized Flat Fee',
+            field: 'flat_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_flat_fees',
+            shown: 'zemauth.can_view_flat_fees',
+        },
+        {
+            name: 'Total Fee',
+            field: 'total_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_flat_fees',
+            shown: 'zemauth.can_view_flat_fees',
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_effective_costs',
+            shown: 'zemauth.can_view_effective_costs',
+        },
+        {
+            name: 'Avg. CPC',
+            field: 'cpc',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            fractionSize: 3,
+            help: 'The average CPC.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+    ];
+
+    var CLICK_METRICS = [
+        {
+            name: 'Clicks',
+            field: 'clicks',
+            checked: true,
+            type: 'number',
+            shown: true,
+            help: 'The number of times a content ad has been clicked.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number',
+            shown: true,
+            totalRow: true,
+            help: 'The number of times content ads have been displayed.',
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'CTR',
+            field: 'ctr',
+            checked: true,
+            type: 'percent',
+            shown: true,
+            defaultValue: '0.0%',
+            totalRow: true,
+            help: 'The number of clicks divided by the number of impressions.',
+            order: true,
+            initialOrder: 'desc',
+        },
+    ];
+
+    var BASE_METRICS = COST_METRICS.concat(CLICK_METRICS);
+
+    var YESTERDAY_COST_METRICS = [
+        {
+            name: 'Actual Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group, including overspend.',
+            totalRow: true,
+            order: true,
+            internal: 'zemauth.can_view_actual_costs',
+            initialOrder: 'desc',
+            shown: 'zemauth.can_view_actual_costs',
+        },
+        {
+            name: 'Yesterday Spend',
+            field: 'e_yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_effective_costs',
+            shown: 'zemauth.can_view_effective_costs',
+        },
+    ];
+
+    var PROJECTION_METRICS = [
+        {
+            name: 'Media budgets',
+            field: 'allocated_budgets',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_see_projections',
+            shown: 'zemauth.can_see_projections',
+        },
+        {
+            name: 'Pacing',
+            field: 'pacing',
+            checked: false,
+            type: 'percent',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_see_projections',
+            shown: 'zemauth.can_see_projections',
+        },
+        {
+            name: 'Spend Projection',
+            field: 'spend_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_see_projections',
+            shown: 'zemauth.can_see_projections',
+        },
+        {
+            name: 'License Fee Projection',
+            field: 'license_fee_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_see_projections',
+            shown: 'zemauth.can_see_projections',
+        },
+        {
+            name: 'Total Fee Projection',
+            field: 'total_fee_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_see_projections',
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees'],
+        },
+    ];
+
+    var OPTIMISATION_METRICS = [
+        {
+            name: 'Total Seconds',
+            field: 'total_seconds',
+            checked: true,
+            type: 'number',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Total time spend on site.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Unbounced Visitors',
+            field: 'unbounced_visits',
+            checked: false,
+            type: 'number',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Percent of visitors that navigate to more than one page on the site.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Total Pageviews',
+            field: 'total_pageviews',
+            checked: true,
+            type: 'number',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Total pageviews.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Avg. Cost per Second',
+            field: 'avg_cost_per_second',
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost per time spent on site.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Avg. Cost per Pageview',
+            field: 'avg_cost_per_pageview',
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost per pageview.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Avg. Cost for Unbounced Visitor',
+            field: 'avg_cost_per_non_bounced_visitor',
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost per non-bounced visitors.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Avg. Cost for New Visitor',
+            field: 'avg_cost_for_new_visitor',
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost for new visitor.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+    ];
+
+    var POSTCLICK_ENGAGEMENT_METRICS = [
+        {
+            name: '% New Users',
+            field: 'percent_new_users',
+            checked: false,
+            type: 'percent',
+            shown: 'zemauth.aggregate_postclick_engagement',
+            internal: 'zemauth.aggregate_postclick_engagement',
+            help: 'An estimate of first time visits during the selected date range.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Bounce Rate',
+            field: 'bounce_rate',
+            checked: false,
+            type: 'percent',
+            shown: 'zemauth.aggregate_postclick_engagement',
+            internal: 'zemauth.aggregate_postclick_engagement',
+            help: 'Percentage of visits that resulted in only one page view.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Pageviews per Visit',
+            field: 'pv_per_visit',
+            checked: false,
+            type: 'number',
+            fractionSize: 2,
+            shown: 'zemauth.aggregate_postclick_engagement',
+            internal: 'zemauth.aggregate_postclick_engagement',
+            help: 'Average number of pageviews per visit.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Time on Site',
+            field: 'avg_tos',
+            checked: false,
+            type: 'seconds',
+            shown: 'zemauth.aggregate_postclick_engagement',
+            internal: 'zemauth.aggregate_postclick_engagement',
+            help: 'Average time spent on site in seconds during the selected date range.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+    ];
+
+    var POSTCLICK_ACQUISITION_METRICS = [
+        {
+            name: 'Visits',
+            field: 'visits',
+            checked: true,
+            type: 'number',
+            shown: 'zemauth.aggregate_postclick_acquisition',
+            internal: 'zemauth.aggregate_postclick_acquisition',
+            help: 'Total number of sessions within a date range. A session is the period of time in which a user ' +
+            'is actively engaged with your site.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Click Discrepancy',
+            field: 'click_discrepancy',
+            checked: false,
+            type: 'percent',
+            shown: 'zemauth.aggregate_postclick_acquisition',
+            internal: 'zemauth.aggregate_postclick_acquisition',
+            help: 'Clicks detected only by media source as a percentage of total clicks.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+        {
+            name: 'Pageviews',
+            field: 'pageviews',
+            checked: true,
+            type: 'number',
+            shown: 'zemauth.aggregate_postclick_acquisition',
+            internal: 'zemauth.aggregate_postclick_acquisition',
+            help: 'Total number of pageviews made during the selected date range. A pageview is a view of ' +
+            'a single page. Repeated views are counted.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+    ];
+
+    var POSTCLICK_CONVERSION_GOALS_METRICS = [];
+
+
+    for (var i = 1; i <= 5; i++) {
+        POSTCLICK_CONVERSION_GOALS_METRICS.push({
+            name: 'Conversion Goal ' + i,
+            field: 'conversion_goal_' + i,
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: false,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        });
+    }
+
+    for (i = 0; i < 6; i++) {
+        OPTIMISATION_METRICS.push({
+            name: 'Avg. CPA',
+            field: 'avg_cost_per_conversion_goal_' + i,
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost per acquisition.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        });
+    }
 
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
     //  COLUMN CATEGORIES
-    // //////////////////////////////////////////////////////////////////////////////////////////////////
+    //
 
     var CATEGORIES = [
         {
             name: 'Costs',
-            columns: [
-                COLUMNS.eDataCost,
-                COLUMNS.eMediaCost,
-                COLUMNS.mediaCost,
-                COLUMNS.eDataCost,
-                COLUMNS.dataCost,
-                COLUMNS.licenseFee,
-                COLUMNS.totalFee,
-                COLUMNS.flatFee,
-                COLUMNS.billingCost,
-                COLUMNS.yesterdayCost,
-                COLUMNS.eYesterdayCost,
-            ],
+            columns: []
+                .concat(COST_METRICS)
+                .concat(YESTERDAY_COST_METRICS),
         }, {
             name: 'Content Sync',
             columns: [
@@ -1109,18 +1080,11 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         },
         {
             name: 'Projections',
-            columns: [
-                COLUMNS.totalFeeProjection,
-                COLUMNS.licenseFeeProjection,
-                COLUMNS.spendProjection,
-                COLUMNS.pacing,
-                COLUMNS.allocatedBudgets,
-            ],
+            columns: PROJECTION_METRICS,
         },
         {
             name: 'Traffic Acquisition',
             columns: [
-                // publisherSelected ??
                 COLUMNS.statusPublisher,
                 COLUMNS.domain,
                 COLUMNS.domainLink,
@@ -1129,21 +1093,13 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
                 COLUMNS.maxBidCpc,
                 COLUMNS.dailyBudget,
                 COLUMNS.dailyBudgetSetting,
-                COLUMNS.clicks,
-                COLUMNS.cpc,
-            ],
+            ].concat(CLICK_METRICS),
         },
         {
             name: 'Audience Metrics',
-            columns: [ // FIXME: goal metrics
-                // visits
-                // pageviews
-                // percent_new_users
-                // bounce_rate
-                // pv_per_visit
-                // avg_tos
-                // click_discrepancy
-            ],
+            columns: []
+                .concat(POSTCLICK_ACQUISITION_METRICS)
+                .concat(POSTCLICK_ENGAGEMENT_METRICS),
         },
         {
             name: 'Management',
@@ -1156,15 +1112,12 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         },
         {
             name: 'Conversions',
-            columns: [ // FIXME: conversion goals
-                // conversion_goal_1
-                // conversion_goal_2
-                // conversion_goal_3
-                // conversion_goal_4
-                // conversion_goal_5
-            ],
+            columns: POSTCLICK_CONVERSION_GOALS_METRICS,
         },
-        // TODO: zemOptimisationMetricsService.createColumnCategories(),
+        {
+            name: 'Campaign Goals',
+            columns: OPTIMISATION_METRICS,
+        },
     ];
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
@@ -1202,7 +1155,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         });
     }
 
-    function getColumns (level, breakdown) {
+    function getBaseColumns (level, breakdown) {
         // TODO: use constants
         var columns;
         if (breakdown === 'source') {
@@ -1240,28 +1193,29 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
                 throw 'Not supported.';
             }
         }
+        return columns;
+    }
+
+    function getMetricsColumns (level) {
+        var columns = BASE_METRICS;
+
+        if (level === 'campaigns')
+            columns = columns.concat(YESTERDAY_COST_METRICS);
+
+        columns = columns.concat(POSTCLICK_ACQUISITION_METRICS).concat(POSTCLICK_ENGAGEMENT_METRICS);
+
+        if (level !== 'all_accounts' && level !== 'accounts')
+            columns = columns.concat(POSTCLICK_CONVERSION_GOALS_METRICS).concat(OPTIMISATION_METRICS);
 
         return columns;
     }
 
     function createColumns ($scope, level, breakdown) {
         // Create columns definitions array based on base level and breakdown
-        var columns = getColumns(level, breakdown);
-        columns = angular.copy(columns);
+        var baseColumns = getBaseColumns(level, breakdown);
+        var metricsColumns = getMetricsColumns(level);
+        var columns = baseColumns.concat(metricsColumns);
         checkPermissions($scope, columns);
-
-        // Append postlick metrics
-        //$scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
-        //$scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
-        //zemPostclickMetricsService.insertAcquisitionColumns
-        //zemPostclickMetricsService.insertEngagementColumns
-        //zemPostclickMetricsService.insertConversionGoalColumns  -- not on all_accounts, account
-
-        // Append optimization metrics
-        //$scope.hasPermission('zemauth.campaign_goal_optimization'),
-        //$scope.isPermissionInternal('zemauth.campaign_goal_optimization')
-        //zemOptimisationMetricsService.insertAudienceOptimizationColumns - for campaigns, adgroups
-
         return columns;
     }
 
