@@ -773,6 +773,9 @@ class AccountSettings(SettingsBase, HistoryMixin):
             self.post_init_state,
             self.get_settings_dict(),
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_account_history(
             self.account,
@@ -874,6 +877,9 @@ class CampaignSettings(SettingsBase, HistoryMixin):
             self.post_init_state,
             self.get_settings_dict(),
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
             self.campaign,
@@ -2061,6 +2067,9 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
             self.post_init_state,
             self.get_settings_dict(),
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             self.ad_group,
@@ -2227,6 +2236,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.post_init_state,
             self.get_settings_dict(),
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             current_settings.ad_group,
@@ -2821,6 +2833,9 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             self.post_init_state,
             model_to_dict(self),
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
 
         if self.account is not None:
@@ -3558,7 +3573,6 @@ def create_ad_group_history(ad_group, history_type, changes, changes_text, user=
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
-
     campaign, account, agency = _generate_parents(ad_group=ad_group)
     history = History.objects.create(
         ad_group=ad_group,

@@ -1373,6 +1373,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 campaign: filter.campaign,
                 account: filter.account,
                 agency: filter.agency,
+                level: filter.level,
             }; 
         }
 
