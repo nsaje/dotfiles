@@ -68,6 +68,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             hasPermission: 'zemauth.can_filter_sources_through_table',
             shown: true,
         },
+
         agency: {
             name: 'Agency',
             field: 'agency',
@@ -141,6 +142,38 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             initialOrder: 'asc',
             internal: 'zemauth.campaign_goal_performance',
             shown: 'zemauth.campaign_goal_performance',
+        },
+
+        // State TODO: refactor
+        stateAdGroup: { // AdGroup state
+            name: '\u25CF',
+            field: 'state',
+            type: 'state',
+            order: true,
+            editable: true,
+            initialOrder: 'asc',
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing Ad Groups.',
+            disabled: false,
+            internal: 'zemauth.can_control_ad_group_state_in_table',
+            shown: 'zemauth.can_control_ad_group_state_in_table',
+        },
+        stateContentAd: {
+            name: '\u25CF',
+            field: 'status_setting',
+            type: 'state',
+            order: true,
+            initialOrder: 'asc',
+            internal: false,
+            shown: true,
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing content ads.',
+            disabled: false,
+            archivedField: 'archived',
         },
 
         // Status columns
@@ -229,64 +262,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             order: false,
             initialOrder: 'asc',
             shown: 'zemauth.can_see_publisher_blacklist_status',
-        },
-
-        // State TODO: refactor
-        stateAdGroup: { // AdGroup state
-            name: '\u25CF',
-            field: 'state',
-            type: 'state',
-            order: true,
-            editable: true,
-            initialOrder: 'asc',
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'A setting for enabling and pausing Ad Groups.',
-            disabled: false,
-            internal: 'zemauth.can_control_ad_group_state_in_table',
-            shown: 'zemauth.can_control_ad_group_state_in_table',
-        },
-        stateContentAd: {
-            name: '\u25CF',
-            field: 'status_setting',
-            type: 'state',
-            order: true,
-            initialOrder: 'asc',
-            internal: false,
-            shown: true,
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            help: 'A setting for enabling and pausing content ads.',
-            disabled: false,
-            archivedField: 'archived',
-        },
-
-        // AdGroup specials (Yesterday spends)
-        yesterdayCost: {
-            name: 'Actual Yesterday Spend',
-            field: 'yesterday_cost',
-            checked: false,
-            type: 'currency',
-            help: 'Amount that you have spent yesterday for promotion on specific ad group, including overspend.',
-            totalRow: true,
-            order: true,
-            internal: 'zemauth.can_view_actual_costs',
-            initialOrder: 'desc',
-            shown: 'zemauth.can_view_actual_costs',
-        },
-        eYesterdayCost: {
-            name: 'Yesterday Spend',
-            field: 'e_yesterday_cost',
-            checked: false,
-            type: 'currency',
-            help: 'Amount that you have spent yesterday for promotion on specific ad group.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
         },
 
         // Media source
@@ -391,45 +366,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             initialOrder: 'desc',
         },
 
-        // Publishers
-        domain: {
-            name: 'Domain',
-            field: 'domain',
-            unselectable: false,
-            checked: true,
-            type: 'clickPermissionOrText',
-            shown: true,
-            totalRow: false,
-            help: 'A publisher where your content is being promoted.',
-            order: true,
-            initialOrder: 'asc',
-        },
-        domainLink: {
-            name: 'Link',
-            field: 'domain_link',
-            unselectable: false,
-            checked: true,
-            type: 'visibleLink',
-            shown: true,
-            totalRow: false,
-            help: 'Link to a publisher where your content is being promoted.',
-            order: false,
-            initialOrder: 'asc',
-        },
-        exchange: {
-            name: 'Media Source',
-            field: 'exchange',
-            unselectable: false,
-            checked: true,
-            type: 'clickPermissionOrText',
-            shown: true,
-            totalRow: false,
-            help: 'An exchange where your content is being promoted.',
-            order: true,
-            initialOrder: 'asc',
-        },
-
-        // ContentAd fields
+        // Content Ad
         imageUrls: {
             name: 'Thumbnail',
             field: 'image_urls',
@@ -553,7 +490,46 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             initialOrder: 'asc',
         },
 
-        // Stats
+        // Publisher
+        domain: {
+            name: 'Domain',
+            field: 'domain',
+            unselectable: false,
+            checked: true,
+            type: 'clickPermissionOrText',
+            shown: true,
+            totalRow: false,
+            help: 'A publisher where your content is being promoted.',
+            order: true,
+            initialOrder: 'asc',
+        },
+        domainLink: {
+            name: 'Link',
+            field: 'domain_link',
+            unselectable: false,
+            checked: true,
+            type: 'visibleLink',
+            shown: true,
+            totalRow: false,
+            help: 'Link to a publisher where your content is being promoted.',
+            order: false,
+            initialOrder: 'asc',
+        },
+        exchange: {
+            name: 'Media Source',
+            field: 'exchange',
+            unselectable: false,
+            checked: true,
+            type: 'clickPermissionOrText',
+            shown: true,
+            totalRow: false,
+            help: 'An exchange where your content is being promoted.',
+            order: true,
+            initialOrder: 'asc',
+        }
+    };
+
+    var COST_METRICS = {
         mediaCost: {
             name: 'Actual Media Spend',
             field: 'media_cost',
@@ -650,6 +626,48 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
+        cpc: {
+            name: 'Avg. CPC',
+            field: 'cpc',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            fractionSize: 3,
+            help: 'The average CPC.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
+    };
+
+    var YESTERDAY_COST_METRICS = {
+        yesterdayCost: {
+            name: 'Actual Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group, including overspend.',
+            totalRow: true,
+            order: true,
+            internal: 'zemauth.can_view_actual_costs',
+            initialOrder: 'desc',
+            shown: 'zemauth.can_view_actual_costs',
+        },
+        eYesterdayCost: {
+            name: 'Yesterday Spend',
+            field: 'e_yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: 'zemauth.can_view_effective_costs',
+            shown: 'zemauth.can_view_effective_costs',
+        },
+    };
+
+    var PROJECTION_METRICS = {
         allocatedBudgets: {
             name: 'Media budgets',
             field: 'allocated_budgets',
@@ -710,18 +728,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             internal: 'zemauth.can_see_projections',
             shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees'],
         },
-        cpc: {
-            name: 'Avg. CPC',
-            field: 'cpc',
-            checked: true,
-            type: 'currency',
-            shown: true,
-            fractionSize: 3,
-            help: 'The average CPC.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        },
+    };
+
+    var CLICK_METRICS = {
         clicks: {
             name: 'Clicks',
             field: 'clicks',
@@ -757,8 +766,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             initialOrder: 'desc',
         },
     };
-
-    // ///////////////////////////////////////
 
     var OPTIMISATION_METRICS = {
         totalSeconds: {
@@ -847,23 +854,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         },
     };
 
-    for (var i = 0; i < 6; i++) {
-        OPTIMISATION_METRICS['avgCostPerConversionGoal' + i] = {
-            name: 'Avg. CPA',
-            field: 'avg_cost_per_conversion_goal_' + i,
-            checked: true,
-            type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per acquisition.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        };
-    }
-
-    // //////////////////////////////////////
-
     var POSTCLICK_ENGAGEMENT_METRICS = {
         percentNewUsers: {
             name: '% New Users',
@@ -925,7 +915,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             shown: 'zemauth.aggregate_postclick_acquisition',
             internal: 'zemauth.aggregate_postclick_acquisition',
             help: 'Total number of sessions within a date range. A session is the period of time in which a user ' +
-                  'is actively engaged with your site.',
+            'is actively engaged with your site.',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
@@ -950,7 +940,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             shown: 'zemauth.aggregate_postclick_acquisition',
             internal: 'zemauth.aggregate_postclick_acquisition',
             help: 'Total number of pageviews made during the selected date range. A pageview is a view of ' +
-                   'a single page. Repeated views are counted.',
+            'a single page. Repeated views are counted.',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
@@ -958,7 +948,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
     };
 
     var POSTCLICK_CONVERSION_GOALS_METRICS = {};
-    for (i = 1; i <= 5; i++) {
+
+    for (var i = 1; i <= 5; i++) {
         POSTCLICK_CONVERSION_GOALS_METRICS['conversionGoal' + i] = {
             name: 'Conversion Goal ' + i,
             field: 'conversion_goal_' + i,
@@ -967,6 +958,21 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             help: 'Number of completions of the conversion goal',
             shown: false,
             internal: false,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        };
+    }
+
+    for (i = 0; i < 6; i++) {
+        OPTIMISATION_METRICS['avgCostPerConversionGoal' + i] = {
+            name: 'Avg. CPA',
+            field: 'avg_cost_per_conversion_goal_' + i,
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost per acquisition.',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
@@ -1201,37 +1207,37 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         var columns;
         if (breakdown === 'source') {
             switch (level) {
-                case 'ad_groups':
-                    columns = AD_GROUP_MEDIA_SOURCE;
-                    break;
-                default:
-                    columns = MEDIA_SOURCE;
-                    break;
+            case 'ad_groups':
+                columns = AD_GROUP_MEDIA_SOURCE;
+                break;
+            default:
+                columns = MEDIA_SOURCE;
+                break;
             }
         } else if (breakdown === 'publisher') {
             switch (level) {
-                case 'ad_groups':
-                    columns = AD_GROUP_PUBLISHERS;
-                    break;
-                default:
-                    throw 'Not supported.';
+            case 'ad_groups':
+                columns = AD_GROUP_PUBLISHERS;
+                break;
+            default:
+                throw 'Not supported.';
             }
         } else {
             switch (level) {
-                case 'all_accounts':
-                    columns = ALL_ACCOUNTS_ACCOUNTS;
-                    break;
-                case 'accounts':
-                    columns = ACCOUNT_CAMPAIGNS;
-                    break;
-                case 'campaigns':
-                    columns = CAMPAIGN_AD_GROUPS;
-                    break;
-                case 'ad_groups':
-                    columns = AD_GROUP_CONTENT_ADS;
-                    break;
-                default:
-                    throw 'Not supported.';
+            case 'all_accounts':
+                columns = ALL_ACCOUNTS_ACCOUNTS;
+                break;
+            case 'accounts':
+                columns = ACCOUNT_CAMPAIGNS;
+                break;
+            case 'campaigns':
+                columns = CAMPAIGN_AD_GROUPS;
+                break;
+            case 'ad_groups':
+                columns = AD_GROUP_CONTENT_ADS;
+                break;
+            default:
+                throw 'Not supported.';
             }
         }
 
