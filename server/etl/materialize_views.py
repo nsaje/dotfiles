@@ -113,9 +113,9 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
         for date in days:
             s3_paths += self.generate_csvs(
                 date_from, date_to,
+                cursor=cursor,
                 date=date,
                 breakdown_keys_with_traffic=breakdown_keys_with_traffic[date],
-                campaign_factors=campaign_factors[date]
             )
 
         logger.info('Insert data into table "%s"', self.table_name())
@@ -131,37 +131,33 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
-    def generate_rows(self, _date_from, _date_to, date, breakdown_keys_with_traffic, campaign_factors):
-        with db.get_stats_cursor() as c:
-            skipped_postclick_stats = set()
-            hits_1 = 0
+    def generate_rows(self, _date_from, _date_to, cursor, date, breakdown_keys_with_traffic):
+        skipped_postclick_stats = set()
 
-            for breakdown_key, row in self._get_postclickstats(c, date):
-               # only return those rows for which we have traffic - click
-                if breakdown_key in breakdown_keys_with_traffic:
-                    hits_1 += 1
-                    yield row
-                else:
-                    skipped_postclick_stats.add(breakdown_key)
+        for breakdown_key, row in self._get_postclickstats(cursor, date):
+            # only return those rows for which we have traffic - click
+            if breakdown_key in breakdown_keys_with_traffic:
+                print 1
+                yield row
+            else:
+                skipped_postclick_stats.add(breakdown_key)
 
-            skipped_tpconversions = set()
-            hits_2 = 0
+        skipped_tpconversions = set()
 
-            for breakdown_key, row in self._get_touchpoint_conversions(c, date):
-               # only return those rows for which we have traffic - click
-                if breakdown_key in breakdown_keys_with_traffic:
-                    hits_2 += 1
-                    yield row
-                else:
-                    skipped_tpconversions.add(breakdown_key)
+        for breakdown_key, row in self._get_touchpoint_conversions(cursor, date):
+            # only return those rows for which we have traffic - click
+            if breakdown_key in breakdown_keys_with_traffic:
+                print 2
+                yield row
+            else:
+                skipped_tpconversions.add(breakdown_key)
 
-            print hits_1, len(skipped_postclick_stats), hits_2z, len(skipped_tpconversions)
-            if skipped_postclick_stats:
-                logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
+        if skipped_postclick_stats:
+            logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
 
-            if skipped_tpconversions:
-                logger.info(
-                    'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
+        if skipped_tpconversions:
+            logger.info(
+                'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
 
     def _get_postclickstats(self, cursor, date):
 
