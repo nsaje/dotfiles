@@ -3440,8 +3440,8 @@ class GAAnalyticsAccount(models.Model):
 
 class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
-    ad_account_id = models.CharField(max_length=127, blank=True)
-    page_url = models.CharField(max_length=255)
+    ad_account_id = models.CharField(max_length=127, blank=True, null=True)
+    page_url = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField(
         default=constants.FacebookPageRequestType.EMPTY,
         choices=constants.FacebookPageRequestType.get_choices()

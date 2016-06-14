@@ -172,6 +172,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_account_agency_information', 'Can view agency column in tables.'),
             ('can_set_account_sales_representative', 'Can view and set account sales representative on account settings tab.'),
             ('can_modify_account_name', 'Can see and modify account name on account settings tab.'),
+            ('can_modify_facebook_page', 'Can see and modify facebook page.'),
             ('can_modify_account_manager', 'Can view and set account manager on account settings tab.'),
             ('account_history_view', 'Can view account''s history tab.'),
             ('can_access_table_breakdowns_feature', 'Can access table breakdowns feature.'),

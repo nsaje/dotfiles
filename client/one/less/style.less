@@ -29,6 +29,10 @@
 
 @white: #fff;
 
+@status-green: #00cc00;
+@status-orange: #ff9900;
+@status-red: #ff0000;
+
 @keyframes show-updated {
     0% { background-color: @updated-color; }
     50% { background-color: @updated-color; }
@@ -4533,4 +4537,58 @@ select.media-source-select {
             color: @insights-table-header;
         }
     }
+}
+
+.fb-logo.input-group {
+    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+
+    i {
+        padding: 0;
+        position: relative;
+        width: 32px;
+        height: 32px;
+        overflow: hidden;
+
+        img {
+            height: 36px;
+            position: absolute;
+            top: -2px;
+            left: -2px;
+        }
+    }
+}
+
+.fb-page {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+
+    img {
+        height: 32px;
+    }
+    div {
+        padding: 0;
+    }
+    p {
+        font-size: 11px;
+        margin-bottom: 0;
+    }
+    p:first-child {
+        padding-top: 1px;
+    }
+
+    .connected {
+        color: @status-green;
+    }
+    .pending {
+        color: @status-orange;
+    }
+    .invalid,
+    .error {
+        color: @status-red;
+    }
+}
+
+.fb-warning {
+    margin-left: 0;
 }
