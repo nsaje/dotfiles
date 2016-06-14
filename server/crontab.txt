@@ -28,4 +28,4 @@
 #20,50 * * * *       /home/ubuntu/docker-manage-py.sh monitor_aggregate_discrepancy
 #20,50 * * * *       /home/ubuntu/docker-manage-py.sh monitor_redshift_discrepancy
 0 8 * * *            /home/ubuntu/docker-manage-py.sh create_demo_snapshot
-0/5 * * * *          /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
+*/5 * * * *          /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
