@@ -1462,10 +1462,6 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         return True
 
 
-class FacebookAccountTemplateAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-
-
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1492,4 +1488,3 @@ admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
-admin.site.register(models.FacebookAccount, FacebookAccountTemplateAdmin)
