@@ -24,9 +24,11 @@ CSV_DELIMITER = '\t'
 
 class TempTableMixin(object):
     def clear_data(self, cursor, date_from, date_to):
+        logger.info('Drop table "%s"', self.table_name())
         sql, params = self.prepare_drop_query()
         cursor.execute(sql, params)
 
+        logger.info('Create table "%s"', self.table_name())
         sql, params = self.prepare_create_table_query()
         cursor.execute(sql, params)
 
@@ -58,10 +60,12 @@ class Materialize(object):
         logger.info("Done materializing table %s for dates %s - %s", self.table_name(), date_from, date_to)
 
     def clear_data(self, cursor, date_from, date_to):
+        logger.info('Delete data from table "%s"', self.table_name())
         del_sql, del_params = self.prepare_delete_query(date_from, date_to)
         cursor.execute(del_sql, del_params)
 
     def insert_data(self, cursor, date_from, date_to, **kwargs):
+        logger.info('Insert data into table "%s"', self.table_name())
         sql, params = self.prepare_insert_query(date_from, date_to, **kwargs)
         cursor.execute(sql, params)
 
