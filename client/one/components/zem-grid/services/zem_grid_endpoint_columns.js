@@ -595,6 +595,10 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         COLUMNS.exchange,
     ];
 
+    var ALL_BASE_COLUMNS = Object.keys(COLUMNS).map(function (key) {
+        return COLUMNS[key];
+    });
+
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // METRICS COLUMNS DEFINITIONS
     //
@@ -746,8 +750,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             initialOrder: 'desc',
         },
     ];
-
-    var BASE_METRICS = COST_METRICS.concat(CLICK_METRICS);
 
     var YESTERDAY_COST_METRICS = [
         {
@@ -1021,7 +1023,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
 
     var POSTCLICK_CONVERSION_GOALS_METRICS = [];
 
-
     for (var i = 1; i <= 5; i++) {
         POSTCLICK_CONVERSION_GOALS_METRICS.push({
             name: 'Conversion Goal ' + i,
@@ -1052,6 +1053,15 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         });
     }
 
+    var BASE_METRICS = COST_METRICS.concat(CLICK_METRICS);
+    
+    var ALL_METRICS_COLUMNS = BASE_METRICS
+        .concat(YESTERDAY_COST_METRICS)
+        .concat(PROJECTION_METRICS)
+        .concat(OPTIMISATION_METRICS)
+        .concat(POSTCLICK_ENGAGEMENT_METRICS)
+        .concat(POSTCLICK_ACQUISITION_METRICS)
+        .concat(POSTCLICK_CONVERSION_GOALS_METRICS);
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
     //  COLUMN CATEGORIES
