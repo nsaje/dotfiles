@@ -1,4 +1,5 @@
 import sys
+import decimal
 
 from django.db import connection, transaction, DatabaseError
 from django.core.exceptions import ValidationError
@@ -111,17 +112,36 @@ class Command(utils.command_helpers.ExceptionCommand):
                 updates[field] = value
         return updates
 
+    def _validate(self, model, object_list):
+        self._validate_dates(model, object_list)
+        if model == MODEL_CREDITS:
+            self._validate_credit_amounts(object_list)
+        else:
+            self._validate_credit_amounts(set([
+                obj.credit for obj in object_list
+            ]))
+
     def _validate_dates(self, model, object_list):
         for obj in object_list:
             if obj.start_date > obj.end_date:
                 raise ValidationError('Start date cannot be bigger than end date')
 
         if model == MODEL_CREDITS:
-            for budget in obj.budgets.all():
-                if budget.start_date < obj.start_date:
-                    raise ValidationError('Budget start date cannot be smaller than credit\'s end date')
-                if budget.end_date > obj.end_date:
-                    raise ValidationError('Budget end date cannot be bigger than the credit\'s end date')
+            for obj in object_list:
+                for budget in obj.budgets.all():
+                    if budget.start_date < obj.start_date:
+                        raise ValidationError(
+                            'Budget start date cannot be smaller than credit\'s end date'
+                        )
+                    if budget.end_date > obj.end_date:
+                        raise ValidationError(
+                            'Budget end date cannot be bigger than the credit\'s end date'
+                        )
+
+    def _validate_credit_amounts(self, credit_list):
+        for credit in credit_list:
+            if credit.amount < credit.get_allocated_amount():
+                raise ValidationError('Amounts in budgets don\'t match credit\'s')
 
     def handle(self, **options):
         action = options['action'][0]
@@ -157,7 +177,8 @@ class Command(utils.command_helpers.ExceptionCommand):
                 update_budgets(object_list, updates)
 
             object_list = [type(obj).objects.get(pk=obj.pk) for obj in object_list]
-            self._validate_dates(model, object_list)
+            self._validate(model, object_list)
+
             for obj in object_list:
                 obj.save()
 
@@ -210,7 +231,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             budget.start_date,
             budget.end_date,
             budget.amount,
-            utils.converters.nano_to_cc(budget.freed_cc)
+            utils.converters.CC_TO_DECIMAL_DOLAR * budget.freed_cc
         ))
 
     def _print_credit(self, credit):
@@ -222,5 +243,5 @@ class Command(utils.command_helpers.ExceptionCommand):
             credit.end_date,
             credit.amount,
             credit.license_fee,
-            utils.converters.nano_to_cc(credit.flat_fee_cc)
+            utils.converters.CC_TO_DECIMAL_DOLAR * credit.flat_fee_cc
         ))
