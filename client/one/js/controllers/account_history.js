@@ -1,11 +1,11 @@
-/* globals oneApp */
+/* globals oneApp,constants */
 oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.history = [];
     $scope.requestInProgress = false;
     $scope.order = 'datetime';
     $scope.orderAsc = false;
 
-    $scope.changeOrder = function(field) {
+    $scope.changeOrder = function (field) {
         $scope.order = field;
         $scope.orderAsc = !$scope.orderAsc;
 
@@ -19,9 +19,8 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
 
         if ($scope.orderAsc) {
             return 'ordered-reverse';
-        } else {
-            return 'ordered';  
         }
+        return 'ordered';
     }
 
     $scope.getHistory = function () {
@@ -30,7 +29,7 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
         if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
             var order = (!$scope.orderAsc && '-' || '') + $scope.order,
                 params = {
-                    account: $state.params.id, 
+                    account: $state.params.id,
                     level: constants.historyLevel.ACCOUNT,
                 };
             api.history.get(params, order).then(

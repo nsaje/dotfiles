@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp,constants */
 oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.history = [];
@@ -6,7 +6,7 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
     $scope.order = 'datetime';
     $scope.orderAsc = false;
 
-    $scope.changeOrder = function(field) {
+    $scope.changeOrder = function (field) {
         $scope.order = field;
         $scope.orderAsc = !$scope.orderAsc;
 
@@ -20,9 +20,8 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
 
         if ($scope.orderAsc) {
             return 'ordered-reverse';
-        } else {
-            return 'ordered';  
         }
+        return 'ordered';
     };
 
     $scope.getHistory = function () {
@@ -32,7 +31,7 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
         if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
             var order = (!$scope.orderAsc && '-' || '') + $scope.order,
                 params = {
-                    campaign: $state.params.id, 
+                    campaign: $state.params.id,
                     level: constants.historyLevel.CAMPAIGN,
                 };
             api.history.get(params, order).then(
