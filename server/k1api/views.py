@@ -183,7 +183,6 @@ def _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source):
     return url
 
 
-
 @csrf_exempt
 def get_content_ad_sources_for_ad_group(request):
     _validate_signature(request)
