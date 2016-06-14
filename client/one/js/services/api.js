@@ -1391,7 +1391,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 defaultSalesRepresentative: data.errors.default_sales_representative,
                 accountType: data.errors.account_type,
                 allowedSources: data.errors.allowed_sources,
-                allowedSourcesData: data.data.allowed_sources,
+                allowedSourcesData: data.errors.allowed_sources,
                 facebookPage: data.errors.facebook_page,
             };
         }

@@ -152,7 +152,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
 
     $scope.clearFacebookPage = function () {
         $scope.settings.facebookPage = null;
-        $scope.settings.facebookStatus = 'Empty';
+        $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
     };
 
     $scope.refreshPage = function () {

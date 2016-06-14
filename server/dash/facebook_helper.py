@@ -43,11 +43,11 @@ def _send_page_access_request(facebook_account):
     elif response.status_code == 400:
         error = json.loads(response.content).get('error', {})
 
-        if error.get('error_user_title', '').find(ERROR_ALREADY_CONNECTED) >= 0:
+        if ERROR_ALREADY_CONNECTED in error.get('error_user_title', ''):
             return constants.FacebookPageRequestType.CONNECTED
-        elif error.get('message', '').find(ERROR_ALREADY_PENDING) >= 0:
+        elif ERROR_ALREADY_PENDING in error.get('message', ''):
             return constants.FacebookPageRequestType.PENDING
-        elif error.get('message', '').find(ERROR_INVALID_PAGE) >= 0:
+        elif ERROR_INVALID_PAGE in error.get('message', ''):
             logger.warning('FB api returned an invalid page error for pageId: {}. Error message: {}', page_id,
                            error.get('message'))
             return constants.FacebookPageRequestType.INVALID
