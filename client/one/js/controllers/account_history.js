@@ -28,7 +28,12 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
         $scope.requestInProgress = true;
 
         if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
-            api.history.get({account: $state.params.id}, (!$scope.orderAsc && '-' || '') + $scope.order).then(
+            var order = (!$scope.orderAsc && '-' || '') + $scope.order,
+                params = {
+                    account: $state.params.id, 
+                    level: constants.historyLevel.ACCOUNT,
+                };
+            api.history.get(params, order).then(
                 function (data) {
                     $scope.history = data.history;
                 }

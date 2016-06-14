@@ -28,7 +28,12 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.getHistory = function (id) {
         $scope.requestInProgress = true;
         if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
-            api.history.get({adGroup: $state.params.id}, (!$scope.orderAsc && '-' || '') + $scope.order).then(
+            var order = (!$scope.orderAsc && '-' || '') + $scope.order,
+                params = {
+                    adGroup: $state.params.id, 
+                    level: constants.historyLevel.AD_GROUP,
+                };
+            api.history.get(params, order).then(
                 function (data) {
                     $scope.history = data.history;
                 }

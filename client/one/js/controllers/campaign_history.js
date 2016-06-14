@@ -30,7 +30,12 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
         $scope.errors = {};
 
         if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
-            api.history.get({campaign: $state.params.id}, (!$scope.orderAsc && '-' || '') + $scope.order).then(
+            var order = (!$scope.orderAsc && '-' || '') + $scope.order,
+                params = {
+                    campaign: $state.params.id, 
+                    level: constants.historyLevel.CAMPAIGN,
+                };
+            api.history.get(params, order).then(
                 function (data) {
                     $scope.history = data.history;
                 }

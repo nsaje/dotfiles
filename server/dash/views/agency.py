@@ -1462,7 +1462,6 @@ class CampaignContentInsights(api_common.BaseApiView):
 class History(api_common.BaseApiView):
 
     def get(self, request):
-        from pudb import set_trace; set_trace()
         if not request.user.has_perm('zemauth.can_view_new_history_backend'):
             raise exc.AuthorizationError()
         # in case somebody wants to fetch entire history disallow it for the
@@ -1498,6 +1497,9 @@ class History(api_common.BaseApiView):
         agency_raw = request.GET.get('agency')
         if agency_raw:
             entity_filter['agency'] = helpers.get_agency(request.user, int(agency_raw))
+        level_raw = request.GET.get('level')
+        if level_raw and int(level_raw) in constants.HistoryLevel.get_all():
+            entity_filter['level'] = int(level_raw)
         return entity_filter
 
     def get_history(self, filters, order=['-created_dt']):
