@@ -101,12 +101,27 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
     def table_name(self):
         return 'mv_master'
 
-    def generate_csvs(self, date_from, date_to, campaign_factors, **kwargs):
+    def insert_data(self, cursor, date_from, date_to, campaign_factors, **kwargs):
         self._prefetch()
 
+        self._execute_insert_stats_into_mv_master(cursor)
+        breakdown_keys_with_traffic = self._get_breakdowns_with_traffic_results(cursor, date_from, date_to)
+
+        # create CSVs by day and insert each separately
         s3_paths = []
-        for date, daily_campaign_factors in campaign_factors.iteritems():
-            s3_paths += super(MasterView.self).generate(date, date, campaign_factors=daily_campaign_factors)
+        days = sorted(campaign_factors.keys())
+        for date in days:
+            s3_paths += self.generate_csvs(
+                date_from, date_to,
+                date=date,
+                breakdown_keys_with_traffic=breakdown_keys_with_traffic[date],
+                campaign_factors=campaign_factors[date]
+            )
+
+        logger.info('Insert data into table "%s"', self.table_name())
+        for s3_path in s3_paths:
+            sql, params = self.prepare_insert_query(date_from, date_to, s3_path=s3_path)
+            cursor.execute(sql, params)
 
     def _prefetch(self):
         self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
@@ -116,101 +131,37 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
-    def generate_rows(self, _, date, campaign_factors):
+    def generate_rows(self, _date_from, _date_to, date, breakdown_keys_with_traffic, campaign_factors):
         with db.get_stats_cursor() as c:
-            breakdown_keys_with_traffic_stats = set()
-
-            for breakdown_key, row in self._get_stats(c, date, campaign_factors):
-                breakdown_keys_with_traffic_stats.add(breakdown_key)
-                yield row
-
             skipped_postclick_stats = set()
-            # only return those rows for which we have
+            hits_1 = 0
+
             for breakdown_key, row in self._get_postclickstats(c, date):
-                if breakdown_key in breakdown_keys_with_traffic_stats:
+               # only return those rows for which we have traffic - click
+                if breakdown_key in breakdown_keys_with_traffic:
+                    hits_1 += 1
                     yield row
                 else:
                     skipped_postclick_stats.add(breakdown_key)
 
             skipped_tpconversions = set()
+            hits_2 = 0
+
             for breakdown_key, row in self._get_touchpoint_conversions(c, date):
-                if breakdown_key in breakdown_keys_with_traffic_stats:
+               # only return those rows for which we have traffic - click
+                if breakdown_key in breakdown_keys_with_traffic:
+                    hits_2 += 1
                     yield row
                 else:
                     skipped_tpconversions.add(breakdown_key)
 
+            print hits_1, len(skipped_postclick_stats), hits_2z, len(skipped_tpconversions)
             if skipped_postclick_stats:
                 logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
 
             if skipped_tpconversions:
                 logger.info(
                     'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
-
-    def _get_stats(self, cursor, date, campaign_factors):
-
-        for row in self._get_stats_query_results(cursor, date):
-
-            if row.ad_group_id not in self.ad_groups_map:
-                logger.warning("Got spend for unknown ad group: %s", row.ad_group_id)
-                continue
-
-            source_slug = helpers.extract_source_slug(row.source_slug)
-            if source_slug not in self.sources_slug_map:
-                logger.warning("Got spend for unknown media source: %s", row.source_slug)
-                continue
-
-            ad_group = self.ad_groups_map[row.ad_group_id]
-            campaign = self.campaigns_map[ad_group.campaign_id]
-            account = self.accounts_map[campaign.account_id]
-            source = self.sources_slug_map[source_slug]
-
-            if campaign not in campaign_factors:
-                logger.warning("Missing cost factors for campaign %s", campaign.id)
-                continue
-
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
-                    row.cost_micro or 0, row.data_cost_micro or 0, campaign_factors[campaign])
-
-            age = helpers.extract_age(row.age)
-            gender = helpers.extract_gender(row.gender)
-
-            yield helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id), (
-                date,
-                source.id,
-
-                account.agency_id,
-                account.id,
-                campaign.id,
-                ad_group.id,
-                row.content_ad_id,
-                row.publisher,
-
-                helpers.extract_device_type(row.device_type),
-                helpers.extract_country(row.country),
-                helpers.extract_state(row.state),
-                helpers.extract_dma(row.dma),
-                age,
-                gender,
-                helpers.extract_age_gender(age, gender),
-
-                row.impressions,
-                row.clicks,
-                converters.micro_to_cc(row.cost_micro),
-                converters.micro_to_cc(row.data_cost_micro),
-
-                0,
-                0,
-                0,
-                0,
-                0,
-
-                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
-                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
-                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
-
-                None,
-                None,
-            )
 
     def _get_postclickstats(self, cursor, date):
 
@@ -340,11 +291,33 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
             )
 
     @classmethod
-    def _get_stats_query_results(cls, cursor, date):
-        sql, params = cls._prepare_stats_query(date)
+    def _execute_insert_stats_into_mv_master(cls, c):
+        sql, params = cls._prepare_insert_stats_query()
+        c.execute(sql, params)
 
-        cursor.execute(sql, params)
-        return db.xnamedtuplefetchall(cursor)
+    @classmethod
+    def _prepare_insert_stats_query(cls):
+        # NOTE: mvh_clean_stats includes only data from the selected date range
+        # so no constraints are necessary
+        return backtosql.generate_sql('etl_insert_mv_master_stats.sql', {}), {}
+
+    @classmethod
+    def _get_breakdowns_with_traffic_results(cls, c, date_from, date_to):
+        sql, params = cls._prepare_get_breakdowns_with_traffic(date_from, date_to)
+        c.execute(sql, params)
+
+        breakdown_keys = defaultdict(set)
+        for row in db.xnamedtuplefetchall(c):
+            breakdown_keys[row.date].add(helpers.get_breakdown_key_for_postclickstats(row.source_id, row.content_ad_id))
+
+        return breakdown_keys
+
+    @classmethod
+    def _prepare_get_breakdowns_with_traffic(cls, date_from, date_to):
+        return backtosql.generate_sql('etl_select_breakdown_keys_with_traffic.sql', {}), {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
 
     @classmethod
     def _get_postclickstats_query_results(cls, c, date):
@@ -352,27 +325,6 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
 
         c.execute(sql, params)
         return db.xnamedtuplefetchall(c)
-
-    @classmethod
-    def _get_touchpoint_conversions_query_results(cls, c, date):
-        sql, params = cls._prepare_touchpoint_conversions_query(date)
-
-        c.execute(sql, params)
-        return db.xnamedtuplefetchall(c)
-
-    @classmethod
-    def _prepare_stats_query(cls, date):
-        sql = backtosql.generate_sql('etl_breakdown_stats_one_day.sql', {
-            'breakdown': models.K1Stats.get_breakdown([
-                'source_slug', 'ad_group_id', 'content_ad_id', 'publisher',
-                'device_type', 'country', 'state', 'dma', 'age', 'gender'
-            ]),
-            'aggregates': models.K1Stats.get_aggregates(),
-        })
-
-        params = helpers.get_local_date_context(date)
-
-        return sql, params
 
     @classmethod
     def _prepare_postclickstats_query(cls, date):
@@ -387,6 +339,13 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
         params = {'date': date}
 
         return sql, params
+
+    @classmethod
+    def _get_touchpoint_conversions_query_results(cls, c, date):
+        sql, params = cls._prepare_touchpoint_conversions_query(date)
+
+        c.execute(sql, params)
+        return db.xnamedtuplefetchall(c)
 
     @classmethod
     def _prepare_touchpoint_conversions_query(cls, date):
