@@ -8,10 +8,10 @@ describe('AdGroupPublishersCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
+    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', {setShowBlacklistedPublishers: function () {}});
-        $provide.value('zemGridDebugEndpoint', zemDataSourceDebugEndpointsProvider.$get());
+        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
     }));
 
     beforeEach(function () {
