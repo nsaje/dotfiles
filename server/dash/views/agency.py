@@ -1462,6 +1462,7 @@ class CampaignContentInsights(api_common.BaseApiView):
 class History(api_common.BaseApiView):
 
     def get(self, request):
+        from pudb import set_trace; set_trace()
         if not request.user.has_perm('zemauth.can_view_new_history_backend'):
             raise exc.AuthorizationError()
         # in case somebody wants to fetch entire history disallow it for the
