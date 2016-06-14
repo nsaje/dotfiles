@@ -4,7 +4,7 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', '$modal', 'api', f
     $scope.history = [];
     $scope.requestInProgress = false;
     $scope.order = 'datetime';
-    $scope.orderAsc = false;
+    $scope.orderAsc = true;
 
     $scope.changeOrder = function (field) {
         $scope.order = field;
