@@ -10,7 +10,7 @@ describe('MediaSourcesCtrl', function () {
 
     beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
         $provide.value('zemLocalStorageService', {get: function () { }});
-        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
+        $provide.value('zemGridEndpointService', zemDataSourceDebugEndpointsProvider.$get());
     }));
 
     beforeEach(function () {

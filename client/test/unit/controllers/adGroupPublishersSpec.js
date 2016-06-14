@@ -11,7 +11,7 @@ describe('AdGroupPublishersCtrl', function () {
     beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', {setShowBlacklistedPublishers: function () {}});
-        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
+        $provide.value('zemGridDebugEndpoint', zemDataSourceDebugEndpointsProvider.$get());
     }));
 
     beforeEach(function () {

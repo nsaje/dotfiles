@@ -20,7 +20,7 @@ describe('AdGroupAdsCtrl', function () {
 
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', zemFilterServiceMock);
-        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
+        $provide.value('zemGridEndpointService', zemDataSourceDebugEndpointsProvider.$get());
         $provide.value('zemCustomTableColsService', {
             load: function () {
                 return [];
