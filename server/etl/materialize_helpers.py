@@ -173,6 +173,7 @@ class MaterializeViaCSVDaily(MaterializeViaCSV):
 
         return [s3_path]
 
+
 def _get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
     return 'aws_access_key_id={key};aws_secret_access_key={secret}'.format(
         key=aws_access_key_id,

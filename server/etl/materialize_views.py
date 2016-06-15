@@ -348,6 +348,7 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
 
         return sql, params
 
+
 class MVAccount(materialize_helpers.Materialize):
 
     def table_name(self):
@@ -389,5 +390,3 @@ class MVAccountDelivery(materialize_helpers.Materialize):
             'date_from': date_from,
             'date_to': date_to,
         }
-
-
