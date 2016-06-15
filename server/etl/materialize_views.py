@@ -17,50 +17,99 @@ from etl import materialize_helpers
 logger = logging.getLogger(__name__)
 
 
-class MVAccount(materialize_helpers.Materialize):
+class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    """
+    Helper view that puts source id and slug into redshift. Its than used to construct the mv_master view.
+    """
 
     def table_name(self):
-        return 'mv_account'
+        return 'mvh_source'
 
-    def prepare_insert_query(self, date_from, date_to):
-        sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
-                'date', 'source_id', 'agency_id', 'account_id',
-            ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
-            'source_table': 'mv_master',
-        })
+    def generate_rows(self, cursor, date_from, date_to, **kwargs):
+        sources = dash.models.Source.objects.all()
 
-        return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
-        }
+        for source in sources:
+            yield (
+                source.id,
+                helpers.extract_source_slug(source.bidder_slug),
+                source.bidder_slug,
+            )
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_source.sql'
 
 
-class MVAccountDelivery(materialize_helpers.Materialize):
+class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    """
+    Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
+    """
 
     def table_name(self):
-        return 'mv_account_delivery'
+        return 'mvh_campaign_factors'
 
-    def prepare_insert_query(self, date_from, date_to):
-        sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
-                'date', 'source_id', 'agency_id', 'account_id',
-                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
-            ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
-            'source_table': 'mv_master',
+    def generate_rows(self, cursor, date_from, date_to, campaign_factors, **kwargs):
+        for date, campaign_dict in campaign_factors.iteritems():
+            for campaign, factors in campaign_dict.iteritems():
+                yield (
+                    date,
+                    campaign.id,
+
+                    factors[0],
+                    factors[1],
+                )
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_campaign_factors.sql'
+
+
+class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    """
+    Helper view that puts ad group structure (campaign id, account id, agency id) into redshift. Its than
+    used to construct the mv_master view.
+    """
+
+    def table_name(self):
+        return 'mvh_adgroup_structure'
+
+    def generate_rows(self, cursor, date_from, date_to, **kwargs):
+        ad_groups = dash.models.AdGroup.objects.select_related('campaign', 'campaign__account').all()
+
+        for ad_group in ad_groups:
+            yield (
+                ad_group.campaign.account.agency_id,
+                ad_group.campaign.account_id,
+                ad_group.campaign_id,
+                ad_group.id,
+            )
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_adgroup_structure.sql'
+
+
+class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_helpers.Materialize):
+    """
+    Writes a temporary table that has data from stats transformed into the correct format for mv_master construction.
+    It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost
+    and license fee based on mvh_campaign_factors.
+    """
+
+    def table_name(self):
+        return 'mvh_clean_stats'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        params = helpers.get_local_multiday_date_context(date_from, date_to)
+
+        sql = backtosql.generate_sql('etl_insert_mvh_clean_stats.sql', {
+            'date_ranges': params.pop('date_ranges'),
         })
 
-        return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
-        }
+        return sql, params
+
+    def create_table_template_name(self):
+        return 'etl_create_table_mvh_clean_stats.sql'
 
 
-class MasterView(materialize_helpers.TransformAndMaterialize):
+class MasterView(materialize_helpers.MaterializeViaCSVDaily):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.
@@ -72,37 +121,17 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
     def table_name(self):
         return 'mv_master'
 
-    def generate_rows(self, date, campaign_factors):
+    def insert_data(self, cursor, date_from, date_to, campaign_factors, **kwargs):
         self._prefetch()
 
-        with db.get_stats_cursor() as c:
-            breakdown_keys_with_traffic_stats = set()
+        self._execute_insert_stats_into_mv_master(cursor)
 
-            for breakdown_key, row in self._get_stats(c, date, campaign_factors):
-                breakdown_keys_with_traffic_stats.add(breakdown_key)
-                yield row
+        breakdown_keys_with_traffic = self._get_breakdowns_with_traffic_results(cursor, date_from, date_to)
 
-            skipped_postclick_stats = set()
-            # only return those rows for which we have
-            for breakdown_key, row in self._get_postclickstats(c, date):
-                if breakdown_key in breakdown_keys_with_traffic_stats:
-                    yield row
-                else:
-                    skipped_postclick_stats.add(breakdown_key)
-
-            skipped_tpconversions = set()
-            for breakdown_key, row in self._get_touchpoint_conversions(c, date):
-                if breakdown_key in breakdown_keys_with_traffic_stats:
-                    yield row
-                else:
-                    skipped_tpconversions.add(breakdown_key)
-
-            if skipped_postclick_stats:
-                logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
-
-            if skipped_tpconversions:
-                logger.info(
-                    'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
+        super(MasterView, self).insert_data(
+            cursor, date_from, date_to, campaign_factors,
+            breakdown_keys_with_traffic=breakdown_keys_with_traffic,
+            **kwargs)
 
     def _prefetch(self):
         self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
@@ -112,71 +141,33 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
-    def _get_stats(self, cursor, date, campaign_factors):
+    def generate_rows(self, cursor, date, breakdown_keys_with_traffic, **kwargs):
+        skipped_postclick_stats = set()
 
-        for row in self._get_stats_query_results(cursor, date):
+        breakdown_keys_with_traffic = breakdown_keys_with_traffic.get(date, {})
 
-            if row.ad_group_id not in self.ad_groups_map:
-                logger.warning("Got spend for unknown ad group: %s", row.ad_group_id)
-                continue
+        for breakdown_key, row in self._get_postclickstats(cursor, date):
+            # only return those rows for which we have traffic - click
+            if breakdown_key in breakdown_keys_with_traffic:
+                yield row
+            else:
+                skipped_postclick_stats.add(breakdown_key)
 
-            source_slug = helpers.extract_source_slug(row.source_slug)
-            if source_slug not in self.sources_slug_map:
-                logger.warning("Got spend for unknown media source: %s", row.source_slug)
-                continue
+        skipped_tpconversions = set()
 
-            ad_group = self.ad_groups_map[row.ad_group_id]
-            campaign = self.campaigns_map[ad_group.campaign_id]
-            account = self.accounts_map[campaign.account_id]
-            source = self.sources_slug_map[source_slug]
+        for breakdown_key, row in self._get_touchpoint_conversions(cursor, date):
+            # only return those rows for which we have traffic - click
+            if breakdown_key in breakdown_keys_with_traffic:
+                yield row
+            else:
+                skipped_tpconversions.add(breakdown_key)
 
-            if campaign not in campaign_factors:
-                logger.warning("Missing cost factors for campaign %s", campaign.id)
-                continue
+        if skipped_postclick_stats:
+            logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
-                    row.cost_micro or 0, row.data_cost_micro or 0, campaign_factors[campaign])
-
-            age = helpers.extract_age(row.age)
-            gender = helpers.extract_gender(row.gender)
-
-            yield helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id), (
-                date,
-                source.id,
-
-                account.agency_id,
-                account.id,
-                campaign.id,
-                ad_group.id,
-                row.content_ad_id,
-                row.publisher,
-
-                helpers.extract_device_type(row.device_type),
-                helpers.extract_country(row.country),
-                helpers.extract_state(row.state),
-                helpers.extract_dma(row.dma),
-                age,
-                gender,
-                helpers.extract_age_gender(age, gender),
-
-                row.impressions,
-                row.clicks,
-                converters.micro_to_cc(row.cost_micro),
-                converters.micro_to_cc(row.data_cost_micro),
-
-                0,
-                0,
-                0,
-                0,
-                0,
-
-                converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
-                converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
-                converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
-
-                None,
-                None,
-            )
+        if skipped_tpconversions:
+            logger.info(
+                'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
 
     def _get_postclickstats(self, cursor, date):
 
@@ -306,11 +297,33 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
             )
 
     @classmethod
-    def _get_stats_query_results(cls, cursor, date):
-        sql, params = cls._prepare_stats_query(date)
+    def _execute_insert_stats_into_mv_master(cls, c):
+        sql, params = cls._prepare_insert_stats_query()
+        c.execute(sql, params)
 
-        cursor.execute(sql, params)
-        return db.xnamedtuplefetchall(cursor)
+    @classmethod
+    def _prepare_insert_stats_query(cls):
+        # NOTE: mvh_clean_stats includes only data from the selected date range
+        # so no constraints are necessary
+        return backtosql.generate_sql('etl_insert_mv_master_stats.sql', {}), {}
+
+    @classmethod
+    def _get_breakdowns_with_traffic_results(cls, c, date_from, date_to):
+        sql, params = cls._prepare_get_breakdowns_with_traffic(date_from, date_to)
+        c.execute(sql, params)
+
+        breakdown_keys = defaultdict(set)
+        for row in db.xnamedtuplefetchall(c):
+            breakdown_keys[row.date].add(helpers.get_breakdown_key_for_postclickstats(row.source_id, row.content_ad_id))
+
+        return breakdown_keys
+
+    @classmethod
+    def _prepare_get_breakdowns_with_traffic(cls, date_from, date_to):
+        return backtosql.generate_sql('etl_select_breakdown_keys_with_traffic.sql', {}), {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
 
     @classmethod
     def _get_postclickstats_query_results(cls, c, date):
@@ -318,27 +331,6 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
 
         c.execute(sql, params)
         return db.xnamedtuplefetchall(c)
-
-    @classmethod
-    def _get_touchpoint_conversions_query_results(cls, c, date):
-        sql, params = cls._prepare_touchpoint_conversions_query(date)
-
-        c.execute(sql, params)
-        return db.xnamedtuplefetchall(c)
-
-    @classmethod
-    def _prepare_stats_query(cls, date):
-        sql = backtosql.generate_sql('etl_breakdown_stats_one_day.sql', {
-            'breakdown': models.K1Stats.get_breakdown([
-                'source_slug', 'ad_group_id', 'content_ad_id', 'publisher',
-                'device_type', 'country', 'state', 'dma', 'age', 'gender'
-            ]),
-            'aggregates': models.K1Stats.get_aggregates(),
-        })
-
-        params = helpers.get_local_date_context(date)
-
-        return sql, params
 
     @classmethod
     def _prepare_postclickstats_query(cls, date):
@@ -355,6 +347,13 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
         return sql, params
 
     @classmethod
+    def _get_touchpoint_conversions_query_results(cls, c, date):
+        sql, params = cls._prepare_touchpoint_conversions_query(date)
+
+        c.execute(sql, params)
+        return db.xnamedtuplefetchall(c)
+
+    @classmethod
     def _prepare_touchpoint_conversions_query(cls, date):
         sql = backtosql.generate_sql('etl_breakdown_simple_one_day.sql', {
             'breakdown': models.K1Conversions.get_breakdown([
@@ -367,3 +366,46 @@ class MasterView(materialize_helpers.TransformAndMaterialize):
         params = {'date': date}
 
         return sql, params
+
+
+class MVAccount(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAccountDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }

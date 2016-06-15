@@ -16,10 +16,60 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertDictEqual(context, {
             'date': '2016-05-01',
-            'tzdate_from': datetime.date(2016, 5, 1),
+            'tzdate_from': '2016-05-01',
             'tzhour_from': 4,
-            'tzdate_to': datetime.date(2016, 5, 2),
+            'tzdate_to': '2016-05-02',
             'tzhour_to': 4,
+        })
+
+    def test_get_local_multiday_date_context_one_day(self):
+        context = helpers.get_local_multiday_date_context(datetime.date(2016, 5, 1), datetime.date(2016, 5, 1))
+
+        self.assertDictEqual(context, {
+            'date_from': '2016-05-01',
+            'date_to': '2016-05-01',
+            'tzdate_from': '2016-05-01',
+            'tzhour_from': 4,
+            'tzdate_to': '2016-05-02',
+            'tzhour_to': 4,
+            'date_ranges': [{
+                'date': '2016-05-01',
+                'tzdate_from': '2016-05-01',
+                'tzhour_from': 4,
+                'tzdate_to': '2016-05-02',
+                'tzhour_to': 4,
+            }]
+        })
+
+    def test_get_local_multiday_date_context(self):
+        context = helpers.get_local_multiday_date_context(datetime.date(2016, 5, 1), datetime.date(2016, 5, 3))
+
+        self.assertDictEqual(context, {
+            'date_from': '2016-05-01',
+            'date_to': '2016-05-03',
+            'tzdate_from': '2016-05-01',
+            'tzhour_from': 4,
+            'tzdate_to': '2016-05-04',
+            'tzhour_to': 4,
+            'date_ranges': [{
+                'date': '2016-05-01',
+                'tzdate_from': '2016-05-01',
+                'tzhour_from': 4,
+                'tzdate_to': '2016-05-02',
+                'tzhour_to': 4,
+            }, {
+                'date': '2016-05-02',
+                'tzdate_from': '2016-05-02',
+                'tzhour_from': 4,
+                'tzdate_to': '2016-05-03',
+                'tzhour_to': 4,
+            }, {
+                'date': '2016-05-03',
+                'tzdate_from': '2016-05-03',
+                'tzhour_from': 4,
+                'tzdate_to': '2016-05-04',
+                'tzhour_to': 4,
+            }]
         })
 
     def test_get_local_date_query(self):
