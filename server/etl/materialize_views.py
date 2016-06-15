@@ -21,7 +21,7 @@ class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.Ma
     def table_name(self):
         return 'mvh_source'
 
-    def generate_rows(self, date_from, date_to, **kwargs):
+    def generate_rows(self, cursor, date_from, date_to, **kwargs):
         sources = dash.models.Source.objects.all()
 
         for source in sources:
@@ -38,7 +38,7 @@ class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_h
     def table_name(self):
         return 'mvh_campaign_factors'
 
-    def generate_rows(self, date_from, date_to, campaign_factors, **kwargs):
+    def generate_rows(self, cursor, date_from, date_to, campaign_factors, **kwargs):
         for date, campaign_dict in campaign_factors.iteritems():
             for campaign, factors in campaign_dict.iteritems():
                 yield (
@@ -57,7 +57,7 @@ class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_
     def table_name(self):
         return 'mvh_adgroup_structure'
 
-    def generate_rows(self, date_from, date_to, **kwargs):
+    def generate_rows(self, cursor, date_from, date_to, **kwargs):
         ad_groups = dash.models.AdGroup.objects.select_related('campaign', 'campaign__account').all()
 
         for ad_group in ad_groups:
@@ -89,7 +89,7 @@ class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_h
         return 'etl_create_table_mvh_clean_stats.sql'
 
 
-class MasterView(materialize_helpers.MaterializeViaCSV):
+class MasterView(materialize_helpers.MaterializeViaCSVDaily):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.
@@ -105,23 +105,13 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
         self._prefetch()
 
         self._execute_insert_stats_into_mv_master(cursor)
+
         breakdown_keys_with_traffic = self._get_breakdowns_with_traffic_results(cursor, date_from, date_to)
 
-        # create CSVs by day and insert each separately
-        s3_paths = []
-        days = sorted(campaign_factors.keys())
-        for date in days:
-            s3_paths += self.generate_csvs(
-                date_from, date_to,
-                cursor=cursor,
-                date=date,
-                breakdown_keys_with_traffic=breakdown_keys_with_traffic[date],
-            )
-
-        logger.info('Insert data into table "%s"', self.table_name())
-        for s3_path in s3_paths:
-            sql, params = self.prepare_insert_query(date_from, date_to, s3_path=s3_path)
-            cursor.execute(sql, params)
+        super(MasterView, self).insert_data(
+            cursor, date_from, date_to, campaign_factors,
+            breakdown_keys_with_traffic=breakdown_keys_with_traffic,
+            **kwargs)
 
     def _prefetch(self):
         self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
@@ -131,13 +121,14 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
 
-    def generate_rows(self, _date_from, _date_to, cursor, date, breakdown_keys_with_traffic):
+    def generate_rows(self, cursor, date, breakdown_keys_with_traffic, **kwargs):
         skipped_postclick_stats = set()
+
+        breakdown_keys_with_traffic = breakdown_keys_with_traffic.get(date, {})
 
         for breakdown_key, row in self._get_postclickstats(cursor, date):
             # only return those rows for which we have traffic - click
             if breakdown_key in breakdown_keys_with_traffic:
-                print 1
                 yield row
             else:
                 skipped_postclick_stats.add(breakdown_key)
@@ -147,7 +138,6 @@ class MasterView(materialize_helpers.MaterializeViaCSV):
         for breakdown_key, row in self._get_touchpoint_conversions(cursor, date):
             # only return those rows for which we have traffic - click
             if breakdown_key in breakdown_keys_with_traffic:
-                print 2
                 yield row
             else:
                 skipped_tpconversions.add(breakdown_key)
@@ -362,7 +352,7 @@ class MVAccount(materialize_helpers.Materialize):
     def table_name(self):
         return 'mv_account'
 
-    def prepare_insert_query(self, date_from, date_to):
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
@@ -383,7 +373,7 @@ class MVAccountDelivery(materialize_helpers.Materialize):
     def table_name(self):
         return 'mv_account_delivery'
 
-    def prepare_insert_query(self, date_from, date_to):
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',

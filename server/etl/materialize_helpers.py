@@ -67,6 +67,7 @@ class Materialize(object):
     def insert_data(self, cursor, date_from, date_to, **kwargs):
         logger.info('Insert data into table "%s"', self.table_name())
         sql, params = self.prepare_insert_query(date_from, date_to, **kwargs)
+
         cursor.execute(sql, params)
 
     def prepare_delete_query(self, date_from, date_to):
@@ -86,14 +87,14 @@ class Materialize(object):
 class MaterializeViaCSV(Materialize):
 
     def insert_data(self, cursor, date_from, date_to, **kwargs):
-        s3_paths = self.generate_csvs(date_from, date_to, **kwargs)
+        s3_paths = self.generate_csvs(cursor, date_from, date_to, **kwargs)
 
         for s3_path in s3_paths:
             logger.info('Insert data into table "%s" from CSV "%s"', self.table_name(), s3_path)
-            sql, params = self.prepare_insert_query(date_from, date_to, s3_path=s3_path)
+            sql, params = self.prepare_insert_query(s3_path, **kwargs)
             cursor.execute(sql, params)
 
-    def generate_csvs(self, date_from, date_to, **kwargs):
+    def generate_csvs(self, cursor, date_from, date_to, **kwargs):
         logger.info('Create CSV for table "%s", %s - %s', self.table_name(), date_from, date_to)
         s3_path = os.path.join(
             MATERIALIZED_VIEWS_S3_PREFIX,
@@ -107,14 +108,14 @@ class MaterializeViaCSV(Materialize):
         with io.BytesIO() as csvfile:
             writer = csv.writer(csvfile, dialect='excel', delimiter=CSV_DELIMITER)
 
-            for line in self.generate_rows(date_from, date_to, **kwargs):
+            for line in self.generate_rows(cursor, date_from, date_to, **kwargs):
                 writer.writerow(line)
 
             bucket.put(s3_path, csvfile.getvalue())
 
         return [s3_path]
 
-    def prepare_insert_query(self, date_from, date_to, s3_path):
+    def prepare_insert_query(self, s3_path, **kwargs):
         sql = backtosql.generate_sql('etl_copy_csv.sql', {
             'table': self.table_name(),
         })
@@ -135,9 +136,42 @@ class MaterializeViaCSV(Materialize):
             'delimiter': CSV_DELIMITER,
         }
 
-    def generate_rows(self, date_from, date_to, **kwargs):
+    def generate_rows(self, cursor, date_from, date_to, **kwargs):
         raise NotImplementedError()
 
+
+class MaterializeViaCSVDaily(MaterializeViaCSV):
+
+    def insert_data(self, cursor, date_from, date_to, campaign_factors, **kwargs):
+        s3_paths = []
+        for date, daily_campaign_factors in campaign_factors.iteritems():
+            s3_paths += self.generate_csvs(cursor, date, campaign_factors=daily_campaign_factors, **kwargs)
+
+        for s3_path in s3_paths:
+            logger.info('Insert data into table "%s" from CSV "%s"', self.table_name(), s3_path)
+            sql, params = self.prepare_insert_query(s3_path, **kwargs)
+            cursor.execute(sql, params)
+
+    def generate_csvs(self, cursor, date, **kwargs):
+        logger.info('Create CSV for table "%s", %s', self.table_name(), date)
+        s3_path = os.path.join(
+            MATERIALIZED_VIEWS_S3_PREFIX,
+            self.table_name(),
+            date.strftime("%Y/%m/%d/"),
+            MATERIALIZED_VIEWS_FILENAME,
+        )
+
+        bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+
+        with io.BytesIO() as csvfile:
+            writer = csv.writer(csvfile, dialect='excel', delimiter=CSV_DELIMITER)
+
+            for line in self.generate_rows(cursor, date, **kwargs):
+                writer.writerow(line)
+
+            bucket.put(s3_path, csvfile.getvalue())
+
+        return [s3_path]
 
 def _get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
     return 'aws_access_key_id={key};aws_secret_access_key={secret}'.format(
