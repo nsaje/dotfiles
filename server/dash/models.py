@@ -891,15 +891,13 @@ class CampaignSettings(SettingsBase):
             self.campaign,
             history_type,
             changes,
-            self.changes_text or changes_text,
+            changes_text,
             user=self.created_by,
             system_user=self.system_user,
         )
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         return get_changes_text_from_dict(cls, changes, separator=separator)
 
@@ -2036,9 +2034,6 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
-
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         if changes is None:
             return 'Created settings'

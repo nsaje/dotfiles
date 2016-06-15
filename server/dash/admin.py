@@ -855,11 +855,8 @@ class UserActionLogResource(resources.ModelResource):
         model = models.UserActionLog
 
     def _changes_text(self, settings=None):
-        changes_text = '/'
-
-        if settings:
-            changes_text = settings.changes_text if settings.changes_text else '- no description -'
-        return changes_text
+        # TODO: This might need some revision
+        return '/'
 
     def _get_name(self, obj):
         return obj.name if obj else '/'
@@ -962,11 +959,11 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
 
         if settings_url_name and settings:
             settings_link = u'<a href="{url}">{name}</a>'.format(
-                name=settings.changes_text or '- no changes description -',
+                name='- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
         elif not settings_url_name and settings:
-            settings_link = settings.changes_text or '- no changes description -'
+            settings_link = '- no changes description -'
 
         return u'{} / {}'.format(obj_link, settings_link)
 

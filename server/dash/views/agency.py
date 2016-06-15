@@ -983,7 +983,6 @@ class AccountSettings(api_common.BaseApiView):
                 )
 
             account.save(request)
-            settings.changes_text = changes_text
             settings.save(request)
 
             history_helpers.write_account_history(
@@ -1331,12 +1330,6 @@ class AccountUsers(api_common.BaseApiView):
             account.users.add(user)
 
             changes_text = u'Added user {} ({})'.format(user.get_full_name(), user.email)
-
-            # add history entry
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = changes_text
-            new_settings.save(request)
-
             history_helpers.write_account_history(
                 account,
                 changes_text,
@@ -1376,11 +1369,6 @@ class AccountUsers(api_common.BaseApiView):
             account.users.remove(user)
 
             changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
-            # add history entry
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = changes_text
-            new_settings.save(request)
-
             history_helpers.write_account_history(
                 account,
                 changes_text,
@@ -1415,11 +1403,6 @@ class UserActivation(api_common.BaseApiView):
             account = helpers.get_account(request.user, account_id)
 
             changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
-            # add history entry
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = changes_text
-            new_settings.save(request)
-
             history_helpers.write_account_history(
                 account,
                 changes_text,
