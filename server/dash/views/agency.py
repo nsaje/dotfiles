@@ -1478,7 +1478,7 @@ class History(api_common.BaseApiView):
         # moment
         entity_filter = self._extract_entity_filter(request)
         if not entity_filter:
-            raise exc.AuthorizationError()
+            raise exc.MissingDataError()
         order = self._extract_order(request)
         response = {
             'history': self.get_history(entity_filter, order=order)
