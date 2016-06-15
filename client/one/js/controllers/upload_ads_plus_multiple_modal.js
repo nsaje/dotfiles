@@ -1,5 +1,7 @@
-/* globals oneApp */
+/* globals $, oneApp, options, defaults */
 oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance', function ($scope, $modalInstance) { // eslint-disable-line max-len
+    $scope.imageCrops = options.imageCrops;
+
     $scope.partials = [
         '/partials/upload_ads_plus_multiple_modal_step1.html',
         '/partials/upload_ads_plus_multiple_modal_step2.html',
@@ -8,12 +10,25 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance'
     $scope.step = 1;
     $scope.selectedCandidate = null;
 
+    $scope.callToActionSelect2Config = {
+        dropdownCssClass: 'service-fee-select2',
+        createSearchChoice: function (term, data) {
+            if ($(data).filter(function () {
+                return this.text.localeCompare(term) === 0;
+            }).length === 0) {
+                return {id: term, text: term};
+            }
+        },
+        data: defaults.callToAction,
+    };
+
     $scope.batchName = '5/22/2016 3:27 AM';
     $scope.candidates = [
         {
             id: 1,
             title: 'Title of content ad',
             status: 3,
+            imageCrop: 'center',
             errors: [
                 {
                     type: 'font',
@@ -24,6 +39,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance'
                     text: 'Image too small',
                 },
             ],
+            callToAction: 'Read More',
         },
         {
             id: 2,
@@ -78,7 +94,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance'
     };
 
     $scope.openEditForm = function (candidate) {
-        $scope.selectedCandidate = candidate.id;
+        $scope.selectedCandidate = candidate;
     };
 
     $scope.closeEditForm = function () {
@@ -90,7 +106,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance'
             return candidate.id !== el.id;
         });
 
-        if ($scope.selectedCandidate === candidate.id) {
+        if ($scope.selectedCandidate.id === candidate.id) {
             $scope.selectedCandidate = null;
         }
     };

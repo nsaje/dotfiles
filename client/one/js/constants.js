@@ -597,6 +597,11 @@ var constants = {
         PENDING: 'Pending',
         EMPTY: 'Empty',
     },
+    imageCrop: {
+        CENTER: 'center',
+        FACES: 'faces',
+        ENTROPY: 'entropy',
+    },
 };
 
 var options = {
@@ -1172,6 +1177,11 @@ var options = {
         {name: 'Daily', value: constants.exportFrequency.DAILY},
         {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
         {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY},
+    ],
+    imageCrops: [
+        {name: 'Center', value: constants.imageCrop.CENTER},
+        {name: 'Faces', value: constants.imageCrop.FACES},
+        {name: 'Entropy', value: constants.imageCrop.ENTROPY},
     ],
 };
 
