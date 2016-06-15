@@ -733,9 +733,15 @@ class AccountConversionPixels(api_common.BaseApiView):
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
+            changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+
             new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            new_settings.changes_text = changes_text
             new_settings.save(request)
+
+            history_helpers.write_account_history(
+                account, changes_text, user=request.user
+            )
 
         email_helper.send_account_pixel_notification(account, request)
 
@@ -782,12 +788,18 @@ class ConversionPixel(api_common.BaseApiView):
                 conversion_pixel.archived = data['archived']
                 conversion_pixel.save()
 
-                new_settings = account.get_current_settings().copy_settings()
-                new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                changes_text = u'{} conversion pixel with unique identifier {}.'.format(
                     'Archived' if data['archived'] else 'Restored',
                     conversion_pixel.slug
                 )
+
+                new_settings = account.get_current_settings().copy_settings()
+                new_settings.changes_text = changes_text
                 new_settings.save(request)
+
+                history_helpers.write_account_history(
+                    account, changes_text, user=request.user
+                )
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
                                                 account=account)
@@ -1338,9 +1350,7 @@ class AccountUsers(api_common.BaseApiView):
             new_settings.save(request)
 
             history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
+                account, changes_text, user=request.user
             )
 
         return self.create_api_response(
