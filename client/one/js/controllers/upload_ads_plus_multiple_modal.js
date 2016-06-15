@@ -1,4 +1,4 @@
-/* globals $, oneApp, options, defaults */
+/* globals $, oneApp, options, defaults, angular */
 oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance', function ($scope, $modalInstance) { // eslint-disable-line max-len
     $scope.imageCrops = options.imageCrops;
 
@@ -74,6 +74,34 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$modalInstance'
             status: 1,
         },
     ];
+
+    $scope.getContentErrors = function (candidate) {
+        if (!candidate.errors) {
+            return '';
+        }
+
+        for (var i = 0; i < candidate.errors.length; i++) {
+            if (candidate.errors[i].type === 'font') {
+                return candidate.errors[i].text;
+            }
+        }
+
+        return '';
+    };
+
+    $scope.getImageErrors = function (candidate) {
+        if (!candidate.errors) {
+            return '';
+        }
+
+        for (var i = 0; i < candidate.errors.length; i++) {
+            if (candidate.errors[i].type === 'picture') {
+                return candidate.errors[i].text;
+            }
+        }
+
+        return '';
+    };
 
     $scope.colorMap = {
         1: 'blue',
