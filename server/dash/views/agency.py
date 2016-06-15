@@ -1479,12 +1479,7 @@ class History(api_common.BaseApiView):
         entity_filter = self._extract_entity_filter(request)
         if not entity_filter:
             raise exc.AuthorizationError()
-
-        order = ['-created_dt']
-        order_raw = request.GET.get('order') or ''
-        if re.match('[-]?(created_dt|created_by)', order_raw):
-            order = [order_raw]
-
+        order = self._extract_order(request)
         response = {
             'history': self.get_history(entity_filter, order=order)
         }
@@ -1511,6 +1506,13 @@ class History(api_common.BaseApiView):
         if level_raw and int(level_raw) in constants.HistoryLevel.get_all():
             entity_filter['level'] = int(level_raw)
         return entity_filter
+
+    def _extract_order(self, request):
+        order = ['-created_dt']
+        order_raw = request.GET.get('order') or ''
+        if re.match('[-]?(created_dt|created_by)', order_raw):
+            order = [order_raw]
+        return order
 
     def get_history(self, filters, order=['-created_dt']):
         history_entries = models.History.objects.filter(
