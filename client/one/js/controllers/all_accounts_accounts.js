@@ -520,11 +520,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getTableData = function (showWaiting) {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            // Data displayed and handled by zem-grid and DataSource
-            return;
-        }
-
         $scope.loadRequestInProgress = true;
 
         api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
