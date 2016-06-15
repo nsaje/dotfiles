@@ -2,6 +2,7 @@
 'use strict';
 
 oneApp.factory('zemGridEndpointApiConverter', [function () {
+    var IGNORED_STATS_FIELDS = ['breakdown_id', 'parent_breakdown_id', 'archived', 'editable_fields'];
 
     return {
         convertFromApi: convertFromApi,
@@ -9,15 +10,17 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
     };
 
     function convertFromApi (config, breakdown, metaData) {
-        breakdown.level = config.level;
         breakdown.breakdownId = breakdown.breakdown_id;
+        delete breakdown.breakdown_id;
+        breakdown.level = config.level;
         breakdown.rows = breakdown.rows.map(function (row) {
-            row.breakdownName = row.breakdown_name;
             return {
                 stats: convertStatsFromApi(row, metaData),
                 breakdownId: row.breakdown_id,
+                archived: row.archived,
             };
         });
+        breakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
     }
 
     function convertToApi (config) {
@@ -32,70 +35,57 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
     function convertStatsFromApi (row, metaData) {
         var convertedStats = {};
         Object.keys(row).forEach(function (field) {
-            convertedStats[field] = convertField(field, row, metaData);
+            if (IGNORED_STATS_FIELDS.indexOf(field) === -1) {
+                convertedStats[field] = convertField(field, row, metaData);
+            }
         });
+        convertedStats = setEditableFields(convertedStats, row.editable_fields);
         return convertedStats;
     }
 
     function convertField (field, row, metaData) {
         var value = row[field];
-        // TODO: Move column definitions to a separate service and use it to generate mocked data and to convert data
-        // from api correctly.
-        // columnDefinitions[field]['type'] = 'curreny/number/submissionStatus/...'
-        // Based on this convert api data.
-        var type;
-        metaData.columns.forEach(function (column) {
+        var type = getFieldType(field, metaData.columns);
+        // TODO: On CAMPAIGN_AD_GROUPS level stateText is dynamically calculated based on state and row.archived. It
+        // can't be converted from api, because no stateText field is returned from server.
+        switch (type) {
+        // TODO: convertBreakdownNameField (include name, id, url, etc.)
+        // TODO: convertInternalLinkField
+        // TODO: convertExternalLinkField
+        // TODO: convertThumbnailField
+        // TODO: convertSubmissionStatusField
+        // TODO: convertPerformanceIndicatorField
+        // TODO: convertTextWithPopupField
+        default: return convertValueToDefaultObject(value);
+        }
+    }
+
+    function getFieldType (field, columns) {
+        var column;
+        for (var i = 0; i < columns.length; i++) {
+            column = columns[i];
             if (column.field === field) {
-                type = column.type;
+                return column.type;
+            }
+        }
+    }
+
+    function setEditableFields (stats, editableFields) {
+        if (!editableFields) {
+            return stats;
+        }
+        Object.keys(editableFields).forEach(function (field) {
+            if (stats[field]) {
+                stats[field].isEditable = editableFields[field].enabled;
+                stats[field].editMessage = editableFields[field].message;
             }
         });
-        switch (type) {
-        case 'number': return convertNumberField(value);
-        case 'percent': return convertPercentField(value);
-        case 'currency': return convertCurrencyField(value);
-        case 'seconds': return convertSecondsField(value);
-        case 'datetime': return convertDatetimeField(value);
-        case 'status': return convertStatusField(value, row);
-        }
-        return value;
+        return stats;
     }
 
-    function convertNumberField (value) {
+    function convertValueToDefaultObject (value) {
         return {
             value: value,
         };
-    }
-
-    function convertPercentField (value) {
-        return {
-            value: value,
-        };
-    }
-
-    function convertCurrencyField (value) {
-        return {
-            value: value,
-        };
-    }
-
-    function convertSecondsField (value) {
-        return {
-            value: value,
-        };
-    }
-
-    function convertDatetimeField (value) {
-        return {
-            value: value,
-        };
-    }
-
-    function convertStatusField (value, row) {
-        if (row.archived) {
-            return 'Archived';
-        } else if (value === '1') { // TODO: Use appropriate constant
-            return 'Active';
-        }
-        return 'Paused';
     }
 }]);

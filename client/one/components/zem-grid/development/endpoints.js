@@ -33,9 +33,9 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     ];
 
     var COLUMNS = {
-        base_level: {
+        breakdown_name: {
             name: 'Mocked Level',
-            type: 'breakdownName',
+            type: 'breakdown',
             help: 'Mocked level.',
             shown: true,
             checked: true,
@@ -191,7 +191,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             {
                 'name': '1st category',
                 fields: [
-                    'base_level',
+                    'breakdown_name',
                     'thumbnail',
                     'status',
                     'performance',
@@ -221,7 +221,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
 
     function getMockedColumns () {
         return getColumnsForFields([
-            'base_level',
+            'breakdown_name',
             'thumbnail',
             'status',
             'performance',
@@ -413,8 +413,10 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
 
         mockedColumns.forEach(function (column) {
             var data;
-            if (column.type === 'breakdownName') {
-                data = key;
+            if (column.type === 'breakdown') {
+                data = {
+                    value: key,
+                };
             } else {
                 data = generateRandomData(column.type, column.field, key);
             }
@@ -486,13 +488,16 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     /* eslint-enable complexity */
 
     function getMockedStatus () {
-        var statuses = ['Active', 'Paused', 'Archived'];
-        return statuses[Math.floor(Math.random() * statuses.length)];
+        return {
+            value: Math.floor(Math.random() * 3),
+        };
     }
 
     function getMockedAccountManager () {
         var managers = ['Ana Dejanović', 'Tadej Pavlič', 'Chad Lloyd', 'Louis Calderon', 'Helen Wagner', ''];
-        return managers[Math.floor(Math.random() * managers.length)];
+        return {
+            value: managers[Math.floor(Math.random() * managers.length)],
+        };
     }
 
     function getMockedNumber (isTotal) {
@@ -620,7 +625,9 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     }
 
     function getMockedAction () {
-        return 'Test click permission or text';
+        return {
+            value: 'Test click permission or text',
+        };
     }
 
     function getMockedThumbnail () {
@@ -679,7 +686,12 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     }
 
     function getMockedState () {
-        return Math.floor(Math.random() * 3 + 1);
+        var isEdtable = (Math.random() < 0.5);
+        return {
+            state: Math.floor(Math.random() * 3 + 1),
+            isEdtable: isEdtable,
+            editMessage: isEdtable ? null : 'Editing disabled.',
+        };
     }
 
     var fieldWithPopupIndex = 0;

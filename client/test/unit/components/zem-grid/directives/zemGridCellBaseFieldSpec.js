@@ -31,6 +31,26 @@ describe('zemGridCellBaseField', function () {
         expect(element.text().trim()).toEqual('N/A');
     });
 
+    it('should correctly display text values', function () {
+        var tests = [
+            {value: undefined, expectedResult: ''},
+            {value: 'abcde', expectedResult: 'abcde'},
+            {value: 12345, expectedResult: '12345'},
+        ];
+
+        scope.ctrl.col.data = {
+            type: 'text',
+        };
+
+        tests.forEach(function (test) {
+            scope.ctrl.value = {
+                value: test.value,
+            };
+            scope.$digest();
+            expect(element.text().trim()).toEqual(test.expectedResult);
+        });
+    });
+
     it('should correctly display percent values', function () {
         var tests = [
             {value: undefined, expectedResult: 'N/A'},

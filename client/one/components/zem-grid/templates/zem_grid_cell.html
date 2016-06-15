@@ -13,14 +13,14 @@
 
     <!-- TODO: fully support current Table styles -->
     <span ng-switch="::ctrl.col.data.type|groupColumnTypes">
-        <zem-grid-cell-base-field ng-switch-when="base" data="ctrl.value" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-base-field>
+        <zem-grid-cell-base-field ng-switch-when="base" data="ctrl.data" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-base-field>
 
         <!--
             All basic data types (number, currency, percent, seconds, datetime) are pre-parsed
             in zem_grid_parser, so here we can only bind to the value
         -->
         <span ng-switch-default>
-            {{ctrl.value}}
+            {{ctrl.data.value}}
         </span>
     </span>
 </div>

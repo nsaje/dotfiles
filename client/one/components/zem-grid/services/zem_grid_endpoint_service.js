@@ -4,33 +4,29 @@
 oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
-        this.metaData = metaData;
-        this.baseUrl = baseUrl;
 
         this.getMetaData = function () {
             // Meta data is not yet fetched from backend,
             // therefor just return already fulfilled promise
             var deferred = $q.defer();
-            deferred.resolve(this.metaData);
+            deferred.resolve(metaData);
             return deferred.promise;
         };
 
-        var self = this; // TODO: Remove when column definitions are moved to a service
         this.getData = function (config) {
-            var url = createUrl(baseUrl, config);
+            var url = createUrl(config);
             config = zemGridEndpointApiConverter.convertToApi(config);
             var deferred = $q.defer();
             $http.post(url, {params: config}).success(function (data) {
                 var breakdowns = data.data;
                 breakdowns.forEach(function (breakdown) {
-                    zemGridEndpointApiConverter.convertFromApi(config, breakdown, self.metaData);
+                    zemGridEndpointApiConverter.convertFromApi(config, breakdown, metaData);
                     checkPaginationCount(config, breakdown);
                 });
                 deferred.resolve(breakdowns);
             }).error(function (data) {
                 deferred.reject(data);
             });
-
             return deferred.promise;
         };
 
@@ -41,7 +37,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-        function createUrl (baseUrl, config) {
+        function createUrl (config) {
             var queries = config.breakdown.map(function (breakdown) {
                 return breakdown.query;
             });
@@ -76,9 +72,6 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         var columns = zemGridEndpointColumns.createColumns(scope, level, breakdown);
         var categories = zemGridEndpointColumns.createCategories(columns);
         var breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(level, breakdown);
-
-        columns[0].field = 'breakdownName';
-        columns[0].type = 'text';
 
         return {
             id: id,
