@@ -4,15 +4,10 @@
 
 oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'config', function ($rootScope, $controller, $http, $q, $timeout, config) { // eslint-disable-line max-len
 
-    function MockEndpoint () {
+    function MockEndpoint (metaData) {
         this.getMetaData = function () {
             var deferred = $q.defer();
-            deferred.resolve({
-                columns: getMockedColumns(),
-                categories: getMockedCategories(),
-                breakdownGroups: getMockedBreakdownGroups(),
-                localStoragePrefix: 'zem-data-source-debug-endpoint',
-            });
+            deferred.resolve(metaData);
             return deferred.promise;
         };
 
@@ -671,9 +666,22 @@ oneApp.factory('zemDataSourceDebugEndpoints', ['$rootScope', '$controller', '$ht
         return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).getTime();
     }
 
+    function createMetaData () {
+        return {
+            columns: getMockedColumns(),
+            categories: getMockedCategories(),
+            breakdownGroups: getMockedBreakdownGroups(),
+            localStoragePrefix: 'zem-data-source-debug-endpoint',
+        };
+    }
+
+    function createEndpoint (metaData) {
+        if (!metaData) metaData = createMetaData();
+        return new MockEndpoint(metaData);
+    }
+
     return {
-        createMockEndpoint: function () {
-            return new MockEndpoint();
-        },
+        createMetaData: createMetaData,
+        createEndpoint: createEndpoint,
     };
 }]);

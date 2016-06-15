@@ -1,23 +1,33 @@
+/* global module,beforeEach,it,describe,expect,inject,spyOn */
 'use strict';
 
 describe('AdGroupSourcesCtrlSpec', function () {
     var $scope, api, $timeout;
+    var permissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(module(function ($provide, zemDataSourceDebugEndpointsProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
+        $provide.value('zemDataSourceEndpoints', zemDataSourceDebugEndpointsProvider.$get());
         $provide.value('zemCustomTableColsService', {
             load: function () { return []; },
             save: function () { return []; }
         });
     }));
 
-    beforeEach(inject(function ($rootScope, $controller, _$timeout_, $state) {
+    beforeEach(inject(function ($rootScope, _$timeout_) {
         $scope = $rootScope.$new();
-        $scope.isPermissionInternal = function () { return true; };
-        $scope.hasPermission = function () { return true; };
+        permissions = {};
+
+        $scope.isPermissionInternal = function () {
+            return true;
+        };
+        $scope.hasPermission = function (permission) {
+            if (!permissions.hasOwnProperty(permission)) return true;
+            return permissions[permission];
+        };
         $scope.setAdGroupData = function () {};
         $scope.adGroupData = {};
         $scope.dateRange = {
@@ -67,12 +77,19 @@ describe('AdGroupSourcesCtrlSpec', function () {
                 get: mockApiFunc
             }
         };
-
-        $state.params = {id: 123};
-        $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state});
     }));
 
+    function initializeController () {
+        inject(function ($controller, $state) {
+            $state.params = {id: 123};
+            $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state});
+        });
+    }
+
     describe('pollSourcesTableUpdates', function () {
+        beforeEach(function () {
+            initializeController();
+        });
         it('returns early if lastChangeTimeout is set', function () {
             spyOn(api, 'adGroupSourcesUpdates');
             $scope.lastChangeTimeout = 123;
@@ -170,6 +187,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
     });
 
     it('should select default metrics when conversion goals don\'t exist', function () {
+        initializeController();
         $scope.chartMetric1 = 'conversion_goal_1';
         $scope.chartMetric2 = 'conversion_goal_2';
 
@@ -198,6 +216,7 @@ describe('AdGroupSourcesCtrlSpec', function () {
     });
 
     it('should select conversion goal when one exists', function () {
+        initializeController();
         var data = {
             chartData: [],
             conversionGoals: [{id: 'conversion_goal_2', name: 'test conversion goal'}]
@@ -223,5 +242,18 @@ describe('AdGroupSourcesCtrlSpec', function () {
 
         expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: '', shown: false, internal: false, hidden: true});
         expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: false, hidden: true});
+    });
+
+    describe('Zem-Grid DataSource', function () {
+        it('check without permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
+        });
     });
 });

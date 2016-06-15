@@ -11,7 +11,7 @@
             </div>
         </div>
     </div>
-    <div class="section table-ad-group-ads">
+    <div class="section table-ad-group-ads" ng-if="!hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <div class="button-bar">
             <div ng-if="hasPermission('zemauth.account_campaigns_add_campaign')" class="button-bar-item add-source-container">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_campaigns_add_campaign')" popover-placement="bottom"></zem-internal-feature>
@@ -52,4 +52,6 @@
             <div>* All times are in Eastern Standard Time (EST).</div>
         </div>
     </div>
+
+    <zem-grid data-data-source="dataSource" api="gridApi" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')"></zem-grid>
 </div>

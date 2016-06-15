@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout) {
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -522,6 +522,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
 
     var getTableData = function (showWaiting) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            // Data displayed and handled by zem-grid and DataSource
+            return;
+        }
         $scope.loadRequestInProgress = true;
 
         api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -742,7 +746,18 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         } else {
             $scope.sideBarVisible = false;
         }
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            initializeDataSource();
+        }
     };
+
+    function initializeDataSource () {
+        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'source');
+        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
@@ -766,6 +781,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
             $scope.sideBarVisible = true;
             $scope.getContentInsights();
+        }
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setDateRange(newValue, true);
         }
     });
 

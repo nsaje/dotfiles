@@ -125,16 +125,45 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
     var BASE_LEVEL_BREAKDOWNS = [
         {name: 'By Account', query: 'account'},
         {name: 'By Campaign', query: 'campaign'},
-        {name: 'By Ad Group', query: 'adgroup'},
+        {name: 'By Ad Group', query: 'ad_group'},
+        {name: 'By Content Ad', query: 'content_ad'},
+        {name: 'By Source', query: 'source'},
+        {name: 'By Publisher', query: 'publisher'},
     ];
 
     var STRUCTURE_LEVEL_BREAKDOWNS = [
         {name: 'By Campaign', query: 'campaign'},
-        {name: 'By Ad Group', query: 'adgroup'},
-        {name: 'By Content Ad', query: 'contentad'},
+        {name: 'By Ad Group', query: 'ad_group'},
+        {name: 'By Content Ad', query: 'content_ad'},
     ];
 
-    function getControllerMetaData (scope, ctrl) {
+    function getBreakdownGroups (baseLevel, baseLevelBreakdown) {
+        var breakdownGroups = angular.copy(BREAKDOWN_GROUPS);
+
+        // Find requested base level breakdown
+        breakdownGroups[0].breakdowns = BASE_LEVEL_BREAKDOWNS.filter(function (b) {
+            return b.query === baseLevelBreakdown;
+        });
+
+        // Structure breakdown is possible for levels lower then requested baseLevel
+        for (var i = STRUCTURE_LEVEL_BREAKDOWNS.length - 1; i >= 0; --i) {
+            var structureBreakdown = STRUCTURE_LEVEL_BREAKDOWNS[i];
+            if (structureBreakdown.query === baseLevel) break;
+
+            breakdownGroups[2].breakdowns.unshift(structureBreakdown);
+        }
+
+        return breakdownGroups;
+    }
+
+    function getUrl (level, id) {
+        if (level === 'all_accounts') {
+            return '/api/all_accounts/breakdown/';
+        }
+        return '/api/' + level + '/' + id + '/breakdown/';
+    }
+
+    function createMetaData (scope, level, id, breakdown) {
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns
         // FIXME: find appropriate solution for this problem (special type)
@@ -142,24 +171,24 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         columns[0].field = 'breakdownName';
         columns[0].type = 'text';
 
-        // Types not supported atm, therefor just assume Account type,
-        // and add required base and structure level breakdowns
-        var breakdownGroups = angular.copy(BREAKDOWN_GROUPS);
-        breakdownGroups[0].breakdowns.push(BASE_LEVEL_BREAKDOWNS[0]);
-        breakdownGroups[2].breakdowns.unshift(STRUCTURE_LEVEL_BREAKDOWNS[0]);
-
         return {
+            id: id,
+            level: level,
             columns: columns,
             categories: scope.columnCategories,
-            breakdownGroups: breakdownGroups,
             localStoragePrefix: scope.localStoragePrefix,
+            breakdownGroups: getBreakdownGroups(level, breakdown),
         };
     }
 
+    function createEndpoint (metaData) {
+        var url = getUrl(metaData.level, metaData.id);
+        return new StatsEndpoint(url, metaData);
+    }
+
+
     return {
-        createAllAccountsEndpoint: function (metaData) {
-            return new StatsEndpoint('/api/all_accounts/breakdown/', metaData);
-        },
-        getControllerMetaData: getControllerMetaData,
+        createEndpoint: createEndpoint,
+        createMetaData: createMetaData,
     };
 }]);

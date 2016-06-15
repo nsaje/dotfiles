@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    <div class="section table-sources">
+    <div class="section table-sources" ng-if="!hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <div class="button-bar">
             <div class="button-bar-item pull-right">
                 <zem-export
@@ -55,4 +55,6 @@
             <div>* All times are in Eastern Standard Time (EST).</div>
         </div>
     </div>
+
+    <zem-grid data-data-source="dataSource" api="gridApi" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')"></zem-grid>
 </div>
