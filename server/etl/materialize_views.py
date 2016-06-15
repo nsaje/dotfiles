@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    """
+    Helper view that puts source id and slug into redshift. Its than used to construct the mv_master view.
+    """
+
     def table_name(self):
         return 'mvh_source'
 
@@ -36,6 +40,10 @@ class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.Ma
 
 
 class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    """
+    Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
+    """
+
     def table_name(self):
         return 'mvh_campaign_factors'
 
@@ -55,6 +63,11 @@ class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_h
 
 
 class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+    """
+    Helper view that puts ad group structure (campaign id, account id, agency id) into redshift. Its than
+    used to construct the mv_master view.
+    """
+
     def table_name(self):
         return 'mvh_adgroup_structure'
 
@@ -74,6 +87,12 @@ class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_
 
 
 class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_helpers.Materialize):
+    """
+    Writes a temporary table that has data from stats transformed into the correct format for mv_master construction.
+    It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost and license
+    fee based on mvh_campaign_factors.
+    """
+
     def table_name(self):
         return 'mvh_clean_stats'
 

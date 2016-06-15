@@ -23,6 +23,11 @@ CSV_DELIMITER = '\t'
 
 
 class TempTableMixin(object):
+    """
+    Mixin that instead of deleting rows from materualized view drops the table and
+    recreates it.
+    """
+
     def clear_data(self, cursor, date_from, date_to):
         logger.info('Drop table "%s"', self.table_name())
         sql, params = self.prepare_drop_query()
