@@ -332,12 +332,17 @@ class CampaignSettingsTest(TestCase):
 
 
 class AdGroupSourceTest(TestCase):
-
     def test_adgroup_source_save(self):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
+        account = models.Account(name='test')
+        account.save(request)
+
+        campaign = models.Campaign(account=account)
+        campaign.save(request)
+
+        ad_group = models.AdGroup(campaign=campaign, modified_by_id=1)
         ad_group.save(request)
 
         source = models.Source.objects.create()
@@ -351,7 +356,13 @@ class AdGroupSourceTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
+        account = models.Account(name='test')
+        account.save(request)
+
+        campaign = models.Campaign(account=account)
+        campaign.save(request)
+
+        ad_group = models.AdGroup(campaign=campaign, modified_by_id=1)
         ad_group.save(request)
 
         source_type = models.SourceType.objects.create()
