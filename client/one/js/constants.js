@@ -592,6 +592,12 @@ var constants = {
         OK: 3,
         FAILED: 4,
     },
+    historyLevel: {
+        AD_GROUP: 1,
+        CAMPAIGN: 2,
+        ACCOUNT: 3,
+        AGENCY: 4,
+    },
     facebookStatus: {
         CONNECTED: 'Connected',
         PENDING: 'Pending',

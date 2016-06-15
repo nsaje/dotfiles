@@ -18,7 +18,9 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+
 from utils import exc
+from utils.test_helper import add_permissions
 
 from reports import redshift
 import reports.models
