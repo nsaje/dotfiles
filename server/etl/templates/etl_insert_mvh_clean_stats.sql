@@ -3,13 +3,14 @@ INSERT INTO mvh_clean_stats (
       CASE
           WHEN hour is null THEN date
           {% for date_context in date_ranges %}
-          WHEN
-          (date='{{ date_context.tzdate_from }}'::date AND hour >= {{ date_context.tzhour_from }}) OR
-          (date='{{ date_context.tzdate_to }}'::date AND hour < {{ date_context.tzhour_to }})
+          WHEN hour is not null AND (
+              (date='{{ date_context.tzdate_from }}'::date AND hour >= {{ date_context.tzhour_from }}) OR
+              (date='{{ date_context.tzdate_to }}'::date AND hour < {{ date_context.tzhour_to }})
+          )
           THEN '{{ date_context.date }}'::date
           {% endfor %}
       END as date,
-      extract_source_slug(stats.media_source) as source_slug,
+      stats.media_source,
       ad_group_id,
       content_ad_id,
       publisher,
@@ -28,7 +29,9 @@ INSERT INTO mvh_clean_stats (
       SUM(data_spend) as data_spend
   FROM stats
   WHERE
-      ((date BETWEEN %(date_from)s AND %(date_to)s) AND hour IS NULL)
+      (hour is null and date>=%(date_from)s AND date<=%(date_to)s)
+      OR
+      (hour is not null and date>%(tzdate_from)s AND date<%(tzdate_to)s)
       OR
       (hour IS NOT NULL AND (
           (date=%(tzdate_from)s AND hour >= %(tzhour_from)s) OR
