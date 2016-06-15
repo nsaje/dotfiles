@@ -141,13 +141,15 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
 
             $scope.getKPIOptimizationLabel = function () {
                 var label = '';
-                $scope.campaignGoals.forEach(function (el) {
-                    if (el.primary & el.type in constants.automaticallyOptimizedKPIGoals) {
+                for (var i = 0; i < $scope.campaignGoals.length; i++) {
+                    var el = $scope.campaignGoals[i];
+                    if (el.primary && constants.automaticallyOptimizedKPIGoals.indexOf(el.type) > -1) {
                         label = ('Goal ' + constants.campaignGoalValueText[el.type] +
                         ' is automatically optimized when data from GA/Omniture ' +
                         'is available and there are enough clicks for the data to be statistically significant.');
+                        break;
                     }
-                });
+                }
                 return label;
             };
 
