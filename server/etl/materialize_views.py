@@ -380,7 +380,7 @@ class MVAccount(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_master',
+            'source_table': 'mv_campaign',
         })
 
         return sql, {
@@ -402,7 +402,7 @@ class MVAccountDelivery(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_master',
+            'source_table': 'mv_campaign_delivery',
         })
 
         return sql, {
@@ -423,7 +423,7 @@ class MVCampaign(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_master',
+            'source_table': 'mv_campaign_delivery',
         })
 
         return sql, {
