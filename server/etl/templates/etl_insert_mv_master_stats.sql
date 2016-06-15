@@ -38,7 +38,6 @@ INSERT INTO mv_master (
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
-      slug varchar(127) encode lzo
       join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id
     )
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
