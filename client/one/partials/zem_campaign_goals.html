@@ -37,6 +37,11 @@
             </div>
         </div>
     </div>
+    <div class="row" ng-if="getKPIOptimizationLabel()">
+        <div class="col-xs-12 nopadding optimization-label">
+            {{getKPIOptimizationLabel()}}
+        </div>
+    </div>
     <div class="row">
         <div class="col-xs-5 nopadding">
             <button type="button" class="btn btn-default" ng-click="addGoal()">
