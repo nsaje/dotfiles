@@ -10,7 +10,7 @@ INSERT INTO mvh_clean_stats (
           THEN '{{ date_context.date }}'::date
           {% endfor %}
       END as date,
-      stats.media_source,
+      stats.media_source as source_slug,
       ad_group_id,
       content_ad_id,
       publisher,

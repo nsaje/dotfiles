@@ -33,7 +33,9 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
     def test_generate_rows(self, mock_get_touchpoint_conversions, mock_get_postclickstats):
 
         date = datetime.date(2016, 5, 1)
-        breakdown_keys_with_traffic = set([(3, 1), (2, 2), (1, 3)])
+        breakdown_keys_with_traffic = {
+            date: set([(3, 1), (2, 2), (1, 3)]),
+        }
 
         mock_get_postclickstats.return_value = [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
@@ -89,7 +91,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         view = materialize_views.MasterView()
         self.assertItemsEqual(list(view.generate_rows(
-            None, None, cursor=mock_cursor, date=date, breakdown_keys_with_traffic=breakdown_keys_with_traffic)), [
+            cursor=mock_cursor, date=date, breakdown_keys_with_traffic=breakdown_keys_with_traffic)), [
             (
                 date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                 constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
@@ -263,3 +265,66 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 conversion_window;""")
 
         self.assertDictEqual(params, {'date': date})
+
+
+class MVNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
+    def test_prepare_insert_query(self):
+
+        date_from = datetime.date(2016, 5, 1)
+        date_to = datetime.date(2016, 5, 3)
+
+        sql, params = materialize_views.MVHelpersNormalizedStats().prepare_insert_query(date_from, date_to)
+
+        self.assertDictEqual(params, {
+            'date_from': '2016-05-01',
+            'date_to': '2016-05-03',
+            'tzdate_from': '2016-05-01',
+            'tzhour_from': 4,
+            'tzdate_to': '2016-05-04',
+            'tzhour_to': 4,
+        })
+
+        self.assertSQLEquals(sql, """
+        INSERT INTO mvh_clean_stats (
+        SELECT
+            CASE
+                 WHEN hour is null THEN date
+                 WHEN hour is not null AND ((date='2016-05-01'::date AND hour >= 4)
+                      OR (date='2016-05-02'::date AND hour < 4)) THEN '2016-05-01'::date
+                 WHEN hour is not null AND ((date='2016-05-02'::date AND hour >= 4)
+                      OR (date='2016-05-03'::date AND hour < 4)) THEN '2016-05-02'::date
+                 WHEN hour is not null AND ((date='2016-05-03'::date AND hour >= 4)
+                      OR (date='2016-05-04'::date AND hour < 4)) THEN '2016-05-03'::date
+            END as date,
+            stats.media_source as source_slug,
+
+            ad_group_id,
+            content_ad_id,
+            publisher,
+
+            extract_device_type(device_type) as device_type,
+            extract_country(country) as country,
+            extract_state(state) as state,
+            extract_dma(dma) as dma,
+            extract_age(age) as age,
+            extract_gender(gender) as gender,
+            extract_age_gender(stats.age, stats.gender) as age_gender,
+
+            SUM(impressions) as impressions,
+            SUM(clicks) as clicks,
+            SUM(spend) as spend,
+            SUM(data_spend) as data_spend
+        FROM stats
+        WHERE (hour is null
+                and date>=%(date_from)s
+                AND date<=%(date_to)s)
+            OR (hour is not null
+                and date>%(tzdate_from)s
+                AND date<%(tzdate_to)s)
+            OR (hour IS NOT NULL
+                AND ((date=%(tzdate_from)s
+                    AND hour >= %(tzhour_from)s)
+                    OR (date=%(tzdate_to)s
+                        AND hour < %(tzhour_to)s)))
+        GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        """)

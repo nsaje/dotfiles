@@ -26,4 +26,4 @@ class RefreshTest(TestCase):
         refresh_k1.refresh_k1_reports(datetime.datetime(2016, 5, 10))
 
         mock_generate.generate.assert_called_with(
-            datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), effective_spend_factors)
+            datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), campaign_factors=effective_spend_factors)

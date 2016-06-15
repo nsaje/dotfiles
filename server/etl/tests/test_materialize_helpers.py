@@ -21,12 +21,14 @@ class MaterializeTest(TestCase, backtosql.TestSQLMixin):
         mat.prepare_insert_query = mock.MagicMock()
         mat.prepare_insert_query.return_value = "bar", 44
 
-        mat.generate(1, 2)
+        mat.generate(1, 2, foobar=5)
 
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call("foo", 33),
             mock.call("bar", 44),
         ])
+
+        mat.prepare_insert_query.assert_called_with(1, 2, foobar=5)
 
     def test_prepare_delete_query(self):
 
@@ -77,12 +79,12 @@ class MaterializeViaCSVTest(TestCase):
             datetime.date(2016, 5, 12): 3,
         }
 
-        mat.generate(date_from, date_to, factors=factors)
+        mat.generate(date_from, date_to, factors=factors, foobar=456)
 
         mat.prepare_insert_query.assert_has_calls([
-            mock.call("asd"),
-            mock.call("bsd"),
-            mock.call("csd"),
+            mock.call("asd", foobar=456, factors=factors),
+            mock.call("bsd", foobar=456, factors=factors),
+            mock.call("csd", foobar=456, factors=factors),
         ])
 
         mock_cursor().__enter__().execute.assert_has_calls([
@@ -109,7 +111,7 @@ class MaterializeViaCSVTest(TestCase):
 
         expected_path = 'materialized_views/mv_bla/2016/05/10/view.csv'
 
-        path = mat.generate_csvs(date, date)
+        path = mat.generate_csvs(mock.MagicMock(), date, date)
 
         mock_s3().put.assert_called_with(
             expected_path,
