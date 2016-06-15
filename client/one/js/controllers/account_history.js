@@ -26,28 +26,18 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.getHistory = function () {
         $scope.requestInProgress = true;
 
-        if ($scope.hasPermission('zemauth.can_view_new_history_backend')) {
-            var order = (!$scope.orderAsc && '-' || '') + $scope.order,
-                params = {
-                    account: $state.params.id,
-                    level: constants.historyLevel.ACCOUNT,
-                };
-            api.history.get(params, order).then(
-                function (data) {
-                    $scope.history = data.history;
-                }
-            ).finally(function () {
-                $scope.requestInProgress = false;
-            });
-        } else {
-            api.accountHistory.get($state.params.id).then(
-                function (data) {
-                    $scope.history = data.history;
-                }
-            ).finally(function () {
-                $scope.requestInProgress = false;
-            });
-        }
+        var order = (!$scope.orderAsc && '-' || '') + $scope.order,
+            params = {
+                account: $state.params.id,
+                level: constants.historyLevel.ACCOUNT,
+            };
+        api.history.get(params, order).then(
+            function (data) {
+                $scope.history = data.history;
+            }
+        ).finally(function () {
+            $scope.requestInProgress = false;
+        });
     };
 
     $scope.refreshPage = function () {
