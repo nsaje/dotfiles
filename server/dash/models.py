@@ -20,7 +20,6 @@ from django.forms.models import model_to_dict
 from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
-from django.db.models.signals import post_init
 
 import utils.string_helper
 import utils.demo_anonymizer
@@ -2068,15 +2067,12 @@ class AdGroupSettings(SettingsBase):
             self.post_init_state,
             self.get_settings_dict(),
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             self.ad_group,
             history_type,
             changes,
-            self.changes_text or changes_text,
+            changes_text,
             user=self.created_by,
             system_user=self.system_user
         )
@@ -2237,9 +2233,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.post_init_state,
             self.get_settings_dict(),
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             current_settings.ad_group,
@@ -2840,9 +2833,6 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             self.post_init_state,
             model_to_dict(self),
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
-            return
         parts = []
         if self.post_init_created:
             parts.append('Created credit.')
@@ -3081,9 +3071,6 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             self.post_init_state,
             model_to_dict(self),
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
-            return
         parts = []
         if self.post_init_created:
             parts.append('Created budget.')
