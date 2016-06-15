@@ -24,6 +24,7 @@ from dash import constants
 from dash import exceptions
 from dash import image_helper
 from dash import threads
+from dash import history_helpers
 from dash.forms import AdGroupAdsUploadExtendedForm, MANDATORY_CSV_FIELDS,\
     OPTIONAL_CSV_FIELDS  # to get fields & validators
 
@@ -425,4 +426,11 @@ def _add_to_history(request, batch, ad_group):
     settings = ad_group.get_current_settings().copy_settings()
     settings.changes_text = changes_text
     settings.save(request)
+
+    history_helpers.write_ad_group_history(
+        ad_group,
+        changes_text,
+        user=request.user,
+    )
+
     email_helper.send_ad_group_notification_email(ad_group, request, changes_text)

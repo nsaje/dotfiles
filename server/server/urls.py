@@ -512,6 +512,11 @@ urlpatterns += [
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
     ),
+    url(
+        r'^api/demov3/$',
+        login_required(dash.views.views.Demo.as_view()),
+        name='demov3'
+    ),
 ]
 
 # Lambdas

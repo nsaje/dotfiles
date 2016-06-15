@@ -422,7 +422,7 @@ class AccountBreakdownTestCase(TestCase):
         self.assertIsNone(result['data'][0]['breakdown_id'])
 
         self.assertDictEqual(result['data'][0]['pagination'], {
-            'count': None,
+            'count': 4,
             'limit': 2,
             'offset': 1,
         })
