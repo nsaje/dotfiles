@@ -7,7 +7,8 @@ oneApp.controller('RequestDemoModalCtrl', ['$scope', '$modalInstance', 'api', fu
     api.demo.request().then(
         function (data) {
             $scope.inProgress = false;
-            $scope.url = data.data.data;
+            $scope.url = data.data.data.url;
+            $scope.password = data.data.data.password;
         },
         function (data) {
             $scope.inProgress = false;

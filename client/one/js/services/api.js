@@ -1364,7 +1364,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 defaultAccountManager: settings.default_account_manager,
                 defaultSalesRepresentative: settings.default_sales_representative,
                 accountType: settings.account_type,
-                allowedSources: settings.allowed_sources
+                allowedSources: settings.allowed_sources,
+                facebookPage: settings.facebook_page,
+                facebookStatus: settings.facebook_status,
             };
         }
 
@@ -1375,7 +1377,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 default_account_manager: settings.defaultAccountManager,
                 default_sales_representative: settings.defaultSalesRepresentative,
                 account_type: settings.accountType,
-                allowed_sources: settings.allowedSources
+                allowed_sources: settings.allowedSources,
+                facebook_page: settings.facebookPage,
+                facebook_status: settings.facebookStatus,
             };
         }
 
@@ -1387,7 +1391,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 defaultSalesRepresentative: data.errors.default_sales_representative,
                 accountType: data.errors.account_type,
                 allowedSources: data.errors.allowed_sources,
-                allowedSourcesData: data.data.allowed_sources
+                allowedSourcesData: data.errors.allowed_sources,
+                facebookPage: data.errors.facebook_page,
             };
         }
 

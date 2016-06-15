@@ -1107,14 +1107,20 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
-        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
-                not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
-            errors.update(
-                {
-                    'state': 'Cannot enable media source that does not support'
-                    'retargeting on adgroup with retargeting enabled.'
-                }
-            )
+        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE:
+            if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+                errors.update(
+                    {
+                        'state': 'Cannot enable media source that does not support'
+                        'retargeting on adgroup with retargeting enabled.'
+                    }
+                )
+            elif not helpers.check_facebook_source(ad_group_source):
+                errors.update(
+                    {
+                        'state': 'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
+                    }
+                )
 
         if campaign_settings.landing_mode:
             for key in resource.keys():
@@ -2152,7 +2158,7 @@ class Demo(api_common.BaseApiView):
 
         instance = self._start_instance()
 
-        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, url=instance)
+        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, **instance)
 
         send_mail(
             subject,
@@ -2176,7 +2182,10 @@ class Demo(api_common.BaseApiView):
         if ret['status'] != 'success':
             raise Exception('Request not successful. status: {}'.format(ret['status']))
 
-        return ret.get('instance_url')
+        return {
+            'url': ret.get('instance_url'),
+            'password': ret.get('instance_password'),
+        }
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

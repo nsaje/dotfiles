@@ -209,3 +209,7 @@ LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://z1-1452281140.us-east-1.elb.amazonaws.com/api/callbacks/content-upload/'
+
+# FB
+FB_BUSINESS_ID = ''
+FB_ACCESS_TOKEN = Secret('plain::').get()

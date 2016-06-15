@@ -763,7 +763,7 @@ def get_fake_ad_group_source_states(ad_group_sources):
         agss = ad_group_sources_settings.get(ags.id)
 
         if ad_group_settings is None or agss is None:
-            logger.error("Missing settigns got ad group source: %s", ags.id)
+            logger.error("Missing settings got ad group source: %s", ags.id)
             continue
 
         state = ad_group_settings.state
@@ -971,11 +971,24 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
             not (ad_group_source.source.can_modify_retargeting_automatically() or
                  ad_group_source.source.can_modify_retargeting_manually()):
         message = 'This source can not be enabled because it does not support retargeting.'
+    elif message is None and not check_facebook_source(ad_group_source):
+        message = 'Please connect your Facebook page to add Facebook as media source.'
 
     return {
         'enabled': message is None,
         'message': message
     }
+
+
+def check_facebook_source(ad_group_source):
+    if ad_group_source.source.source_type.type != constants.SourceType.FACEBOOK:
+        return True
+
+    try:
+        facebook_account_status = ad_group_source.ad_group.campaign.account.facebookaccount.status
+        return facebook_account_status == constants.FacebookPageRequestType.CONNECTED
+    except models.FacebookAccount.DoesNotExist:
+        return False
 
 
 def _get_status_setting_disabled_message(ad_group_source):

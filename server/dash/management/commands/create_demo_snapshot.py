@@ -147,6 +147,11 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
     _add_to_serialize_list(serialize_list, list(demo_users_set))
     _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
 
+    # add sources
+    default_source_settings = dash.models.DefaultSourceSettings.objects.all()
+    _add_to_serialize_list(serialize_list, list(default_source_settings))
+    _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
+
     # add demo accounts
     for demo_mapping in demo_mappings:
         name_pools = demo_anonymizer.DemoNamePools(
@@ -256,8 +261,6 @@ def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymiz
 def _get_fields(obj):
     try:
         fields = list(obj._meta.fields)
-        # include one-to-one relations
-        fields.extend(f for f in obj._meta.get_fields() if f.one_to_one)
         return fields
     except AttributeError:
         return []
