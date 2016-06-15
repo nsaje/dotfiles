@@ -2,33 +2,37 @@
 'use strict';
 
 describe('AdGroupPublishersCtrl', function () {
-    var $scope, $state, $q, api;
+    var $scope, $q, api;
+    var permissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', {setShowBlacklistedPublishers: function () {}});
+        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
     }));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
+        inject(function ($rootScope, $controller, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
 
             $scope.infoboxHeader = null;
             $scope.infoboxBasicSettings = null;
             $scope.infoboxPerformanceSettings = null;
+            permissions = {};
 
-            $scope.setInfoboxHeader = function (data) {
-                $scope.infoboxHeader = data;
-            };
             $scope.isPermissionInternal = function () {
                 return true;
             };
-            $scope.hasPermission = function () {
-                return true;
+            $scope.hasPermission = function (permission) {
+                if (!permissions.hasOwnProperty(permission)) return true;
+                return permissions[permission];
+            };
+            $scope.setInfoboxHeader = function (data) {
+                $scope.infoboxHeader = data;
             };
             $scope.getTableData = function () {
                 return;
@@ -72,21 +76,23 @@ describe('AdGroupPublishersCtrl', function () {
                     get: mockApiFunc,
                 },
             };
-
-            $state = _$state_;
-            $state.params = {id: 1};
-
-            $controller('AdGroupPublishersCtrl',
-                {
-                    $scope: $scope,
-                    api: api,
-                }
-            );
         });
     });
 
+    function initializeController () {
+        inject(function ($controller, $state) {
+            $state.params = {id: 1};
+            $controller('AdGroupPublishersCtrl', {
+                $scope: $scope,
+                $state: $state,
+                api: api,
+            });
+        });
+    }
+
     describe('getInfoboxData', function () {
         it('fetch infobox data with permission', function () {
+            initializeController();
             spyOn(api.adGroupOverview, 'get').and.callFake(function () {
                 var deferred = $q.defer();
                 deferred.resolve(
@@ -108,6 +114,19 @@ describe('AdGroupPublishersCtrl', function () {
                     title: 'Test',
                 }
             );
+        });
+    });
+
+    describe('Zem-Grid DataSource', function () {
+        it('check without permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
         });
     });
 });

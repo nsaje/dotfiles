@@ -7,13 +7,13 @@ import httplib
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
-from django.contrib.auth.models import Permission
 from django.conf import settings
 from django.test import Client
+from requests import Response
 
 from zemauth.models import User
 from dash import models
@@ -76,9 +76,8 @@ class AdGroupSettingsTest(TestCase):
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
         )
-        self.maxDiff = None
-
-        self.assertDictEqual(json.loads(response.content), {
+        json_blob = json.loads(response.content)
+        self.assertDictEqual(json_blob, {
             'data': {
                 'can_archive': True,
                 'can_restore': True,
@@ -122,7 +121,7 @@ class AdGroupSettingsTest(TestCase):
                     'start_date': '2015-03-02',
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
-                    'target_regions': ['UK', 'US', 'CA'],
+                    'target_regions': ['GB', 'US', 'CA'],
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_state': 1,
                     'autopilot_daily_budget': '50.00',
@@ -2232,6 +2231,10 @@ class AccountHistoryTest(TestCase):
             self.assertEqual(changes_string, expected_changes_strings[i])
 
 
+@override_settings(
+    FB_BUSINESS_ID='fake_app_id',
+    FB_ACCESS_TOKEN='very_fake_token',
+)
 class AccountSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
@@ -2287,7 +2290,8 @@ class AccountSettingsTest(TestCase):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
-            'can_modify_account_type'
+            'can_modify_account_type',
+            'can_modify_facebook_page',
         ])
 
         response = client.get(
@@ -2302,7 +2306,8 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': '2',
             'account_type': 3,
             'id': '1',
-            'archived': False
+            'archived': False,
+            'facebook_status': 'Empty',
         })
 
     def test_get_as_agency_manager(self):
@@ -2503,15 +2508,20 @@ class AccountSettingsTest(TestCase):
             'archived': False
         })
 
+    @patch('requests.post')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction):
+    def test_put(self, mock_log_useraction, mock_request):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
             'can_modify_account_type',
             'can_modify_allowed_sources',
             'can_set_account_sales_representative',
+            'can_modify_facebook_page',
         ])
+        response = Response()
+        response.status_code = 200
+        mock_request.return_value = response
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
@@ -2524,7 +2534,8 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
-                    }
+                    },
+                    'facebook_page': 'http://www.facebook.com/dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2547,6 +2558,8 @@ class AccountSettingsTest(TestCase):
             'account_type': 4,
             'name': 'changed name',
         })
+        self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
+        self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
@@ -2570,7 +2583,8 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
-                    }
+                    },
+                    'facebook_page': 'dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2589,7 +2603,8 @@ class AccountSettingsTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
-                    'allowed_sources': {}
+                    'allowed_sources': {},
+                    'facebook_page': 'dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2627,13 +2642,18 @@ class AccountSettingsTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
-            1: {'allowed': True},
-            2: {'allowed': False},
-            3: {'allowed': True}
-        }))
+        changes_text = view.set_allowed_sources(
+            account_settings,
+            account,
+            True,
+            self._get_form_with_allowed_sources_dict({
+                1: {'allowed': True},
+                2: {'allowed': False},
+                3: {'allowed': True}
+            })
+        )
 
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
@@ -2650,7 +2670,7 @@ class AccountSettingsTest(TestCase):
 
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        view.set_allowed_sources(
+        changes_text = view.set_allowed_sources(
             account_settings,
             account,
             False,  # no permission to remove unreleased source 3
@@ -2659,7 +2679,7 @@ class AccountSettingsTest(TestCase):
                 2: {'allowed': False},
                 3: {'allowed': False}
             }))
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([3, ])
@@ -2675,7 +2695,7 @@ class AccountSettingsTest(TestCase):
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
         view = agency.AccountSettings()
-        view.set_allowed_sources(
+        changes_text = view.set_allowed_sources(
             account_settings,
             account,
             False,  # no permission to add unreleased source 3
@@ -2684,7 +2704,7 @@ class AccountSettingsTest(TestCase):
                 2: {'allowed': True},
                 3: {'allowed': True}
             }))
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2, ])

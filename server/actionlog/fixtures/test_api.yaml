@@ -85,6 +85,25 @@
     model: dash.account
     pk: 4
 
+
+# test facebook account
+
+-   fields:
+        account: 1
+        ad_account_id: 'dummy_id'
+        page_url: 'http://fakebook.fake/dummy_page_url'
+        status: 2
+    model: dash.facebookaccount
+    pk: 1
+
+-   fields:
+        account: 2
+        ad_account_id: 'dummy_id'
+        page_url: 'http://fakebook.fake/dummy_page_url'
+        status: 3
+    model: dash.facebookaccount
+    pk: 2
+
 # test campaign
 
 -   fields:
@@ -175,6 +194,12 @@
         type: 'maintenance'
     model: dash.sourcetype
     pk: 6
+
+-   fields:
+        type: 'facebook'
+        available_actions: [4, 19, 20]
+    model: dash.sourcetype
+    pk: 7
 
 # sources
 
@@ -285,6 +310,19 @@
     model: dash.source
     pk: 9
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Facebook
+        tracking_slug: 'facebook'
+        source_type: 7
+        maintenance: false
+        bidder_slug: 'facebook'
+        supports_retargeting: true
+        default_daily_budget_cc: 24
+    model: dash.source
+    pk: 10
+
 # test adgroupsettings
 
 -   fields:
@@ -294,7 +332,7 @@
         ad_group: 1
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
-        target_regions: ['UK', 'US', 'CA']
+        target_regions: ['GB', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'
         description: 'Example description'

@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    <div class="section table-ad-group-ads">
+    <div class="section table-ad-group-ads" ng-if="!hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <div class="button-bar">
             <div class="button-bar-item add-source-container">
                 <button type="button" class="btn btn-add" ng-click="addAdGroup()">+ Ad group</button>
@@ -53,4 +53,6 @@
             <div>* All times are in Eastern Standard Time (EST).</div>
         </div>
     </div>
+
+    <zem-grid data-data-source="dataSource" api="gridApi" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')"></zem-grid>
 </div>

@@ -70,7 +70,7 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     if not should_send_notification_mail(ad_group.campaign, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
+    link_url = request.build_absolute_uri('/ad_groups/{}/history'.format(ad_group.pk))
     link_url = link_url.replace('http://', 'https://')
     args = {
         'user': request.user,
@@ -91,7 +91,7 @@ def send_campaign_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
+    link_url = request.build_absolute_uri('/campaigns/{}/history'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
 
     args = {
@@ -112,7 +112,7 @@ def send_budget_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
-    link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
+    link_url = request.build_absolute_uri('/campaigns/{}/history'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
     args = {
         'user': request.user,

@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -520,6 +520,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getTableData = function (showWaiting) {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            // Data displayed and handled by zem-grid and DataSource
+            return;
+        }
+
         $scope.loadRequestInProgress = true;
 
         api.accountAccountsTable.get($scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -567,6 +572,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.getInfoboxData();
         getDailyStats();
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setDateRange(newValue, true);
+        }
     });
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
@@ -690,7 +699,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.getInfoboxData();
         getTableData();
         initColumns();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            initializeDataSource();
+        }
     };
+
+    function initializeDataSource () {
+        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, null, 'account');
+        var endpoint = zemGridEndpointService.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);

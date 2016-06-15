@@ -2,26 +2,32 @@
 'use strict';
 
 describe('AllAccountsAccountsCtrl', function () {
-    var $scope, $state, $q, api;
+    var $scope, $q, api;
+    var permissions;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});
+        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
     }));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
+        inject(function ($rootScope, $controller, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
+            permissions = {};
 
             $scope.isPermissionInternal = function () {
                 return true;
             };
-            $scope.hasPermission = function () {
-                return true;
+
+            $scope.hasPermission = function (permission) {
+                if (!permissions.hasOwnProperty(permission)) return true;
+                return permissions[permission];
             };
+
             $scope.getTableData = function () {
                 return;
             };
@@ -62,20 +68,23 @@ describe('AllAccountsAccountsCtrl', function () {
                 },
             };
 
-            $state = _$state_;
-            $state.params = {id: 1};
-
-            $controller('AllAccountsAccountsCtrl',
-                {
-                    $scope: $scope,
-                    api: api,
-                }
-            );
         });
     });
 
+    function initializeController () {
+        inject(function ($controller, $state) {
+            $state.params = {id: 1};
+            $controller('AllAccountsAccountsCtrl', {
+                $scope: $scope,
+                $state: $state,
+                api: api,
+            });
+        });
+    }
+
     describe('getInfoboxData', function () {
         it('fetch infobox data', function () {
+            initializeController();
             spyOn(api.allAccountsOverview, 'get').and.callFake(function () {
                 var deferred = $q.defer();
                 deferred.resolve(
@@ -97,6 +106,19 @@ describe('AllAccountsAccountsCtrl', function () {
                     title: 'Test',
                 }
             );
+        });
+    });
+
+    describe('Zem-Grid DataSource', function () {
+        it('check without permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
         });
     });
 });

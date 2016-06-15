@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular, constants */
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService) { // eslint-disable-line max-len
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -665,6 +665,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
 
         getDailyStats();
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setDateRange($scope.dateRange, true);
+        }
     });
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
@@ -743,6 +747,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     };
 
     var getTableData = function () {
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            // Data displayed and handled by zem-grid and DataSource
+            return;
+        }
         $scope.loadRequestInProgress = true;
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -884,7 +892,18 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         initColumns();
 
         pollSyncStatus();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            initializeDataSource();
+        }
     };
+
+    function initializeDataSource () {
+        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'content_ad');
+        var endpoint = zemGridEndpointService.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
 
     $scope.pollTableUpdates = function () {
         if ($scope.lastChangeTimeout) {
