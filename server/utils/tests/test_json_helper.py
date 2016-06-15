@@ -129,3 +129,33 @@ class DateJSONEncoderTestCase(unittest.TestCase):
     def test_encode_datetime_fail(self):
         with self.assertRaises(TypeError):
             json.dumps({'date': datetime.datetime(2016, 1, 1)}, cls=json_helper.DateJSONEncoder)
+
+
+class Helpers(unittest.TestCase):
+
+    class IdObj(object):
+        def __init__(self, id):
+            self.id = id
+
+    def test_json_serializable_changes(self):
+        self.assertIsNone(json_helper.json_serializable_changes({}))
+
+        res = json_helper.json_serializable_changes({
+            'test': 1,
+            'test2': 'random',
+        })
+
+        self.assertEqual({
+            'test': 1,
+            'test2': 'random',
+        }, res)
+
+        a = Helpers.IdObj(100)
+        res = json_helper.json_serializable_changes({
+            'test': 1,
+            'idobj': a,
+        })
+        self.assertEqual({
+            'test': 1,
+            'idobj': 100,
+        }, res)
