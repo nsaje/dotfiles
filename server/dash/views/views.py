@@ -1107,14 +1107,20 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
-        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
-                not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
-            errors.update(
-                {
-                    'state': 'Cannot enable media source that does not support'
-                    'retargeting on adgroup with retargeting enabled.'
-                }
-            )
+        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE:
+            if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+                errors.update(
+                    {
+                        'state': 'Cannot enable media source that does not support'
+                        'retargeting on adgroup with retargeting enabled.'
+                    }
+                )
+            elif not helpers.check_facebook_source(ad_group_source):
+                errors.update(
+                    {
+                        'state': 'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
+                    }
+                )
 
         if campaign_settings.landing_mode:
             for key in resource.keys():

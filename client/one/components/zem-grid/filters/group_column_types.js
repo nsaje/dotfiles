@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/* globals oneApp */
 'use strict';
 
 oneApp.filter('groupColumnTypes', function () {

@@ -1301,7 +1301,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         });
     }
 
-    function updateGoalColumns (columns, goals) {
+    function updateGoalColumns (columns, goals) { // eslint-disable-line no-unused-vars
         // TODO: configure visibility and names based on goals
     }
 

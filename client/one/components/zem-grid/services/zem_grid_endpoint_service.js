@@ -1,4 +1,4 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len
@@ -30,7 +30,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-        this.saveData = function (value, stats, column) {
+        this.saveData = function (value, stats, column) { // eslint-disable-line no-unused-vars
             // TODO: actually save value - depends on Columns definitions refactorings...
             var deferred = $q.defer();
             deferred.resolve();
