@@ -131,7 +131,7 @@
             <div class="col-xs-4" ng-if="!uploadStatus">
                 <button type="button" class="btn btn-add" ng-click="upload()">Upload</button>
             </div>
-            <div class="col-xs-4" ng-if="isUploadSuccessful()">
+            <div class="col-xs-4" ng-if="uploadStatus && uploadStatus === uploadBatchStatusConstants.DONE">
                 <button type="button" class="btn btn-add" ng-click="viewUploadedAds()">View uploaded ads</button>
             </div>
             <div class="col-xs-4" ng-if="canRetryUpload()">
