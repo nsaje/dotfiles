@@ -236,7 +236,7 @@ class HistoryMixin(object):
                 changes[field_name] = new_value
         return changes
 
-    def get_changes_text(self, changes, separator=', '):
+    def get_history_changes_text(self, changes, separator=', '):
         change_strings = []
         for key, value in changes.iteritems():
             prop = self.get_human_prop_name(key)
@@ -251,7 +251,7 @@ class HistoryMixin(object):
     def get_changes_text_from_dict(self, changes, separator=', '):
         if not changes:
             return 'Created settings'
-        return self.get_changes_text(changes, separator=separator)
+        return self.get_history_changes_text(changes, separator=separator)
 
 
 class HistoryModel(models.Model):
@@ -2852,7 +2852,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if self.post_init_created:
             parts.append('Created credit.')
             changes = model_to_dict(self)
-        text = self.get_changes_text(changes)
+        text = self.get_history_changes_text(changes)
         if text:
             parts.append(text)
         changes_text = ' '.join(parts)
@@ -3093,7 +3093,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         if self.post_init_created:
             parts.append('Created budget.')
             changes = model_to_dict(self)
-        text = self.get_changes_text(changes)
+        text = self.get_history_changes_text(changes)
         if text:
             parts.append(text)
         changes_text = ' '.join(parts)

@@ -745,18 +745,21 @@ class HistoryTest(TestCase):
         self.acc = models.Account.objects.get(pk=1)
         self.su = constants.SystemUserType.AUTOPILOT
 
-    def _latest_ad_group_history(self):
+    def _latest_ad_group_history(self, ad_group=None):
         return models.History.objects.all().filter(
+            ad_group=ad_group,
             level=constants.HistoryLevel.AD_GROUP
         ).order_by('-created_dt').first()
 
-    def _latest_campaign_history(self):
+    def _latest_campaign_history(self, campaign=None):
         return models.History.objects.all().filter(
+            campaign=campaign,
             level=constants.HistoryLevel.CAMPAIGN
         ).order_by('-created_dt').first()
 
-    def _latest_account_history(self):
+    def _latest_account_history(self, account=None):
         return models.History.objects.all().filter(
+            account=account,
             level=constants.HistoryLevel.ACCOUNT
         ).order_by('-created_dt').first()
 
@@ -844,9 +847,6 @@ class HistoryTest(TestCase):
         )
         adgss.save(None)
 
-        adg_hist = self._latest_ad_group_history()
-        self.assertIsNone(adg_hist)
-
         hist = models.create_ad_group_history(
             ad_group,
             constants.HistoryType.AD_GROUP,
@@ -860,7 +860,7 @@ class HistoryTest(TestCase):
         adgss.cpc_cc = 5100
         adgss.save(None)
 
-        adg_hist = self._latest_ad_group_history()
+        adg_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.maxDiff = None
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual(
@@ -892,14 +892,11 @@ class HistoryTest(TestCase):
         )
         adgss.save(None)
 
-        adgs_hist = self._latest_ad_group_history()
-        self.assertIsNone(adgs_hist)
-
         adgss = adgss.copy_settings()
         adgss.daily_budget_cc = 50000
         adgss.save(None)
 
-        adgs_hist = self._latest_ad_group_history()
+        adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.assertEqual(constants.HistoryType.AD_GROUP_SOURCE, adgs_hist.type)
         self.assertDictEqual(
             {
@@ -919,9 +916,6 @@ class HistoryTest(TestCase):
         )
         adgss.save(None)
 
-        camp_hist = self._latest_campaign_history()
-        self.assertIsNone(camp_hist)
-
         hist = models.create_campaign_history(
             campaign,
             constants.HistoryType.CAMPAIGN,
@@ -935,7 +929,7 @@ class HistoryTest(TestCase):
         adgss.name = 'Awesomer'
         adgss.save(None)
 
-        camp_hist = self._latest_campaign_history()
+        camp_hist = self._latest_campaign_history(campaign=campaign)
         self.assertEqual(constants.HistoryType.CAMPAIGN, camp_hist.type)
         self.assertDictEqual(
             {
@@ -964,9 +958,6 @@ class HistoryTest(TestCase):
         )
         adgss.save(r)
 
-        acc_hist = self._latest_account_history()
-        self.assertIsNone(acc_hist)
-
         hist = models.create_account_history(
             account,
             constants.HistoryType.ACCOUNT,
@@ -989,7 +980,7 @@ class HistoryTest(TestCase):
         adgss.name = 'Wacky account'
         adgss.save(r)
 
-        acc_hist = self._latest_account_history()
+        acc_hist = self._latest_account_history(account=account)
         self.assertEqual(constants.HistoryType.ACCOUNT, acc_hist.type)
         self.assertDictEqual(
             {
@@ -1013,43 +1004,6 @@ class HistoryTest(TestCase):
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'amount': 200}, hist.changes)
-
-    def test_budget_and_credit_history(self):
-        campaign = models.Campaign.objects.get(pk=1)
-        user = User.objects.get(pk=1)
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=100)
-
-        credit = models.CreditLineItem.objects.create(
-            account=campaign.account,
-            start_date=start_date,
-            end_date=end_date,
-            amount=100,
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by=user,
-            flat_fee_cc=10000,
-            flat_fee_start_date=start_date,
-            flat_fee_end_date=end_date,
-            comment="No comment"
-        )
-
-        acc_hist = self._latest_account_history()
-        self.assertIsNone(acc_hist)
-
-        end_date = start_date + datetime.timedelta(days=29)
-        models.BudgetLineItem.objects.create(
-            campaign=campaign,
-            credit=credit,
-            amount=30,
-            freed_cc=1000,
-            start_date=start_date,
-            end_date=end_date,
-            created_by=user,
-            comment="Random remark"
-        )
-
-        camp_hist = self._latest_campaign_history()
-        self.assertIsNone(camp_hist)
 
     def test_create_credit_history(self):
         r = test_helper.fake_request(User.objects.get(pk=1))
