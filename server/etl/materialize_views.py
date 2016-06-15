@@ -11,11 +11,56 @@ from utils import converters
 
 from etl import models
 from etl import helpers
+from etl import materialize_helpers
+
 
 logger = logging.getLogger(__name__)
 
 
-class MasterView(object):
+class MVAccount(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account'
+
+    def prepare_insert_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAccountDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_account_delivery'
+
+    def prepare_insert_query(self, date_from, date_to):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_master',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MasterView(materialize_helpers.TransformAndMaterialize):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.

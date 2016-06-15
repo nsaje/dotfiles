@@ -1,9 +1,11 @@
 import backtosql
 
+from stats import constants
+
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 
-class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
+class MVMaster(backtosql.Model, RSBreakdownMixin):
     """
     Defines all the fields that are provided by this breakdown model.
     Materialized sub-views are a part of it.
@@ -15,11 +17,21 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
     week = backtosql.TemplateColumn('part_trunc_week.sql', {'column_name': 'date'}, BREAKDOWN)
     month = backtosql.TemplateColumn('part_trunc_month.sql', {'column_name': 'date'}, BREAKDOWN)
 
+    agency_id = backtosql.Column('agency_id', BREAKDOWN)
     account_id = backtosql.Column('account_id', BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
     ad_group_id = backtosql.Column('adgroup_id', BREAKDOWN)
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
     source_id = backtosql.Column('source_id', BREAKDOWN)
+    publisher = backtosql.Column('publisher', BREAKDOWN)
+
+    device_type = backtosql.Column('device_type', BREAKDOWN)
+    country = backtosql.Column('country', BREAKDOWN)
+    state = backtosql.Column('state', BREAKDOWN)
+    dma = backtosql.Column('dma', BREAKDOWN)
+    age = backtosql.Column('age', BREAKDOWN)
+    gender = backtosql.Column('gender', BREAKDOWN)
+    age_gender = backtosql.Column('age_gender', BREAKDOWN)
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
@@ -59,9 +71,16 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
         Selects the most suitable materialized view for the selected breakdown.
         """
 
-        # TODO: no materialized views yet, contentadstats
-        # is treated as one of the materialized views.
-        return 'contentadstats'
+        base = constants.get_base_dimension(breakdown)
+        structure = constants.get_structure_dimension(breakdown)
+        delivery = constants.get_delivery_dimension(breakdown)
+
+        if base == 'account_id' and structure != 'publisher':
+            if delivery:
+                return 'mv_account_delivery'
+            return 'mv_account'
+
+        return 'mv_master'
 
     @classmethod
     def get_default_context(cls, breakdown, constraints, breakdown_constraints,

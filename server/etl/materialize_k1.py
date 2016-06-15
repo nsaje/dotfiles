@@ -9,12 +9,19 @@ from django.conf import settings
 import dash.models
 import reports.constants
 from utils import converters
+from redshiftapi.db import get_stats_cursor
 
 from etl import helpers
 
 logger = logging.getLogger(__name__)
 
 POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
+
+
+"""
+NOTE: This module will be deprecated when contentadstats and related tables are deprecated - when redshiftapi
+replaces reports module.
+"""
 
 
 class ContentAdStats(object):
@@ -344,7 +351,7 @@ class TouchpointConversions(object):
             from conversions
             where date=%s
         """
-        with connections[settings.STATS_DB_NAME].cursor() as c:
+        with get_stats_cursor() as c:
             c.execute(query, [date])
             for row in c:
                 yield row
@@ -390,7 +397,7 @@ class Breakdown(object):
 
 
 def _query_rows(query):
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with get_stats_cursor() as c:
         c.execute(query)
         for row in c:
             yield row

@@ -1148,6 +1148,7 @@ class SourceType(ConstantBase):
     ZEMANTA = 'zemanta'
     DISQUS = 'disqus'
     B1 = 'b1'
+    FACEBOOK = 'facebook'
 
     _VALUES = {
         ADBLADE: 'AdBlade',
@@ -1156,7 +1157,8 @@ class SourceType(ConstantBase):
         OUTBRAIN: 'Outbrain',
         YAHOO: 'Yahoo',
         ZEMANTA: 'Zemanta',
-        B1: 'B1'
+        B1: 'B1',
+        FACEBOOK: 'Facebook',
     }
 
 
@@ -1403,15 +1405,15 @@ class FacebookPageRequestType(ConstantBase):
     EMPTY = 1
     CONNECTED = 2
     PENDING = 3
-    INVALID_PAGE = 4
-    UNKNOWN = 5
+    INVALID = 4
+    ERROR = 5
 
     _VALUES = {
         EMPTY: 'Empty',
         CONNECTED: 'Connected',
         PENDING: 'Pending',
-        INVALID_PAGE: 'Invalid page',
-        UNKNOWN: 'Unknown'
+        INVALID: 'Invalid',
+        ERROR: 'Error'
     }
 
 

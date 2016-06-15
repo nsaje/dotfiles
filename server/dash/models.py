@@ -3488,8 +3488,8 @@ class GAAnalyticsAccount(models.Model):
 
 class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
-    ad_account_id = models.CharField(max_length=127, blank=True)
-    page_url = models.CharField(max_length=255)
+    ad_account_id = models.CharField(max_length=127, blank=True, null=True)
+    page_url = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField(
         default=constants.FacebookPageRequestType.EMPTY,
         choices=constants.FacebookPageRequestType.get_choices()
@@ -3503,7 +3503,7 @@ class FacebookAccount(models.Model):
         page_id = url[url.rfind('/') + 1:]
         dash_index = page_id.rfind('-')
         if dash_index != -1:
-            page_id = url[dash_index + 1:]
+            page_id = page_id[dash_index + 1:]
         return page_id
 
     def __unicode__(self):

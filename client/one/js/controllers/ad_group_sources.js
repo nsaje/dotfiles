@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -785,6 +785,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         $scope.getDailyStats();
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setDateRange(newValue, true);
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -833,7 +837,18 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         getInfoboxData();
 
         getSources();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            initializeDataSource();
+        }
     };
+
+    function initializeDataSource () {
+        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'source');
+        var endpoint = zemGridEndpointService.createEndpoint(metadata);
+        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
+        $scope.dataSource.setDateRange($scope.dateRange, false);
+    }
 
     var getSources = function () {
         if (!$scope.hasPermission('zemauth.ad_group_sources_add_source')) {
