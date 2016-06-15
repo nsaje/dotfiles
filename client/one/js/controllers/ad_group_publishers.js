@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemDataSourceEndpoints) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -999,8 +999,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'publisher');
-        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'publisher');
+        var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
     }

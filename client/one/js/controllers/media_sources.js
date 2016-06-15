@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-len
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -753,8 +753,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'source');
-        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'source');
+        var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
     }
