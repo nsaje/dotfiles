@@ -921,6 +921,19 @@ class ContentAdCandidateFormTestCase(TestCase):
             'image_crop': ['Image crop landscape is not supported']
         }, f.errors)
 
+    def test_capitalized_image_crop(self):
+        data = self._get_valid_data()
+        data['image_crop'] = 'Center'
+        f = forms.ContentAdCandidateForm(data)
+        self.assertTrue(f.is_valid())
+
+    def test_empty_image_crop(self):
+        data = self._get_valid_data()
+        data['image_crop'] = ''
+        f = forms.ContentAdCandidateForm(data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(f.cleaned_data['image_crop'], 'center')
+
     def test_missing_display_url(self):
         data = self._get_valid_data()
         del data['display_url']
