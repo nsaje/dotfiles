@@ -223,6 +223,7 @@ class HistoryMixin(object):
 
     def snapshot(self):
         self.post_init_state = self.get_history_dict()
+        self.post_init_created = self.id is None
 
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
@@ -235,17 +236,22 @@ class HistoryMixin(object):
                 changes[field_name] = new_value
         return changes
 
-    def get_changes_text_from_dict(self, changes, separator=', '):
-        if changes is None:
-            return 'Created settings'
+    def get_changes_text(self, changes, separator=', '):
         change_strings = []
         for key, value in changes.iteritems():
             prop = self.get_human_prop_name(key)
+            if not prop:
+                continue
             val = self.get_human_value(key, value)
             change_strings.append(
                 u'{} set to "{}"'.format(prop, val)
             )
         return separator.join(change_strings)
+
+    def get_changes_text_from_dict(self, changes, separator=', '):
+        if not changes:
+            return 'Created settings'
+        return self.get_changes_text(changes, separator=separator)
 
 
 class HistoryModel(models.Model):
@@ -774,7 +780,7 @@ class AccountSettings(SettingsBase):
             self.get_settings_dict(),
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes:
+        if not changes and not self.post_init_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_account_history(
@@ -878,7 +884,7 @@ class CampaignSettings(SettingsBase):
             self.get_settings_dict(),
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes:
+        if not changes and not self.post_init_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
@@ -2068,7 +2074,7 @@ class AdGroupSettings(SettingsBase):
             self.get_settings_dict(),
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes:
+        if not changes and not self.post_init_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
@@ -2237,7 +2243,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.get_settings_dict(),
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes:
+        if not changes and not self.post_init_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
@@ -2785,8 +2791,6 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {
-            'account': 'Account',
-            'agency': 'Agency',
             'start_date': 'Start Date',
             'end_date': 'End Date',
             'amount': 'Amount',
@@ -2797,7 +2801,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             'status': 'Status',
             'comment': 'Comment'
         }
-        return NAMES[prop_name]
+        return NAMES.get(prop_name)
 
     @classmethod
     def get_human_value(cls, prop_name, value):
@@ -2810,6 +2814,14 @@ class CreditLineItem(FootprintModel, HistoryMixin):
                 value * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
+        elif prop_name == 'comment':
+            value = value or ''
+        elif prop_name == 'flat_fee_cc':
+            value = value or ''
+        elif prop_name == 'flat_fee_start_date':
+            value = value or ''
+        elif prop_name == 'flat_fee_end_date':
+            value = value or ''
         return value
 
     def get_settings_dict(self):
@@ -2834,9 +2846,16 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             model_to_dict(self),
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes:
+        if not changes and not self.post_init_created:
             return
-        changes_text = self.get_changes_text_from_dict(changes)
+        parts = []
+        if self.post_init_created:
+            parts.append('Created credit.')
+            changes = model_to_dict(self)
+        text = self.get_changes_text(changes)
+        if text:
+            parts.append(text)
+        changes_text = ' '.join(parts)
 
         if self.account is not None:
             create_account_history(
@@ -3031,7 +3050,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             'freed_cc': 'Freed (cc)',
             'comment': 'Comment',
         }
-        return NAMES[prop_name]
+        return NAMES.get(prop_name)
 
     @classmethod
     def get_human_value(cls, prop_name, value):
@@ -3043,6 +3062,8 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'comment':
+            value = value or ''
         return value
 
     def get_settings_dict(self):
@@ -3065,7 +3086,17 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             self.post_init_state,
             model_to_dict(self),
         )
-        changes_text = self.get_changes_text_from_dict(changes)
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
+        parts = []
+        if self.post_init_created:
+            parts.append('Created budget.')
+            changes = model_to_dict(self)
+        text = self.get_changes_text(changes)
+        if text:
+            parts.append(text)
+        changes_text = ' '.join(parts)
         create_campaign_history(
             self.campaign,
             constants.HistoryType.BUDGET,
