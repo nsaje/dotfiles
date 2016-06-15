@@ -797,6 +797,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getTableData();
         getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+        }
     }, true);
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

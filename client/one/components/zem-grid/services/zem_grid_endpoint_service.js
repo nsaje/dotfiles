@@ -1,4 +1,6 @@
-/* globals oneApp, angular */
+/* globals oneApp */
+/* eslint-disable camelcase*/
+
 'use strict';
 
 oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns) { // eslint-disable-line max-len
@@ -58,11 +60,14 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
                 };
             });
         }
-
         function convertToApi (config) {
-            config.breakdown_page = config.breakdownPage; // eslint-disable-line camelcase
-            config.start_date = config.startDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-            config.end_date = config.endDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
+            config.breakdown_page = config.breakdownPage;
+            config.start_date = config.startDate.format('YYYY-MM-DD');
+            config.end_date = config.endDate.format('YYYY-MM-DD');
+            config.show_archived = config.showArchived;
+            config.show_blacklisted_publishers = config.showBlacklistedPublishers;
+            config.filtered_sources  = config.filteredSources;
+
             delete config.breakdownPage;
             delete config.breakdown;
         }
