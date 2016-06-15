@@ -28,6 +28,7 @@ class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.Ma
             yield (
                 source.id,
                 helpers.extract_source_slug(source.bidder_slug),
+                source.bidder_slug,
             )
 
     def create_table_template_name(self):
