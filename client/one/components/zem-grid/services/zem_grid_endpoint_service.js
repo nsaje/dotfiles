@@ -1,4 +1,4 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns) { // eslint-disable-line max-len
