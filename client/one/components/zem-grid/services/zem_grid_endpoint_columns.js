@@ -1,21 +1,14 @@
-/* globals oneApp, angular */
+/* globals oneApp, constants */
 'use strict';
 
-oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemPostclickMetricsService', function (zemOptimisationMetricsService, zemPostclickMetricsService) { // eslint-disable-line max-len
-    // removed extraTdCss
-    // TODO: default values : unselectable, checked, shown, totalRow, order, orderField==field, initialOrder
-
+oneApp.factory('zemGridEndpointColumns', [function () {
     // TODO: conversion goals/optimisation metrics names, visibility, etc. -- update columns based on goals data
-
-    // TODO: state - saveData, constants, messages, archived - move to directives
-    // TODO: settings - saveData, constants, autopilotOn
-    // TODO - actions - clickCallback: zemFilterService.exclusivelyFilterSource
     // FIXME: Categories -- Diff conflict in ad_group_publishers
+    // TODO: state - saveData, constants, messages, archived - move to directives
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // BASE COLUMNS DEFINITIONS
     //
-
     var COLUMNS = {
         account: {
             name: 'Account',
@@ -143,7 +136,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             shown: 'zemauth.campaign_goal_performance',
         },
 
-        // State TODO: refactor
+        // State
         stateAdGroup: { // AdGroup state
             name: '\u25CF',
             field: 'state',
@@ -527,6 +520,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             initialOrder: 'asc',
         },
 
+        // Costs
         mediaCost: {
             name: 'Actual Media Spend',
             field: 'media_cost',
@@ -936,7 +930,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
             order: true,
             initialOrder: 'desc',
         },
-
     };
 
     for (var i = 1; i <= 5; i++) {
@@ -1148,7 +1141,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
     //  COLUMN CATEGORIES
     //
-
     var CATEGORIES = [
         {
             name: 'Costs',
@@ -1235,7 +1227,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
 
     function convertPermission (permission, checkFn) {
         // Convert Column definitions permissions to boolean value using passed function
-        // 3 versions are possible: boolean, string, array
+        // Possible types: boolean, string, array
         var result = false;
         if (typeof permission === 'boolean') {
             result = permission;
@@ -1265,24 +1257,24 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
     }
 
     function getColumns (level, breakdown) {
-        // TODO: use constants
+        // TODO: create breakdown constants
         if (breakdown === 'source') {
             switch (level) {
-            case 'ad_groups': return AD_GROUP_MEDIA_SOURCE;
-            case 'campaign': return CAMPAIGN_MEDIA_SOURCE;
+            case constants.level.AD_GROUPS: return AD_GROUP_MEDIA_SOURCE;
+            case constants.level.CAMPAIGNS: return CAMPAIGN_MEDIA_SOURCE;
             default: return MEDIA_SOURCE;
             }
         } else if (breakdown === 'publisher') {
             switch (level) {
-            case 'ad_groups': return AD_GROUP_PUBLISHERS;
+            case constants.level.AD_GROUPS: return AD_GROUP_PUBLISHERS;
             default: throw 'Not supported.';
             }
         } else {
             switch (level) {
-            case 'all_accounts': return ALL_ACCOUNTS_ACCOUNTS;
-            case 'accounts': return ACCOUNT_CAMPAIGNS;
-            case 'campaigns': return CAMPAIGN_AD_GROUPS;
-            case 'ad_groups': return AD_GROUP_CONTENT_ADS;
+            case constants.level.ALL_ACCOUNTS: return ALL_ACCOUNTS_ACCOUNTS;
+            case constants.level.ACCOUNTS: return ACCOUNT_CAMPAIGNS;
+            case constants.level.CAMPAIGNS: return CAMPAIGN_AD_GROUPS;
+            case constants.level.AD_GROUPS: return AD_GROUP_CONTENT_ADS;
             default: throw 'Not supported.';
             }
         }
@@ -1295,9 +1287,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         return columns;
     }
 
-    function createCategories (columns) {
-        // Create categories in correct format
+    function createCategories () {
         // TODO: check if column is required in category
+        // Create categories in correct format
         return CATEGORIES.map(function (category) {
             var fields = category.columns.map(function (column) {
                 return column.field;
@@ -1309,8 +1301,14 @@ oneApp.factory('zemGridEndpointColumns', ['zemOptimisationMetricsService', 'zemP
         });
     }
 
+    function updateGoalColumns (columns, goals) {
+        // TODO: configure visibility and names based on goals
+    }
+
+
     return {
         createColumns: createColumns,
         createCategories: createCategories,
+        updateGoalColumns: updateGoalColumns,
     };
 }]);
