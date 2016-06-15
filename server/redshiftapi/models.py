@@ -13,7 +13,7 @@ MATERIALIZED_VIEWS = [
      'mv_campaign'),
     ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN} |
      set(sc.DeliveryDimension._ALL),
-         'mv_campaign_delivery'),
+     'mv_campaign_delivery'),
 ]
 
 
