@@ -21,8 +21,8 @@ MATERIALIZED_VIEWS = [
     materialize_views.MasterView(),
 
     # Derived views from master
-    materialize_views.MVAccount(),
-    materialize_views.MVAccountDelivery(),
+    # materialize_views.MVAccount(),
+    # materialize_views.MVAccountDelivery(),
 ]
 
 
