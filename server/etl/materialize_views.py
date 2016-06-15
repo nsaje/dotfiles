@@ -89,8 +89,8 @@ class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_
 class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_helpers.Materialize):
     """
     Writes a temporary table that has data from stats transformed into the correct format for mv_master construction.
-    It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost and license
-    fee based on mvh_campaign_factors.
+    It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost
+    and license fee based on mvh_campaign_factors.
     """
 
     def table_name(self):
