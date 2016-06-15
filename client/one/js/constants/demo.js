@@ -6,10 +6,10 @@ oneApp.constant('demoDefaults', {
         return {
             id: id,
             name: 'New demo campaign',
-            defaultAccountManager: '1',
+            accountManager: '1',
             IABCategory: 'IAB1',
             promotionGoal: 1,
-            defaultSalesRepresentative: '1',
+            salesRepresentative: '1',
             serviceFee: '20'
         };
     },
