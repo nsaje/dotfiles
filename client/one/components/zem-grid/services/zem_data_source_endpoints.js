@@ -135,16 +135,12 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
     ];
 
     function getControllerMetaData (scope, ctrl) {
-        //
-        // HACK (legacy support): access columns variable from corresponded controller scope
-        //
-        try { $controller(ctrl, {$scope: scope}); } catch (e) { } // eslint-disable-line
-
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns
         // FIXME: find appropriate solution for this problem (special type)
-        scope.columns[0].field = 'breakdownName';
-        scope.columns[0].type = 'text';
+        var columns = angular.copy(scope.columns);
+        columns[0].field = 'breakdownName';
+        columns[0].type = 'text';
 
         // Types not supported atm, therefor just assume Account type,
         // and add required base and structure level breakdowns
@@ -153,7 +149,7 @@ oneApp.factory('zemDataSourceEndpoints', ['$rootScope', '$controller', '$http', 
         breakdownGroups[2].breakdowns.unshift(STRUCTURE_LEVEL_BREAKDOWNS[0]);
 
         return {
-            columns: scope.columns,
+            columns: columns,
             categories: scope.columnCategories,
             breakdownGroups: breakdownGroups,
             localStoragePrefix: scope.localStoragePrefix,

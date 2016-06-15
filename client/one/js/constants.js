@@ -592,6 +592,11 @@ var constants = {
         OK: 3,
         FAILED: 4,
     },
+    facebookStatus: {
+        CONNECTED: 'Connected',
+        PENDING: 'Pending',
+        EMPTY: 'Empty',
+    },
     imageCrop: {
         CENTER: 'center',
         FACES: 'faces',

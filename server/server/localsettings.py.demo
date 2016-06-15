@@ -180,8 +180,6 @@ R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_
 R1_CONVERSION_STATS_URL = ''
 R1_CONVERSION_STATS_RESULT_URL = ''
 
-BIDDER_API_SIGN_KEY = ''
-
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 BIDDER_API_SIGN_KEY = Secret('').get()
@@ -195,7 +193,7 @@ GA_PRIVATE_KEY = ''
 
 # k1
 K1_DEMO_MODE = True
-K1_CONSISTENCY_SYNC = False
+K1_CONSISTENCY_SYNC = True
 
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
@@ -204,9 +202,14 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 # DeployKitty
 DK_API_KEY = Secret('').get()
 DK_DEMO_PREPARE_ENDPOINT = ''
+DK_DEMO_UP_ENDPOINT = ''
 
 LAMBDA_REGION = 'us-east-1'
 LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK/AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACWMIGTBgkqhkiG9w0BBwaggYUwgYICAQAwfQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAx7yLKe0tUFVxMxsMMCARCAUFMra/DjBi1zN9BhzOI/C8+JHJA5rBM0tsNGeCZBzYnFgMm951IWfgRr7gqwdnPVqzDdwHwMHYzbR2viuXRMus4bfcdCm2BEqQBnNAgZ/fZt').get()
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = os.environ.get('INSTANCE_NAME', 'demo123')
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com/api/callbacks/content-upload/'.format(INSTANCE_NAME=LAMBDA_CONTENT_UPLOAD_NAMESPACE)
+
+# FB
+FB_BUSINESS_ID = ''
+FB_ACCESS_TOKEN = Secret('plain::').get()

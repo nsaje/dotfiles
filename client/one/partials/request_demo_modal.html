@@ -1,0 +1,32 @@
+<div class="modal-body">
+    <div ng-show="inProgress">
+        Requesting demo instance <div class="loader"></div>
+    </div>
+
+    <div ng-show="!inProgress && !error">
+        <p>Demo is running.</p>
+        <p>
+            Log in to <a href="{{ url }}">{{ url }}</a><br>
+            u/p: regular.user+demo@zemanta.com / {{ password }}<br>
+            NOTE: This instance will selfdestroy in 3 days.<br>
+        </p>
+        <p>
+            These details have also been sent to your email.
+        </p>
+    </div>
+
+    <div class="error" ng-if="error">
+        <span ng-if="!!errorMessage">
+            {{ errorMessage }}
+        </span>
+        <span ng-if="!errorMessage">
+            An error has occured.
+        </span>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-4">
+            <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+        </div>
+    </div>
+</div>

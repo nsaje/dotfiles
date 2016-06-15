@@ -265,6 +265,7 @@ class AccountSettingsForm(forms.Form):
     )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
+    facebook_page = forms.CharField(max_length=255, required=False)
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -348,6 +349,14 @@ class AccountSettingsForm(forms.Form):
             allowed_sources[key] = {'allowed': allowed, 'name': v.get('name', '')}
 
         return allowed_sources
+
+    def clean_facebook_page(self):
+        facebook_page = self.cleaned_data.get('facebook_page')
+
+        if not facebook_page:
+            return None
+
+        return facebook_page
 
 
 def validate_lower_case_only(st):
@@ -984,6 +993,7 @@ class BreakdownForm(forms.Form):
     )
 
     show_archived = forms.BooleanField(required=False)
+    show_blacklisted_publishers = forms.BooleanField(required=False)
 
     offset = forms.IntegerField(min_value=0, required=True)
     limit = forms.IntegerField(min_value=0, max_value=100, required=True)

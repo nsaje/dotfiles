@@ -30,3 +30,12 @@ python /app/zemanta-eins/manage.py sqlflush | python /app/zemanta-eins/manage.py
 
 echo "Loading dump"
 python /app/zemanta-eins/manage.py loaddata dump.json
+
+echo "Incrementing sequences"
+python /app/zemanta-eins/manage.py dbshell <<SQL | grep 'ALTER SEQUENCE' | python /app/zemanta-eins/manage.py dbshell
+SELECT 'ALTER SEQUENCE ' ||
+       quote_ident(S.relname) ||
+       ' INCREMENT BY 1000000;'
+FROM pg_class AS S
+WHERE S.relkind = 'S'
+SQL

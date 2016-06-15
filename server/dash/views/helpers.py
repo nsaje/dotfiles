@@ -20,6 +20,7 @@ import automation.autopilot_settings
 from dash import models
 from dash import constants
 from dash import api
+from dash import history_helpers
 
 from utils import exc
 from utils import statsd_helper
@@ -762,7 +763,7 @@ def get_fake_ad_group_source_states(ad_group_sources):
         agss = ad_group_sources_settings.get(ags.id)
 
         if ad_group_settings is None or agss is None:
-            logger.error("Missing settigns got ad group source: %s", ags.id)
+            logger.error("Missing settings got ad group source: %s", ags.id)
             continue
 
         state = ad_group_settings.state
@@ -970,11 +971,24 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
             not (ad_group_source.source.can_modify_retargeting_automatically() or
                  ad_group_source.source.can_modify_retargeting_manually()):
         message = 'This source can not be enabled because it does not support retargeting.'
+    elif message is None and not check_facebook_source(ad_group_source):
+        message = 'Please connect your Facebook page to add Facebook as media source.'
 
     return {
         'enabled': message is None,
         'message': message
     }
+
+
+def check_facebook_source(ad_group_source):
+    if ad_group_source.source.source_type.type != constants.SourceType.FACEBOOK:
+        return True
+
+    try:
+        facebook_account_status = ad_group_source.ad_group.campaign.account.facebookaccount.status
+        return facebook_account_status == constants.FacebookPageRequestType.CONNECTED
+    except models.FacebookAccount.DoesNotExist:
+        return False
 
 
 def _get_status_setting_disabled_message(ad_group_source):
@@ -1137,6 +1151,8 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
 def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
     changes = old_settings.get_setting_changes(new_settings)
     if changes:
+        history_changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator=', ')
+        history_helpers.write_campaign_history(campaign, history_changes_text, user=request.user)
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
         log_useraction_if_necessary(request, user_action_type, campaign=campaign)

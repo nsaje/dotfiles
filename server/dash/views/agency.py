@@ -21,7 +21,9 @@ from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
+from dash import facebook_helper
 from dash import content_insights_helper
+from dash import history_helpers
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -967,17 +969,35 @@ class AccountSettings(api_common.BaseApiView):
                     raise exc.AuthorizationError()
                 settings.account_type = form.cleaned_data['account_type']
 
+            # FIXME: changes_text should be part of account settings comparison in
+            # dash.models and not in views
+            changes_text = None
             if 'allowed_sources' in form.cleaned_data and\
                     form.cleaned_data['allowed_sources'] is not None:
-                self.set_allowed_sources(
+                changes_text = self.set_allowed_sources(
                     settings,
                     account,
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
                     form
                 )
 
+            if 'facebook_page' in form.data:
+                if not request.user.has_perm('zemauth.can_modify_facebook_page'):
+                    raise exc.AuthorizationError()
+                facebook_account = self.get_or_create_facebook_account(account)
+                self.set_facebook_page(facebook_account, form)
+                facebook_account.save()
+
             account.save(request)
+            settings.changes_text = changes_text
             settings.save(request)
+
+            history_helpers.write_account_history(
+                account,
+                changes_text,
+                user=request.user,
+            )
+
             return settings
 
     def _validate_essential_account_settings(self, user, form):
@@ -1059,10 +1079,26 @@ class AccountSettings(api_common.BaseApiView):
             self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
             return
 
+        changes_text = None
         if to_be_added or to_be_removed:
-            settings.changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
+            changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
             account.allowed_sources.add(*list(to_be_added))
             account.allowed_sources.remove(*list(to_be_removed))
+        return changes_text
+
+    def get_or_create_facebook_account(self, account):
+        try:
+            facebook_account = account.facebookaccount
+        except models.FacebookAccount.DoesNotExist:
+            facebook_account = models.FacebookAccount.objects.create(
+                account=account,
+                status=constants.FacebookPageRequestType.EMPTY,
+            )
+        return facebook_account
+
+    def set_facebook_page(self, facebook_account, form):
+        new_url = form.cleaned_data['facebook_page']
+        facebook_helper.update_facebook_account(facebook_account, new_url)
 
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()
@@ -1115,6 +1151,15 @@ class AccountSettings(api_common.BaseApiView):
 
         return allowed_sources_dict
 
+    def add_facebook_account_to_result(self, result, account):
+        try:
+            result['facebook_page'] = account.facebookaccount.page_url
+            result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                account.facebookaccount.status)
+        except models.FacebookAccount.DoesNotExist:
+            result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                models.constants.FacebookPageRequestType.EMPTY)
+
     def get_dict(self, request, settings, account):
         if not settings:
             return {}
@@ -1139,6 +1184,8 @@ class AccountSettings(api_common.BaseApiView):
                 request.user.has_perm('zemauth.can_see_all_available_sources'),
                 [source.id for source in account.allowed_sources.all()]
             )
+        if request.user.has_perm('zemauth.can_modify_facebook_page'):
+            self.add_facebook_account_to_result(result, account)
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
@@ -1314,10 +1361,18 @@ class AccountUsers(api_common.BaseApiView):
         if not len(account.users.filter(pk=user.pk)):
             account.users.add(user)
 
+            changes_text = u'Added user {} ({})'.format(user.get_full_name(), user.email)
+
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Added user {} ({})'.format(user.get_full_name(), user.email)
+            new_settings.changes_text = changes_text
             new_settings.save(request)
+
+            history_helpers.write_account_history(
+                account,
+                changes_text,
+                user=request.user,
+            )
 
         return self.create_api_response(
             {'user': self._get_user_dict(user)},
@@ -1351,10 +1406,17 @@ class AccountUsers(api_common.BaseApiView):
         if len(account.users.filter(pk=user.pk)):
             account.users.remove(user)
 
+            changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
+            new_settings.changes_text = changes_text
             new_settings.save(request)
+
+            history_helpers.write_account_history(
+                account,
+                changes_text,
+                user=request.user,
+            )
 
         return self.create_api_response({
             'user_id': user.id
@@ -1382,10 +1444,18 @@ class UserActivation(api_common.BaseApiView):
             email_helper.send_email_to_new_user(user, request)
 
             account = helpers.get_account(request.user, account_id)
+
+            changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
+            new_settings.changes_text = changes_text
             new_settings.save(request)
+
+            history_helpers.write_account_history(
+                account,
+                changes_text,
+                user=request.user,
+            )
 
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(

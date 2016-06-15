@@ -185,8 +185,6 @@ R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_
 R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
 
-BIDDER_API_SIGN_KEY = ''
-
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 BIDDER_API_SIGN_KEY = Secret('').get()
@@ -205,6 +203,7 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
 # DeployKitty
 DK_API_KEY = Secret('').get()
 DK_DEMO_PREPARE_ENDPOINT = ''
+DK_DEMO_UP_ENDPOINT = ''
 
 # l1
 LAMBDA_REGION = 'us-east-1'
@@ -212,3 +211,7 @@ LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''
+
+# FB
+FB_BUSINESS_ID = ''
+FB_ACCESS_TOKEN = Secret('plain::').get()

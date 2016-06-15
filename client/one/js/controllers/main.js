@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular, constants */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', '$window', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modalStack, $timeout, $window, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modal', '$modalStack', '$timeout', '$window', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modal, $modalStack, $timeout, $window, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -312,6 +312,16 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         return 'adgroup-status-active-icon';
+    };
+
+    $scope.requestDemo = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/request_demo_modal.html',
+            controller: 'RequestDemoModalCtrl',
+            windowClass: 'modal-default',
+            scope: $scope,
+        });
+        return modalInstance;
     };
 
     $scope.$on('$stateChangeSuccess', function () {
