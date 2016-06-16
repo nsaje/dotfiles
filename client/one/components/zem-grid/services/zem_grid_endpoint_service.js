@@ -14,7 +14,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         };
 
         this.getData = function (config) {
-            var url = createUrl(config);
+            var url = createUrl(baseUrl, config);
             config = zemGridEndpointApiConverter.convertToApi(config);
             var deferred = $q.defer();
             $http.post(url, {params: config}).success(function (data) {
@@ -37,7 +37,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-        function createUrl (config) {
+        function createUrl (baseUrl, config) {
             var queries = config.breakdown.map(function (breakdown) {
                 return breakdown.query;
             });

@@ -1,7 +1,7 @@
 /* globals describe, it, beforeEach, expect, module, inject, moment */
 
 /* eslint-disable camelcase */
-describe('test zemGridEndpointApiConverter', function () {
+describe('zemGridEndpointApiConverter', function () {
     var zemGridEndpointApiConverter,
         config,
         breakdown,
@@ -72,16 +72,24 @@ describe('test zemGridEndpointApiConverter', function () {
         };
 
         metaData = {
-            columns: {
-                clicks: {
+            columns: [
+                {
+                    field: 'breakdown_name',
+                    type: 'breakdown',
+                },
+                {
                     field: 'clicks',
                     type: 'number',
                 },
-                state: {
+                {
                     field: 'state',
                     type: 'state',
                 },
-            },
+                {
+                    field: 'unknown',
+                    type: 'unknown',
+                },
+            ],
         };
 
         expectedResult = {
@@ -98,9 +106,6 @@ describe('test zemGridEndpointApiConverter', function () {
                             value: 1,
                             isEditable: true,
                             editMessage: null,
-                        },
-                        unknown: {
-                            value: null,
                         },
                     },
                     breakdownId: 3,
