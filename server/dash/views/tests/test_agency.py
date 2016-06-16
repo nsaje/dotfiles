@@ -1801,7 +1801,7 @@ class CampaignHistoryTest(TestCase):
                 {'name': 'Goal Quantity', 'value': '0.00'},
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
-                {'name': 'Device targeting', 'value': 'Mobile'},
+                {'name': 'Device targeting', 'value': 'Mobile/Tablet'},
                 {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
                 {'name': 'Automatic Campaign Stop', 'value': 'True'},
                 {'name': 'Landing Mode', 'value': 'False'},
