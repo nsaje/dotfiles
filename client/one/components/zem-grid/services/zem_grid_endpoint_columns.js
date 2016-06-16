@@ -963,6 +963,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
     }
 
     var BASE_METRICS = [
+        COLUMNS.licenseFee,
         COLUMNS.mediaCost,
         COLUMNS.eMediaCost,
         COLUMNS.dataCost,
@@ -1024,7 +1025,6 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         COLUMNS.flatFee,
         COLUMNS.totalFee,
         COLUMNS.totalFeeProjection,
-        COLUMNS.licenseFee,
         COLUMNS.licenseFeeProjection,
     ].concat(
         BASE_METRICS,
@@ -1040,7 +1040,6 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         COLUMNS.allocatedBudgets,
         COLUMNS.spendProjection,
         COLUMNS.pacing,
-        COLUMNS.licenseFee,
         COLUMNS.licenseFeeProjection,
     ].concat(
         BASE_METRICS,
