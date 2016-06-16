@@ -640,7 +640,7 @@ var options = {
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
-        {name: 'Mobile', value: constants.adTargetDevice.MOBILE},
+        {name: 'Mobile/Tablet', value: constants.adTargetDevice.MOBILE},
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
