@@ -8,13 +8,13 @@ import textwrap
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
-from django.contrib.auth.models import Permission
 from django.conf import settings
 from django.test import Client
+from requests import Response
 
 from zemauth.models import User
 from dash import models
@@ -1960,6 +1960,10 @@ class CampaignSettingsTest(TestCase):
         )
 
 
+@override_settings(
+    FB_BUSINESS_ID='fake_app_id',
+    FB_ACCESS_TOKEN='very_fake_token',
+)
 class AccountSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
@@ -2015,7 +2019,8 @@ class AccountSettingsTest(TestCase):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
-            'can_modify_account_type'
+            'can_modify_account_type',
+            'can_modify_facebook_page',
         ])
 
         response = client.get(
@@ -2030,7 +2035,8 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': '2',
             'account_type': 3,
             'id': '1',
-            'archived': False
+            'archived': False,
+            'facebook_status': 'Empty',
         })
 
     def test_get_as_agency_manager(self):
@@ -2231,15 +2237,20 @@ class AccountSettingsTest(TestCase):
             'archived': False
         })
 
+    @patch('requests.post')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction):
+    def test_put(self, mock_log_useraction, mock_request):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
             'can_modify_account_type',
             'can_modify_allowed_sources',
             'can_set_account_sales_representative',
+            'can_modify_facebook_page',
         ])
+        response = Response()
+        response.status_code = 200
+        mock_request.return_value = response
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
@@ -2252,7 +2263,8 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
-                    }
+                    },
+                    'facebook_page': 'http://www.facebook.com/dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2275,6 +2287,8 @@ class AccountSettingsTest(TestCase):
             'account_type': 4,
             'name': 'changed name',
         })
+        self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
+        self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
@@ -2298,7 +2312,8 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
-                    }
+                    },
+                    'facebook_page': 'dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2317,7 +2332,8 @@ class AccountSettingsTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
-                    'allowed_sources': {}
+                    'allowed_sources': {},
+                    'facebook_page': 'dummy_page',
                 }
             }),
             content_type='application/json',
@@ -3031,102 +3047,3 @@ class HistoryTest(TestCase):
         history = response['data']['history'][0]
         self.assertEqual(self.user.email, history['changed_by'])
         self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
-
-    def test_create_new_ad_group_history(self):
-        campaign = models.Campaign.objects.get(pk=1)
-
-        req = fake_request(self.user)
-        ad_group = models.AdGroup(
-            name='Test group',
-            campaign=campaign,
-        )
-        ad_group.save(req)
-        new_settings = models.AdGroupSettings(
-            ad_group=ad_group,
-            cpc_cc=100
-        )
-        new_settings.save(req)
-
-        history = models.History.objects.all().first()
-        self.assertEqual('Created settings', history.changes_text)
-
-    def test_create_new_campaign_history(self):
-        account = models.Account.objects.get(pk=1)
-
-        req = fake_request(self.user)
-        campaign = models.Campaign(
-            name='Test campaign',
-            account=account,
-        )
-        campaign.save(req)
-        new_settings = models.CampaignSettings(
-            campaign=campaign,
-            name='Tested campaign'
-        )
-        new_settings.save(req)
-
-        history = models.History.objects.all().first()
-        self.assertEqual('Created settings', history.changes_text)
-
-    def test_create_new_account_history(self):
-        req = fake_request(self.user)
-        account = models.Account(
-            name='Test account',
-        )
-        account.save(req)
-        new_settings = models.AccountSettings(
-            name='Tested account',
-            account=account,
-        )
-        new_settings.save(req)
-
-        history = models.History.objects.all().first()
-        self.assertEqual('Created settings', history.changes_text)
-
-    def test_create_new_bcm_history(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
-        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
-        credit = models.CreditLineItem.objects.create(
-            account=ad_group.campaign.account,
-            start_date=start_date,
-            end_date=end_date,
-            amount=100,
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by=self.user,
-        )
-
-        history = models.History.objects.all().first()
-        self.assertEqual(textwrap.dedent(
-            '''
-            Created credit
-            . Status set to "Signed"
-            , Comment set to ""
-            , End Date set to "2016-06-30"
-            , Flat Fee Start Date set to ""
-            , Flat Fee (cc) set to "$0.00"
-            , Start Date set to "2016-05-31"
-            , Flat Fee End Date set to ""
-            , Amount set to "$100.00"
-            , License Fee set to "20.00%"
-            ''').replace('\n', ''), history.changes_text)
-
-        models.BudgetLineItem.objects.create(
-            campaign=ad_group.campaign,
-            credit=credit,
-            amount=100,
-            start_date=start_date,
-            end_date=end_date,
-            created_by=self.user,
-        )
-
-        history = models.History.objects.all().last()
-        self.assertEqual(textwrap.dedent(
-            '''
-            Created budget
-            . Comment set to ""
-            , End Date set to "2016-06-30"
-            , Start Date set to "2016-05-31"
-            , Amount set to "$100.00"
-            , Freed (cc) set to "$0.00"
-            ''').replace('\n', ''), history.changes_text)

@@ -1045,3 +1045,108 @@ class HistoryTest(TestCase):
 
         self.assertEqual(account, hist.account)
         self.assertDictEqual({'amount': 20000}, hist.changes)
+
+    def test_create_new_ad_group_history(self):
+        campaign = models.Campaign.objects.get(pk=1)
+
+        req = test_helper.fake_request(self.u)
+        ad_group = models.AdGroup(
+            name='Test group',
+            campaign=campaign,
+        )
+        ad_group.save(req)
+        new_settings = models.AdGroupSettings(
+            ad_group=ad_group,
+            cpc_cc=100
+        )
+        new_settings.save(req)
+
+        history = models.History.objects.all().first()
+        self.assertEqual('Created settings', history.changes_text)
+
+    def test_create_new_campaign_history(self):
+        account = models.Account.objects.get(pk=1)
+
+        req = test_helper.fake_request(self.u)
+        campaign = models.Campaign(
+            name='Test campaign',
+            account=account,
+        )
+        campaign.save(req)
+        new_settings = models.CampaignSettings(
+            campaign=campaign,
+            name='Tested campaign'
+        )
+        new_settings.save(req)
+
+        history = models.History.objects.all().first()
+        self.assertEqual('Created settings', history.changes_text)
+
+    def test_create_new_account_history(self):
+        req = test_helper.fake_request(self.u)
+        account = models.Account(
+            name='Test account',
+        )
+        account.save(req)
+        new_settings = models.AccountSettings(
+            name='Tested account',
+            account=account,
+        )
+        new_settings.save(req)
+
+        history = models.History.objects.all().first()
+        self.assertEqual('Created settings', history.changes_text)
+
+    def test_create_new_bcm_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
+        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
+        credit = models.CreditLineItem.objects.create(
+            account=ad_group.campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=self.u,
+        )
+
+        history = models.History.objects.all().first()
+        self.assertEqual(textwrap.dedent(
+            '''
+            Created credit
+            . Credit: #{cid}. Status set to "Signed"
+            , Comment set to ""
+            , End Date set to "{ed}"
+            , Flat Fee Start Date set to ""
+            , Flat Fee (cc) set to "$0.00"
+            , Start Date set to "{sd}"
+            , Flat Fee End Date set to ""
+            , Amount set to "$100.00"
+            , License Fee set to "20.00%"
+            '''.format(cid=credit.id,
+                       sd=start_date.isoformat(),
+                       ed=end_date.isoformat()))
+            .replace('\n', ''), history.changes_text)
+
+        budget = models.BudgetLineItem.objects.create(
+            campaign=ad_group.campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=self.u,
+        )
+
+        history = models.History.objects.all().last()
+        self.assertEqual(textwrap.dedent(
+            '''
+            Created budget
+            . Budget: #{budid}. Comment set to ""
+            , End Date set to "{ed}"
+            , Start Date set to "{sd}"
+            , Amount set to "$100.00"
+            , Freed set to "$0.00"
+            '''.format(budid=budget.id,
+                       sd=start_date.isoformat(),
+                       ed=end_date.isoformat())
+        ).replace('\n', ''), history.changes_text)

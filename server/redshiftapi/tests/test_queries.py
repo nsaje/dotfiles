@@ -116,7 +116,7 @@ class TestPrepareQuery(TestCase):
         }
 
         context = {
-            'constraints': backtosql.Q(models.RSContentAdStats, **constraints)
+            'constraints': backtosql.Q(models.MVMaster, **constraints)
         }
 
         with self.assertRaises(exc.MissingBreakdownConstraintsError):
@@ -129,7 +129,7 @@ class TestPrepareQuery(TestCase):
         }
 
         context = {
-            'constraints': backtosql.Q(models.RSContentAdStats, **constraints)
+            'constraints': backtosql.Q(models.MVMaster, **constraints)
         }
 
         with self.assertRaises(exc.MissingBreakdownConstraintsError):
@@ -142,7 +142,7 @@ class TestPrepareQuery(TestCase):
         }
 
         _, params = queries.prepare_time_top_rows(
-            models.RSContentAdStats,
+            models.MVMaster,
             constants.TimeDimension.DAY, {}, constraints, 1, 2)
 
         self.assertItemsEqual(params, [datetime.date(2016, 2, 2), datetime.date(2016, 2, 4)])

@@ -139,6 +139,20 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 return modalInstance;
             };
 
+            $scope.getKPIOptimizationLabel = function () {
+                var label = '';
+                for (var i = 0; i < $scope.campaignGoals.length; i++) {
+                    var el = $scope.campaignGoals[i];
+                    if (el.primary && constants.automaticallyOptimizedKPIGoals.indexOf(el.type) > -1) {
+                        label = ('Goal ' + constants.campaignGoalValueText[el.type] +
+                        ' is automatically optimized when data from GA/Omniture ' +
+                        'is available and there are enough clicks for the data to be statistically significant.');
+                        break;
+                    }
+                }
+                return label;
+            };
+
             $scope.getConversionPixelTag = function (url) {
                 return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
             };

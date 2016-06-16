@@ -23,6 +23,7 @@ from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import conversions_helper
+from dash import facebook_helper
 from dash import content_insights_helper
 from dash import history_helpers
 import automation.settings
@@ -818,6 +819,13 @@ class AccountSettings(api_common.BaseApiView):
                     form
                 )
 
+            if 'facebook_page' in form.data:
+                if not request.user.has_perm('zemauth.can_modify_facebook_page'):
+                    raise exc.AuthorizationError()
+                facebook_account = self.get_or_create_facebook_account(account)
+                self.set_facebook_page(facebook_account, form)
+                facebook_account.save()
+
             account.save(request)
             settings.save(request)
 
@@ -915,6 +923,20 @@ class AccountSettings(api_common.BaseApiView):
             account.allowed_sources.remove(*list(to_be_removed))
         return changes_text
 
+    def get_or_create_facebook_account(self, account):
+        try:
+            facebook_account = account.facebookaccount
+        except models.FacebookAccount.DoesNotExist:
+            facebook_account = models.FacebookAccount.objects.create(
+                account=account,
+                status=constants.FacebookPageRequestType.EMPTY,
+            )
+        return facebook_account
+
+    def set_facebook_page(self, facebook_account, form):
+        new_url = form.cleaned_data['facebook_page']
+        facebook_helper.update_facebook_account(facebook_account, new_url)
+
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()
         if not can_see_all_available_sources:
@@ -966,6 +988,15 @@ class AccountSettings(api_common.BaseApiView):
 
         return allowed_sources_dict
 
+    def add_facebook_account_to_result(self, result, account):
+        try:
+            result['facebook_page'] = account.facebookaccount.page_url
+            result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                account.facebookaccount.status)
+        except models.FacebookAccount.DoesNotExist:
+            result['facebook_status'] = models.constants.FacebookPageRequestType.get_text(
+                models.constants.FacebookPageRequestType.EMPTY)
+
     def get_dict(self, request, settings, account):
         if not settings:
             return {}
@@ -990,6 +1021,8 @@ class AccountSettings(api_common.BaseApiView):
                 request.user.has_perm('zemauth.can_see_all_available_sources'),
                 [source.id for source in account.allowed_sources.all()]
             )
+        if request.user.has_perm('zemauth.can_modify_facebook_page'):
+            self.add_facebook_account_to_result(result, account)
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
@@ -1210,13 +1243,8 @@ class History(api_common.BaseApiView):
         # moment
         entity_filter = self._extract_entity_filter(request)
         if not entity_filter:
-            raise exc.AuthorizationError()
-
-        order = ['-created_dt']
-        order_raw = request.GET.get('order') or ''
-        if re.match('[-]?(created_dt|created_by)', order_raw):
-            order = [order_raw]
-
+            raise exc.MissingDataError()
+        order = self._extract_order(request)
         response = {
             'history': self.get_history(entity_filter, order=order)
         }
@@ -1243,6 +1271,13 @@ class History(api_common.BaseApiView):
         if level_raw and int(level_raw) in constants.HistoryLevel.get_all():
             entity_filter['level'] = int(level_raw)
         return entity_filter
+
+    def _extract_order(self, request):
+        order = ['-created_dt']
+        order_raw = request.GET.get('order') or ''
+        if re.match('[-]?(created_dt|created_by)', order_raw):
+            order = [order_raw]
+        return order
 
     def get_history(self, filters, order=['-created_dt']):
         history_entries = models.History.objects.filter(

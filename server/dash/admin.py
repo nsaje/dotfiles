@@ -1459,6 +1459,10 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         return True
 
 
+class FacebookAccount(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1484,4 +1488,5 @@ admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
+admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)

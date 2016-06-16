@@ -227,7 +227,8 @@ class HistoryMixin(object):
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
 
-    def get_model_state_changes(self, current_dict, new_dict):
+    def get_model_state_changes(self, new_dict, current_dict=None):
+        current_dict = current_dict or self.post_init_state
         changes = OrderedDict()
         for field_name in self.history_fields:
             new_value = new_dict[field_name]
@@ -775,8 +776,7 @@ class AccountSettings(SettingsBase):
     def add_to_history(self, user=None):
         history_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_created:
@@ -879,8 +879,7 @@ class CampaignSettings(SettingsBase):
     def add_to_history(self):
         history_type = constants.HistoryType.CAMPAIGN
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_created:
@@ -2064,8 +2063,7 @@ class AdGroupSettings(SettingsBase):
     def add_to_history(self):
         history_type = constants.HistoryType.AD_GROUP
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
@@ -2230,8 +2228,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
@@ -2830,13 +2827,15 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     def add_to_history(self, user=None):
         history_type = constants.HistoryType.CREDIT
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            model_to_dict(self),
+            model_to_dict(self)
         )
         parts = []
         if self.post_init_created:
             parts.append('Created credit.')
             changes = model_to_dict(self)
+
+        parts.append('Credit: #{}.'.format(self.id))
+
         text = self.get_history_changes_text(changes)
         if text:
             parts.append(text)
@@ -3032,7 +3031,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             'start_date': 'Start Date',
             'end_date': 'End Date',
             'amount': 'Amount',
-            'freed_cc': 'Freed (cc)',
+            'freed_cc': 'Freed',
             'comment': 'Comment',
         }
         return NAMES.get(prop_name)
@@ -3068,13 +3067,15 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
 
     def add_to_history(self, user=None):
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            model_to_dict(self),
+            model_to_dict(self)
         )
         parts = []
         if self.post_init_created:
             parts.append('Created budget.')
             changes = model_to_dict(self)
+
+        parts.append('Budget: #{}.'.format(self.id))
+
         text = self.get_history_changes_text(changes)
         if text:
             parts.append(text)
@@ -3469,8 +3470,8 @@ class GAAnalyticsAccount(models.Model):
 
 class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
-    ad_account_id = models.CharField(max_length=127, blank=True)
-    page_url = models.CharField(max_length=255)
+    ad_account_id = models.CharField(max_length=127, blank=True, null=True)
+    page_url = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField(
         default=constants.FacebookPageRequestType.EMPTY,
         choices=constants.FacebookPageRequestType.get_choices()
@@ -3484,7 +3485,7 @@ class FacebookAccount(models.Model):
         page_id = url[url.rfind('/') + 1:]
         dash_index = page_id.rfind('-')
         if dash_index != -1:
-            page_id = url[dash_index + 1:]
+            page_id = page_id[dash_index + 1:]
         return page_id
 
     def __unicode__(self):

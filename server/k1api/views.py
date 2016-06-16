@@ -88,18 +88,18 @@ def get_ad_group_source(request):
     if not source_type:
         return _response_error("Must provide source type.")
 
-    try:
-        ad_group_source = (
-            dash.models.AdGroupSource.objects
-                .select_related(
-                    'source_credentials', 'source', 'source__source_type',
-                    'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
-                ).get(ad_group_id=ad_group_id, source__source_type__type=source_type)
-        )
-    except dash.models.AdGroupSource.DoesNotExist:
-        return _response_error("The ad group %s is not present on source %s" %
-                               (ad_group_id, source_type), status=404)
-
+    bidder_slug = request.GET.get("bidder_slug")
+    ad_group_source = dash.models.AdGroupSource.objects.select_related(
+                'source_credentials', 'source', 'source__source_type',
+                'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
+            ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
+    if bidder_slug:
+        ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
+    if ad_group_source.count() != 1:
+        status = 404 if ad_group_source.count() == 0 else 400
+        return _response_error("%d objects retrieved for ad group %s on source %s with bidder slug %s" %
+                               (ad_group_source.count(), ad_group_id, source_type, bidder_slug), status=status)
+    ad_group_source = ad_group_source[0]
     ad_group_source_with_settings = _add_settings_to_ad_group_source(ad_group_source)
     return _response_ok(ad_group_source_with_settings)
 
@@ -163,6 +163,26 @@ def get_ad_group_sources_for_source_type(request):
     return _response_ok(ad_group_sources_with_settings)
 
 
+def _get_ad_group_tracking_codes(ad_group_source):
+    ad_group_tracking_codes = None
+    if ad_group_source.source.update_tracking_codes_on_content_ads() and \
+            ad_group_source.can_manage_content_ads:
+        ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
+    return ad_group_tracking_codes
+
+
+def _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source):
+    url = content_ad_source.content_ad.url
+    if ad_group_tracking_codes:
+        url = content_ad_source.content_ad.url_with_tracking_codes(
+            url_helper.combine_tracking_codes(
+                ad_group_tracking_codes,
+                ad_group_source.get_tracking_ids(),
+            )
+        )
+    return url
+
+
 @csrf_exempt
 def get_content_ad_sources_for_ad_group(request):
     _validate_signature(request)
@@ -175,15 +195,19 @@ def get_content_ad_sources_for_ad_group(request):
         return _response_error("Must provide ad group id.")
     content_ad_id = request.GET.get('content_ad_id', None)
 
-    try:
-        ad_group_source = (
-            dash.models.AdGroupSource.objects
-                .select_related('ad_group', 'source')
-                .get(ad_group_id=ad_group_id,
-                     source__source_type__type=source_type)
-        )
-    except dash.models.AdGroupSource.DoesNotExist:
+    bidder_slug = request.GET.get("bidder_slug")
+
+    ad_group_source = dash.models.AdGroupSource.objects.select_related('ad_group', 'source').filter(
+        ad_group_id=ad_group_id, source__source_type__type=source_type)
+
+    if bidder_slug:
+        ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
+
+    if ad_group_source.count() == 0:
         return _response_ok([])
+    elif ad_group_source.count() > 1:
+        return _response_error("%d object retrieved instead of 1" % ad_group_source.count())
+    ad_group_source = ad_group_source[0]
 
     content_ad_sources = (
         dash.models.ContentAdSource.objects
@@ -194,23 +218,14 @@ def get_content_ad_sources_for_ad_group(request):
     )
     if content_ad_id:
         content_ad_sources = content_ad_sources.filter(content_ad_id=content_ad_id)
+    if bidder_slug:
+        content_ad_sources = content_ad_sources.filter(source__bidder_slug=bidder_slug)
 
-    ad_group_tracking_codes = None
-    if ad_group_source.source.update_tracking_codes_on_content_ads() and \
-            ad_group_source.can_manage_content_ads:
-        ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
+    ad_group_tracking_codes = _get_ad_group_tracking_codes(ad_group_source)
 
     content_ads = []
     for content_ad_source in content_ad_sources:
-        if ad_group_tracking_codes:
-            url = content_ad_source.content_ad.url_with_tracking_codes(
-                url_helper.combine_tracking_codes(
-                    ad_group_tracking_codes,
-                    ad_group_source.get_tracking_ids(),
-                )
-            )
-        else:
-            url = content_ad_source.content_ad.url
+        url = _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source)
 
         content_ads.append({
             'content_ad_source_id': content_ad_source.id,
@@ -235,7 +250,7 @@ def get_content_ad_sources_for_ad_group(request):
             'tracking_slug': ad_group_source.source.tracking_slug,
             'tracker_urls': content_ad_source.content_ad.tracker_urls
         })
-    return _response_ok(list(content_ads))
+    return _response_ok(content_ads)
 
 
 @csrf_exempt

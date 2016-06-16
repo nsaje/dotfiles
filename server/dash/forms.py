@@ -265,6 +265,7 @@ class AccountSettingsForm(forms.Form):
     )
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
+    facebook_page = forms.CharField(max_length=255, required=False)
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -348,6 +349,14 @@ class AccountSettingsForm(forms.Form):
             allowed_sources[key] = {'allowed': allowed, 'name': v.get('name', '')}
 
         return allowed_sources
+
+    def clean_facebook_page(self):
+        facebook_page = self.cleaned_data.get('facebook_page')
+
+        if not facebook_page:
+            return None
+
+        return facebook_page
 
 
 def validate_lower_case_only(st):
@@ -1034,13 +1043,8 @@ class ContentAdCandidateForm(forms.Form):
             'required': 'Missing image URL',
         }
     )
-    image_crop = forms.ChoiceField(
-        choices=constants.ImageCrop.get_choices(),
+    image_crop = forms.CharField(
         required=False,
-        error_messages={
-            'required': 'Missing image crop',
-            'invalid_choice': 'Image crop %(value)s is not supported'
-        }
     )
     display_url = forms.CharField(
         max_length=25,
@@ -1122,6 +1126,17 @@ class ContentAdCandidateForm(forms.Form):
             result.append(url)
 
         return result
+
+    def clean_image_crop(self):
+        image_crop = self.cleaned_data.get('image_crop')
+        if not image_crop:
+            return constants.ImageCrop.CENTER
+
+        print constants.ImageCrop.get_all()
+        if image_crop.lower() in constants.ImageCrop.get_all():
+            return image_crop.lower()
+
+        raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
 
 
 class ContentAdForm(ContentAdCandidateForm):
