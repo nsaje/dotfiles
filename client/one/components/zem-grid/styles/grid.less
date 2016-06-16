@@ -1,9 +1,9 @@
 @zem-grid-text-color: #454545;
 @zem-grid-bg-color: #ffffff;
 @zem-grid-level-1-bg-color: #f4f4f4;
-@zem-grid-level-2-bg-color: #ececec;
-@zem-grid-level-3-bg-color: #e8e8e8;
-@zem-grid-level-4-bg-color: #e2e2e2;
+@zem-grid-level-2-bg-color: #f0f0f0;
+@zem-grid-level-3-bg-color: #ebebeb;
+@zem-grid-level-4-bg-color: #e8e8e8;
 @zem-grid-header-footer-bg-color: #f6f6f6;
 @zem-grid-cell-border-color: #dddddd;
 
@@ -61,6 +61,12 @@
         white-space: nowrap;
         // TODO: Change to more sophisticated way of trimming long text in cells
         text-overflow: ellipsis;
+
+      }
+
+      .zem-grid-cell-checkbox {
+        min-width: 20px;
+        max-width: 20px;
       }
 
       .load-more-cell {
@@ -69,38 +75,23 @@
 
       &.level-1 {
         background-color: @zem-grid-level-1-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 20px;
-        }
       }
 
       &.level-2 {
         background-color: @zem-grid-level-2-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 40px;
-        }
       }
 
       &.level-3 {
         background-color: @zem-grid-level-3-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 60px;
-        }
       }
 
       &.level-4 {
         background-color: @zem-grid-level-4-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 80px;
-        }
       }
 
       &.level-last {
-        .zem-grid-cell:not(:first-child):not(.pagination-cell) {
+        //.zem-grid-cell:not(:first-child):not(.pagination-cell) {
+        .zem-grid-cell{
           background-color: @zem-grid-bg-color;
         }
       }

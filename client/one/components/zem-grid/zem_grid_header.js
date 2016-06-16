@@ -58,7 +58,17 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
                     return column.visible;
                 });
+
+                if (vm.grid.meta.service.getBreakdownLevel() > 1) {
+                    vm.grid.header.visibleColumns.unshift({
+                        type: 'collapse',
+                    });
+                }
+                vm.grid.header.visibleColumns.unshift({
+                    type: 'checkbox',
+                });
             }
+
 
             function setOrder (column) {
                 var order = vm.grid.meta.service.getOrder();

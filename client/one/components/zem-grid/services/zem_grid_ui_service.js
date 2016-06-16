@@ -19,6 +19,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         // and configured styles (font, min/max widths, padding, etc.)
         // Solution is sub-optimal, since it can only calculate text fields (including parsed values)
         var headerCells = grid.header.ui.element.find('.zem-grid-cell');
+        var gridWidth = 0;
         var columnWidths = [];
         var maxColumnWidths = [];
         grid.header.visibleColumns.forEach(function (column, i) {
@@ -41,16 +42,21 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
             maxColumnWidths[i] = maxWidth;
             columnWidths[i] = width;
+            gridWidth += width;
         });
 
         var scrollerWidth = 20; // TODO: find exact value (based on browser version)
         var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
         keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
+        gridWidth = Math.max (headerWidth, gridWidth);
 
         grid.ui.columnsWidths = columnWidths;
+        grid.ui.width = gridWidth;
     }
 
     function calculateColumnWidth (grid, column, font) {
+        if (!column.data) return -1;
+
         var width = getTextWidth(column.data.name, font);
         if (column.data.help) width += 20; // TODO: find better solution for icon widths
 
@@ -101,11 +107,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
     }
 
     function resizeCells (grid, element) {
-        var loadMoreColumnWidth = grid.ui.columnsWidths.reduce(function (sum, w, i) {
-            if (i === 0) return 0; // Skip over first column
-            return w + sum;
-        }, 0);
-
         var rows = element.find('.zem-grid-row');
         rows.each(function (rowIndex, row) {
             row = angular.element(row);
@@ -115,14 +116,43 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
                     'width': grid.ui.columnsWidths[cellIndex] + 'px',
                 });
             });
-            var paginationCell = row.find('.zem-grid-cell.pagination-cell');
-            paginationCell.css({
-                'width': grid.ui.columnsWidths[0] + 'px',
-            });
-            var loadMoreCell = row.find('.zem-grid-cell.load-more-cell');
-            loadMoreCell.css({
-                'width': loadMoreColumnWidth + 'px',
-            });
+
+            // Find breakdown row
+            // var totalWidth = grid.ui.columnsWidths.reduce(function (prev, next) { return prev+next }, 0);
+            // var breakdownRow = row.find('.breakdown-row');
+            // breakdownRow.css({
+            //     'width': totalWidth + 'px',
+            // });
+
+            // var paginationCellWidth = 0;
+            // var loadMoreCellWidth = 0;
+            // var offset = 0;
+            // var found = false;
+            // grid.header.visibleColumns.forEach(function (column, idx) {
+            //     if (found) loadMoreCellWidth += grid.ui.columnsWidths[idx];
+            //     else paginationCellWidth += grid.ui.columnsWidths[idx];
+            //     if (column.type === 'breakdownName') {
+            //         offset = paginationCellWidth - grid.ui.columnsWidths[idx];
+            //         found = true;
+            //     }
+            // });
+
+            // var breakdownRow = row.find('.breakdown-row');
+            // breakdownRow.css({
+            //     'width': grid.ui.width + 'px',
+            //     'max-width': grid.ui.width + 'px',
+            // });
+            // var paginationCell = row.find('.zem-grid-cell.pagination-cell');
+            // paginationCell.css({
+            //     'width': paginationCellWidth + 'px',
+            //     'max-width': paginationCellWidth + 'px',
+            //     'padding-left': offset + 'px',
+            // });
+            // var loadMoreCell = row.find('.zem-grid-cell.load-more-cell');
+            // loadMoreCell.css({
+            //     'width': loadMoreCellWidth + 'px',
+            //     'max-width': loadMoreCellWidth + 'px',
+            // });
         });
     }
 
