@@ -657,7 +657,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     function initializeDataSource () {
-        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'campaign');
+        var metadata = zemGridEndpointService.createMetaData($scope,
+            $scope.level, $state.params.id, constants.breakdown.CAMPAIGN);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);

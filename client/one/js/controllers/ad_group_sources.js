@@ -844,7 +844,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     function initializeDataSource () {
-        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'source');
+        var metadata = zemGridEndpointService.createMetaData($scope,
+            $scope.level, $state.params.id, constants.breakdown.MEDIA_SOURCE);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);

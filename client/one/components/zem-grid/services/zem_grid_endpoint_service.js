@@ -33,15 +33,19 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-        this.saveData = function (value, stats, column) { // eslint-disable-line no-unused-vars
-            var level = metaData.level;
-            var breakdown = metaData.breakdown;
-            var field = column.field;
-            var api = zemGridEndpointApi.getApi(level, breakdown, field);
+        this.saveData = function (value, stats, column) {
+            var api = zemGridEndpointApi.getApi(metaData.level, metaData.breakdown, column.field);
 
+            var deferred = $q.defer();
             var levelEntityId = metaData.id;
             var breakdownEntityId = stats.id;
-            return api.save(levelEntityId, breakdownEntityId, value);
+            api.save(levelEntityId, breakdownEntityId, value).then(function (data) {
+                // TODO: handle data
+                deferred.resolve(data);
+            }, function (err) {
+                deferred.reject(err);
+            });
+            return deferred.promise;
         };
 
         function createUrl (baseUrl, config) {
