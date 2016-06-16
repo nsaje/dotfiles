@@ -507,6 +507,7 @@ var constants = {
         CPC: 5,
         CPM: 6,
         NEW_UNIQUE_VISITORS: 7,
+        CPV: 8,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -1157,6 +1158,7 @@ var options = {
         {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
         {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
         {name: 'Pageviews per Visit', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'Cost per Visit', value: constants.campaignGoalKPI.CPV, unit: '$'},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
         {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
@@ -1165,6 +1167,7 @@ var options = {
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},
         {name: 'bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'cost per visit', value: constants.campaignGoalKPI.CPV},
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
         {name: 'new visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
@@ -1209,6 +1212,7 @@ var defaults = {
         {id: constants.campaignGoalKPI.CPC, value: 0.35},
         {id: constants.campaignGoalKPI.CPA, value: 50},
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
+        {id: constants.campaignGoalKPI.CPV, value: 0.35}, // DAVORIN TODO Get actual default value
     ],
 };
 
@@ -1220,9 +1224,11 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] = 'Bo
 constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = 'New Unique Visitors';
 constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,
     constants.campaignGoalKPI.NEW_UNIQUE_VISITORS,
     constants.campaignGoalKPI.TIME_ON_SITE,
-    constants.campaignGoalKPI.PAGES_PER_SESSION];
+    constants.campaignGoalKPI.PAGES_PER_SESSION,
+    constants.campaignGoalKPI.CPV];

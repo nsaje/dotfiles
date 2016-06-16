@@ -19,6 +19,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
+    constants.CampaignGoalKPI.CPV: '{} Cost Per Visit',
 }
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
@@ -28,6 +29,7 @@ CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: lambda x: '{:.2f} %'.format(x),
     constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CPC: lambda x: utils.lc_helper.default_currency(x, places=3),
+    constants.CampaignGoalKPI.CPV: utils.lc_helper.default_currency,
 }
 
 CAMPAIGN_GOAL_MAP = {
