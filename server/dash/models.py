@@ -227,7 +227,7 @@ class HistoryMixin(object):
         # signifies whether this particular history object is created anew
         # or does it have a previous object from which it potentially
         # differs in some settings
-        self.post_init_created = previous.id is None
+        self.post_init_newly_created = previous.id is None
 
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
@@ -264,7 +264,7 @@ class HistoryMixin(object):
         Values in braces are situational.
         '''
         parts = []
-        if self.post_init_created:
+        if self.post_init_newly_created:
             parts.append(created_text)
             changes = model_to_dict(self)
 
@@ -802,7 +802,7 @@ class AccountSettings(SettingsBase):
             self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
+        if not changes and not self.post_init_newly_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_account_history(
@@ -905,7 +905,7 @@ class CampaignSettings(SettingsBase):
             self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
+        if not changes and not self.post_init_newly_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
@@ -2094,7 +2094,7 @@ class AdGroupSettings(SettingsBase):
             self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
+        if not changes and not self.post_init_newly_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
@@ -2263,13 +2263,13 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
+        if not changes and not self.post_init_newly_created:
             return None, ''
 
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
-            changes if not self.post_init_created else None
+            changes if not self.post_init_newly_created else None
         )
         create_ad_group_history(
             current_settings.ad_group,
@@ -2871,7 +2871,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             model_to_dict(self)
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
+        if not changes and not self.post_init_newly_created:
             return None, ''
         changes, changes_text = self.construct_changes(
             'Created credit.',
@@ -3103,7 +3103,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             model_to_dict(self)
         )
         # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_created:
+        if not changes and not self.post_init_newly_created:
             return None, ''
         changes, changes_text = self.construct_changes(
             'Created budget.',

@@ -3324,13 +3324,16 @@ class HistoryTest(TestCase):
 class TestHistoryMixin(TestCase):
 
     class FakeMeta(object):
+
         def __init__(self, concrete_fields, virtual_fields):
             self.concrete_fields = concrete_fields
             self.virtual_fields = virtual_fields
             self.many_to_many = []
 
     class HistoryTest(models.HistoryMixin):
+
         history_fields = ['test_field']
+
         def __init__(self):
             self._meta = TestHistoryMixin.FakeMeta(
                 self.history_fields,
@@ -3349,13 +3352,13 @@ class TestHistoryMixin(TestCase):
     def test_snapshot(self):
         mix = TestHistoryMixin.HistoryTest()
         self.assertEqual({'test_field': ''}, mix.post_init_state)
-        self.assertTrue(mix.post_init_created)
+        self.assertTrue(mix.post_init_newly_created)
 
         mix.id = 5
         mix.snapshot(previous=mix)
 
         self.assertEqual({'test_field': ''}, mix.post_init_state)
-        self.assertFalse(mix.post_init_created)
+        self.assertFalse(mix.post_init_newly_created)
 
     def test_get_history_dict(self):
         mix = TestHistoryMixin.HistoryTest()
