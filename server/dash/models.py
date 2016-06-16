@@ -224,7 +224,10 @@ class HistoryMixin(object):
             previous = self
 
         self.post_init_state = self.get_history_dict()
-        self.post_init_created = previous.id is None if previous else False
+        # signifies whether this particular history object is created anew
+        # or does it have a previous object from which it potentially
+        # differs in some settings
+        self.post_init_created = previous.id is None
 
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
