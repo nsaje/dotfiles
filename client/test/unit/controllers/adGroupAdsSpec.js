@@ -4,12 +4,13 @@
 
 describe('AdGroupAdsCtrl', function () {
     var $scope, api, $q, $state, $window;
+    var permissions;
     var zemFilterServiceMock;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide) {
+    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
         zemFilterServiceMock = {
             getShowArchived: function () {
                 return true;
@@ -19,6 +20,7 @@ describe('AdGroupAdsCtrl', function () {
 
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', zemFilterServiceMock);
+        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
         $provide.value('zemCustomTableColsService', {
             load: function () {
                 return [];
@@ -32,12 +34,16 @@ describe('AdGroupAdsCtrl', function () {
     beforeEach(inject(function ($controller, $rootScope, _$state_, _$window_, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
+        $state = _$state_;
+        permissions = {};
 
         $scope.isPermissionInternal = function () {
             return true;
         };
-        $scope.hasPermission = function () {
-            return true;
+
+        $scope.hasPermission = function (permission) {
+            if (!permissions.hasOwnProperty(permission)) return true;
+            return permissions[permission];
         };
         $scope.dateRange = {
             startDate: {
@@ -91,15 +97,24 @@ describe('AdGroupAdsCtrl', function () {
             },
         };
 
-        $state = _$state_;
-        $state.params = {id: 1};
-
         $window = _$window_;
-
-        $controller('AdGroupAdsCtrl', {$scope: $scope, api: api});
     }));
 
+    function initializeController () {
+        inject(function ($controller, $state) {
+            $state.params = {id: 1};
+            $controller('AdGroupAdsCtrl', {
+                $scope: $scope,
+                $state: $state,
+                api: api,
+            });
+        });
+    }
+
     describe('addContentAds', function (done) {
+        beforeEach(function () {
+            initializeController();
+        });
         it('opens a modal window when called', function () {
             $scope.addContentAds().result
                 .catch(function (error) {
@@ -111,6 +126,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('archiveContentAds', function () {
         beforeEach(function () {
+            initializeController();
             $scope.selectedAll = true;
         });
         it('does nothing on failure', function () {
@@ -151,6 +167,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('restoreContentAds', function () {
         beforeEach(function () {
+            initializeController();
             $scope.selectedAll = true;
         });
 
@@ -191,6 +208,9 @@ describe('AdGroupAdsCtrl', function () {
     });
 
     describe('selectedAdsChanged', function () {
+        beforeEach(function () {
+            initializeController();
+        });
         it('sets correct partialSelection to true if necessary', function () {
             $scope.selectedAdsChanged({id: 1}, true);
 
@@ -232,6 +252,9 @@ describe('AdGroupAdsCtrl', function () {
     });
 
     describe('selectAllCallback', function () {
+        beforeEach(function () {
+            initializeController();
+        });
         it('sets selection and calls updateContentAdSelection if checked', function () {
             $scope.selectionMenuConfig.partialSelection = true;
 
@@ -260,6 +283,9 @@ describe('AdGroupAdsCtrl', function () {
     });
 
     describe('selectBatchCallback', function () {
+        beforeEach(function () {
+            initializeController();
+        });
         it('sets selection and calls updateContentAdSelection', function () {
             var batchId = 1;
 
@@ -276,6 +302,9 @@ describe('AdGroupAdsCtrl', function () {
     });
 
     describe('clearContentAdSelection', function () {
+        beforeEach(function () {
+            initializeController();
+        });
         it('unchecks all selected rows', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true},
@@ -293,6 +322,7 @@ describe('AdGroupAdsCtrl', function () {
 
     describe('updateContentAdSelection', function () {
         beforeEach(function () {
+            initializeController();
             $scope.rows = [
                 {id: 1, ad_selected: false, batch_id: 1},
                 {id: 2, ad_selected: false, batch_id: 1},
@@ -377,6 +407,10 @@ describe('AdGroupAdsCtrl', function () {
     });
 
     describe('executeBulkAction', function () {
+        beforeEach(function () {
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
+            initializeController();
+        });
         it('pauses all selected content ads if executeBulkAction(\'pause\')', function () {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
@@ -527,6 +561,19 @@ describe('AdGroupAdsCtrl', function () {
             $scope.executeBulkAction('restore');
 
             expect(api.adGroupContentAdArchive.restore).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Zem-Grid DataSource', function () {
+        it('check without permission', function () {
+            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
+            initializeController();
+            expect($scope.dataSource).toBe(undefined);
+        });
+
+        it('check with permission', function () {
+            initializeController();
+            expect($scope.dataSource).not.toBe(undefined);
         });
     });
 });

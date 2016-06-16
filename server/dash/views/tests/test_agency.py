@@ -3,17 +3,18 @@ import json
 import datetime
 import pytz
 import httplib
+import textwrap
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
-from django.contrib.auth.models import Permission
 from django.conf import settings
 from django.test import Client
+from requests import Response
 
 from zemauth.models import User
 from dash import models
@@ -76,9 +77,8 @@ class AdGroupSettingsTest(TestCase):
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
         )
-        self.maxDiff = None
-
-        self.assertDictEqual(json.loads(response.content), {
+        json_blob = json.loads(response.content)
+        self.assertDictEqual(json_blob, {
             'data': {
                 'can_archive': True,
                 'can_restore': True,
@@ -122,7 +122,7 @@ class AdGroupSettingsTest(TestCase):
                     'start_date': '2015-03-02',
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
-                    'target_regions': ['UK', 'US', 'CA'],
+                    'target_regions': ['GB', 'US', 'CA'],
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_state': 1,
                     'autopilot_daily_budget': '50.00',
@@ -2232,6 +2232,10 @@ class AccountHistoryTest(TestCase):
             self.assertEqual(changes_string, expected_changes_strings[i])
 
 
+@override_settings(
+    FB_BUSINESS_ID='fake_app_id',
+    FB_ACCESS_TOKEN='very_fake_token',
+)
 class AccountSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
 
@@ -2287,7 +2291,8 @@ class AccountSettingsTest(TestCase):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
-            'can_modify_account_type'
+            'can_modify_account_type',
+            'can_modify_facebook_page',
         ])
 
         response = client.get(
@@ -2302,7 +2307,8 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': '2',
             'account_type': 3,
             'id': '1',
-            'archived': False
+            'archived': False,
+            'facebook_status': 'Empty',
         })
 
     def test_get_as_agency_manager(self):
@@ -2503,15 +2509,20 @@ class AccountSettingsTest(TestCase):
             'archived': False
         })
 
+    @patch('requests.post')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction):
+    def test_put(self, mock_log_useraction, mock_request):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
             'can_modify_account_type',
             'can_modify_allowed_sources',
             'can_set_account_sales_representative',
+            'can_modify_facebook_page',
         ])
+        response = Response()
+        response.status_code = 200
+        mock_request.return_value = response
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
@@ -2524,7 +2535,8 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
-                    }
+                    },
+                    'facebook_page': 'http://www.facebook.com/dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2547,6 +2559,8 @@ class AccountSettingsTest(TestCase):
             'account_type': 4,
             'name': 'changed name',
         })
+        self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
+        self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
@@ -2570,7 +2584,8 @@ class AccountSettingsTest(TestCase):
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
-                    }
+                    },
+                    'facebook_page': 'dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2589,7 +2604,8 @@ class AccountSettingsTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
-                    'allowed_sources': {}
+                    'allowed_sources': {},
+                    'facebook_page': 'dummy_page',
                 }
             }),
             content_type='application/json',
@@ -2627,13 +2643,18 @@ class AccountSettingsTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
-            1: {'allowed': True},
-            2: {'allowed': False},
-            3: {'allowed': True}
-        }))
+        changes_text = view.set_allowed_sources(
+            account_settings,
+            account,
+            True,
+            self._get_form_with_allowed_sources_dict({
+                1: {'allowed': True},
+                2: {'allowed': False},
+                3: {'allowed': True}
+            })
+        )
 
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
@@ -2650,7 +2671,7 @@ class AccountSettingsTest(TestCase):
 
         account_settings = account.get_current_settings()
         view = agency.AccountSettings()
-        view.set_allowed_sources(
+        changes_text = view.set_allowed_sources(
             account_settings,
             account,
             False,  # no permission to remove unreleased source 3
@@ -2659,7 +2680,7 @@ class AccountSettingsTest(TestCase):
                 2: {'allowed': False},
                 3: {'allowed': False}
             }))
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([3, ])
@@ -2675,7 +2696,7 @@ class AccountSettingsTest(TestCase):
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
         view = agency.AccountSettings()
-        view.set_allowed_sources(
+        changes_text = view.set_allowed_sources(
             account_settings,
             account,
             False,  # no permission to add unreleased source 3
@@ -2684,7 +2705,7 @@ class AccountSettingsTest(TestCase):
                 2: {'allowed': True},
                 3: {'allowed': True}
             }))
-        self.assertIsNotNone(account_settings.changes_text)
+        self.assertIsNotNone(changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2, ])
@@ -3171,3 +3192,237 @@ class CampaignContentInsightsTest(TestCase):
                 },
                 'success': True,
             }, json.loads(response.content))
+
+
+class HistoryTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+
+    def _add_entries(self):
+        self.dt = datetime.datetime.utcnow()
+        ad_group = models.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        account = campaign.account
+
+        models.History.objects.create(
+            ad_group=ad_group,
+            campaign=campaign,
+            account=account,
+            type=constants.HistoryType.AD_GROUP,
+            level=constants.HistoryLevel.AD_GROUP,
+            changes={'name': 'test'},
+            changes_text="Name changed to 'test'",
+            created_by=self.user,
+        )
+
+        models.History.objects.create(
+            campaign=campaign,
+            account=account,
+            type=constants.HistoryType.CAMPAIGN,
+            level=constants.HistoryLevel.CAMPAIGN,
+            changes={'targeting': ['US']},
+            changes_text="Geographic targeting changed to 'US'",
+            created_dt=self.dt,
+            created_by=self.user,
+        )
+        models.History.objects.create(
+            account=account,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
+            changes={'account_manager': 1},
+            changes_text="Account manager changed to 'Janez Novak'",
+            created_dt=self.dt,
+            created_by=self.user,
+        )
+
+    def get_history(self, filters):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse(
+            'history',
+            kwargs={})
+        response = self.client.get(
+            reversed_url,
+            filters,
+            follow=True
+        )
+        return response.json()
+
+    def test_permission(self):
+        response = self.get_history({})
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_view_new_history_backend'])
+        response = self.get_history({})
+        self.assertFalse(response['success'])
+
+        response = self.get_history({'campaign': 1})
+        self.assertTrue(response['success'])
+
+    def test_get_ad_group_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'ad_group': 1})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Name changed to 'test'", history['changes_text'])
+
+    def test_get_campaign_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'campaign': 1, 'level': constants.HistoryLevel.CAMPAIGN})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Geographic targeting changed to 'US'", history['changes_text'])
+
+        response = self.get_history({'campaign': 1})
+        self.assertTrue(response['success'])
+        self.assertEqual(2, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Geographic targeting changed to 'US'", history['changes_text'])
+
+        history = response['data']['history'][1]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Name changed to 'test'", history['changes_text'])
+
+    def test_get_account_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'account': 1, 'level': constants.HistoryLevel.ACCOUNT})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
+
+
+class TestHistoryMixin(TestCase):
+
+    class FakeMeta(object):
+
+        def __init__(self, concrete_fields, virtual_fields):
+            self.concrete_fields = concrete_fields
+            self.virtual_fields = virtual_fields
+            self.many_to_many = []
+
+    class HistoryTest(models.HistoryMixin):
+
+        history_fields = ['test_field']
+
+        def __init__(self):
+            self._meta = TestHistoryMixin.FakeMeta(
+                self.history_fields,
+                []
+            )
+            self.id = None
+            self.test_field = ''
+            super(TestHistoryMixin.HistoryTest, self).__init__()
+
+        def get_human_prop_name(self, prop):
+            return 'Test Field'
+
+        def get_human_value(self, key, value):
+            return value
+
+    def test_snapshot(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertTrue(mix.post_init_newly_created)
+
+        mix.id = 5
+        mix.snapshot(previous=mix)
+
+        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertFalse(mix.post_init_newly_created)
+
+    def test_get_history_dict(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual({'test_field': ''}, mix.get_history_dict())
+
+    def test_get_model_state_changes(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            {},
+            mix.get_model_state_changes({'test_field': ''})
+        )
+        self.assertEqual(
+            {'test_field': 'johnny'},
+            mix.get_model_state_changes({'test_field': 'johnny'})
+        )
+
+    def test_get_history_changes_text(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            'Test Field set to "johnny"',
+            mix.get_history_changes_text({'test_field': 'johnny'})
+        )
+
+        self.assertEqual(
+            '',
+            mix.get_history_changes_text({})
+        )
+
+    def test_get_changes_text_from_dict(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            'Test Field set to "johnny"',
+            mix.get_changes_text_from_dict({'test_field': 'johnny'})
+        )
+
+        self.assertEqual(
+            'Created settings',
+            mix.get_changes_text_from_dict({})
+        )
+
+    def test_construct_changes(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            ({}, 'Created settings. Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
+
+        self.assertEqual(
+            ({}, 'Created settings. Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
+        )
+
+        mix.id = 5
+        mix.snapshot(previous=mix)
+
+        self.assertEqual(
+            ({}, 'Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
+        self.assertEqual(
+            ({'test_field': 'pesa'}, 'Settings: 5. Test Field set to "pesa"'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
+        )
+        self.assertEqual(
+            ({}, 'Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )

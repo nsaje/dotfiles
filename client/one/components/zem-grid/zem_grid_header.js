@@ -14,11 +14,10 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function postLink (scope, element) {
             var pubsub = scope.ctrl.grid.meta.pubsub;
+            scope.ctrl.grid.header.ui.element = element;
 
-            function updateHeader () {
+            function resizeColumns () {
                 $timeout(function () {
-                    scope.ctrl.grid.ui.state.headerRendered = true;
-                    scope.ctrl.grid.header.element = element;
                     zemGridUIService.resizeGridColumns(scope.ctrl.grid);
                 }, 0, false);
             }
@@ -34,28 +33,48 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 });
             }
 
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateHeader);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);
+            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, resizeColumns);
+            resizeColumns();
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);
             });
         },
-        controller: [function () {
-            this.setOrder = function (column) {
-                var order = this.grid.meta.source.config.order;
+        controller: ['zemGridStorageService', function (zemGridStorageService) {
+            var vm = this;
+            vm.setOrder = setOrder;
+
+            initialize();
+
+            function initialize () {
+                // Initialize header columns based on the stored data and default values
+                zemGridStorageService.loadColumns(vm.grid);
+                initVisibleColumns();
+                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED, initVisibleColumns);
+            }
+
+            function initVisibleColumns () {
+                vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
+                    return column.visible;
+                });
+            }
+
+            function setOrder (column) {
+                var order = vm.grid.meta.service.getOrder();
 
                 if (order === column.field) {
                     order = '-' + column.field;
                 } else if (order === '-' + column.field) {
                     order = column.field;
-                } else if (column.initialOrder === 'asc') {
+                } else if (column.data.initialOrder === 'asc') {
                     order = column.field;
                 } else {
                     order = '-' + column.field;
                 }
 
-                this.grid.meta.service.setOrder(order, true);
-            };
+                vm.grid.meta.service.setOrder(order, true);
+            }
         }],
     };
 }]);

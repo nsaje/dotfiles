@@ -86,11 +86,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl'
-        })
-        .state('main.allAccounts.accounts_breakdowns', {
-            url: '/accounts-tablebreakdowns',
-            template: '<zem-grid data-data-source="dataSource"></zem-grid>',
-            controller: 'AllAccountsAccountsBreakdownsCtrl',
         });
 
     $stateProvider

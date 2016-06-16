@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
 import datetime
+import textwrap
 from decimal import Decimal
 
 import pytz
+from mock import patch
 from django.db.models.signals import pre_save
 from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.forms.models import model_to_dict
 
 from dash import models, constants
 from dash.constants import GATrackingType
 from zemauth import models as zemauthmodels
 from zemauth.models import User
-from utils import exc
+from utils import exc, test_helper
 
 
 class AdGroupSettingsTest(TestCase):
@@ -329,12 +332,17 @@ class CampaignSettingsTest(TestCase):
 
 
 class AdGroupSourceTest(TestCase):
-
     def test_adgroup_source_save(self):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
+        account = models.Account(name='test')
+        account.save(request)
+
+        campaign = models.Campaign(account=account)
+        campaign.save(request)
+
+        ad_group = models.AdGroup(campaign=campaign, modified_by_id=1)
         ad_group.save(request)
 
         source = models.Source.objects.create()
@@ -348,7 +356,13 @@ class AdGroupSourceTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        ad_group = models.AdGroup(campaign_id=1, modified_by_id=1)
+        account = models.Account(name='test')
+        account.save(request)
+
+        campaign = models.Campaign(account=account)
+        campaign.save(request)
+
+        ad_group = models.AdGroup(campaign=campaign, modified_by_id=1)
         ad_group.save(request)
 
         source_type = models.SourceType.objects.create()
@@ -742,53 +756,397 @@ class HistoryTest(TestCase):
         self.acc = models.Account.objects.get(pk=1)
         self.su = constants.SystemUserType.AUTOPILOT
 
+    def _latest_ad_group_history(self, ad_group=None):
+        return models.History.objects.all().filter(
+            ad_group=ad_group,
+            level=constants.HistoryLevel.AD_GROUP
+        ).order_by('-created_dt').first()
+
+    def _latest_campaign_history(self, campaign=None):
+        return models.History.objects.all().filter(
+            campaign=campaign,
+            level=constants.HistoryLevel.CAMPAIGN
+        ).order_by('-created_dt').first()
+
+    def _latest_account_history(self, account=None):
+        return models.History.objects.all().filter(
+            account=account,
+            level=constants.HistoryLevel.ACCOUNT
+        ).order_by('-created_dt').first()
+
     def test_save(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
-        self.assertEqual(1, models.AccountHistory.objects.all().count())
+        self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_system(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             system_user=self.su,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
-        self.assertEqual(1, models.AccountHistory.objects.all().count())
+        self.assertEqual(1, models.History.objects.all().count())
+
+    def test_save_no_creds(self):
+        models.History.objects.create(
+            account=self.acc,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
+        )
+        self.assertEqual(1, models.History.objects.all().count())
+
+    def test_save_no_changes(self):
+        self.assertIsNone(
+            models.create_ad_group_history(
+                None, constants.HistoryType.AD_GROUP,
+                {}, ''
+            )
+        )
+
+        self.assertIsNone(
+            models.create_campaign_history(
+                None, constants.HistoryType.CAMPAIGN,
+                {}, ''
+            )
+        )
+
+        self.assertIsNone(
+            models.create_account_history(
+                None, constants.HistoryType.ACCOUNT,
+                {}, ''
+            )
+        )
+
+        self.assertEquals(0, models.History.objects.all().count())
+        self.assertEquals(0, models.History.objects.all().count())
+        self.assertEquals(0, models.History.objects.all().count())
 
     def test_save_fail(self):
-        with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.create(
-                created_by=self.u,
-                system_user=self.su,
-                account=self.acc,
-                type=constants.AccountHistoryType.ACCOUNT,
-            )
-
-        with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.create(
-                account=self.acc,
-                type=constants.AccountHistoryType.ACCOUNT,
-            )
-
-        entry = models.AccountHistory.objects.create(
+        entry = models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
         with self.assertRaises(AssertionError):
             entry.delete()
 
         with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.all().delete()
+            models.History.objects.all().delete()
 
     def test_update_fail(self):
-        models.AccountHistory.objects.create(
+        models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.AccountHistoryType.ACCOUNT,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
         )
         with self.assertRaises(AssertionError):
-            models.AccountHistory.objects.update(changes_text='Something different')
+            models.History.objects.update(changes_text='Something different')
+
+    def test_create_ad_group_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        adgss = models.AdGroupSettings(
+            ad_group=ad_group,
+            cpc_cc=4999,
+        )
+        adgss.save(None)
+
+        hist = models.create_ad_group_history(
+            ad_group,
+            constants.HistoryType.AD_GROUP,
+            model_to_dict(adgss),
+            '')
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual(4999, hist.changes['cpc_cc'])
+
+        adgss = adgss.copy_settings()
+        adgss.cpc_cc = 5100
+        adgss.save(None)
+
+        adg_hist = self._latest_ad_group_history(ad_group=ad_group)
+        self.maxDiff = None
+        self.assertEqual(1, adg_hist.ad_group.id)
+        self.assertDictEqual(
+            {
+                'cpc_cc': 5100,
+            }, adg_hist.changes
+        )
+        self.assertEqual(
+            'Max CPC bid set to "$5,100.00"',
+            adg_hist.changes_text
+        )
+
+        hist = models.create_ad_group_history(
+            ad_group,
+            constants.HistoryType.AD_GROUP,
+            {'cpc_cc': 5100},
+            '')
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual({'cpc_cc': 5100}, hist.changes)
+
+    def test_create_ad_group_source_history(self):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        source = models.Source.objects.get(pk=1)
+        adgs = models.AdGroupSource.objects.filter(ad_group=ad_group, source=source).first()
+        adgss = models.AdGroupSourceSettings(
+            ad_group_source=adgs,
+            daily_budget_cc=10000,
+        )
+        adgss.save(None)
+
+        adgss = adgss.copy_settings()
+        adgss.daily_budget_cc = 50000
+        adgss.save(None)
+
+        adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
+        self.assertEqual(constants.HistoryType.AD_GROUP_SOURCE, adgs_hist.type)
+        self.assertDictEqual(
+            {
+                'daily_budget_cc': 50000,
+            },
+            adgs_hist.changes)
+        self.assertEqual(
+            textwrap.dedent("""
+            Source: AdsNative. Daily Budget set to "$50,000.00"
+            """).replace('\n', ''), adgs_hist.changes_text)
+
+    def test_create_campaign_history(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        adgss = models.CampaignSettings(
+            campaign=campaign,
+            name='Awesome',
+        )
+        adgss.save(None)
+
+        hist = models.create_campaign_history(
+            campaign,
+            constants.HistoryType.CAMPAIGN,
+            model_to_dict(adgss),
+            '')
+
+        self.assertEqual(campaign, hist.campaign)
+        self.assertEqual('Awesome', hist.changes['name'])
+
+        adgss = adgss.copy_settings()
+        adgss.name = 'Awesomer'
+        adgss.save(None)
+
+        camp_hist = self._latest_campaign_history(campaign=campaign)
+        self.assertEqual(constants.HistoryType.CAMPAIGN, camp_hist.type)
+        self.assertDictEqual(
+            {
+                'name': 'Awesomer'
+            },
+            camp_hist.changes
+        )
+        self.assertEqual('Name set to "Awesomer"', camp_hist.changes_text)
+
+        hist = models.create_campaign_history(
+            campaign,
+            constants.HistoryType.CAMPAIGN,
+            {'name': 'Awesomer'},
+            '')
+
+        self.assertEqual(campaign, hist.campaign)
+        self.assertEqual({'name': 'Awesomer'}, hist.changes)
+
+    def test_create_account_history(self):
+        r = test_helper.fake_request(User.objects.get(pk=1))
+
+        account = models.Account.objects.get(pk=1)
+        adgss = models.AccountSettings(
+            account=account,
+            archived=False,
+        )
+        adgss.save(r)
+
+        hist = models.create_account_history(
+            account,
+            constants.HistoryType.ACCOUNT,
+            adgss.get_settings_dict(),
+            "")
+
+        self.assertEqual(account, hist.account)
+        self.assertFalse(hist.changes['archived'])
+
+        hist = models.create_account_history(
+            account,
+            constants.HistoryType.ACCOUNT,
+            {'archived': True},
+            '')
+
+        self.assertEqual(account, hist.account)
+        self.assertEqual({'archived': True}, hist.changes)
+
+        adgss = adgss.copy_settings()
+        adgss.name = 'Wacky account'
+        adgss.save(r)
+
+        acc_hist = self._latest_account_history(account=account)
+        self.assertEqual(constants.HistoryType.ACCOUNT, acc_hist.type)
+        self.assertDictEqual(
+            {
+                'name': 'Wacky account'
+            },
+            acc_hist.changes)
+        self.assertEqual(
+            'Name set to "Wacky account"',
+            acc_hist.changes_text
+        )
+
+    @patch('dash.models.BudgetLineItem.state')
+    def test_create_budget_history(self, mock_state):
+        mock_state.return_value = constants.BudgetLineItemState.PENDING
+        campaign = models.Campaign.objects.get(pk=1)
+        hist = models.create_campaign_history(
+            campaign,
+            constants.HistoryType.BUDGET,
+            {'amount': 200},
+            "")
+
+        self.assertEqual(campaign, hist.campaign)
+        self.assertEqual({'amount': 200}, hist.changes)
+
+    def test_create_credit_history(self):
+        r = test_helper.fake_request(User.objects.get(pk=1))
+
+        account = models.Account.objects.get(pk=1)
+        start_date = datetime.date(2014, 6, 4)
+        end_date = datetime.date(2014, 6, 5)
+        campaign = models.Campaign.objects.get(pk=1)
+        credit = models.CreditLineItem(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=10000,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=r.user,
+        )
+        credit.save()
+
+        credit.amount = 20000
+        credit.save()
+
+        hist = models.create_account_history(
+            account,
+            constants.HistoryType.CREDIT,
+            {'amount': 20000},
+            ''
+        )
+
+        self.assertEqual(account, hist.account)
+        self.assertDictEqual({'amount': 20000}, hist.changes)
+
+    def test_create_new_ad_group_history(self):
+        campaign = models.Campaign.objects.get(pk=1)
+
+        req = test_helper.fake_request(self.u)
+        ad_group = models.AdGroup(
+            name='Test group',
+            campaign=campaign,
+        )
+        ad_group.save(req)
+        new_settings = models.AdGroupSettings(
+            ad_group=ad_group,
+            cpc_cc=100
+        )
+        new_settings.save(req)
+
+        history = models.History.objects.all().first()
+        self.assertEqual('Created settings', history.changes_text)
+
+    def test_create_new_campaign_history(self):
+        account = models.Account.objects.get(pk=1)
+
+        req = test_helper.fake_request(self.u)
+        campaign = models.Campaign(
+            name='Test campaign',
+            account=account,
+        )
+        campaign.save(req)
+        new_settings = models.CampaignSettings(
+            campaign=campaign,
+            name='Tested campaign'
+        )
+        new_settings.save(req)
+
+        history = models.History.objects.all().first()
+        self.assertEqual('Created settings', history.changes_text)
+
+    def test_create_new_account_history(self):
+        req = test_helper.fake_request(self.u)
+        account = models.Account(
+            name='Test account',
+        )
+        account.save(req)
+        new_settings = models.AccountSettings(
+            name='Tested account',
+            account=account,
+        )
+        new_settings.save(req)
+
+        history = models.History.objects.all().first()
+        self.assertEqual('Created settings', history.changes_text)
+
+    def test_create_new_bcm_history(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
+        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
+        credit = models.CreditLineItem.objects.create(
+            account=ad_group.campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=self.u,
+        )
+
+        history = models.History.objects.all().first()
+        self.assertEqual(textwrap.dedent(
+            '''
+            Created credit
+            . Credit: #{cid}. Status set to "Signed"
+            , Comment set to ""
+            , End Date set to "{ed}"
+            , Flat Fee Start Date set to ""
+            , Flat Fee (cc) set to "$0.00"
+            , Start Date set to "{sd}"
+            , Flat Fee End Date set to ""
+            , Amount set to "$100.00"
+            , License Fee set to "20.00%"
+            '''.format(cid=credit.id,
+                       sd=start_date.isoformat(),
+                       ed=end_date.isoformat()))
+            .replace('\n', ''), history.changes_text)
+
+        budget = models.BudgetLineItem.objects.create(
+            campaign=ad_group.campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=self.u,
+        )
+
+        history = models.History.objects.all().last()
+        self.assertEqual(textwrap.dedent(
+            '''
+            Created budget
+            . Budget: #{budid}. Comment set to ""
+            , End Date set to "{ed}"
+            , Start Date set to "{sd}"
+            , Amount set to "$100.00"
+            , Freed set to "$0.00"
+            '''.format(budid=budget.id,
+                       sd=start_date.isoformat(),
+                       ed=end_date.isoformat())
+        ).replace('\n', ''), history.changes_text)

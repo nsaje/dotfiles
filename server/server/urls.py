@@ -220,6 +220,11 @@ urlpatterns += [
         name='all_accounts_overview'
     ),
     url(
+        r'^api/history/',
+        login_required(dash.views.agency.History.as_view()),
+        name='history'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.sync.AdGroupSync.as_view()),
     ),
@@ -507,6 +512,11 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
+    ),
+    url(
+        r'^api/demov3/$',
+        login_required(dash.views.views.Demo.as_view()),
+        name='demov3'
     ),
 ]
 

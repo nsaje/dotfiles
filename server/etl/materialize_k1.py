@@ -7,17 +7,25 @@ from django.db import connections
 from django.conf import settings
 
 import dash.models
-
+import reports.constants
 from utils import converters
+from redshiftapi.db import get_stats_cursor
 
 from etl import helpers
+from etl.materialize_helpers import MaterializeViaCSVDaily
 
 logger = logging.getLogger(__name__)
 
 POST_CLICK_PRIORITY = {'gaapi': 1, 'ga_mail': 2, 'omniture': 3}
 
 
-class ContentAdStats(object):
+"""
+NOTE: This module will be deprecated when contentadstats and related tables are deprecated - when redshiftapi
+replaces reports module.
+"""
+
+
+class ContentAdStats(MaterializeViaCSVDaily):
     """
     date, content_ad_id, adgroup_id, source_id
     campaign_id, account_id
@@ -67,10 +75,10 @@ class ContentAdStats(object):
             "bounced_visits": post_click[5],
             "pageviews": post_click[6],
             "time_on_site": post_click[7],
-            "conversions": json.dumps(_sum_conversion(post_click[8])),
+            "conversions": json.dumps(_sum_conversion(post_click[1], post_click[8])),
         }
 
-    def generate_rows(self, date, campaign_factors):
+    def generate_rows(self, cursor, date, campaign_factors, **kwargs):
         content_ad_postclick = defaultdict(list)
         for row in self._postclick_stats_breakdown(date).rows():
             content_ad_id = row[0]
@@ -137,7 +145,7 @@ class ContentAdStats(object):
         logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
-class Publishers(object):
+class Publishers(MaterializeViaCSVDaily):
     """
     date, adgroup_id, exchange,
     domain, external_id,
@@ -211,10 +219,10 @@ class Publishers(object):
             "bounced_visits": post_click[6],
             "pageviews": post_click[7],
             "time_on_site": post_click[8],
-            "conversions": json.dumps(_sum_conversion(post_click[9])),
+            "conversions": json.dumps(_sum_conversion(post_click[1], post_click[9])),
         }
 
-    def generate_rows(self, date, campaign_factors):
+    def generate_rows(self, cursor, date, campaign_factors, **kwargs):
         content_ad_postclick = defaultdict(list)
         for row in self._postclick_stats_breakdown(date).rows():
             ad_group_id = row[0]
@@ -324,7 +332,7 @@ class Publishers(object):
         logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
-class TouchpointConversions(object):
+class TouchpointConversions(MaterializeViaCSVDaily):
     """
     zuid, slug, date, conversion_id, conversion_timestamp, account_id,
     campaign_id, ad_group_id, content_ad_id, source_id,
@@ -334,7 +342,7 @@ class TouchpointConversions(object):
     def table_name(self):
         return 'touchpointconversions'
 
-    def generate_rows(self, date, campaign_factors):
+    def generate_rows(self, cursor, date, campaign_factors, **kwargs):
         # TODO rewrite to the query insert-select materialization when it's ready
         query = """
             select
@@ -344,7 +352,7 @@ class TouchpointConversions(object):
             from conversions
             where date=%s
         """
-        with connections[settings.STATS_DB_NAME].cursor() as c:
+        with get_stats_cursor() as c:
             c.execute(query, [date])
             for row in c:
                 yield row
@@ -390,13 +398,21 @@ class Breakdown(object):
 
 
 def _query_rows(query):
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with get_stats_cursor() as c:
         c.execute(query)
         for row in c:
             yield row
 
 
-def _sum_conversion(conversion_str):
+def _get_conversion_prefix(postclick_source, k):
+    if postclick_source in ('gaapi', 'ga_mail'):
+        return reports.constants.ReportType.GOOGLE_ANALYTICS + '__' + k
+    if postclick_source in ('omniture', ):
+        return reports.constants.ReportType.OMNITURE + '__' + k
+    return k
+
+
+def _sum_conversion(postclick_source, conversion_str):
     conv = defaultdict(int)
 
     for line in conversion_str.split('\n'):
@@ -405,6 +421,6 @@ def _sum_conversion(conversion_str):
             continue
         c = json.loads(line)
         for k, v in c.iteritems():
-            conv[k] += v
+            conv[_get_conversion_prefix(postclick_source, k)] += v
 
     return dict(conv)

@@ -30,38 +30,14 @@
   font-size: 13px;
   color: @zem-grid-text-color;
 
+  .loader { // Initial loader
+    margin: 50px; // Don't cover header and footer
+  }
+
   .zem-grid {
     width: 100%;
     overflow: hidden;
     background-color: @zem-grid-bg-color;
-
-    .zem-grid-header, .zem-grid-footer {
-      font-weight: 600;
-
-      a {
-        color: @zem-grid-text-color;
-      }
-
-      .zem-grid-cell {
-        background-color: @zem-grid-header-footer-bg-color;
-      }
-    }
-
-    .zem-grid-body {
-      height: 525px;
-      overflow: auto;
-
-      background-color: white;
-
-      .zem-grid-table {
-        position: relative;
-        width: 100%;
-      }
-
-      .zem-grid-row {
-        position: absolute;
-      }
-    }
 
     .zem-grid-row {
       height: 35px;
@@ -79,10 +55,16 @@
         padding: 0 8px;
         overflow: hidden;
 
+        min-width: 50px;
+        max-width: 300px;
         font-size: 13px;
         white-space: nowrap;
         // TODO: Change to more sophisticated way of trimming long text in cells
         text-overflow: ellipsis;
+      }
+
+      .load-more-cell {
+        max-width: none; // Ignore max-width configured on cell
       }
 
       &.level-1 {
@@ -121,6 +103,37 @@
         .zem-grid-cell:not(:first-child):not(.pagination-cell) {
           background-color: @zem-grid-bg-color;
         }
+      }
+    }
+
+    .zem-grid-header, .zem-grid-footer {
+      font-weight: 600;
+      border-bottom: 1px solid @zem-grid-cell-border-color;
+      background-color: @zem-grid-header-footer-bg-color;
+
+      a {
+        color: @zem-grid-text-color;
+      }
+
+      .zem-grid-cell {
+        background-color: @zem-grid-header-footer-bg-color;
+        border-bottom: 0px;
+      }
+    }
+
+    .zem-grid-body {
+      height: 525px;
+      overflow: auto;
+
+      background-color: white;
+
+      .zem-grid-table {
+        position: relative;
+        width: 100%;
+      }
+
+      .zem-grid-row {
+        position: absolute;
       }
     }
 

@@ -4,59 +4,108 @@
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($timeout, zemGridConstants) {
 
     var requestAnimationFrame = (function () {
-        return window.requestAnimationFrame       ||
-               window.webkitRequestAnimationFrame ||
-               window.mozRequestAnimationFrame    ||
-               window.oRequestAnimationFrame      ||
-               window.msRequestAnimationFrame     ||
-               function (callback) {
-                   window.setTimeout(callback, 1000 / 60);
-               };
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
     })();
 
-    function resetUIState (grid) {
-        grid.ui.state.headerRendered = false;
-        grid.ui.state.bodyRendered = false;
-        grid.ui.state.footerRendered = false;
-        grid.ui.state.columnsWidthsCalculated = false;
-        grid.ui.columnsWidths = [];
+    function calculateColumnWidths (grid) {
+        // Calculate rendered column widths, based on grid contents,
+        // and configured styles (font, min/max widths, padding, etc.)
+        // Solution is sub-optimal, since it can only calculate text fields (including parsed values)
+        var headerCells = grid.header.ui.element.find('.zem-grid-cell');
+        var columnWidths = [];
+        var maxColumnWidths = [];
+        grid.header.visibleColumns.forEach(function (column, i) {
+            // Retrieve properties that affects column width
+            var font = window.getComputedStyle(headerCells[i], null).getPropertyValue('font');
+            var padding = window.getComputedStyle(headerCells[i], null).getPropertyValue('padding-left');
+            var maxWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('max-width');
+            var minWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('min-width');
+            maxWidth = parseInt(maxWidth) || Number.MAX_VALUE;
+            minWidth = parseInt(minWidth) || 0;
+            padding = parseInt(padding) || 0;
+
+            // Calculate column column width without constraints (use only font)
+            var width = calculateColumnWidth(grid, column, font);
+
+            // Apply constraints to column width (padding, max/min size)
+            width += 2 * padding;
+            width = Math.min(maxWidth, width);
+            width = Math.max(minWidth, width);
+
+            maxColumnWidths[i] = maxWidth;
+            columnWidths[i] = width;
+        });
+
+        var scrollerWidth = 20; // TODO: find exact value (based on browser version)
+        var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
+        keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
+
+        grid.ui.columnsWidths = columnWidths;
     }
 
-    function showLoader (grid, loading) {
-        // TODO: Hide loader after gird rendering is done
-        grid.ui.loading = loading;
+    function calculateColumnWidth (grid, column, font) {
+        var width = getTextWidth(column.data.name, font);
+        if (column.data.help) width += 20; // TODO: find better solution for icon widths
+
+        grid.body.rows.forEach(function (row) {
+            if (row.type !== zemGridConstants.gridRowType.STATS) return;
+            var valueWidth = getTextWidth(row.stats[column.field], font);
+            width = Math.max(width, valueWidth);
+        });
+
+        if (grid.footer.row) {
+            var valueWidth = getTextWidth(grid.footer.row.stats[column.field], font);
+            width = Math.max(width, valueWidth);
+        }
+
+        return width;
     }
 
-    function calculateColumnsWidths (grid, element) {
-        // TODO: Optimize element querying
-        var rows = element.find('.zem-grid-row');
-        rows.each(function (rowIndex, row) {
-            row = angular.element(row);
-            var cells = row.find('.zem-grid-cell');
-            cells.each(function (cellIndex, cell) {
-                angular.element(cell).css({
-                    'width': 'auto',
-                });
-                var cellWidth = cell.offsetWidth;
-                if (!grid.ui.columnsWidths[cellIndex] || grid.ui.columnsWidths[cellIndex] < cellWidth) {
-                    grid.ui.columnsWidths[cellIndex] = cellWidth;
+    function keepAspectRatio (columnWidths, maxColumnWidths, headerWidth) {
+        // Stretch columns to fill available space, if there is any (keep ratio)
+        while (true) { // eslint-disable-line no-constant-condition
+            var computedColumnsWidth = 0;
+            var maxedColumnsWidth = 0;
+            columnWidths.forEach(function (w, i) {
+                computedColumnsWidth += w;
+                if (w >= maxColumnWidths[i]) maxedColumnsWidth += w;
+            });
+
+            if (maxedColumnsWidth === computedColumnsWidth || headerWidth <= computedColumnsWidth) break;
+
+            var ratio = (headerWidth - maxedColumnsWidth) / (computedColumnsWidth - maxedColumnsWidth);
+            columnWidths.forEach(function (w, i) {
+                if (w < maxColumnWidths[i]) {
+                    columnWidths[i] = Math.min(maxColumnWidths[i], w * ratio);
                 }
             });
-            if (row.hasClass('breakdown')) {
-                var paginationCell = row.find('.zem-grid-cell.pagination-cell');
-                paginationCell.css({
-                    'width': 'auto',
-                });
-                var paginationCellWidth = paginationCell[0].offsetWidth;
-                if (!grid.ui.columnsWidths[0] || grid.ui.columnsWidths[0] < paginationCellWidth) {
-                    grid.ui.columnsWidths[0] = paginationCellWidth;
-                }
-            }
-        });
+        }
+    }
+
+    function getTextWidth (text, font) {
+        if (typeof text !== 'string') return -1;
+        if (!getTextWidth.canvas) {
+            getTextWidth.canvas = document.createElement('canvas');
+        }
+        var context = getTextWidth.canvas.getContext('2d');
+        context.font = font;
+        var metrics = context.measureText(text);
+        return metrics.width;
     }
 
     function resizeCells (grid, element) {
-        // TODO: Optimize element querying
+        var loadMoreColumnWidth = grid.ui.columnsWidths.reduce(function (sum, w, i) {
+            if (i === 0) return 0; // Skip over first column
+            return w + sum;
+        }, 0);
+
         var rows = element.find('.zem-grid-row');
         rows.each(function (rowIndex, row) {
             row = angular.element(row);
@@ -72,37 +121,14 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
             });
             var loadMoreCell = row.find('.zem-grid-cell.load-more-cell');
             loadMoreCell.css({
-                'width': 'auto',
+                'width': loadMoreColumnWidth + 'px',
             });
         });
     }
 
     function resizeGridColumns (grid) {
-        requestAnimationFrame(function () {
-            var headerRendered = grid.ui.state.headerRendered,
-                bodyRendered = grid.ui.state.bodyRendered,
-                footerRendered = grid.ui.state.footerRendered;
-
-            if (!grid.ui.state.columnsWidthsCalculated && headerRendered && bodyRendered && footerRendered) {
-                // Adjust grid.ui.columnsWidths based on header columns widths
-                calculateColumnsWidths(grid, grid.header.element);
-                // Adjust grid.ui.columnsWidths based on body columns widths
-                calculateColumnsWidths(grid, grid.body.element);
-                // Adjust grid.ui.columnsWidths based on footer columns widths
-                calculateColumnsWidths(grid, grid.footer.element);
-
-                grid.ui.state.columnsWidthsCalculated = true;
-            }
-
-            if (grid.ui.state.columnsWidthsCalculated) {
-                // Resize header columns based on grid.ui.columnsWidths
-                resizeCells(grid, grid.header.element);
-                // Resize body columns based on grid.ui.columnsWidths
-                resizeCells(grid, grid.body.element);
-                // Resize footer columns based on grid.ui.columnsWidths
-                resizeCells(grid, grid.footer.element);
-            }
-        });
+        calculateColumnWidths(grid);
+        resizeCells(grid, grid.ui.element);
     }
 
     function getRowClass (grid, row) {
@@ -119,42 +145,9 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         return classes;
     }
 
-    function setRowCollapsed (grid, gridRow, collapsed) {
-        gridRow.collapsed = collapsed;
-        var idx = grid.body.rows.indexOf(gridRow);
-        while (++idx < grid.body.rows.length) {
-            var child = grid.body.rows[idx];
-            if (child.level <= gridRow.level) break;
-            child.visible = !gridRow.collapsed && !child.parent.collapsed;
-        }
-    }
-
-    function toggleCollapse (grid, gridRow) {
-        setRowCollapsed(grid, gridRow, !gridRow.collapsed);
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-    }
-
-    function toggleCollapseLevel (grid, level) {
-        var collapsed = null;
-        for (var i = 0; i < grid.body.rows.length; ++i) {
-            var row = grid.body.rows[i];
-            if (row.level === level) {
-                if (collapsed === null)
-                    collapsed = !row.collapsed;
-                setRowCollapsed(grid, row, collapsed);
-            }
-        }
-        grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-    }
-
     return {
         requestAnimationFrame: requestAnimationFrame,
-        resetUIState: resetUIState,
-        showLoader: showLoader,
         resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
-
-        toggleCollapse: toggleCollapse,
-        toggleCollapseLevel: toggleCollapseLevel,
     };
 }]);

@@ -30,6 +30,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
     };
 
     function DataSource (endpoint) {
+        var metaData = null;
         var data = null;
 
         var config = {
@@ -68,10 +69,13 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         // Definitions
         //
         function getMetaData () {
+            if (metaData) return $q.resolve(metaData);
+
             var deferred = $q.defer();
-            endpoint.getMetaData().then(function (metaData) {
+            endpoint.getMetaData().then(function (_metaData) {
                 // Base level always defines only one breakdown and
                 // is available as first element in breakdownGroups
+                metaData = _metaData;
                 var baseLevelBreakdown = metaData.breakdownGroups[0];
                 selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
                 deferred.resolve(metaData);
@@ -92,7 +96,10 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 initializeRoot();
             }
 
-            return getDataByLevel(level, breakdowns, offset, limit);
+            // First make sure that meta-data is initialized and then fetch the requested data
+            return getMetaData().then(function () {
+                return getDataByLevel(level, breakdowns, offset, limit);
+            });
         }
 
         function getDataByLevel (level, breakdowns, offset, limit) {

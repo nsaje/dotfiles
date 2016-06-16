@@ -1356,6 +1356,57 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function History () {
+        function convertHistoryFromApi (history) {
+            return history.map(function (item) {
+                return {
+                    changedBy: item.changed_by,
+                    changesText: item.changes_text,
+                    datetime: item.datetime,
+                };
+            });
+        }
+
+        function convertFilterToApi (filter) {
+            return {
+                ad_group: filter.adGroup,
+                campaign: filter.campaign,
+                account: filter.account,
+                agency: filter.agency,
+                level: filter.level,
+            };
+        }
+
+        this.get = function (filter, order) {
+            var deferred = $q.defer();
+            var url = '/api/history/';
+            var config = {
+                params: convertFilterToApi(filter),
+            };
+
+            if (order) {
+                config.params.order = order
+                    .replace('changedBy', 'created_by')
+                    .replace('datetime', 'created_dt');
+            }
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        history: convertHistoryFromApi(data.data.history),
+                    });
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AccountSettings () {
         function convertSettingsFromApi (settings) {
             return {
@@ -1364,7 +1415,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 defaultAccountManager: settings.default_account_manager,
                 defaultSalesRepresentative: settings.default_sales_representative,
                 accountType: settings.account_type,
-                allowedSources: settings.allowed_sources
+                allowedSources: settings.allowed_sources,
+                facebookPage: settings.facebook_page,
+                facebookStatus: settings.facebook_status,
             };
         }
 
@@ -1375,7 +1428,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 default_account_manager: settings.defaultAccountManager,
                 default_sales_representative: settings.defaultSalesRepresentative,
                 account_type: settings.accountType,
-                allowed_sources: settings.allowedSources
+                allowed_sources: settings.allowedSources,
+                facebook_page: settings.facebookPage,
+                facebook_status: settings.facebookStatus,
             };
         }
 
@@ -1387,7 +1442,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 defaultSalesRepresentative: data.errors.default_sales_representative,
                 accountType: data.errors.account_type,
                 allowedSources: data.errors.allowed_sources,
-                allowedSourcesData: data.data.allowed_sources
+                allowedSourcesData: data.errors.allowed_sources,
+                facebookPage: data.errors.facebook_page,
             };
         }
 
@@ -3248,6 +3304,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function Demo () {
+        this.request = function () {
+            var url = '/api/demov3/';
+            return $http.get(url);
+        };
+    }
+
     return {
         navigation: new Navigation(),
         user: new User(),
@@ -3273,6 +3336,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignContentInsights: new CampaignContentInsights(),
         accountHistory: new AccountHistory(),
         accountSettings: new AccountSettings(),
+        history: new History(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
@@ -3304,6 +3368,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountCredit: new AccountCredit(),
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
+        demo: new Demo(),
         // Also, don't forget to add me to DEMO!
     };
 }]);

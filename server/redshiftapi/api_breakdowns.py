@@ -10,7 +10,7 @@ from utils import exc
 def query(breakdown, constraints, breakdown_constraints, order, offset, limit):
     # returns a collection of rows that are dicts
 
-    model = models.RSContentAdStats
+    model = models.MVMaster
 
     query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints, order, offset, limit)
 

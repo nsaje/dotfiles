@@ -7,14 +7,14 @@ from redshiftapi import models
 class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
     def setUp(self):
-        self.model = models.RSContentAdStats
+        self.model = models.MVMaster
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 29)
+        self.assertEquals(len(columns), 38)
 
         columns = self.model.select_columns(group=models.BREAKDOWN)
-        self.assertEquals(len(columns), 9)
+        self.assertEquals(len(columns), 18)
 
     def test_get_breakdown(self):
         self.assertEquals(
@@ -48,7 +48,7 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
             {'content_ad_id': 35, 'source_id': [2, 4, 22]},
         ]
 
-        context = models.RSContentAdStats.get_default_context(
+        context = models.MVMaster.get_default_context(
             ['account_id', 'source_id'],
             constraints,
             breakdown_constraints,

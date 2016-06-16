@@ -6,6 +6,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.settings.allowedSources = {};
     $scope.saved = false;
     $scope.errors = {};
+    $scope.constants = constants;
     $scope.requestInProgress = false;
     $scope.mediaSourcesOrderByProp = 'name';
     $scope.accountTypes = options.accountTypes;
@@ -24,6 +25,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
             $scope.hasPermission('zemauth.can_modify_account_name') ||
+            $scope.hasPermission('zemauth.can_modify_facebook_page') ||
             $scope.hasPermission('zemauth.can_modify_account_type') ||
             $scope.hasPermission('zemauth.can_set_account_sales_representative') ||
             $scope.hasPermission('zemauth.can_modify_account_manager');
@@ -146,6 +148,11 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         ).finally(function () {
             $scope.requestInProgress = false;
         });
+    };
+
+    $scope.clearFacebookPage = function () {
+        $scope.settings.facebookPage = null;
+        $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
     };
 
     $scope.refreshPage = function () {

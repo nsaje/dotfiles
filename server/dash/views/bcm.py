@@ -417,13 +417,13 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
         if min_amount > amount:
             item.errors.setdefault('amount', []).append(
-                'Budget exceeds the minimum budget amount by ${}.'.format(
-                    Decimal(min_amount - amount).quantize(Decimal('1.00'))
+                'Budget amount has to be at least ${}.'.format(
+                    Decimal(min_amount).quantize(Decimal('1.00'))
                 )
             )
         if not campaign_stop.is_current_time_valid_for_amount_editing(item.instance.campaign):
             item.errors.setdefault('amount', []).append(
-                'You cannot lower the amount on an active budget line item at this time.'
+                'You can lower the amount on an active budget line item after 12:00 UTC.'
             )
 
     def _get_response(self, item):
