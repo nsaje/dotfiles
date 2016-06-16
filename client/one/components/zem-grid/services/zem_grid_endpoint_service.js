@@ -38,7 +38,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
 
             var deferred = $q.defer();
             var levelEntityId = metaData.id;
-            var breakdownEntityId = stats.id;
+            var breakdownEntityId = stats.breakdownId;
             api.save(levelEntityId, breakdownEntityId, value).then(function (data) {
                 // TODO: handle data
                 deferred.resolve(data);
