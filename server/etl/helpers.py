@@ -1,4 +1,5 @@
 import datetime
+from dateutil import rrule
 from collections import defaultdict
 
 from dash import constants
@@ -31,10 +32,34 @@ def get_local_date_context(date):
 
     return {
         'date': date.isoformat(),
-        'tzdate_from': hour_from.date(),
+        'tzdate_from': hour_from.date().isoformat(),
         'tzhour_from': hour_from.hour,
-        'tzdate_to': hour_to.date(),
+        'tzdate_to': hour_to.date().isoformat(),
         'tzhour_to': hour_to.hour,
+    }
+
+
+def get_local_multiday_date_context(date_from, date_to):
+    """
+    Prepare a date time context for multiday aggregation of data by local time zone
+    from UTC hourly data in the stats table.
+    """
+
+    from_context = get_local_date_context(date_from)
+    to_context = get_local_date_context(date_to)
+
+    date_ranges = []
+    for date in rrule.rrule(rrule.DAILY, dtstart=date_from, until=date_to):
+        date_ranges.append(get_local_date_context(date.date()))
+
+    return {
+        'date_from': from_context['date'],
+        'date_to': to_context['date'],
+        'tzdate_from': from_context['tzdate_from'],
+        'tzhour_from': from_context['tzhour_from'],
+        'tzdate_to': to_context['tzdate_to'],
+        'tzhour_to': to_context['tzhour_to'],
+        'date_ranges': date_ranges,
     }
 
 

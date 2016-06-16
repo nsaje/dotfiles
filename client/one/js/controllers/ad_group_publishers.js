@@ -719,10 +719,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     var getTableData = function (showWaiting) {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            // Data displayed and handled by zem-grid and DataSource
-            return;
-        }
         $scope.loadRequestInProgress = true;
 
         api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(

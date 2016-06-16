@@ -27,7 +27,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
         order = '-campaign_id'
 
         query, params = api_breakdowns._prepare_query(
-            models.RSContentAdStats,
+            models.MVMaster,
             breakdown, constraints, breakdown_constraints, order, 10, 50)
 
         self.assertEquals(params,
@@ -100,7 +100,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                                                     sum(b.total_time_on_site) total_time_on_site,
                                                     row_number() over (partition BY b.adgroup_id
                                                                     ORDER BY b.campaign_id DESC) AS r
-        FROM contentadstats b
+        FROM mv_master b
         WHERE (b.account_id=any(%s)
                 AND b.campaign_id=%s
                 AND trunc(b.date)>=%s

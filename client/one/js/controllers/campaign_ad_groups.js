@@ -575,10 +575,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getTableData = function () {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            // Data displayed and handled by zem-grid and DataSource
-            return;
-        }
         $scope.getTableDataRequestInProgress = true;
 
         api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
