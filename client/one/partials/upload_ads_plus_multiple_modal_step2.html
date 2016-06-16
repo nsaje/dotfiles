@@ -1,16 +1,14 @@
-<div class="modal-body contentad-picker">
-    <div class="candidate-table" ng-class="{small: !!selectedCandidate}">
-        <h4>{{ batchName }}</h4>
+<div class="modal-body contentad-picker" ng-class="{editing: !!selectedCandidate}">
+    <div class="clearfix"></div>
+    <div class="candidate-table custom_scroller">
+        <h4 class="candidate-title">{{ batchName }}</h4>
         <table class="table">
             <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate.id}">
                 <td class="status" ng-class="colorMap[candidate.status]">
                     <ng-switch on="candidate.status">
-                        <span ng-switch-when="1" class="glyphicon glyphicon-option-horizontal">
-                        </span>
-                        <span ng-switch-when="2" class="glyphicon glyphicon-ok">
-                        </span>
-                        <span ng-switch-when="3" class="glyphicon glyphicon-warning-sign">
-                        </span>
+                        <img ng-switch-when="1" class="small-icon" ng-src="{{ config.static_url }}/one/img/loader.svg"/>
+                        <img ng-switch-when="2" class="small-icon" ng-src="{{ config.static_url }}/one/img/checkmark.svg"/>
+                        <img ng-switch-when="3" class="small-icon" ng-src="{{ config.static_url }}/one/img/warning.svg"/>
                     </ng-switch>
                 </td>
                 <td class="image">
@@ -19,26 +17,23 @@
                 <td class="title">
                     {{ candidate.title }}
                 </td>
-                <td></td>
                 <td class="errors">
                     <div ng-if="getContentErrors(candidate)">
-                        <span class="glyphicon glyphicon-font"> </span>
+                        <img ng-src="{{ config.static_url }}/one/img/error-content.svg"/>
                         <span class="error-text">{{ getContentErrors(candidate) }}</span>
                     </div>
                     <div ng-if="getImageErrors(candidate)">
-                        <span class="glyphicon glyphicon-picture"> </span>
+                        <img ng-src="{{ config.static_url }}/one/img/error-image.svg"/>
                         <span class="error-text">{{ getImageErrors(candidate) }}</span>
                     </div>
                 </td>
                 <td class="action">
-                    <a href ng-click="openEditForm(candidate)">
-                        <span class="glyphicon glyphicon-edit"></span>
+                    <a href ng-click="openEditForm(candidate)" class="btn btn-secondary">
+                        <img ng-src="{{ config.static_url }}/one/img/button-edit.svg"/>
                         <span class="action-text">Edit</span>
                     </a>
-                </td>
-                <td class="action">
-                    <a href ng-click="removeCandidate(candidate)">
-                        <span class="glyphicon glyphicon-remove"></span>
+                    <a href ng-click="removeCandidate(candidate)" class="btn btn-secondary">
+                        <img ng-src="{{ config.static_url }}/one/img/button-remove.svg"/>
                         <span class="action-text">Remove</span>
                     </a>
                 </td>
@@ -47,21 +42,18 @@
         <button type="button" class="btn btn-default btn-download"><span class="glyphicon glyphicon-save"></span> Download</button>
     </div>
 
-    <div class="edit-form" ng-class="{expanded: !!selectedCandidate}">
-        <h4>
-            Edit content ad
-        </h4>
+    <div class="edit-form custom_scroller">
+        <h4>Edit content ad</h4>
         <form class="file-upload-form form-horizontal">
 
             <div class="form-group">
                 <label for="url-input" class="col-xs-2 control-label">
                     URL:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <input type="text" class="form-control" id="url-input" />
                 </div>
-                <div class="col-xs-2"></div>
-                <div class="col-xs-2 control-label small">
+                <div class="col-xs-3 control-label small">
                     0 / 936
                 </div>
             </div>
@@ -70,11 +62,10 @@
                 <label for="title-input" class="col-xs-2 control-label">
                     Ad Title:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <input type="text" class="form-control" id="title-input" />
                 </div>
-                <div class="col-xs-2"></div>
-                <div class="col-xs-2 control-label small">
+                <div class="col-xs-3 control-label small">
                     0 / 140
                 </div>
             </div>
@@ -83,14 +74,13 @@
                 <label for="image-url-input" class="col-xs-2 control-label">
                     Image URL:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <input type="text" class="form-control" id="image-url-input" />
                         <div class="help-block">
                             Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
                         </div>
                 </div>
-                <div class="col-xs-2"></div>
-                <div class="col-xs-2 control-label small">
+                <div class="col-xs-3 control-label small">
                     0 / 140
                 </div>
             </div>
@@ -99,7 +89,7 @@
                 <label for="image-crop-input" class="col-xs-2 control-label">
                     Image crop:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <ui-select theme="select2" search-enabled="false" id="image-crop-input" class="form-control" ng-model="selectedCandidate.imageCrop">
                         <ui-select-match placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
                         <ui-select-choices repeat="crop.value as crop in imageCrops">
@@ -107,33 +97,22 @@
                         </ui-select-choices>
                     </ui-select>
                 </div>
-                <div class="col-xs-2">
-                    <label class="checkbox-default-label">
-                        <input type="checkbox" />
-                        Use as default
-                    </label>
-                </div>
-                <div class="col-xs-2"></div>
+                <div class="col-xs-3 control-label"><label class="checkbox-default-label"><input type="checkbox" />Use as default</label></div>
             </div>
 
             <div class="form-group has-error">
                 <label for="description-input" class="col-xs-2 control-label">
                     Description:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <textarea type="text" class="form-control" rows="3" id="description-input"></textarea>
                     <span class="control-label small error">
                         Description is too long.
                     </span>
                 </div>
-                <div class="col-xs-2">
-                    <label class="checkbox-default-label">
-                        <input type="checkbox" />
-                        Use as default
-                    </label>
-                </div>
-                <div class="col-xs-2 control-label small error">
+                <div class="col-xs-3 control-label small error p-t-none">
                     160/140
+                    <label class="checkbox-default-label"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
 
@@ -141,17 +120,12 @@
                 <label for="display-url-input" class="col-xs-2 control-label">
                     Display URL:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <input type="text" class="form-control" id="display-url-input" />
                 </div>
-                <div class="col-xs-2">
-                    <label class="checkbox-default-label">
-                        <input type="checkbox" />
-                        Use as default
-                    </label>
-                </div>
-                <div class="col-xs-2 control-label small">
+                <div class="col-xs-3 control-label small p-t-none">
                     0 / 25
+                    <label class="checkbox-default-label"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
 
@@ -159,17 +133,12 @@
                 <label for="brand-nam-input" class="col-xs-2 control-label">
                     Brand name:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <input type="text" class="form-control" id="brand-name-input" />
                 </div>
-                <div class="col-xs-2">
-                    <label class="checkbox-default-label">
-                        <input type="checkbox" />
-                        Use as default
-                    </label>
-                </div>
-                <div class="col-xs-2 control-label small">
+                <div class="col-xs-3 control-label small p-t-none">
                     0 / 25
+                    <label class="checkbox-default-label"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
 
@@ -177,60 +146,51 @@
                 <label for="call-to-action-input" class="col-xs-2 control-label">
                     Call To Action:
                 </label>
-                <div class="col-xs-6">
+                <div class="col-xs-7">
                     <div ui-select2="callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="formData.callToAction" zem-select2-model-transform="text"></div>
                 </div>
-                <div class="col-xs-2">
-                    <label class="checkbox-default-label">
-                        <input type="checkbox" />
-                        Use as default
-                    </label>
-                </div>
-                <div class="col-xs-2 control-label small">
+                <div class="col-xs-3 control-label small p-t-none">
                     0 / 25
+                    <label class="checkbox-default-label"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
 
             <div class="form-group">
-                <div class="row">
-                    <div class="col-xs-2"></div>
-                    <div class="col-xs-6">
-                        <label class="checkbox-label">
-                            <input type="checkbox" ng-model="selectedCandidate.useTrackers" />
-                            Use impression trackers
-                        </label>
-                    </div>
-                    <div class="col-xs-2"></div>
-                    <div class="col-xs-2"></div>
-                </div>
-
-                <div class="row" ng-if="selectedCandidate.useTrackers">
-                    <label for="impression-trackers-input" class="col-xs-2 control-label">
-                        Impression Trackers
+                <div class="col-xs-2 control-label"></div>
+                <div class="col-xs-7">
+                    <label class="checkbox-label">
+                        <input type="checkbox" ng-model="selectedCandidate.useTrackers" />
+                        Use impression trackers
                     </label>
-                    <div class="col-xs-6">
-                        <input type="text" class="form-control" id="impression-trackers-input" />
-                        <div class="help-block">
-                            Paste your impression tracker link to track impressions.
-                        </div>
-                    </div>
-                    <div class="col-xs-2"> </div>
                 </div>
+                <div class="col-xs-3"></div>
             </div>
 
-            <div clas="row">
-                <div class="col-xs-2"></div>
-                <div class="col-xs-6">
-                    <button type="button" class="btn btn-add" ng-click="closeEditForm()">UPDATE AD</span></button>
+            <div class="form-group" ng-if="selectedCandidate.useTrackers">
+                <label for="impression-trackers-input" class="col-xs-2 control-label">
+                    Impression Trackers
+                </label>
+                <div class="col-xs-7">
+                    <input type="text" class="form-control" id="impression-trackers-input" />
+                    <div class="help-block">
+                        Paste your impression tracker link to track impressions.
+                    </div>
                 </div>
-                <div class="col-xs-2"></div>
-                <div class="col-xs-2"></div>
+                <div class="col-xs-3"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-xs-2 control-label"></div>
+                <div class="col-xs-7">
+                    <button type="button" class="btn btn-add" ng-click="closeEditForm()">UPDATE AD</button>
+                </div>
+                <div class="col-xs-3"></div>
             </div>
         </form>
 
-        <button type="button" class="btn btn-default btn-close" ng-click="closeEditForm()">Close <span class="glyphicon glyphicon-chevron-right"></span></button>
+        <button type="button" class="btn-close" ng-click="closeEditForm()">Close <span class="glyphicon glyphicon-chevron-right"></span></button>
     </div>
-
+    <div class="clear"></div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="close()">Cancel</button>
