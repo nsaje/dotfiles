@@ -21,9 +21,13 @@
                 </td>
                 <td></td>
                 <td class="errors">
-                    <div ng-repeat="error in candidate.errors" class="candidate-error">
-                        <span class="glyphicon glyphicon-{{  error.type }}"> </span>
-                        <span class="error-text">{{ error.text }}</span>
+                    <div ng-if="getContentErrors(candidate)">
+                        <span class="glyphicon glyphicon-font"> </span>
+                        <span class="error-text">{{ getContentErrors(candidate) }}</span>
+                    </div>
+                    <div ng-if="getImageErrors(candidate)">
+                        <span class="glyphicon glyphicon-picture"> </span>
+                        <span class="error-text">{{ getImageErrors(candidate) }}</span>
                     </div>
                 </td>
                 <td class="action">

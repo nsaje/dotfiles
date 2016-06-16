@@ -592,6 +592,12 @@ var constants = {
         OK: 3,
         FAILED: 4,
     },
+    historyLevel: {
+        AD_GROUP: 1,
+        CAMPAIGN: 2,
+        ACCOUNT: 3,
+        AGENCY: 4,
+    },
     facebookStatus: {
         CONNECTED: 'Connected',
         PENDING: 'Pending',
@@ -1214,3 +1220,9 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] = 'Bo
 constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = 'New Unique Visitors';
 constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
+
+constants.automaticallyOptimizedKPIGoals = [
+    constants.campaignGoalKPI.MAX_BOUNCE_RATE,
+    constants.campaignGoalKPI.NEW_UNIQUE_VISITORS,
+    constants.campaignGoalKPI.TIME_ON_SITE,
+    constants.campaignGoalKPI.PAGES_PER_SESSION];

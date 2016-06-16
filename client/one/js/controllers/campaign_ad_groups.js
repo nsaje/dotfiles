@@ -1,5 +1,5 @@
 /* globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemDataSourceEndpoints', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService, zemDataSourceService, zemDataSourceEndpoints) { // eslint-disable-line max-len
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -575,10 +575,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getTableData = function () {
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            // Data displayed and handled by zem-grid and DataSource
-            return;
-        }
         $scope.getTableDataRequestInProgress = true;
 
         api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
@@ -722,8 +718,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     function initializeDataSource () {
-        var metadata = zemDataSourceEndpoints.createMetaData($scope, $scope.level, $state.params.id, 'ad_group');
-        var endpoint = zemDataSourceEndpoints.createEndpoint(metadata);
+        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'ad_group');
+        var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
     }

@@ -1043,13 +1043,8 @@ class ContentAdCandidateForm(forms.Form):
             'required': 'Missing image URL',
         }
     )
-    image_crop = forms.ChoiceField(
-        choices=constants.ImageCrop.get_choices(),
+    image_crop = forms.CharField(
         required=False,
-        error_messages={
-            'required': 'Missing image crop',
-            'invalid_choice': 'Image crop %(value)s is not supported'
-        }
     )
     display_url = forms.CharField(
         max_length=25,
@@ -1131,6 +1126,17 @@ class ContentAdCandidateForm(forms.Form):
             result.append(url)
 
         return result
+
+    def clean_image_crop(self):
+        image_crop = self.cleaned_data.get('image_crop')
+        if not image_crop:
+            return constants.ImageCrop.CENTER
+
+        print constants.ImageCrop.get_all()
+        if image_crop.lower() in constants.ImageCrop.get_all():
+            return image_crop.lower()
+
+        raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
 
 
 class ContentAdForm(ContentAdCandidateForm):

@@ -1142,7 +1142,7 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
                 )
             )
 
-    k1_helper.update_ad_group((ad_group.pk for ad_group in campaign_ad_groups),
+    k1_helper.update_ad_groups((ad_group.pk for ad_group in campaign_ad_groups),
                               msg='views.helpers.save_campaign_settings_and_propagate')
 
     actionlog.zwei_actions.send(actions)
