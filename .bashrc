@@ -58,3 +58,5 @@ export GOPATH=$HOME/.go
 export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 export GO15VENDOREXPERIMENT=1
 
+
+[ -s "/home/nsaje/.scm_breeze/scm_breeze.sh" ] && source "/home/nsaje/.scm_breeze/scm_breeze.sh"

@@ -10,3 +10,5 @@
 	default = simple
 [diff]
 	tool = meld
+[core]
+	pager = diff-so-fancy | less --tabs=4 -RFX
