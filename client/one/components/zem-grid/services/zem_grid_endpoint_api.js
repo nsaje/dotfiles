@@ -3,8 +3,8 @@
 
 oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function (api, zemGridEndpointColumns) { // eslint-disable-line max-len
     //
-    // Service responsible for defining API methods used by Grid Endpoint
-    // based on level, breakdown and field -> uniquely defines table and column/field
+    // Service responsible for defining API methods used by Grid Endpoint based on
+    // level, breakdown and column -> uniquely defines table cells throughout the application
     // Each specific API contains CRUD functions that are supported on specific field (e.g. save)
     // Function signature - function (levelEntityId, breakdownEntityId, value) [returns Promise]
     //      - levelEntityId --> ID of entity on which we made breakdown
