@@ -134,16 +134,16 @@ class CopySettingsMixin(object):
 
         if type(self) == AccountSettings:
             new_settings.account = self.account
-            new_settings.snapshot()
+            new_settings.snapshot(previous=self)
         elif type(self) == CampaignSettings:
             new_settings.campaign = self.campaign
-            new_settings.snapshot()
+            new_settings.snapshot(previous=self)
         elif type(self) == AdGroupSettings:
             new_settings.ad_group = self.ad_group
-            new_settings.snapshot()
+            new_settings.snapshot(previous=self)
         elif type(self) == AdGroupSourceSettings or type(self) == AdGroupSourceState:
             new_settings.ad_group_source = self.ad_group_source
-            new_settings.snapshot()
+            new_settings.snapshot(previous=self)
 
         return new_settings
 
@@ -219,9 +219,12 @@ class HistoryMixin(object):
     def __init__(self):
         self.snapshot()
 
-    def snapshot(self):
+    def snapshot(self, previous=None):
+        if not previous:
+            previous = self
+
         self.post_init_state = self.get_history_dict()
-        self.post_init_created = self.id is None
+        self.post_init_created = previous.id is None if previous else False
 
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
@@ -2260,10 +2263,10 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         if not changes and not self.post_init_created:
             return None, ''
 
-        changes, changes_text = self.construct_changes(
+        _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
-            changes
+            changes if not self.post_init_created else None
         )
         create_ad_group_history(
             current_settings.ad_group,
@@ -3593,7 +3596,7 @@ class History(models.Model):
         if self.created_by is None and self.system_user is not None:
             return constants.SystemUserType.get_text(self.system_user)
         elif self.created_by is None and self.system_user is None:
-            return ''
+            return 'System User'
         else:
             return self.created_by.email
 
