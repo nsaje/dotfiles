@@ -1114,16 +1114,19 @@ class HistoryTest(TestCase):
         self.assertEqual(textwrap.dedent(
             '''
             Created credit
-            . Credit: #{}. Status set to "Signed"
+            . Credit: #{cid}. Status set to "Signed"
             , Comment set to ""
-            , End Date set to "2016-06-30"
+            , End Date set to "{ed}"
             , Flat Fee Start Date set to ""
             , Flat Fee (cc) set to "$0.00"
-            , Start Date set to "2016-05-31"
+            , Start Date set to "{sd}"
             , Flat Fee End Date set to ""
             , Amount set to "$100.00"
             , License Fee set to "20.00%"
-            '''.format(credit.id)).replace('\n', ''), history.changes_text)
+            '''.format(cid=credit.id,
+                       sd=start_date.isoformat(),
+                       ed=end_date.isoformat()))
+            .replace('\n', ''), history.changes_text)
 
         budget = models.BudgetLineItem.objects.create(
             campaign=ad_group.campaign,
@@ -1138,9 +1141,12 @@ class HistoryTest(TestCase):
         self.assertEqual(textwrap.dedent(
             '''
             Created budget
-            . Budget: #{}. Comment set to ""
-            , End Date set to "2016-06-30"
-            , Start Date set to "2016-05-31"
+            . Budget: #{budid}. Comment set to ""
+            , End Date set to "{ed}"
+            , Start Date set to "{sd}"
             , Amount set to "$100.00"
             , Freed set to "$0.00"
-            '''.format(budget.id)).replace('\n', ''), history.changes_text)
+            '''.format(budid=budget.id,
+                       sd=start_date.isoformat(),
+                       ed=end_date.isoformat())
+        ).replace('\n', ''), history.changes_text)
