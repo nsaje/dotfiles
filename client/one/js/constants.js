@@ -74,6 +74,7 @@ var constants = {
         UNBOUNCED_VISITS: 'unbounced_visits',
         COST_PER_SECOND: 'avg_cost_per_second',
         COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
+        COST_PER_VISIT: 'avg_cost_per_visit',
         COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
         COST_PER_NEW_VISITOR: 'avg_cost_for_new_visitor',
         COST_PER_CONVERSION_GOAL_1: 'avg_cost_per_conversion_goal_1',
@@ -707,6 +708,11 @@ var options = {
             shown: false,
         },
         {
+            name: 'Avg. Cost per Visit',
+            value: constants.chartMetric.COST_PER_VISIT,
+            shown: false,
+        },
+        {
             name: 'Avg. Cost for Unbounced Visitor',
             value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR,
             shown: false,
@@ -1212,7 +1218,7 @@ var defaults = {
         {id: constants.campaignGoalKPI.CPC, value: 0.35},
         {id: constants.campaignGoalKPI.CPA, value: 50},
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
-        {id: constants.campaignGoalKPI.CPV, value: 0.35}, // DAVORIN TODO Get actual default value
+        {id: constants.campaignGoalKPI.CPV, value: 0.50},
     ],
 };
 

@@ -228,6 +228,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
+        self._add_value(constants.CampaignGoalKPI.CPV, 0.5)
 
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
 
@@ -251,6 +252,12 @@ class CampaignGoalsTestCase(TestCase):
                 'conversion': None,
                 'value': 75,
                 'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
+            },
+            {
+                'name': 'Cost per Visit',
+                'conversion': None,
+                'value': 0.5,
+                'fields': {'avg_cost_per_visit': True},
             },
             {
                 'name': 'Avg. CPA',
