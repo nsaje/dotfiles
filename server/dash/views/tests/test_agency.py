@@ -3319,3 +3319,110 @@ class HistoryTest(TestCase):
         history = response['data']['history'][0]
         self.assertEqual(self.user.email, history['changed_by'])
         self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
+
+
+class TestHistoryMixin(TestCase):
+
+    class FakeMeta(object):
+
+        def __init__(self, concrete_fields, virtual_fields):
+            self.concrete_fields = concrete_fields
+            self.virtual_fields = virtual_fields
+            self.many_to_many = []
+
+    class HistoryTest(models.HistoryMixin):
+
+        history_fields = ['test_field']
+
+        def __init__(self):
+            self._meta = TestHistoryMixin.FakeMeta(
+                self.history_fields,
+                []
+            )
+            self.id = None
+            self.test_field = ''
+            super(TestHistoryMixin.HistoryTest, self).__init__()
+
+        def get_human_prop_name(self, prop):
+            return 'Test Field'
+
+        def get_human_value(self, key, value):
+            return value
+
+    def test_snapshot(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertTrue(mix.post_init_newly_created)
+
+        mix.id = 5
+        mix.snapshot(previous=mix)
+
+        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertFalse(mix.post_init_newly_created)
+
+    def test_get_history_dict(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual({'test_field': ''}, mix.get_history_dict())
+
+    def test_get_model_state_changes(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            {},
+            mix.get_model_state_changes({'test_field': ''})
+        )
+        self.assertEqual(
+            {'test_field': 'johnny'},
+            mix.get_model_state_changes({'test_field': 'johnny'})
+        )
+
+    def test_get_history_changes_text(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            'Test Field set to "johnny"',
+            mix.get_history_changes_text({'test_field': 'johnny'})
+        )
+
+        self.assertEqual(
+            '',
+            mix.get_history_changes_text({})
+        )
+
+    def test_get_changes_text_from_dict(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            'Test Field set to "johnny"',
+            mix.get_changes_text_from_dict({'test_field': 'johnny'})
+        )
+
+        self.assertEqual(
+            'Created settings',
+            mix.get_changes_text_from_dict({})
+        )
+
+    def test_construct_changes(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            ({}, 'Created settings. Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
+
+        self.assertEqual(
+            ({}, 'Created settings. Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
+        )
+
+        mix.id = 5
+        mix.snapshot(previous=mix)
+
+        self.assertEqual(
+            ({}, 'Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
+        self.assertEqual(
+            ({'test_field': 'pesa'}, 'Settings: 5. Test Field set to "pesa"'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
+        )
+        self.assertEqual(
+            ({}, 'Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
