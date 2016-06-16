@@ -25,6 +25,7 @@ from django.db.models.signals import post_init
 import utils.string_helper
 import utils.demo_anonymizer
 
+import automation.settings
 from dash import constants
 from dash import region_targeting_helper
 from dash import views
@@ -222,11 +223,13 @@ class HistoryMixin(object):
 
     def snapshot(self):
         self.post_init_state = self.get_history_dict()
+        self.post_init_created = self.id is None
 
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
 
-    def get_model_state_changes(self, current_dict, new_dict):
+    def get_model_state_changes(self, new_dict, current_dict=None):
+        current_dict = current_dict or self.post_init_state
         changes = OrderedDict()
         for field_name in self.history_fields:
             new_value = new_dict[field_name]
@@ -234,17 +237,22 @@ class HistoryMixin(object):
                 changes[field_name] = new_value
         return changes
 
-    def get_changes_text_from_dict(self, changes, separator=', '):
-        if changes is None:
-            return 'Created settings'
+    def get_history_changes_text(self, changes, separator=', '):
         change_strings = []
         for key, value in changes.iteritems():
             prop = self.get_human_prop_name(key)
+            if not prop:
+                continue
             val = self.get_human_value(key, value)
             change_strings.append(
                 u'{} set to "{}"'.format(prop, val)
             )
         return separator.join(change_strings)
+
+    def get_changes_text_from_dict(self, changes, separator=', '):
+        if not changes:
+            return 'Created settings'
+        return self.get_history_changes_text(changes, separator=separator)
 
 
 class HistoryModel(models.Model):
@@ -693,7 +701,7 @@ class SettingsBase(models.Model, CopySettingsMixin, HistoryMixin):
         abstract = True
 
 
-class AccountSettings(SettingsBase, HistoryMixin):
+class AccountSettings(SettingsBase):
     _demo_fields = {
         'name': utils.demo_anonymizer.account_name_from_pool
     }
@@ -769,9 +777,11 @@ class AccountSettings(SettingsBase, HistoryMixin):
     def add_to_history(self, user=None):
         history_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_account_history(
             self.account,
@@ -790,7 +800,7 @@ class AccountSettings(SettingsBase, HistoryMixin):
             return self.order_by('account_id', '-created_dt').distinct('account')
 
 
-class CampaignSettings(SettingsBase, HistoryMixin):
+class CampaignSettings(SettingsBase):
     _demo_fields = {
         'name': utils.demo_anonymizer.campaign_name_from_pool
     }
@@ -870,9 +880,11 @@ class CampaignSettings(SettingsBase, HistoryMixin):
     def add_to_history(self):
         history_type = constants.HistoryType.CAMPAIGN
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
             self.campaign,
@@ -1798,7 +1810,7 @@ class AdGroupSource(models.Model):
         return unicode(self).encode('ascii', 'ignore')
 
 
-class AdGroupSettings(SettingsBase, HistoryMixin):
+class AdGroupSettings(SettingsBase):
     _demo_fields = {
         'display_url': utils.demo_anonymizer.fake_display_url,
         'ad_group_name': utils.demo_anonymizer.ad_group_name_from_pool,
@@ -2057,9 +2069,11 @@ class AdGroupSettings(SettingsBase, HistoryMixin):
     def add_to_history(self):
         history_type = constants.HistoryType.AD_GROUP
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             self.ad_group,
@@ -2223,9 +2237,11 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            self.get_settings_dict(),
+            self.get_settings_dict()
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             current_settings.ad_group,
@@ -2775,8 +2791,6 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {
-            'account': 'Account',
-            'agency': 'Agency',
             'start_date': 'Start Date',
             'end_date': 'End Date',
             'amount': 'Amount',
@@ -2787,19 +2801,27 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             'status': 'Status',
             'comment': 'Comment'
         }
-        return NAMES[prop_name]
+        return NAMES.get(prop_name)
 
     @classmethod
     def get_human_value(cls, prop_name, value):
         if prop_name == 'amount' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'license_fee' and value is not None:
-            value = '{}%'.format(utils.string_helper.format_decimal(value*100, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 value * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
+        elif prop_name == 'comment':
+            value = value or ''
+        elif prop_name == 'flat_fee_cc':
+            value = value or ''
+        elif prop_name == 'flat_fee_start_date':
+            value = value or ''
+        elif prop_name == 'flat_fee_end_date':
+            value = value or ''
         return value
 
     def get_settings_dict(self):
@@ -2820,10 +2842,22 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     def add_to_history(self, user=None):
         history_type = constants.HistoryType.CREDIT
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            model_to_dict(self),
+            model_to_dict(self)
         )
-        changes_text = self.get_changes_text_from_dict(changes)
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
+        parts = []
+        if self.post_init_created:
+            parts.append('Created credit.')
+            changes = model_to_dict(self)
+
+        parts.append('Credit: #{}.'.format(self.id))
+
+        text = self.get_history_changes_text(changes)
+        if text:
+            parts.append(text)
+        changes_text = ' '.join(parts)
 
         if self.account is not None:
             create_account_history(
@@ -3015,10 +3049,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             'start_date': 'Start Date',
             'end_date': 'End Date',
             'amount': 'Amount',
-            'freed_cc': 'Freed (cc)',
+            'freed_cc': 'Freed',
             'comment': 'Comment',
         }
-        return NAMES[prop_name]
+        return NAMES.get(prop_name)
 
     @classmethod
     def get_human_value(cls, prop_name, value):
@@ -3030,6 +3064,8 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'comment':
+            value = value or ''
         return value
 
     def get_settings_dict(self):
@@ -3049,10 +3085,22 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
 
     def add_to_history(self, user=None):
         changes = self.get_model_state_changes(
-            self.post_init_state,
-            model_to_dict(self),
+            model_to_dict(self)
         )
-        changes_text = self.get_changes_text_from_dict(changes)
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_created:
+            return
+        parts = []
+        if self.post_init_created:
+            parts.append('Created budget.')
+            changes = model_to_dict(self)
+
+        parts.append('Budget: #{}.'.format(self.id))
+
+        text = self.get_history_changes_text(changes)
+        if text:
+            parts.append(text)
+        changes_text = ' '.join(parts)
         create_campaign_history(
             self.campaign,
             constants.HistoryType.BUDGET,
@@ -3538,6 +3586,14 @@ class History(models.Model):
     class QuerySet(HistoryQuerySet):
         pass
 
+    def get_changed_by_text(self):
+        if self.created_by is None and self.system_user is not None:
+            return constants.SystemUserType.get_text(self.system_user)
+        elif self.created_by is None and self.system_user is None:
+            return ''
+        else:
+            return self.created_by.email
+
     def save(self, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating history object not alowed.')
@@ -3552,7 +3608,6 @@ def create_ad_group_history(ad_group, history_type, changes, changes_text, user=
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
-
     campaign, account, agency = _generate_parents(ad_group=ad_group)
     history = History.objects.create(
         ad_group=ad_group,

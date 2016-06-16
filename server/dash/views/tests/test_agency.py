@@ -3,6 +3,7 @@ import json
 import datetime
 import pytz
 import httplib
+import textwrap
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
@@ -3191,3 +3192,130 @@ class CampaignContentInsightsTest(TestCase):
                 },
                 'success': True,
             }, json.loads(response.content))
+
+
+class HistoryTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+
+    def _add_entries(self):
+        self.dt = datetime.datetime.utcnow()
+        ad_group = models.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        account = campaign.account
+
+        models.History.objects.create(
+            ad_group=ad_group,
+            campaign=campaign,
+            account=account,
+            type=constants.HistoryType.AD_GROUP,
+            level=constants.HistoryLevel.AD_GROUP,
+            changes={'name': 'test'},
+            changes_text="Name changed to 'test'",
+            created_by=self.user,
+        )
+
+        models.History.objects.create(
+            campaign=campaign,
+            account=account,
+            type=constants.HistoryType.CAMPAIGN,
+            level=constants.HistoryLevel.CAMPAIGN,
+            changes={'targeting': ['US']},
+            changes_text="Geographic targeting changed to 'US'",
+            created_dt=self.dt,
+            created_by=self.user,
+        )
+        models.History.objects.create(
+            account=account,
+            type=constants.HistoryType.ACCOUNT,
+            level=constants.HistoryLevel.ACCOUNT,
+            changes={'account_manager': 1},
+            changes_text="Account manager changed to 'Janez Novak'",
+            created_dt=self.dt,
+            created_by=self.user,
+        )
+
+    def get_history(self, filters):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse(
+            'history',
+            kwargs={})
+        response = self.client.get(
+            reversed_url,
+            filters,
+            follow=True
+        )
+        return response.json()
+
+    def test_permission(self):
+        response = self.get_history({})
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_view_new_history_backend'])
+        response = self.get_history({})
+        self.assertFalse(response['success'])
+
+        response = self.get_history({'campaign': 1})
+        self.assertTrue(response['success'])
+
+    def test_get_ad_group_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'ad_group': 1})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Name changed to 'test'", history['changes_text'])
+
+    def test_get_campaign_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'campaign': 1, 'level': constants.HistoryLevel.CAMPAIGN})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Geographic targeting changed to 'US'", history['changes_text'])
+
+        response = self.get_history({'campaign': 1})
+        self.assertTrue(response['success'])
+        self.assertEqual(2, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Geographic targeting changed to 'US'", history['changes_text'])
+
+        history = response['data']['history'][1]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Name changed to 'test'", history['changes_text'])
+
+    def test_get_account_history(self):
+        add_permissions(self.user, ['can_view_new_history_backend'])
+
+        history_count = models.History.objects.all().count()
+        self.assertEqual(0, history_count)
+
+        self._add_entries()
+
+        response = self.get_history({'account': 1, 'level': constants.HistoryLevel.ACCOUNT})
+        self.assertTrue(response['success'])
+        self.assertEqual(1, len(response['data']['history']))
+
+        history = response['data']['history'][0]
+        self.assertEqual(self.user.email, history['changed_by'])
+        self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])

@@ -1,7 +1,9 @@
+import re
 import datetime
 import json
 import logging
 import newrelic.agent
+import dateutil.parser
 
 from collections import OrderedDict
 from django.db import transaction
@@ -732,9 +734,15 @@ class AccountConversionPixels(api_common.BaseApiView):
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
+            changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+
             new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            new_settings.changes_text = changes_text
             new_settings.save(request)
+
+            history_helpers.write_account_history(
+                account, changes_text, user=request.user
+            )
 
         email_helper.send_account_pixel_notification(account, request)
 
@@ -781,12 +789,18 @@ class ConversionPixel(api_common.BaseApiView):
                 conversion_pixel.archived = data['archived']
                 conversion_pixel.save()
 
-                new_settings = account.get_current_settings().copy_settings()
-                new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                changes_text = u'{} conversion pixel with unique identifier {}.'.format(
                     'Archived' if data['archived'] else 'Restored',
                     conversion_pixel.slug
                 )
+
+                new_settings = account.get_current_settings().copy_settings()
+                new_settings.changes_text = changes_text
                 new_settings.save(request)
+
+                history_helpers.write_account_history(
+                    account, changes_text, user=request.user
+                )
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
                                                 account=account)
@@ -1369,9 +1383,7 @@ class AccountUsers(api_common.BaseApiView):
             new_settings.save(request)
 
             history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
+                account, changes_text, user=request.user
             )
 
         return self.create_api_response(
@@ -1488,3 +1500,63 @@ class CampaignContentInsights(api_common.BaseApiView):
             'best_performer_rows': best_performer_rows,
             'worst_performer_rows': worst_performer_rows,
         })
+
+
+class History(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_view_new_history_backend'):
+            raise exc.AuthorizationError()
+        # in case somebody wants to fetch entire history disallow it for the
+        # moment
+        entity_filter = self._extract_entity_filter(request)
+        if not entity_filter:
+            raise exc.MissingDataError()
+        order = self._extract_order(request)
+        response = {
+            'history': self.get_history(entity_filter, order=order)
+        }
+        return self.create_api_response(response)
+
+    def _extract_entity_filter(self, request):
+        entity_filter = {}
+        ad_group_raw = request.GET.get('ad_group')
+        if ad_group_raw:
+            entity_filter['ad_group'] = helpers.get_ad_group(
+                request.user, int(ad_group_raw))
+        campaign_raw = request.GET.get('campaign')
+        if campaign_raw:
+            entity_filter['campaign'] = helpers.get_campaign(
+                request.user, int(campaign_raw))
+        account_raw = request.GET.get('account')
+        if account_raw:
+            entity_filter['account'] = helpers.get_account(
+                request.user, int(account_raw))
+        agency_raw = request.GET.get('agency')
+        if agency_raw:
+            entity_filter['agency'] = helpers.get_agency(request.user, int(agency_raw))
+        level_raw = request.GET.get('level')
+        if level_raw and int(level_raw) in constants.HistoryLevel.get_all():
+            entity_filter['level'] = int(level_raw)
+        return entity_filter
+
+    def _extract_order(self, request):
+        order = ['-created_dt']
+        order_raw = request.GET.get('order') or ''
+        if re.match('[-]?(created_dt|created_by)', order_raw):
+            order = [order_raw]
+        return order
+
+    def get_history(self, filters, order=['-created_dt']):
+        history_entries = models.History.objects.filter(
+            **filters
+        ).order_by(*order)
+
+        history = []
+        for history_entry in history_entries:
+            history.append({
+                'datetime': history_entry.created_dt,
+                'changed_by': history_entry.get_changed_by_text(),
+                'changes_text': history_entry.changes_text,
+            })
+        return history

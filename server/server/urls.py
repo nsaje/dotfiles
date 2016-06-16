@@ -224,6 +224,11 @@ urlpatterns += [
         name='all_accounts_overview'
     ),
     url(
+        r'^api/history/',
+        login_required(dash.views.agency.History.as_view()),
+        name='history'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.sync.AdGroupSync.as_view()),
     ),
