@@ -16,6 +16,7 @@ FB_API_VERSION = "v2.6"
 FB_PAGES_URL = "https://graph.facebook.com/%s/%s/pages"
 FB_PAGE_ID_URL = "https://graph.facebook.com/%s/%s?fields=id"
 FB_AD_ACCOUNT_URL = "https://graph.facebook.com/%s/%s/adaccount"
+FB_USER_PERMISSIONS_URL = "https://graph.facebook.com/%s/%s/userpermissions"
 
 TZ_AMERICA_NEW_YORK = 7
 CURRENCY_USD = 'USD'
@@ -31,7 +32,9 @@ class Command(ExceptionCommand):
             page_status = pages.get(page_id)
 
             if page_status and page_status == 'CONFIRMED':
+                _add_system_user_to_page(page_id)
                 ad_account_id = _create_ad_account(pending_account.account.name, page_id)
+                _add_system_user_to_account(ad_account_id)
 
                 pending_account.ad_account_id = ad_account_id
                 pending_account.status = constants.FacebookPageRequestType.CONNECTED
@@ -74,8 +77,10 @@ def _create_ad_account(name, page_id):
               'currency': CURRENCY_USD,
               'timezone_id': TZ_AMERICA_NEW_YORK,
               'end_advertiser': page_id,
-              'media_agency': 'NONE',
+              'media_agency': settings.FB_APP_ID,
               'partner': page_id,
+              # TODO matijav 16.06.2016 disabled until we setup Business Manager Owned Normal Credit Line
+              # 'invoice': True,
               'access_token': settings.FB_ACCESS_TOKEN}
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     response = requests.post(FB_AD_ACCOUNT_URL % (FB_API_VERSION, settings.FB_BUSINESS_ID), json.dumps(params),
@@ -87,3 +92,31 @@ def _create_ad_account(name, page_id):
 
     content = response.json()
     return content['id']
+
+
+def _add_system_user_to_account(account_id):
+    params = {'business': settings.FB_BUSINESS_ID,
+              'user': settings.FB_SYSTEM_USER_ID,
+              'role': 'ADMIN',
+              'access_token': settings.FB_ACCESS_TOKEN}
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    response = requests.post(FB_USER_PERMISSIONS_URL % (FB_API_VERSION, account_id), json.dumps(params),
+                             headers=headers)
+    if response.status_code != httplib.OK:
+        logger.error('Error while adding system user to facebook ad account. Status code: %s, Error %s',
+                     response.status_code, response.content)
+        raise CommandError('Error while adding system user to facebook account.')
+
+
+def _add_system_user_to_page(page_id):
+    params = {'business': settings.FB_BUSINESS_ID,
+              'user': settings.FB_SYSTEM_USER_ID,
+              'role': 'ADVERTISER',
+              'access_token': settings.FB_ACCESS_TOKEN}
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    response = requests.post(FB_USER_PERMISSIONS_URL % (FB_API_VERSION, page_id), json.dumps(params),
+                             headers=headers)
+    if response.status_code != httplib.OK:
+        logger.error('Error while adding system user to facebook page. Status code: %s, Error %s',
+                     response.status_code, response.content)
+        raise CommandError('Error while adding system user to facebook page.')
