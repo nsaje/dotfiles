@@ -20,12 +20,10 @@ from django.forms.models import model_to_dict
 from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
-from django.db.models.signals import post_init
 
 import utils.string_helper
 import utils.demo_anonymizer
 
-import automation.settings
 from dash import constants
 from dash import region_targeting_helper
 from dash import views
@@ -253,6 +251,24 @@ class HistoryMixin(object):
         if not changes:
             return 'Created settings'
         return self.get_history_changes_text(changes, separator=separator)
+
+    def construct_changes(self, created_text, created_text_id, changes):
+        '''
+        Created text of form - (created_text) created_text_id (changes)
+        Values in braces are situational.
+        '''
+        parts = []
+        if self.post_init_created:
+            parts.append(created_text)
+            changes = model_to_dict(self)
+
+        if created_text_id:
+            parts.append(created_text_id)
+        text = self.get_history_changes_text(changes)
+        if text:
+            parts.append(text)
+        changes_text = ' '.join(parts)
+        return changes, changes_text
 
 
 class HistoryModel(models.Model):
@@ -2209,7 +2225,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             'daily_budget_cc': 'Daily Budget',
             'landing_mode': 'Landing Mode',
         }
-        return NAMES[prop_name]
+        return NAMES.get(prop_name)
 
     @classmethod
     def get_human_value(cls, prop_name, value):
@@ -2236,13 +2252,19 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
     def add_to_history(self):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
+
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_created:
-            return
-        changes_text = self.get_changes_text_from_dict(changes)
+            return None, ''
+
+        changes, changes_text = self.construct_changes(
+            'Created settings.',
+            'Source: {}.'.format(self.ad_group_source.source.name),
+            changes
+        )
         create_ad_group_history(
             current_settings.ad_group,
             history_type,
@@ -2838,40 +2860,30 @@ class CreditLineItem(FootprintModel, HistoryMixin):
 
     def add_to_history(self, user=None):
         history_type = constants.HistoryType.CREDIT
+
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_created:
-            return
-        parts = []
-        if self.post_init_created:
-            parts.append('Created credit.')
-            changes = model_to_dict(self)
-
-        parts.append('Credit: #{}.'.format(self.id))
-
-        text = self.get_history_changes_text(changes)
-        if text:
-            parts.append(text)
-        changes_text = ' '.join(parts)
-
+            return None, ''
+        changes, changes_text = self.construct_changes(
+            'Created credit.',
+            'Credit: #{}.'.format(self.id) if self.id else None,
+            changes
+        )
         if self.account is not None:
-            create_account_history(
-                self.account,
-                history_type,
-                changes,
-                changes_text,
-                user=user
-            )
+            create_account_history(self.account,
+                                   history_type,
+                                   changes,
+                                   changes_text,
+                                   user=user)
         elif self.agency is not None:
-            create_agency_history(
-                self.agency,
-                history_type,
-                changes,
-                changes_text,
-                user=user
-            )
+            create_agency_history(self.agency,
+                                  history_type,
+                                  changes,
+                                  changes_text,
+                                  user=user)
 
     def __unicode__(self):
         parent = self.agency or self.account
@@ -3086,18 +3098,12 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         )
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_created:
-            return
-        parts = []
-        if self.post_init_created:
-            parts.append('Created budget.')
-            changes = model_to_dict(self)
-
-        parts.append('Budget: #{}.'.format(self.id))
-
-        text = self.get_history_changes_text(changes)
-        if text:
-            parts.append(text)
-        changes_text = ' '.join(parts)
+            return None, ''
+        changes, changes_text = self.construct_changes(
+            'Created budget.',
+            'Budget: #{}.'.format(self.id) if self.id else None,
+            changes
+        )
         create_campaign_history(
             self.campaign,
             constants.HistoryType.BUDGET,
