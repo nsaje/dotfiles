@@ -3,8 +3,8 @@ import decimal
 
 from django.db import connection, transaction, DatabaseError
 from django.core.exceptions import ValidationError
+from django.core.management.base import BaseCommand
 
-import utils.command_helpers
 import utils.converters
 import dash.models
 
@@ -25,6 +25,10 @@ UPDATABLE_FIELDS = {
 }
 
 INVALIDATE_DAILY_STATEMENTS_FIELDS = ('license_fee', )
+
+
+class CommandError(Exception):
+    pass
 
 
 @transaction.atomic
@@ -84,7 +88,7 @@ def _updates_to_sql(updates):
     return sql, args
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(BaseCommand):
     help = """Manage credits and budgets
     Usage: ./manage.py bcm update|delete budgets|credits ids [options]
 
@@ -148,9 +152,16 @@ class Command(utils.command_helpers.ExceptionCommand):
         model = options['model'][0]
         ids = options['ids']
 
+        try:
+            self._handle(action, model, ids, options)
+        except CommandError as err:
+            self.stderr.write('{}\n'.format(err))
+            sys.exit(1)
+
+    def _handle(self, action, model, ids, options):
         object_list = self._get_objects(model, ids, credit_ids=options.get('credit'))
         if not object_list:
-            self._error('No matching {}'.format(model))
+            raise CommandError('No matching {}'.format(model))
 
         self._print_object_list(action, model, object_list)
 
@@ -162,15 +173,15 @@ class Command(utils.command_helpers.ExceptionCommand):
             with transaction.atomic():
                 self._handle_action(action, model, object_list, options)
         except ValidationError:
-            self._error('Validation failed.')
+            raise CommandError('Validation failed.')
         except DatabaseError:
-            self._error('Wrong fields.')
+            raise CommandError('Wrong fields.')
 
     def _handle_action(self, action, model, object_list, options):
         if action == 'update':
             updates = self._get_updates(options)
             if not updates:
-                self._error('Nothing to change')
+                raise CommandError('Nothing to change')
             if model == MODEL_CREDITS:
                 update_credits(object_list, updates)
             else:
@@ -211,10 +222,6 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def _print(self, msg):
         self.stdout.write('{}\n'.format(msg))
-
-    def _error(self, msg):
-        self.stderr.write('{}\n'.format(msg))
-        sys.exit(1)
 
     def _print_object_list(self, action, model, object_list):
         self._print('You will {} the following {}:'.format(action, model))
