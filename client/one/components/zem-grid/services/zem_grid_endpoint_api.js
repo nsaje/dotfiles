@@ -1,7 +1,7 @@
 /* globals oneApp, constants */
 'use strict';
 
-oneApp.factory('zemGridEndpointApi', ['api', function (api) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function (api, zemGridEndpointColumns) { // eslint-disable-line max-len
     //
     // Service responsible for defining API methods used by Grid Endpoint
     // based on level, breakdown and field -> uniquely defines table and column/field
@@ -11,8 +11,7 @@ oneApp.factory('zemGridEndpointApi', ['api', function (api) { // eslint-disable-
     //      - breakdownEntityId --> ID of one instance in breakdown list
     //      - value (optional) --> new value to be propagated (for save)
     //
-    // Atm. only save() is supported, however this service can be extended to provide also other CRUD methods
-    //
+    var COLUMNS = zemGridEndpointColumns.COLUMNS;
 
     function CampaignsAdGroupState () {
         this.save = function (levelEntityId, breakdownEntityId, value) {
@@ -20,7 +19,7 @@ oneApp.factory('zemGridEndpointApi', ['api', function (api) { // eslint-disable-
         };
     }
 
-    AdGroupsContentAdState.SUPPORTED_FIELDS = ['bid_cpc', 'daily_budget'];
+    AdGroupsContentAdState.SUPPORTED_FIELDS = [COLUMNS.bidCpcSetting.field, COLUMNS.dailyBudgetSetting.field];
     function AdGroupsContentAdState () {
         this.save = function (levelEntityId, breakdownEntityId, value) {
             return api.adGroupSettingsState.post(breakdownEntityId, value);
@@ -36,17 +35,21 @@ oneApp.factory('zemGridEndpointApi', ['api', function (api) { // eslint-disable-
     }
 
     function getApi (level, breakdown, field) {
-        if (level === constants.level.AD_GROUPS && breakdown === 'source') {
+        if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.MEDIA_SOURCE) {
             if (AdGroupsSourceSettings.SUPPORTED_FIELDS.indexOf(field) >= 0) {
                 return new AdGroupsSourceSettings(field);
             }
         }
 
-        if (level === constants.level.CAMPAIGNS && breakdown === 'ad_group' && field === 'state') {
+        if (level === constants.level.CAMPAIGNS &&
+            breakdown === constants.breakdown.AD_GROUP &&
+            field === COLUMNS.stateAdGroup.field) {
             return new CampaignsAdGroupState();
         }
 
-        if (level === constants.level.AD_GROUPS && breakdown === 'content_ad' && field === 'state') {
+        if (level === constants.level.AD_GROUPS &&
+            breakdown === constants.breakdown.CONTENT_AD &&
+            field === COLUMNS.stateAdGroup.field) {
             return new CampaignsAdGroupState();
         }
     }

@@ -1306,6 +1306,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
 
 
     return {
+        COLUMNS: COLUMNS,
         createColumns: createColumns,
         createCategories: createCategories,
         updateGoalColumns: updateGoalColumns,
