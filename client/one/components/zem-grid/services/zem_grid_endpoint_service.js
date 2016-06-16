@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', function ($rootScope, $controller, $http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
         this.metaData = metaData;
@@ -34,10 +34,14 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         };
 
         this.saveData = function (value, stats, column) { // eslint-disable-line no-unused-vars
-            // TODO: actually save value - depends on Columns definitions refactorings...
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
+            var level = metaData.level;
+            var breakdown = metaData.breakdown;
+            var field = column.field;
+            var api = zemGridEndpointApi.getApi(level, breakdown, field);
+
+            var levelEntityId = metaData.id;
+            var breakdownEntityId = stats.id;
+            return api.save(levelEntityId, breakdownEntityId, value);
         };
 
         function createUrl (baseUrl, config) {
@@ -102,6 +106,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         return {
             id: id,
             level: level,
+            breakdown: breakdown,
             columns: columns,
             categories: categories,
             breakdownGroups: breakdownGroups,

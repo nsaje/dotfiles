@@ -534,6 +534,14 @@ var constants = {
         ACCOUNTS: 'accounts',
         ALL_ACCOUNTS: 'all_accounts',
     },
+    breakdown: {
+        ACCOUNT: 'account',
+        CAMPAIGN: 'campaign',
+        AD_GROUP: 'ad_group',
+        CONTENT_AD: 'content_ad',
+        MEDIA_SOURCE: 'source',
+        PUBLISHER: 'publisher',
+    },
     contentAdApprovalStatus: {
         PENDING: 1,
         APPROVED: 2,
