@@ -86,7 +86,7 @@ def augment_content_ads(stats_rows):
         rows_by_id[row['content_ad_id']].append(row)
 
     content_ads = models.ContentAd.objects.filter(pk__in=rows_by_id.keys())
-    content_ad_by_id = {x.pk: x for x in content_ad_by_id}
+    content_ad_by_id = {x.pk: x for x in content_ads}
 
     for content_ad_id, rows in rows_by_id.items():
         content_ad = content_ad_by_id.get(content_ad_id)
