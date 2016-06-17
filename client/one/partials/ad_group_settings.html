@@ -163,8 +163,6 @@
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_ga_performance_tracking')" popover-placement="right"></zem-internal-feature>
                     <input type="checkbox" id="enable-ga-tracking" ng-model="settings.enableGaTracking"> Enable Google Analytics performance tracking
                     <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
-                    <br />
-                    <a href="{{ config.static_url }}/one/assets/SettingUpAutomatedGoogleAnalyticsReports.pdf" target="_self">Download a guide to setting up Automated Google Analytics Report</a>
                 </label>
             </div>
         </div>
@@ -188,6 +186,18 @@
                         <div>{{type.name}}</div>
                     </ui-select-choices>
                 </ui-select>
+            </div>
+            <div class="checkbox col-xs-12" ng-if="hasPermission('zemauth.can_toggle_ga_performance_tracking')">
+                <a ng-if="settings.gaTrackingType === constants.gaTrackingType.EMAIL"
+                   href="{{ config.static_url }}/one/assets/SettingUpAutomatedGoogleAnalyticsReports.pdf" 
+                   target="_blank">
+                   Download a guide to setting up Automated Google Analytics Report via email
+                </a>
+                <a ng-if="settings.gaTrackingType === constants.gaTrackingType.API"
+                   href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1" 
+                   target="_blank">
+                   Download a guide to setting up Automated Google Analytics Report via API
+                </a>
             </div>
         </div>
 
