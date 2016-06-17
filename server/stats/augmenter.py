@@ -140,3 +140,9 @@ def augment_row_time(row):
     if constants.TimeDimension.MONTH in row:
         date = row[constants.TimeDimension.MONTH]
         row[constants.TimeDimension.MONTH] = "Month {}/{}".format(date.month, date.year)
+
+
+def filter_columns_by_permission(user, rows, breakdown, target_dimension):
+    # TODO remove columns that user doesn't have a permission for
+    # can use reports.api_helpers
+    pass
