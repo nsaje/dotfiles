@@ -293,7 +293,7 @@ class AdGroupSettingsTest(TestCase):
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_ad_group')
     def test_put_add_ga_analytics(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
-             mock_order_ad_group_settings_update):
+                                  mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -959,7 +959,8 @@ class AdGroupHistoryTest(TestCase):
                     u'show_old_settings': False
                 }, {
                     u'changed_by': u'non_superuser@zemanta.com',
-                    u'changes_text': u'Daily budget set to "$120.00", GA web property ID set to "UA-123456789-1", Max CPC bid set to "$2.00"',
+                    u'changes_text': u'Daily budget set to "$120.00", GA web property ID set to "UA-123456789-1", '
+                                     u'Max CPC bid set to "$2.00"',
                     u'datetime': u'2015-06-05T09:22:24',
                     u'settings': [
                         {u'name': u'State', u'old_value': u'Paused', u'value': u'Paused'},
