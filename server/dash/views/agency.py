@@ -198,6 +198,8 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.ad_group_name = resource['name']
         settings.enable_ga_tracking = resource['enable_ga_tracking']
         settings.tracking_code = resource['tracking_code']
+        settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+        settings.adobe_tracking_param = resource['adobe_tracking_param']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
@@ -207,10 +209,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
             if settings.ga_tracking_type == constants.GATrackingType.API:
                 settings.ga_property_id = resource['ga_property_id']
-
-        if user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
-            settings.enable_adobe_tracking = resource['enable_adobe_tracking']
-            settings.adobe_tracking_param = resource['adobe_tracking_param']
 
         if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
@@ -1249,10 +1247,6 @@ class AdGroupHistory(api_common.BaseApiView):
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
-            if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
-                    not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
-                continue
-
             settings_dict[field] = {
                 'name': models.AdGroupSettings.get_human_prop_name(field),
                 'value': models.AdGroupSettings.get_human_value(field, getattr(
