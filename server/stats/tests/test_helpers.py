@@ -89,7 +89,7 @@ class HelpersTest(TestCase):
                 ['campaign', 'publisher', 'gender'],
                 {'campaign_id': 13, 'publisher': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
             ),
-            "13-gimme.beer.com-M"
+            "13||gimme.beer.com||M"
         )
 
         self.assertEqual(
