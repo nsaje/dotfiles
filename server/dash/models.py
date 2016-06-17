@@ -3626,6 +3626,10 @@ class History(models.Model):
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting history object not allowed.')
 
+    class Meta:
+        verbose_name = 'History'
+        verbose_name_plural = 'History'
+
 
 def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
     if not changes and not changes_text:
