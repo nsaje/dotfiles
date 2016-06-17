@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($timeout, zemGridConstants) {
+oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) {
 
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -64,15 +64,18 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
             var data = grid.footer.row.data.stats[column.field];
-            if (!data) return;
-            var valueWidth = getTextWidth(data.value, font);
-            width = Math.max(width, valueWidth);
+            if (data) {
+                var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
+                var valueWidth = getTextWidth(parsedValue, font);
+                width = Math.max(width, valueWidth);
+            }
         });
 
         if (grid.footer.row) {
             var data = grid.footer.row.data.stats[column.field];
             if (data) {
-                var valueWidth = getTextWidth(data.value, font);
+                var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
+                var valueWidth = getTextWidth(parsedValue, font);
                 width = Math.max(width, valueWidth);
             }
         }
