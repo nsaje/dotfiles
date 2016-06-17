@@ -880,7 +880,7 @@ class HistoryTest(TestCase):
             }, adg_hist.changes
         )
         self.assertEqual(
-            'Max CPC bid set to "$5,100.00"',
+            'Max CPC bid set from "$4,999.00" to "$5,100.00"',
             adg_hist.changes_text
         )
 
@@ -916,7 +916,7 @@ class HistoryTest(TestCase):
             adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
-            Source: AdsNative. Daily Budget set to "$50,000.00"
+            Source: AdsNative. Daily Budget set from "$10,000.00" to "$50,000.00"
             """).replace('\n', ''), adgs_hist.changes_text)
 
     def test_create_campaign_history(self):
@@ -948,7 +948,7 @@ class HistoryTest(TestCase):
             },
             camp_hist.changes
         )
-        self.assertEqual('Name set to "Awesomer"', camp_hist.changes_text)
+        self.assertEqual('Name set from "Awesome" to "Awesomer"', camp_hist.changes_text)
 
         hist = models.create_campaign_history(
             campaign,

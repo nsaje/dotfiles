@@ -248,9 +248,18 @@ class HistoryMixin(object):
             if not prop:
                 continue
             val = self.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
+
+            previous_value = None
+            previous_value_raw = self.post_init_state.get(key) if self.post_init_state else None
+            if previous_value_raw:
+                previous_value = self.get_human_value(key, previous_value_raw)
+
+            if previous_value and previous_value != val:
+                change_strings.append(u'{} set from "{}" to "{}"'.format(
+                    prop, previous_value, val
+                ))
+            else:
+                change_strings.append(u'{} set to "{}"'.format(prop, val))
         return separator.join(change_strings)
 
     def get_changes_text_from_dict(self, changes, separator=', '):
