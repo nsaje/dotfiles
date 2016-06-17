@@ -55,7 +55,7 @@
         padding: 0 8px;
         overflow: hidden;
 
-        min-width: 50px;
+        min-width: 40px;
         max-width: 300px;
         font-size: 13px;
         white-space: nowrap;
@@ -65,8 +65,13 @@
       }
 
       .zem-grid-cell-checkbox {
-        min-width: 20px;
-        max-width: 20px;
+        max-width: 40px;
+        padding-left: 6px; // position in the middle FIXME: cleaner solution
+      }
+
+      .zem-grid-cell-collapse {
+        max-width: 40px;
+        padding-left: 2px; // position in the middle FIXME: cleaner solution
       }
 
       &.level-1 {

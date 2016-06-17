@@ -58,6 +58,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         if (!column.data) return -1;
 
         var width = getTextWidth(column.data.name, font);
+        width = Math.max(width, 20);    // If only icon without the text
         if (column.data.help) width += 20; // TODO: find better solution for icon widths
 
         grid.body.rows.forEach(function (row) {
@@ -175,9 +176,25 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
         return classes;
     }
 
+    function getHeaderColumnClass (grid, column) {
+        var classes = [];
+        classes.push('zem-grid-cell');
+
+        if (column.type === 'checkbox') {
+            classes.push('zem-grid-cell-checkbox');
+        }
+
+        if (column.type === 'collapse') {
+            classes.push('zem-grid-cell-collapse');
+        }
+
+        return classes;
+    }
+
     return {
         requestAnimationFrame: requestAnimationFrame,
         resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
+        getHeaderColumnClass: getHeaderColumnClass,
     };
 }]);

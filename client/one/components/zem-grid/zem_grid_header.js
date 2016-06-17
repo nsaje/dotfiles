@@ -44,6 +44,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
         controller: ['zemGridStorageService', function (zemGridStorageService) {
             var vm = this;
             vm.setOrder = setOrder;
+            vm.getHeaderColumnClass = getHeaderColumnClass;
 
             initialize();
 
@@ -69,6 +70,9 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 });
             }
 
+            function getHeaderColumnClass (column) {
+                return zemGridUIService.getHeaderColumnClass(vm.grid, column);
+            }
 
             function setOrder (column) {
                 var order = vm.grid.meta.service.getOrder();
