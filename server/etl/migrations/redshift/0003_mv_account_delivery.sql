@@ -26,8 +26,6 @@ CREATE TABLE mv_account_delivery (
 
        effective_cost_nano bigint encode lzo,
        effective_data_cost_nano bigint encode lzo,
-       license_fee_nano bigint encode lzo,
+       license_fee_nano bigint encode lzo
 
-       conversions varchar(2048) encode lzo,
-       tp_conversions varchar(4092) encode lzo
-) distkey(date) sortkey(date, source_id, account_id);
+) sortkey(date, source_id, account_id);
