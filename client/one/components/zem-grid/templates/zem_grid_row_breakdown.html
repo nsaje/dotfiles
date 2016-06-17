@@ -6,7 +6,7 @@
         <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count>0">
              - {{ctrl.row.data.pagination.limit}} of {{ctrl.row.data.pagination.count}} -
         </span>
-        <span ng-if="!ctrl.row.data.meta.loading && !ctrl.row.data.pagination.count">
+        <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count<=0">
              - {{ctrl.row.data.pagination.limit}} -
         </span>
     </div>

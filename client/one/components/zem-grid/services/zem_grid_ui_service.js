@@ -48,7 +48,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         var scrollerWidth = 20; // TODO: find exact value (based on browser version)
         var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
         keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
-        gridWidth = Math.max (headerWidth, gridWidth);
+        gridWidth = Math.max(headerWidth, gridWidth);
 
         grid.ui.columnsWidths = columnWidths;
         grid.ui.width = gridWidth;
@@ -63,10 +63,13 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
-            var data = grid.footer.row.data.stats[column.field];
+            var data = row.data.stats[column.field];
             if (data) {
                 var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
                 var valueWidth = getTextWidth(parsedValue, font);
+                if (column.type === 'breakdown') {
+                    valueWidth += (row.level-1) * 20;
+                }
                 width = Math.max(width, valueWidth);
             }
         });

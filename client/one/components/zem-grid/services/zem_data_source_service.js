@@ -78,11 +78,6 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 metaData = _metaData;
                 var baseLevelBreakdown = metaData.breakdownGroups[0];
                 selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
-                selectedBreakdown = [
-                    metaData.breakdownGroups[0].breakdowns[0],
-                    metaData.breakdownGroups[1].breakdowns[0],
-                    metaData.breakdownGroups[2].breakdowns[0],
-                ];
                 deferred.resolve(metaData);
             });
             return deferred.promise;
