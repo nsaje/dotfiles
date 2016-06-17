@@ -76,24 +76,36 @@
 
       &.level-1 {
         background-color: @zem-grid-level-1-bg-color;
+        &:hover {
+          background-color: darken(@zem-grid-level-1-bg-color, 3%);
+        }
       }
 
       &.level-2 {
         background-color: @zem-grid-level-2-bg-color;
+        &:hover {
+          background-color: darken(@zem-grid-level-2-bg-color, 3%);
+        }
       }
 
       &.level-3 {
         background-color: @zem-grid-level-3-bg-color;
+        &:hover {
+          background-color: darken(@zem-grid-level-3-bg-color, 3%);
+        }
       }
 
       &.level-4 {
         background-color: @zem-grid-level-4-bg-color;
+        &:hover {
+          background-color: darken(@zem-grid-level-4-bg-color, 3%);
+        }
       }
 
       &.level-last {
-        //.zem-grid-cell:not(:first-child):not(.pagination-cell) {
-        .zem-grid-cell{
-          background-color: @zem-grid-bg-color;
+        background-color: @zem-grid-bg-color;
+        &:hover {
+          background-color: darken(@zem-grid-bg-color, 3%);
         }
       }
     }
