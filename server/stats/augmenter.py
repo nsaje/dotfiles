@@ -1,6 +1,8 @@
 import collections
+import datetime
 
 from dash import models
+from dash import constants as dash_constants
 
 from stats import constants
 from stats import helpers
@@ -31,6 +33,9 @@ def augment(breakdown, stats_rows, target_dimension):
         row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
         row['parent_breakdown_id'] = helpers.create_breakdown_id(
             constants.get_parent_breakdown(breakdown), row) if breakdown else None
+
+        augment_row_delivery(row)
+        augment_row_time(row)
 
 
 def augment_accounts(stats_rows):
@@ -81,7 +86,7 @@ def augment_content_ads(stats_rows):
         rows_by_id[row['content_ad_id']].append(row)
 
     content_ads = models.ContentAd.objects.filter(pk__in=rows_by_id.keys())
-    content_ad_by_id = {x.pk: x for x in content_ad_by_id}
+    content_ad_by_id = {x.pk: x for x in content_ads}
 
     for content_ad_id, rows in rows_by_id.items():
         content_ad = content_ad_by_id.get(content_ad_id)
@@ -101,3 +106,43 @@ def augment_source(stats_rows):
         source = source_by_id.get(source_id)
         for row in rows:
             row['source_name'] = source.name if source else UNKNOWN
+
+
+def augment_row_delivery(row):
+
+    mapping = {
+        constants.DeliveryDimension.DEVICE: dash_constants.DeviceType,
+        constants.DeliveryDimension.AGE: dash_constants.AgeGroup,
+        constants.DeliveryDimension.GENDER: dash_constants.Gender,
+        constants.DeliveryDimension.AGE_GENDER: dash_constants.AgeGenderGroup,
+    }
+
+    for dimension, const_class in mapping.iteritems():
+        if dimension in row:
+            row[dimension] = const_class.get_text(row[dimension])
+
+    for dimension in constants.DeliveryDimension._ALL:
+        if dimension in row and not row[dimension]:
+            row[dimension] = UNKNOWN
+
+
+def augment_row_time(row):
+
+    if constants.TimeDimension.DAY in row:
+        date = row[constants.TimeDimension.DAY]
+        row[constants.TimeDimension.DAY] = date.isoformat()
+
+    if constants.TimeDimension.WEEK in row:
+        date = row[constants.TimeDimension.WEEK]
+        row[constants.TimeDimension.WEEK] = "Week {} - {}".format(date.isoformat(),
+                                                                  (date + datetime.timedelta(days=6)).isoformat())
+
+    if constants.TimeDimension.MONTH in row:
+        date = row[constants.TimeDimension.MONTH]
+        row[constants.TimeDimension.MONTH] = "Month {}/{}".format(date.month, date.year)
+
+
+def filter_columns_by_permission(user, rows, breakdown, target_dimension):
+    # TODO remove columns that user doesn't have a permission for
+    # can use reports.api_helpers
+    pass

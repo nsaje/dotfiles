@@ -23,9 +23,9 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     Materialized sub-views are a part of it.
     """
 
-    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+    date = backtosql.Column('date', BREAKDOWN)
 
-    day = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+    day = backtosql.Column('date', BREAKDOWN)
     week = backtosql.TemplateColumn('part_trunc_week.sql', {'column_name': 'date'}, BREAKDOWN)
     month = backtosql.TemplateColumn('part_trunc_month.sql', {'column_name': 'date'}, BREAKDOWN)
 
