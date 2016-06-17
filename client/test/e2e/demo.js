@@ -219,83 +219,83 @@ describe('Media sources and ads', function () {
         checkSourcesForAds(3, 4);
     });
 
-    it('uploading ads', function () {
-        expect(demoLoaded).toBe(true);
-        createAdGroup();
-        uploadAds();
-        checkSourcesForAds(5, 0);
-        addThreeSources();
-        checkSourcesForAds(8, 0);
+    // it('uploading ads', function () {
+    //     expect(demoLoaded).toBe(true);
+    //     createAdGroup();
+    //     uploadAds();
+    //     checkSourcesForAds(5, 0);
+    //     addThreeSources();
+    //     checkSourcesForAds(8, 0);
 
-        selectAdGroupWithContentAds(2);
-        uploadAds();
-        checkSourcesForAds(0, 4);
-    });
+    //     selectAdGroupWithContentAds(2);
+    //     uploadAds();
+    //     checkSourcesForAds(0, 4);
+    // });
 
 
-    it('new ad group sources management', function () {
-        var page = '.page-ad-group-sources';
-        expect(demoLoaded).toBe(true);
-        createAdGroup();
-        tabs.adGroup.sources.click();
-        expect(
-            element.all(by.css(page + ' table tbody tr')).count()
-        ).toBeGreaterThan(5);
+    // it('new ad group sources management', function () {
+    //     var page = '.page-ad-group-sources';
+    //     expect(demoLoaded).toBe(true);
+    //     createAdGroup();
+    //     tabs.adGroup.sources.click();
+    //     expect(
+    //         element.all(by.css(page + ' table tbody tr')).count()
+    //     ).toBeGreaterThan(5);
 
-        expect(
-            selectCell(page, 2, 3).getText()
-        ).toBe('Outbrain');
+    //     expect(
+    //         selectCell(page, 2, 3).getText()
+    //     ).toBe('Outbrain');
 
-        expect(
-            selectCell(page, 2, 4).getText()
-        ).toBe('Active');
+    //     expect(
+    //         selectCell(page, 2, 4).getText()
+    //     ).toBe('Active');
 
-        expect(
-            selectCell(page, 2, 5).getText()
-        ).toBe('$0.18');
+    //     expect(
+    //         selectCell(page, 2, 5).getText()
+    //     ).toBe('$0.18');
 
-        expect(
-            selectCell(page, 2, 6).getText()
-        ).toBe('$2,500');
+    //     expect(
+    //         selectCell(page, 2, 6).getText()
+    //     ).toBe('$2,500');
 
-        uploadAds();
-        checkSourcesForAds(5, 0);
-        tabs.adGroup.sources.click();
+    //     uploadAds();
+    //     checkSourcesForAds(5, 0);
+    //     tabs.adGroup.sources.click();
 
-        element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector button')).click();
-        element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector ul li:nth-child(3) a')).click();
+    //     element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector button')).click();
+    //     element(by.css('.table tbody tr:nth-child(2) td .zem-state-selector ul li:nth-child(3) a')).click();
 
-        expect(
-            selectCell(page, 2, 4).getText()
-        ).toBe('Paused');
+    //     expect(
+    //         selectCell(page, 2, 4).getText()
+    //     ).toBe('Paused');
 
-        checkSourcesForAds(4, 1);
-        tabs.adGroup.sources.click();
+    //     checkSourcesForAds(4, 1);
+    //     tabs.adGroup.sources.click();
 
-        selectCell(page, 3, 5, '.edit-field').click();
-        selectCell(page, 3, 5, 'input').clear().sendKeys('0.5').then(function () {
-            selectCell(page, 3, 5, '.btn-primary').click();
-            expect(
-                selectCell(page, 3, 5).getText()
-            ).toBe('$0.50');
-        });
+    //     selectCell(page, 3, 5, '.edit-field').click();
+    //     selectCell(page, 3, 5, 'input').clear().sendKeys('0.5').then(function () {
+    //         selectCell(page, 3, 5, '.btn-primary').click();
+    //         expect(
+    //             selectCell(page, 3, 5).getText()
+    //         ).toBe('$0.50');
+    //     });
 
-        selectCell(page, 3, 6, '.edit-field').click();
-        selectCell(page, 3, 6, 'input').clear().sendKeys('5555').then(function () {
-            selectCell(page, 3, 6, '.btn-primary').click();
-            expect(
-                selectCell(page, 3, 6).getText()
-            ).toBe('$5,555');
-        });
+    //     selectCell(page, 3, 6, '.edit-field').click();
+    //     selectCell(page, 3, 6, 'input').clear().sendKeys('5555').then(function () {
+    //         selectCell(page, 3, 6, '.btn-primary').click();
+    //         expect(
+    //             selectCell(page, 3, 6).getText()
+    //         ).toBe('$5,555');
+    //     });
 
-        selectCell(page, 3, 6, '.edit-field').click();
-        selectCell(page, 3, 6, 'input').clear().sendKeys('6666').then(function () {
-            selectCell(page, 3, 6, '.btn-default').click();
-            expect(
-                selectCell(page, 3, 6).getText()
-            ).toBe('$5,555');
-        });
-    });
+    //     selectCell(page, 3, 6, '.edit-field').click();
+    //     selectCell(page, 3, 6, 'input').clear().sendKeys('6666').then(function () {
+    //         selectCell(page, 3, 6, '.btn-default').click();
+    //         expect(
+    //             selectCell(page, 3, 6).getText()
+    //         ).toBe('$5,555');
+    //     });
+    // });
 
     it ('existing ad group sources management', function () {
         expect(demoLoaded).toBe(true);

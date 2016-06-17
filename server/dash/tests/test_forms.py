@@ -1079,8 +1079,8 @@ class ContentAdFormTestCase(TestCase):
             'tracker_urls': 'https://zemanta.com/px1 https://zemanta.com/px2',
             'image_id': 'id123',
             'image_hash': 'imagehash',
-            'image_width': 300,
-            'image_height': 300,
+            'image_width': 500,
+            'image_height': 500,
             'image_status': constants.AsyncUploadJobStatus.OK,
             'url_status': constants.AsyncUploadJobStatus.OK,
         }
@@ -1140,7 +1140,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_width': ['Image too small (min width 2 px)']
+            'image_width': ['Image too small (min width 500 px)']
         }, f.errors)
 
     def test_image_max_width(self):
@@ -1149,7 +1149,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_width': ['Image too big (max width 4000 px)']
+            'image_width': ['Image too big (max width 5000 px)']
         }, f.errors)
 
     def test_image_min_height(self):
@@ -1158,7 +1158,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_height': ['Image too small (min height 2 px)']
+            'image_height': ['Image too small (min height 500 px)']
         }, f.errors)
 
     def test_image_max_height(self):
@@ -1167,7 +1167,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_height': ['Image too big (max height 3000 px)']
+            'image_height': ['Image too big (max height 5000 px)']
         }, f.errors)
 
     def test_invalid_url_status(self):
