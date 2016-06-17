@@ -50,7 +50,7 @@ def extract_breakdown_id(breakdown, breakdown_id_str):
     """
 
     d = {}
-    ids = breakdown_id_str.split("-")
+    ids = breakdown_id_str.split(u"||")
     for i, dimension in enumerate(breakdown[:len(ids)]):
         str_id = ids[i]
         str_id = int(str_id) if dimension in constants.IntegerDimensions else str_id
@@ -70,7 +70,7 @@ def create_breakdown_id(breakdown, row):
 
     Returns: '1-2-500'
     """
-    return "-".join(str(row[constants.get_dimension_identifier(dimension)]) for dimension in breakdown)
+    return u"||".join(str(row[constants.get_dimension_identifier(dimension)]) for dimension in breakdown)
 
 
 def extract_order_fields(order, breakdown):
