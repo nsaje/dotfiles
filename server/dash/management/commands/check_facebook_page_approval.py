@@ -31,8 +31,8 @@ class Command(ExceptionCommand):
             page_status = pages.get(pending_account.page_id)
 
             if page_status and page_status == 'CONFIRMED':
-                _add_system_user_permissions(page_id, 'ADVERTISER')
-                ad_account_id = _create_ad_account(pending_account.account.name, page_id)
+                _add_system_user_permissions(pending_account.page_id, 'ADVERTISER')
+                ad_account_id = _create_ad_account(pending_account.account.name, pending_account.page_id)
                 _add_system_user_permissions(ad_account_id, 'ADMIN')
 
                 pending_account.ad_account_id = ad_account_id
