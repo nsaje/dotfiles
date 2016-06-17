@@ -1,6 +1,7 @@
 import collections
 
 from dash import models
+from dash import constants as dash_constants
 
 from stats import constants
 from stats import helpers
@@ -31,6 +32,8 @@ def augment(breakdown, stats_rows, target_dimension):
         row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
         row['parent_breakdown_id'] = helpers.create_breakdown_id(
             constants.get_parent_breakdown(breakdown), row) if breakdown else None
+
+        augment_row_constants_text(row)
 
 
 def augment_accounts(stats_rows):
@@ -101,3 +104,17 @@ def augment_source(stats_rows):
         source = source_by_id.get(source_id)
         for row in rows:
             row['source_name'] = source.name if source else UNKNOWN
+
+
+def augment_row_constants_text(row):
+
+    mapping = {
+        constants.DeliveryDimension.DEVICE: dash_constants.DeviceType,
+        constants.DeliveryDimension.AGE: dash_constants.AgeGroup,
+        constants.DeliveryDimension.GENDER: dash_constants.Gender,
+        constants.DeliveryDimension.AGE_GENDER: dash_constants.AgeGenderGroup,
+    }
+
+    for dimension, const_class in mapping.iteritems():
+        if dimension in row:
+            row[dimension] = const_class.get_text(row[dimension])
