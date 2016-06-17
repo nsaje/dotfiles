@@ -1156,7 +1156,6 @@ class ContentAdCandidateForm(forms.Form):
         if not image_crop:
             return constants.ImageCrop.CENTER
 
-        print constants.ImageCrop.get_all()
         if image_crop.lower() in constants.ImageCrop.get_all():
             return image_crop.lower()
 
