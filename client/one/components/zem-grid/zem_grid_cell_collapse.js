@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridCell', [function () {
+oneApp.directive('zemGridCellCollapse', [function () {
 
     return {
         restrict: 'E',
@@ -9,13 +9,11 @@ oneApp.directive('zemGridCell', [function () {
         scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            position: '=',
             col: '=',
-            value: '=',
             row: '=',
             grid: '=',
         },
-        templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
+        templateUrl: '/components/zem-grid/templates/zem_grid_cell_collapse.html',
         controller: [function () {
             this.toggleCollapse = function () {
                 this.grid.meta.api.setCollapsedRows(this.row, !this.row.collapsed);

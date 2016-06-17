@@ -15,8 +15,8 @@ oneApp.directive('zemGridCellCheckbox', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_checkbox.html',
         controller: [function () {
-            this.onChange = function () {
-                // Workaround - using the same field as API - remove the needed complexity
+            this.toggleSelection = function () {
+                // Workaround - using the same field for checkbox ng-model as API (value is already updated)
                 this.grid.meta.api.setSelectedRows(this.row, this.row.selected);
             };
         }],

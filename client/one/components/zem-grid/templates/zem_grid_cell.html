@@ -5,19 +5,10 @@
             <a zem-in-link="{{ctrl.value.state}}({id: {{ctrl.value.id}}})">{{ ctrl.value.text }} </a>
         </span>
 
-        <zem-grid-cell-checkbox ng-switch-when="checkbox"
-                                row="ctrl.row"
-                                col="ctrl.col"
-                                grid="ctrl.grid"
-        ></zem-grid-cell-checkbox>
+        <zem-grid-cell-checkbox ng-switch-when="checkbox" row="ctrl.row" col="ctrl.col" grid="ctrl.grid"></zem-grid-cell-checkbox>
 
-        <span ng-switch-when="collapse">
-            <span ng-show="ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel()">
-                <a ng-click="ctrl.toggleCollapse()" class="action">
-                    {{ctrl.row.collapsed ? "[ + ]" : "[ - ]"}}
-                </a>
-            </span>
-        </span>
+        <zem-grid-cell-collapse ng-switch-when="collapse" row="ctrl.row" col="ctrl.col" grid="ctrl.grid"></zem-grid-cell-collapse>
+
         <span ng-switch-when="breakdownName" ng-style="{'padding-left': (ctrl.row.level-1)*20+'px'}">
             {{ctrl.value}}
         </span>
