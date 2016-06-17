@@ -44,7 +44,7 @@ class AdGroupSettingsTest(TestCase):
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
                 'ga_tracking_type': 2,
-                'ga_property_id': 'UA-123456789-1',
+                'ga_property_id': 'UA-0123456789-1',
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
                 'autopilot_min_budget': '0'
@@ -115,8 +115,6 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
                     'daily_budget_cc': '100.00',
-                    'enable_adobe_tracking': False,
-                    'enable_ga_tracking': True,
                     'end_date': '2015-04-02',
                     'id': '1',
                     'name': 'test adgroup 1',
@@ -224,8 +222,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings'
             ])
@@ -254,8 +250,6 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
-                        'enable_ga_tracking': True,
-                        'enable_adobe_tracking': False,
                         'adobe_tracking_param': '',
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
@@ -308,8 +302,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
                 'can_set_ga_api_tracking'
@@ -442,8 +434,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings'
             ])
@@ -526,7 +516,7 @@ class AdGroupSettingsTest(TestCase):
             self.settings_dict['settings']['tracking_code'] = 'asd=123'
             self.settings_dict['settings']['enable_ga_tracking'] = False
 
-            add_permissions(self.user, ['settings_view', 'can_toggle_ga_performance_tracking'])
+            add_permissions(self.user, ['settings_view'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -625,13 +615,11 @@ class AdGroupSettingsTest(TestCase):
             response_settings_dict = json.loads(response.content)['data']['settings']
 
             self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
-            self.assertNotEqual(response_settings_dict['enable_ga_tracking'], False)
-            self.assertNotEqual(response_settings_dict['tracking_code'], 'def=123')
-            self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
-            self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+            self.assertNotEqual(response_settings_dict['ga_tracking_type'], 2)
+            self.assertNotEqual(response_settings_dict['ga_property_id'], 'UA-0123456789-1')
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
@@ -917,7 +905,6 @@ class AdGroupHistoryTest(TestCase):
 
         add_permissions(self.user, [
             'ad_group_history_view',
-            'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
             reverse('ad_group_history', kwargs={'ad_group_id': ad_group_id}),
