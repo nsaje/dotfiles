@@ -2258,9 +2258,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(user=request and request.user)
 
-    def add_to_history(self):
+    def add_to_history(self, user):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
 
@@ -2281,7 +2281,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             history_type,
             changes,
             changes_text,
-            user=self.created_by
+            user=user
         )
 
     def delete(self, *args, **kwargs):
