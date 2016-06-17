@@ -76,6 +76,7 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='total_pageviews_sum',           app='total_pageviews',                  out=unchanged,     calc=sum_agr('pageviews')),
         dict(sql='avg_cost_per_pageview_sum',     app='avg_cost_per_pageview',            out=from_cc,       calc=sum_div('cost_cc', 'pageviews')),
         dict(sql='avg_cost_for_new_visitor_sum',  app='avg_cost_for_new_visitor',         out=from_cc,       calc=sum_div('cost_cc', 'new_visits')),
+        dict(sql='avg_cost_per_visit_sum',        app='avg_cost_per_visit',               out=from_cc,       calc=sum_div('cost_cc', 'visits')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [

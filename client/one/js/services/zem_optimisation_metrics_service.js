@@ -60,6 +60,17 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             order: true,
             initialOrder: 'desc',
         }, {
+            name: 'Avg. Cost per Visit',
+            field: 'avg_cost_per_visit',
+            checked: true,
+            type: 'currency',
+            shown: isShown,
+            internal: isInternal,
+            help: 'Average cost per visit.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
             name: 'Avg. Cost for Unbounced Visitor',
             field: 'avg_cost_per_non_bounced_visitor',
             checked: true,
@@ -108,6 +119,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             avg_cost_per_pageview: true,
             avg_cost_per_non_bounced_visitor: true,
             avg_cost_for_new_visitor: true,
+            avg_cost_per_visit: true,
             cpa: true,
         };
         for (var i = 0; i < 6; i++) {

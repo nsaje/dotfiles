@@ -30,6 +30,7 @@ CAMPAIGN_GOAL_FIELDS = [
     'total_pageviews',
     'avg_cost_per_pageview',
     'avg_cost_for_new_visitor',
+    'avg_cost_per_visit',
 ]
 
 FIELD_PERMISSION_MAPPING = {
