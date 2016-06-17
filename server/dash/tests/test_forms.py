@@ -1128,11 +1128,11 @@ class ContentAdCandidateFormTestCase(TestCase):
 
     def test_title_too_long(self):
         data = self._get_valid_data()
-        data['title'] = 'repeat' * 52
+        data['title'] = 'repeat' * 19
         f = forms.ContentAdCandidateForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'title': ['Title too long (max 256 characters)']
+            'title': ['Title too long (max 90 characters)']
         }, f.errors)
 
     def test_missing_image_url(self):

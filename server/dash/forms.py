@@ -1068,7 +1068,7 @@ class ContentAdCandidateForm(forms.Form):
         }
     )
     title = forms.CharField(
-        max_length=256,
+        max_length=90,
         error_messages={
             'required': 'Missing title',
             'max_length': 'Title too long (max %(limit_value)d characters)',
