@@ -432,7 +432,7 @@ class MVCampaignDelivery(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_adgroup_delivery',
+            'source_table': 'mv_master',
         })
 
         return sql, {
