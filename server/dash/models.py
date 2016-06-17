@@ -2858,8 +2858,6 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == 'comment':
             value = value or ''
-        elif prop_name == 'flat_fee_cc':
-            value = value or ''
         elif prop_name == 'flat_fee_start_date':
             value = value or ''
         elif prop_name == 'flat_fee_end_date':
