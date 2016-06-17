@@ -331,7 +331,7 @@ class FacebookAccountTest(TestCase):
                 'end_advertiser': page_id,
                 'media_agency': 'fake_app_id',
                 'partner': page_id,
-                'access_token': 'fake_token'}
+                'access_token': 'fake_access_token'}
 
     @staticmethod
     def _get_user_params(role):
