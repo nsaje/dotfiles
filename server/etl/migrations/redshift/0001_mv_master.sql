@@ -1,4 +1,5 @@
 -- table definition for the master materialized view table
+-- it can be quite big - use even distribution (default)
 CREATE TABLE mv_master (
        date date not null encode delta,
        source_id int2 encode bytedict,

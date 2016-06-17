@@ -29,4 +29,4 @@ CREATE TABLE mv_campaign_delivery (
        effective_data_cost_nano bigint encode lzo,
        license_fee_nano bigint encode lzo
 
-) sortkey(date, source_id, account_id, campaign_id);
+) sortkey(date, source_id, account_id, campaign_id, device_type, country, state, age);
