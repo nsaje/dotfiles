@@ -1,8 +1,20 @@
 import backtosql
 
-from stats import constants
+from stats import constants as sc
 
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
+
+MATERIALIZED_VIEWS = [
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE},
+     'mv_account'),
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE} | set(sc.DeliveryDimension._ALL),
+     'mv_account_delivery'),
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN},
+     'mv_campaign'),
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN} |
+     set(sc.DeliveryDimension._ALL),
+     'mv_campaign_delivery'),
+]
 
 
 class MVMaster(backtosql.Model, RSBreakdownMixin):
@@ -71,14 +83,16 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         Selects the most suitable materialized view for the selected breakdown.
         """
 
-        base = constants.get_base_dimension(breakdown)
-        structure = constants.get_structure_dimension(breakdown)
-        delivery = constants.get_delivery_dimension(breakdown)
+        base = sc.get_base_dimension(breakdown)
+        structure = sc.get_structure_dimension(breakdown)
+        delivery = sc.get_delivery_dimension(breakdown)
 
-        if base == 'account_id' and structure != 'publisher':
-            if delivery:
-                return 'mv_account_delivery'
-            return 'mv_account'
+        # find first one that matches
+        breakdown = set(x for x in (base, structure, delivery) if x)
+
+        for available, view in MATERIALIZED_VIEWS:
+            if len(breakdown - available) == 0:
+                return view
 
         return 'mv_master'
 
