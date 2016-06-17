@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
     def handle(self, *args, **options):
+        credentials = facebook_helper.get_credentials()
         pending_accounts = models.FacebookAccount.objects.filter(status=constants.FacebookPageRequestType.PENDING)
-        pages = facebook_helper.get_all_pages()
+        pages = facebook_helper.get_all_pages(credentials['business_id'], credentials['access_token'])
         if pages is None:
             raise CommandError('Error while accessing facebook page api.')
 
@@ -20,14 +21,21 @@ class Command(ExceptionCommand):
             page_status = pages.get(pending_account.page_id)
 
             if page_status and page_status == 'CONFIRMED':
-                added = facebook_helper.add_system_user_permissions(pending_account.page_id, 'ADVERTISER')
+                added = facebook_helper.add_system_user_permissions(pending_account.page_id, 'ADVERTISER',
+                                                                    credentials['business_id'],
+                                                                    credentials['system_user_id'],
+                                                                    credentials['access_token'])
                 if not added:
                     raise CommandError('Error while adding system user to a connected object.')
 
-                ad_account_id = facebook_helper.create_ad_account(pending_account.account.name, pending_account.page_id)
+                ad_account_id = facebook_helper.create_ad_account(pending_account.account.name, pending_account.page_id,
+                                                                  credentials['app_id'], credentials['business_id'],
+                                                                  credentials['access_token'])
                 if not ad_account_id:
                     raise CommandError('Error while creating facebook account.')
-                added = facebook_helper.add_system_user_permissions(ad_account_id, 'ADMIN')
+                added = facebook_helper.add_system_user_permissions(ad_account_id, 'ADMIN', credentials['businsess_id'],
+                                                                    credentials['system_user_id'],
+                                                                    credentials['access_token'])
                 if not added:
                     raise CommandError('Error while adding system user to a connected object.')
 

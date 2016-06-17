@@ -2,9 +2,8 @@ import httplib
 import json
 import logging
 import requests
-from django.conf import settings
 
-from dash import constants
+from dash import constants, models
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +23,8 @@ ERROR_INVALID_PAGE = 'Param page_id must be a valid page ID'
 ERROR_ALREADY_PENDING = 'There is already pending client request for page'
 ERROR_ALREADY_CONNECTED = 'You Already Have Access To This Page'
 
-# TODO matijav 17.06.2016 refactor - read settings from SourceCredentials
 
-
-def update_facebook_account(facebook_account, new_url):
+def update_facebook_account(facebook_account, new_url, business_id, access_token):
     if new_url == facebook_account.page_url:
         return
 
@@ -38,18 +35,18 @@ def update_facebook_account(facebook_account, new_url):
         return
 
     facebook_account.page_url = new_url
-    page_id = get_page_id(new_url)
+    page_id = get_page_id(new_url, access_token)
     if page_id:
         facebook_account.page_id = page_id
-        facebook_account.status = send_page_access_request(page_id)
+        facebook_account.status = send_page_access_request(page_id, business_id, access_token)
     else:
         facebook_account.page_id = None
         facebook_account.status = constants.FacebookPageRequestType.ERROR
 
 
-def get_page_id(page_url):
+def get_page_id(page_url, access_token):
     page_id = extract_page_id_from_url(page_url)
-    params = {'access_token': settings.FB_ACCESS_TOKEN}
+    params = {'access_token': access_token}
     response = requests.get(FB_PAGE_ID_URL.format(FB_API_VERSION, page_id), params=params)
 
     if response.status_code != httplib.OK:
@@ -69,12 +66,12 @@ def extract_page_id_from_url(page_url):
     return page_id
 
 
-def send_page_access_request(page_id):
+def send_page_access_request(page_id, business_id, access_token):
     params = {'page_id': page_id,
               'access_type': ACCESS_TYPE,
               'permitted_roles': PERMITTED_ROLES,
-              'access_token': settings.FB_ACCESS_TOKEN}
-    response = requests.post(FB_PAGES_URL.format(FB_API_VERSION, settings.FB_BUSINESS_ID), data=json.dumps(params),
+              'access_token': access_token}
+    response = requests.post(FB_PAGES_URL.format(FB_API_VERSION, business_id), data=json.dumps(params),
                              headers=HEADERS)
 
     if response.status_code == 200:
@@ -97,9 +94,9 @@ def send_page_access_request(page_id):
     return constants.FacebookPageRequestType.ERROR
 
 
-def get_all_pages():
-    params = {'access_token': settings.FB_ACCESS_TOKEN}
-    response = requests.get(FB_PAGES_URL.format(FB_API_VERSION, settings.FB_BUSINESS_ID), params=params)
+def get_all_pages(business_id, access_token):
+    params = {'access_token': access_token}
+    response = requests.get(FB_PAGES_URL.format(FB_API_VERSION, business_id), params=params)
 
     if response.status_code != httplib.OK:
         logger.error('Error while accessing facebook page api. Status code: %s, Error %s', response.status_code,
@@ -114,17 +111,17 @@ def get_all_pages():
     return pages_dict
 
 
-def create_ad_account(name, page_id):
+def create_ad_account(name, page_id, app_id, business_id, access_token):
     params = {'name': name,
               'currency': CURRENCY_USD,
               'timezone_id': TZ_AMERICA_NEW_YORK,
               'end_advertiser': page_id,
-              'media_agency': settings.FB_APP_ID,
+              'media_agency': app_id,
               'partner': page_id,
               # TODO matijav 16.06.2016 disabled until we setup Business Manager Owned Normal Credit Line
               # 'invoice': True,
-              'access_token': settings.FB_ACCESS_TOKEN}
-    response = requests.post(FB_AD_ACCOUNT_URL.format(FB_API_VERSION, settings.FB_BUSINESS_ID), json.dumps(params),
+              'access_token': access_token}
+    response = requests.post(FB_AD_ACCOUNT_URL.format(FB_API_VERSION, business_id), json.dumps(params),
                              headers=HEADERS)
     if response.status_code != httplib.OK:
         logger.error('Error while creating facebook ad account. Status code: %s, Error %s', response.status_code,
@@ -135,11 +132,11 @@ def create_ad_account(name, page_id):
     return content['id']
 
 
-def add_system_user_permissions(connected_object_id, role):
-    params = {'business': settings.FB_BUSINESS_ID,
-              'user': settings.FB_SYSTEM_USER_ID,
+def add_system_user_permissions(connected_object_id, role, business_id, system_user_id, access_token):
+    params = {'business':  business_id,
+              'user': system_user_id,
               'role': role,
-              'access_token': settings.FB_ACCESS_TOKEN}
+              'access_token': access_token}
     response = requests.post(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, connected_object_id), json.dumps(params),
                              headers=HEADERS)
     if response.status_code != httplib.OK:
@@ -147,3 +144,7 @@ def add_system_user_permissions(connected_object_id, role):
                      response.status_code, response.content)
         return False
     return True
+
+
+def get_credentials():
+    return json.loads(models.SourceCredentials.objects.get(source__source_type__type='facebook').decrypt())
