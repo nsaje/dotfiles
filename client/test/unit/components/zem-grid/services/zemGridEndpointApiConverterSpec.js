@@ -69,6 +69,7 @@ describe('zemGridEndpointApiConverter', function () {
                 clicks: 1000,
             },
             breakdown_id: 2,
+            pagination: {},
         };
 
         metaData = {
@@ -153,10 +154,11 @@ describe('zemGridEndpointApiConverter', function () {
             },
             breakdownId: 2,
             level: 2,
+            pagination: {},
         };
 
-        zemGridEndpointApiConverter.convertFromApi(config, breakdown, metaData);
-        expect(breakdown).toEqual(expectedResult);
+        var convertedBreakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
+        expect(convertedBreakdown).toEqual(expectedResult);
     });
 
     it('should correctly convert config object to api', function () {
@@ -168,18 +170,24 @@ describe('zemGridEndpointApiConverter', function () {
             breakdown: [{name: 'By Ad Group', query: 'ad_group'}],
             startDate: startDate,
             endDate: endDate,
+            level: 1,
+            limit: 20,
+            offset: 0,
+            order: 'field',
         };
 
         expectedResult = {
             breakdown_page: [],
-            startDate: startDate,
             start_date: '2016-05-17',
-            endDate: endDate,
             end_date: '2016-06-14',
+            level: 1,
+            limit: 20,
+            offset: 0,
+            order: 'field',
         };
 
-        zemGridEndpointApiConverter.convertToApi(config);
-        expect(config).toEqual(expectedResult);
+        var convertedConfig = zemGridEndpointApiConverter.convertConfigToApi(config);
+        expect(convertedConfig).toEqual(expectedResult);
     });
 });
 /* eslint-enable camelcase */
