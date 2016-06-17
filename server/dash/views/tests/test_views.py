@@ -2720,6 +2720,81 @@ class PublishersBlacklistStatusTest(TestCase):
 
         self.assertEqual(30, models.PublisherBlacklist.objects.count())
 
+    @patch('reports.redshift.get_cursor')
+    def test_post_outbrain_manual(self, cursor):
+        req = RequestFactory().get('/')
+        req.user = zemauth.models.User.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.name = 'ZemAccount'
+        account.save(req)
+
+        for i in xrange(10):
+            models.PublisherBlacklist.objects.create(
+                account=models.Account.objects.get(pk=1),
+                source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
+                name='test_{}'.format(i),
+                status=constants.PublisherStatus.BLACKLISTED,
+            )
+
+        cursor().dictfetchall.return_value = [
+            {
+                'domain': u'Test',
+                'ctr': 0.0,
+                'exchange': 'outbrain',
+                'external_id': 'sfdafkl1230899012asldas',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ACCOUNT,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.get(
+            action_type=actionlog.constants.ActionType.MANUAL,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(
+            publisher_blacklist_action.message,
+            u'''Blacklist the following publishers on Outbrain for account ZemAccount (#1):
+- Test (sfdafkl1230899012asldas)'''
+        )
+        self.assertTrue(res['success'])
+        self.assertEqual(11, models.PublisherBlacklist.objects.count())
+
+        # Revert
+        publisher_blacklist_action.delete()
+        payload = {
+            "state": constants.PublisherStatus.ENABLED,
+            "level": constants.PublisherBlacklistLevel.ACCOUNT,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.get(
+            action_type=actionlog.constants.ActionType.MANUAL,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(11, models.PublisherBlacklist.objects.count())
+        self.assertEqual(
+            publisher_blacklist_action.message,
+            '''Whitelist the following publishers on Outbrain for account ZemAccount (#1):
+- Test (sfdafkl1230899012asldas)'''
+        )
+
 
 class AdGroupOverviewTest(TestCase):
     fixtures = ['test_api.yaml', 'users']

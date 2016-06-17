@@ -1,6 +1,7 @@
 import re
 import datetime
 import json
+import re
 import logging
 import newrelic.agent
 import dateutil.parser
@@ -92,6 +93,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
+        self._add_ga_account(request.user, ad_group, new_settings)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
@@ -112,6 +114,25 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def _extract_ga_account_id(self, ga_property_id):
+        result = re.search(constants.GA_PROPERTY_ID_REGEX, ga_property_id)
+        return result.group(1)
+
+    def _add_ga_account(self, user, ad_group, settings):
+        if not user.has_perm('zemauth.can_set_ga_api_tracking'):
+            return
+
+        if models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=settings.ga_property_id).exists():
+            return  # no need to add it
+
+        models.GAAnalyticsAccount.objects.create(
+            account=ad_group.campaign.account,
+            ga_web_property_id=settings.ga_property_id,
+            ga_account_id=self._extract_ga_account_id(settings.ga_property_id)
+        )
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}
@@ -154,6 +175,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
                 'enable_ga_tracking': settings.enable_ga_tracking,
+                'ga_property_id': settings.ga_property_id,
+                'ga_tracking_type': settings.ga_tracking_type,
                 'enable_adobe_tracking': settings.enable_adobe_tracking,
                 'adobe_tracking_param': settings.adobe_tracking_param,
                 'autopilot_state': settings.autopilot_state,
@@ -177,17 +200,19 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
+        settings.enable_ga_tracking = resource['enable_ga_tracking']
+        settings.tracking_code = resource['tracking_code']
+        settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+        settings.adobe_tracking_param = resource['adobe_tracking_param']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
 
-        if user.has_perm('zemauth.can_toggle_ga_performance_tracking'):
-            settings.enable_ga_tracking = resource['enable_ga_tracking']
-            settings.tracking_code = resource['tracking_code']
+        if user.has_perm('zemauth.can_set_ga_api_tracking'):
+            settings.ga_tracking_type = resource['ga_tracking_type']
 
-        if user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
-            settings.enable_adobe_tracking = resource['enable_adobe_tracking']
-            settings.adobe_tracking_param = resource['adobe_tracking_param']
+            if settings.ga_tracking_type == constants.GATrackingType.API:
+                settings.ga_property_id = resource['ga_property_id']
 
         if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
@@ -1283,10 +1308,6 @@ class AdGroupHistory(api_common.BaseApiView):
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
-            if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
-                    not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
-                continue
-
             settings_dict[field] = {
                 'name': models.AdGroupSettings.get_human_prop_name(field),
                 'value': models.AdGroupSettings.get_human_value(field, getattr(
