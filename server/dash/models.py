@@ -236,6 +236,8 @@ class HistoryMixin(object):
         current_dict = current_dict or self.post_init_state
         changes = OrderedDict()
         for field_name in self.history_fields:
+            if field_name not in new_dict:
+                continue
             new_value = new_dict[field_name]
             if current_dict[field_name] != new_value:
                 changes[field_name] = new_value
