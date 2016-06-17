@@ -2,8 +2,7 @@
 
 oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.$on('$stateChangeSuccess', function () {
-        if ($state.is('main.development.grid') &&
-            !$scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+        if ($state.is('main.development.grid') && !$scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             $state.go('main');
         }
     });
@@ -18,7 +17,10 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceSe
     $timeout(initializeGridApi, 0);
 
     function initializeGridApi () {
-        // TODO: Initialize GridApi listeners
+        // Initialize GridApi listeners
+        $scope.gridApi.onRowsSelectionChanged($scope, function () {
+            console.log($scope.gridApi.getSelectedRows()); // eslint-disable-line
+        });
     }
 }]);
 

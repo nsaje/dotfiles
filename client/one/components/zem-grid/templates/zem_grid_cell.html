@@ -4,14 +4,13 @@
         <span ng-switch-when="linkNav" class="pointer">
             <a zem-in-link="{{ctrl.value.state}}({id: {{ctrl.value.id}}})">{{ ctrl.value.text }} </a>
         </span>
-        <span ng-switch-when="checkbox" class="zem-grid-cell-checkbox">
-            <input ng-show="ctrl.row.level === 1"
-                    type="checkbox"
-                    data-ng-model="row[col.field]"
-                    ng-disabled="false"
-                    data-ng-change=""
-            />
-        </span>
+
+        <zem-grid-cell-checkbox ng-switch-when="checkbox"
+                                row="ctrl.row"
+                                col="ctrl.col"
+                                grid="ctrl.grid"
+        ></zem-grid-cell-checkbox>
+
         <span ng-switch-when="collapse">
             <span ng-show="ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel()">
                 <a ng-click="ctrl.toggleCollapse()" class="action">
