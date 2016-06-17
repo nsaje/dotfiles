@@ -1484,7 +1484,8 @@ class HistoryAdmin(admin.ModelAdmin):
 
     list_filter = (
         'type',
-        'level'
+        'level',
+        'system_user',
     )
 
     search_fields = [
@@ -1497,6 +1498,7 @@ class HistoryAdmin(admin.ModelAdmin):
         'ad_group__name',
         'ad_group__id',
         'changes_text',
+        'created_by__email',
     ]
 
     def get_readonly_fields(self, request, obj=None):
