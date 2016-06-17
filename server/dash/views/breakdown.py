@@ -180,6 +180,9 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
         'count': len(response['rows'])
     }
 
+    response['conversion_goals'] = response.get('conversion_goals')
+    response['campaign_goals'] = response.get('campaign_goals')
+
     return response
 
 
@@ -272,6 +275,9 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+
+    response['conversion_goals'] = response.get('conversion_goals')
+    response['campaign_goals'] = response.get('campaign_goals')
 
     return response
 

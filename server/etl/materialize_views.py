@@ -153,21 +153,8 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
             else:
                 skipped_postclick_stats.add(breakdown_key)
 
-        skipped_tpconversions = set()
-
-        for breakdown_key, row in self._get_touchpoint_conversions(cursor, date):
-            # only return those rows for which we have traffic - click
-            if breakdown_key in breakdown_keys_with_traffic:
-                yield row
-            else:
-                skipped_tpconversions.add(breakdown_key)
-
         if skipped_postclick_stats:
             logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
-
-        if skipped_tpconversions:
-            logger.info(
-                'MasterView: Couldn\'t join the following touchpoint conversions stats: %s', skipped_tpconversions)
 
     def _get_postclickstats(self, cursor, date):
 
@@ -234,8 +221,8 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
                     0,
                     0,
 
-                    row.conversions,
-                    None,
+                    # row.conversions,
+                    # None,
                 )
 
     def _get_touchpoint_conversions(self, cursor, date):
@@ -380,7 +367,7 @@ class MVAccount(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_master',
+            'source_table': 'mv_campaign',
         })
 
         return sql, {
@@ -398,6 +385,49 @@ class MVAccountDelivery(materialize_helpers.Materialize):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_campaign_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVCampaign(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_campaign'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_campaign_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVCampaignDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_campaign_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),

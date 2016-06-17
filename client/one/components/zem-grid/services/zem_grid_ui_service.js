@@ -63,13 +63,18 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
-            var valueWidth = getTextWidth(row.stats[column.field], font);
+            var data = grid.footer.row.data.stats[column.field];
+            if (!data) return;
+            var valueWidth = getTextWidth(data.value, font);
             width = Math.max(width, valueWidth);
         });
 
         if (grid.footer.row) {
-            var valueWidth = getTextWidth(grid.footer.row.stats[column.field], font);
-            width = Math.max(width, valueWidth);
+            var data = grid.footer.row.data.stats[column.field];
+            if (data) {
+                var valueWidth = getTextWidth(data.value, font);
+                width = Math.max(width, valueWidth);
+            }
         }
 
         return width;
@@ -117,43 +122,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
                     'width': grid.ui.columnsWidths[cellIndex] + 'px',
                 });
             });
-
-            // Find breakdown row
-            // var totalWidth = grid.ui.columnsWidths.reduce(function (prev, next) { return prev+next }, 0);
-            // var breakdownRow = row.find('.breakdown-row');
-            // breakdownRow.css({
-            //     'width': totalWidth + 'px',
-            // });
-
-            // var paginationCellWidth = 0;
-            // var loadMoreCellWidth = 0;
-            // var offset = 0;
-            // var found = false;
-            // grid.header.visibleColumns.forEach(function (column, idx) {
-            //     if (found) loadMoreCellWidth += grid.ui.columnsWidths[idx];
-            //     else paginationCellWidth += grid.ui.columnsWidths[idx];
-            //     if (column.type === 'breakdownName') {
-            //         offset = paginationCellWidth - grid.ui.columnsWidths[idx];
-            //         found = true;
-            //     }
-            // });
-
-            // var breakdownRow = row.find('.breakdown-row');
-            // breakdownRow.css({
-            //     'width': grid.ui.width + 'px',
-            //     'max-width': grid.ui.width + 'px',
-            // });
-            // var paginationCell = row.find('.zem-grid-cell.pagination-cell');
-            // paginationCell.css({
-            //     'width': paginationCellWidth + 'px',
-            //     'max-width': paginationCellWidth + 'px',
-            //     'padding-left': offset + 'px',
-            // });
-            // var loadMoreCell = row.find('.zem-grid-cell.load-more-cell');
-            // loadMoreCell.css({
-            //     'width': loadMoreCellWidth + 'px',
-            //     'max-width': loadMoreCellWidth + 'px',
-            // });
         });
     }
 

@@ -7,8 +7,11 @@ from dash import regions
 # Experiment 6/13/2016: we can blacklist 30 publishers on OB dashboard, it's not documented
 #                       but we can try to enable 30 via API
 MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 30
+MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD = 10
 
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
+
+GA_PROPERTY_ID_REGEX = r'UA-([0-9]+)-*'
 
 
 class AdGroupSettingsState(ConstantBase):
@@ -1047,6 +1050,7 @@ class CampaignGoalKPI(ConstantBase):
     CPC = 5
 #    CPM = 6
     NEW_UNIQUE_VISITORS = 7
+    CPV = 8
 
     _VALUES = {
         TIME_ON_SITE: 'Time on Site - Seconds',
@@ -1056,6 +1060,7 @@ class CampaignGoalKPI(ConstantBase):
         CPC: 'CPC',
         #        CPM: '$CPM',
         NEW_UNIQUE_VISITORS: 'New Unique Visitors',
+        CPV: 'Cost per Visit'
     }
 
 

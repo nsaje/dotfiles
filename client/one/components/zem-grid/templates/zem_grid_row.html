@@ -2,8 +2,8 @@
     <zem-grid-cell ng-repeat="col in ctrl.grid.header.visibleColumns track by $index"
                    ng-show="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
                    position="$index"
-                   col = "col"
-                   value = "ctrl.row.stats[col.field]"
+                   col="col"
+                   data="ctrl.row.data.stats[col.field]"
                    row="ctrl.row"
                    grid="ctrl.grid"
     ></zem-grid-cell>

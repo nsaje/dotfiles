@@ -58,6 +58,7 @@ class AdGroupSettingsTest(TestCase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': True,
+            'ga_property_id': 'UA-123456789-1',
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
             'autopilot_daily_budget': Decimal('0.0000'),
@@ -139,7 +140,8 @@ class AdGroupSettingsTest(TestCase):
             'Call to action set to "Call to action", '
             'Ad group name set to "AdGroup name", '
             'Start date set to "2014-06-04", '
-            'Retargeting ad groups set to "test adgroup 1, test adgroup 2"'
+            'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
+            'GA web property ID set to "UA-123456789-1"'
         )
 
 
@@ -880,7 +882,7 @@ class HistoryTest(TestCase):
             }, adg_hist.changes
         )
         self.assertEqual(
-            'Max CPC bid set to "$5,100.00"',
+            'Max CPC bid set from "$4,999.00" to "$5,100.00"',
             adg_hist.changes_text
         )
 
@@ -916,7 +918,7 @@ class HistoryTest(TestCase):
             adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
-            Source: AdsNative. Daily Budget set to "$50,000.00"
+            Source: AdsNative. Daily Budget set from "$10,000.00" to "$50,000.00"
             """).replace('\n', ''), adgs_hist.changes_text)
 
     def test_create_campaign_history(self):
@@ -948,7 +950,7 @@ class HistoryTest(TestCase):
             },
             camp_hist.changes
         )
-        self.assertEqual('Name set to "Awesomer"', camp_hist.changes_text)
+        self.assertEqual('Name set from "Awesome" to "Awesomer"', camp_hist.changes_text)
 
         hist = models.create_campaign_history(
             campaign,

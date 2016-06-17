@@ -19,7 +19,7 @@ oneApp.directive('zemGridRowBreakdown', [function () {
                 // Breakdown split widths - before breakdown, breakdown, after breakdown
                 var breakdownSplitWidths = [0];
                 grid.header.visibleColumns.forEach(function (column, idx) {
-                    if (column.type === 'breakdownName') {
+                    if (column.type === 'breakdown') {
                         breakdownSplitWidths.push(grid.ui.columnsWidths[idx]);
                         breakdownSplitWidths.push(0);
                     }

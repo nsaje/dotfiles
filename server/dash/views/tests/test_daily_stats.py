@@ -495,6 +495,10 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'New Unique Visitors',
                         'name': 'New Unique Visitors'
                     },
+                    'avg_cost_per_visit': {
+                        'id': 'Cost per Visit',
+                        'name': 'Cost per Visit'
+                    },
                 },
                 'chart_data': [{
                     'id': 'totals',
@@ -654,6 +658,10 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'New Unique Visitors',
                         'name': 'New Unique Visitors'
                     },
+                    'avg_cost_per_visit': {
+                        'id': 'Cost per Visit',
+                        'name': 'Cost per Visit'
+                    },
                 },
                 'chart_data': [{
                     'id': 'totals',
@@ -808,6 +816,10 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                     'percent_new_users': {
                         'id': 'New Unique Visitors',
                         'name': 'New Unique Visitors'
+                    },
+                    'avg_cost_per_visit': {
+                        'id': 'Cost per Visit',
+                        'name': 'Cost per Visit'
                     },
                 },
                 'chart_data': [{

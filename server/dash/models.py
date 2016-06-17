@@ -236,6 +236,8 @@ class HistoryMixin(object):
         current_dict = current_dict or self.post_init_state
         changes = OrderedDict()
         for field_name in self.history_fields:
+            if field_name not in new_dict:
+                continue
             new_value = new_dict[field_name]
             if current_dict[field_name] != new_value:
                 changes[field_name] = new_value
@@ -248,10 +250,21 @@ class HistoryMixin(object):
             if not prop:
                 continue
             val = self.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
+            change_strings.append(self._extract_value_diff_text(key, prop, val))
         return separator.join(change_strings)
+
+    def _extract_value_diff_text(self, key, prop, val):
+        previous_value = None
+        previous_value_raw = self.post_init_state.get(key) if self.post_init_state else None
+        if previous_value_raw:
+            previous_value = self.get_human_value(key, previous_value_raw)
+
+        if previous_value and previous_value != val:
+            return u'{} set from "{}" to "{}"'.format(
+                prop, previous_value, val
+            )
+        else:
+            return u'{} set to "{}"'.format(prop, val)
 
     def get_changes_text_from_dict(self, changes, separator=', '):
         if not changes:
@@ -1857,6 +1870,7 @@ class AdGroupSettings(SettingsBase):
         'ad_group_name',
         'enable_ga_tracking',
         'ga_tracking_type',
+        'ga_property_id',
         'enable_adobe_tracking',
         'adobe_tracking_param',
         'autopilot_state',
@@ -1901,6 +1915,7 @@ class AdGroupSettings(SettingsBase):
         default=constants.GATrackingType.EMAIL,
         choices=constants.GATrackingType.get_choices()
     )
+    ga_property_id = models.CharField(max_length=25, blank=True, default='')
     enable_adobe_tracking = models.BooleanField(default=False)
     adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
@@ -2012,6 +2027,7 @@ class AdGroupSettings(SettingsBase):
             'ad_group_name': 'Ad group name',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
+            'ga_property_id': 'GA web property ID',
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
@@ -2196,6 +2212,11 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         blank=True,
         on_delete=models.PROTECT
     )
+    system_user = models.PositiveSmallIntegerField(
+        choices=constants.SystemUserType.get_choices(),
+        null=True,
+        blank=True,
+    )
 
     state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
@@ -2253,9 +2274,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(user=request and request.user)
 
-    def add_to_history(self):
+    def add_to_history(self, user):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
 
@@ -2269,14 +2290,14 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
-            changes if not self.post_init_newly_created else None
+            changes
         )
         create_ad_group_history(
             current_settings.ad_group,
             history_type,
             changes,
             changes_text,
-            user=self.created_by
+            user=user
         )
 
     def delete(self, *args, **kwargs):
@@ -2554,6 +2575,9 @@ class ContentAdCandidate(models.Model):
     image_hash = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    def get_dict(self):
+        return model_to_dict(self)
 
 
 class Article(models.Model):
@@ -2836,12 +2860,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
-                value * converters.CC_TO_DECIMAL_DOLAR)
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == 'comment':
-            value = value or ''
-        elif prop_name == 'flat_fee_cc':
             value = value or ''
         elif prop_name == 'flat_fee_start_date':
             value = value or ''
@@ -3611,6 +3633,10 @@ class History(models.Model):
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting history object not allowed.')
+
+    class Meta:
+        verbose_name = 'History'
+        verbose_name_plural = 'History'
 
 
 def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
