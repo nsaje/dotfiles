@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
+from django.contrib.admin.utils import flatten_fieldsets
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -1466,6 +1467,56 @@ class FacebookAccount(admin.ModelAdmin):
     pass
 
 
+class HistoryAdmin(admin.ModelAdmin):
+    actions = None
+
+    list_display = (
+        'id',
+        'agency',
+        'account',
+        'campaign',
+        'ad_group',
+        'created_dt',
+        'created_by',
+        'system_user',
+        'changes_text',
+    )
+
+    list_filter = (
+        'type',
+        'level',
+        'system_user',
+    )
+
+    search_fields = [
+        'agency__id',
+        'agency__name',
+        'account__name',
+        'account__id',
+        'campaign__name',
+        'campaign__id',
+        'ad_group__name',
+        'ad_group__id',
+        'changes_text',
+        'created_by__email',
+    ]
+
+    def get_readonly_fields(self, request, obj=None):
+        return list(set(
+            [field.name for field in self.opts.local_fields] +
+            [field.name for field in self.opts.local_many_to_many]
+        ))
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1493,3 +1544,4 @@ admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
 admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
+admin.site.register(models.History, HistoryAdmin)
