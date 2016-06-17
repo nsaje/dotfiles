@@ -1857,6 +1857,7 @@ class AdGroupSettings(SettingsBase):
         'ad_group_name',
         'enable_ga_tracking',
         'ga_tracking_type',
+        'ga_property_id',
         'enable_adobe_tracking',
         'adobe_tracking_param',
         'autopilot_state',
@@ -1901,6 +1902,7 @@ class AdGroupSettings(SettingsBase):
         default=constants.GATrackingType.EMAIL,
         choices=constants.GATrackingType.get_choices()
     )
+    ga_property_id = models.CharField(max_length=25, blank=True, default='')
     enable_adobe_tracking = models.BooleanField(default=False)
     adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
@@ -2012,6 +2014,7 @@ class AdGroupSettings(SettingsBase):
             'ad_group_name': 'Ad group name',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
+            'ga_property_id': 'GA web property ID',
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',

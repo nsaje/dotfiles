@@ -147,39 +147,85 @@
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
                 <label for="tracking-input" class="col-xs-2 control-label">
                     Tracking codes
-                    <zem-help-popover ng-if="!hasPermission('zemauth.can_toggle_ga_performance_tracking')" content="The tracking code / UTM to be appended to all URLs being promoted. Please contact your account manager for setting this field." placement="top"></zem-help-popover>
+                    <zem-help-popover content="The tracking code / UTM to be appended to all URLs being promoted." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-4">
-                    <textarea id="tracking-input" type="text" ng-readonly="!hasPermission('zemauth.can_toggle_ga_performance_tracking')" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
+                    <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
                 </div>
 
                 <label ng-repeat="error in errors.trackingCode" class="control-label error" for="tracking-input">{{ error }}</label>
-
-                <div class="checkbox col-xs-10" ng-if="hasPermission('zemauth.can_toggle_ga_performance_tracking')">
-                    <label>
-                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_ga_performance_tracking')" popover-placement="right"></zem-internal-feature>
-                        <input type="checkbox" id="enable-ga-tracking" ng-model="settings.enableGaTracking"> Enable Google Analytics performance tracking
-                        <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
-                        <br />
-                        <a href="{{ config.static_url }}/one/assets/SettingUpAutomatedGoogleAnalyticsReports.pdf" target="_self">Download a guide to setting up Automated Google Analytics Report</a>
-                    </label>
-                </div>
-
-                <div class="checkbox col-xs-10" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking')">
-                    <label>
-                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
-                        <input type="checkbox" id="enable-adobe-tracking" ng-model="settings.enableAdobeTracking"> Enable Adobe Analytics performance tracking
-                        <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
-                        <br />
-                        <a href="{{ config.static_url }}/one/assets/Adobe_Analytics_Tutorial_Zemanta_v.2.pdf" target="_self">Download a guide to setting up Automated Adobe Analytics Report</a>
-                    </label>
-                </div>
             </div>
         </div>
 
-        <div class="form-group indented" ng-class="{'has-error': !!errors.adobeTrackingParam}" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking') && settings.enableAdobeTracking">
+        <div class="form-group">
+            <div class="checkbox col-xs-10">
+                <label>
+                    <input type="checkbox" id="enable-ga-tracking" ng-model="settings.enableGaTracking"> Enable Google Analytics performance tracking
+                    <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group indented" ng-if="hasPermission('zemauth.can_set_ga_api_tracking') && settings.enableGaTracking">
+            <label for="ga-tracking-type-select" class="col-xs-3 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_ga_api_tracking')" popover-placement="right"></zem-internal-feature>
+                Reporting type
+                <zem-help-popover content="Google Analytics reporting type." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <ui-select
+                        id="ga-tracking-type-select"
+                        theme="select2"
+                        search-enabled="false"
+                        ng-model="settings.gaTrackingType">
+                    <ui-select-match>
+                        <div ng-bind="getGaTrackingTypeByValue(settings.gaTrackingType).name"></div>
+                    </ui-select-match>
+                    <ui-select-choices repeat="type.value as type in options.gaTrackingType">
+                        <div>{{type.name}}</div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <div class="checkbox col-xs-12">
+                <a ng-if="settings.gaTrackingType === constants.gaTrackingType.EMAIL"
+                   href="{{ config.static_url }}/one/assets/SettingUpAutomatedGoogleAnalyticsReports.pdf" 
+                   target="_blank">
+                   Download a guide to setting up Automated Google Analytics Report via email
+                </a>
+                <a ng-if="settings.gaTrackingType === constants.gaTrackingType.API"
+                   href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1" 
+                   target="_blank">
+                   Download a guide to setting up Automated Google Analytics Report via API
+                </a>
+            </div>
+        </div>
+
+        <div class="form-group indented" ng-class="{'has-error': !!errors.gaPropertyId}" ng-if="hasPermission('zemauth.can_set_ga_api_tracking') && settings.gaTrackingType === constants.gaTrackingType.API && settings.enableGaTracking">
+            <label for="ga-property-id-input" class="col-xs-3 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_ga_api_tracking')" popover-placement="right"></zem-internal-feature>
+                Web property ID
+                <zem-help-popover content="Google Analytics web property ID." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <input id="ga-property-id-input" type="text" class="form-control" ng-model="settings.gaPropertyId">
+            </div>
+
+            <label ng-repeat="error in errors.gaPropertyId" class="control-label error" for="ga-property-id-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group">
+            <div class="checkbox col-xs-10">
+                <label>
+                    <input type="checkbox" id="enable-adobe-tracking" ng-model="settings.enableAdobeTracking"> Enable Adobe Analytics performance tracking
+                    <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+                    <br />
+                    <a href="{{ config.static_url }}/one/assets/Adobe_Analytics_Tutorial_Zemanta_v.2.pdf" target="_self">Download a guide to setting up Automated Adobe Analytics Report</a>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group indented" ng-class="{'has-error': !!errors.adobeTrackingParam}" ng-if="settings.enableAdobeTracking">
             <label for="adobe-tracking-param-input" class="col-xs-3 control-label">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
                 Adobe tracking parameter
                 <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
             </label>
