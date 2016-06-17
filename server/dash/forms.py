@@ -1171,8 +1171,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_width = forms.IntegerField(
         required=False,
-        min_value=2,
-        max_value=4000,
+        min_value=500,
+        max_value=5000,
         error_messages={
             'min_value': 'Image too small (min width %(limit_value)d px)',
             'max_value': 'Image too big (max width %(limit_value)d px)',
@@ -1180,8 +1180,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_height = forms.IntegerField(
         required=False,
-        min_value=2,
-        max_value=3000,
+        min_value=500,
+        max_value=5000,
         error_messages={
             'min_value': 'Image too small (min height %(limit_value)d px)',
             'max_value': 'Image too big (max height %(limit_value)d px)',
