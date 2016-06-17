@@ -196,13 +196,11 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
+        settings.enable_ga_tracking = resource['enable_ga_tracking']
+        settings.tracking_code = resource['tracking_code']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
-
-        if user.has_perm('zemauth.can_toggle_ga_performance_tracking'):
-            settings.enable_ga_tracking = resource['enable_ga_tracking']
-            settings.tracking_code = resource['tracking_code']
 
         if user.has_perm('zemauth.can_set_ga_api_tracking'):
             settings.ga_tracking_type = resource['ga_tracking_type']
