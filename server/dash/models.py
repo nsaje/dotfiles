@@ -2558,6 +2558,9 @@ class ContentAdCandidate(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    def get_dict(self):
+        return model_to_dict(self)
+
 
 class Article(models.Model):
     url = models.CharField(max_length=2048, editable=False)

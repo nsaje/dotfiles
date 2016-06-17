@@ -1224,7 +1224,7 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     def post(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadExtendedForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
