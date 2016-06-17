@@ -24,6 +24,8 @@ ERROR_INVALID_PAGE = 'Param page_id must be a valid page ID'
 ERROR_ALREADY_PENDING = 'There is already pending client request for page'
 ERROR_ALREADY_CONNECTED = 'You Already Have Access To This Page'
 
+# TODO matijav 17.06.2016 refactor - read settings from SourceCredentials
+
 
 def update_facebook_account(facebook_account, new_url):
     if new_url == facebook_account.page_url:
@@ -145,4 +147,3 @@ def add_system_user_permissions(connected_object_id, role):
                      response.status_code, response.content)
         return False
     return True
-

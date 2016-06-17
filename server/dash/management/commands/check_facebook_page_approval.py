@@ -34,5 +34,3 @@ class Command(ExceptionCommand):
                 pending_account.ad_account_id = ad_account_id
                 pending_account.status = constants.FacebookPageRequestType.CONNECTED
                 pending_account.save()
-
-
