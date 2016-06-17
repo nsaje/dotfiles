@@ -1278,11 +1278,8 @@ class AdGroupSourceSettingsWriter(object):
                 daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc,
                 landing_mode is not None and landing_mode != latest_settings.landing_mode
         ]):
-            new_settings = latest_settings
-            new_settings.pk = None  # make a copy of the latest settings
-
+            new_settings = latest_settings.copy_settings()
             old_settings_obj = {}
-
             if state is not None:
                 new_settings.state = state
             if cpc_cc is not None:
@@ -1293,9 +1290,13 @@ class AdGroupSourceSettingsWriter(object):
                 new_settings.daily_budget_cc = daily_budget_cc
             if landing_mode is not None:
                 new_settings.landing_mode = landing_mode
+            if not request:
+                new_settings.system_user = system_user
+            else:
+                new_settings.created_by = request.user
             new_settings.save(request)
 
-            self.add_to_history_and_notify(settings_obj, old_settings_obj, request, system_user)
+            self.notify(settings_obj, old_settings_obj, request, system_user)
 
             if create_action:
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems()}
@@ -1330,37 +1331,27 @@ class AdGroupSourceSettingsWriter(object):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
         return models.AdGroup.is_ad_group_active(ad_group_settings)
 
-    def add_to_history_and_notify(self, change_obj, old_change_obj, request, system_user):
+    def notify(self, change_obj, old_change_obj, request, system_user):
+        if not request:
+            return
+
         changes_text_parts = []
         for key, val in change_obj.items():
             if val is None:
                 continue
-
             field = models.AdGroupSettings.get_human_prop_name(key)
             val = models.AdGroupSettings.get_human_value(key, val)
             source_name = self.ad_group_source.source.name
-
             old_val = old_change_obj.get(key)
-
             if old_val is None:
                 text = '%s %s set to %s' % (source_name, field, val)
             else:
                 old_val = models.AdGroupSettings.get_human_value(key, old_val)
                 text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
-
             changes_text_parts.append(text)
 
-        settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = ', '.join(changes_text_parts)
-
-        if not request:
-            settings.system_user = system_user
-
-        settings.save(request)
-        if request:
-            email_helper.send_ad_group_notification_email(
-                self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
-
+        email_helper.send_ad_group_notification_email(
+            self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
 
 def get_content_ad(content_ad_id):
     try:
