@@ -1544,6 +1544,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
 
+        self.assertEqual(request.user, new_latest_settings.created_by)
+        self.assertIsNone(new_latest_settings.system_user)
+
+
         mock_send_mail.assert_called_with(
             self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
 
@@ -1556,7 +1560,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
 
         request = None
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request, system_user=constants.SystemUserType.AUTOPILOT)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -1568,6 +1572,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
+        self.assertIsNone(new_latest_settings.created_by)
+        self.assertEqual(constants.SystemUserType.AUTOPILOT, new_latest_settings.system_user)
 
         self.assertFalse(mock_send_mail.called)
 

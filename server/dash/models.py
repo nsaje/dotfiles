@@ -2196,6 +2196,11 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         blank=True,
         on_delete=models.PROTECT
     )
+    system_user = models.PositiveSmallIntegerField(
+        choices=constants.SystemUserType.get_choices(),
+        null=True,
+        blank=True,
+    )
 
     state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
