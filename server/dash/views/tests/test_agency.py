@@ -45,6 +45,8 @@ class AdGroupSettingsTest(TestCase):
                 'retargeting_ad_groups': [2],
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
+                'ga_tracking_type': 2,
+                'ga_property_id': 'UA-0123456789-1',
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
                 'autopilot_min_budget': '0'
@@ -114,8 +116,6 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
                     'daily_budget_cc': '100.00',
-                    'enable_adobe_tracking': False,
-                    'enable_ga_tracking': True,
                     'end_date': '2015-04-02',
                     'id': '1',
                     'name': 'test adgroup 1',
@@ -128,6 +128,8 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
                     'enable_ga_tracking': True,
+                    'ga_property_id': 'UA-123456789-1',
+                    'ga_tracking_type': 1,
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
@@ -221,8 +223,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings'
             ])
@@ -251,13 +251,13 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
-                        'enable_ga_tracking': True,
-                        'enable_adobe_tracking': False,
                         'adobe_tracking_param': '',
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
+                        'ga_property_id': 'UA-123456789-1',
+                        'ga_tracking_type': 1,
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
@@ -282,6 +282,53 @@ class AdGroupSettingsTest(TestCase):
             ])
             mock_log_useraction.assert_called_with(
                 response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_put_add_ga_analytics(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+                                  mock_order_ad_group_settings_update):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
+
+            add_permissions(self.user, [
+                'settings_view',
+                'can_set_ad_group_max_cpc',
+                'can_set_adgroup_to_auto_pilot',
+                'can_view_retargeting_settings',
+                'can_set_ga_api_tracking'
+            ])
+            self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            new_settings = ad_group.get_current_settings()
+            self.assertEquals(models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=new_settings.ga_property_id).count(), 1)
+
+            # put again - this time no new GAAnalyticsAccount should be created
+            self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            new_settings = ad_group.get_current_settings()
+            self.assertEquals(models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=new_settings.ga_property_id).count(), 1)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -388,8 +435,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings'
             ])
@@ -421,6 +466,8 @@ class AdGroupSettingsTest(TestCase):
                         'adobe_tracking_param': '',
                         'enable_adobe_tracking': False,
                         'autopilot_state': 2,
+                        'ga_property_id': '',
+                        'ga_tracking_type': 1,
                         'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
@@ -470,7 +517,7 @@ class AdGroupSettingsTest(TestCase):
             self.settings_dict['settings']['tracking_code'] = 'asd=123'
             self.settings_dict['settings']['enable_ga_tracking'] = False
 
-            add_permissions(self.user, ['settings_view', 'can_toggle_ga_performance_tracking'])
+            add_permissions(self.user, ['settings_view'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -569,13 +616,11 @@ class AdGroupSettingsTest(TestCase):
             response_settings_dict = json.loads(response.content)['data']['settings']
 
             self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
-            self.assertNotEqual(response_settings_dict['enable_ga_tracking'], False)
-            self.assertNotEqual(response_settings_dict['tracking_code'], 'def=123')
-            self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
-            self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+            self.assertNotEqual(response_settings_dict['ga_tracking_type'], 2)
+            self.assertNotEqual(response_settings_dict['ga_property_id'], 'UA-0123456789-1')
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
@@ -855,12 +900,12 @@ class AdGroupHistoryTest(TestCase):
                 cpc_cc='2.0000',
                 daily_budget_cc='120.0000',
                 tracking_code=tracking_code,
+                ga_property_id='UA-123456789-1'
             )
             settings.save(request)
 
         add_permissions(self.user, [
             'ad_group_history_view',
-            'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
             reverse('ad_group_history', kwargs={'ad_group_id': ad_group_id}),
@@ -892,6 +937,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'Ad group name', u'value': u''},
                         {u'name': u'Enable GA tracking', u'value': u'True'},
                         {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
+                        {u'name': u'GA web property ID', u'value': u''},
                         {u'name': u'Enable Adobe tracking', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'value': u''},
                         {u'name': u'Autopilot', u'value': u'Disabled'},
@@ -901,7 +947,8 @@ class AdGroupHistoryTest(TestCase):
                     u'show_old_settings': False
                 }, {
                     u'changed_by': u'non_superuser@zemanta.com',
-                    u'changes_text': u'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
+                    u'changes_text': u'Daily budget set to "$120.00", GA web property ID set to "UA-123456789-1", '
+                                     u'Max CPC bid set to "$2.00"',
                     u'datetime': u'2015-06-05T09:22:24',
                     u'settings': [
                         {u'name': u'State', u'old_value': u'Paused', u'value': u'Paused'},
@@ -921,6 +968,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'Ad group name', u'old_value': u'', u'value': u''},
                         {u'name': u'Enable GA tracking', u'old_value': u'True', u'value': u'True'},
                         {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
+                        {u'name': u'GA web property ID', u'old_value': u'', u'value': u'UA-123456789-1'},
                         {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
                         {u'name': u'Autopilot', u'old_value': u'Disabled', u'value': u'Disabled'},
@@ -1801,7 +1849,7 @@ class CampaignHistoryTest(TestCase):
                 {'name': 'Goal Quantity', 'value': '0.00'},
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
-                {'name': 'Device targeting', 'value': 'Mobile'},
+                {'name': 'Device targeting', 'value': 'Mobile/Tablet'},
                 {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'},
                 {'name': 'Automatic Campaign Stop', 'value': 'True'},
                 {'name': 'Landing Mode', 'value': 'False'},
@@ -3319,3 +3367,110 @@ class HistoryTest(TestCase):
         history = response['data']['history'][0]
         self.assertEqual(self.user.email, history['changed_by'])
         self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
+
+
+class TestHistoryMixin(TestCase):
+
+    class FakeMeta(object):
+
+        def __init__(self, concrete_fields, virtual_fields):
+            self.concrete_fields = concrete_fields
+            self.virtual_fields = virtual_fields
+            self.many_to_many = []
+
+    class HistoryTest(models.HistoryMixin):
+
+        history_fields = ['test_field']
+
+        def __init__(self):
+            self._meta = TestHistoryMixin.FakeMeta(
+                self.history_fields,
+                []
+            )
+            self.id = None
+            self.test_field = ''
+            super(TestHistoryMixin.HistoryTest, self).__init__()
+
+        def get_human_prop_name(self, prop):
+            return 'Test Field'
+
+        def get_human_value(self, key, value):
+            return value
+
+    def test_snapshot(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertTrue(mix.post_init_newly_created)
+
+        mix.id = 5
+        mix.snapshot(previous=mix)
+
+        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertFalse(mix.post_init_newly_created)
+
+    def test_get_history_dict(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual({'test_field': ''}, mix.get_history_dict())
+
+    def test_get_model_state_changes(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            {},
+            mix.get_model_state_changes({'test_field': ''})
+        )
+        self.assertEqual(
+            {'test_field': 'johnny'},
+            mix.get_model_state_changes({'test_field': 'johnny'})
+        )
+
+    def test_get_history_changes_text(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            'Test Field set to "johnny"',
+            mix.get_history_changes_text({'test_field': 'johnny'})
+        )
+
+        self.assertEqual(
+            '',
+            mix.get_history_changes_text({})
+        )
+
+    def test_get_changes_text_from_dict(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            'Test Field set to "johnny"',
+            mix.get_changes_text_from_dict({'test_field': 'johnny'})
+        )
+
+        self.assertEqual(
+            'Created settings',
+            mix.get_changes_text_from_dict({})
+        )
+
+    def test_construct_changes(self):
+        mix = TestHistoryMixin.HistoryTest()
+        self.assertEqual(
+            ({}, 'Created settings. Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
+
+        self.assertEqual(
+            ({}, 'Created settings. Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
+        )
+
+        mix.id = 5
+        mix.snapshot(previous=mix)
+
+        self.assertEqual(
+            ({}, 'Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )
+        self.assertEqual(
+            ({'test_field': 'pesa'}, 'Settings: 5. Test Field set to "pesa"'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
+        )
+        self.assertEqual(
+            ({}, 'Settings: 5.'),
+            mix.construct_changes('Created settings.', 'Settings: 5.', {})
+        )

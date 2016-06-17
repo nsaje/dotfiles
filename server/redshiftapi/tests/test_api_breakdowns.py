@@ -84,7 +84,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
             (sum(a.license_fee_nano)+sum(a.cost_cc)*100000+sum(a.data_cost_cc)*100000)/1000000000.0 total_cost,
             sum(a.visits) visits
         FROM
-        (SELECT b.adgroup_id AS ad_group_id,
+        (SELECT b.ad_group_id AS ad_group_id,
                                 b.content_ad_id AS content_ad_id,
                                                     sum(b.clicks) clicks,
                                                     sum(b.impressions) impressions,
@@ -98,7 +98,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                                                     sum(b.bounced_visits) bounced_visits,
                                                     sum(b.pageviews) pageviews,
                                                     sum(b.total_time_on_site) total_time_on_site,
-                                                    row_number() over (partition BY b.adgroup_id
+                                                    row_number() over (partition BY b.ad_group_id
                                                                     ORDER BY b.campaign_id DESC) AS r
         FROM mv_master b
         WHERE (b.account_id=any(%s)

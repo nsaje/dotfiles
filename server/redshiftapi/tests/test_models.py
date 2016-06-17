@@ -2,6 +2,7 @@ import backtosql
 from django.test import TestCase
 
 from redshiftapi import models
+from stats import constants
 
 
 class RSModelTest(TestCase, backtosql.TestSQLMixin):
@@ -74,3 +75,46 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(context['offset'], 2)
         self.assertEqual(context['limit'], 33)
+
+    def test_get_best_view(self):
+        m = models.MVMaster
+
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_account')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.SOURCE,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_account')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_account')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_account_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_account_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.CAMPAIGN,
+        ]), 'mv_campaign')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
+        ]), 'mv_campaign')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_campaign_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_master')

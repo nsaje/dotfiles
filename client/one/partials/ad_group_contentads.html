@@ -13,24 +13,25 @@
     </div>
     <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
-            <div class="button-bar-item">
-                <button
-                     type="button"
-                     class="btn btn-add"
-                     ng-click="addContentAds()">
-                    + Content Ads
-                </button>
+            <div ng-if="!hasPermission(zemauth.can_use_improved_ads_upload)">
+                <div class="button-bar-item">
+                    <button
+                        type="button"
+                        class="btn btn-add"
+                        ng-click="addContentAds()">
+                        + Content Ads
+                    </button>
+                </div>
             </div>
 
-
-            <div ng-if="hasPermission('zemauth.can_use_improved_ads_upload')">
+            <div ng-if="hasPermission(zemauth.can_use_improved_ads_upload)">
                 <div class="button-bar-item">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_use_improved_ads_upload')" popover-placement="top"></zem-internal-feature>
                     <button
                         type="button"
                         class="btn btn-add"
                         ng-click="addContentAdsPlus()">
-                        + Content Ads v2
+                        + Content Ads
                     </button>
                 </div>
             </div>

@@ -91,6 +91,15 @@ class AdGroupSettingsForm(forms.Form):
 
     enable_ga_tracking = forms.NullBooleanField(required=False)
 
+    ga_tracking_type = forms.TypedChoiceField(
+        required=False,
+        choices=constants.GATrackingType.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    ga_property_id = forms.CharField(max_length=25, required=False)
+
     enable_adobe_tracking = forms.NullBooleanField(required=False)
 
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
@@ -147,6 +156,21 @@ class AdGroupSettingsForm(forms.Form):
     def clean_enable_ga_tracking(self):
         # return True if the field is not set or set to True
         return self.cleaned_data.get('enable_ga_tracking', True) is not False
+
+    def clean_ga_property_id(self):
+        property_id = self.cleaned_data.get('ga_property_id').strip()
+        tracking_type = self.cleaned_data.get('ga_tracking_type')
+
+        if tracking_type == constants.GATrackingType.EMAIL:
+            return None  # property ID should not be set when email type is selected
+
+        if not property_id:
+            raise forms.ValidationError('Web property ID is required.')
+
+        if not re.match(constants.GA_PROPERTY_ID_REGEX, property_id):
+            raise forms.ValidationError('Web property ID is not valid.')
+
+        return property_id
 
     def clean_enable_adobe_tracking(self):
         # return False if the field is not set or set to False
@@ -1144,7 +1168,6 @@ class ContentAdCandidateForm(forms.Form):
         if not image_crop:
             return constants.ImageCrop.CENTER
 
-        print constants.ImageCrop.get_all()
         if image_crop.lower() in constants.ImageCrop.get_all():
             return image_crop.lower()
 
@@ -1160,8 +1183,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_width = forms.IntegerField(
         required=False,
-        min_value=2,
-        max_value=4000,
+        min_value=500,
+        max_value=5000,
         error_messages={
             'min_value': 'Image too small (min width %(limit_value)d px)',
             'max_value': 'Image too big (max width %(limit_value)d px)',
@@ -1169,8 +1192,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_height = forms.IntegerField(
         required=False,
-        min_value=2,
-        max_value=3000,
+        min_value=500,
+        max_value=5000,
         error_messages={
             'min_value': 'Image too small (min height %(limit_value)d px)',
             'max_value': 'Image too big (max height %(limit_value)d px)',
