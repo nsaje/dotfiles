@@ -15,13 +15,14 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
 
         this.getData = function (config) {
             var url = createUrl(baseUrl, config);
-            config = zemGridEndpointApiConverter.convertToApi(config);
+            var params = zemGridEndpointApiConverter.convertConfigToApi(config);
             var deferred = $q.defer();
-            $http.post(url, {params: config}).success(function (data) {
+            $http.post(url, {params: params}).success(function (data) {
                 var breakdowns = data.data;
-                breakdowns.forEach(function (breakdown) {
-                    zemGridEndpointApiConverter.convertFromApi(config, breakdown, metaData);
+                breakdowns = breakdowns.map(function (breakdown) {
+                    breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
                     checkPaginationCount(config, breakdown);
+                    return breakdown;
                 });
                 deferred.resolve(breakdowns);
             }).error(function (data) {

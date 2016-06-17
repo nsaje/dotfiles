@@ -132,7 +132,7 @@ class AdGroupSettingsTest(TestCase):
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Max CPC bid set to "$1.00", '
-            'Device targeting set to "Mobile", '
+            'Device targeting set to "Mobile/Tablet", '
             'Display URL set to "example.com", '
             'Brand name set to "Example", '
             'State set to "Enabled", '
@@ -916,7 +916,7 @@ class HistoryTest(TestCase):
             adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
-            Daily Budget set to "$50,000.00"
+            Source: AdsNative. Daily Budget set to "$50,000.00"
             """).replace('\n', ''), adgs_hist.changes_text)
 
     def test_create_campaign_history(self):

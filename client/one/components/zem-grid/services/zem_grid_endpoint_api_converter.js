@@ -4,31 +4,37 @@
 oneApp.factory('zemGridEndpointApiConverter', [function () {
 
     return {
-        convertFromApi: convertFromApi,
-        convertToApi: convertToApi,
+        convertBreakdownFromApi: convertBreakdownFromApi,
+        convertConfigToApi: convertConfigToApi,
     };
 
-    function convertFromApi (config, breakdown, metaData) {
-        breakdown.breakdownId = breakdown.breakdown_id;
-        delete breakdown.breakdown_id;
-        breakdown.level = config.level;
-        breakdown.rows = breakdown.rows.map(function (row) {
+    function convertBreakdownFromApi (config, breakdown, metaData) {
+        var convertedBreakdown = {
+            breakdownId: breakdown.breakdown_id,
+            level: config.level,
+            pagination: breakdown.pagination,
+            totals: convertStatsFromApi(breakdown.totals, metaData),
+        };
+        convertedBreakdown.rows = breakdown.rows.map(function (row) {
             return {
                 stats: convertStatsFromApi(row, metaData),
                 breakdownId: row.breakdown_id,
                 archived: row.archived,
             };
         });
-        breakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
+        return convertedBreakdown;
     }
 
-    function convertToApi (config) {
-        config.breakdown_page = config.breakdownPage; // eslint-disable-line camelcase
-        config.start_date = config.startDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-        config.end_date = config.endDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-        delete config.breakdownPage;
-        delete config.breakdown;
-        return config;
+    function convertConfigToApi (config) {
+        return {
+            breakdown_page: config.breakdownPage, // eslint-disable-line camelcase
+            start_date: config.startDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
+            end_date: config.endDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
+            level: config.level,
+            limit: config.limit,
+            offset: config.offset,
+            order: config.order,
+        };
     }
 
     function convertStatsFromApi (row, metaData) {

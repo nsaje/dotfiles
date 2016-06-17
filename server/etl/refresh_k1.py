@@ -20,9 +20,11 @@ MATERIALIZED_VIEWS = [
 
     materialize_views.MasterView(),
 
-    # Derived views from master
-    # materialize_views.MVAccount(),
+    # Derived views from master - from broder to narrower breakdown
+    # materialize_views.MVCampaignDelivery(),
     # materialize_views.MVAccountDelivery(),
+    # materialize_views.MVCampaign(),
+    # materialize_views.MVAccount(),
 ]
 
 

@@ -380,7 +380,7 @@ class MVAccount(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_master',
+            'source_table': 'mv_campaign',
         })
 
         return sql, {
@@ -398,6 +398,49 @@ class MVAccountDelivery(materialize_helpers.Materialize):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_campaign_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVCampaign(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_campaign'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_campaign_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVCampaignDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_campaign_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
