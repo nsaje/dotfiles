@@ -1,7 +1,13 @@
-/* globals oneApp */
+/* globals oneApp, constants */
 'use strict';
 
 oneApp.directive('zemGridCellBreakdownField', [function () {
+
+    var LEVELS_WITH_INTERNAL_LINKS = [
+        constants.level.ALL_ACCOUNTS,
+        constants.level.ACCOUNTS,
+        constants.level.CAMPAIGNS,
+    ];
 
     return {
         restrict: 'E',
@@ -19,10 +25,8 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
             scope.$watch('ctrl.data', function () {
                 if (ctrl.data) {
                     ctrl.fieldType = 'base';
-                    // Display internal link for first breakdown level in 'All acounts', 'Account' or 'Campaign' view.
-                    if (ctrl.row.level === 1 &&
-                        ['all_accounts', 'accounts', 'campaigns'].indexOf(ctrl.grid.meta.data.level) !== -1
-                    ) {
+                    // Display internal link for row level 1 on 'All acounts', 'Account' or 'Campaign' level.
+                    if (ctrl.row.level === 1 && LEVELS_WITH_INTERNAL_LINKS.indexOf(ctrl.grid.meta.data.level) !== -1) {
                         ctrl.fieldType = 'internalLink';
                     }
                 }
