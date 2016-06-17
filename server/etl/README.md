@@ -9,10 +9,15 @@ this operations when we query.
 Transforming of data includes:
 
 A. applying cost factors that are calculated from daily statements to `cost`, `data_cost` and so calculating `effective_cost_nano`, `effective_data_cost_nano` and `license_fee_nano`
+
 B. transforming UTC `date` and `hour` fields to local (EST) day `date`
+
 C. transforming source slugs to `source_id`
+
 D. adding `campaign_id`, `account_id`, `agency_id` fields based on `ad_group_id`
+
 E. transforming `device_type`, `country`, `dma`, `state`, `age`, `gender` and `age_gender` to constants used by z1
+
 F. converting `spend` and `data_spend` to `cost_cc` and `data_cost_cc`
 
 Most of transformations are made directly in the database so that we don't have the overhead of python,
@@ -48,8 +53,7 @@ big performance hit.
 
 ### Other notes ###
 
-Currently first 3 materialized views are there to support legacy tables: `ContentAdStats`, `Publishers`, `TouchpointConversions`.
-These 3 work similarily. `MVMaster` is basically extended `ContentAdStats`, same logics but lots of it is happening in database. 
+Currently first 3 materialized views are there to support legacy tables: `ContentAdStats`, `Publishers`, `TouchpointConversions`. `MVMaster` is basically extended `ContentAdStats`, same logics but lots of it is happening in database as it is broader and more resource intensive.
 
 ## Code structure ##
 
