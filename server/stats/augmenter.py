@@ -1,4 +1,5 @@
 import collections
+import datetime
 
 from dash import models
 from dash import constants as dash_constants
@@ -34,6 +35,7 @@ def augment(breakdown, stats_rows, target_dimension):
             constants.get_parent_breakdown(breakdown), row) if breakdown else None
 
         augment_row_delivery(row)
+        augment_row_time(row)
 
 
 def augment_accounts(stats_rows):
@@ -122,3 +124,19 @@ def augment_row_delivery(row):
     for dimension in constants.DeliveryDimension._ALL:
         if dimension in row and not row[dimension]:
             row[dimension] = UNKNOWN
+
+
+def augment_row_time(row):
+
+    if constants.TimeDimension.DAY in row:
+        date = row[constants.TimeDimension.DAY]
+        row[constants.TimeDimension.DAY] = date.isoformat()
+
+    if constants.TimeDimension.WEEK in row:
+        date = row[constants.TimeDimension.WEEK]
+        row[constants.TimeDimension.WEEK] = "Week {} - {}".format(date.isoformat(),
+                                                                  (date + datetime.timedelta(days=6)).isoformat())
+
+    if constants.TimeDimension.MONTH in row:
+        date = row[constants.TimeDimension.MONTH]
+        row[constants.TimeDimension.MONTH] = "Month {}/{}".format(date.month, date.year)
