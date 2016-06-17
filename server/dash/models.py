@@ -2274,7 +2274,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
-            changes if not self.post_init_newly_created else None
+            changes
         )
         create_ad_group_history(
             current_settings.ad_group,
