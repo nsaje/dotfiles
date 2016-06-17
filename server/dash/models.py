@@ -2853,7 +2853,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
-                value * converters.CC_TO_DECIMAL_DOLAR)
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == 'comment':
