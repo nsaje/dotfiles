@@ -33,7 +33,7 @@ def augment(breakdown, stats_rows, target_dimension):
         row['parent_breakdown_id'] = helpers.create_breakdown_id(
             constants.get_parent_breakdown(breakdown), row) if breakdown else None
 
-        augment_row_constants_text(row)
+        augment_row_delivery(row)
 
 
 def augment_accounts(stats_rows):
@@ -106,7 +106,7 @@ def augment_source(stats_rows):
             row['source_name'] = source.name if source else UNKNOWN
 
 
-def augment_row_constants_text(row):
+def augment_row_delivery(row):
 
     mapping = {
         constants.DeliveryDimension.DEVICE: dash_constants.DeviceType,
@@ -118,3 +118,7 @@ def augment_row_constants_text(row):
     for dimension, const_class in mapping.iteritems():
         if dimension in row:
             row[dimension] = const_class.get_text(row[dimension])
+
+    for dimension in constants.DeliveryDimension._ALL:
+        if dimension in row and not row[dimension]:
+            row[dimension] = UNKNOWN
