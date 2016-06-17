@@ -1547,7 +1547,6 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(request.user, new_latest_settings.created_by)
         self.assertIsNone(new_latest_settings.system_user)
 
-
         mock_send_mail.assert_called_with(
             self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
 
