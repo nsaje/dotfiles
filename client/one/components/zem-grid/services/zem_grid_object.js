@@ -28,6 +28,7 @@ oneApp.factory('zemGridObject', [function () {
 
         this.meta = {           // meta information and functionality
             api: null,          // zemGridApi - api for exposed/public zem-grid functionality
+            options: null,      // Options (enableSelection, maxSelectedRows, etc.)
             service: null,      // zemGridDataService - access to data
             pubsub: null,       // zemGridPubSub - internal message queue
             data: null,         // meta-data retrieved through Endpoint - columns definitions

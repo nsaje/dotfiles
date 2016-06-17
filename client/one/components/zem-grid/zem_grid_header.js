@@ -65,9 +65,12 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                         type: 'collapse',
                     });
                 }
-                vm.grid.header.visibleColumns.unshift({
-                    type: 'checkbox',
-                });
+
+                if (vm.grid.meta.options.enableSelection) {
+                    vm.grid.header.visibleColumns.unshift({
+                        type: 'checkbox',
+                    });
+                }
             }
 
             function getHeaderColumnClass (column) {

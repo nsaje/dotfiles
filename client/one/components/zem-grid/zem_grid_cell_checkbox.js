@@ -15,9 +15,28 @@ oneApp.directive('zemGridCellCheckbox', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_checkbox.html',
         controller: [function () {
-            this.toggleSelection = function () {
+            var maxRowsReached = false;
+
+            var vm = this;
+            vm.isDisabled = isDisabled;
+            vm.toggleSelection = toggleSelection;
+
+            this.grid.meta.api.onRowsSelectionChanged(this.grid.meta.scope, function () {
+                maxRowsReached = false;
+                var selectedRows = vm.grid.meta.api.getSelectedRows();
+                var maxSelectedRows = vm.grid.meta.options.maxSelectedRows;
+                if (maxSelectedRows && selectedRows.length >= maxSelectedRows) {
+                    maxRowsReached = true;
+                }
+            });
+
+            function isDisabled () {
+                return maxRowsReached && !vm.row.selected;
+            }
+
+            function toggleSelection () {
                 // Workaround - using the same field for checkbox ng-model as API (value is already updated)
-                this.grid.meta.api.setSelectedRows(this.row, this.row.selected);
+                vm.grid.meta.api.setSelectedRows(vm.row, vm.row.selected);
             };
         }],
     };

@@ -1,7 +1,7 @@
 <span class="zem-grid-cell-checkbox">
      <input ng-show="ctrl.row.level === 1"
             type="checkbox"
-            ng-disabled="false"
+            ng-disabled="ctrl.isDisabled()"
             data-ng-model="ctrl.row.selected"
             data-ng-change="ctrl.toggleSelection()"
      />
