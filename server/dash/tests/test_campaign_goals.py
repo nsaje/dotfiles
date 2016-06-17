@@ -239,7 +239,7 @@ class CampaignGoalsTestCase(TestCase):
                 'name': 'Time on Site - Seconds',
                 'conversion': None,
                 'value': 60,
-                'fields': {'total_seconds': True, 'avg_cost_per_second': True},
+                'fields': {'total_seconds': True, 'avg_cost_per_minute': True},
             },
             {
                 'name': 'Pageviews per Visit',

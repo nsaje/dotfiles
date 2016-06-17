@@ -24,7 +24,7 @@ CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MA
 
 CAMPAIGN_GOAL_FIELDS = [
     'total_seconds',
-    'avg_cost_per_second',
+    'avg_cost_per_minute',
     'unbounced_visits',
     'avg_cost_per_non_bounced_visitor',
     'total_pageviews',
