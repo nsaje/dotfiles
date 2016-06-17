@@ -103,8 +103,8 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
         FROM mv_master b
         WHERE (b.account_id=any(%s)
                 AND b.campaign_id=%s
-                AND trunc(b.date)>=%s
-                AND trunc(b.date)<=%s)
+                AND b.date>=%s
+                AND b.date<=%s)
         AND ((b.content_ad_id=%s AND b.source_id=%s) OR (b.content_ad_id=%s AND b.source_id=ANY(%s)))
         GROUP BY ad_group_id,
                 content_ad_id) a
