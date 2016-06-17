@@ -13,7 +13,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
 
     function parseMetaData (grid, metadata) {
         grid.meta.data = metadata;
-        grid.header.columns = metadata.columns.map (function (data) {
+        grid.header.columns = metadata.columns.map(function (data) {
             return zemGridObject.createColumn(data);
         });
     }
@@ -45,7 +45,16 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
             }
         });
 
-        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, level, parent);
+        if (!breakdown.pagination.complete) {
+            var row = createBreakdownRow(grid, breakdown, parent);
+            rows.push(row);
+        }
+
+        return rows;
+    }
+
+    function createBreakdownRow (grid, breakdown, parent) {
+        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, breakdown.level, parent);
 
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
@@ -54,9 +63,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
             emptyStats[col.field] = '';
         });
         row.data.stats = emptyStats;
-        rows.push(row);
-
-        return rows;
+        return row;
     }
 
     function parseStats (grid, stats) {

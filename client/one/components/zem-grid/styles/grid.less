@@ -69,10 +69,6 @@
         max-width: 20px;
       }
 
-      .load-more-cell {
-        max-width: none; // Ignore max-width configured on cell
-      }
-
       &.level-1 {
         background-color: @zem-grid-level-1-bg-color;
       }
@@ -95,6 +91,14 @@
           background-color: @zem-grid-bg-color;
         }
       }
+    }
+
+    .loading-cell {
+      color: #00cc18;
+      background-image: url('img/loader.gif');
+      background-position: 10px center;
+      background-repeat: no-repeat;
+      background-size: 20px 20px;
     }
 
     .zem-grid-header, .zem-grid-footer {

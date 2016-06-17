@@ -1,19 +1,21 @@
-<div class="breakdown-row">
-    <div class="zem-grid-cell pagination-cell">
-        <span>{{ctrl.row.data.breakdownId}} {{ctrl.row.data.level}} {{ctrl.row.level}}</span>
-        <span ng-show="ctrl.row.data.pagination.count>0">
+<div class="zem-grid-row-breakdown">
+    <div class="zem-grid-cell breakdown-pagination-cell">
+        <span ng-if="ctrl.row.data.meta.loading">
+             Loading...
+        </span>
+        <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count>0">
              - {{ctrl.row.data.pagination.limit}} of {{ctrl.row.data.pagination.count}} -
         </span>
-        <span ng-show="!ctrl.row.data.pagination.count || ctrl.row.data.pagination.count<1">
+        <span ng-if="!ctrl.row.data.meta.loading && !ctrl.row.data.pagination.count">
              - {{ctrl.row.data.pagination.limit}} -
         </span>
     </div>
 
-    <div class="zem-grid-cell load-more-cell infobox-reloading-icon" ng-show="ctrl.row.data.meta.loading">
+    <div class="zem-grid-cell breakdown-load-more-cell loading-cell" ng-show="ctrl.row.data.meta.loading">
     </div>
-    <div class="zem-grid-cell load-more-cell" ng-show="!ctrl.row.data.meta.loading">
-        <span ng-show="ctrl.row.data.pagination.limit == ctrl.row.data.pagination.count">All data loaded</span>
-        <a ng-show="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count" ng-click="ctrl.loadMore(20)"> (load 20 more) </a>
-        <a ng-show="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count && ctrl.row.data.pagination.count>0" ng-click="ctrl.loadMore()"> (load all) </a>
+    <div class="zem-grid-cell breakdown-load-more-cell" ng-show="!ctrl.row.data.meta.loading">
+        <span ng-if="ctrl.row.data.pagination.limit == ctrl.row.data.pagination.count">All data loaded</span>
+        <a ng-if="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count" ng-click="ctrl.loadMore(20)"> (load more) </a>
+        <a ng-if="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count && ctrl.row.data.pagination.count>0" ng-click="ctrl.loadMore()"> (load all) </a>
     </div>
 </div>

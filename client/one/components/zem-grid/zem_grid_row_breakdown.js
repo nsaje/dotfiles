@@ -15,33 +15,35 @@ oneApp.directive('zemGridRowBreakdown', [function () {
         link: function (scope, element) {
             var grid = scope.ctrl.grid;
             scope.$watch('ctrl.row', function (row) {
-                var paginationElementWidth = 0;
-                var loadMoreElementWidth = 0;
-                var offset = (row.level-1) * 20 + 8;
-                var found = false;
+                // Resize breakdown columns based on breakdown column position
+                // Breakdown split widths - before breakdown, breakdown, after breakdown
+                var breakdownSplitWidths = [0];
                 grid.header.visibleColumns.forEach(function (column, idx) {
-                    if (found) loadMoreElementWidth += grid.ui.columnsWidths[idx];
-                    else paginationElementWidth += grid.ui.columnsWidths[idx];
                     if (column.type === 'breakdownName') {
-                        offset = offset + paginationElementWidth - grid.ui.columnsWidths[idx];
-                        found = true;
+                        breakdownSplitWidths.push(grid.ui.columnsWidths[idx]);
+                        breakdownSplitWidths.push(0);
                     }
+                    breakdownSplitWidths[breakdownSplitWidths.length - 1] += grid.ui.columnsWidths[idx];
                 });
 
-                element.find('.pagination-cell').css ({
-                    'width': paginationElementWidth + 'px',
-                    'max-width': paginationElementWidth + 'px',
-                    'padding-left': offset + 'px',
+                var paginationCellWidth = breakdownSplitWidths[0] + breakdownSplitWidths[1];
+                var paginationPadding = breakdownSplitWidths[0] + (row.level - 1) * 20;
+                var loadMoreCellWidth = breakdownSplitWidths[2];
+
+                element.find('.breakdown-pagination-cell').css({
+                    'width': paginationCellWidth + 'px',
+                    'max-width': paginationCellWidth + 'px',
+                    'padding-left': paginationPadding + 'px',
                 });
 
-                element.find('.load-more-cell').css({
-                    'width': loadMoreElementWidth + 'px',
-                    'max-width': loadMoreElementWidth + 'px',
+                element.find('.breakdown-load-more-cell').css({
+                    'width': loadMoreCellWidth + 'px',
+                    'max-width': loadMoreCellWidth + 'px',
                 });
             });
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row_breakdown.html',
-        controller: ['zemGridUIService', function (zemGridUIService) {
+        controller: [function () {
             this.loadMore = function (size) {
                 if (!size) {
                     size = this.row.data.pagination.count - this.row.data.pagination.limit;
