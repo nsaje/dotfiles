@@ -1,3 +1,4 @@
+/* globals describe, constants, expect, it, beforeEach, module, inject */
 'use strict';
 
 describe('AdGroupSettingsCtrlSpec', function () {
@@ -5,7 +6,7 @@ describe('AdGroupSettingsCtrlSpec', function () {
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($rootScope, $controller, _$timeout_, $state) {
+    beforeEach(inject(function ($rootScope, $controller) {
         $scope = $rootScope.$new();
         $scope.adGroup = {archived: false};
         $scope.account = {id: 1};
@@ -22,7 +23,7 @@ describe('AdGroupSettingsCtrlSpec', function () {
 
         api = {
             adGroupSettings: {
-                get: mockApiFunc
+                get: mockApiFunc,
             },
         };
 
@@ -59,11 +60,11 @@ describe('AdGroupSettingsCtrlSpec', function () {
         it('return true if targetDevices are equal to default targetDevices', function () {
             $scope.settings.targetDevices = [
                 {value: 'mobile', checked: true},
-                {value: 'desktop', checked: false}
+                {value: 'desktop', checked: false},
             ];
             $scope.defaultSettings.targetDevices = [
                 {value: 'mobile', checked: true},
-                {value: 'desktop', checked: false}
+                {value: 'desktop', checked: false},
             ];
 
             expect($scope.isDefaultTargetDevices()).toBe(true);
@@ -72,14 +73,26 @@ describe('AdGroupSettingsCtrlSpec', function () {
         it('return true if targetDevices are equal to default targetDevices', function () {
             $scope.settings.targetDevices = [
                 {value: 'mobile', checked: true},
-                {value: 'desktop', checked: false}
+                {value: 'desktop', checked: false},
             ];
             $scope.defaultSettings.targetDevices = [
                 {value: 'mobile', checked: true},
-                {value: 'desktop', checked: true}
+                {value: 'desktop', checked: true},
             ];
 
             expect($scope.isDefaultTargetDevices()).toBe(false);
+        });
+    });
+
+    describe('getGaTrackingTypeByValue', function () {
+        it('returns correct tracking type by value', function () {
+            var type = $scope.getGaTrackingTypeByValue(constants.gaTrackingType.EMAIL);
+            expect(type).toEqual({name: 'Email', value: 1});
+        });
+
+        it('returns undefined when matching type does not exist', function () {
+            var type = $scope.getGaTrackingTypeByValue(999);
+            expect(type).toBeUndefined();
         });
     });
 });

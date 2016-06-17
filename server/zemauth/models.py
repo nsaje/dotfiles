@@ -128,8 +128,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('aggregate_postclick_engagement', 'Can view aggregate postclick eng. metrics.'),
             ('view_pubs_postclick_acquisition', 'Can view publishers postclick acq. metrics.'),
             ('data_status_column', 'Can see data status column in table.'),
-            ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
-            ('can_toggle_adobe_performance_tracking', 'Can toggle Adobe Analytics performance tracking.'),
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_subdivision_targeting', 'Can set subdivision targeting'),
             ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
@@ -186,6 +184,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_new_history_backend', 'Can view history from new history models.'),
             ('can_request_demo_v3', 'Can request demo v3.'),
             ('can_upload_with_picker', 'Can use upload with content ad picker.'),
+            ('can_set_ga_api_tracking', 'Can set GA API tracking.'),
         )
 
     def get_full_name(self):
