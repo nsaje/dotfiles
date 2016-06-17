@@ -122,7 +122,8 @@ class AdGroupSettings(api_common.BaseApiView):
     def _add_ga_account(self, user, ad_group, settings):
         if not user.has_perm('zemauth.can_set_ga_api_tracking'):
             return
-
+        if not settings.ga_property_id:
+            return
         if models.GAAnalyticsAccount.objects.filter(
                 account=ad_group.campaign.account,
                 ga_web_property_id=settings.ga_property_id).exists():
