@@ -2233,7 +2233,7 @@ class AccountHistoryTest(TestCase):
 
 
 @override_settings(
-    FB_BUSINESS_ID='fake_app_id',
+    FB_BUSINESS_ID='fake_business_id',
     FB_ACCESS_TOKEN='very_fake_token',
 )
 class AccountSettingsTest(TestCase):
@@ -2509,9 +2509,10 @@ class AccountSettingsTest(TestCase):
             'archived': False
         })
 
+    @patch('requests.get')
     @patch('requests.post')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction, mock_request):
+    def test_put(self, mock_log_useraction, mock_request, mock_page_id):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
@@ -2523,6 +2524,9 @@ class AccountSettingsTest(TestCase):
         response = Response()
         response.status_code = 200
         mock_request.return_value = response
+
+        response._content = '{"id": "1234"}'
+        mock_page_id.return_value = response
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),

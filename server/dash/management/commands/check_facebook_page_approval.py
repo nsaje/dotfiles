@@ -27,29 +27,14 @@ class Command(ExceptionCommand):
         pages = _get_all_pages()
 
         for pending_account in pending_accounts:
-            page_id = _get_page_id(pending_account)
-            page_status = pages.get(page_id)
+            page_status = pages.get(pending_account.page_id)
 
             if page_status and page_status == 'CONFIRMED':
-                ad_account_id = _create_ad_account(pending_account.account.name, page_id)
+                ad_account_id = _create_ad_account(pending_account.account.name, pending_account.page_id)
 
                 pending_account.ad_account_id = ad_account_id
                 pending_account.status = constants.FacebookPageRequestType.CONNECTED
                 pending_account.save()
-
-
-def _get_page_id(facebook_account):
-    page_id = facebook_account.get_page_id()
-    params = {'access_token': settings.FB_ACCESS_TOKEN}
-    response = requests.get(FB_PAGE_ID_URL % (FB_API_VERSION, page_id), params=params)
-
-    if response.status_code != httplib.OK:
-        logger.error('Error while retrieving facebook page id. Status code: %s, Error %s', response.status_code,
-                     response.content)
-        raise CommandError('Error while retrieving facebook page id.')
-
-    content = response.json()
-    return content['id']
 
 
 def _get_all_pages():
