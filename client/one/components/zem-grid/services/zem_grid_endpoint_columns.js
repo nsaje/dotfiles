@@ -815,6 +815,18 @@ oneApp.factory('zemGridEndpointColumns', [function () {
             order: true,
             initialOrder: 'desc',
         },
+        avgCostPerVisit: {
+            name: 'Avg. Cost per Visit',
+            field: 'avg_cost_per_visit',
+            checked: true,
+            type: 'currency',
+            shown: 'zemauth.campaign_goal_optimization',
+            internal: 'zemauth.campaign_goal_optimization',
+            help: 'Average cost per visit.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        },
         avgCostPerNonBouncedVisitor: {
             name: 'Avg. Cost for Unbounced Visitor',
             field: 'avg_cost_per_non_bounced_visitor',
