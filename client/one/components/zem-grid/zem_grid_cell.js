@@ -11,7 +11,7 @@ oneApp.directive('zemGridCell', [function () {
         bindToController: {
             position: '=',
             col: '=',
-            value: '=',
+            data: '=',
             row: '=',
             grid: '=',
         },
