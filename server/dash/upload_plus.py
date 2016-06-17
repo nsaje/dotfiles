@@ -84,7 +84,7 @@ def _prepare_candidates(batch):
     new_content_ads = []
     errors = []
     for candidate in candidates:
-        f = forms.ContentAdForm(candidate.get_dict())
+        f = forms.ContentAdForm(candidate.to_dict())
         if not f.is_valid():
             # f.errors is a dict of lists of messages
             errors.append({
@@ -134,7 +134,7 @@ def _save_error_report(batch_id, filename, errors):
 
     writer.writeheader()
     for error_dict in errors:
-        row = {_transform_field(k): v for k, v in error_dict['candidate'].get_dict().items() if k in fields}
+        row = {_transform_field(k): v for k, v in error_dict['candidate'].to_dict().items() if k in fields}
         row['Errors'] = error_dict['errors']
         writer.writerow(row)
 
@@ -181,7 +181,7 @@ def cancel_upload(batch):
 def validate_candidates(candidates):
     errors = {}
     for candidate in candidates:
-        f = forms.ContentAdCandidateForm(candidate.get_dict())
+        f = forms.ContentAdForm(candidate.to_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
     return errors
@@ -230,6 +230,8 @@ def _create_candidates(content_ads_data, ad_group, batch):
                 description=content_ad.get('description', ''),
                 call_to_action=content_ad.get('call_to_action', ''),
                 tracker_urls=content_ad.get('tracker_urls', ''),
+                primary_tracker_url=content_ad.get('primary_tracker_url', ''),
+                secondary_tracker_url=content_ad.get('secondary_tracker_url', ''),
             )
         )
     return candidates_added

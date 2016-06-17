@@ -1,6 +1,7 @@
 from mock import patch
 from django.test import TestCase, override_settings
 
+import dash.constants
 import dash.models
 import dash.upload_plus
 
@@ -120,7 +121,7 @@ class PersistCandidatesTestCase(TestCase):
         self.assertEqual(candidate.description, content_ad.description)
         self.assertEqual(candidate.brand_name, content_ad.brand_name)
         self.assertEqual(candidate.call_to_action, content_ad.call_to_action)
-        self.assertEqual(candidate.tracker_urls.split(' '), content_ad.tracker_urls)
+        self.assertEqual([candidate.primary_tracker_url, candidate.secondary_tracker_url], content_ad.tracker_urls)
         self.assertEqual(candidate.image_id, content_ad.image_id)
         self.assertEqual(candidate.image_width, content_ad.image_width)
         self.assertEqual(candidate.image_height, content_ad.image_height)
@@ -148,9 +149,9 @@ class PersistCandidatesTestCase(TestCase):
         self.assertTrue(s3_key.endswith('.csv'))
         self.assertEqual(
             'Url,Title,Image Url,Impression Trackers,Display Url,Brand Name,Description,Call To Action,Label,'
-            'Image Crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog,http://zemanta.com/img.jpg,,zemanta.com,'
-            'Zemanta,Zemanta blog,Read more,content ad 1,entropy,"Content unreachable,'
-            ' Image could not be processed"\r\n', content)
+            'Image Crop,Primary Tracker Url,Secondary Tracker Url,Errors\r\nhttp://zemanta.com/blog,Zemanta blog,'
+            'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,entropy,,,'
+            '"Content unreachable, Image could not be processed"\r\n', content)
 
         batch.refresh_from_db()
         self.assertEqual(dash.constants.UploadBatchStatus.DONE, batch.status)
@@ -215,8 +216,40 @@ class ValidateCandidatesTestCase(TestCase):
         ad_group = dash.models.AdGroup.objects.get(id=1)
         batch, candidates = dash.upload_plus.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
 
+        candidate = candidates[0]
+        candidate.image_status = dash.constants.AsyncUploadJobStatus.OK
+        candidate.url_status = dash.constants.AsyncUploadJobStatus.OK
+        candidate.image_id = '1234'
+        candidate.image_hash = 'abcd'
+        candidate.image_width = 500
+        candidate.image_height = 500
+        candidate.save()
+
         errors = dash.upload_plus.validate_candidates(candidates)
         self.assertFalse(errors)
+
+    def test_image_errors(self):
+        data = [valid_candidate]
+
+        # prepare candidate
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        batch, candidates = dash.upload_plus.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+
+        candidate = candidates[0]
+        candidate.image_status = dash.constants.AsyncUploadJobStatus.OK
+        candidate.url_status = dash.constants.AsyncUploadJobStatus.OK
+        candidate.image_id = '1234'
+        candidate.image_hash = 'abcd'
+        candidate.image_width = 100
+        candidate.image_height = 100
+        candidate.save()
+
+        errors = dash.upload_plus.validate_candidates(candidates)
+        self.assertEqual(errors, {
+            candidate.id: {
+                'image_url': ['Image too small (minimum size is 300x300 px)']
+            }
+        })
 
     def test_invalid_candidate(self):
         data = [invalid_candidate]
@@ -228,6 +261,7 @@ class ValidateCandidatesTestCase(TestCase):
         errors = dash.upload_plus.validate_candidates(candidates)
         self.assertEquals({
             candidates[0].id: {
+                '__all__': ['Content ad still processing'],
                 'label': [u'Label too long (max 25 characters)'],
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],

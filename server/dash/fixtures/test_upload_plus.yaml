@@ -277,11 +277,12 @@
     brand_name: 'Zemanta'
     description: 'Zemanta blog'
     call_to_action: 'Read more'
-    tracker_urls: 'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
-    image_id: 'abc12345'
     image_width: 500
     image_height: 500
     image_hash: '54321cba'
+    primary_tracker_url: 'https://t.zemanta.com/px1.png'
+    secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    image_id: 'abc12345'
   model: dash.contentadcandidate
   pk: 2
 

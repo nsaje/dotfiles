@@ -583,7 +583,8 @@ class UserForm(forms.Form):
 DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name',
-                       'description', 'call_to_action', 'label', 'image_crop']
+                       'description', 'call_to_action', 'label', 'image_crop',
+                       'primary_tracker_url', 'secondary_tracker_url']
 IGNORED_CSV_FIELDS = ['errors']
 
 # Example CSV content - must be ignored if mistakenly uploaded
@@ -620,14 +621,6 @@ class AdGroupAdsUploadForm(forms.Form):
         error_messages={
             'required': 'Please enter a name for this upload.',
             'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    description = forms.CharField(
-        required=True,
-        max_length=140,
-        label="Description",
-        error_messages={
-            'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
         }
     )
 
@@ -781,6 +774,14 @@ class AdGroupAdsUploadExtendedForm(AdGroupAdsUploadForm):
         max_length=25,
         error_messages={
             'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    description = forms.CharField(
+        required=True,
+        max_length=140,
+        label="Description",
+        error_messages={
+            'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
         }
     )
 
@@ -1126,6 +1127,20 @@ class ContentAdCandidateForm(forms.Form):
     tracker_urls = forms.CharField(
         required=False,
     )
+    primary_tracker_url = forms.CharField(
+        max_length=936,
+        required=False,
+        error_messages={
+            'max_length': 'URL too long (max %(limit_value)d characters)',
+        }
+    )
+    secondary_tracker_url = forms.CharField(
+        max_length=936,
+        required=False,
+        error_messages={
+            'max_length': 'URL too long (max %(limit_value)d characters)',
+        }
+    )
 
     def _validate_url(self, url):
         validate_url = validators.URLValidator(schemes=['http', 'https'])
@@ -1138,6 +1153,18 @@ class ContentAdCandidateForm(forms.Form):
         url = 'http://{}'.format(url)
         validate_url(url)
 
+        return url
+
+    def _validate_tracker_url(self, url):
+        validate_url = validators.URLValidator(schemes=['https'])
+        if url.lower().startswith('http://'):
+            raise forms.ValidationError('Impression tracker URLs have to be HTTPS')
+        try:
+            # URL is considered invalid if it contains any unicode chars
+            url = url.encode('ascii')
+            validate_url(url)
+        except (forms.ValidationError, UnicodeEncodeError):
+            raise forms.ValidationError('Invalid impression tracker URLs')
         return url
 
     def clean_url(self):
@@ -1154,6 +1181,20 @@ class ContentAdCandidateForm(forms.Form):
         except forms.ValidationError:
             raise forms.ValidationError('Invalid image URL')
 
+    def clean_primary_tracker_url(self):
+        url = self.cleaned_data.get('primary_tracker_url').strip()
+        if not url:
+            return
+
+        return self._validate_tracker_url(url)
+
+    def clean_secondary_tracker_url(self):
+        url = self.cleaned_data.get('secondary_tracker_url').strip()
+        if not url:
+            return
+
+        return self._validate_tracker_url(url)
+
     def clean_tracker_urls(self):
         tracker_urls_str = self.cleaned_data.get('tracker_urls').strip()
         if not tracker_urls_str:
@@ -1162,19 +1203,8 @@ class ContentAdCandidateForm(forms.Form):
         tracker_urls = tracker_urls_str.strip().split(' ')
 
         result = []
-        validate_url = validators.URLValidator(schemes=['https'])
-
         for url in tracker_urls:
-            if url.lower().startswith('http://'):
-                raise forms.ValidationError('Impression tracker URLs have to be HTTPS')
-            try:
-                # URL is considered invalid if it contains any unicode chars
-                url = url.encode('ascii')
-                validate_url(url)
-            except (forms.ValidationError, UnicodeEncodeError):
-                raise forms.ValidationError('Invalid impression tracker URLs')
-
-            result.append(url)
+            result.append(self._validate_tracker_url(url))
 
         return result
 
@@ -1188,6 +1218,19 @@ class ContentAdCandidateForm(forms.Form):
 
         raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
 
+    def clean(self):
+        super(ContentAdCandidateForm, self).clean()
+
+        primary_tracker_url = self.cleaned_data.get('primary_tracker_url')
+        if primary_tracker_url:
+            self.cleaned_data['tracker_urls'].append(primary_tracker_url)
+
+        secondary_tracker_url = self.cleaned_data.get('secondary_tracker_url')
+        if secondary_tracker_url:
+            self.cleaned_data['tracker_urls'].append(secondary_tracker_url)
+
+        return self.cleaned_data
+
 
 class ContentAdForm(ContentAdCandidateForm):
     image_id = forms.CharField(
@@ -1198,32 +1241,29 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_width = forms.IntegerField(
         required=False,
-        min_value=300,
-        max_value=10000,
-        error_messages={
-            'min_value': 'Image too small (min width %(limit_value)d px)',
-            'max_value': 'Image too big (max width %(limit_value)d px)',
-        },
     )
     image_height = forms.IntegerField(
         required=False,
-        min_value=300,
-        max_value=10000,
-        error_messages={
-            'min_value': 'Image too small (min height %(limit_value)d px)',
-            'max_value': 'Image too big (max height %(limit_value)d px)',
-        },
     )
 
-    image_status = forms.IntegerField()
-    url_status = forms.IntegerField()
+    image_status = forms.IntegerField(
+        required=False,
+    )
+    url_status = forms.IntegerField(
+        required=False,
+    )
+
+    MIN_IMAGE_SIZE = 300
+    MAX_IMAGE_SIZE = 10000
 
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
 
-        if 'image_width' not in cleaned_data or 'image_height' not in cleaned_data:
-            # didn't validate
-            return
+        pending_statuses = [constants.AsyncUploadJobStatus.PENDING_START,
+                            constants.AsyncUploadJobStatus.WAITING_RESPONSE]
+        if cleaned_data['image_status'] in pending_statuses or cleaned_data['url_status'] in pending_statuses:
+            self.add_error(None, 'Content ad still processing')
+            return self.cleaned_data
 
         if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
            not cleaned_data['image_id'] or\
@@ -1231,6 +1271,14 @@ class ContentAdForm(ContentAdCandidateForm):
            not cleaned_data['image_width'] or\
            not cleaned_data['image_height']:
             self.add_error('image_url', 'Image could not be processed')
+        elif cleaned_data['image_width'] < self.MIN_IMAGE_SIZE or cleaned_data['image_height'] < self.MIN_IMAGE_SIZE:
+            self.add_error(
+                'image_url', 'Image too small (minimum size is {min}x{min} px)'.format(min=self.MIN_IMAGE_SIZE))
+        elif cleaned_data['image_width'] > self.MAX_IMAGE_SIZE or cleaned_data['image_height'] > self.MAX_IMAGE_SIZE:
+            self.add_error(
+                'image_url', 'Image too big (maximum size is {max}x{max} px)'.format(max=self.MAX_IMAGE_SIZE))
 
         if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
             self.add_error('url', 'Content unreachable')
+
+        return self.cleaned_data

@@ -91,7 +91,11 @@ class UploadCsvTestCase(TestCase):
             'data': {
                 'batch_id': batch.id,
                 'candidates': [candidate.id],
-                'errors': {},
+                'errors': {
+                    str(candidate.id): {
+                        '__all__': ['Content ad still processing'],
+                    }
+                },
             }
         }, json.loads(response.content))
 
@@ -144,7 +148,11 @@ class UploadCsvTestCase(TestCase):
             'data': {
                 'batch_id': batch.id,
                 'candidates': [candidate.id],
-                'errors': {},
+                'errors': {
+                    str(candidate.id): {
+                        '__all__': ['Content ad still processing'],
+                    }
+                },
             }
         }, json.loads(response.content))
 
@@ -195,7 +203,11 @@ class UploadCsvTestCase(TestCase):
             'data': {
                 'batch_id': batch.id,
                 'candidates': [candidate.id],
-                'errors': {},
+                'errors': {
+                    str(candidate.id): {
+                        '__all__': ['Content ad still processing'],
+                    }
+                },
             }
         }, json.loads(response.content))
 
@@ -240,7 +252,6 @@ class UploadCsvTestCase(TestCase):
         batch = models.UploadBatch.objects.filter(ad_group_id=ad_group_id).latest()
         candidate = batch.contentadcandidate_set.get()
 
-        self.maxDiff = None
         self.assertEqual(response.status_code, 200)
         self.assertEqual({
             'success': True,
@@ -249,6 +260,7 @@ class UploadCsvTestCase(TestCase):
                 'candidates': [candidate.id],
                 'errors': {
                     str(candidate.id): {
+                        '__all__': ['Content ad still processing'],
                         'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
                         'image_url': ['Invalid image URL'],
                         'url': ['Invalid URL'],
@@ -272,49 +284,20 @@ class UploadMultipleTestCase(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
-    def setUp(self):
-        self.maxDiff = None
-
-    def test_get(self):
-        ad_group_id = 1
-        response = _get_client().get(
-            reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-        self.assertEqual({
-            'success': True,
-            'data': {
-                'defaults': {
-                    'description': 'Example description',
-                }
-            }
-        }, json.loads(response.content))
-
-    def test_get_permission(self):
-        ad_group_id = 1
-        response = _get_client(superuser=False).get(
-            reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
-
     @patch('utils.lambda_helper.invoke_lambda', MagicMock())
     def test_post(self):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Tracker URLs,Brand name,Display URL,Call to Action\n'
+            'URL,Title,Image URL,Label,Image Crop,Tracker URLs,Brand name,Display URL,Call to Action,Description\n'
             'http://zemanta.com/test-content-ad,test content ad,http://zemanta.com/test-image.jpg,test,entropy,'
-            'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Read more'
+            'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
         )
         response = _get_client().post(
             reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
-                'description': 'Default description',
             },
             follow=True
         )
@@ -322,13 +305,17 @@ class UploadMultipleTestCase(TestCase):
         batch = models.UploadBatch.objects.filter(ad_group_id=ad_group_id).latest()
         candidate = batch.contentadcandidate_set.get()
 
+        expected_candidate = candidate.to_dict()
+        expected_candidate['errors'] = {
+            '__all__': ['Content ad still processing'],
+        }
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual({
             'success': True,
             'data': {
                 'batch_id': batch.id,
-                'candidates': [candidate.get_dict()],
-                'errors': {},
+                'candidates': [expected_candidate],
             }
         }, json.loads(response.content))
 
@@ -344,25 +331,27 @@ class UploadMultipleTestCase(TestCase):
         self.assertEqual('https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png', candidate.tracker_urls)
         self.assertEqual('zemanta.com', candidate.display_url)
         self.assertEqual('Zemanta', candidate.brand_name)
-        self.assertEqual('Default description', candidate.description)
-        self.assertEqual('Read more', candidate.call_to_action)
+        self.assertEqual('description', candidate.description)
+        self.assertEqual('Click for more', candidate.call_to_action)
 
     @patch('utils.lambda_helper.invoke_lambda', MagicMock())
-    def test_post_custom_description(self):
+    def test_post_defaults(self):
         ad_group_id = 1
+        ad_group_settings = models.AdGroup.objects.get(id=ad_group_id).get_current_settings().copy_settings()
+        ad_group_settings.brand_name = 'Default brand name'
+        ad_group_settings.save(None)
+
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Tracker URLs,Description,Brand name,Display URL,Call to Action\n'
-            'http://zemanta.com/test-content-ad,test content ad,http://zemanta.com/test-image.jpg,test,entropy,'
-            'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png,Custom description,Zemanta,zemanta.com,'
-            'Read more'
+            'URL,Title,Image URL,Label,Image Crop,Tracker URLs,Description\n'
+            'http://example.com/test-content-ad,test content ad,http://zemanta.com/test-image.jpg,test,entropy,'
+            'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png,description'
         )
         response = _get_client().post(
             reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
-                'description': 'Default description',
             },
             follow=True
         )
@@ -370,13 +359,17 @@ class UploadMultipleTestCase(TestCase):
         batch = models.UploadBatch.objects.filter(ad_group_id=ad_group_id).latest()
         candidate = batch.contentadcandidate_set.get()
 
+        expected_candidate = candidate.to_dict()
+        expected_candidate['errors'] = {
+            '__all__': ['Content ad still processing'],
+        }
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual({
             'success': True,
             'data': {
                 'batch_id': batch.id,
-                'candidates': [candidate.get_dict()],
-                'errors': {},
+                'candidates': [expected_candidate],
             }
         }, json.loads(response.content))
 
@@ -385,14 +378,14 @@ class UploadMultipleTestCase(TestCase):
         self.assertEqual(1, batch.batch_size)
 
         self.assertEqual('test', candidate.label)
-        self.assertEqual('http://zemanta.com/test-content-ad', candidate.url)
+        self.assertEqual('http://example.com/test-content-ad', candidate.url)
         self.assertEqual('test content ad', candidate.title)
         self.assertEqual('http://zemanta.com/test-image.jpg', candidate.image_url)
         self.assertEqual('entropy', candidate.image_crop)
         self.assertEqual('https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png', candidate.tracker_urls)
-        self.assertEqual('zemanta.com', candidate.display_url)
-        self.assertEqual('Zemanta', candidate.brand_name)
-        self.assertEqual('Custom description', candidate.description)
+        self.assertEqual('example.com', candidate.display_url)
+        self.assertEqual('Default brand name', candidate.brand_name)
+        self.assertEqual('description', candidate.description)
         self.assertEqual('Read more', candidate.call_to_action)
 
     @patch('utils.lambda_helper.invoke_lambda', MagicMock())
@@ -410,7 +403,6 @@ class UploadMultipleTestCase(TestCase):
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
-                'description': 'Default description',
             },
             follow=True
         )
@@ -418,24 +410,23 @@ class UploadMultipleTestCase(TestCase):
         batch = models.UploadBatch.objects.filter(ad_group_id=ad_group_id).latest()
         candidate = batch.contentadcandidate_set.get()
 
+        expected_candidate = candidate.to_dict()
+        expected_candidate['errors'] = {
+            '__all__': ['Content ad still processing'],
+            'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
+            'image_url': ['Invalid image URL'],
+            'url': ['Invalid URL'],
+            'label': ['Label too long (max 25 characters)'],
+            'description': ['Missing description'],
+        }
+
         self.maxDiff = None
         self.assertEqual(response.status_code, 200)
         self.assertEqual({
             'success': True,
             'data': {
                 'batch_id': batch.id,
-                'candidates': [candidate.get_dict()],
-                'errors': {
-                    str(candidate.id): {
-                        'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
-                        'image_url': ['Invalid image URL'],
-                        'url': ['Invalid URL'],
-                        'label': ['Label too long (max 25 characters)'],
-                        'display_url': ['Missing display URL'],
-                        'brand_name': ['Missing brand name'],
-                        'call_to_action': ['Missing call to action'],
-                    }
-                },
+                'candidates': [expected_candidate],
             }
         }, json.loads(response.content))
 

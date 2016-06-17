@@ -2462,7 +2462,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 });
 
             return deferred.promise;
-
         };
 
         this.uploadCsv = function (adGroupId, data) {
@@ -2484,7 +2483,45 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 deferred.resolve({
                     batchId: data.data.batch_id,
                     candidates: data.data.candidates,
-                    errors: convertCandidateErrorsFromApi(data.data.errors),
+                });
+            }).error(function (data, status) {
+                var result = {};
+                if (status === '413') {
+                    data = {
+                        'data': {
+                            'status': constants.uploadBatchStatus.FAILED,
+                            'errors': {
+                                'content_ads': ['File too large (max 1MB).'],
+                            },
+                        },
+                        'success': false,
+                    };
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                } else if (data && data.data && data.data.errors) {
+                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                }
+
+                deferred.reject(result);
+            });
+
+            return deferred.promise;
+        };
+
+        this.uploadMultiple = function (adGroupId, data) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/multiple/';
+
+            var formData = new FormData();
+            formData.append('content_ads', data.file);
+            formData.append('batch_name', data.batchName ? data.batchName : '');
+
+            $http.post(url, formData, {
+                transformRequest: angular.identity,
+                headers: {'Content-Type': undefined},
+            }).success(function (data) {
+                deferred.resolve({
+                    batchId: data.data.batch_id,
+                    candidates: convertCandidatesFromApi(data.data.candidates),
                 });
             }).error(function (data, status) {
                 var result = {};
@@ -2554,20 +2591,48 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         function convertCandidateErrorsFromApi (errors) {
-            var result = {};
-            angular.forEach(errors, function (candidateErrors, candidateId) {
-                result[candidateId] = {
-                    label: candidateErrors.label,
-                    title: candidateErrors.title,
-                    url: candidateErrors.url,
-                    imageUrl: candidateErrors.image_url,
-                    imageCrop: candidateErrors.image_crop,
-                    displayUrl: candidateErrors.display_url,
-                    brandName: candidateErrors.brand_name,
-                    description: candidateErrors.description,
-                    callToAction: candidateErrors.call_to_action,
-                    trackerUrls: candidateErrors.tracker_urls,
-                };
+            return {
+                label: errors.label,
+                title: errors.title,
+                url: errors.url,
+                imageUrl: errors.image_url,
+                imageCrop: errors.image_crop,
+                displayUrl: errors.display_url,
+                brandName: errors.brand_name,
+                description: errors.description,
+                callToAction: errors.call_to_action,
+                trackerUrls: errors.tracker_urls,
+                primaryTrackerUrl: errors.primary_tracker_url,
+                secondaryTrackerUrl: errors.secondary_tracker_url,
+            };
+        }
+
+        function convertCandidatesFromApi (candidates) {
+            var result = [];
+            angular.forEach(candidates, function (candidate) {
+                result.push({
+                    id: candidate.id,
+                    label: candidate.label,
+                    url: candidate.url,
+                    title: candidate.title,
+                    imageStatus: candidate.image_status,
+                    urlStatus: candidate.url_status,
+                    imageUrl: candidate.image_url,
+                    imageId: candidate.image_id,
+                    imageHash: candidate.image_hash,
+                    imageWidth: candidate.image_width,
+                    imageHeight: candidate.image_height,
+                    imageCrop: candidate.image_crop,
+                    hostedImageUrl: candidate.hosted_image_url,
+                    displayUrl: candidate.display_url,
+                    brandName: candidate.brand_name,
+                    description: candidate.description,
+                    callToAction: candidate.call_to_action,
+                    trackerUrls: candidate.tracker_urls,
+                    primaryTrackerUrl: candidate.primary_tracker_url,
+                    secondaryTrackerUrl: candidate.secondary_tracker_url,
+                    errors: convertCandidateErrorsFromApi(candidate.errors),
+                });
             });
             return result;
         }

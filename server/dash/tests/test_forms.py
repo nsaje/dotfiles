@@ -521,15 +521,6 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
 
-    def test_empty_description(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Description'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.description]])
-
-        form = self._init_form(csv_file, {'description': ''})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'description': ['This field is required.']})
-
     def test_csv_empty_lines(self):
         csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Impression Trackers'], [],
                                            [self.url, self.title, self.image_url, self.tracker_urls], []])
@@ -580,7 +571,6 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, {
             'batch_name': self.batch_name,
-            'description': self.description,
             'content_ads': [{
                 u'crop_areas': self.crop_areas,
                 u'image_url': self.image_url,
@@ -663,7 +653,6 @@ class AdGroupAdsUploadFormTest(TestCase):
     def _init_form(self, csv_file, data_updates):
         data = {
             'batch_name': self.batch_name,
-            'description': self.description,
         }
 
         if data_updates is not None:
@@ -721,6 +710,15 @@ class AdGroupAdsPlusUploadExtendedFormTestCase(TestCase):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
             [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'description': ''})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'description': ['This field is required.']})
+
+    def test_empty_description(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Description'],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.description]])
 
         form = self._init_form(csv_file, {'description': ''})
         self.assertFalse(form.is_valid())
@@ -1074,7 +1072,8 @@ class ContentAdCandidateFormTestCase(TestCase):
             'brand_name': 'Zemanta',
             'description': 'Description',
             'call_to_action': 'Read more',
-            'tracker_urls': 'https://zemanta.com/px1 https://zemanta.com/px2'
+            'primary_tracker_url': 'https://zemanta.com/px1',
+            'secondary_tracker_url': 'https://zemanta.com/px2',
         }
 
     def test_valid(self):
@@ -1090,7 +1089,9 @@ class ContentAdCandidateFormTestCase(TestCase):
             'brand_name': 'Zemanta',
             'description': 'Description',
             'call_to_action': 'Read more',
-            'tracker_urls': ['https://zemanta.com/px1', 'https://zemanta.com/px2']
+            'tracker_urls': ['https://zemanta.com/px1', 'https://zemanta.com/px2'],
+            'primary_tracker_url': 'https://zemanta.com/px1',
+            'secondary_tracker_url': 'https://zemanta.com/px2',
         })
 
     def test_label_too_long(self):
@@ -1259,22 +1260,40 @@ class ContentAdCandidateFormTestCase(TestCase):
             'call_to_action': ['Call to action too long (max 25 characters)']
         }, f.errors)
 
-    def test_http_tracker_urls(self):
+    def test_http_primary_tracker(self):
         data = self._get_valid_data()
-        data['tracker_urls'] = 'http://zemanta.com/'
+        data['primary_tracker_url'] = 'http://zemanta.com/'
         f = forms.ContentAdCandidateForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'tracker_urls': ['Impression tracker URLs have to be HTTPS']
+            'primary_tracker_url': ['Impression tracker URLs have to be HTTPS']
         }, f.errors)
 
-    def test_unicode_tracker_urls(self):
+    def test_http_secondary_tracker(self):
         data = self._get_valid_data()
-        data['tracker_urls'] = 'https://zemanta.com/š'
+        data['secondary_tracker_url'] = 'http://zemanta.com/'
         f = forms.ContentAdCandidateForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'tracker_urls': ['Invalid impression tracker URLs']
+            'secondary_tracker_url': ['Impression tracker URLs have to be HTTPS']
+        }, f.errors)
+
+    def test_unicode_primary_tracker(self):
+        data = self._get_valid_data()
+        data['primary_tracker_url'] = 'https://zemanta.com/š'
+        f = forms.ContentAdCandidateForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'primary_tracker_url': ['Invalid impression tracker URLs']
+        }, f.errors)
+
+    def test_unicode_secondary_tracker(self):
+        data = self._get_valid_data()
+        data['secondary_tracker_url'] = 'https://zemanta.com/š'
+        f = forms.ContentAdCandidateForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'secondary_tracker_url': ['Invalid impression tracker URLs']
         }, f.errors)
 
 
@@ -1355,7 +1374,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_width': ['Image too small (min width 300 px)']
+            'image_url': ['Image too small (minimum size is 300x300 px)']
         }, f.errors)
 
     def test_image_max_width(self):
@@ -1364,7 +1383,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_width': ['Image too big (max width 10000 px)']
+            'image_url': ['Image too big (maximum size is 10000x10000 px)']
         }, f.errors)
 
     def test_image_min_height(self):
@@ -1373,7 +1392,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_height': ['Image too small (min height 300 px)']
+            'image_url': ['Image too small (minimum size is 300x300 px)']
         }, f.errors)
 
     def test_image_max_height(self):
@@ -1382,7 +1401,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_height': ['Image too big (max height 10000 px)']
+            'image_url': ['Image too big (maximum size is 10000x10000 px)']
         }, f.errors)
 
     def test_invalid_url_status(self):
