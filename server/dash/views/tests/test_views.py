@@ -2727,7 +2727,7 @@ class PublishersBlacklistStatusTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account.name = 'ZemAccount'
         account.save(req)
-
+        
         for i in xrange(10):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),

@@ -1924,6 +1924,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             action_type=actionlog.constants.ActionType.MANUAL,
             expiration_dt=None,
             state=actionlog.constants.ActionState.WAITING,
+            ad_group_source=models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source__tracking_slug=constants.SourceType.OUTBRAIN
+            ).first(),
             payload={
                 'ad_group_id': ad_group.pk,
                 'state': state,
