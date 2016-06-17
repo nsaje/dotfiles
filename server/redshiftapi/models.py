@@ -14,13 +14,6 @@ MATERIALIZED_VIEWS = [
     ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN} |
      set(sc.DeliveryDimension._ALL),
      'mv_campaign_delivery'),
-    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN,
-      sc.StructureDimension.AD_GROUP},
-     'mv_adgroup'),
-    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN,
-      sc.StructureDimension.AD_GROUP} |
-     set(sc.DeliveryDimension._ALL),
-     'mv_adgroup_delivery'),
 ]
 
 
