@@ -1,4 +1,4 @@
-CREATE TABLE mv_campaign_delivery (
+CREATE TABLE mv_campaign (
        date date not null encode delta,
        source_id int2 encode bytedict,
 
