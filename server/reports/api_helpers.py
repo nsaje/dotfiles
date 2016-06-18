@@ -81,3 +81,24 @@ def filter_by_permissions(result, user):
         return filter_row(result)
     else:
         return [filter_row(row) for row in result]
+
+
+def remove_columns_without_permission(user, rows):
+    for row in rows:
+        if not ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
+                 user.has_perm('zemauth.aggregate_postclick_acquisition'))):
+            for field in POSTCLICK_ACQUISITION_FIELDS:
+                if field in row:
+                    del row[field]
+        if not user.has_perm('zemauth.aggregate_postclick_engagement'):
+            for field in POSTCLICK_ENGAGEMENT_FIELDS:
+                if field in row:
+                    del row[field]
+        if not user.has_perm('zemauth.campaign_goal_optimization'):
+            for field in CAMPAIGN_GOAL_FIELDS:
+                if field in row:
+                    del row[field]
+
+        for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
+            if not user.has_perm(permission) and field in row:
+                del row[field]
