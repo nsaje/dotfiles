@@ -2297,7 +2297,8 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             history_type,
             changes,
             changes_text,
-            user=user
+            user=user,
+            system_user=self.system_user,
         )
 
     def delete(self, *args, **kwargs):
