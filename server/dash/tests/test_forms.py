@@ -307,6 +307,18 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertIsNone(form.cleaned_data['ga_property_id'])
 
     @patch('utils.dates_helper.local_today')
+    def test_ga_tracking_disabled(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        self.data['enable_ga_tracking'] = False
+        self.data['ga_tracking_type'] = 2
+        self.data['ga_property_id'] = 'abcd'
+
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('ga_property_id', form.cleaned_data)
+        self.assertIsNone(form.cleaned_data['ga_property_id'])
+
+    @patch('utils.dates_helper.local_today')
     def test_ga_property_id_missing(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['ga_tracking_type'] = 2

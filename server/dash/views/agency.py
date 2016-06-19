@@ -209,7 +209,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
 
-        if user.has_perm('zemauth.can_set_ga_api_tracking'):
+        if settings.enable_ga_tracking and user.has_perm('zemauth.can_set_ga_api_tracking'):
             settings.ga_tracking_type = resource['ga_tracking_type']
 
             if settings.ga_tracking_type == constants.GATrackingType.API:
