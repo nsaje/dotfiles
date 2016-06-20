@@ -119,7 +119,6 @@
     }
 
     .zem-grid-header, .zem-grid-footer {
-      font-weight: 600;
       border-bottom: 1px solid @zem-grid-cell-border-color;
       background-color: @zem-grid-header-footer-bg-color;
 
@@ -130,6 +129,15 @@
       .zem-grid-cell {
         background-color: @zem-grid-header-footer-bg-color;
         border-bottom: 0px;
+      }
+    }
+
+    .zem-grid-header {
+      font-weight: 600;
+    }
+    .zem-grid-footer {
+      .zem-grid-cell-breakdown-field {
+        font-weight: 600;
       }
     }
 
