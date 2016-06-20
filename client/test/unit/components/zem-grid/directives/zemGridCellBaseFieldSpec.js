@@ -3,7 +3,7 @@
 describe('zemGridCellBaseField', function () {
     var scope, element;
 
-    var template = '<zem-grid-cell-base-field data="ctrl.value" column="ctrl.col" grid="ctrl.grid">' +
+    var template = '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
                    '</zem-grid-cell-base-field>';
 
     beforeEach(module('one'));
@@ -15,18 +15,14 @@ describe('zemGridCellBaseField', function () {
         scope.ctrl.col = {};
         scope.ctrl.col.data = {};
         scope.ctrl.grid = {};
-        scope.ctrl.grid.meta = {};
-        scope.ctrl.grid.meta.pubsub = {
-            register: function () {
-                return function () {};
-            },
-        };
 
         element = $compile(template)(scope);
     }));
 
     it('should display N/A if field\'s value is not defined', function () {
-        scope.ctrl.value = undefined;
+        scope.ctrl.data = undefined;
+        // Update row reference to trigger the watch on 'ctrl.row' in directive
+        scope.ctrl.row = {};
         scope.$digest();
         expect(element.text().trim()).toEqual('N/A');
     });
@@ -43,9 +39,10 @@ describe('zemGridCellBaseField', function () {
         };
 
         tests.forEach(function (test) {
-            scope.ctrl.value = {
+            scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -64,9 +61,10 @@ describe('zemGridCellBaseField', function () {
         };
 
         tests.forEach(function (test) {
-            scope.ctrl.value = {
+            scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -85,9 +83,10 @@ describe('zemGridCellBaseField', function () {
         };
 
         tests.forEach(function (test) {
-            scope.ctrl.value = {
+            scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -104,9 +103,10 @@ describe('zemGridCellBaseField', function () {
         };
 
         tests.forEach(function (test) {
-            scope.ctrl.value = {
+            scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -126,9 +126,10 @@ describe('zemGridCellBaseField', function () {
 
         tests.forEach(function (test) {
             scope.ctrl.col.data.fractionSize = test.fractionSize;
-            scope.ctrl.value = {
+            scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -148,9 +149,10 @@ describe('zemGridCellBaseField', function () {
 
         tests.forEach(function (test) {
             scope.ctrl.col.data.fractionSize = test.fractionSize;
-            scope.ctrl.value = {
+            scope.ctrl.data = {
                 value: test.value,
             };
+            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });

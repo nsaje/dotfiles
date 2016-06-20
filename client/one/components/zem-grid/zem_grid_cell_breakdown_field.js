@@ -9,6 +9,20 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         constants.level.CAMPAIGNS,
     ];
 
+    function updateRow (ctrl) {
+        if (ctrl.data) {
+            ctrl.fieldType = getFieldType(ctrl.grid.meta.data.level, ctrl.row.level);
+        }
+    }
+
+    function getFieldType (level, rowLevel) {
+        // Display internal link for rows level 1 on 'All acounts', 'Account' or 'Campaign' level
+        if (LEVELS_WITH_INTERNAL_LINKS.indexOf(level) !== -1 && rowLevel === 1) {
+            return 'internalLink';
+        }
+        return 'base';
+    }
+
     return {
         restrict: 'E',
         replace: true,
@@ -22,14 +36,8 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.data', function () {
-                if (ctrl.data) {
-                    ctrl.fieldType = 'base';
-                    // Display internal link for row level 1 on 'All acounts', 'Account' or 'Campaign' level.
-                    if (ctrl.row.level === 1 && LEVELS_WITH_INTERNAL_LINKS.indexOf(ctrl.grid.meta.data.level) !== -1) {
-                        ctrl.fieldType = 'internalLink';
-                    }
-                }
+            scope.$watch('ctrl.row', function () {
+                updateRow(ctrl);
             });
         },
         controller: [function () {}],
