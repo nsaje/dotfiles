@@ -32,6 +32,13 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
                 }
             });
         },
-        controller: [function () {}],
+        controller: ['zemGridUIService', function (zemGridUIService) {
+            var vm = this;
+            vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
+
+            function getBreakdownColumnStyle () {
+                return zemGridUIService.getBreakdownColumnStyle(vm.row);
+            }
+        }],
     };
 }]);

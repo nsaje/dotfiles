@@ -26,7 +26,7 @@ oneApp.directive('zemGridRowBreakdown', [function () {
             }
 
             function getBreakdownColumnStyle () {
-                return zemGridUIService.getBreakdownColumnClass(vm.row);
+                return zemGridUIService.getBreakdownColumnStyle(vm.row);
             }
         }],
     };

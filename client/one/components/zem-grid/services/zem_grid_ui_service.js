@@ -209,6 +209,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
         getHeaderColumnClass: getHeaderColumnClass,
-        getBreakdownColumnClass: getBreakdownColumnStyle,
+        getBreakdownColumnStyle: getBreakdownColumnStyle,
     };
 }]);
