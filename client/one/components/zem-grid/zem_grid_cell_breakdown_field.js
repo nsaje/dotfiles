@@ -3,21 +3,21 @@
 
 oneApp.directive('zemGridCellBreakdownField', [function () {
 
-    var LEVELS_WITH_INTERNAL_LINKS = [
-        constants.level.ALL_ACCOUNTS,
-        constants.level.ACCOUNTS,
-        constants.level.CAMPAIGNS,
+    var BREAKDOWNS_WITH_INTERNAL_LINKS = [
+        constants.breakdown.ACCOUNT,
+        constants.breakdown.CAMPAIGN,
+        constants.breakdown.AD_GROUP,
     ];
 
     function updateRow (ctrl) {
         if (ctrl.data) {
-            ctrl.fieldType = getFieldType(ctrl.grid.meta.data.level, ctrl.row.level);
+            ctrl.fieldType = getFieldType(ctrl.grid.meta.data.breakdown, ctrl.row.level);
         }
     }
 
-    function getFieldType (level, rowLevel) {
-        // Display internal link for rows level 1 on 'All acounts', 'Account' or 'Campaign' level
-        if (LEVELS_WITH_INTERNAL_LINKS.indexOf(level) !== -1 && rowLevel === 1) {
+    function getFieldType (breakdown, rowLevel) {
+        // Display internal links for rows on first level in 'Account', 'Campaign' or 'Ad Group' breakdowns
+        if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 && rowLevel === 1) {
             return 'internalLink';
         }
         return 'base';

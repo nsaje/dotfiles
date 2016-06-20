@@ -29,10 +29,7 @@ oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config)
     }
 
     function isFieldVisible (rowLevel) {
-        if (rowLevel === 1) {
-            return true;
-        }
-        return false;
+        return rowLevel === 1;
     }
 
     function getOverallIcon (overall) {
