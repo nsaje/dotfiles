@@ -36,7 +36,7 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
 
 
 @transaction.atomic
-def invoke_external_validation(candidate):
+def invoke_external_validation(candidate, skip_url_validation=False):
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
         {
@@ -46,13 +46,18 @@ def invoke_external_validation(candidate):
             'adGroupID': candidate.ad_group.pk,
             'batchID': candidate.batch.pk,
             'imageUrl': candidate.image_url,
-            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL
+            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
+            'skipUrlValidation': skip_url_validation,
         },
         async=True,
     )
     candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.save()
+
+
+def has_skip_validation_magic_word(filename):
+    return 'no-verify' in (filename or '')
 
 
 def persist_candidates(batch):
