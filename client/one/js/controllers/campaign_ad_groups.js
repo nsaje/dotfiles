@@ -723,6 +723,39 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
+        $scope.gridOptions = {
+            enableSelection: true,
+            enableTotalsSelection: true,
+            maxSelectedRows: 4,
+        };
+
+        // GridApi is defined by zem-grid in initialization, therefor
+        // it will be available in the next cycle; postpone initialization using $timeout
+        $scope.gridApi = undefined;
+        $timeout(initializeGridApi, 0);
+    }
+
+    function initializeGridApi () {
+        // Initialize GridApi listeners
+        $scope.gridApi.onRowsSelectionChanged($scope, function () {
+            var selectedRows = $scope.gridApi.getSelectedRows(); // eslint-disable-line
+
+            var totalSelected = false;
+            var selectedAdGroupIds = [];
+
+            selectedRows.forEach (function (row) {
+                if (row.level === 0) {
+                    totalSelected = true;
+                }
+                if (row.level === 1) {
+                    selectedAdGroupIds.push(row.breakdown_id);
+                }
+            });
+
+            $location.search('ad_group_ids', selectedAdGroupIds.join(','));
+            $location.search('ad_group_totals', totalSelected ? 1 : null);
+            getDailyStats();
+        });
     }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
