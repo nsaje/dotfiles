@@ -11,4 +11,13 @@
             <zem-grid-footer grid="ctrl.grid"></zem-grid-footer>
         </div>
     </div>
+
+    <!-- Popover templates -->
+    <script id="performanceIndicatorPopover.html" type="text/ng-template">
+        <ul class="icon-list">
+            <li ng-repeat="status in ctrl.statusList">
+                <img class="zem-icon {{status.class}}" ng-src="{{ctrl.config.static_url}}/one/img/{{status.file}}" /> {{status.text}}
+            </li>
+        </ul>
+    </script>
 </div>

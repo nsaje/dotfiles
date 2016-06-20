@@ -55,8 +55,8 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
         // TODO: convertExternalLinkField
         // TODO: convertThumbnailField
         // TODO: convertSubmissionStatusField
-        // TODO: convertPerformanceIndicatorField
         // TODO: convertTextWithPopupField
+        case 'performanceIndicator': return value;
         default: return convertValueToDefaultObject(value);
         }
     }
