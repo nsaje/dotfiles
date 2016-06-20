@@ -66,7 +66,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             config.end_date = config.endDate.format('YYYY-MM-DD');
             config.show_archived = config.showArchived;
             config.show_blacklisted_publishers = config.showBlacklistedPublishers;
-            config.filtered_sources  = config.filteredSources;
+            config.filtered_sources = config.filteredSources;
 
             delete config.breakdownPage;
             delete config.breakdown;
