@@ -32,7 +32,7 @@ def query(user, breakdown, constraints, breakdown_page,
     target_dimension = constants.get_target_dimension(breakdown)
 
     augmenter.augment(breakdown, rows, target_dimension)
-    augmenter.filter_columns_by_permission(user, rows, breakdown, target_dimension)
+    augmenter.filter_columns_by_permission(user, rows)
 
     rows = sort_helper.sort_results(rows, helpers.extract_order_fields(order, breakdown))
 
