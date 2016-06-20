@@ -3,12 +3,11 @@ import json
 import datetime
 import pytz
 import httplib
-import textwrap
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory, override_settings
+from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
@@ -45,6 +44,8 @@ class AdGroupSettingsTest(TestCase):
                 'retargeting_ad_groups': [2],
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
+                'ga_tracking_type': 2,
+                'ga_property_id': 'UA-0123456789-1',
                 'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
                 'autopilot_min_budget': '0'
@@ -114,8 +115,6 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
                     'daily_budget_cc': '100.00',
-                    'enable_adobe_tracking': False,
-                    'enable_ga_tracking': True,
                     'end_date': '2015-04-02',
                     'id': '1',
                     'name': 'test adgroup 1',
@@ -128,6 +127,8 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
                     'enable_ga_tracking': True,
+                    'ga_property_id': 'UA-123456789-1',
+                    'ga_tracking_type': 1,
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
@@ -221,8 +222,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings'
             ])
@@ -251,13 +250,13 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
-                        'enable_ga_tracking': True,
-                        'enable_adobe_tracking': False,
                         'adobe_tracking_param': '',
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
+                        'ga_property_id': 'UA-123456789-1',
+                        'ga_tracking_type': 1,
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
@@ -282,6 +281,53 @@ class AdGroupSettingsTest(TestCase):
             ])
             mock_log_useraction.assert_called_with(
                 response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_put_add_ga_analytics(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+                                  mock_order_ad_group_settings_update):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
+
+            add_permissions(self.user, [
+                'settings_view',
+                'can_set_ad_group_max_cpc',
+                'can_set_adgroup_to_auto_pilot',
+                'can_view_retargeting_settings',
+                'can_set_ga_api_tracking'
+            ])
+            self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            new_settings = ad_group.get_current_settings()
+            self.assertEquals(models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=new_settings.ga_property_id).count(), 1)
+
+            # put again - this time no new GAAnalyticsAccount should be created
+            self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            new_settings = ad_group.get_current_settings()
+            self.assertEquals(models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=new_settings.ga_property_id).count(), 1)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -388,8 +434,6 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
-                'can_toggle_ga_performance_tracking',
-                'can_toggle_adobe_performance_tracking',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings'
             ])
@@ -421,6 +465,8 @@ class AdGroupSettingsTest(TestCase):
                         'adobe_tracking_param': '',
                         'enable_adobe_tracking': False,
                         'autopilot_state': 2,
+                        'ga_property_id': '',
+                        'ga_tracking_type': 1,
                         'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
@@ -470,7 +516,7 @@ class AdGroupSettingsTest(TestCase):
             self.settings_dict['settings']['tracking_code'] = 'asd=123'
             self.settings_dict['settings']['enable_ga_tracking'] = False
 
-            add_permissions(self.user, ['settings_view', 'can_toggle_ga_performance_tracking'])
+            add_permissions(self.user, ['settings_view'])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
                 json.dumps(self.settings_dict),
@@ -569,13 +615,11 @@ class AdGroupSettingsTest(TestCase):
             response_settings_dict = json.loads(response.content)['data']['settings']
 
             self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
-            self.assertNotEqual(response_settings_dict['enable_ga_tracking'], False)
-            self.assertNotEqual(response_settings_dict['tracking_code'], 'def=123')
-            self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
-            self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+            self.assertNotEqual(response_settings_dict['ga_tracking_type'], 2)
+            self.assertNotEqual(response_settings_dict['ga_property_id'], 'UA-0123456789-1')
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
@@ -855,12 +899,12 @@ class AdGroupHistoryTest(TestCase):
                 cpc_cc='2.0000',
                 daily_budget_cc='120.0000',
                 tracking_code=tracking_code,
+                ga_property_id='UA-123456789-1'
             )
             settings.save(request)
 
         add_permissions(self.user, [
             'ad_group_history_view',
-            'can_toggle_adobe_performance_tracking'
         ])
         response = self.client.get(
             reverse('ad_group_history', kwargs={'ad_group_id': ad_group_id}),
@@ -892,6 +936,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'Ad group name', u'value': u''},
                         {u'name': u'Enable GA tracking', u'value': u'True'},
                         {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
+                        {u'name': u'GA web property ID', u'value': u''},
                         {u'name': u'Enable Adobe tracking', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'value': u''},
                         {u'name': u'Autopilot', u'value': u'Disabled'},
@@ -901,7 +946,8 @@ class AdGroupHistoryTest(TestCase):
                     u'show_old_settings': False
                 }, {
                     u'changed_by': u'non_superuser@zemanta.com',
-                    u'changes_text': u'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
+                    u'changes_text': u'Daily budget set to "$120.00", GA web property ID set to "UA-123456789-1", '
+                                     u'Max CPC bid set to "$2.00"',
                     u'datetime': u'2015-06-05T09:22:24',
                     u'settings': [
                         {u'name': u'State', u'old_value': u'Paused', u'value': u'Paused'},
@@ -921,6 +967,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'Ad group name', u'old_value': u'', u'value': u''},
                         {u'name': u'Enable GA tracking', u'old_value': u'True', u'value': u'True'},
                         {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
+                        {u'name': u'GA web property ID', u'old_value': u'', u'value': u'UA-123456789-1'},
                         {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
                         {u'name': u'Autopilot', u'old_value': u'Disabled', u'value': u'Disabled'},
@@ -2232,12 +2279,8 @@ class AccountHistoryTest(TestCase):
             self.assertEqual(changes_string, expected_changes_strings[i])
 
 
-@override_settings(
-    FB_BUSINESS_ID='fake_app_id',
-    FB_ACCESS_TOKEN='very_fake_token',
-)
 class AccountSettingsTest(TestCase):
-    fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
+    fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml', 'test_facebook.yaml']
 
     @classmethod
     def setUpClass(cls):
@@ -2360,7 +2403,10 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True}},
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
+                                u'100': {u'name': u'AdsNative', u'released': True},
+                                u'200': {u'name': u'Facebook', u'released': True}
+                                },
             'id': '1000',
             'archived': False,
         })
@@ -2377,7 +2423,10 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True}},
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
+                                u'100': {u'name': u'AdsNative', u'released': True},
+                                u'200': {u'name': u'Facebook', u'released': True}
+                                },
             'account_type': constants.AccountType.UNKNOWN,
             'id': '1000',
             'archived': False,
@@ -2509,9 +2558,10 @@ class AccountSettingsTest(TestCase):
             'archived': False
         })
 
+    @patch('requests.get')
     @patch('requests.post')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction, mock_request):
+    def test_put(self, mock_log_useraction, mock_request, mock_page_id):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
@@ -2523,6 +2573,9 @@ class AccountSettingsTest(TestCase):
         response = Response()
         response.status_code = 200
         mock_request.return_value = response
+
+        response._content = '{"id": "1234"}'
+        mock_page_id.return_value = response
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
@@ -2765,7 +2818,9 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True, 'released': True},
-            '3': {'name': 'Source 3', 'released': False}
+            '3': {'name': 'Source 3', 'released': False},
+            '100': {'name': 'AdsNative', 'released': True},
+            '200': {'name': 'Facebook', 'released': True},
         })
 
     def test_get_allowed_sources_no_released(self):
@@ -2781,6 +2836,8 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True, 'released': True},
+            '100': {'name': 'AdsNative', 'released': True},
+            '200': {'name': 'Facebook', 'released': True},
         })
 
     def test_add_error_to_account_agency_form(self):

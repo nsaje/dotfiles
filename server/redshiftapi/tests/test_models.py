@@ -118,3 +118,11 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
             constants.StructureDimension.AD_GROUP,
             constants.TimeDimension.MONTH,
         ]), 'mv_master')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_master')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CONTENT_AD,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_master')

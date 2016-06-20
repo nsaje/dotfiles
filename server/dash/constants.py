@@ -7,8 +7,11 @@ from dash import regions
 # Experiment 6/13/2016: we can blacklist 30 publishers on OB dashboard, it's not documented
 #                       but we can try to enable 30 via API
 MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 30
+MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD = 10
 
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
+
+GA_PROPERTY_ID_REGEX = r'UA-([0-9]+)-*'
 
 
 class AdGroupSettingsState(ConstantBase):
@@ -1600,17 +1603,17 @@ class HistoryLevel(ConstantBase):
 
 class HistoryType(ConstantBase):
     AD_GROUP = 1
-    AD_GROUP_SOURCE = 2
     CAMPAIGN = 2
     BUDGET = 3
     ACCOUNT = 4
     CREDIT = 5
+    AD_GROUP_SOURCE = 6
 
     _VALUES = {
         AD_GROUP: 'Ad Group History',
-        AD_GROUP_SOURCE: 'Ad Group Source History',
         CAMPAIGN: 'Campaign History',
         BUDGET: 'Budget History',
         ACCOUNT: 'Account History',
         CREDIT: 'Credit History',
+        AD_GROUP_SOURCE: 'Ad Group Source History',
     }

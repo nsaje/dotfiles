@@ -31,10 +31,10 @@ INSERT INTO mv_master (
 
       round(a.spend * cf.pct_actual_spend::decimal(10, 2) * 1000) as effective_cost_nano,
       round(a.data_spend * cf.pct_actual_spend::decimal(10, 2) * 1000) as effective_data_cost_nano,
-      round(((a.spend * cf.pct_actual_spend::decimal(10, 2)) + (a.data_spend * cf.pct_actual_spend::decimal(10, 2))) * pct_license_fee::decimal(10, 2) * 1000) as license_fee_nano,
+      round(((a.spend * cf.pct_actual_spend::decimal(10, 2)) + (a.data_spend * cf.pct_actual_spend::decimal(10, 2))) * pct_license_fee::decimal(10, 2) * 1000) as license_fee_nano
 
-      null as conversions,
-      null as tp_conversions
+      -- null as conversions,
+      -- null as tp_conversions
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)

@@ -24,7 +24,7 @@ CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MA
 
 CAMPAIGN_GOAL_FIELDS = [
     'total_seconds',
-    'avg_cost_per_second',
+    'avg_cost_per_minute',
     'unbounced_visits',
     'avg_cost_per_non_bounced_visitor',
     'total_pageviews',
@@ -81,3 +81,30 @@ def filter_by_permissions(result, user):
         return filter_row(result)
     else:
         return [filter_row(row) for row in result]
+
+
+def remove_columns_without_permission(user, rows):
+    fields_to_remove = []
+
+    if not ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
+             user.has_perm('zemauth.aggregate_postclick_acquisition'))):
+        fields_to_remove.extend(POSTCLICK_ACQUISITION_FIELDS)
+
+    if not user.has_perm('zemauth.aggregate_postclick_engagement'):
+        fields_to_remove.extend(POSTCLICK_ENGAGEMENT_FIELDS)
+
+    if not user.has_perm('zemauth.campaign_goal_optimization'):
+        fields_to_remove.extend(CAMPAIGN_GOAL_FIELDS)
+
+    for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
+        if not user.has_perm(permission):
+            fields_to_remove.append(field)
+
+    for row in rows:
+        _remove_fields(row, fields_to_remove)
+
+
+def _remove_fields(row, fields):
+    for field in fields:
+        if field in row:
+            del row[field]

@@ -43,7 +43,7 @@ CAMPAIGN_GOAL_MAP = {
     ],
     constants.CampaignGoalKPI.TIME_ON_SITE: [
         'total_seconds',
-        'avg_cost_per_second',
+        'avg_cost_per_minute',
     ],
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: [
         'avg_cost_for_new_visitor',
@@ -389,7 +389,7 @@ def copy_fields(user, source, dest):
         return
 
     dest['total_seconds'] = source.get('total_seconds', 0)
-    dest['avg_cost_per_second'] = source.get('avg_time_per_second', 0)
+    dest['avg_cost_per_minute'] = source.get('avg_cost_per_minute', 0)
     dest['unbounced_visits'] = source.get('unbounced_visits', 0)
     dest['avg_cost_per_non_bounced_visitor'] = source.get('avg_cost_per_non_bounced_visitor', 0)
     dest['total_pageviews'] = source.get('total_pageviews', 0)
