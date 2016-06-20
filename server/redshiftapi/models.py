@@ -1,25 +1,49 @@
 import backtosql
 
+from stats import constants as sc
+
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
+MATERIALIZED_VIEWS = [
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE},
+     'mv_account'),
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE} | set(sc.DeliveryDimension._ALL),
+     'mv_account_delivery'),
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN},
+     'mv_campaign'),
+    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN} |
+     set(sc.DeliveryDimension._ALL),
+     'mv_campaign_delivery'),
+]
 
-class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
+
+class MVMaster(backtosql.Model, RSBreakdownMixin):
     """
     Defines all the fields that are provided by this breakdown model.
     Materialized sub-views are a part of it.
     """
 
-    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+    date = backtosql.Column('date', BREAKDOWN)
 
-    day = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+    day = backtosql.Column('date', BREAKDOWN)
     week = backtosql.TemplateColumn('part_trunc_week.sql', {'column_name': 'date'}, BREAKDOWN)
     month = backtosql.TemplateColumn('part_trunc_month.sql', {'column_name': 'date'}, BREAKDOWN)
 
+    agency_id = backtosql.Column('agency_id', BREAKDOWN)
     account_id = backtosql.Column('account_id', BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
-    ad_group_id = backtosql.Column('adgroup_id', BREAKDOWN)
+    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
     source_id = backtosql.Column('source_id', BREAKDOWN)
+    publisher = backtosql.Column('publisher', BREAKDOWN)
+
+    device_type = backtosql.Column('device_type', BREAKDOWN)
+    country = backtosql.Column('country', BREAKDOWN)
+    state = backtosql.Column('state', BREAKDOWN)
+    dma = backtosql.Column('dma', BREAKDOWN)
+    age = backtosql.Column('age', BREAKDOWN)
+    gender = backtosql.Column('gender', BREAKDOWN)
+    age_gender = backtosql.Column('age_gender', BREAKDOWN)
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
@@ -59,9 +83,18 @@ class RSContentAdStats(backtosql.Model, RSBreakdownMixin):
         Selects the most suitable materialized view for the selected breakdown.
         """
 
-        # TODO: no materialized views yet, contentadstats
-        # is treated as one of the materialized views.
-        return 'contentadstats'
+        base = sc.get_base_dimension(breakdown)
+        structure = sc.get_structure_dimension(breakdown)
+        delivery = sc.get_delivery_dimension(breakdown)
+
+        # find first one that matches
+        breakdown = set(x for x in (base, structure, delivery) if x)
+
+        for available, view in MATERIALIZED_VIEWS:
+            if len(breakdown - available) == 0:
+                return view
+
+        return 'mv_master'
 
     @classmethod
     def get_default_context(cls, breakdown, constraints, breakdown_constraints,

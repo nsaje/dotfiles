@@ -2,19 +2,20 @@ import backtosql
 from django.test import TestCase
 
 from redshiftapi import models
+from stats import constants
 
 
 class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
     def setUp(self):
-        self.model = models.RSContentAdStats
+        self.model = models.MVMaster
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 29)
+        self.assertEquals(len(columns), 38)
 
         columns = self.model.select_columns(group=models.BREAKDOWN)
-        self.assertEquals(len(columns), 9)
+        self.assertEquals(len(columns), 18)
 
     def test_get_breakdown(self):
         self.assertEquals(
@@ -48,7 +49,7 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
             {'content_ad_id': 35, 'source_id': [2, 4, 22]},
         ]
 
-        context = models.RSContentAdStats.get_default_context(
+        context = models.MVMaster.get_default_context(
             ['account_id', 'source_id'],
             constraints,
             breakdown_constraints,
@@ -74,3 +75,54 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(context['offset'], 2)
         self.assertEqual(context['limit'], 33)
+
+    def test_get_best_view(self):
+        m = models.MVMaster
+
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_account')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.SOURCE,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_account')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_account')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_account_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_account_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.CAMPAIGN,
+        ]), 'mv_campaign')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
+        ]), 'mv_campaign')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_campaign_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.TimeDimension.MONTH,
+        ]), 'mv_master')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_master')
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CONTENT_AD,
+            constants.DeliveryDimension.AGE,
+        ]), 'mv_master')

@@ -13,12 +13,6 @@ from etl import materialize_views
 from etl import helpers
 
 
-StatsResults = collections.namedtuple('Result1',
-                                      ['source_slug', 'ad_group_id', 'content_ad_id', 'publisher',
-                                       'device_type', 'country', 'state', 'dma', 'age', 'gender',
-                                       'clicks', 'impressions', 'cost_micro', 'data_cost_micro'])
-
-
 PostclickstatsResults = collections.namedtuple('Result2',
                                                ['ad_group_id', 'postclick_source', 'content_ad_id', 'source_slug',
                                                 'publisher', 'bounced_visits', 'conversions', 'new_visits', 'pageviews',
@@ -34,25 +28,14 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
 
-    @mock.patch('etl.materialize_views.MasterView._get_stats')
     @mock.patch('etl.materialize_views.MasterView._get_postclickstats')
     @mock.patch('etl.materialize_views.MasterView._get_touchpoint_conversions')
-    @mock.patch('redshiftapi.db.get_stats_cursor')
-    def test_generate_rows(self, mock_cursor, mock_get_touchpoint_conversions, mock_get_postclickstats, mock_get_stats):
+    def test_generate_rows(self, mock_get_touchpoint_conversions, mock_get_postclickstats):
 
         date = datetime.date(2016, 5, 1)
-
-        mock_get_stats.return_value = [
-            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
-                      constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
-                      22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None)),
-            ((2, 2), (date, 2, 1, 2, 2, 2, 2, 'Trol', constants.DeviceType.TABLET, 'US', 'FL', 866,
-                      constants.AgeGroup.AGE_21_29, constants.Gender.WOMEN, constants.AgeGenderGroup.AGE_21_29_WOMEN,
-                      22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None)),
-            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'beer', constants.DeviceType.UNDEFINED, 'US', 'MA', 866,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None)),
-        ]
+        breakdown_keys_with_traffic = {
+            date: set([(3, 1), (2, 2), (1, 3)]),
+        }
 
         mock_get_postclickstats.return_value = [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
@@ -66,6 +49,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
         ]
 
+        # TODO disabled
         mock_get_touchpoint_conversions.return_value = [
             ((3, 1),
              (
@@ -104,24 +88,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         ]
 
         self.maxDiff = None
+        mock_cursor = mock.MagicMock()
 
         view = materialize_views.MasterView()
-        self.assertItemsEqual(list(view.generate_rows(date, {})), [
-            (
-                date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
-                constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
-                22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None
-            ),
-            (
-                date, 2, 1, 2, 2, 2, 2, 'Trol', constants.DeviceType.TABLET, 'US', 'FL', 866,
-                constants.AgeGroup.AGE_21_29, constants.Gender.WOMEN, constants.AgeGenderGroup.AGE_21_29_WOMEN,
-                22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None
-            ),
-            (
-                date, 1, 1, 1, 3, 3, 3, 'beer', constants.DeviceType.UNDEFINED, 'US', 'MA', 866,
-                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                22, 12, 3000, 3200, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None
-            ),
+        self.assertItemsEqual(list(view.generate_rows(
+            cursor=mock_cursor, date=date, breakdown_keys_with_traffic=breakdown_keys_with_traffic)), [
             (
                 date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                 constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
@@ -132,60 +103,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
                 0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
             ),
-            (
-                date, 3, 1, 1, 1, 1, 1, 'bla.com',
-                constants.DeviceType.UNDEFINED, None, None, None,
-                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, json.dumps({
-                    'blapix_168': 2,
-                    'blapix_720': 2,
-                    'einpix_24': 2,
-                    'einpix_168': 10,
-                    'einpix_720': 12,
-                }),
-            ),
-            (
-                date, 2, 1, 1, 1, 1, 2, 'na.com',
-                constants.DeviceType.UNDEFINED, None, None, None,
-                constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, json.dumps({
-                    'einpix_24': 2,
-                    'einpix_168': 2,
-                    'einpix_720': 2,
-                }),
-            ),
-        ])
-
-    @mock.patch('etl.materialize_views.MasterView._get_stats_query_results')
-    def test_get_stats(self, mock_get_stats_query_results):
-
-        date = datetime.date(2016, 5, 1)
-
-        campaign_factors = {
-            models.Campaign.objects.get(pk=1): (0.95, 0.2),
-            models.Campaign.objects.get(pk=2): (0.90, 0.18),
-            models.Campaign.objects.get(pk=3): (0.85, 0.15),
-        }
-
-        mock_get_stats_query_results.return_value = [
-            StatsResults('outbrain', 1, 1, 'bla.com', 2, 'US', 'CA', 866, '50-64', 'male', 12, 22, 3000, 3200),
-            StatsResults('adiant', 2, 2, 'Trol', 5, 'US', 'FL', 866, '21-29', 'female', 12, 22, 3000, 3200),
-            StatsResults('adblade', 3, 3, 'beer', 4, 'US', 'MA', 866, 'gibberish', 'gibberish', 12, 22, 3000, 3200),
-        ]
-
-        view = materialize_views.MasterView()
-        view._prefetch()
-
-        self.assertItemsEqual(list(view._get_stats(None, date, campaign_factors)), [
-            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.DESKTOP, 'US', 'CA', 866,
-                      constants.AgeGroup.AGE_50_64, constants.Gender.MEN, constants.AgeGenderGroup.AGE_50_64_MEN,
-                      22, 12, 30, 32, 0, 0, 0, 0, 0, 2850000, 3040000, 1178000, None, None)),
-            ((2, 2), (date, 2, 1, 2, 2, 2, 2, 'Trol', constants.DeviceType.TABLET, 'US', 'FL', 866,
-                      constants.AgeGroup.AGE_21_29, constants.Gender.WOMEN, constants.AgeGenderGroup.AGE_21_29_WOMEN,
-                      22, 12, 30, 32, 0, 0, 0, 0, 0, 2700000, 2880000, 1004400, None, None)),
-            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'beer', constants.DeviceType.UNDEFINED, 'US', 'MA', 866,
-                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      22, 12, 30, 32, 0, 0, 0, 0, 0, 2550000, 2720000, 790500, None, None)),
         ])
 
     @mock.patch('etl.materialize_views.MasterView._get_postclickstats_query_results')
@@ -206,13 +123,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(view._get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0)),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0)),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0)),
         ])
 
     @mock.patch('etl.materialize_views.MasterView._get_touchpoint_conversions_query_results')
@@ -271,48 +188,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
              )),
         ])
 
-    def test_prepare_stats_query(self):
-
-        date = datetime.date(2016, 5, 1)
-        sql, params = materialize_views.MasterView._prepare_stats_query(date)
-
-        self.assertSQLEquals(sql, """
-        SELECT
-            media_source AS source_slug,
-            ad_group_id AS ad_group_id,
-            content_ad_id AS content_ad_id,
-            publisher AS publisher,
-            device_type AS device_type,
-            country AS country,
-            state AS state,
-            dma AS dma,
-            age AS age,
-            gender AS gender,
-            SUM(clicks) clicks,
-            SUM(spend) cost_micro,
-            SUM(data_spend) data_cost_micro,
-            SUM(impressions) impressions
-        FROM stats
-        WHERE
-            (date=%(date)s AND hour IS NULL)
-            OR (hour IS NOT NULL AND ((date=%(tzdate_from)s
-                    AND hour >= %(tzhour_from)s)
-                OR (date=%(tzdate_to)s
-                    AND hour < %(tzhour_to)s)))
-        GROUP BY
-            source_slug,
-            ad_group_id,
-            content_ad_id,
-            publisher,
-            device_type,
-            country,
-            state,
-            dma,
-            age,
-            gender;""")
-
-        self.assertDictEqual(params, helpers.get_local_date_context(date))
-
     def test_prepare_postclickstats_query(self):
         date = datetime.date(2016, 5, 1)
         sql, params = materialize_views.MasterView._prepare_postclickstats_query(date)
@@ -369,3 +244,66 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 conversion_window;""")
 
         self.assertDictEqual(params, {'date': date})
+
+
+class MVNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
+    def test_prepare_insert_query(self):
+
+        date_from = datetime.date(2016, 5, 1)
+        date_to = datetime.date(2016, 5, 3)
+
+        sql, params = materialize_views.MVHelpersNormalizedStats().prepare_insert_query(date_from, date_to)
+
+        self.assertDictEqual(params, {
+            'date_from': '2016-05-01',
+            'date_to': '2016-05-03',
+            'tzdate_from': '2016-05-01',
+            'tzhour_from': 4,
+            'tzdate_to': '2016-05-04',
+            'tzhour_to': 4,
+        })
+
+        self.assertSQLEquals(sql, """
+        INSERT INTO mvh_clean_stats (
+        SELECT
+            CASE
+                 WHEN hour is null THEN date
+                 WHEN hour is not null AND ((date='2016-05-01'::date AND hour >= 4)
+                      OR (date='2016-05-02'::date AND hour < 4)) THEN '2016-05-01'::date
+                 WHEN hour is not null AND ((date='2016-05-02'::date AND hour >= 4)
+                      OR (date='2016-05-03'::date AND hour < 4)) THEN '2016-05-02'::date
+                 WHEN hour is not null AND ((date='2016-05-03'::date AND hour >= 4)
+                      OR (date='2016-05-04'::date AND hour < 4)) THEN '2016-05-03'::date
+            END as date,
+            stats.media_source as source_slug,
+
+            ad_group_id,
+            content_ad_id,
+            publisher,
+
+            extract_device_type(device_type) as device_type,
+            extract_country(country) as country,
+            extract_state(state) as state,
+            extract_dma(dma) as dma,
+            extract_age(age) as age,
+            extract_gender(gender) as gender,
+            extract_age_gender(stats.age, stats.gender) as age_gender,
+
+            SUM(impressions) as impressions,
+            SUM(clicks) as clicks,
+            SUM(spend) as spend,
+            SUM(data_spend) as data_spend
+        FROM stats
+        WHERE (hour is null
+                and date>=%(date_from)s
+                AND date<=%(date_to)s)
+            OR (hour is not null
+                and date>%(tzdate_from)s
+                AND date<%(tzdate_to)s)
+            OR (hour IS NOT NULL
+                AND ((date=%(tzdate_from)s
+                    AND hour >= %(tzhour_from)s)
+                    OR (date=%(tzdate_to)s
+                        AND hour < %(tzhour_to)s)))
+        GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        """)

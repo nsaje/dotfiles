@@ -365,9 +365,10 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.TOTAL_SECONDS] = {};
             metricFormats[constants.chartMetric.TOTAL_PAGEVIEWS] = {};
             metricFormats[constants.chartMetric.UNBOUNCED_VISITS] = {};
-            metricFormats[constants.chartMetric.COST_PER_SECOND] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_MINUTE] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_PAGEVIEW] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_UNBOUNCED_VISITOR] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.COST_PER_VISIT] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_NEW_VISITOR] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_1] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_2] = {'type': 'currency', 'fractionSize': 2};

@@ -44,6 +44,8 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                     return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.NEW_UNIQUE_VISITORS:
                     return value + ' ' + constants.campaignGoalValueText[goal.type];
+                case constants.campaignGoalKPI.CPV:
+                    return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
                 }
             };
 
@@ -137,6 +139,20 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 });
 
                 return modalInstance;
+            };
+
+            $scope.getKPIOptimizationLabel = function () {
+                var label = '';
+                for (var i = 0; i < $scope.campaignGoals.length; i++) {
+                    var el = $scope.campaignGoals[i];
+                    if (el.primary && constants.automaticallyOptimizedKPIGoals.indexOf(el.type) > -1) {
+                        label = ('Goal ' + constants.campaignGoalValueText[el.type] +
+                        ' is automatically optimized when data from GA/Omniture ' +
+                        'is available and there are enough clicks for the data to be statistically significant.');
+                        break;
+                    }
+                }
+                return label;
             };
 
             $scope.getConversionPixelTag = function (url) {

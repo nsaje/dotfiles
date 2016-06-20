@@ -887,7 +887,12 @@ def adg_setting_manual_update(
 ):
     source = ad_group_source.source
 
-    if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
+    if field_name in [
+            'enable_ga_tracking',
+            'enable_adobe_tracking',
+            'adobe_tracking_param',
+            'ga_tracking_type',
+            'ga_property_id']:
         # do not create an action - only used for our redirector
         return
 
@@ -1278,98 +1283,120 @@ class AdGroupSourceSettingsWriter(object):
                 daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc,
                 landing_mode is not None and landing_mode != latest_settings.landing_mode
         ]):
-            new_settings = latest_settings
-            new_settings.pk = None  # make a copy of the latest settings
+            new_settings = self.update_settings(
+                request,
+                latest_settings,
+                settings_obj,
+                state,
+                cpc_cc,
+                daily_budget_cc,
+                landing_mode,
+                system_user=system_user
+            )
+            self.create_action_on_settings_change(
+                request,
+                create_action,
+                settings_obj,
+                new_settings,
+                send_to_zwei=send_to_zwei
+            )
+        else:
+            self.create_action_on_no_change(
+                request,
+                create_action,
+                settings_obj,
+                latest_settings,
+                send_to_zwei=send_to_zwei
+            )
+        return []
 
-            old_settings_obj = {}
-
-            if state is not None:
-                new_settings.state = state
-            if cpc_cc is not None:
-                old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
-                new_settings.cpc_cc = cpc_cc
-            if daily_budget_cc is not None:
-                old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
-                new_settings.daily_budget_cc = daily_budget_cc
-            if landing_mode is not None:
-                new_settings.landing_mode = landing_mode
-            new_settings.save(request)
-
-            self.add_to_history_and_notify(settings_obj, old_settings_obj, request, system_user)
-
-            if create_action:
-                filtered_settings_obj = {k: v for k, v in settings_obj.iteritems()}
-                if 'state' not in settings_obj or self.can_trigger_action():
-                    if filtered_settings_obj:
-                        k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
-                        return actionlog.api.set_ad_group_source_settings(
-                            filtered_settings_obj, new_settings.ad_group_source, request, send=send_to_zwei)
-                else:
-                    logger.info(
-                        'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
+    def update_settings(self,
+                        request,
+                        latest_settings,
                         settings_obj,
-                        self.ad_group_source
-                    )
-        elif create_action:
-            ssc = consistency.SettingsStateConsistence(self.ad_group_source)
-            if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
-                new_settings = latest_settings
-                new_settings.pk = None  # make a copy of the latest settings
-                new_settings.save(request)
-                logger.info(
-                    'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
-                    self.ad_group_source
-                )
+                        state,
+                        cpc_cc,
+                        daily_budget_cc,
+                        landing_mode,
+                        system_user=None):
+        new_settings = latest_settings.copy_settings()
+        old_settings_obj = {}
+        if state is not None:
+            new_settings.state = state
+        if cpc_cc is not None:
+            old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
+            new_settings.cpc_cc = cpc_cc
+        if daily_budget_cc is not None:
+            old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
+            new_settings.daily_budget_cc = daily_budget_cc
+        if landing_mode is not None:
+            new_settings.landing_mode = landing_mode
+        if not request:
+            new_settings.system_user = system_user
+        else:
+            new_settings.created_by = request.user
+        new_settings.save(request)
+        self.notify(settings_obj, old_settings_obj, request, system_user)
+        return new_settings
+
+    def create_action_on_settings_change(self, request, create_action, settings_obj, new_settings, send_to_zwei=True):
+        if not create_action:
+            return
+        filtered_settings_obj = {k: v for k, v in settings_obj.iteritems()}
+        if 'state' not in settings_obj or self.can_trigger_action():
+            if filtered_settings_obj:
                 k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
                 return actionlog.api.set_ad_group_source_settings(
-                    settings_obj, latest_settings.ad_group_source, request, send=send_to_zwei)
+                    filtered_settings_obj, new_settings.ad_group_source, request, send=send_to_zwei)
+        else:
+            logger.info(
+                'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
+                settings_obj,
+                self.ad_group_source
+            )
 
-        return []
+    def create_action_on_no_change(self, request, create_action, settings_obj, latest_settings, send_to_zwei=True):
+        if not create_action:
+            return
+
+        ssc = consistency.SettingsStateConsistence(self.ad_group_source)
+        if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
+            new_settings.save(request)
+            logger.info(
+                'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
+                self.ad_group_source
+            )
+            k1_helper.update_ad_group(self.ad_group_source.ad_group_id, msg='AdGroupSourceSettingsWriter')
+            return actionlog.api.set_ad_group_source_settings(
+                settings_obj, latest_settings.ad_group_source, request, send=send_to_zwei)
 
     def can_trigger_action(self):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
         return models.AdGroup.is_ad_group_active(ad_group_settings)
 
-    def add_to_history_and_notify(self, change_obj, old_change_obj, request, system_user):
+    def notify(self, change_obj, old_change_obj, request, system_user):
+        if not request:
+            return
+
         changes_text_parts = []
         for key, val in change_obj.items():
             if val is None:
                 continue
-
             field = models.AdGroupSettings.get_human_prop_name(key)
             val = models.AdGroupSettings.get_human_value(key, val)
             source_name = self.ad_group_source.source.name
-
             old_val = old_change_obj.get(key)
-
             if old_val is None:
                 text = '%s %s set to %s' % (source_name, field, val)
             else:
                 old_val = models.AdGroupSettings.get_human_value(key, old_val)
                 text = '%s %s set from %s to %s' % (source_name, field, old_val, val)
-
             changes_text_parts.append(text)
 
-        settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = ', '.join(changes_text_parts)
-
-        if not request:
-            settings.system_user = system_user
-
-        settings.save(request)
-
-        user = request and request.user
-        history_helpers.write_ad_group_history(
-            self.ad_group_source.ad_group,
-            ','.join(changes_text_parts),
-            user=user,
-            system_user=system_user
-        )
-
-        if request:
-            email_helper.send_ad_group_notification_email(
-                self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
-
+        email_helper.send_ad_group_notification_email(
+            self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
 
 def get_content_ad(content_ad_id):
     try:

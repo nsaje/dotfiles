@@ -56,12 +56,12 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', function ($t
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
-            var valueWidth = getTextWidth(row.stats[column.field], font);
+            var valueWidth = getTextWidth(row.data.stats[column.field], font);
             width = Math.max(width, valueWidth);
         });
 
         if (grid.footer.row) {
-            var valueWidth = getTextWidth(grid.footer.row.stats[column.field], font);
+            var valueWidth = getTextWidth(grid.footer.row.data.stats[column.field], font);
             width = Math.max(width, valueWidth);
         }
 

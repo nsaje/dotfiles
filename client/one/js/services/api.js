@@ -909,6 +909,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
                 enableGaTracking: settings.enable_ga_tracking,
+                gaTrackingType: settings.ga_tracking_type,
+                gaPropertyId: settings.ga_property_id,
                 enableAdobeTracking: settings.enable_adobe_tracking,
                 adobeTrackingParam: settings.adobe_tracking_param,
                 autopilotState: settings.autopilot_state,
@@ -932,6 +934,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 target_regions: settings.targetRegions,
                 tracking_code: settings.trackingCode,
                 enable_ga_tracking: settings.enableGaTracking,
+                ga_tracking_type: settings.gaTrackingType,
+                ga_property_id: settings.gaPropertyId,
                 enable_adobe_tracking: settings.enableAdobeTracking,
                 adobe_tracking_param: settings.adobeTrackingParam,
                 autopilot_state: settings.autopilotState,
@@ -959,6 +963,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 callToAction: errors.call_to_action,
                 enableGaTracking: errors.enable_ga_tracking,
                 enableAdobeTracking: errors.enable_adobe_tracking,
+                gaTrackingType: errors.ga_tracking_type,
+                gaPropertyId: errors.ga_property_id,
                 adobeTrackingParam: errors.adobe_tracking_param,
                 autopilotState: errors.autopilot_state,
                 autopilotBudget: errors.autopilot_daily_budget,
@@ -1340,6 +1346,57 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var url = '/api/accounts/' + id + '/history/';
 
             $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve({
+                        history: convertHistoryFromApi(data.data.history),
+                    });
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function History () {
+        function convertHistoryFromApi (history) {
+            return history.map(function (item) {
+                return {
+                    changedBy: item.changed_by,
+                    changesText: item.changes_text,
+                    datetime: item.datetime,
+                };
+            });
+        }
+
+        function convertFilterToApi (filter) {
+            return {
+                ad_group: filter.adGroup,
+                campaign: filter.campaign,
+                account: filter.account,
+                agency: filter.agency,
+                level: filter.level,
+            };
+        }
+
+        this.get = function (filter, order) {
+            var deferred = $q.defer();
+            var url = '/api/history/';
+            var config = {
+                params: convertFilterToApi(filter),
+            };
+
+            if (order) {
+                config.params.order = order
+                    .replace('changedBy', 'created_by')
+                    .replace('datetime', 'created_dt');
+            }
+
+            $http.get(url, config).
                 success(function (data, status) {
                     if (!data || !data.data) {
                         deferred.reject(data);
@@ -3285,6 +3342,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignContentInsights: new CampaignContentInsights(),
         accountHistory: new AccountHistory(),
         accountSettings: new AccountSettings(),
+        history: new History(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),

@@ -1,7 +1,10 @@
+import re
 import datetime
 import json
+import re
 import logging
 import newrelic.agent
+import dateutil.parser
 
 from collections import OrderedDict
 from django.db import transaction
@@ -90,6 +93,7 @@ class AdGroupSettings(api_common.BaseApiView):
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
+        self._add_ga_account(request.user, ad_group, new_settings)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
@@ -110,6 +114,26 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def _extract_ga_account_id(self, ga_property_id):
+        result = re.search(constants.GA_PROPERTY_ID_REGEX, ga_property_id)
+        return result.group(1)
+
+    def _add_ga_account(self, user, ad_group, settings):
+        if not user.has_perm('zemauth.can_set_ga_api_tracking'):
+            return
+        if not settings.ga_property_id:
+            return
+        if models.GAAnalyticsAccount.objects.filter(
+                account=ad_group.campaign.account,
+                ga_web_property_id=settings.ga_property_id).exists():
+            return  # no need to add it
+
+        models.GAAnalyticsAccount.objects.create(
+            account=ad_group.campaign.account,
+            ga_web_property_id=settings.ga_property_id,
+            ga_account_id=self._extract_ga_account_id(settings.ga_property_id)
+        )
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}
@@ -152,6 +176,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
                 'enable_ga_tracking': settings.enable_ga_tracking,
+                'ga_property_id': settings.ga_property_id,
+                'ga_tracking_type': settings.ga_tracking_type,
                 'enable_adobe_tracking': settings.enable_adobe_tracking,
                 'adobe_tracking_param': settings.adobe_tracking_param,
                 'autopilot_state': settings.autopilot_state,
@@ -175,17 +201,19 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
+        settings.enable_ga_tracking = resource['enable_ga_tracking']
+        settings.tracking_code = resource['tracking_code']
+        settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+        settings.adobe_tracking_param = resource['adobe_tracking_param']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
 
-        if user.has_perm('zemauth.can_toggle_ga_performance_tracking'):
-            settings.enable_ga_tracking = resource['enable_ga_tracking']
-            settings.tracking_code = resource['tracking_code']
+        if settings.enable_ga_tracking and user.has_perm('zemauth.can_set_ga_api_tracking'):
+            settings.ga_tracking_type = resource['ga_tracking_type']
 
-        if user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
-            settings.enable_adobe_tracking = resource['enable_adobe_tracking']
-            settings.adobe_tracking_param = resource['adobe_tracking_param']
+            if settings.ga_tracking_type == constants.GATrackingType.API:
+                settings.ga_property_id = resource['ga_property_id']
 
         if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
@@ -732,9 +760,15 @@ class AccountConversionPixels(api_common.BaseApiView):
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
+            changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+
             new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            new_settings.changes_text = changes_text
             new_settings.save(request)
+
+            history_helpers.write_account_history(
+                account, changes_text, user=request.user
+            )
 
         email_helper.send_account_pixel_notification(account, request)
 
@@ -781,12 +815,18 @@ class ConversionPixel(api_common.BaseApiView):
                 conversion_pixel.archived = data['archived']
                 conversion_pixel.save()
 
-                new_settings = account.get_current_settings().copy_settings()
-                new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                changes_text = u'{} conversion pixel with unique identifier {}.'.format(
                     'Archived' if data['archived'] else 'Restored',
                     conversion_pixel.slug
                 )
+
+                new_settings = account.get_current_settings().copy_settings()
+                new_settings.changes_text = changes_text
                 new_settings.save(request)
+
+                history_helpers.write_account_history(
+                    account, changes_text, user=request.user
+                )
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
                                                 account=account)
@@ -1098,7 +1138,9 @@ class AccountSettings(api_common.BaseApiView):
 
     def set_facebook_page(self, facebook_account, form):
         new_url = form.cleaned_data['facebook_page']
-        facebook_helper.update_facebook_account(facebook_account, new_url)
+        credentials = facebook_helper.get_credentials()
+        facebook_helper.update_facebook_account(facebook_account, new_url, credentials['business_id'],
+                                                credentials['access_token'])
 
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()
@@ -1269,10 +1311,6 @@ class AdGroupHistory(api_common.BaseApiView):
     def convert_settings_to_dict(self, old_settings, new_settings, user):
         settings_dict = OrderedDict()
         for field in models.AdGroupSettings._settings_fields:
-            if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
-                    not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
-                continue
-
             settings_dict[field] = {
                 'name': models.AdGroupSettings.get_human_prop_name(field),
                 'value': models.AdGroupSettings.get_human_value(field, getattr(
@@ -1369,9 +1407,7 @@ class AccountUsers(api_common.BaseApiView):
             new_settings.save(request)
 
             history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
+                account, changes_text, user=request.user
             )
 
         return self.create_api_response(
@@ -1488,3 +1524,63 @@ class CampaignContentInsights(api_common.BaseApiView):
             'best_performer_rows': best_performer_rows,
             'worst_performer_rows': worst_performer_rows,
         })
+
+
+class History(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_view_new_history_backend'):
+            raise exc.AuthorizationError()
+        # in case somebody wants to fetch entire history disallow it for the
+        # moment
+        entity_filter = self._extract_entity_filter(request)
+        if not entity_filter:
+            raise exc.MissingDataError()
+        order = self._extract_order(request)
+        response = {
+            'history': self.get_history(entity_filter, order=order)
+        }
+        return self.create_api_response(response)
+
+    def _extract_entity_filter(self, request):
+        entity_filter = {}
+        ad_group_raw = request.GET.get('ad_group')
+        if ad_group_raw:
+            entity_filter['ad_group'] = helpers.get_ad_group(
+                request.user, int(ad_group_raw))
+        campaign_raw = request.GET.get('campaign')
+        if campaign_raw:
+            entity_filter['campaign'] = helpers.get_campaign(
+                request.user, int(campaign_raw))
+        account_raw = request.GET.get('account')
+        if account_raw:
+            entity_filter['account'] = helpers.get_account(
+                request.user, int(account_raw))
+        agency_raw = request.GET.get('agency')
+        if agency_raw:
+            entity_filter['agency'] = helpers.get_agency(request.user, int(agency_raw))
+        level_raw = request.GET.get('level')
+        if level_raw and int(level_raw) in constants.HistoryLevel.get_all():
+            entity_filter['level'] = int(level_raw)
+        return entity_filter
+
+    def _extract_order(self, request):
+        order = ['-created_dt']
+        order_raw = request.GET.get('order') or ''
+        if re.match('[-]?(created_dt|created_by)', order_raw):
+            order = [order_raw]
+        return order
+
+    def get_history(self, filters, order=['-created_dt']):
+        history_entries = models.History.objects.filter(
+            **filters
+        ).order_by(*order)
+
+        history = []
+        for history_entry in history_entries:
+            history.append({
+                'datetime': history_entry.created_dt,
+                'changed_by': history_entry.get_changed_by_text(),
+                'changes_text': history_entry.changes_text,
+            })
+        return history
