@@ -11,4 +11,9 @@ oneApp.constant('zemGridConstants', {
         STATS: 1,
         BREAKDOWN: 2,
     },
+    gridColumnType: {
+        COLLAPSE: 'collapse',
+        CHECKBOX: 'checkbox',
+        BREAKDOWN: 'breakdown',
+    },
 });
