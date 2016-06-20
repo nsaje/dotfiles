@@ -56,6 +56,10 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
             function () {
                 $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
             }
+        ).finally(
+            function () {
+                $scope.isCancelDisabled = false;
+            }
         );
     };
 
