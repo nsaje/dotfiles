@@ -86,7 +86,6 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             $scope.availableCredit = $scope.getAvailableCredit(false);
 
             updateBudgetInitialValues($scope.availableCredit[0]);
-            
             $scope.budgetItem.isEditable = true;
             $scope.budgetItem.credit = $scope.availableCredit[0];
         } else {
@@ -114,10 +113,10 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         }, 1000);
     }
 
-    function updateBudgetInitialValues(credit) {
+    function updateBudgetInitialValues (credit) {
         var creditStartDate = moment(credit.startDate, 'MM/DD/YYYY'),
             today = moment();
-                
+
         $scope.minDate = credit.startDate;
         $scope.maxDate = credit.endDate;
         $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();

@@ -1896,7 +1896,6 @@ class PublishersTable(object):
 
         if publisher_exchange == constants.SourceType.OUTBRAIN:
             publishers_totals['impressions'] = None
-                
 
     def _annotate_publishers(self, publishers_data, user, adgroup):
         pub_blacklist_qs, source_cache_by_slug = self._construct_pub_bl_queryset(publishers_data, adgroup)
