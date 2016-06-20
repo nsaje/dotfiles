@@ -18,6 +18,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+from dash import history_helpers
 
 from utils import exc
 from utils.test_helper import add_permissions
@@ -1145,9 +1146,8 @@ class AdGroupContentAdArchive(TestCase):
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
-        settings = ad_group.get_current_settings()
-
-        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1163,10 +1163,9 @@ class AdGroupContentAdArchive(TestCase):
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
-        settings = ad_group.get_current_settings()
-
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(
-            settings.changes_text,
+            hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.'
         )
 
@@ -2727,7 +2726,7 @@ class PublishersBlacklistStatusTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account.name = 'ZemAccount'
         account.save(req)
-        
+
         for i in xrange(10):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),

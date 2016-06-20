@@ -1032,9 +1032,9 @@ class ConversionPixelTestCase(TestCase):
             'archived': True,
         }, decoded_response['data'])
 
-        latest_account_settings = models.AccountSettings.objects.latest('created_dt')
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual('Archived conversion pixel with unique identifier test.',
-                         latest_account_settings.changes_text)
+                         hist.changes_text)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
