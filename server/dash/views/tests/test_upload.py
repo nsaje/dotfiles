@@ -371,7 +371,7 @@ class UploadMultipleTestCase(TestCase):
                 'candidates': [candidate.get_dict()],
                 'errors': {
                     str(candidate.id): {
-                        'tracker_urls': ['Invalid tracker URLs'],
+                        'tracker_urls': ['Tracker URLs have to be HTTPS'],
                         'image_url': ['Invalid image URL'],
                         'url': ['Invalid URL'],
                         'label': ['Label too long (max 25 characters)'],
