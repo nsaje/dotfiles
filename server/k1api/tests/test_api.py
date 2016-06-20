@@ -6,8 +6,6 @@ import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
-from django.db.models import Q
-from django.http import Http404
 
 import dash.constants
 import dash.models

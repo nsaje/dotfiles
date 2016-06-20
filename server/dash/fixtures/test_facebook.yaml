@@ -226,7 +226,7 @@
         modified_dt: '2014-06-04T00:00:00'
         source: 200
         name: 'Test credentials 2'
-        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+        credentials: 'UaNLMoh787kXRvWAiiglNcp1wMG31FjaXQvfTOvLZvWvm16dl1hXGEZT8lQqCF7I/OvZTRtLe3zKd7p4RnqdJgfCj3wsylheXzLIN7pawAgUP58E+QMmmTDmrY/+KJVmLrvq4LNllMdzkFcyIOOS24QkB2aCig7/cATdsLHM4fUSgjS5sHnWPiC+dBMRa+eEo5AXxRJNTGX01cmabacfS7GtnMK9PYxnwl/5'
     model: dash.sourcecredentials
     pk: 200
 
