@@ -14,6 +14,7 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceSe
 
     $scope.gridOptions = {
         enableSelection: true,
+        enableTotalsSelection: true,
         maxSelectedRows: 3,
     };
 

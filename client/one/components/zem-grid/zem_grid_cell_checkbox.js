@@ -18,6 +18,7 @@ oneApp.directive('zemGridCellCheckbox', [function () {
             var maxRowsReached = false;
 
             var vm = this;
+            vm.isVisible = isVisible;
             vm.isDisabled = isDisabled;
             vm.toggleSelection = toggleSelection;
 
@@ -29,6 +30,15 @@ oneApp.directive('zemGridCellCheckbox', [function () {
                     maxRowsReached = true;
                 }
             });
+
+            function isVisible () {
+                if (!vm.row) return false;
+
+                if (vm.row.level === 1) return true;
+                if (vm.row.level === 0) return vm.grid.meta.options.enableTotalsSelection;
+
+                return false;
+            }
 
             function isDisabled () {
                 return maxRowsReached && !vm.row.selected;
