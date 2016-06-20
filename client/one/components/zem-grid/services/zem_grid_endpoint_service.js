@@ -1,4 +1,6 @@
 /* globals oneApp */
+/* eslint-disable camelcase*/
+
 'use strict';
 
 oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len

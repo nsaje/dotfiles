@@ -758,6 +758,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getTableData();
         getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue);
+        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -766,6 +770,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
 
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+        }
     });
 
     $scope.init();
