@@ -9,22 +9,12 @@ oneApp.directive('zemGridCell', [function () {
         scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            position: '=',
             col: '=',
             data: '=',
             row: '=',
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: ['zemGridUIService', function (zemGridUIService) {
-            this.toggleCollapse = function () {
-                this.grid.meta.api.setCollapsedRows(this.row, !this.row.collapsed);
-            };
-
-            this.getBreakdownColumnStyle = function () {
-                if (!this.row) return; // can happen - temporary; fix is part of Breakdown directive PR
-                return zemGridUIService.getBreakdownColumnStyle(this.row);
-            };
-        }],
+        controller: [function () {}],
     };
 }]);
