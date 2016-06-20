@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'config', function ($rootScope, $controller, $http, $q, $timeout, config) { // eslint-disable-line max-len
+oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', function ($rootScope, $controller, $http, $q, $timeout) { // eslint-disable-line max-len
 
     function MockEndpoint (metaData) {
         this.getMetaData = function () {
