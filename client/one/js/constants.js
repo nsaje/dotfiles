@@ -72,7 +72,7 @@ var constants = {
         TOTAL_SECONDS: 'total_seconds',
         TOTAL_PAGEVIEWS: 'total_pageviews',
         UNBOUNCED_VISITS: 'unbounced_visits',
-        COST_PER_SECOND: 'avg_cost_per_second',
+        COST_PER_MINUTE: 'avg_cost_per_minute',
         COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
         COST_PER_VISIT: 'avg_cost_per_visit',
         COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
@@ -702,8 +702,8 @@ var options = {
             shown: false,
         },
         {
-            name: 'Avg. Cost per Second',
-            value: constants.chartMetric.COST_PER_SECOND,
+            name: 'Avg. Cost per Minute',
+            value: constants.chartMetric.COST_PER_MINUTE,
             shown: false,
         },
         {
