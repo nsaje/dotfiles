@@ -20,6 +20,7 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
+from dash import history_helpers
 
 from utils import exc
 from utils.test_helper import add_permissions, fake_request
@@ -915,9 +916,9 @@ class AccountConversionPixelsTestCase(TestCase):
             'archived': False,
         }, decoded_response['data'])
 
-        latest_account_settings = models.AccountSettings.objects.latest('created_dt')
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual('Added conversion pixel with unique identifier slug.',
-                         latest_account_settings.changes_text)
+                         hist.changes_text)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.CREATE_CONVERSION_PIXEL,
