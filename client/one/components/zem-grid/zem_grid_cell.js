@@ -16,9 +16,13 @@ oneApp.directive('zemGridCell', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: [function () {
+        controller: ['zemGridUIService', function (zemGridUIService) {
             this.toggleCollapse = function () {
                 this.grid.meta.api.setCollapsedRows(this.row, !this.row.collapsed);
+            };
+
+            this.getBreakdownColumnStyle = function () {
+                return zemGridUIService.getBreakdownColumnClass(this.row);
             };
         }],
     };

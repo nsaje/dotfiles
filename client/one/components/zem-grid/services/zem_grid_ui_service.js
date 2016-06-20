@@ -58,17 +58,19 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         if (!column.data) return -1;
 
         var width = getTextWidth(column.data.name, font);
-        width = Math.max(width, 20);    // If only icon without the text
-        if (column.data.help) width += 20; // TODO: find better solution for icon widths
+        width = Math.max(width, 20);        // Column without text (e.g. only icon)
+        if (column.data.help) width += 20;  // TODO: find better solution for icon widths
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
             var data = row.data.stats[column.field];
             if (data) {
+                // Format data to string and predict width based on it
                 var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
                 var valueWidth = getTextWidth(parsedValue, font);
                 if (column.type === 'breakdown') {
-                    valueWidth += (row.level-1) * 20;
+                    // Special case for breakdown column - add padding based on row level
+                    valueWidth += (row.level - 1) * 20;
                 }
                 width = Math.max(width, valueWidth);
             }
@@ -118,7 +120,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         return metrics.width;
     }
 
-    function resizeCells (grid, element) {
+    function resizeCells (grid) {
+        var element = grid.ui.element;
         var rows = element.find('.zem-grid-row');
         rows.each(function (rowIndex, row) {
             row = angular.element(row);
@@ -131,9 +134,39 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         });
     }
 
+    function resizeBreakdownRows (grid) {
+        // Resize breakdown columns based on breakdown column position
+        // Breakdown split widths - before breakdown (empty), breakdown (pagination), after breakdown (load-more)
+        var element = grid.ui.element;
+        var breakdownSplitWidths = [0];
+        grid.header.visibleColumns.forEach(function (column, idx) {
+            if (column.type === 'breakdown') {
+                breakdownSplitWidths.push(grid.ui.columnsWidths[idx]);
+                breakdownSplitWidths.push(0);
+                return;
+            }
+            breakdownSplitWidths[breakdownSplitWidths.length - 1] += grid.ui.columnsWidths[idx];
+        });
+
+        var paginationCellPadding = breakdownSplitWidths[0] + 8;
+        var paginationCellWidth = breakdownSplitWidths[0] + breakdownSplitWidths[1];
+        var loadMoreCellWidth = breakdownSplitWidths[2];
+        element.find('.breakdown-pagination-cell').css({
+            'width': paginationCellWidth + 'px',
+            'max-width': paginationCellWidth + 'px',
+            'padding-left': paginationCellPadding,
+        });
+
+        element.find('.breakdown-load-more-cell').css({
+            'width': loadMoreCellWidth + 'px',
+            'max-width': loadMoreCellWidth + 'px',
+        });
+    }
+
     function resizeGridColumns (grid) {
         calculateColumnWidths(grid);
-        resizeCells(grid, grid.ui.element);
+        resizeCells(grid);
+        resizeBreakdownRows(grid);
     }
 
     function getRowClass (grid, row) {
@@ -165,10 +198,17 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         return classes;
     }
 
+    function getBreakdownColumnStyle (row) {
+        return {
+            'padding-left': (row.level - 1) * 20 + 'px',
+        };
+    }
+
     return {
         requestAnimationFrame: requestAnimationFrame,
         resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
         getHeaderColumnClass: getHeaderColumnClass,
+        getBreakdownColumnClass: getBreakdownColumnStyle,
     };
 }]);
