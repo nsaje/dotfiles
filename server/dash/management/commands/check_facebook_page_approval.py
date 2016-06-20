@@ -13,9 +13,10 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 FB_API_VERSION = "v2.6"
-FB_PAGES_URL = "https://graph.facebook.com/%s/%s/pages"
-FB_PAGE_ID_URL = "https://graph.facebook.com/%s/%s?fields=id"
-FB_AD_ACCOUNT_URL = "https://graph.facebook.com/%s/%s/adaccount"
+FB_PAGES_URL = "https://graph.facebook.com/{}/{}/pages"
+FB_PAGE_ID_URL = "https://graph.facebook.com/{}/{}?fields=id"
+FB_AD_ACCOUNT_URL = "https://graph.facebook.com/{}/{}/adaccount"
+FB_USER_PERMISSIONS_URL = "https://graph.facebook.com/{}/{}/userpermissions"
 
 TZ_AMERICA_NEW_YORK = 7
 CURRENCY_USD = 'USD'
@@ -31,7 +32,9 @@ class Command(ExceptionCommand):
             page_status = pages.get(page_id)
 
             if page_status and page_status == 'CONFIRMED':
+                _add_system_user_permissions(page_id, 'ADVERTISER')
                 ad_account_id = _create_ad_account(pending_account.account.name, page_id)
+                _add_system_user_permissions(ad_account_id, 'ADMIN')
 
                 pending_account.ad_account_id = ad_account_id
                 pending_account.status = constants.FacebookPageRequestType.CONNECTED
@@ -41,7 +44,7 @@ class Command(ExceptionCommand):
 def _get_page_id(facebook_account):
     page_id = facebook_account.get_page_id()
     params = {'access_token': settings.FB_ACCESS_TOKEN}
-    response = requests.get(FB_PAGE_ID_URL % (FB_API_VERSION, page_id), params=params)
+    response = requests.get(FB_PAGE_ID_URL.format(FB_API_VERSION, page_id), params=params)
 
     if response.status_code != httplib.OK:
         logger.error('Error while retrieving facebook page id. Status code: %s, Error %s', response.status_code,
@@ -54,7 +57,7 @@ def _get_page_id(facebook_account):
 
 def _get_all_pages():
     params = {'access_token': settings.FB_ACCESS_TOKEN}
-    response = requests.get(FB_PAGES_URL % (FB_API_VERSION, settings.FB_BUSINESS_ID), params=params)
+    response = requests.get(FB_PAGES_URL.format(FB_API_VERSION, settings.FB_BUSINESS_ID), params=params)
 
     if response.status_code != httplib.OK:
         logger.error('Error while accessing facebook page api. Status code: %s, Error %s', response.status_code,
@@ -74,11 +77,13 @@ def _create_ad_account(name, page_id):
               'currency': CURRENCY_USD,
               'timezone_id': TZ_AMERICA_NEW_YORK,
               'end_advertiser': page_id,
-              'media_agency': 'NONE',
+              'media_agency': settings.FB_APP_ID,
               'partner': page_id,
+              # TODO matijav 16.06.2016 disabled until we setup Business Manager Owned Normal Credit Line
+              # 'invoice': True,
               'access_token': settings.FB_ACCESS_TOKEN}
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post(FB_AD_ACCOUNT_URL % (FB_API_VERSION, settings.FB_BUSINESS_ID), json.dumps(params),
+    response = requests.post(FB_AD_ACCOUNT_URL.format(FB_API_VERSION, settings.FB_BUSINESS_ID), json.dumps(params),
                              headers=headers)
     if response.status_code != httplib.OK:
         logger.error('Error while creating facebook ad account. Status code: %s, Error %s', response.status_code,
@@ -87,3 +92,17 @@ def _create_ad_account(name, page_id):
 
     content = response.json()
     return content['id']
+
+
+def _add_system_user_permissions(connected_object_id, role):
+    params = {'business': settings.FB_BUSINESS_ID,
+              'user': settings.FB_SYSTEM_USER_ID,
+              'role': role,
+              'access_token': settings.FB_ACCESS_TOKEN}
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    response = requests.post(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, connected_object_id), json.dumps(params),
+                             headers=headers)
+    if response.status_code != httplib.OK:
+        logger.error('Error while adding system user to a connected object. Status code: %s, Error %s',
+                     response.status_code, response.content)
+        raise CommandError('Error while adding system user to a connected object.')

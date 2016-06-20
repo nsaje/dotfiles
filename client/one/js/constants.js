@@ -72,8 +72,9 @@ var constants = {
         TOTAL_SECONDS: 'total_seconds',
         TOTAL_PAGEVIEWS: 'total_pageviews',
         UNBOUNCED_VISITS: 'unbounced_visits',
-        COST_PER_SECOND: 'avg_cost_per_second',
+        COST_PER_MINUTE: 'avg_cost_per_minute',
         COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
+        COST_PER_VISIT: 'avg_cost_per_visit',
         COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
         COST_PER_NEW_VISITOR: 'avg_cost_for_new_visitor',
         COST_PER_CONVERSION_GOAL_1: 'avg_cost_per_conversion_goal_1',
@@ -507,6 +508,7 @@ var constants = {
         CPC: 5,
         CPM: 6,
         NEW_UNIQUE_VISITORS: 7,
+        CPV: 8,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -608,6 +610,10 @@ var constants = {
         FACES: 'faces',
         ENTROPY: 'entropy',
     },
+    gaTrackingType: {
+        EMAIL: 1,
+        API: 2,
+    },
 };
 
 var options = {
@@ -640,7 +646,7 @@ var options = {
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
-        {name: 'Mobile', value: constants.adTargetDevice.MOBILE},
+        {name: 'Mobile/Tablet', value: constants.adTargetDevice.MOBILE},
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -696,13 +702,18 @@ var options = {
             shown: false,
         },
         {
-            name: 'Avg. Cost per Second',
-            value: constants.chartMetric.COST_PER_SECOND,
+            name: 'Avg. Cost per Minute',
+            value: constants.chartMetric.COST_PER_MINUTE,
             shown: false,
         },
         {
             name: 'Avg. Cost for Pageview',
             value: constants.chartMetric.COST_PER_PAGEVIEW,
+            shown: false,
+        },
+        {
+            name: 'Avg. Cost per Visit',
+            value: constants.chartMetric.COST_PER_VISIT,
             shown: false,
         },
         {
@@ -1157,6 +1168,7 @@ var options = {
         {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
         {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
         {name: 'Pageviews per Visit', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'Cost per Visit', value: constants.campaignGoalKPI.CPV, unit: '$'},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
         {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
@@ -1165,6 +1177,7 @@ var options = {
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},
         {name: 'bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: 'cost per visit', value: constants.campaignGoalKPI.CPV},
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
         {name: 'new visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
@@ -1189,6 +1202,10 @@ var options = {
         {name: 'Faces', value: constants.imageCrop.FACES},
         {name: 'Entropy', value: constants.imageCrop.ENTROPY},
     ],
+    gaTrackingType: [
+        {name: 'Email', value: constants.gaTrackingType.EMAIL},
+        {name: 'API', value: constants.gaTrackingType.API},
+    ],
 };
 
 var defaults = {
@@ -1209,6 +1226,7 @@ var defaults = {
         {id: constants.campaignGoalKPI.CPC, value: 0.35},
         {id: constants.campaignGoalKPI.CPA, value: 50},
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
+        {id: constants.campaignGoalKPI.CPV, value: 0.50},
     ],
 };
 
@@ -1220,9 +1238,11 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] = 'Bo
 constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = 'New Unique Visitors';
 constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,
     constants.campaignGoalKPI.NEW_UNIQUE_VISITORS,
     constants.campaignGoalKPI.TIME_ON_SITE,
-    constants.campaignGoalKPI.PAGES_PER_SESSION];
+    constants.campaignGoalKPI.PAGES_PER_SESSION,
+    constants.campaignGoalKPI.CPV];

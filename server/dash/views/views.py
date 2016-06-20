@@ -45,6 +45,8 @@ from utils import request_signer
 from automation import autopilot_plus
 
 import actionlog.api
+import actionlog.models
+import actionlog.constants
 import actionlog.api_contentads
 import actionlog.sync
 import actionlog.zwei_actions
@@ -1216,7 +1218,7 @@ class AdGroupAdsUpload(api_common.BaseApiView):
     def post(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadExtendedForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -1695,6 +1697,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         )
 
         publisher_blacklist = self._create_adgroup_blacklist(
+            request,
             ad_group,
             publishers + publishers_selected,
             state,
@@ -1786,7 +1789,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         return ret
 
-    def _create_adgroup_blacklist(self, ad_group, publishers, state, level, ignored_publishers):
+    def _create_adgroup_blacklist(self, request, ad_group, publishers, state, level,
+                                  ignored_publishers):
         adgroup_blacklist = set([])
         failed_publisher_mappings = set([])
         count_failed_publisher = 0
@@ -1884,7 +1888,50 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             for (dom, adgroup_id, source_val, ext_id,) in adgroup_blacklist
         ]
 
+        self._trigger_manual_ob_blacklist_action(
+            count_ob_blacklisted_publishers,
+            request,
+            ad_group,
+            state,
+            [
+                {'domain': dom, 'external_id': ext_id}
+                for (dom, adgroup_id, source_val, ext_id,) in adgroup_blacklist
+                if source_val.source_type.type == constants.SourceType.OUTBRAIN
+            ]
+        )
+
         return kv_blacklist
+
+    def _trigger_manual_ob_blacklist_action(self, count_ob_blacklisted_publishers,
+                                            request, ad_group, state, publishers_list):
+        if count_ob_blacklisted_publishers <= constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD \
+           or count_ob_blacklisted_publishers > constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
+            return
+        action_name = {
+            constants.PublisherStatus.BLACKLISTED: 'Blacklist',
+            constants.PublisherStatus.ENABLED: 'Whitelist',
+        }[state]
+        domains = '\n'.join('- {} ({})'.format(pub['domain'], pub['external_id']) for pub in publishers_list)
+
+        action = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            expiration_dt=None,
+            state=actionlog.constants.ActionState.WAITING,
+            ad_group_source=models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source__tracking_slug=constants.SourceType.OUTBRAIN
+            ).first(),
+            payload={
+                'ad_group_id': ad_group.pk,
+                'state': state,
+                'publishers': publishers_list
+            },
+            message=u'{} the following publishers on Outbrain for account {} (#{}):\n{}'.format(
+                action_name, ad_group.campaign.account.name, ad_group.campaign.account.pk, domains
+            )
+        )
+        action.save(request)
 
     def _handle_global_blacklist(self, request, ad_group, state, publishers, publishers_selected, publishers_not_selected):
         existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(

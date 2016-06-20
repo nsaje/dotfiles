@@ -4,7 +4,7 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', 'api', 'zemNavigati
     $scope.history = [];
     $scope.requestInProgress = false;
     $scope.order = 'datetime';
-    $scope.orderAsc = true;
+    $scope.orderAsc = false;
 
     $scope.changeOrder = function (field) {
         $scope.order = field;

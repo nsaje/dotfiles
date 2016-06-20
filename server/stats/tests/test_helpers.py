@@ -52,7 +52,7 @@ class HelpersTest(TestCase):
         self.assertDictEqual(
             helpers.extract_breakdown_id(
                 ['ad_group', 'publisher', 'state', 'month'],
-                "23-gimme.beer.com-FL"
+                "23||gimme.beer.com||FL"
             ),
             {
                 'ad_group_id': 23,
@@ -64,7 +64,7 @@ class HelpersTest(TestCase):
         self.assertDictEqual(
             helpers.extract_breakdown_id(
                 ['source', 'content_ad', 'country'],
-                "11-20284"
+                "11||20284"
             ),
             {
                 'source_id': 11,
@@ -89,7 +89,7 @@ class HelpersTest(TestCase):
                 ['campaign', 'publisher', 'gender'],
                 {'campaign_id': 13, 'publisher': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
             ),
-            "13-gimme.beer.com-M"
+            "13||gimme.beer.com||M"
         )
 
         self.assertEqual(

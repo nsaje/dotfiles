@@ -157,6 +157,10 @@ urlpatterns += [
         login_required(dash.views.upload.UploadCsv.as_view()), name='upload_plus_csv'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/multiple/',
+        login_required(dash.views.upload.UploadMultiple.as_view()), name='upload_plus_multiple'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/status/',
         login_required(dash.views.upload.UploadStatus.as_view()), name='upload_plus_status'
     ),

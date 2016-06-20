@@ -19,6 +19,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.PAGES_PER_SESSION: '{} Pageviews per Visit',
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
+    constants.CampaignGoalKPI.CPV: '{} Cost Per Visit',
 }
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
@@ -28,6 +29,7 @@ CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: lambda x: '{:.2f} %'.format(x),
     constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CPC: lambda x: utils.lc_helper.default_currency(x, places=3),
+    constants.CampaignGoalKPI.CPV: utils.lc_helper.default_currency,
 }
 
 CAMPAIGN_GOAL_MAP = {
@@ -41,13 +43,14 @@ CAMPAIGN_GOAL_MAP = {
     ],
     constants.CampaignGoalKPI.TIME_ON_SITE: [
         'total_seconds',
-        'avg_cost_per_second',
+        'avg_cost_per_minute',
     ],
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: [
         'avg_cost_for_new_visitor',
     ],
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: ['cpc'],
+    constants.CampaignGoalKPI.CPV: ['avg_cost_per_visit'],
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
@@ -56,12 +59,14 @@ CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.TIME_ON_SITE: 'avg_tos',
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
+    constants.CampaignGoalKPI.CPV: 'avg_cost_per_visit',
 }
 
 INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
     constants.CampaignGoalKPI.CPA,
     constants.CampaignGoalKPI.CPC,
+    constants.CampaignGoalKPI.CPV,
 )
 
 STATUS_TO_EMOTICON_MAP = {
@@ -77,6 +82,7 @@ E_MEDIA_COST_COLUMN = 'e_media_cost'
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
     constants.CampaignGoalKPI.CPC,
+    constants.CampaignGoalKPI.CPV,
 )
 
 
@@ -383,12 +389,13 @@ def copy_fields(user, source, dest):
         return
 
     dest['total_seconds'] = source.get('total_seconds', 0)
-    dest['avg_cost_per_second'] = source.get('avg_time_per_second', 0)
+    dest['avg_cost_per_minute'] = source.get('avg_cost_per_minute', 0)
     dest['unbounced_visits'] = source.get('unbounced_visits', 0)
     dest['avg_cost_per_non_bounced_visitor'] = source.get('avg_cost_per_non_bounced_visitor', 0)
     dest['total_pageviews'] = source.get('total_pageviews', 0)
     dest['avg_cost_per_pageview'] = source.get('avg_cost_per_pageview', 0)
     dest['avg_cost_for_new_visitor'] = source.get('avg_cost_for_new_visitor', 0)
+    dest['avg_cost_per_visit'] = source.get('avg_cost_per_visit', 0)
 
 
 def _add_entry_to_history(request, campaign, action_type, changes_text):

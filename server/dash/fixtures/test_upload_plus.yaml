@@ -279,8 +279,8 @@
     call_to_action: 'Read more'
     tracker_urls: 'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
-    image_width: 300
-    image_height: 300
+    image_width: 500
+    image_height: 500
     image_hash: '54321cba'
   model: dash.contentadcandidate
   pk: 2
