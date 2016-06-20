@@ -1153,7 +1153,7 @@ class ContentAdCandidateForm(forms.Form):
         validate_url = validators.URLValidator(schemes=['https'])
 
         for url in tracker_urls:
-            if url.startswith('http://'):
+            if url.lower().startswith('http://'):
                 raise forms.ValidationError('Tracker URLs have to be HTTPS')
             try:
                 # URL is considered invalid if it contains any unicode chars
