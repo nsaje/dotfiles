@@ -84,21 +84,27 @@ def filter_by_permissions(result, user):
 
 
 def remove_columns_without_permission(user, rows):
-    for row in rows:
-        if not ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                 user.has_perm('zemauth.aggregate_postclick_acquisition'))):
-            for field in POSTCLICK_ACQUISITION_FIELDS:
-                if field in row:
-                    del row[field]
-        if not user.has_perm('zemauth.aggregate_postclick_engagement'):
-            for field in POSTCLICK_ENGAGEMENT_FIELDS:
-                if field in row:
-                    del row[field]
-        if not user.has_perm('zemauth.campaign_goal_optimization'):
-            for field in CAMPAIGN_GOAL_FIELDS:
-                if field in row:
-                    del row[field]
+    fields_to_remove = []
 
-        for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
-            if not user.has_perm(permission) and field in row:
-                del row[field]
+    if not ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
+             user.has_perm('zemauth.aggregate_postclick_acquisition'))):
+        fields_to_remove.extend(POSTCLICK_ACQUISITION_FIELDS)
+
+    if not user.has_perm('zemauth.aggregate_postclick_engagement'):
+        fields_to_remove.extend(POSTCLICK_ENGAGEMENT_FIELDS)
+
+    if not user.has_perm('zemauth.campaign_goal_optimization'):
+        fields_to_remove.extend(CAMPAIGN_GOAL_FIELDS)
+
+    for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
+        if not user.has_perm(permission):
+            fields_to_remove.append(field)
+
+    for row in rows:
+        _remove_fields(row, fields_to_remove)
+
+
+def _remove_fields(row, fields):
+    for field in fields:
+        if field in row:
+            del row[field]
