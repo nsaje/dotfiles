@@ -3464,7 +3464,7 @@ class TestHistoryMixin(TestCase):
         )
 
         self.assertEqual(
-            ({}, 'Created settings. Settings: 5.'),
+            ({'test_field': 'pesa'}, 'Created settings. Settings: 5. Test Field set to "pesa"'),
             mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
         )
 
