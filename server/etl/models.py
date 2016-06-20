@@ -89,7 +89,7 @@ class K1OutbrainPublisherStats(backtosql.Model, RSBreakdownMixin):
 
 
 class MVMaster(backtosql.Model, RSBreakdownMixin):
-    date = backtosql.TemplateColumn('part_trunc_date.sql', {'column_name': 'date'}, BREAKDOWN)
+    date = backtosql.Column('date', BREAKDOWN)
 
     agency_id = backtosql.Column('agency_id', BREAKDOWN)
     account_id = backtosql.Column('account_id', BREAKDOWN)
@@ -109,8 +109,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
-    cost = backtosql.TemplateColumn('part_sum_cc.sql', {'column_name': 'cost_cc'}, AGGREGATES)
-    data_cost = backtosql.TemplateColumn('part_sum_cc.sql', {'column_name': 'data_cost_cc'}, AGGREGATES)
+    cost_cc = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'cost_cc'}, AGGREGATES)
+    data_cost_cc = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'data_cost_cc'}, AGGREGATES)
 
     visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, AGGREGATES)
     new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, AGGREGATES)
@@ -123,8 +123,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
                                                         AGGREGATES)
     license_fee_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'license_fee_nano'}, AGGREGATES)
 
-    conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'conversions'}, AGGREGATES)
-    tp_conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'tp_conversions'}, AGGREGATES)
+    # conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'conversions'}, AGGREGATES)
+    # tp_conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'tp_conversions'}, AGGREGATES)
 
     @classmethod
     def get_ordered_aggregates(cls):
@@ -133,7 +133,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         """
 
         return cls.select_columns(subset=[
-            'impressions', 'clicks', 'cost', 'data_cost', 'visits', 'new_visits',
+            'impressions', 'clicks', 'cost_cc', 'data_cost_cc', 'visits', 'new_visits',
             'bounced_visits', 'pageviews', 'total_time_on_site', 'effective_cost_nano',
-            'effective_data_cost_nano', 'license_fee_nano', 'conversions', 'tp_conversions',
+            'effective_data_cost_nano', 'license_fee_nano',
         ])

@@ -1,35 +1,33 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', function ($rootScope, $controller, $http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
-        this.metaData = metaData;
-        this.baseUrl = baseUrl;
 
         this.getMetaData = function () {
             // Meta data is not yet fetched from backend,
             // therefor just return already fulfilled promise
             var deferred = $q.defer();
-            deferred.resolve(this.metaData);
+            deferred.resolve(metaData);
             return deferred.promise;
         };
 
         this.getData = function (config) {
             var url = createUrl(baseUrl, config);
-            convertToApi(config);
+            var params = zemGridEndpointApiConverter.convertConfigToApi(config);
             var deferred = $q.defer();
-            $http.post(url, {params: config}).success(function (data) {
+            $http.post(url, {params: params}).success(function (data) {
                 var breakdowns = data.data;
-                breakdowns.forEach(function (breakdown) {
-                    convertFromApi(config, breakdown);
+                breakdowns = breakdowns.map(function (breakdown) {
+                    breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
                     checkPaginationCount(config, breakdown);
+                    return breakdown;
                 });
                 deferred.resolve(breakdowns);
             }).error(function (data) {
                 deferred.reject(data);
             });
-
             return deferred.promise;
         };
 
@@ -53,26 +51,6 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
                 return breakdown.query;
             });
             return baseUrl + queries.join('/') + '/';
-        }
-
-        function convertFromApi (config, breakdown) {
-            breakdown.level = config.level;
-            breakdown.breakdownId = breakdown.breakdown_id;
-            breakdown.rows = breakdown.rows.map(function (row) {
-                row.breakdownName = row.breakdown_name;
-                return {
-                    stats: row,
-                    breakdownId: row.breakdown_id,
-                };
-            });
-        }
-
-        function convertToApi (config) {
-            config.breakdown_page = config.breakdownPage; // eslint-disable-line camelcase
-            config.start_date = config.startDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-            config.end_date = config.endDate.format('YYYY-MM-DD'); // eslint-disable-line camelcase
-            delete config.breakdownPage;
-            delete config.breakdown;
         }
 
         function checkPaginationCount (config, breakdown) {
@@ -103,9 +81,6 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         var columns = zemGridEndpointColumns.createColumns(scope, level, breakdown);
         var categories = zemGridEndpointColumns.createCategories(columns);
         var breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(level, breakdown);
-
-        columns[0].field = 'breakdownName';
-        columns[0].type = 'text';
 
         return {
             id: id,

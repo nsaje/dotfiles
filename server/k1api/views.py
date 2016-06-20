@@ -821,7 +821,7 @@ def get_facebook_account(request):
         facebook_account = {
             'account_id': query_facebook_account.account_id,
             'ad_account_id': query_facebook_account.ad_account_id,
-            'page_id': query_facebook_account.get_page_id()
+            'page_id': query_facebook_account.page_id
         }
     except dash.models.FacebookAccount.DoesNotExist:
         facebook_account = None
