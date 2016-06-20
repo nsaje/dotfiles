@@ -1152,3 +1152,17 @@ class HistoryTest(TestCase):
                        sd=start_date.isoformat(),
                        ed=end_date.isoformat())
         ).replace('\n', ''), history.changes_text)
+
+    def test_create_ad_group_source(self):
+        s = models.Source.objects.create(
+            name='b1'
+        )
+        ad_group = models.AdGroup.objects.get(pk=1)
+        new_adgs = models.AdGroupSource(
+            source=s,
+            ad_group=ad_group
+        )
+        new_adgs.save()
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings. Source: b1.', hist.changes_text)
