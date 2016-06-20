@@ -792,13 +792,13 @@ oneApp.factory('zemGridEndpointColumns', [function () {
             initialOrder: 'desc',
         },
         avgCostPerSecond: {
-            name: 'Avg. Cost per Second',
-            field: 'avg_cost_per_second',
+            name: 'Avg. Cost per Minute',
+            field: 'avg_cost_per_minute',
             checked: true,
             type: 'currency',
             shown: 'zemauth.campaign_goal_optimization',
             internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per time spent on site.',
+            help: 'Average cost per minute spent on site.',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
@@ -975,6 +975,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
     }
 
     var BASE_METRICS = [
+        COLUMNS.licenseFee,
         COLUMNS.mediaCost,
         COLUMNS.eMediaCost,
         COLUMNS.dataCost,
@@ -1036,7 +1037,6 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         COLUMNS.flatFee,
         COLUMNS.totalFee,
         COLUMNS.totalFeeProjection,
-        COLUMNS.licenseFee,
         COLUMNS.licenseFeeProjection,
     ].concat(
         BASE_METRICS,
@@ -1052,7 +1052,6 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         COLUMNS.allocatedBudgets,
         COLUMNS.spendProjection,
         COLUMNS.pacing,
-        COLUMNS.licenseFee,
         COLUMNS.licenseFeeProjection,
     ].concat(
         BASE_METRICS,
@@ -1319,6 +1318,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
 
 
     return {
+        COLUMNS: COLUMNS,
         createColumns: createColumns,
         createCategories: createCategories,
         updateGoalColumns: updateGoalColumns,

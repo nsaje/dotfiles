@@ -3,12 +3,11 @@ import json
 import datetime
 import pytz
 import httplib
-import textwrap
 
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory, override_settings
+from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
@@ -2280,12 +2279,8 @@ class AccountHistoryTest(TestCase):
             self.assertEqual(changes_string, expected_changes_strings[i])
 
 
-@override_settings(
-    FB_BUSINESS_ID='fake_app_id',
-    FB_ACCESS_TOKEN='very_fake_token',
-)
 class AccountSettingsTest(TestCase):
-    fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml']
+    fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml', 'test_facebook.yaml']
 
     @classmethod
     def setUpClass(cls):
@@ -2408,7 +2403,10 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True}},
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
+                                u'100': {u'name': u'AdsNative', u'released': True},
+                                u'200': {u'name': u'Facebook', u'released': True}
+                                },
             'id': '1000',
             'archived': False,
         })
@@ -2425,7 +2423,10 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
-            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True}},
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
+                                u'100': {u'name': u'AdsNative', u'released': True},
+                                u'200': {u'name': u'Facebook', u'released': True}
+                                },
             'account_type': constants.AccountType.UNKNOWN,
             'id': '1000',
             'archived': False,
@@ -2557,9 +2558,10 @@ class AccountSettingsTest(TestCase):
             'archived': False
         })
 
+    @patch('requests.get')
     @patch('requests.post')
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction, mock_request):
+    def test_put(self, mock_log_useraction, mock_request, mock_page_id):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
@@ -2571,6 +2573,9 @@ class AccountSettingsTest(TestCase):
         response = Response()
         response.status_code = 200
         mock_request.return_value = response
+
+        response._content = '{"id": "1234"}'
+        mock_page_id.return_value = response
 
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
@@ -2813,7 +2818,9 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True, 'released': True},
-            '3': {'name': 'Source 3', 'released': False}
+            '3': {'name': 'Source 3', 'released': False},
+            '100': {'name': 'AdsNative', 'released': True},
+            '200': {'name': 'Facebook', 'released': True},
         })
 
     def test_get_allowed_sources_no_released(self):
@@ -2829,6 +2836,8 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True, 'released': True},
+            '100': {'name': 'AdsNative', 'released': True},
+            '200': {'name': 'Facebook', 'released': True},
         })
 
     def test_add_error_to_account_agency_form(self):
@@ -3455,7 +3464,7 @@ class TestHistoryMixin(TestCase):
         )
 
         self.assertEqual(
-            ({}, 'Created settings. Settings: 5.'),
+            ({'test_field': 'pesa'}, 'Created settings. Settings: 5. Test Field set to "pesa"'),
             mix.construct_changes('Created settings.', 'Settings: 5.', {'test_field': 'pesa'})
         )
 

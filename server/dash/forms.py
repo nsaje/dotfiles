@@ -160,8 +160,9 @@ class AdGroupSettingsForm(forms.Form):
     def clean_ga_property_id(self):
         property_id = self.cleaned_data.get('ga_property_id').strip()
         tracking_type = self.cleaned_data.get('ga_tracking_type')
+        enable_ga_tracking = self.cleaned_data.get('enable_ga_tracking')
 
-        if tracking_type == constants.GATrackingType.EMAIL:
+        if not enable_ga_tracking or tracking_type == constants.GATrackingType.EMAIL:
             return None  # property ID should not be set when email type is selected
 
         if not property_id:

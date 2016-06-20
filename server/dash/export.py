@@ -64,7 +64,7 @@ FIELDNAMES = {
     'total_seconds': 'Total Seconds',
     'unbounced_visits': 'Unbounced Visitors',
     'total_pageviews': 'Total Pageviews',
-    'avg_cost_per_second': 'Avg. Cost per Second',
+    'avg_cost_per_minute': 'Avg. Cost per Minute',
     'avg_cost_per_pageview': 'Avg. Cost per Pageview',
     'avg_cost_per_visit': 'Avg. Cost per Visit',
     'avg_cost_per_non_bounced_visitor': 'Avg. Cost for Unbounced Visitor',

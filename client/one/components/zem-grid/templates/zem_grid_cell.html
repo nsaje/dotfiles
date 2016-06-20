@@ -1,19 +1,13 @@
 <div class="zem-grid-cell">
     <!-- TODO: fully support current Table styles -->
     <span ng-switch="ctrl.col.type|groupColumnTypes">
+        <zem-grid-cell-breakdown-field ng-switch-when="breakdown" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-breakdown-field>
+
         <zem-grid-cell-base-field ng-switch-when="base" data="ctrl.data" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-base-field>
 
         <zem-grid-cell-checkbox ng-switch-when="checkbox" row="ctrl.row" col="ctrl.col" grid="ctrl.grid"></zem-grid-cell-checkbox>
 
         <zem-grid-cell-collapse ng-switch-when="collapse" row="ctrl.row" col="ctrl.col" grid="ctrl.grid"></zem-grid-cell-collapse>
-
-        <span ng-switch-when="breakdown" ng-style="ctrl.getBreakdownColumnStyle()">
-            {{ctrl.data.value}}
-        </span>
-
-        <span ng-switch-default>
-            {{ctrl.data.value}}
-        </span>
     </span>
 </div>
 

@@ -209,7 +209,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
 
-        if user.has_perm('zemauth.can_set_ga_api_tracking'):
+        if settings.enable_ga_tracking and user.has_perm('zemauth.can_set_ga_api_tracking'):
             settings.ga_tracking_type = resource['ga_tracking_type']
 
             if settings.ga_tracking_type == constants.GATrackingType.API:
@@ -1138,7 +1138,9 @@ class AccountSettings(api_common.BaseApiView):
 
     def set_facebook_page(self, facebook_account, form):
         new_url = form.cleaned_data['facebook_page']
-        facebook_helper.update_facebook_account(facebook_account, new_url)
+        credentials = facebook_helper.get_credentials()
+        facebook_helper.update_facebook_account(facebook_account, new_url, credentials['business_id'],
+                                                credentials['access_token'])
 
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()

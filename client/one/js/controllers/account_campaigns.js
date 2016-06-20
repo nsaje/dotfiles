@@ -657,7 +657,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     function initializeDataSource () {
-        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'campaign');
+        var metadata = zemGridEndpointService.createMetaData($scope,
+            $scope.level, $state.params.id, constants.breakdown.CAMPAIGN);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
@@ -694,6 +695,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         getTableData();
         getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -702,6 +707,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         }
 
         getTableData();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+        }
     });
 
     $scope.init();

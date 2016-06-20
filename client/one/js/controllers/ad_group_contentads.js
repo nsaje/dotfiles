@@ -731,6 +731,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         }
         getTableData();
         getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -739,6 +743,10 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         }
         getTableData();
         getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+        }
     }, true);
 
     $scope.triggerSync = function () {
@@ -895,7 +903,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     };
 
     function initializeDataSource () {
-        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'content_ad');
+        var metadata = zemGridEndpointService.createMetaData($scope,
+            $scope.level, $state.params.id, constants.breakdown.CONTENT_AD);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);
