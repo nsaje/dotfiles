@@ -167,6 +167,11 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     });
 
     $scope.cancel = function () {
+        if ($scope.uploadStatus === constants.uploadBatchStatus.DONE) {
+            $modalInstance.close();
+            return;
+        }
+
         api.uploadPlus.cancel($state.params.id, $scope.batchId).then(function () {
             $scope.cancelErrors = null;
             stopPolling();
