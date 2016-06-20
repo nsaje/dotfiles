@@ -209,9 +209,3 @@ LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mp
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = os.environ.get('INSTANCE_NAME', 'demo123')
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://{INSTANCE_NAME}.demo.zemanta.com/api/callbacks/content-upload/'.format(INSTANCE_NAME=LAMBDA_CONTENT_UPLOAD_NAMESPACE)
-
-# FB
-FB_BUSINESS_ID = ''
-FB_SYSTEM_USER_ID = ''
-FB_APP_ID = ''
-FB_ACCESS_TOKEN = Secret('plain::').get()

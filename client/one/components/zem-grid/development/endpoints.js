@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'config', function ($rootScope, $controller, $http, $q, $timeout, config) { // eslint-disable-line max-len
+oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', function ($rootScope, $controller, $http, $q, $timeout) { // eslint-disable-line max-len
 
     function MockEndpoint (metaData) {
         this.getMetaData = function () {
@@ -35,7 +35,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     var COLUMNS = {
         breakdown_name: {
             name: 'Mocked Level',
-            type: 'breakdown',
+            type: 'text',
             help: 'Mocked level.',
             shown: true,
             checked: true,
@@ -129,57 +129,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             checked: true,
             unselectable: false,
         },
-        test_link_with_icon: {
-            name: 'Link with Icon',
-            type: 'link',
-            shown: true,
-            checked: true,
-            unselectable: false,
-        },
-        text_visible_link: {
-            name: 'Visible Link',
-            type: 'visibleLink',
-            shown: true,
-            checked: true,
-            unselectable: false,
-        },
-        test_link_text: {
-            name: 'Link Text',
-            type: 'linkText',
-            shown: true,
-            checked: true,
-            unselectable: false,
-        },
-        test_link_nav: {
-            name: 'Link Nav',
-            type: 'linkNav',
-            shown: true,
-            checked: true,
-            unselectable: false,
-        },
-        test_click_permission_or_text: {
-            name: 'Click Permissions',
-            type: 'clickPermissionOrText',
-            hasPermission: true,
-            shown: true,
-            checked: true,
-            unselectable: false,
-        },
-        status_setting: {
-            name: 'State',
-            type: 'state',
-            enabledValue: 'Enabled',
-            pausedValue: 'Paused',
-            onChange: function () {
-                return false;
-            },
-            enablingAutopilotSourcesNotAllowed: function () {
-                return false;
-            },
-            getDisabledMessage: function () {
-                return 'Disabled.';
-            },
-        },
     };
 
     function getMockedBreakdownGroups () {
@@ -196,7 +145,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
                     'status',
                     'performance',
                     'submission_status',
-                    'status_setting',
                     'default_account_manager',
                     'cost',
                     'pacing',
@@ -209,11 +157,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
                     'time_on_site',
                     'last_sync',
                     'text_with_popup',
-                    'test_link_with_icon',
-                    'text_visible_link',
-                    'test_link_text',
-                    'test_link_nav',
-                    'test_click_permission_or_text',
                 ],
             },
         ];
@@ -223,10 +166,8 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         return getColumnsForFields([
             'breakdown_name',
             'thumbnail',
-            'status',
             'performance',
             'submission_status',
-            'status_setting',
             'default_account_manager',
             'cost',
             'pacing',
@@ -234,11 +175,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             'time_on_site',
             'last_sync',
             'text_with_popup',
-            'test_link_with_icon',
-            'text_visible_link',
-            'test_link_text',
-            'test_link_nav',
-            'test_click_permission_or_text',
         ]);
     }
 
@@ -413,7 +349,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
 
         mockedColumns.forEach(function (column) {
             var data;
-            if (column.type === 'breakdown') {
+            if (column.field === 'breakdown_name') {
                 data = {
                     value: key,
                 };
@@ -455,17 +391,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         case 'datetime':
             data = getMockedDateTime();
             break;
-        case 'link':
-        case 'visibleLink':
-        case 'linkText':
-            data = getMockedExternalLink(type);
-            break;
-        case 'linkNav':
-            data = getMockedInternalLink();
-            break;
-        case 'clickPermissionOrText':
-            data = getMockedAction();
-            break;
         case 'thumbnail':
             data = getMockedThumbnail();
             break;
@@ -474,9 +399,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             break;
         case 'performanceIndicator':
             data = getMockedPerformance();
-            break;
-        case 'state':
-            data = getMockedState();
             break;
         case 'textWithPopup':
             data = getMockedFieldWithPopup();
@@ -548,88 +470,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         }
     }
 
-    function getMockedExternalLink (type) {
-        var mockedExternalLink;
-        switch (type) {
-        case 'link':
-            if (Math.random() < 0.6) {
-                mockedExternalLink = {
-                    url: '/?random_link=' + Math.floor(Math.random() * 10000),
-                    text: '',
-                    icon: config.static_url + '/one/img/link.svg',
-                    title: 'Random link with icon.',
-                    showDisabled: true,
-                    disabledMessage: 'No link here.',
-                };
-            } else {
-                mockedExternalLink = {
-                    url: '',
-                    text: '',
-                    icon: config.static_url + '/one/img/link.svg',
-                    title: 'Disabled link with icon.',
-                    showDisabled: true,
-                    disabledMessage: 'Should be visible.',
-                };
-            }
-            return mockedExternalLink;
-        case 'visibleLink':
-            if (Math.random() < 0.6) {
-                mockedExternalLink = {
-                    url: '/?random_link=' + Math.floor(Math.random() * 10000),
-                    text: '',
-                    icon: config.static_url + '/one/img/link.svg',
-                    title: 'Should be visible.',
-                    showDisabled: false,
-                    disabledMessage: '',
-                };
-            } else {
-                mockedExternalLink = {
-                    text: '',
-                    icon: config.static_url + '/one/img/link.svg',
-                    title: 'Should be hidden.',
-                    showDisabled: false,
-                    disabledMessage: '',
-                };
-            }
-            return mockedExternalLink;
-        case 'linkText':
-            if (Math.random() < 0.6) {
-                mockedExternalLink = {
-                    url: '/?random_link=' + Math.floor(Math.random() * 10000),
-                    text: 'Link with text',
-                    icon: '',
-                    title: 'Link with text.',
-                    showDisabled: true,
-                    disabledMessage: '',
-                };
-            } else {
-                mockedExternalLink = {
-                    url: '',
-                    text: 'No link with text',
-                    icon: '',
-                    title: 'No link with text.',
-                    showDisabled: true,
-                    disabledMessage: '',
-                };
-            }
-            return mockedExternalLink;
-        }
-    }
-
-    function getMockedInternalLink () {
-        return {
-            state: 'main.accounts.campaigns',
-            id: 118,
-            text: 'Test link nav',
-        };
-    }
-
-    function getMockedAction () {
-        return {
-            value: 'Test click permission or text',
-        };
-    }
-
     function getMockedThumbnail () {
         var thumbnails = [
             'ff36fcbc-64b0-419c-bf56-346778f6fd4b.jpg',
@@ -683,15 +523,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
                 overall: 3,
             };
         }
-    }
-
-    function getMockedState () {
-        var isEdtable = (Math.random() < 0.5);
-        return {
-            state: Math.floor(Math.random() * 3 + 1),
-            isEdtable: isEdtable,
-            editMessage: isEdtable ? null : 'Editing disabled.',
-        };
     }
 
     var fieldWithPopupIndex = 0;

@@ -52,8 +52,6 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
         // TODO: On CAMPAIGN_AD_GROUPS level stateText is dynamically calculated based on state and row.archived. It
         // can't be converted from api, because no stateText field is returned from server.
         switch (type) {
-        // TODO: convertBreakdownNameField (include name, id, url, etc.)
-        // TODO: convertInternalLinkField
         // TODO: convertExternalLinkField
         // TODO: convertThumbnailField
         // TODO: convertSubmissionStatusField
