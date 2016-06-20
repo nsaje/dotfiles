@@ -1153,6 +1153,47 @@ class HistoryTest(TestCase):
                        ed=end_date.isoformat())
         ).replace('\n', ''), history.changes_text)
 
+    def test_create_account(self):
+        req = test_helper.fake_request(self.u)
+        a = models.Account(
+            name='test',
+        )
+        a.save(req)
+
+        acs = a.get_current_settings()
+        acs.save(req)
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings', hist.changes_text)
+
+    def test_create_campaign(self):
+        req = test_helper.fake_request(self.u)
+        c = models.Campaign(
+            name='test',
+            account=models.Account.objects.all().get(pk=1),
+        )
+        c.save(req)
+
+        cs = c.get_current_settings()
+        cs.save(req)
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings', hist.changes_text)
+
+    def test_create_ad_group(self):
+        req = test_helper.fake_request(self.u)
+        a = models.AdGroup(
+            name='test',
+            campaign=models.Campaign.objects.all().get(pk=1),
+        )
+        a.save(req)
+
+        adgs = a.get_current_settings()
+        adgs.save(req)
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings', hist.changes_text)
+
     def test_create_ad_group_source(self):
         s = models.Source.objects.create(
             name='b1'
