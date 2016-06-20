@@ -14,16 +14,20 @@ oneApp.directive('zemGridRowBreakdown', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row_breakdown.html',
         controller: ['zemGridUIService', function (zemGridUIService) {
-            this.loadMore = function (size) {
-                if (!size) {
-                    size = this.row.data.pagination.count - this.row.data.pagination.limit;
-                }
-                this.grid.meta.service.loadData(this.row, size);
-            };
+            var vm = this;
+            vm.loadMore = loadMore;
+            vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
 
-            this.getBreakdownColumnStyle = function () {
-                return zemGridUIService.getBreakdownColumnClass(this.row);
-            };
+            function loadMore (size) {
+                if (!size) {
+                    size = vm.row.data.pagination.count - vm.row.data.pagination.limit;
+                }
+                vm.grid.meta.service.loadData(vm.row, size);
+            }
+
+            function getBreakdownColumnStyle () {
+                return zemGridUIService.getBreakdownColumnClass(vm.row);
+            }
         }],
     };
 }]);

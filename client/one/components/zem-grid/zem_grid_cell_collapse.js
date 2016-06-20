@@ -15,9 +15,12 @@ oneApp.directive('zemGridCellCollapse', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_collapse.html',
         controller: [function () {
-            this.toggleCollapse = function () {
-                this.grid.meta.api.setCollapsedRows(this.row, !this.row.collapsed);
-            };
+            var vm = this;
+            vm.toggleCollapse = toggleCollapse;
+
+            function toggleCollapse () {
+                vm.grid.meta.api.setCollapsedRows(vm.row, !vm.row.collapsed);
+            }
         }],
     };
 }]);
