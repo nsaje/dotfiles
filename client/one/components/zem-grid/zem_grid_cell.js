@@ -22,6 +22,7 @@ oneApp.directive('zemGridCell', [function () {
             };
 
             this.getBreakdownColumnStyle = function () {
+                if (!this.row) return; // can happen - temporary; fix is part of Breakdown directive PR
                 return zemGridUIService.getBreakdownColumnClass(this.row);
             };
         }],
