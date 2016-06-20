@@ -1,6 +1,8 @@
 import collections
 import datetime
 
+import reports.api_helpers
+
 from dash import models
 from dash import constants as dash_constants
 
@@ -142,7 +144,7 @@ def augment_row_time(row):
         row[constants.TimeDimension.MONTH] = "Month {}/{}".format(date.month, date.year)
 
 
-def filter_columns_by_permission(user, rows, breakdown, target_dimension):
-    # TODO remove columns that user doesn't have a permission for
-    # can use reports.api_helpers
-    pass
+def filter_columns_by_permission(user, rows):
+    # TODO check if any additional cleanup is needed
+    # if not, call the remove function directly
+    return reports.api_helpers.remove_columns_without_permission(user, rows)

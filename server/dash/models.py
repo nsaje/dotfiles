@@ -279,7 +279,6 @@ class HistoryMixin(object):
         parts = []
         if self.post_init_newly_created:
             parts.append(created_text)
-            changes = model_to_dict(self)
 
         if created_text_id:
             parts.append(created_text_id)
@@ -2297,7 +2296,8 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             history_type,
             changes,
             changes_text,
-            user=user
+            user=user,
+            system_user=self.system_user,
         )
 
     def delete(self, *args, **kwargs):
@@ -2895,11 +2895,16 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
         changes, changes_text = self.construct_changes(
             'Created credit.',
             'Credit: #{}.'.format(self.id) if self.id else None,
             changes
         )
+
         if self.account is not None:
             create_account_history(self.account,
                                    history_type,
@@ -3127,6 +3132,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
         changes, changes_text = self.construct_changes(
             'Created budget.',
             'Budget: #{}.'.format(self.id) if self.id else None,
@@ -3524,21 +3533,11 @@ class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
     ad_account_id = models.CharField(max_length=127, blank=True, null=True)
     page_url = models.CharField(max_length=255, blank=True, null=True)
+    page_id = models.CharField(max_length=127, blank=True, null=True)
     status = models.IntegerField(
         default=constants.FacebookPageRequestType.EMPTY,
         choices=constants.FacebookPageRequestType.get_choices()
     )
-
-    def get_page_id(self):
-        if not self.page_url:
-            return None
-
-        url = self.page_url.strip('/')
-        page_id = url[url.rfind('/') + 1:]
-        dash_index = page_id.rfind('-')
-        if dash_index != -1:
-            page_id = page_id[dash_index + 1:]
-        return page_id
 
     def __unicode__(self):
         return self.account.name

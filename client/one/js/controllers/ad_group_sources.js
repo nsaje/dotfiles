@@ -801,6 +801,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         getTableData();
         $scope.getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+        }
     }, true);
 
     $scope.init = function () {
@@ -844,7 +848,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     function initializeDataSource () {
-        var metadata = zemGridEndpointService.createMetaData($scope, $scope.level, $state.params.id, 'source');
+        var metadata = zemGridEndpointService.createMetaData($scope,
+            $scope.level, $state.params.id, constants.breakdown.MEDIA_SOURCE);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         $scope.dataSource = zemDataSourceService.createInstance(endpoint);
         $scope.dataSource.setDateRange($scope.dateRange, false);

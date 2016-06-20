@@ -1138,7 +1138,9 @@ class AccountSettings(api_common.BaseApiView):
 
     def set_facebook_page(self, facebook_account, form):
         new_url = form.cleaned_data['facebook_page']
-        facebook_helper.update_facebook_account(facebook_account, new_url)
+        credentials = facebook_helper.get_credentials()
+        facebook_helper.update_facebook_account(facebook_account, new_url, credentials['business_id'],
+                                                credentials['access_token'])
 
     def get_all_media_sources(self, can_see_all_available_sources):
         qs_sources = models.Source.objects.all()
