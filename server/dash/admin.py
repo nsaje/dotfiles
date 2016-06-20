@@ -1474,10 +1474,10 @@ class HistoryAdmin(admin.ModelAdmin):
 
     list_display = (
         'id',
-        'agency',
-        'account',
-        'campaign',
-        'ad_group',
+        'agency_',
+        'account_',
+        'campaign_',
+        'ad_group_',
         'created_dt',
         'created_by',
         'system_user',
@@ -1508,6 +1508,38 @@ class HistoryAdmin(admin.ModelAdmin):
             [field.name for field in self.opts.local_fields] +
             [field.name for field in self.opts.local_many_to_many]
         ))
+
+    def agency_(self, obj):
+        return '<a href="{agency_url}">{agency}</a>'.format(
+            agency_url=reverse('admin:dash_agency_change', args=(obj.agency.id,)),
+            agency=obj.agency
+        ) if obj.agency else '-'
+    agency_.allow_tags = True
+    agency_.admin_order_field = 'agency'
+
+    def account_(self, obj):
+        return '<a href="{account_url}">{account}</a>'.format(
+            account_url=reverse('admin:dash_account_change', args=(obj.account.id,)),
+            account=obj.account
+        ) if obj.account else '-'
+    account_.allow_tags = True
+    account_.admin_order_field = 'account'
+
+    def campaign_(self, obj):
+        return '<a href="{campaign_url}">{campaign}</a>'.format(
+            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
+            campaign=obj.campaign
+        ) if obj.campaign else '-'
+    campaign_.allow_tags = True
+    campaign_.admin_order_field = 'campaign'
+
+    def ad_group_(self, obj):
+        return '<a href="{ad_group_url}">{ad_group}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
+            ad_group=obj.ad_group
+        ) if obj.ad_group else '-'
+    ad_group_.allow_tags = True
+    ad_group_.admin_order_field = 'ad_group'
 
     def has_add_permission(self, request):
         return False
