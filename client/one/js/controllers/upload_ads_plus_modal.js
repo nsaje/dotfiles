@@ -171,7 +171,8 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     });
 
     $scope.cancel = function () {
-        if ($scope.uploadStatus === constants.uploadBatchStatus.DONE) {
+        if ($scope.uploadStatus === constants.uploadBatchStatus.DONE ||
+            $scope.uploadStatus === constants.uploadBatchStatus.FAILED) {
             $modalInstance.close();
             return;
         }
