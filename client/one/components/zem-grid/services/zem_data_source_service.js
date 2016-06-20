@@ -29,6 +29,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
     };
 
+    var FILTER = {
+        FILTERED_MEDIA_SOURCES: 1,
+        SHOW_ARCHIVED_SOURCES: 2,
+        SHOW_BLACKLISTED_PUBLISHERS: 3,
+    };
+
     function DataSource (endpoint) {
         var metaData = null;
         var data = null;
@@ -49,15 +55,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         //
         // Public API
         //
+        this.FILTER = FILTER;
         this.getData = getData;
         this.getMetaData = getMetaData;
         this.saveData = saveData;
 
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
+        this.setFilter = setFilter;
         this.setBreakdown = setBreakdown;
         this.getDateRange = getDateRange;
         this.getOrder = getOrder;
+        this.getFilter = getFilter;
         this.getBreakdown = getBreakdown;
         this.getBreakdownLevel = getBreakdownLevel;
 
@@ -264,6 +273,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             }
         }
 
+        function setFilter (filter, value, fetch) {
+            switch (filter) {
+            case FILTER.SHOW_ARCHIVED_SOURCES: config.showArchived = value; break;
+            case FILTER.SHOW_BLACKLISTED_PUBLISHERS: config.showBlacklistedPublishers = value; break;
+            case FILTER.FILTERED_MEDIA_SOURCES: config.filteredSources = value; break;
+            }
+
+            if (fetch) {
+                return getData();
+            }
+        }
+
         function setBreakdown (breakdown, fetch) {
             // Configures new breakdown for this DataSource and fetch missing data
             // Compare previous configured breakdown with new one and find out
@@ -325,6 +346,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getOrder () {
             return config.order;
+        }
+
+        function getFilter (filter) {
+            switch (filter) {
+            case FILTER.SHOW_ARCHIVED_SOURCES: return config.showArchived;
+            case FILTER.SHOW_BLACKLISTED_PUBLISHERS: return config.showBlacklistedPublishers;
+            case FILTER.FILTERED_MEDIA_SOURCES: return config.filteredSources;
+            }
+
+            if (fetch) {
+                return getData();
+            }
         }
 
         function getBreakdown () {

@@ -279,7 +279,6 @@ class HistoryMixin(object):
         parts = []
         if self.post_init_newly_created:
             parts.append(created_text)
-            changes = model_to_dict(self)
 
         if created_text_id:
             parts.append(created_text_id)
@@ -2879,11 +2878,19 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_newly_created:
+            return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
         changes, changes_text = self.construct_changes(
             'Created credit.',
             'Credit: #{}.'.format(self.id) if self.id else None,
             changes
         )
+
         if self.account is not None:
             create_account_history(self.account,
                                    history_type,
@@ -3108,6 +3115,13 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )
+        # this is a temporary state until cleaning up of settings changes text
+        if not changes and not self.post_init_newly_created:
+            return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
         changes, changes_text = self.construct_changes(
             'Created budget.',
             'Budget: #{}.'.format(self.id) if self.id else None,

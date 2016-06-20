@@ -1,4 +1,5 @@
 /* globals oneApp */
+/* eslint-disable camelcase*/
 'use strict';
 
 oneApp.factory('zemGridEndpointApiConverter', [function () {
@@ -27,9 +28,12 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
 
     function convertConfigToApi (config) {
         return {
-            breakdown_page: config.breakdownPage, // eslint-disable-line camelcase
-            start_date: config.startDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
-            end_date: config.endDate.format('YYYY-MM-DD'), // eslint-disable-line camelcase
+            breakdown_page: config.breakdownPage,
+            start_date: config.startDate.format('YYYY-MM-DD'),
+            end_date: config.endDate.format('YYYY-MM-DD'),
+            show_archived: config.showArchived,
+            show_blacklisted_publishers: config.showBlacklistedPublishers,
+            filtered_sources: config.filteredSources,
             level: config.level,
             limit: config.limit,
             offset: config.offset,
