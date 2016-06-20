@@ -2047,7 +2047,7 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'target_devices':
@@ -2258,7 +2258,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'landing_mode':
