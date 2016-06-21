@@ -102,6 +102,11 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
                     selectedData.push(row);
                 }
             });
+
+            if (grid.footer.row.selected) {
+                selectedData.push(grid.footer.row);
+            }
+
             return selectedData;
         }
 

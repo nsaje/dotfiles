@@ -203,22 +203,22 @@ class UploadSave(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError()
 
-        try:
-            content_ads = upload_plus.persist_candidates(batch)
-        except upload_plus.InvalidBatchStatus as e:
-            raise exc.ValidationError(message=e.message)
+        with transaction.atomic():
+            try:
+                content_ads = upload_plus.persist_candidates(batch)
+            except upload_plus.InvalidBatchStatus as e:
+                raise exc.ValidationError(message=e.message)
 
-        self._create_redirect_ids(content_ads)
-
-        num_uploaded = batch.batch_size - batch.num_errors
-        changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
-            batch.name,
-            num_uploaded,
-            pluralize(num_uploaded),
-        )
-        history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
-                                            ad_group=ad_group)
+            self._create_redirect_ids(content_ads)
+            num_uploaded = batch.batch_size - batch.num_errors
+            changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
+                batch.name,
+                num_uploaded,
+                pluralize(num_uploaded),
+            )
+            history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
+                                                ad_group=ad_group)
 
         error_report = None
         if batch.error_report_key:

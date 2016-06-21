@@ -1,0 +1,26 @@
+<div class="zem-grid-row-breakdown">
+    <div class="zem-grid-cell breakdown-pagination-cell">
+        <div ng-style="ctrl.getBreakdownColumnStyle()">
+            <span ng-if="ctrl.row.data.meta.loading">
+                 Loading...
+            </span>
+            <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count>0">
+                 - {{ctrl.row.data.pagination.limit}} of {{ctrl.row.data.pagination.count}} -
+            </span>
+            <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count<=0">
+                 - {{ctrl.row.data.pagination.limit}} -
+            </span>
+        </div>
+    </div>
+
+    <div class="zem-grid-cell breakdown-load-more-cell loading-cell" ng-show="ctrl.row.data.meta.loading">
+    </div>
+    <div class="zem-grid-cell breakdown-load-more-cell" ng-show="!ctrl.row.data.meta.loading">
+        <span ng-if="ctrl.row.data.pagination.complete && ctrl.row.data.pagination.count>0">All data loaded</span>
+        <span ng-if="ctrl.row.data.pagination.complete && ctrl.row.data.pagination.count===0">No data</span>
+        <a ng-if="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count" ng-click="ctrl.loadMore(20)"> (load
+            more) </a>
+        <a ng-if="!ctrl.row.data.pagination.complete && ctrl.row.data.pagination.count>0"
+           ng-click="ctrl.loadMore()"> (load all) </a>
+    </div>
+</div>

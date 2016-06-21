@@ -35,7 +35,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     var COLUMNS = {
         breakdown_name: {
             name: 'Mocked Level',
-            type: 'text',
+            type: 'breakdown',
             help: 'Mocked level.',
             shown: true,
             checked: true,

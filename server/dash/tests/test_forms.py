@@ -1265,7 +1265,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         f = forms.ContentAdCandidateForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'tracker_urls': ['Invalid tracker URLs']
+            'tracker_urls': ['Tracker URLs have to be HTTPS']
         }, f.errors)
 
     def test_unicode_tracker_urls(self):
