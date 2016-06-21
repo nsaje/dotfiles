@@ -604,13 +604,12 @@ def _run_autopilot(campaign, daily_caps):
 
         ap_data = per_ad_group_autopilot_data[ad_group]
         daily_cap = daily_caps[ad_group.id]
-        campaign_goal = campaign_goals[ad_group.campaign]
 
         budget_changes = autopilot_budgets.get_autopilot_daily_budget_recommendations(
             ad_group,
             daily_cap,
             ap_data,
-            campaign_goal=campaign_goal,
+            campaign_goal=None,  # only optimize for spend in landing mode
         )
         cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(ad_group, ap_data, budget_changes)
 
