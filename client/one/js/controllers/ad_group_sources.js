@@ -893,7 +893,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
             $location.search('source_ids', $scope.selectedSourceIds.join(','));
             $location.search('source_totals', $scope.selectedTotals ? 1 : null);
-            getDailyStats();
+            $scope.getDailyStats();
         });
 
         $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
