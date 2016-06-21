@@ -919,7 +919,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getTableData();
         getDailyStats();
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setDateRange($scope.dateRange, true);
+            $scope.grid.dataSource.setDateRange($scope.dateRange, true);
         }
     });
 
@@ -932,7 +932,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
         }
     }, true);
 
@@ -945,7 +945,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_BLACKLISTED_PUBLISHERS, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_BLACKLISTED_PUBLISHERS, newValue, true);
         }
     }, true);
 
@@ -997,16 +997,22 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemFilterService.setShowBlacklistedPublishers(true);
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.PUBLISHER);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange, false);
+
+        $scope.grid = {
+            api: undefined,
+            options: undefined,
+            dataSource: dataSource,
+        };
     }
 
     $scope.loadPage = function (page) {
