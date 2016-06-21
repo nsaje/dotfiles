@@ -22,7 +22,7 @@ DATABASES = {
         'NAME': 'one',
         'USER': 'eins23',
         'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
-        'HOST': 'zemantaone.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
+        'HOST': 'eins.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
         'PORT': 5432,
         'TEST': {
             'NAME': 'test_one_%s_%s' % (socket.gethostname(), int(time.time() * 1E6))
@@ -33,8 +33,7 @@ DATABASES = {
         'NAME': 'k1',
         'USER': 'eins',
         'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
-        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'HOST': '172.26.4.104',
+        'HOST': 'zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439
     }
 }

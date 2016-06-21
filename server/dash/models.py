@@ -2047,7 +2047,7 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'target_devices':
@@ -2258,7 +2258,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'landing_mode':
@@ -2406,7 +2406,7 @@ class ContentAd(models.Model):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
     crop_areas = models.CharField(max_length=128, null=True)
-    image_crop = models.CharField(max_length=25, null=True)
+    image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
 
     redirect_id = models.CharField(max_length=128, null=True)
 

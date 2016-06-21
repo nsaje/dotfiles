@@ -12,7 +12,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.maxDate = null;
     $scope.saveRequestInProgress = false;
 
-    $scope.initStartDate = null;
+    $scope.initStartDate = moment().toDate();
     $scope.endStartDate = null;
 
     $scope.getLicenseFees = function (search) {
@@ -40,13 +40,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             $scope.getAvailableCredit().forEach(function (obj) {
                 if (obj.id !== id) { return; }
 
-                $scope.minDate = obj.startDate;
-                $scope.maxDate = obj.endDate;
-                $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
-                $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
-                $scope.budgetItem.amount = parseInt(obj.total);
-                $scope.budgetItem.startDate = $scope.initStartDate;
-                $scope.budgetItem.endDate = $scope.initEndDate;
+                updateBudgetInitialValues(obj);
             });
         }, 100); // to be sure that the selected id is correct
 
@@ -91,19 +85,9 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         if ($scope.isNew) {
             $scope.availableCredit = $scope.getAvailableCredit(false);
 
-            $scope.minDate = $scope.availableCredit[0].startDate;
-            $scope.maxDate = $scope.availableCredit[0].endDate;
-            $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
-            $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
-
+            updateBudgetInitialValues($scope.availableCredit[0]);
             $scope.budgetItem.isEditable = true;
-            $scope.budgetItem.startDate = $scope.initStartDate;
-            $scope.budgetItem.endDate = $scope.initEndDate;
-
             $scope.budgetItem.credit = $scope.availableCredit[0];
-
-            $scope.budgetItem.amount = parseInt($scope.getAvailableCredit()[0].total);
-
         } else {
             api.campaignBudget.get(
                 $scope.campaign.id,
@@ -127,6 +111,21 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             $scope.saveRequestInProgress = false;
             $modalInstance.close(data);
         }, 1000);
+    }
+
+    function updateBudgetInitialValues (credit) {
+        var creditStartDate = moment(credit.startDate, 'MM/DD/YYYY'),
+            today = moment();
+
+        $scope.minDate = credit.startDate;
+        $scope.maxDate = credit.endDate;
+        $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+        $scope.initStartDate = (creditStartDate > today ? creditStartDate : today).toDate();
+
+        $scope.budgetItem.startDate = $scope.initStartDate;
+        $scope.budgetItem.endDate = $scope.initEndDate;
+
+        $scope.budgetItem.amount = parseInt(credit.available);
     }
 
     $scope.init();

@@ -269,6 +269,5 @@ class CurrentMonthBudgetProjections(BudgetProjections):
             datetime.date(today.year, today.month, 1),
             datetime.date(today.year, today.month, end),
             breakdown,
-            projection_date=today,
             **constraints
         )
