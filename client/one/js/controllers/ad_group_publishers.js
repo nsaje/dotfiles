@@ -997,11 +997,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         zemFilterService.setShowBlacklistedPublishers(true);
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.PUBLISHER);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);

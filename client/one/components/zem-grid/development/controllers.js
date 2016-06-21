@@ -10,9 +10,9 @@ oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $sta
 }]);
 
 oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceService', 'zemGridDebugEndpoint', function ($scope, $timeout, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
-    $scope.dataSource = zemDataSourceService.createInstance(zemGridDebugEndpoint.createEndpoint());
+    var dataSource = zemDataSourceService.createInstance(zemGridDebugEndpoint.createEndpoint());
 
-    $scope.gridOptions = {
+    var options = {
         enableSelection: true,
         enableTotalsSelection: true,
         maxSelectedRows: 3,
@@ -20,8 +20,16 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceSe
 
     // GridApi is defined by zem-grid in initialization, therefor
     // it will be available in the next cycle; postpone initialization using $timeout
-    $scope.gridApi = undefined;
-    $timeout(initializeGridApi, 0);
+    $scope.grid = {
+        api: undefined,
+        options: options,
+        dataSource: dataSource,
+    };
+
+    $scope.$watch('grid.api', function (newValue, oldValue) {
+        if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
+        initializeGridApi();
+    });
 
     function initializeGridApi () {
         // Initialize GridApi listeners

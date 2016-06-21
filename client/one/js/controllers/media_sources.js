@@ -744,11 +744,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.MEDIA_SOURCE);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
@@ -768,7 +768,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             options: options,
             dataSource: dataSource,
         };
-        $timeout(initializeGridApi, 0);
+
+        $scope.$watch('grid.api', function (newValue, oldValue) {
+            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
+            initializeGridApi();
+        });
     }
 
     function initializeGridApi () {

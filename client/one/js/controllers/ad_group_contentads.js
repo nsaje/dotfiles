@@ -898,11 +898,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         pollSyncStatus();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.CONTENT_AD);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);

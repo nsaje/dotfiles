@@ -704,11 +704,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         initColumns();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.ACCOUNT);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
