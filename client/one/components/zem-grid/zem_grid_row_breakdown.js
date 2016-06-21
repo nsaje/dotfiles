@@ -36,11 +36,7 @@ oneApp.directive('zemGridRowBreakdown', [function () {
 
                 var pagination = vm.row.data.pagination;
                 if (vm.row.data.meta.loading) return 'Loading ...';
-
-                if (pagination.count > 0) {
-                    return '- ' + pagination.limit + ' of ' + pagination.count + ' -';
-                }
-
+                if (pagination.count > 0) return '- ' + pagination.limit + ' of ' + pagination.count + ' -';
                 return '- ' + pagination.limit + ' -';
             }
 
