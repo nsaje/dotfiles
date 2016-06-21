@@ -54,6 +54,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
         grid.ui.columnsWidths = columnWidths;
         grid.ui.width = gridWidth;
+        grid.ui.headerWidth = headerWidth;
     }
 
     function calculateColumnWidth (grid, column, font) {
@@ -153,6 +154,14 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         var paginationCellPadding = breakdownSplitWidths[0] + zemGridConstants.gridStyle.CELL_PADDING;
         var paginationCellWidth = breakdownSplitWidths[0] + breakdownSplitWidths[1];
         var loadMoreCellWidth = breakdownSplitWidths[2];
+
+        if (breakdownSplitWidths.length === 1) {
+            // Fallback if BREAKDOWN column has not been found
+            paginationCellPadding = 50;
+            paginationCellWidth = 200;
+            loadMoreCellWidth = grid.ui.width - 250;
+        }
+
         element.find('.breakdown-pagination-cell').css({
             'width': paginationCellWidth + 'px',
             'max-width': paginationCellWidth + 'px',
