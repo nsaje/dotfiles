@@ -1575,7 +1575,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'blacklisted_level_description': 'Blacklisted in this account',
             u'exchange': u'Outbrain',
             u'source_id': 3,
-            u'impressions': 10560,
+            u'impressions': None,  # OB doesnt report impressions for publishers
             u'domain': 'test_1',
             u'domain_link': '',
             u'visits': 15,
@@ -1608,7 +1608,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'e_data_cost': 1.9,
             u'data_cost': 1.9,
             u'e_media_cost': 2.1,
-            u'impressions': 1560,
+            u'impressions': None,
             u'visits': 15,
             u'click_discrepancy': 3,
             u'pageviews': 100,
