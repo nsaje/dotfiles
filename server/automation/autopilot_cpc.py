@@ -41,8 +41,8 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
 
 def _round_cpc(num):
     return num.quantize(
-        decimal.Decimal('0.01'),
-        rounding=decimal.ROUND_UP)
+        decimal.Decimal('0.001'),
+        rounding=decimal.ROUND_HALF_UP)
 
 
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
