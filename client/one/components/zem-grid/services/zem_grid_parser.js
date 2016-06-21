@@ -40,7 +40,9 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
             }
         });
 
-        if (!breakdown.pagination.complete) {
+        if (!breakdown.pagination.complete || breakdown.pagination.count === 0) {
+            // Add breakdown row only if there is more data to be loaded
+            // OR there is no data at all (to show empty msg)
             var row = createBreakdownRow(grid, breakdown, parent);
             rows.push(row);
         }
