@@ -23,9 +23,7 @@
 }
 
 .zem-grid-container {
-  border: solid lightgray 1px;
   width: 100%;
-  padding: 20px;
 
   font-size: 13px;
   color: @zem-grid-text-color;
@@ -141,16 +139,17 @@
     }
 
     .zem-grid-header {
-      font-weight: 600;
+      font-weight: 500;
     }
     .zem-grid-footer {
       .zem-grid-cell-breakdown-field {
-        font-weight: 600;
+        font-weight: 500;
       }
     }
 
     .zem-grid-body {
-      height: 525px;
+      max-height: 525px;
+      min-height: 35px;
       overflow: auto;
 
       background-color: white;

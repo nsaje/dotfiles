@@ -1,25 +1,22 @@
 <div class="zem-grid-row-breakdown">
     <div class="zem-grid-cell breakdown-pagination-cell">
         <div ng-style="ctrl.getBreakdownColumnStyle()">
-            <span ng-if="ctrl.row.data.meta.loading">
-                 Loading...
-            </span>
-            <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count>0">
-                 - {{ctrl.row.data.pagination.limit}} of {{ctrl.row.data.pagination.count}} -
-            </span>
-            <span ng-if="!ctrl.row.data.meta.loading && ctrl.row.data.pagination.count<=0">
-                 - {{ctrl.row.data.pagination.limit}} -
+            <span>
+                {{ ctrl.getPaginationText() }}
             </span>
         </div>
     </div>
 
-    <div class="zem-grid-cell breakdown-load-more-cell loading-cell" ng-show="ctrl.row.data.meta.loading">
+    <div class="zem-grid-cell breakdown-load-more-cell loading-cell" ng-show="ctrl.row.data.meta.loading"></div>
+
+    <div class="zem-grid-cell breakdown-load-more-cell"
+         ng-show="!ctrl.row.data.meta.loading && !ctr.row.data.pagination.complete && !ctrl.row.data.meta.error">
+        <a ng-click="ctrl.loadMore(20)"> (load more) </a>
+        <a ng-if="ctrl.row.data.pagination.count>0" ng-click="ctrl.loadMore()"> (load all) </a>
     </div>
-    <div class="zem-grid-cell breakdown-load-more-cell" ng-show="!ctrl.row.data.meta.loading">
-        <span ng-if="ctrl.row.data.pagination.limit == ctrl.row.data.pagination.count">All data loaded</span>
-        <a ng-if="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count" ng-click="ctrl.loadMore(20)"> (load
-            more) </a>
-        <a ng-if="ctrl.row.data.pagination.limit != ctrl.row.data.pagination.count && ctrl.row.data.pagination.count>0"
-           ng-click="ctrl.loadMore()"> (load all) </a>
+
+    <div class="zem-grid-cell breakdown-load-more-cell"
+         ng-show="!ctrl.row.data.meta.loading && (ctr.row.data.pagination.complete || ctrl.row.data.meta.error)">
+        <span> {{ ctrl.getCompleteText() }} </span>
     </div>
 </div>
