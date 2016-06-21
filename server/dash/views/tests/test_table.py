@@ -1608,7 +1608,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'e_data_cost': 1.9,
             u'data_cost': 1.9,
             u'e_media_cost': 2.1,
-            u'impressions': None,
+            u'impressions': 1560,
             u'visits': 15,
             u'click_discrepancy': 3,
             u'pageviews': 100,
