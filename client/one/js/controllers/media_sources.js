@@ -752,8 +752,56 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.MEDIA_SOURCE);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange, false);
+
+        var options = {
+            enableSelection: true,
+            enableTotalsSelection: true,
+            maxSelectedRows: 4,
+        };
+
+        // GridApi is defined by zem-grid in initialization, therefor
+        // it will be available in the next cycle; postpone initialization using $timeout
+        $scope.grid = {
+            api: undefined,
+            options: options,
+            dataSource: dataSource,
+        };
+        $timeout(initializeGridApi, 0);
+    }
+
+    function initializeGridApi () {
+        // Initialize GridApi listeners
+        $scope.grid.api.onRowsSelectionChanged($scope, function () {
+            var selectedRows = $scope.grid.api.getSelectedRows();
+
+            $scope.selectedTotals = false;
+            $scope.selectedSourceIds = [];
+
+            selectedRows.forEach(function (row) {
+                if (row.level === 0) {
+                    $scope.selectedTotals = true;
+                }
+                if (row.level === 1) {
+                    $scope.selectedSourceIds.push(row.data.breakdownId);
+                }
+            });
+
+            $location.search('source_ids', $scope.selectedSourceIds.join(','));
+            $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+            getDailyStats();
+        });
+
+        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+            rows.forEach(function (row) {
+                if (row.level === 0)
+                    row.selected = $scope.selectedTotals;
+                if (row.level === 1) {
+                    row.selected = $scope.selectedSourceIds.indexOf(row.data.breakdownId) >= 0;
+                }
+            });
+        });
     }
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {

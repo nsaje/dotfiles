@@ -12,6 +12,8 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
     // Definition of events used internally in GridApi
     // External listeners are registered through dedicated methods
     var EVENTS = {
+        COLUMNS_LOADED: 'zem-grid-api-clumns-loaded',
+        ROWS_LOADED: 'zem-grid-api-rows-loaded',
         ROWS_SELECTION_CHANGED: 'zem-grid-api-rows-selection-changed',
         ROWS_COLLAPSE_CHANGED: 'zem-grid-api-rows-collapse-changed',
         COLUMNS_VISIBILITY_CHANGED: 'zem-grid-api-columns-visibility-changed',
@@ -33,9 +35,24 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.setSelectedRows = setSelectedRows;
         this.setVisibleColumns = setVisibleColumns;
 
+        this.onRowsLoaded = onRowsLoaded;
+        this.onColumnsLoaded = onColumnsLoaded;
         this.onRowsCollapseChanged = onRowsCollapseChanged;
         this.onRowsSelectionChanged = onRowsSelectionChanged;
         this.onColumnsVisibilityChanged = onColumnsVisibilityChanged;
+
+        // Initialize API
+        initialize();
+
+        function initialize () {
+            // Re-Wire some of pubsub events; notify when rows and columns are available
+            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.DATA_UPDATED, function () {
+                notifyListeners(EVENTS.ROWS_LOADED, getRows());
+            });
+            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
+                notifyListeners(EVENTS.COLUMNS_LOADED, getColumns());
+            });
+        }
 
         function setCollapsedRows (rows, collapsed) {
             if (!Array.isArray(rows)) rows = [rows];
@@ -92,7 +109,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         }
 
         function getRows () {
-            return grid.body.rows;
+            return grid.body.rows.concat([grid.footer.row]);
         }
 
         function getSelectedRows () {
@@ -118,6 +135,14 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             return grid.header.columns.filter(function (column) {
                 return column.visible;
             });
+        }
+
+        function onColumnsLoaded (scope, callback) {
+            registerListener(EVENTS.COLUMNS_LOADED, scope, callback);
+        }
+
+        function onRowsLoaded (scope, callback) {
+            registerListener(EVENTS.ROWS_LOADED, scope, callback);
         }
 
         function onRowsSelectionChanged (scope, callback) {

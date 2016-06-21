@@ -660,8 +660,56 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.CAMPAIGN);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange, false);
+
+        var options = {
+            enableSelection: true,
+            enableTotalsSelection: true,
+            maxSelectedRows: 4,
+        };
+
+        // GridApi is defined by zem-grid in initialization, therefor
+        // it will be available in the next cycle; postpone initialization using $timeout
+        $scope.grid = {
+            api: undefined,
+            options: options,
+            dataSource: dataSource,
+        };
+        $timeout(initializeGridApi, 0);
+    }
+
+    function initializeGridApi () {
+        // Initialize GridApi listeners
+        $scope.grid.api.onRowsSelectionChanged($scope, function () {
+            var selectedRows = $scope.grid.api.getSelectedRows();
+
+            $scope.selectedTotals = false;
+            $scope.selectedCampaignIds = [];
+
+            selectedRows.forEach(function (row) {
+                if (row.level === 0) {
+                    $scope.selectedTotals = true;
+                }
+                if (row.level === 1) {
+                    $scope.selectedCampaignIds.push(row.data.breakdownId);
+                }
+            });
+
+            $location.search('campaign_ids', $scope.selectedCampaignIds.join(','));
+            $location.search('campaign_totals', $scope.selectedTotals ? 1 : null);
+            getDailyStats();
+        });
+
+        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+            rows.forEach(function (row) {
+                if (row.level === 0)
+                    row.selected = $scope.selectedTotals;
+                if (row.level === 1) {
+                    row.selected = $scope.selectedCampaignIds.indexOf(row.data.breakdownId) >= 0;
+                }
+            });
+        });
     }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

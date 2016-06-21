@@ -66,9 +66,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.exportOptions = [
-      {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
-      {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
-      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
+        {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
+        {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
+        {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.columns = [
@@ -397,7 +397,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-
         );
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
@@ -721,9 +720,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.AD_GROUP);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
-        $scope.gridOptions = {
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange, false);
+
+        var options = {
             enableSelection: true,
             enableTotalsSelection: true,
             maxSelectedRows: 4,
@@ -731,30 +731,44 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         // GridApi is defined by zem-grid in initialization, therefor
         // it will be available in the next cycle; postpone initialization using $timeout
-        $scope.gridApi = undefined;
+        $scope.grid = {
+            api: undefined,
+            options: options,
+            dataSource: dataSource,
+        };
         $timeout(initializeGridApi, 0);
     }
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.gridApi.onRowsSelectionChanged($scope, function () {
-            var selectedRows = $scope.gridApi.getSelectedRows(); // eslint-disable-line
+        $scope.grid.api.onRowsSelectionChanged($scope, function () {
+            var selectedRows = $scope.grid.api.getSelectedRows();
 
-            var totalSelected = false;
-            var selectedAdGroupIds = [];
+            $scope.selectedTotals = false;
+            $scope.selectedAdGroupIds = [];
 
-            selectedRows.forEach (function (row) {
+            selectedRows.forEach(function (row) {
                 if (row.level === 0) {
-                    totalSelected = true;
+                    $scope.selectedTotals = true;
                 }
                 if (row.level === 1) {
-                    selectedAdGroupIds.push(row.breakdown_id);
+                    $scope.selectedAdGroupIds.push(row.data.breakdownId);
                 }
             });
 
-            $location.search('ad_group_ids', selectedAdGroupIds.join(','));
-            $location.search('ad_group_totals', totalSelected ? 1 : null);
+            $location.search('ad_group_ids', $scope.selectedAdGroupIds.join(','));
+            $location.search('ad_group_totals', $scope.selectedTotals ? 1 : null);
             getDailyStats();
+        });
+
+        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+            rows.forEach(function (row) {
+                if (row.level === 0)
+                    row.selected = $scope.selectedTotals;
+                if (row.level === 1) {
+                    row.selected = $scope.selectedAdGroupIds.indexOf(row.data.breakdownId) >= 0;
+                }
+            });
         });
     }
 
