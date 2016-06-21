@@ -576,6 +576,28 @@ class UploadSaveTestCase(TestCase):
             }
         }, json.loads(response.content))
 
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    @patch('utils.redirector_helper.insert_redirect')
+    def test_redirector_error(self, mock_insert_redirect, mock_s3_put):
+        mock_insert_redirect.side_effect = Exception()
+
+        batch_id = 2
+        ad_group_id = 3
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(500, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'ServerError',
+                'message': 'An error occurred.'
+            },
+        }, json.loads(response.content))
+        self.assertEqual(0, models.ContentAd.objects.count())
+
     def test_invalid_batch_status(self):
         batch_id = 4
         ad_group_id = 5
