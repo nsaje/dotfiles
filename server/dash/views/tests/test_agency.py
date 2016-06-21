@@ -234,7 +234,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
-                    'action_is_waiting': True,
+                    'action_is_waiting': False,
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
@@ -445,7 +445,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
-                    'action_is_waiting': True,
+                    'action_is_waiting': False,
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
@@ -922,7 +922,7 @@ class AdGroupHistoryTest(TestCase):
                         {u'name': u'State', u'value': u'Paused'},
                         {u'name': u'Start date', u'value': None},
                         {u'name': u'End date', u'value': u'I\'ll stop it myself'},
-                        {u'name': u'Max CPC bid', u'value': u'$1.00'},
+                        {u'name': u'Max CPC bid', u'value': u'$1.000'},
                         {u'name': u'Daily budget', u'value': None},
                         {u'name': u'Device targeting', u'value': u''},
                         {u'name': u'Locations', u'value': u'worldwide'},
@@ -947,13 +947,13 @@ class AdGroupHistoryTest(TestCase):
                 }, {
                     u'changed_by': u'non_superuser@zemanta.com',
                     u'changes_text': u'Daily budget set to "$120.00", GA web property ID set to "UA-123456789-1", '
-                                     u'Max CPC bid set to "$2.00"',
+                                     u'Max CPC bid set to "$2.000"',
                     u'datetime': u'2015-06-05T09:22:24',
                     u'settings': [
                         {u'name': u'State', u'old_value': u'Paused', u'value': u'Paused'},
                         {u'name': u'Start date', u'old_value': None, u'value': None},
                         {u'name': u'End date', u'old_value': u'I\'ll stop it myself', u'value': u'I\'ll stop it myself'},
-                        {u'name': u'Max CPC bid', u'old_value': u'$1.00', u'value': u'$2.00'},
+                        {u'name': u'Max CPC bid', u'old_value': u'$1.000', u'value': u'$2.000'},
                         {u'name': u'Daily budget', u'old_value': None, u'value': u'$120.00'},
                         {u'name': u'Device targeting', u'old_value': u'', u'value': u''},
                         {u'name': u'Locations', u'old_value': u'worldwide', u'value': u'worldwide'},

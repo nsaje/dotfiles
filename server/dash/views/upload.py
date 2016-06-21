@@ -76,8 +76,9 @@ class UploadCsv(api_common.BaseApiView):
         with transaction.atomic():
             self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
             batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name, filename)
+        skip_url_validation = upload_plus.has_skip_validation_magic_word(filename)
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate)
+            upload_plus.invoke_external_validation(candidate, skip_url_validation)
         errors = upload_plus.validate_candidates(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
@@ -134,8 +135,9 @@ class UploadMultiple(api_common.BaseApiView):
                 filename,
             )
 
+        skip_url_validation = upload_plus.has_skip_validation_magic_word(filename)
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate)
+            upload_plus.invoke_external_validation(candidate, skip_url_validation)
 
         errors = upload_plus.validate_candidates(candidates)
         return self.create_api_response({

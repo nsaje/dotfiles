@@ -14,15 +14,15 @@ AUTOPILOT_CPC_CHANGE_TABLE = (
     {'underspend_upper_limit': -0.8, 'underspend_lower_limit': -0.4, 'bid_cpc_proc_increase': Decimal('0.25')},
     {'underspend_upper_limit': -0.4, 'underspend_lower_limit': -0.2, 'bid_cpc_proc_increase': Decimal('0.1')},
     {'underspend_upper_limit': -0.2, 'underspend_lower_limit': -0.1, 'bid_cpc_proc_increase': Decimal('0.05')},
-    {'underspend_upper_limit': -0.1, 'underspend_lower_limit': -0.05, 'bid_cpc_proc_increase': Decimal('0')},
+    {'underspend_upper_limit': -0.1, 'underspend_lower_limit': -0.05, 'bid_cpc_proc_increase': Decimal('-0.02')},
     {'underspend_upper_limit': -0.05, 'underspend_lower_limit': -0.01, 'bid_cpc_proc_increase': Decimal('-0.1')},
     {'underspend_upper_limit': -0.01, 'underspend_lower_limit': 100.00, 'bid_cpc_proc_increase': Decimal('-0.15')}
 )
 AUTOPILOT_MIN_CPC = Decimal('0.03')
 AUTOPILOT_MAX_CPC = Decimal('4.0')
-AUTOPILOT_MIN_REDUCING_CPC_CHANGE = Decimal('0.01')
+AUTOPILOT_MIN_REDUCING_CPC_CHANGE = Decimal('0.001')
 AUTOPILOT_MAX_REDUCING_CPC_CHANGE = Decimal('0.20')
-AUTOPILOT_MIN_INCREASING_CPC_CHANGE = Decimal('0.01')
+AUTOPILOT_MIN_INCREASING_CPC_CHANGE = Decimal('0.001')
 AUTOPILOT_MAX_INCREASING_CPC_CHANGE = Decimal('0.5')
 AUTOPILOT_MAX_ALLOWED_SPENDING = AUTOPILOT_CPC_CHANGE_TABLE[-1]['underspend_lower_limit']
 AUTOPILOT_OPTIMAL_SPEND = Decimal('-0.1')
