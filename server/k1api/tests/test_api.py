@@ -262,6 +262,7 @@ class K1ApiTest(TestCase):
             u'image_width',
             u'image_height',
             u'image_hash',
+            u'image_crop',
             u'redirect_id',
             u'display_url',
             u'brand_name',
