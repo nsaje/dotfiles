@@ -1,7 +1,7 @@
-/*global oneApp,constants*/
+/*global oneApp */
 'use strict';
 
-oneApp.directive('zemHistory', ['config', function (config) {
+oneApp.directive('zemHistory', [function () {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_history.html',
@@ -44,7 +44,7 @@ oneApp.directive('zemHistory', ['config', function (config) {
                 });
             };
 
-            $scope.$watch('params', function(newValue) {
+            $scope.$watch('params', function (newValue) {
                 $scope.getHistory();
             });
         }]

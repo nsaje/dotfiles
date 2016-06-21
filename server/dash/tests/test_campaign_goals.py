@@ -97,7 +97,6 @@ class CampaignGoalsTestCase(TestCase):
         campaign_goals.set_campaign_goal_primary(self.request, self.campaign, goal.pk)
         self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
 
-
         hist = history_helpers.get_campaign_history(self.campaign).first()
         self.assertEqual(hist.changes_text, 'Campaign goal "Time on Site - Seconds" set as primary')
 
@@ -161,7 +160,6 @@ class CampaignGoalsTestCase(TestCase):
         campaign_goals.delete_campaign_goal(self.request, goal.pk, self.campaign)
         self.assertFalse(models.CampaignGoalValue.objects.all().count())
         self.assertFalse(models.CampaignGoal.objects.all().count())
-
 
         hist = history_helpers.get_campaign_history(self.campaign).first()
         self.assertEqual(hist.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
