@@ -1,4 +1,4 @@
-/* globals oneApp, angular, constants */
+/* globals oneApp, constants */
 'use strict';
 
 oneApp.factory('zemGridEndpointBreakdowns', [function () {
