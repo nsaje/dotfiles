@@ -63,12 +63,20 @@
 
       .zem-grid-cell-checkbox {
         max-width: 40px;
-        padding-left: 6px; // position in the middle FIXME: cleaner solution
+        input {
+          width: 100%;
+          margin: 0px;
+          display: inline-block;
+          vertical-align: middle;
+
+        }
       }
 
       .zem-grid-cell-collapse {
         max-width: 40px;
-        padding-left: 2px; // position in the middle FIXME: cleaner solution
+        width: 100%;
+        display: inline-block;
+        text-align: center;
       }
 
       &.level-1 {
@@ -139,8 +147,8 @@
     }
 
     .zem-grid-body {
+      max-height: 545px;
       min-height: 35px;
-      max-height: 525px;
       overflow: auto;
 
       background-color: white;
