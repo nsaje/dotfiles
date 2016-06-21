@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 
 from django import test
+import mock
 
 import dash.models
 import dash.constants
@@ -37,6 +38,31 @@ class ProjectionsTestCase(test.TestCase):
                 if budget.state(date) != dash.constants.BudgetLineItemState.ACTIVE:
                     continue
                 self._create_statement(budget, date)
+
+    def test_first_of_month(self):
+        start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 30)
+
+        self._create_batch_statements(
+            dash.models.BudgetLineItem.objects.all(),
+            start_date
+        )
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = start_date
+            stats = reports.projections.BudgetProjections(start_date, end_date, 'account')
+
+        self.assertEqual(stats.row(1), {
+            'total_fee_projection': Decimal('5892.15686274509803921568627'),
+            'ideal_media_spend': Decimal('535.6209150326797385620915033'),
+            'attributed_media_spend': Decimal('4000.0000'),
+            'allocated_media_budget': Decimal('16068.62745098039215686274510'),
+            'pacing': Decimal('746.7968273337400854179377669'),
+            'total_fee': Decimal('400.0000'),
+            'flat_fee': Decimal('0.0'),
+            'media_spend_projection': Decimal('16068.62745098039215686274510'),
+            'allocated_total_budget': Decimal('21960.78431372549019607843137'),
+            'license_fee_projection': Decimal('5892.15686274509803921568627'),
+            'attributed_license_fee': Decimal('400.0000')
+        })
 
     def test_running_half_month(self):
         start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 30)
