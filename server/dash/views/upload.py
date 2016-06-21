@@ -4,9 +4,11 @@ import boto.exception
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import Http404
+from django.template.defaultfilters import pluralize
 
 from dash import constants
 from dash import forms
+from dash import history_helpers
 from dash import models
 from dash import upload_plus
 
@@ -208,6 +210,13 @@ class UploadSave(api_common.BaseApiView):
                 raise exc.ValidationError(message=e.message)
 
             self._create_redirect_ids(content_ads)
+            num_uploaded = batch.batch_size - batch.num_errors
+            changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
+                batch.name,
+                num_uploaded,
+                pluralize(num_uploaded),
+            )
+            history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
             helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
                                                 ad_group=ad_group)
 
