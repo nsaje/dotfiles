@@ -2,7 +2,6 @@
 'use strict';
 
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
-
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -45,7 +44,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             gridWidth += width;
         });
 
-        var scrollerWidth = 20; // TODO: find exact value (based on browser version)
+        var scrollerWidth = zemGridConstants.gridStyle.DEFAULT_SCROLLER_WIDTH; // TODO: find exact value
         var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
         keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
         gridWidth = Math.max(headerWidth, gridWidth);
@@ -58,8 +57,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         if (!column.data) return -1;
 
         var width = getTextWidth(column.data.name, font);
-        width = Math.max(width, 20);        // Column without text (e.g. only icon)
-        if (column.data.help) width += 20;  // TODO: find better solution for icon widths
+        width = Math.max(width, zemGridConstants.gridStyle.DEFAULT_ICON_SIZE);  // Column without text (e.g. only icon)
+        if (column.data.help) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
@@ -70,7 +69,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
                 var valueWidth = getTextWidth(parsedValue, font);
                 if (column.type === zemGridConstants.gridColumnType.BREAKDOWN) {
                     // Special case for breakdown column - add padding based on row level
-                    valueWidth += (row.level - 1) * 20;
+                    valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
                 }
                 width = Math.max(width, valueWidth);
             }
@@ -148,7 +147,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             breakdownSplitWidths[breakdownSplitWidths.length - 1] += grid.ui.columnsWidths[idx];
         });
 
-        var paginationCellPadding = breakdownSplitWidths[0] + 8;
+        var paginationCellPadding = breakdownSplitWidths[0] + zemGridConstants.gridStyle.CELL_PADDING;
         var paginationCellWidth = breakdownSplitWidths[0] + breakdownSplitWidths[1];
         var loadMoreCellWidth = breakdownSplitWidths[2];
         element.find('.breakdown-pagination-cell').css({
@@ -200,7 +199,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
     function getBreakdownColumnStyle (row) {
         return {
-            'padding-left': (row.level - 1) * 20 + 'px',
+            'padding-left': (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING + 'px',
         };
     }
 
