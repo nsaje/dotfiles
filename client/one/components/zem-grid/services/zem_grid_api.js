@@ -12,7 +12,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
     // Definition of events used internally in GridApi
     // External listeners are registered through dedicated methods
     var EVENTS = {
-        COLUMNS_LOADED: 'zem-grid-api-clumns-loaded',
+        COLUMNS_LOADED: 'zem-grid-api-columns-loaded',
         ROWS_LOADED: 'zem-grid-api-rows-loaded',
         ROWS_SELECTION_CHANGED: 'zem-grid-api-rows-selection-changed',
         ROWS_COLLAPSE_CHANGED: 'zem-grid-api-rows-collapse-changed',
