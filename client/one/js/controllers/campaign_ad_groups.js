@@ -794,7 +794,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.getContentInsights();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setDateRange(newValue, true);
+            $scope.grid.dataSource.setDateRange(newValue, true);
         }
     });
 
@@ -807,7 +807,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue);
         }
     }, true);
 
@@ -819,7 +819,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getTableData();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
         }
     });
 

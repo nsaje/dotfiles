@@ -828,7 +828,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.getContentInsights();
         }
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setDateRange(newValue, true);
+            $scope.grid.dataSource.setDateRange(newValue, true);
         }
     });
 
@@ -844,7 +844,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getDailyStats();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
         }
     }, true);
 
