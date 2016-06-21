@@ -44,11 +44,15 @@ class FacebookPageAccessTest(TestCase):
         fb_account = models.FacebookAccount()
         fb_account.page_url = page_url
         fb_account.page_id = page_id
+
+        account = models.Account()
+        fb_account.account = account
         return fb_account
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_unchanged_page(self, mock_post, mock_get):
+    def test_update_unchanged_page(self, mock_post, mock_get, mock_stop):
         page_url = 'http://facebook.com/existing_page_id'
         page_id = '1234'
         fb_account = self._get_fb_account(page_url, page_id)
@@ -60,10 +64,12 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.page_id, page_id)
         self.assertFalse(mock_post.called)
         self.assertFalse(mock_get.called)
+        self.assertFalse(mock_stop.called)
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_new_page(self, mock_request, mock_page_id):
+    def test_update_new_page(self, mock_request, mock_page_id, mock_stop):
         page_url = 'http://www.facebook.com/new_page'
         page_id = '1234'
 
@@ -83,10 +89,12 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.status, constants.FacebookPageRequestType.PENDING)
         self.assertTrue(mock_page_id.called)
         self.assertTrue(mock_request.called)
+        mock_stop.assert_called_once_with(fb_account.account)
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_changed_page(self, mock_request, mock_page_id):
+    def test_update_changed_page(self, mock_request, mock_page_id, mock_stop):
         page_url = 'http://www.facebook.com/new_page'
         page_id = '9876'
 
@@ -106,10 +114,12 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.status, constants.FacebookPageRequestType.PENDING)
         self.assertTrue(mock_page_id.called)
         self.assertTrue(mock_request.called)
+        mock_stop.assert_called_once_with(fb_account.account)
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_clear_page(self, mock_request, mock_page_id):
+    def test_update_clear_page(self, mock_request, mock_page_id, mock_stop):
         page_url = 'http://facebook.com/existing_page'
         page_id = '1234'
         fb_account = self._get_fb_account(page_url, page_id)
@@ -122,6 +132,7 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.status, constants.FacebookPageRequestType.EMPTY)
         self.assertFalse(mock_request.called)
         self.assertFalse(mock_page_id.called)
+        mock_stop.assert_called_once_with(fb_account.account)
 
     @patch('requests.post')
     def test_send_page_access_invalid_page(self, mock_post):
@@ -413,3 +424,25 @@ class FacebookAccountTest(TestCase):
         mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, page_id),
                                      json.dumps(self._get_user_params('ADVERTISER')), headers=self._get_headers())
         self.assertFalse(result)
+
+
+class FacebookStopMediaSourcesTest(TestCase):
+    fixtures = ['test_facebook.yaml']
+
+    @patch('utils.k1_helper.update_ad_groups')
+    @patch('dash.models.AdGroupSourceSettings.save')
+    def test_stop_source_on_account(self, save_mock, k1_update_mock):
+        account = models.Account.objects.get(pk=100)
+        facebook_helper.stop_facebook_media_sources(account)
+
+        save_mock.assert_called_once_with(None)
+        k1_update_mock.assert_called_once_with({100})
+
+    @patch('utils.k1_helper.update_ad_groups')
+    @patch('dash.models.AdGroupSourceSettings.save')
+    def test_stop_source_on_account_with_no_fb_sources(self, save_mock, k1_update_mock):
+        account = models.Account.objects.get(pk=200)
+        facebook_helper.stop_facebook_media_sources(account)
+
+        self.assertFalse(save_mock.called)
+        self.assertFalse(k1_update_mock.called)

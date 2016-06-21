@@ -4,6 +4,7 @@ import logging
 import requests
 
 from dash import constants, models
+from utils import k1_helper
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,8 @@ def update_facebook_account(facebook_account, new_url, business_id, access_token
         facebook_account.page_url = None
         facebook_account.page_id = None
         facebook_account.status = constants.FacebookPageRequestType.EMPTY
+
+        stop_facebook_media_sources(facebook_account.account)
         return
 
     facebook_account.page_url = new_url
@@ -42,6 +45,8 @@ def update_facebook_account(facebook_account, new_url, business_id, access_token
     else:
         facebook_account.page_id = None
         facebook_account.status = constants.FacebookPageRequestType.ERROR
+
+    stop_facebook_media_sources(facebook_account.account)
 
 
 def get_page_id(page_url, access_token):
@@ -148,3 +153,23 @@ def add_system_user_permissions(connected_object_id, role, business_id, system_u
 
 def get_credentials():
     return json.loads(models.SourceCredentials.objects.get(source__source_type__type='facebook').decrypt())
+
+
+def stop_facebook_media_sources(account):
+    current_settings = models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__source__source_type__type='facebook',
+        ad_group_source__ad_group__campaign__account=account).group_current_settings()
+
+    ad_groups_to_ping = set()
+    for cs in current_settings:
+        if cs.state != constants.AdGroupSourceSettingsState.ACTIVE:
+            continue
+
+        new_settings = cs.copy_settings()
+        new_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+        new_settings.save(None)
+
+        ad_groups_to_ping.add(new_settings.ad_group_source.ad_group.id)
+
+    if ad_groups_to_ping:
+        k1_helper.update_ad_groups(ad_groups_to_ping)
