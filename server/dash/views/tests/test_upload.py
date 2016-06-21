@@ -560,7 +560,7 @@ class UploadSaveTestCase(TestCase):
         self.assertEqual(
             models.History.objects.filter(
                 ad_group=ad_group_id,
-                type=constants.HistoryType.AD_GROUP,
+                level=constants.HistoryLevel.AD_GROUP,
             ).latest('created_dt').changes_text,
             'Imported batch "batch 2" with 1 content ad.',
         )
