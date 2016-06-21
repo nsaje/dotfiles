@@ -1,4 +1,4 @@
-/*global oneApp */
+/* global oneApp */
 'use strict';
 
 oneApp.directive('zemHistory', [function () {
@@ -44,9 +44,9 @@ oneApp.directive('zemHistory', [function () {
                 });
             };
 
-            $scope.$watch('params', function (newValue) {
+            $scope.$watch('params', function () {
                 $scope.getHistory();
             });
-        }]
+        }],
     };
 }]);

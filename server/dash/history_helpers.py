@@ -75,4 +75,3 @@ def get_account_history(account):
         account=account,
         level=dash.constants.HistoryLevel.ACCOUNT,
     ).order_by('-created_dt')
-
