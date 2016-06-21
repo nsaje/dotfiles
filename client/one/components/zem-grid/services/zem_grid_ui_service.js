@@ -44,8 +44,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             gridWidth += width;
         });
 
-        var scrollerWidth = zemGridConstants.gridStyle.DEFAULT_SCROLLER_WIDTH; // TODO: find exact value
-        var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
+        var headerWidth = grid.header.ui.element[0].offsetWidth;
+        if (grid.body.rows.length > zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE) {
+            // Check if scroller will be present and incorporate this into header width
+            headerWidth -= zemGridConstants.gridStyle.DEFAULT_SCROLLER_WIDTH;
+        }
         keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
         gridWidth = Math.max(headerWidth, gridWidth);
 
