@@ -213,7 +213,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.limit = current.rows.length;
             current.pagination.count = breakdown.pagination.count;
-            current.pagination.complete = current.pagination.count === current.pagination.limit;
+            current.pagination.complete = breakdown.pagination.complete;
         }
 
         function findBreakdown (breakdownId, subtree) {
