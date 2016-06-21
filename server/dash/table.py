@@ -906,9 +906,11 @@ class AccountsAccountsTable(object):
         response = {
             'rows': rows,
             'totals': totals_data,
-            'last_sync': None,  # pytz.utc.localize(last_sync_joined).isoformat() if last_sync_joined is not None else None,
+            # pytz.utc.localize(last_sync_joined).isoformat() if last_sync_joined is not None else None,
+            'last_sync': None,
             'is_sync_recent': True,  # helpers.is_sync_recent(last_success_actions_joined.values()),
-            'is_sync_in_progress': False,  # actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources),
+            # actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources),
+            'is_sync_in_progress': False,
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1797,6 +1799,7 @@ class PublishersTable(object):
 
         # self._annotate_publishers(publishers_data
         self._annotate_publishers(publishers_data, user, adgroup)
+        self._mark_missing_data(publishers_data, totals_data)
 
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             account_id=adgroup.campaign.account_id,
@@ -1882,6 +1885,17 @@ class PublishersTable(object):
                 everywhere=True
             )
         return pub_blacklist_qs, source_cache_by_slug
+
+    def _mark_missing_data(self, publishers_data, publishers_totals):
+        for publisher_data in publishers_data:
+            publisher_exchange = publisher_data['exchange'].lower()
+
+            if publisher_exchange == constants.SourceType.OUTBRAIN:
+                # OB does not report back impressions for publishers
+                publisher_data['impressions'] = None
+
+        if publisher_exchange == constants.SourceType.OUTBRAIN:
+            publishers_totals['impressions'] = None
 
     def _annotate_publishers(self, publishers_data, user, adgroup):
         pub_blacklist_qs, source_cache_by_slug = self._construct_pub_bl_queryset(publishers_data, adgroup)

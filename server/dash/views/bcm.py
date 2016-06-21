@@ -64,7 +64,7 @@ class AccountCreditView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
-        item.save()
+        item.save(request=request)
 
         return self.create_api_response(item.instance.pk)
 
@@ -184,7 +184,7 @@ class AccountCreditItemView(api_common.BaseApiView):
         if item_form.errors:
             raise exc.ValidationError(errors=item_form.errors)
 
-        item_form.save()
+        item_form.save(request=request)
         return self.create_api_response(credit_id)
 
     def _get_response(self, account_id, item):
@@ -237,7 +237,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
-        item.save()
+        item.save(request=request)
         campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
@@ -377,7 +377,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
-        item.save()
+        item.save(request=request)
         state_changed = campaign_stop.perform_landing_mode_check(
             campaign,
             campaign.get_current_settings()
