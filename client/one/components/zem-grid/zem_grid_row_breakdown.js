@@ -13,7 +13,7 @@ oneApp.directive('zemGridRowBreakdown', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row_breakdown.html',
-        controller: ['zemGridConstants', 'zemGridUIService', function (zemGridConstants,zemGridUIService) {
+        controller: ['zemGridConstants', 'zemGridUIService', function (zemGridConstants, zemGridUIService) {
             var vm = this;
             vm.loadMore = loadMore;
             vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
