@@ -3593,6 +3593,12 @@ class History(models.Model):
         null=False,
         blank=False,
     )
+    # TODO: once the transition period is over make action_type non-nullable
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryActionType.get_choices(),
+        null=True,
+        blank=True,
+    )
 
     changes_text = models.TextField(blank=False, null=False)
     changes = jsonfield.JSONField(blank=False, null=False)
