@@ -751,6 +751,17 @@ def _get_conversion_goals(user, campaign):
     return campaign.conversiongoal_set.all()
 
 
+def _extend_fieldnames(fieldnames, conversion_goals, additional_fields):
+    for conversion_goal in conversion_goals:
+        view_key = conversion_goal.get_view_key(conversion_goals)
+        cpa_view_key = 'avg_cost_per_' + view_key
+        if view_key in additional_fields:
+            fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
+        if cpa_view_key in additional_fields:
+            fieldnames[cpa_view_key] = 'Avg. CPA ({})'.format(conversion_goal.name)
+    return fieldnames
+
+
 def get_granularity_from_type(export_type):
     return {
         'allaccounts-csv': constants.ScheduledReportGranularity.ALL_ACCOUNTS,
@@ -947,9 +958,8 @@ class CampaignExport(object):
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
         conversion_goals = _get_conversion_goals(user, campaign)
-        for conversion_goal in conversion_goals:
-            if conversion_goal.get_view_key(conversion_goals) in additional_fields:
-                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
+
+        fieldnames = _extend_fieldnames(fieldnames, conversion_goals, additional_fields)
 
         results = _generate_rows(
             dimensions,
@@ -989,11 +999,8 @@ class AdGroupAdsExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-
         conversion_goals = _get_conversion_goals(user, ad_group.campaign)
-        for conversion_goal in conversion_goals:
-            if conversion_goal.get_view_key(conversion_goals) in additional_fields:
-                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
+        fieldnames = _extend_fieldnames(fieldnames, conversion_goals, additional_fields)
 
         results = _generate_rows(
             dimensions,
