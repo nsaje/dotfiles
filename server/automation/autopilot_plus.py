@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
 def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
-                  send_mail=False, initialization=False, report_to_statsd=False):
+                  send_mail=False, initialization=False, report_to_influx=False):
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
     else:
@@ -58,9 +58,9 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
     actionlog.zwei_actions.send(actions)
     if send_mail:
         autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
-    if report_to_statsd:
-        _report_adgroups_data_to_statsd(ad_group_settings_on_ap)
-        _report_new_budgets_on_ap_to_statsd(ad_group_settings_on_ap)
+    if report_to_influx:
+        _report_adgroups_data_to_influx(ad_group_settings_on_ap)
+        _report_new_budgets_on_ap_to_influx(ad_group_settings_on_ap)
     return changes_data
 
 
@@ -308,7 +308,7 @@ def _report_autopilot_exception(element, e):
     )
 
 
-def _report_adgroups_data_to_statsd(ad_groups_settings):
+def _report_adgroups_data_to_influx(ad_groups_settings):
     num_on_budget_ap = 0
     total_budget_on_budget_ap = Decimal(0.0)
     num_on_cpc_ap = 0
@@ -344,7 +344,7 @@ def _report_adgroups_data_to_statsd(ad_groups_settings):
                  autopilot='cpc_autopilot', type='yesterday')
 
 
-def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
+def _report_new_budgets_on_ap_to_influx(ad_group_settings):
     total_budget_on_budget_ap = Decimal(0.0)
     total_budget_on_cpc_ap = Decimal(0.0)
     total_budget_on_all_ap = Decimal(0.0)

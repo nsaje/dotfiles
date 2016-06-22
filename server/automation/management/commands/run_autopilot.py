@@ -15,4 +15,4 @@ class Command(ExceptionCommand):
     def handle(self, *args, **options):
         logger.info('Running Ad Group Autopilot.')
 
-        automation.autopilot_plus.run_autopilot(send_mail=True, report_to_statsd=True)
+        automation.autopilot_plus.run_autopilot(send_mail=True, report_to_influx=True)

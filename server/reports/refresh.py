@@ -452,9 +452,6 @@ def refresh_contentadstats_diff(date, campaign):
         if all(row[key] == 0 for key in metric_keys):
             continue
 
-        for key in metric_keys:
-            if row[key] > 0:
-
         diff_rows.append(row)
 
     _add_effective_spend(date, campaign, diff_rows)
