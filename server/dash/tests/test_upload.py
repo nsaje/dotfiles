@@ -250,7 +250,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_unicode_tracker_urls(self):
         self.tracker_urls = u'http://exampleś.com'
@@ -258,7 +258,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_invalid_tracker_urls_not_https(self):
         self.tracker_urls = 'http://example.com/p.gif'
@@ -266,7 +266,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_multiple_tracker_urls(self):
         self.tracker_urls = 'https://example.com/p1.gif https://example.com/p2.gif'
@@ -282,7 +282,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_no_upload_form_fields(self):
         self.upload_form_display_url = ''
