@@ -35,6 +35,3 @@ class Command(ExceptionCommand):
         total_visits = demo_totals.get('visits') or 0
         total_conversions = sum(x.get('conversions') or 0 for x in demo_totals.get('goals', {}).itervalues())
 
-        statsd_gauge('demo.total_recent_impressions', total_impressions)
-        statsd_gauge('demo.total_recent_visits', total_visits)
-        statsd_gauge('demo.total_recent_conversions', total_conversions)

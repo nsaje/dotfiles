@@ -99,7 +99,6 @@ def fetch_redirects_impressions(date, timeout=300):
             time.sleep(2)
             continue
 
-        statsd_helper.statsd_gauge('redirector_helper.fetch_redirects_impressions_size', len(json.dumps(result)))
         return result
 
     raise Exception('Redirect conversion stats timeout')

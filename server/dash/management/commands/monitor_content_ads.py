@@ -22,6 +22,4 @@ class Command(ExceptionCommand):
                 submission_status=dash.constants.ContentAdSubmissionStatus.PENDING
             ).earliest('modified_dt')
             hours_since = int((datetime.datetime.utcnow() - cas.modified_dt).total_seconds() / 3600)
-            statsd_helper.statsd_gauge('dash.oldest_pending_content_ad_source', hours_since)
         except dash.models.ContentAdSource.DoesNotExist:
-            statsd_helper.statsd_gauge('dash.oldest_pending_content_ad_source', 0)
