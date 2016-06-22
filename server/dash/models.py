@@ -3644,7 +3644,8 @@ class History(models.Model):
         verbose_name_plural = 'History'
 
 
-def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
+def create_ad_group_history(ad_group, history_type, changes, changes_text,
+                            user=None, system_user=None, action_type=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
@@ -3660,11 +3661,13 @@ def create_ad_group_history(ad_group, history_type, changes, changes_text, user=
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.AD_GROUP,
+        action_type=action_type
     )
     return history
 
 
-def create_campaign_history(campaign, history_type, changes, changes_text, user=None, system_user=None):
+def create_campaign_history(campaign, history_type, changes, changes_text,
+                            user=None, system_user=None, action_type=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
@@ -3680,10 +3683,12 @@ def create_campaign_history(campaign, history_type, changes, changes_text, user=
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.CAMPAIGN,
+        action_type=action_type
     )
 
 
-def create_account_history(account, history_type, changes, changes_text, user=None, system_user=None):
+def create_account_history(account, history_type, changes, changes_text,
+                           user=None, system_user=None, action_type=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
@@ -3698,10 +3703,12 @@ def create_account_history(account, history_type, changes, changes_text, user=No
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.ACCOUNT,
+        action_type=action_type
     )
 
 
-def create_agency_history(agency, history_type, changes, changes_text, user=None, system_user=None):
+def create_agency_history(agency, history_type, changes, changes_text,
+                          user=None, system_user=None, action_type=None):
     if not changes and not changes_text:
         # don't write history in case of no changes
         return None
@@ -3713,6 +3720,7 @@ def create_agency_history(agency, history_type, changes, changes_text, user=None
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.AGENCY,
+        action_type=action_type
     )
 
 
