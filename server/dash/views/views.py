@@ -538,7 +538,6 @@ class CampaignAdGroups(api_common.BaseApiView):
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
-        ad_group_settings.changes_text = changes_text
         ad_group_settings.save(request)
 
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
@@ -1058,11 +1057,6 @@ class AdGroupSources(api_common.BaseApiView):
 
     def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-
-        settings = ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
-        settings.save(request)
-
         ad_group_source.ad_group.write_history(
             changes_text,
             user=request.user,
@@ -2162,10 +2156,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             level_description=level_description,
             pubs=pubs_string
         )
-        settings = ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
-        settings.save(request)
-
         action_type = publisher_helpers.get_historyactiontype(level)
         entity = publisher_helpers.get_historyentity(ad_group, level)
         if entity is not None:

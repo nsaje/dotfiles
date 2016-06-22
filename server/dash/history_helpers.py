@@ -21,3 +21,24 @@ def write_global_history(changes_text,
         level=dash.constants.HistoryLevel.GLOBAL,
         action_type=action_type
     )
+
+
+def get_ad_group_history(ad_group):
+    return dash.models.History.objects.all().filter(
+        ad_group=ad_group,
+        level=dash.constants.HistoryLevel.AD_GROUP,
+    ).order_by('-created_dt')
+
+
+def get_campaign_history(campaign):
+    return dash.models.History.objects.all().filter(
+        campaign=campaign,
+        level=dash.constants.HistoryLevel.CAMPAIGN,
+    ).order_by('-created_dt')
+
+
+def get_account_history(account):
+    return dash.models.History.objects.all().filter(
+        account=account,
+        level=dash.constants.HistoryLevel.ACCOUNT,
+    ).order_by('-created_dt')

@@ -18,6 +18,7 @@ from dash import models
 from dash import constants
 from dash import api
 from dash.views import views
+from dash import history_helpers
 
 from utils import exc
 from utils.test_helper import add_permissions
@@ -447,8 +448,10 @@ class CampaignAdGroups(TestCase):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+
         self.assertIsNotNone(ad_group_settings.id)
-        self.assertIsNotNone(ad_group_settings.changes_text)
+        self.assertIsNotNone(hist.changes_text)
         self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
@@ -833,9 +836,8 @@ class AdGroupContentAdStateTest(TestCase):
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
-        settings = ad_group.get_current_settings()
-
-        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -853,10 +855,9 @@ class AdGroupContentAdStateTest(TestCase):
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
-        settings = ad_group.get_current_settings()
-
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(
-            settings.changes_text,
+            hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
         )
 
@@ -1145,9 +1146,8 @@ class AdGroupContentAdArchive(TestCase):
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
-        settings = ad_group.get_current_settings()
-
-        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1163,10 +1163,9 @@ class AdGroupContentAdArchive(TestCase):
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
-        settings = ad_group.get_current_settings()
-
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(
-            settings.changes_text,
+            hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.'
         )
 
@@ -1325,9 +1324,8 @@ class AdGroupContentAdRestore(TestCase):
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
-        settings = ad_group.get_current_settings()
-
-        self.assertEqual(settings.changes_text, 'Content ad(s) 1, 2, 3 Restored.')
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Restored.')
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1343,10 +1341,9 @@ class AdGroupContentAdRestore(TestCase):
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
-        settings = ad_group.get_current_settings()
-
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(
-            settings.changes_text,
+            hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.'
         )
 
@@ -2492,19 +2489,18 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual('zemanta.com', publisher_blacklist.name)
 
         adg1 = models.AdGroup.objects.get(pk=1)
-        settings1 = adg1.get_current_settings()
-
+        hist1 = history_helpers.get_ad_group_history(adg1).first()
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
-            settings1.changes_text
+            hist1.changes_text
         )
 
         adg9 = models.AdGroup.objects.get(pk=9)
-        settings9 = adg9.get_current_settings()
+        hist9 = history_helpers.get_ad_group_history(adg9).first()
 
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
-            settings9.changes_text
+            hist9.changes_text
         )
 
         useractionlogs = models.UserActionLog.objects.filter(
@@ -2727,7 +2723,7 @@ class PublishersBlacklistStatusTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account.name = 'ZemAccount'
         account.save(req)
-        
+
         for i in xrange(10):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),

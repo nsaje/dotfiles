@@ -1245,10 +1245,6 @@ def update_content_ads_archived_state(request, content_ads, ad_group, archived):
 
 
 def save_change_to_history(ad_group, description, history_action_type, request):
-    settings = ad_group.get_current_settings().copy_settings()
-    settings.changes_text = description
-    settings.save(request)
-
     ad_group.write_history(
         description,
         user=request.user,

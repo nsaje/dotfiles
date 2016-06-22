@@ -404,16 +404,11 @@ def copy_fields(user, source, dest):
 
 
 def _add_entry_to_history(request, campaign, action_type, history_action_type, changes_text):
-    new_settings = campaign.get_current_settings().copy_settings()
-    new_settings.changes_text = changes_text
-    new_settings.save(request)
-
     campaign.write_history(
         changes_text,
         user=request.user,
         action_type=history_action_type
     )
-
     helpers.log_useraction_if_necessary(
         request,
         action_type,

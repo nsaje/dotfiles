@@ -330,67 +330,6 @@ class AdGroupSettingsState(api_common.BaseApiView):
                 raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
-class CampaignHistory(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
-    def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_history_view'):
-            raise exc.AuthorizationError()
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        response = {
-            'history': self.get_history(campaign),
-        }
-        return self.create_api_response(response)
-
-    def get_history(self, campaign):
-        settings = models.CampaignSettings.objects.\
-            filter(campaign=campaign).\
-            order_by('created_dt')
-
-        history = []
-
-        for i in range(0, len(settings)):
-            old_settings = settings[i - 1] if i > 0 else None
-            new_settings = settings[i]
-
-            changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings)
-
-            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
-
-            if new_settings.created_by is None and new_settings.system_user is not None:
-                changed_by = constants.SystemUserType.get_text(new_settings.system_user)
-            elif new_settings.created_by is None and new_settings.system_user is None:
-                changed_by = automation.settings.AUTOMATION_AI_NAME
-            else:
-                changed_by = new_settings.created_by.email
-
-            history.append({
-                'datetime': new_settings.created_dt,
-                'changed_by': changed_by,
-                'changes_text': changes_text,
-                'settings': settings_dict.values(),
-                'show_old_settings': old_settings is not None
-            })
-
-        return history
-
-    def convert_settings_to_dict(self, old_settings, new_settings):
-        settings_dict = OrderedDict()
-
-        for field in models.CampaignSettings._settings_fields:
-            settings_dict[field] = {
-                'name': models.CampaignSettings.get_human_prop_name(field),
-                'value': models.CampaignSettings.get_human_value(
-                    field, getattr(new_settings, field, models.CampaignSettings.get_default_value(field)))
-            }
-
-            if old_settings is not None:
-                settings_dict[field]['old_value'] = models.CampaignSettings.get_human_value(
-                    field, getattr(old_settings, field, models.CampaignSettings.get_default_value(field)))
-
-        return settings_dict
-
-
 class CampaignConversionGoals(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
@@ -761,11 +700,6 @@ class AccountConversionPixels(api_common.BaseApiView):
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
             changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
-
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = changes_text
-            new_settings.save(request)
-
             account.write_history(
                 changes_text,
                 user=request.user,
@@ -824,11 +758,6 @@ class ConversionPixel(api_common.BaseApiView):
                     'Archived' if data['archived'] else 'Restored',
                     conversion_pixel.slug
                 )
-
-                new_settings = account.get_current_settings().copy_settings()
-                new_settings.changes_text = changes_text
-                new_settings.save(request)
-
                 account.write_history(
                     changes_text,
                     user=request.user,
@@ -844,111 +773,6 @@ class ConversionPixel(api_common.BaseApiView):
             'id': conversion_pixel.id,
             'archived': conversion_pixel.archived,
         })
-
-
-class AccountHistory(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'account_history_get')
-    def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_history_view'):
-            raise exc.AuthorizationError()
-
-        account = helpers.get_account(request.user, account_id)
-        response = {
-            'history': self.get_history(account),
-        }
-        return self.create_api_response(response)
-
-    def get_history(self, account):
-        settings = models.AccountSettings.objects.\
-            filter(account=account).\
-            order_by('created_dt')
-
-        history = []
-        for i in range(0, len(settings)):
-            old_settings = settings[i - 1] if i > 0 else None
-            new_settings = settings[i]
-
-            settings_dict = self.convert_settings_to_dict(new_settings, old_settings)
-            changes_text = self.get_changes_text(new_settings, old_settings)
-
-            if not changes_text:
-                continue
-
-            history.append({
-                'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
-                'changes_text': changes_text,
-                'settings': settings_dict.values(),
-                'show_old_settings': old_settings is not None
-            })
-
-        return history
-
-    def convert_settings_to_dict(self, new_settings, old_settings):
-        settings_dict = OrderedDict([
-            ('name', {
-                'name': 'Name',
-                'value': new_settings.name.encode('utf-8')
-            }),
-            ('archived', {
-                'name': 'Archived',
-                'value': str(new_settings.archived)
-            }),
-            ('default_account_manager', {
-                'name': 'Account Manager',
-                'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
-            }),
-            ('default_sales_representative', {
-                'name': 'Sales Representative',
-                'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
-            }),
-            ('account_type', {
-                'name': 'Account Type',
-                'value': constants.AccountType.get_text(new_settings.account_type)
-            }),
-        ])
-
-        if old_settings is not None:
-            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
-            settings_dict['archived']['old_value'] = str(old_settings.archived)
-
-            if old_settings.default_account_manager is not None:
-                settings_dict['default_account_manager']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.default_account_manager)
-
-            if old_settings.default_sales_representative is not None:
-                settings_dict['default_sales_representative']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
-
-            if old_settings.account_type is not None:
-                settings_dict['account_type']['old_value'] = constants.AccountType.get_text(old_settings.account_type)
-
-        return settings_dict
-
-    def get_changes_text(self, new_settings, old_settings):
-        if not old_settings:
-            return 'Created settings'
-
-        changes_text = ', '.join(filter(None, [
-            self.get_changes_text_for_settings(new_settings, old_settings),
-            new_settings.changes_text.encode('utf-8') if new_settings.changes_text is not None else ''
-        ]))
-
-        return changes_text
-
-    def get_changes_text_for_settings(self, new_settings, old_settings):
-        change_strings = []
-        changes = old_settings.get_setting_changes(new_settings)
-        settings_dict = self.convert_settings_to_dict(new_settings, None)
-
-        for key in changes:
-            setting = settings_dict[key]
-            change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
-            )
-
-        return ', '.join(change_strings)
 
 
 class AccountSettings(api_common.BaseApiView):
@@ -1040,7 +864,6 @@ class AccountSettings(api_common.BaseApiView):
                 facebook_account.save()
 
             account.save(request)
-            settings.changes_text = changes_text
             settings.save(request)
 
             account.write_history(
@@ -1270,77 +1093,6 @@ class AccountSettings(api_common.BaseApiView):
         return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
-class AdGroupHistory(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
-    def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_history_view'):
-            raise exc.AuthorizationError()
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        response = {
-            'history': self.get_history(ad_group, request.user),
-        }
-        return self.create_api_response(response)
-
-    @newrelic.agent.function_trace()
-    def get_history(self, ad_group, user):
-        ad_group_settings = models.AdGroupSettings.objects.\
-            filter(ad_group=ad_group).\
-            order_by('created_dt').\
-            select_related('created_by')
-
-        history = []
-        for i in range(0, len(ad_group_settings)):
-            old_settings = ad_group_settings[i - 1] if i > 0 else None
-            new_settings = ad_group_settings[i]
-
-            changes_text = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
-
-            if i > 0 and not len(changes_text):
-                continue
-
-            settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
-            if new_settings.created_by is None:
-                changed_by = automation.settings.AUTOMATION_AI_NAME
-                if new_settings.system_user:
-                    changed_by = constants.SystemUserType.get_text(new_settings.system_user)
-            else:
-                changed_by = new_settings.created_by.email
-            history.append({
-                'datetime': new_settings.created_dt,
-                'changed_by': changed_by,
-                'changes_text': changes_text,
-                'settings': settings_dict.values(),
-                'show_old_settings': old_settings is not None
-            })
-
-        return history
-
-    @newrelic.agent.function_trace()
-    def convert_settings_to_dict(self, old_settings, new_settings, user):
-        settings_dict = OrderedDict()
-        for field in models.AdGroupSettings._settings_fields:
-            settings_dict[field] = {
-                'name': models.AdGroupSettings.get_human_prop_name(field),
-                'value': models.AdGroupSettings.get_human_value(field, getattr(
-                    new_settings,
-                    field,
-                    models.AdGroupSettings.get_default_value(field)
-                ))
-            }
-
-            if old_settings is not None:
-                old_value = models.AdGroupSettings.get_human_value(field, getattr(
-                    old_settings,
-                    field,
-                    models.AdGroupSettings.get_default_value(field)
-                ))
-                settings_dict[field]['old_value'] = old_value
-
-        return settings_dict
-
-
 class AccountUsers(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
@@ -1451,11 +1203,6 @@ class AccountUsers(api_common.BaseApiView):
             account.users.remove(user)
 
             changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
-            # add history entry
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = changes_text
-            new_settings.save(request)
-
             account.write_history(changes_text, user=request.user)
 
         return self.create_api_response({
@@ -1486,11 +1233,6 @@ class UserActivation(api_common.BaseApiView):
             account = helpers.get_account(request.user, account_id)
 
             changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
-            # add history entry
-            new_settings = account.get_current_settings().copy_settings()
-            new_settings.changes_text = changes_text
-            new_settings.save(request)
-
             account.write_history(changes_text, user=request.user)
 
         except ZemUser.DoesNotExist:

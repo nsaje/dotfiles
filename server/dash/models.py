@@ -973,9 +973,6 @@ class CampaignSettings(SettingsBase):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         self.campaign.write_history(
             self.changes_text or changes_text,
@@ -987,8 +984,6 @@ class CampaignSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         return get_changes_text_from_dict(cls, changes, separator=separator)
 
@@ -2151,9 +2146,6 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
-
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         if changes is None:
             return 'Created settings'
@@ -2187,9 +2179,6 @@ class AdGroupSettings(SettingsBase):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         self.ad_group.write_history(
             self.changes_text or changes_text,
@@ -2361,10 +2350,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return None, ''
-
+        changes_text = self.get_changes_text_from_dict(changes)
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
