@@ -1587,17 +1587,24 @@ class ImageCrop(ConstantBase):
     }
 
 
+"""
+The difference between global and agency level is that agency for some users
+is the global level but involves only some accounts. Global spans the entire system.
+Examples are global blacklisting and report scheduling.
+"""
 class HistoryLevel(ConstantBase):
     AD_GROUP = 1
     CAMPAIGN = 2
     ACCOUNT = 3
     AGENCY = 4
+    GLOBAL = 5
 
     _VALUES = {
         AD_GROUP: 'Ad Group Level',
         CAMPAIGN: 'Campaign Level',
         ACCOUNT: 'Account Level',
         AGENCY: 'Agency Level',
+        GLOBAL: 'All Accounts',
     }
 
 
