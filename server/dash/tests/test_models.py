@@ -58,6 +58,7 @@ class AdGroupSettingsTest(TestCase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': True,
+            'ga_property_id': 'UA-123456789-1',
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
             'autopilot_daily_budget': Decimal('0.0000'),
@@ -131,15 +132,16 @@ class AdGroupSettingsTest(TestCase):
             'Locations set to "United States", '
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
-            'Max CPC bid set to "$1.00", '
-            'Device targeting set to "Mobile", '
+            'Max CPC bid set to "$1.000", '
+            'Device targeting set to "Mobile/Tablet", '
             'Display URL set to "example.com", '
             'Brand name set to "Example", '
             'State set to "Enabled", '
             'Call to action set to "Call to action", '
             'Ad group name set to "AdGroup name", '
             'Start date set to "2014-06-04", '
-            'Retargeting ad groups set to "test adgroup 1, test adgroup 2"'
+            'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
+            'GA web property ID set to "UA-123456789-1"'
         )
 
 
@@ -424,6 +426,18 @@ class ContentAdTest(TestCase):
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_image_url()
+        self.assertEqual(image_url, None)
+
+    def test_original_image_url(self):
+        content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+
+        content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
+        image_url = content_ad.get_original_image_url()
         self.assertEqual(image_url, None)
 
 
@@ -854,7 +868,7 @@ class HistoryTest(TestCase):
 
         adgss = models.AdGroupSettings(
             ad_group=ad_group,
-            cpc_cc=4999,
+            cpc_cc=4.999,
         )
         adgss.save(None)
 
@@ -865,10 +879,10 @@ class HistoryTest(TestCase):
             '')
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(4999, hist.changes['cpc_cc'])
+        self.assertEqual(4.999, hist.changes['cpc_cc'])
 
         adgss = adgss.copy_settings()
-        adgss.cpc_cc = 5100
+        adgss.cpc_cc = 5.103
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
@@ -876,22 +890,22 @@ class HistoryTest(TestCase):
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual(
             {
-                'cpc_cc': 5100,
+                'cpc_cc': 5.103,
             }, adg_hist.changes
         )
         self.assertEqual(
-            'Max CPC bid set to "$5,100.00"',
+            'Max CPC bid set from "$4.999" to "$5.103"',
             adg_hist.changes_text
         )
 
         hist = models.create_ad_group_history(
             ad_group,
             constants.HistoryType.AD_GROUP,
-            {'cpc_cc': 5100},
+            {'cpc_cc': 5.101},
             '')
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual({'cpc_cc': 5100}, hist.changes)
+        self.assertEqual({'cpc_cc': 5.101}, hist.changes)
 
     def test_create_ad_group_source_history(self):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -916,7 +930,7 @@ class HistoryTest(TestCase):
             adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
-            Source: AdsNative. Daily Budget set to "$50,000.00"
+            Source: AdsNative. Daily Budget set from "$10,000.00" to "$50,000.00"
             """).replace('\n', ''), adgs_hist.changes_text)
 
     def test_create_campaign_history(self):
@@ -948,7 +962,7 @@ class HistoryTest(TestCase):
             },
             camp_hist.changes
         )
-        self.assertEqual('Name set to "Awesomer"', camp_hist.changes_text)
+        self.assertEqual('Name set from "Awesome" to "Awesomer"', camp_hist.changes_text)
 
         hist = models.create_campaign_history(
             campaign,
@@ -1150,3 +1164,58 @@ class HistoryTest(TestCase):
                        sd=start_date.isoformat(),
                        ed=end_date.isoformat())
         ).replace('\n', ''), history.changes_text)
+
+    def test_create_account(self):
+        req = test_helper.fake_request(self.u)
+        a = models.Account(
+            name='test',
+        )
+        a.save(req)
+
+        acs = a.get_current_settings()
+        acs.save(req)
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings', hist.changes_text)
+
+    def test_create_campaign(self):
+        req = test_helper.fake_request(self.u)
+        c = models.Campaign(
+            name='test',
+            account=models.Account.objects.all().get(pk=1),
+        )
+        c.save(req)
+
+        cs = c.get_current_settings()
+        cs.save(req)
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings', hist.changes_text)
+
+    def test_create_ad_group(self):
+        req = test_helper.fake_request(self.u)
+        a = models.AdGroup(
+            name='test',
+            campaign=models.Campaign.objects.all().get(pk=1),
+        )
+        a.save(req)
+
+        adgs = a.get_current_settings()
+        adgs.save(req)
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings', hist.changes_text)
+
+    def test_create_ad_group_source(self):
+        s = models.Source.objects.create(
+            name='b1'
+        )
+        ad_group = models.AdGroup.objects.get(pk=1)
+        new_adgs = models.AdGroupSource(
+            source=s,
+            ad_group=ad_group
+        )
+        new_adgs.save()
+
+        hist = models.History.objects.all().order_by('-created_dt').first()
+        self.assertEqual('Created settings. Source: b1.', hist.changes_text)

@@ -25,7 +25,8 @@ from dash import exceptions
 from dash import image_helper
 from dash import threads
 from dash import history_helpers
-from dash.forms import AdGroupAdsUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
+from dash.forms import AdGroupAdsUploadExtendedForm, MANDATORY_CSV_FIELDS,\
+    OPTIONAL_CSV_FIELDS  # to get fields & validators
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +280,7 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
 # This function cleans the fields that are, when column is not present or
 # the value is empty, inherited from form submission
 def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
-    field = AdGroupAdsUploadForm.base_fields[field_name]
+    field = AdGroupAdsUploadExtendedForm.base_fields[field_name]
 
     if value_from_csv:
         return field.clean(value_from_csv)
@@ -318,6 +319,8 @@ def _clean_tracker_urls(tracker_urls_string):
         try:
             # URL is considered invalid if it contains any unicode chars
             url = url.encode('ascii')
+            if url.startswith('http://'):
+                raise ValidationError('Tracker URLs have to be HTTPS')
             validate_url(url)
         except (ValidationError, UnicodeEncodeError):
             raise ValidationError('Invalid tracker URLs')

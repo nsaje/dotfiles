@@ -4,9 +4,11 @@ import boto.exception
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import Http404
+from django.template.defaultfilters import pluralize
 
 from dash import constants
 from dash import forms
+from dash import history_helpers
 from dash import models
 from dash import upload_plus
 
@@ -64,7 +66,7 @@ class UploadCsv(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadExtendedForm(request.POST, request.FILES)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
@@ -76,12 +78,73 @@ class UploadCsv(api_common.BaseApiView):
         with transaction.atomic():
             self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
             batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name, filename)
+        skip_url_validation = upload_plus.has_skip_validation_magic_word(filename)
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate)
+            upload_plus.invoke_external_validation(candidate, skip_url_validation)
         errors = upload_plus.validate_candidates(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
             'candidates': [c.id for c in candidates],
+            'errors': errors,
+        })
+
+
+class UploadMultiple(api_common.BaseApiView):
+
+    def _update_ad_group_batch_settings(self, request, ad_group, cleaned_fields):
+        new_settings = ad_group.get_current_settings().copy_settings()
+        new_settings.description = cleaned_fields['description']
+        new_settings.save(request)
+
+    def _augment_candidates_data(self, cleaned_fields):
+        for content_ad in cleaned_fields['content_ads']:
+            if 'description' not in content_ad:
+                content_ad['description'] = cleaned_fields['description']
+        return cleaned_fields['content_ads']
+
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_upload_with_picker'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        current_settings = ad_group.get_current_settings()
+        return self.create_api_response({
+            'defaults': {
+                'description': current_settings.description,
+            }
+        })
+
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_upload_with_picker'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
+        batch_name = form.cleaned_data['batch_name']
+        content_ads = form.cleaned_data['content_ads']
+        filename = request.FILES['content_ads'].name
+
+        self._augment_candidates_data(form.cleaned_data)
+        with transaction.atomic():
+            self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
+            batch, candidates = upload_plus.insert_candidates(
+                content_ads,
+                ad_group,
+                batch_name,
+                filename,
+            )
+
+        skip_url_validation = upload_plus.has_skip_validation_magic_word(filename)
+        for candidate in candidates:
+            upload_plus.invoke_external_validation(candidate, skip_url_validation)
+
+        errors = upload_plus.validate_candidates(candidates)
+        return self.create_api_response({
+            'batch_id': batch.id,
+            'candidates': [c.get_dict() for c in candidates],
             'errors': errors,
         })
 
@@ -140,15 +203,22 @@ class UploadSave(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError()
 
-        try:
-            content_ads = upload_plus.persist_candidates(batch)
-        except upload_plus.InvalidBatchStatus as e:
-            raise exc.ValidationError(message=e.message)
+        with transaction.atomic():
+            try:
+                content_ads = upload_plus.persist_candidates(batch)
+            except upload_plus.InvalidBatchStatus as e:
+                raise exc.ValidationError(message=e.message)
 
-        self._create_redirect_ids(content_ads)
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
-                                            ad_group=ad_group)
-        batch.refresh_from_db()
+            self._create_redirect_ids(content_ads)
+            num_uploaded = batch.batch_size - batch.num_errors
+            changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
+                batch.name,
+                num_uploaded,
+                pluralize(num_uploaded),
+            )
+            history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
+                                                ad_group=ad_group)
 
         error_report = None
         if batch.error_report_key:

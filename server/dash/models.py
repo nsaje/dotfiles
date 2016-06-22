@@ -236,6 +236,8 @@ class HistoryMixin(object):
         current_dict = current_dict or self.post_init_state
         changes = OrderedDict()
         for field_name in self.history_fields:
+            if field_name not in new_dict:
+                continue
             new_value = new_dict[field_name]
             if current_dict[field_name] != new_value:
                 changes[field_name] = new_value
@@ -248,10 +250,21 @@ class HistoryMixin(object):
             if not prop:
                 continue
             val = self.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
+            change_strings.append(self._extract_value_diff_text(key, prop, val))
         return separator.join(change_strings)
+
+    def _extract_value_diff_text(self, key, prop, val):
+        previous_value = None
+        previous_value_raw = self.post_init_state.get(key) if self.post_init_state else None
+        if previous_value_raw:
+            previous_value = self.get_human_value(key, previous_value_raw)
+
+        if previous_value and previous_value != val:
+            return u'{} set from "{}" to "{}"'.format(
+                prop, previous_value, val
+            )
+        else:
+            return u'{} set to "{}"'.format(prop, val)
 
     def get_changes_text_from_dict(self, changes, separator=', '):
         if not changes:
@@ -266,7 +279,6 @@ class HistoryMixin(object):
         parts = []
         if self.post_init_newly_created:
             parts.append(created_text)
-            changes = model_to_dict(self)
 
         if created_text_id:
             parts.append(created_text_id)
@@ -1857,6 +1869,7 @@ class AdGroupSettings(SettingsBase):
         'ad_group_name',
         'enable_ga_tracking',
         'ga_tracking_type',
+        'ga_property_id',
         'enable_adobe_tracking',
         'adobe_tracking_param',
         'autopilot_state',
@@ -1901,6 +1914,7 @@ class AdGroupSettings(SettingsBase):
         default=constants.GATrackingType.EMAIL,
         choices=constants.GATrackingType.get_choices()
     )
+    ga_property_id = models.CharField(max_length=25, blank=True, default='')
     enable_adobe_tracking = models.BooleanField(default=False)
     adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
@@ -2012,6 +2026,7 @@ class AdGroupSettings(SettingsBase):
             'ad_group_name': 'Ad group name',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
+            'ga_property_id': 'GA web property ID',
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
@@ -2032,7 +2047,7 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'target_devices':
@@ -2196,6 +2211,11 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         blank=True,
         on_delete=models.PROTECT
     )
+    system_user = models.PositiveSmallIntegerField(
+        choices=constants.SystemUserType.get_choices(),
+        null=True,
+        blank=True,
+    )
 
     state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
@@ -2238,7 +2258,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'cpc_cc' and value is not None:
-            value = lc_helper.default_currency(Decimal(value))
+            value = lc_helper.default_currency(Decimal(value), places=3)
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'landing_mode':
@@ -2253,9 +2273,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(user=request and request.user)
 
-    def add_to_history(self):
+    def add_to_history(self, user):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
 
@@ -2269,14 +2289,15 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
-            changes if not self.post_init_newly_created else None
+            changes
         )
         create_ad_group_history(
             current_settings.ad_group,
             history_type,
             changes,
             changes_text,
-            user=self.created_by
+            user=user,
+            system_user=self.system_user,
         )
 
     def delete(self, *args, **kwargs):
@@ -2385,7 +2406,7 @@ class ContentAd(models.Model):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
     crop_areas = models.CharField(max_length=128, null=True)
-    image_crop = models.CharField(max_length=25, null=True)
+    image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -2406,7 +2427,9 @@ class ContentAd(models.Model):
         if self.image_id is None:
             return None
 
-        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
+        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, '{image_id}.jpg'.format(
+            image_id=self.image_id
+        ))
 
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
@@ -2554,6 +2577,9 @@ class ContentAdCandidate(models.Model):
     image_hash = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    def get_dict(self):
+        return model_to_dict(self)
 
 
 class Article(models.Model):
@@ -2836,12 +2862,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
-                value * converters.CC_TO_DECIMAL_DOLAR)
+                Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'status':
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == 'comment':
-            value = value or ''
-        elif prop_name == 'flat_fee_cc':
             value = value or ''
         elif prop_name == 'flat_fee_start_date':
             value = value or ''
@@ -2873,11 +2897,16 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
         changes, changes_text = self.construct_changes(
             'Created credit.',
             'Credit: #{}.'.format(self.id) if self.id else None,
             changes
         )
+
         if self.account is not None:
             create_account_history(self.account,
                                    history_type,
@@ -3105,6 +3134,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return None, ''
+
+        if self.post_init_newly_created:
+            changes = model_to_dict(self)
+
         changes, changes_text = self.construct_changes(
             'Created budget.',
             'Budget: #{}.'.format(self.id) if self.id else None,
@@ -3502,21 +3535,11 @@ class FacebookAccount(models.Model):
     account = models.OneToOneField(Account, primary_key=True)
     ad_account_id = models.CharField(max_length=127, blank=True, null=True)
     page_url = models.CharField(max_length=255, blank=True, null=True)
+    page_id = models.CharField(max_length=127, blank=True, null=True)
     status = models.IntegerField(
         default=constants.FacebookPageRequestType.EMPTY,
         choices=constants.FacebookPageRequestType.get_choices()
     )
-
-    def get_page_id(self):
-        if not self.page_url:
-            return None
-
-        url = self.page_url.strip('/')
-        page_id = url[url.rfind('/') + 1:]
-        dash_index = page_id.rfind('-')
-        if dash_index != -1:
-            page_id = page_id[dash_index + 1:]
-        return page_id
 
     def __unicode__(self):
         return self.account.name
@@ -3570,6 +3593,12 @@ class History(models.Model):
         null=False,
         blank=False,
     )
+    # TODO: once the transition period is over make action_type non-nullable
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryActionType.get_choices(),
+        null=True,
+        blank=True,
+    )
 
     changes_text = models.TextField(blank=False, null=False)
     changes = jsonfield.JSONField(blank=False, null=False)
@@ -3611,6 +3640,10 @@ class History(models.Model):
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting history object not allowed.')
+
+    class Meta:
+        verbose_name = 'History'
+        verbose_name_plural = 'History'
 
 
 def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):

@@ -2,7 +2,6 @@ import logging
 import StringIO
 
 from django.db import transaction
-from django.forms.models import model_to_dict
 from django.conf import settings
 import unicodecsv
 
@@ -37,7 +36,7 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
 
 
 @transaction.atomic
-def invoke_external_validation(candidate):
+def invoke_external_validation(candidate, skip_url_validation=False):
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
         {
@@ -47,13 +46,18 @@ def invoke_external_validation(candidate):
             'adGroupID': candidate.ad_group.pk,
             'batchID': candidate.batch.pk,
             'imageUrl': candidate.image_url,
-            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL
+            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
+            'skipUrlValidation': skip_url_validation,
         },
         async=True,
     )
     candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.save()
+
+
+def has_skip_validation_magic_word(filename):
+    return 'no-verify' in (filename or '')
 
 
 def persist_candidates(batch):
@@ -80,7 +84,7 @@ def _prepare_candidates(batch):
     new_content_ads = []
     errors = []
     for candidate in candidates:
-        f = forms.ContentAdForm(model_to_dict(candidate))
+        f = forms.ContentAdForm(candidate.get_dict())
         if not f.is_valid():
             # f.errors is a dict of lists of messages
             errors.append({
@@ -121,21 +125,26 @@ def _update_batch_status(batch, errors):
 def _save_error_report(batch_id, filename, errors):
     string = StringIO.StringIO()
 
-    fields = [_get_mapped_field(field) for field in forms.MANDATORY_CSV_FIELDS]
-    fields += [_get_mapped_field(field) for field in forms.OPTIONAL_CSV_FIELDS]
+    fields = [field for field in forms.MANDATORY_CSV_FIELDS]
+    fields += [field for field in forms.OPTIONAL_CSV_FIELDS]
     fields.remove('crop_areas')  # a hack to ease transition
 
     fields.append('errors')
-    writer = unicodecsv.DictWriter(string, fields)
+    writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
 
     writer.writeheader()
     for error_dict in errors:
-        row = {_get_mapped_field(k): v for k, v in model_to_dict(error_dict['candidate']).items() if k in fields}
-        row['errors'] = error_dict['errors']
+        row = {_transform_field(k): v for k, v in error_dict['candidate'].get_dict().items() if k in fields}
+        row['Errors'] = error_dict['errors']
         writer.writerow(row)
 
     content = string.getvalue()
     return _upload_error_report_to_s3(batch_id, content, filename)
+
+
+def _transform_field(field):
+    field = _get_mapped_field(field)
+    return field.replace('_', ' ').title()
 
 
 def _get_mapped_field(field):
@@ -172,7 +181,7 @@ def cancel_upload(batch):
 def validate_candidates(candidates):
     errors = {}
     for candidate in candidates:
-        f = forms.ContentAdCandidateForm(model_to_dict(candidate))
+        f = forms.ContentAdCandidateForm(candidate.get_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
     return errors

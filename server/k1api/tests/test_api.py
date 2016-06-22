@@ -6,8 +6,6 @@ import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
-from django.db.models import Q
-from django.http import Http404
 
 import dash.constants
 import dash.models
@@ -264,6 +262,7 @@ class K1ApiTest(TestCase):
             u'image_width',
             u'image_height',
             u'image_hash',
+            u'image_crop',
             u'redirect_id',
             u'display_url',
             u'brand_name',

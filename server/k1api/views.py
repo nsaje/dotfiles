@@ -242,6 +242,7 @@ def get_content_ad_sources_for_ad_group(request):
             'image_width': content_ad_source.content_ad.image_width,
             'image_height': content_ad_source.content_ad.image_height,
             'image_hash': content_ad_source.content_ad.image_hash,
+            'image_crop': content_ad_source.content_ad.image_crop,
             'redirect_id': content_ad_source.content_ad.redirect_id,
             'display_url': content_ad_source.content_ad.display_url,
             'brand_name': content_ad_source.content_ad.brand_name,
@@ -655,6 +656,7 @@ def get_content_ads(request):
             'image_width': item.image_width,
             'image_height': item.image_height,
             'image_hash': item.image_hash,
+            'image_crop': item.image_crop,
             'description': item.description,
             'brand_name': item.brand_name,
             'display_url': item.display_url,
@@ -821,7 +823,7 @@ def get_facebook_account(request):
         facebook_account = {
             'account_id': query_facebook_account.account_id,
             'ad_account_id': query_facebook_account.ad_account_id,
-            'page_id': query_facebook_account.get_page_id()
+            'page_id': query_facebook_account.page_id
         }
     except dash.models.FacebookAccount.DoesNotExist:
         facebook_account = None

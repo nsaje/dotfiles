@@ -41,9 +41,10 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 handleHorizontalScroll(leftOffset);
             });
         },
-        controller: ['zemGridStorageService', function (zemGridStorageService) {
+        controller: ['zemGridConstants', 'zemGridStorageService', function (zemGridConstants, zemGridStorageService) {
             var vm = this;
             vm.setOrder = setOrder;
+            vm.getHeaderColumnClass = getHeaderColumnClass;
 
             initialize();
 
@@ -58,6 +59,22 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
                     return column.visible;
                 });
+
+                if (vm.grid.meta.service.getBreakdownLevel() > 1) {
+                    vm.grid.header.visibleColumns.unshift({
+                        type: zemGridConstants.gridColumnType.COLLAPSE,
+                    });
+                }
+
+                if (vm.grid.meta.options.enableSelection) {
+                    vm.grid.header.visibleColumns.unshift({
+                        type: zemGridConstants.gridColumnType.CHECKBOX,
+                    });
+                }
+            }
+
+            function getHeaderColumnClass (column) {
+                return zemGridUIService.getHeaderColumnClass(vm.grid, column);
             }
 
             function setOrder (column) {

@@ -21,14 +21,6 @@ oneApp.directive('zemGridRow', [function () {
         controller: ['$scope', 'zemGridConstants', 'zemGridUIService',
             function ($scope, zemGridConstants, zemGridUIService) {
                 $scope.constants = zemGridConstants;
-
-                this.loadMore = function (size) {
-                    if (!size) {
-                        size = this.row.data.pagination.count - this.row.data.pagination.limit;
-                    }
-                    this.grid.meta.service.loadData(this.row, size);
-                };
-
                 this.getRowClass = function () {
                     return zemGridUIService.getRowClass(this.grid, this.row);
                 };
