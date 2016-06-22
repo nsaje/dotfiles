@@ -1612,6 +1612,33 @@ class AdGroup(models.Model):
             new_settings.archived = False
             new_settings.save(request)
 
+
+    def write_history(self,
+                      changes_text,
+                      changes=None,
+                      user=None,
+                      system_user=None,
+                      history_type=dash.constants.HistoryType.AD_GROUP,
+                      action_type=None):
+        if not changes_text:
+            return  # nothing to write
+
+        campaign, account, agency = _generate_parents(ad_group=self)
+        history = History.objects.create(
+            ad_group=ad_group,
+            campaign=campaign,
+            account=account,
+            agency=agency,
+            created_by=user,
+            system_user=system_user,
+            changes=json_helper.json_serializable_changes(changes),
+            changes_text=changes_text or "",
+            type=history_type,
+            level=constants.HistoryLevel.AD_GROUP,
+            action_type=action_type
+        )
+        return history
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(AdGroup, self).save(*args, **kwargs)
@@ -2112,11 +2139,11 @@ class AdGroupSettings(SettingsBase):
         if not changes and not self.post_init_newly_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
-        create_ad_group_history(
-            self.ad_group,
-            history_type,
-            changes,
+        self.ad_group.write_history(
             self.changes_text or changes_text,
+            changes=changes,
+            history_type=history_type,
+            action_type=constants.HistoryActionType.SETTINGS_CHANGE,
             user=self.created_by,
             system_user=self.system_user
         )
@@ -2291,12 +2318,12 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             'Source: {}.'.format(self.ad_group_source.source.name),
             changes
         )
-        create_ad_group_history(
-            current_settings.ad_group,
-            history_type,
-            changes,
+        current_settings.ad_group.write_history(
             changes_text,
+            changes=changes,
             user=user,
+            history_type=history_type,
+            action_type=constants.HistoryActionType.SETTINGS_CHANGE,
             system_user=self.system_user,
         )
 
@@ -3646,28 +3673,6 @@ class History(models.Model):
         verbose_name_plural = 'History'
 
 
-def create_ad_group_history(ad_group, history_type, changes, changes_text,
-                            user=None, system_user=None, action_type=None):
-    if not changes and not changes_text:
-        # don't write history in case of no changes
-        return None
-    campaign, account, agency = _generate_parents(ad_group=ad_group)
-    history = History.objects.create(
-        ad_group=ad_group,
-        campaign=campaign,
-        account=account,
-        agency=agency,
-        created_by=user,
-        system_user=system_user,
-        changes=json_helper.json_serializable_changes(changes),
-        changes_text=changes_text or "",
-        type=history_type,
-        level=constants.HistoryLevel.AD_GROUP,
-        action_type=action_type
-    )
-    return history
-
-
 def create_campaign_history(campaign, history_type, changes, changes_text,
                             user=None, system_user=None, action_type=None):
     if not changes and not changes_text:
@@ -3685,6 +3690,23 @@ def create_campaign_history(campaign, history_type, changes, changes_text,
         changes_text=changes_text or "",
         type=history_type,
         level=constants.HistoryLevel.CAMPAIGN,
+        action_type=action_type
+    )
+
+
+def create_global_history(history_type, changes, changes_text,
+                          user=None, system_user=None, action_type=None):
+    if not changes and not changes_text:
+        # don't write history in case of no changes
+        return None
+
+    return History.objects.create(
+        created_by=user,
+        system_user=system_user,
+        changes=json_helper.json_serializable_changes(changes),
+        changes_text=changes_text or "",
+        type=history_type,
+        level=constants.HistoryLevel.GLOBAL,
         action_type=action_type
     )
 

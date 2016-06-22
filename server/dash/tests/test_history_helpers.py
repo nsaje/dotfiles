@@ -11,8 +11,7 @@ class HistoryHelperTests(TestCase):
     def test_write_none(self):
         user = User.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        dash.history_helpers.write_ad_group_history(
-            ad_group,
+        ad_group.write_history(
             '',
             user=user,
             history_type=dash.constants.HistoryType.AD_GROUP
@@ -40,8 +39,7 @@ class HistoryHelperTests(TestCase):
     def test_write_ad_group(self):
         user = User.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        dash.history_helpers.write_ad_group_history(
-            ad_group,
+        ad_group.write_history(
             'Funky test',
             user=user,
             history_type=dash.constants.HistoryType.AD_GROUP

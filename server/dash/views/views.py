@@ -493,7 +493,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group_settings.changes_text = changes_text
         ad_group_settings.save(request)
 
-        history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
+        ad_group.write_history(changes_text, user=request.user)
 
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
         actionlog.zwei_actions.send(actions)
@@ -1004,8 +1004,7 @@ class AdGroupSources(api_common.BaseApiView):
         settings.changes_text = changes_text
         settings.save(request)
 
-        history_helpers.write_ad_group_history(
-            ad_group_source.ad_group,
+        ad_group_source.ad_group.write_history(
             changes_text,
             user=request.user,
             history_type=constants.HistoryType.AD_GROUP_SOURCE
@@ -2080,8 +2079,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         settings.changes_text = changes_text
         settings.save(request)
 
-        history_helpers.write_ad_group_history(
-            ad_group,
+        ad_group.write_history(
             changes_text,
             user=request.user,
         )

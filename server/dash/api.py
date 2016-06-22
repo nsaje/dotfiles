@@ -1210,7 +1210,10 @@ def add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, st
 
     description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
 
-    save_change_to_history(ad_group, description, request)
+    save_change_to_history(ad_group,
+                           description,
+                           constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
+                           request)
 
     email_helper.send_ad_group_notification_email(ad_group, request, description)
 
@@ -1220,7 +1223,10 @@ def add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads,
 
     description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
 
-    save_change_to_history(ad_group, description, request)
+    save_change_to_history(ad_group,
+                           description,
+                           constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE,
+                           request)
 
     email_helper.send_ad_group_notification_email(ad_group, request, description)
 
@@ -1238,15 +1244,15 @@ def update_content_ads_archived_state(request, content_ads, ad_group, archived):
                 content_ad.save()
 
 
-def save_change_to_history(ad_group, description, request):
+def save_change_to_history(ad_group, description, history_action_type, request):
     settings = ad_group.get_current_settings().copy_settings()
     settings.changes_text = description
     settings.save(request)
 
-    history_helpers.write_ad_group_history(
-        ad_group,
+    ad_group.write_history(
         description,
         user=request.user,
+        action_type=history_action_type
     )
 
 

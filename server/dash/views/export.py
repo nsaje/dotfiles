@@ -15,6 +15,7 @@ from dash import models
 from dash import export
 from dash import constants
 from dash import scheduled_report
+from dash import history_helpers
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
@@ -226,6 +227,11 @@ class AccountCampaignsExport(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account)
 
+        history_helpers.write_account_history(
+            account,
+            'Exported report: {}'.format(filename),
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
@@ -235,6 +241,11 @@ class AccountCampaignsExport(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account)
 
+        history_helpers.write_account_history(
+            account,
+            'Scheduled report.',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
@@ -247,6 +258,11 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign)
 
+        history_helpers.write_campaign_history(
+            campaign,
+            'Exported report: {}'.format(filename),
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)
@@ -256,6 +272,11 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign)
 
+        history_helpers.write_campaign_history(
+            campaign,
+            'Scheduled report',
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, campaign=campaign)
 
         return self.create_api_response(response)
@@ -268,6 +289,10 @@ class AdGroupAdsExport(ExportApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export.get_report_from_request(request, ad_group=ad_group)
 
+        ad_group.write_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, ad_group=ad_group)
 
         return self.create_csv_response(filename, content=content)
@@ -277,6 +302,10 @@ class AdGroupAdsExport(ExportApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group)
 
+        ad_group.write_history(
+            'Scheduled report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, ad_group=ad_group)
 
         return self.create_api_response(response)
@@ -288,6 +317,10 @@ class AllAccountsSourcesExport(ExportApiView):
     def get(self, request):
         content, filename = export.get_report_from_request(request, by_source=True)
 
+        history_helpers.write_global_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
@@ -296,6 +329,10 @@ class AllAccountsSourcesExport(ExportApiView):
     def put(self, request):
         response = _add_scheduled_report_from_request(request, by_source=True)
 
+        history_helpers.write_global_history(
+            'Scheduled report',
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
@@ -308,6 +345,11 @@ class AccountSourcesExport(ExportApiView):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account, by_source=True)
 
+        history_helpers.write_account_history(
+            account,
+            'Exported media sources report: {}'.format(filename),
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
@@ -317,6 +359,11 @@ class AccountSourcesExport(ExportApiView):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account, by_source=True)
 
+        history_helpers.write_account_history(
+            account,
+            'Scheduled media sources report',
+            user=request.user,
+           history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
@@ -329,6 +376,11 @@ class CampaignSourcesExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign, by_source=True)
 
+        history_helpers.write_campaign_history(
+            campaign,
+            'Exported media sources report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)
@@ -338,6 +390,11 @@ class CampaignSourcesExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
 
+        history_helpers.write_campaign_history(
+            campaign,
+            'Scheduled media sources report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, campaign=campaign)
 
         return self.create_api_response(response)
@@ -350,6 +407,10 @@ class AdGroupSourcesExport(ExportApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export.get_report_from_request(request, ad_group=ad_group, by_source=True)
 
+        ad_group.write_history(
+            'Exported media sources report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, ad_group=ad_group)
 
         return self.create_csv_response(filename, content=content)
@@ -359,6 +420,10 @@ class AdGroupSourcesExport(ExportApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group, by_source=True)
 
+        ad_group.write_history(
+            'Scheduled media sources report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, ad_group=ad_group)
 
         return self.create_api_response(response)
@@ -370,6 +435,10 @@ class AllAccountsExport(ExportApiView):
     def get(self, request):
         content, filename = export.get_report_from_request(request)
 
+        history_helpers.write_global_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
@@ -378,6 +447,10 @@ class AllAccountsExport(ExportApiView):
     def put(self, request):
         response = _add_scheduled_report_from_request(request)
 
+        history_helpers.write_global_history(
+            'Scheduled report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
@@ -444,7 +517,10 @@ class ScheduledReports(api_common.BaseApiView):
                 'account': scheduled_report.report.account,
             }
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_SCHEDULED_REPORT, **log_data)
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.DELETE_SCHEDULED_REPORT,
+            **log_data)
 
     def format_reports(self, reports):
         result = []
