@@ -29,7 +29,6 @@ logger = logging.getLogger(__name__)
 
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
-@statsd_timer('automation.autopilot_plus', 'run_autopilot')
 def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                   send_mail=False, initialization=False, report_to_statsd=False):
     if not ad_groups:

@@ -85,7 +85,6 @@ def get_adgroup(ad_group_id):
         raise e
 
 
-@statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
 def fetch_redirects_impressions(date, timeout=300):
     request_url = settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d'))
 

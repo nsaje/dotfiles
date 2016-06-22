@@ -26,7 +26,6 @@ def action_log(request):
 
 
 class ActionLogApiView(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('actionlog.api', 'view_get')
     @method_decorator(permission_required('actionlog.manual_view'))
     def get(self, request):
         response = {}
@@ -178,7 +177,6 @@ class ActionLogApiView(api_common.BaseApiView):
                 + '?ad_group_id={}&source_id={}'.format(action.ad_group_source.ad_group.id, action.ad_group_source.source.id)
         }
 
-    @statsd_helper.statsd_timer('actionlog.api', 'view_put')
     @method_decorator(permission_required('actionlog.manual_acknowledge'))
     def put(self, request, action_log_id):
 

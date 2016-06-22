@@ -6,8 +6,6 @@ from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 import django.views.defaults
 
-import utils.statsd_helper
-
 from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
@@ -30,10 +28,6 @@ import dash.views.upload
 
 
 admin.site.login = login_required(admin.site.login)
-
-# Decorators for auth views for statsd.
-auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(
-    auth_views.logout_then_login)
 
 
 # RedirectView.permanent will be False

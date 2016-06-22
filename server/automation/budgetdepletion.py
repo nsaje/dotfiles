@@ -151,7 +151,6 @@ def _send_campaign_stopped_notification_email(
 
 
 @influx.timer('automation.budgetdepletion.budget_campaigns', operation='notify_depleting')
-@statsd_timer('automation.budgetdepletion', 'notify_depleting_budget_campaigns')
 def notify_depleting_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)
@@ -168,7 +167,6 @@ def notify_depleting_budget_campaigns():
 
 
 @influx.timer('automation.budgetdepletion.budget_campaigns', operation='stop_and_notify_depleted')
-@statsd_timer('automation.budgetdepletion', 'stop_and_notify_depleted_budget_campaigns')
 def stop_and_notify_depleted_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)

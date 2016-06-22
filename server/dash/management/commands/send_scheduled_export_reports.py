@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
     @influx.timer('dash.scheduled_reports.send_scheduled_export_reports_job')
-    @statsd_timer('dash.scheduled_reports', 'send_scheduled_export_reports_job')
     def handle(self, *args, **options):
         logger.info('Sending Scheduled Export Report Emails')
 

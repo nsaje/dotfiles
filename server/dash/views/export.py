@@ -59,7 +59,6 @@ class ExportAllowed(api_common.BaseApiView):
     ALL_ACC_BD_CAMP_MAX_DAYS = 160
 
     @influx.timer('dash.export_plus.allowed_get', type='default')
-    @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -135,7 +134,6 @@ class SourcesExportAllowed(api_common.BaseApiView):
     ALL_ACC_BD_ACC_MAX_DAYS = 62
 
     @influx.timer('dash.export_plus.allowed_get', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         user = request.user
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
@@ -221,7 +219,6 @@ class SourcesExportAllowed(api_common.BaseApiView):
 
 class AccountCampaignsExport(api_common.BaseApiView):
     @influx.timer('dash.export_plus.account', type='campaigns')
-    @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account)
@@ -230,7 +227,6 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'accounts_campaigns_scheduled_report_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account)
@@ -242,7 +238,6 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
 class CampaignAdGroupsExport(ExportApiView):
     @influx.timer('dash.export_plus.campaign', type='ad_group')
-    @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign)
@@ -251,7 +246,6 @@ class CampaignAdGroupsExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_scheduled_report_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign)
@@ -263,7 +257,6 @@ class CampaignAdGroupsExport(ExportApiView):
 
 class AdGroupAdsExport(ExportApiView):
     @influx.timer('dash.export_plus.ad_group', type='ads')
-    @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export.get_report_from_request(request, ad_group=ad_group)
@@ -272,7 +265,6 @@ class AdGroupAdsExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_scheduled_report_put')
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group)
@@ -284,7 +276,6 @@ class AdGroupAdsExport(ExportApiView):
 
 class AllAccountsSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.all_accounts', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
         content, filename = export.get_report_from_request(request, by_source=True)
 
@@ -292,7 +283,6 @@ class AllAccountsSourcesExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'all_accounts_sources_scheduled_report_put')
     def put(self, request):
         response = _add_scheduled_report_from_request(request, by_source=True)
 
@@ -303,7 +293,6 @@ class AllAccountsSourcesExport(ExportApiView):
 
 class AccountSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.account', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account, by_source=True)
@@ -312,7 +301,6 @@ class AccountSourcesExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'account_sources_scheduled_report_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account, by_source=True)
@@ -324,7 +312,6 @@ class AccountSourcesExport(ExportApiView):
 
 class CampaignSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.campaign', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign, by_source=True)
@@ -333,7 +320,6 @@ class CampaignSourcesExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_sources_scheduled_report_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
@@ -345,7 +331,6 @@ class CampaignSourcesExport(ExportApiView):
 
 class AdGroupSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.ad_group', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export.get_report_from_request(request, ad_group=ad_group, by_source=True)
@@ -354,7 +339,6 @@ class AdGroupSourcesExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_scheduled_report_put')
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group, by_source=True)
@@ -366,7 +350,6 @@ class AdGroupSourcesExport(ExportApiView):
 
 class AllAccountsExport(ExportApiView):
     @influx.timer('dash.export_plus.all_accounts', type='default')
-    @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
         content, filename = export.get_report_from_request(request)
 
@@ -374,7 +357,6 @@ class AllAccountsExport(ExportApiView):
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'all_accounts_scheduled_report_put')
     def put(self, request):
         response = _add_scheduled_report_from_request(request)
 
@@ -409,7 +391,6 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
 
 
 class ScheduledReports(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_get')
     def get(self, request, account_id=None):
         if account_id:
             account = helpers.get_account(request.user, account_id)
@@ -421,7 +402,6 @@ class ScheduledReports(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_delete')
     def delete(self, request, scheduled_report_id):
         scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
 
@@ -494,7 +474,6 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
     @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_allowed_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -528,7 +507,6 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 8072
 
     @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'campiagn_ad_group_export_allowed_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 

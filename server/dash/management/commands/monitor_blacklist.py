@@ -29,7 +29,6 @@ class Command(ExceptionCommand):
         ),
     )
 
-    @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
     def handle(self, *args, **options):
         logger.info('Monitor publisher blacklisting.')
 

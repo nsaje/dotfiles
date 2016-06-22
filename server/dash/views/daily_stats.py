@@ -144,7 +144,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
 
 class AccountDailyStats(BaseDailyStatsView):
-    @statsd_helper.statsd_timer('dash.api', 'account_daily_stats_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
 
@@ -198,7 +197,6 @@ class AccountDailyStats(BaseDailyStatsView):
 
 
 class CampaignDailyStats(BaseDailyStatsView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_daily_stats_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -259,7 +257,6 @@ class CampaignDailyStats(BaseDailyStatsView):
 
 
 class AdGroupDailyStats(BaseDailyStatsView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_daily_stats_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -308,7 +305,6 @@ class AdGroupDailyStats(BaseDailyStatsView):
 
 
 class AdGroupPublishersDailyStats(BaseDailyStatsView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_publishers_daily_stats_get')
     def get(self, request, ad_group_id, ):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
@@ -413,7 +409,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
 
 class AccountsDailyStats(BaseDailyStatsView):
-    @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
         # Permission check
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
@@ -457,7 +452,6 @@ class AccountsDailyStats(BaseDailyStatsView):
 
 
 class AdGroupAdsDailyStats(BaseDailyStatsView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_daily_stats_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 

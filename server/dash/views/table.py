@@ -8,7 +8,6 @@ from utils import statsd_helper
 
 
 class AdGroupSourcesTableUpdates(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_notifications_get')
     def get(self, request, ad_group_id_=None):
         user = request.user
 
@@ -26,7 +25,6 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
 
 class SourcesTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
         newrelic.agent.set_transaction_name('dash.views.table:SourcesTable#%s' % (level_))
@@ -53,7 +51,6 @@ class SourcesTable(api_common.BaseApiView):
 
 
 class AccountsAccountsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'accounts_accounts_table_get')
     def get(self, request):
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -84,7 +81,6 @@ class AccountsAccountsTable(api_common.BaseApiView):
 
 
 class AdGroupAdsTableUpdates(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
     def get(self, request, ad_group_id):
         user = request.user
 
@@ -102,7 +98,6 @@ class AdGroupAdsTableUpdates(api_common.BaseApiView):
 
 
 class AdGroupAdsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
         user = request.user
 
@@ -131,7 +126,6 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
 
 class CampaignAdGroupsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_ad_groups_table_get')
     def get(self, request, campaign_id):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -154,7 +148,6 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
 
 class AccountCampaignsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
     def get(self, request, account_id):
         user = request.user
 
@@ -180,7 +173,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
 
 class PublishersTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
     def get(self, request, level_, id_=None):
         newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
 

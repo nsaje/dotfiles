@@ -13,7 +13,6 @@ class Command(ExceptionCommand):
     help = "Autopilot rearranges daily budgets and bid CPCs of all active media sources in participating ad groups."
 
     @influx.timer('automation.autopilot_plus.run_autopilot_job')
-    @statsd_timer('automation.autopilot_plus', 'run_autopilot_job')
     def handle(self, *args, **options):
         logger.info('Running Ad Group Autopilot.')
 

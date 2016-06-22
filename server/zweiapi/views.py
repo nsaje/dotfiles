@@ -48,7 +48,6 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
 
 
 @csrf_exempt
-@statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 @influx.timer('zweiapi.views.zwei_callback')
 def zwei_callback(request, action_id):
     newrelic.agent.set_background_task(flag=True)
