@@ -11,10 +11,8 @@ import reports.api
 import reports.refresh
 import reports.models
 from reports import redshift
-from utils.statsd_helper import statsd_timer
 import influx
 
-from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 

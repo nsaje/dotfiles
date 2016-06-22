@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 import dash.constants
 import dash.models
 
-from utils import statsd_helper
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)

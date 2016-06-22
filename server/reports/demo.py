@@ -3,7 +3,6 @@ import logging
 
 from slugify import slugify
 
-from utils.statsd_helper import statsd_incr
 import dash.models
 import reports.api
 import reports.update

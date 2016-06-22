@@ -4,7 +4,6 @@ import influx
 
 import automation.autopilot_plus
 from utils.command_helpers import ExceptionCommand
-from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
 

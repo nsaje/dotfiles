@@ -23,7 +23,6 @@ from dash import api
 from dash import history_helpers
 
 from utils import exc
-from utils import statsd_helper
 from utils import email_helper
 from utils import k1_helper
 

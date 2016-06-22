@@ -17,7 +17,6 @@ import automation.settings
 import automation.helpers
 from utils import pagerduty_helper, url_helper
 from utils.email_helper import format_email, email_manager_list
-from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
 

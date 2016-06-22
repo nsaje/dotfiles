@@ -12,7 +12,6 @@ import dash.constants
 import dash.models
 import dash.publisher_helpers
 
-from utils import statsd_helper
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)

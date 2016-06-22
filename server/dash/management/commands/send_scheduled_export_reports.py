@@ -10,8 +10,6 @@ from dash import scheduled_report
 from dash import export
 
 from utils.command_helpers import ExceptionCommand
-from utils.statsd_helper import statsd_timer
-from utils.statsd_helper import statsd_gauge
 from utils import email_helper
 
 logger = logging.getLogger(__name__)

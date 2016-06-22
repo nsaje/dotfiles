@@ -5,7 +5,6 @@ from django.db import connections
 
 import influx
 
-from utils.statsd_helper import statsd_timer
 
 from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection

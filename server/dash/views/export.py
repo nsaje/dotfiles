@@ -16,7 +16,6 @@ from dash import export
 from dash import constants
 from dash import scheduled_report
 from utils import api_common
-from utils import statsd_helper
 from utils import exc
 
 

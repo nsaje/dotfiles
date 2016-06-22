@@ -28,7 +28,6 @@ from dash import threads
 from dash import history_helpers
 
 import utils.url_helper
-import utils.statsd_helper
 import influx
 
 logger = logging.getLogger(__name__)

@@ -6,7 +6,6 @@ import urllib2
 from django.conf import settings
 
 from utils import request_signer
-from utils import statsd_helper
 
 
 logger = logging.getLogger(__name__)

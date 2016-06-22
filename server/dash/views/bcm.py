@@ -2,7 +2,7 @@ from decimal import Decimal
 import json
 
 from dash import models, constants, forms
-from utils import statsd_helper, api_common, exc
+from utils import api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
 from django.db.models import Q

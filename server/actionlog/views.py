@@ -8,7 +8,6 @@ from django.core import urlresolvers
 
 from utils import api_common
 from utils import exc
-from utils import statsd_helper
 import dash.models
 import dash.constants
 

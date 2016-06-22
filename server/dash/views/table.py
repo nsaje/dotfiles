@@ -4,7 +4,6 @@ from dash.views import helpers
 from dash import table as dt
 
 from utils import api_common
-from utils import statsd_helper
 
 
 class AdGroupSourcesTableUpdates(api_common.BaseApiView):

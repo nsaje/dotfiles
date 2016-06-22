@@ -2,7 +2,6 @@
 import logging
 
 from utils import api_common
-from utils import statsd_helper
 
 from dash import models
 from dash.views import helpers

@@ -5,7 +5,6 @@ from django.forms import ValidationError
 
 import influx
 
-from utils.statsd_helper import statsd_incr
 
 from zemauth import models
 

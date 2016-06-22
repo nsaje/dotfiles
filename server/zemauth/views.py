@@ -13,7 +13,6 @@ from django.shortcuts import resolve_url
 import influx
 
 import gauth
-from utils import statsd_helper
 from utils import email_helper
 from zemauth.models import User
 from zemauth import forms

@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from actionlog import sync
-from utils import statsd_helper
 import influx
 
 def refresh_fetch_all_orders():

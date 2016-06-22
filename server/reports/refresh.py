@@ -20,7 +20,6 @@ from reports import redshift
 from reports import daily_statements
 from utils import json_helper
 from utils import s3helpers
-from utils import statsd_helper
 from utils import sqs_helper
 from utils import converters
 

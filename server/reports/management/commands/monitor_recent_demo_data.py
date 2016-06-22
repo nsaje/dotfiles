@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 import reports.api
 import dash.models
 
-from utils.statsd_helper import statsd_gauge
 from utils.command_helpers import last_n_days, ExceptionCommand
 
 

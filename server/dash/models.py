@@ -30,7 +30,6 @@ from dash import views
 import reports.constants
 from reports import budget_helpers
 from utils import encryption_helpers
-from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters

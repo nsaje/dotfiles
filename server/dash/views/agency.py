@@ -30,7 +30,6 @@ from dash import history_helpers
 import automation.settings
 from reports import redshift
 from utils import api_common
-from utils import statsd_helper
 from utils import exc
 from utils import email_helper
 from utils import k1_helper

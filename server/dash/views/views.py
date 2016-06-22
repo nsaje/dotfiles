@@ -34,7 +34,6 @@ import influx
 from dash.views import helpers
 
 from utils import lc_helper
-from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers

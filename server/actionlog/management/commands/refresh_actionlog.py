@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 
 from actionlog import api
 from actionlog import refresh_orders
-from utils import statsd_helper
 import influx
 from utils.command_helpers import ExceptionCommand
 

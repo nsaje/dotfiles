@@ -20,8 +20,6 @@ import automation.constants
 from dash.constants import AdGroupSettingsState, AdGroupSettingsAutopilotState
 import reports.api_contentads
 from utils import pagerduty_helper
-from utils.statsd_helper import statsd_timer
-from utils import statsd_helper
 from utils import dates_helper
 from utils import k1_helper
 

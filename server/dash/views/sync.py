@@ -6,7 +6,6 @@ import actionlog.sync
 from dash.views import helpers
 from dash import models
 from utils import api_common
-from utils import statsd_helper
 
 
 logger = logging.getLogger(__name__)

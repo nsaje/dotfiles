@@ -8,7 +8,6 @@ from dash import constants
 from dash import publisher_helpers
 from dash import campaign_goals
 
-from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils.sort_helper import sort_results

@@ -31,7 +31,6 @@ import reports.update
 import reports.api_publishers
 
 from utils import request_signer
-from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
