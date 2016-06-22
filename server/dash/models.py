@@ -3678,7 +3678,9 @@ class History(models.Model):
         null=False,
         blank=False,
     )
-    # TODO: once the transition period is over make action_type non-nullable
+
+    # action type is user initiated action type
+    # non user initiated action type is None
     action_type = models.PositiveSmallIntegerField(
         choices=constants.HistoryActionType.get_choices(),
         null=True,
