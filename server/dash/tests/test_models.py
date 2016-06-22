@@ -132,7 +132,7 @@ class AdGroupSettingsTest(TestCase):
             'Locations set to "United States", '
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
-            'Max CPC bid set to "$1.00", '
+            'Max CPC bid set to "$1.000", '
             'Device targeting set to "Mobile/Tablet", '
             'Display URL set to "example.com", '
             'Brand name set to "Example", '
@@ -426,6 +426,18 @@ class ContentAdTest(TestCase):
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_image_url()
+        self.assertEqual(image_url, None)
+
+    def test_original_image_url(self):
+        content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+
+        content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
+        image_url = content_ad.get_original_image_url()
         self.assertEqual(image_url, None)
 
 
@@ -856,7 +868,7 @@ class HistoryTest(TestCase):
 
         adgss = models.AdGroupSettings(
             ad_group=ad_group,
-            cpc_cc=4999,
+            cpc_cc=4.999,
         )
         adgss.save(None)
 
@@ -867,10 +879,10 @@ class HistoryTest(TestCase):
             '')
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(4999, hist.changes['cpc_cc'])
+        self.assertEqual(4.999, hist.changes['cpc_cc'])
 
         adgss = adgss.copy_settings()
-        adgss.cpc_cc = 5100
+        adgss.cpc_cc = 5.103
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
@@ -878,22 +890,22 @@ class HistoryTest(TestCase):
         self.assertEqual(1, adg_hist.ad_group.id)
         self.assertDictEqual(
             {
-                'cpc_cc': 5100,
+                'cpc_cc': 5.103,
             }, adg_hist.changes
         )
         self.assertEqual(
-            'Max CPC bid set from "$4,999.00" to "$5,100.00"',
+            'Max CPC bid set from "$4.999" to "$5.103"',
             adg_hist.changes_text
         )
 
         hist = models.create_ad_group_history(
             ad_group,
             constants.HistoryType.AD_GROUP,
-            {'cpc_cc': 5100},
+            {'cpc_cc': 5.101},
             '')
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual({'cpc_cc': 5100}, hist.changes)
+        self.assertEqual({'cpc_cc': 5.101}, hist.changes)
 
     def test_create_ad_group_source_history(self):
         ad_group = models.AdGroup.objects.get(pk=2)

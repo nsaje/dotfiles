@@ -85,6 +85,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 });
             }
 
+
             var visibleRowsCount;
             function updateVisibleRows () {
                 visibleRows = [];

@@ -120,12 +120,12 @@ describe('MediaSourcesCtrl', function () {
         it('check without permission', function () {
             permissions['zemauth.can_access_table_breakdowns_feature'] = false;
             initializeController();
-            expect($scope.dataSource).toBe(undefined);
+            expect($scope.grid).toBe(undefined);
         });
 
         it('check with permission', function () {
             initializeController();
-            expect($scope.dataSource).not.toBe(undefined);
+            expect($scope.grid).not.toBe(undefined);
         });
     });
 });

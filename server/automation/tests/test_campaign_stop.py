@@ -1361,8 +1361,8 @@ class RunAutopilotTestCase(TestCase):
         campaign_stop._run_autopilot(campaign, daily_caps)
 
         budget_ap_calls = [
-            call(ag1, 100, 'Mock ad group 1 prefetch data', campaign_goal='Mock campaign goal'),
-            call(ag2, 200, 'Mock ad group 2 prefetch data', campaign_goal='Mock campaign goal'),
+            call(ag1, 100, 'Mock ad group 1 prefetch data', campaign_goal=None),
+            call(ag2, 200, 'Mock ad group 2 prefetch data', campaign_goal=None),
         ]
         mock_ap_budget.assert_has_calls(budget_ap_calls, any_order=True)
 

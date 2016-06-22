@@ -66,6 +66,7 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
                     pagination.count = pagination.offset + pagination.limit;
                 }
             }
+            pagination.complete = (pagination.offset + pagination.limit) === pagination.count;
         }
     }
 

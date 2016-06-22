@@ -40,6 +40,14 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
                 updateRow(ctrl);
             });
         },
-        controller: [function () {}],
+        controller: ['zemGridUIService', function (zemGridUIService) {
+            var vm = this;
+            vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
+
+            function getBreakdownColumnStyle () {
+                if (!this.row) return; // can happen because of virtual scroll; TODO: find better solution
+                return zemGridUIService.getBreakdownColumnStyle(vm.row);
+            }
+        }],
     };
 }]);

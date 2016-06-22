@@ -1548,7 +1548,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertIsNone(new_latest_settings.system_user)
 
         mock_send_mail.assert_called_with(
-            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
+            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.120 to $2.000')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1600,7 +1600,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertFalse(set_ad_group_source_settings.called)
 
         mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request,
-                                          'AdsNative Max CPC bid set from $0.12 to $2.00')
+                                          'AdsNative Max CPC bid set from $0.120 to $2.000')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.zwei_actions.send')
@@ -1625,7 +1625,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
 
         mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request,
-                                          'AdsNative Max CPC bid set from $0.12 to $2.00')
+                                          'AdsNative Max CPC bid set from $0.120 to $2.000')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
