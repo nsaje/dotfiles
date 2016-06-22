@@ -1672,7 +1672,7 @@ class AdGroup(models.Model):
                       user=None, system_user=None,
                       history_type=constants.HistoryType.AD_GROUP,
                       action_type=None):
-        if not changes_text:
+        if not changes and not changes_text:
             return  # nothing to write
 
         campaign, account, agency = _generate_parents(ad_group=self)

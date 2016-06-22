@@ -877,7 +877,7 @@ class HistoryTest(TestCase):
         )
         adgss.save(None)
 
-        ad_group.write_history(
+        hist = ad_group.write_history(
             '',
             changes=model_to_dict(adgss),
             history_type=constants.HistoryType.AD_GROUP)
@@ -902,7 +902,7 @@ class HistoryTest(TestCase):
             adg_hist.changes_text
         )
 
-        ad_group.write_history(
+        hist = ad_group.write_history(
             '',
             changes={'cpc_cc': 5.101},
             history_type=constants.HistoryType.AD_GROUP)
