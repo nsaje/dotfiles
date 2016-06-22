@@ -26,6 +26,13 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
                     checkPaginationCount(config, breakdown);
                     return breakdown;
                 });
+
+                if (breakdowns.length === 1 && breakdowns[0].totals) {
+                    var breakdown = breakdowns[0];
+                    zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversion_goals);
+                    zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaign_goals);
+                }
+
                 deferred.resolve(breakdowns);
             }).error(function (data) {
                 deferred.reject(data);

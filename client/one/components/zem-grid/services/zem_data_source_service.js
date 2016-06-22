@@ -77,8 +77,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         //
         // Definitions
         //
-        function getMetaData () {
-            if (metaData) return $q.resolve(metaData);
+        function getMetaData (useCached) {
+            if (metaData && useCached) return $q.resolve(metaData);
 
             var deferred = $q.defer();
             endpoint.getMetaData().then(function (_metaData) {
@@ -106,7 +106,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             }
 
             // First make sure that meta-data is initialized and then fetch the requested data
-            return getMetaData().then(function () {
+            return getMetaData(true).then(function () {
                 return getDataByLevel(level, breakdowns, offset, limit);
             });
         }

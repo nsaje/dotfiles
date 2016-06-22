@@ -965,7 +965,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
             field: 'avg_cost_per_conversion_goal_' + i,
             checked: true,
             type: 'currency',
-            shown: 'zemauth.campaign_goal_optimization',
+            shown: false,
             internal: 'zemauth.campaign_goal_optimization',
             help: 'Average cost per acquisition.',
             totalRow: true,
@@ -995,6 +995,9 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         COLUMNS.avgCostPerPageview,
         COLUMNS.avgCostPerNonBouncedVisitor,
         COLUMNS.avgCostForNewVisitor,
+    ];
+
+    var OPTIMISATION_GOAL_METRICS = [
         COLUMNS.avgCostPerConversionGoal0,
         COLUMNS.avgCostPerConversionGoal1,
         COLUMNS.avgCostPerConversionGoal2,
@@ -1070,7 +1073,8 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         POSTCLICK_ACQUISITION_METRICS,
         POSTCLICK_ENGAGEMENT_METRICS,
         POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
+        OPTIMISATION_METRICS,
+        OPTIMISATION_GOAL_METRICS
     );
 
     var AD_GROUP_CONTENT_ADS = [
@@ -1092,7 +1096,8 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         POSTCLICK_ACQUISITION_METRICS,
         POSTCLICK_ENGAGEMENT_METRICS,
         POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
+        OPTIMISATION_METRICS,
+        OPTIMISATION_GOAL_METRICS
     );
 
     var MEDIA_SOURCE = [
@@ -1111,7 +1116,8 @@ oneApp.factory('zemGridEndpointColumns', [function () {
     var CAMPAIGN_MEDIA_SOURCE = [].concat(
         MEDIA_SOURCE,
         POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
+        OPTIMISATION_METRICS,
+        OPTIMISATION_GOAL_METRICS
     );
 
     var AD_GROUP_MEDIA_SOURCE = [
@@ -1131,7 +1137,8 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         POSTCLICK_ACQUISITION_METRICS,
         POSTCLICK_ENGAGEMENT_METRICS,
         POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
+        OPTIMISATION_METRICS,
+        OPTIMISATION_GOAL_METRICS
     );
 
     var AD_GROUP_PUBLISHERS = [
@@ -1145,7 +1152,8 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         POSTCLICK_ACQUISITION_METRICS,
         POSTCLICK_ENGAGEMENT_METRICS,
         POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
+        OPTIMISATION_METRICS,
+        OPTIMISATION_GOAL_METRICS
     );
 
 
@@ -1228,7 +1236,7 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         },
         {
             name: 'Campaign Goals',
-            columns: OPTIMISATION_METRICS,
+            columns: [].concat(OPTIMISATION_METRICS, OPTIMISATION_GOAL_METRICS),
         },
     ];
 
@@ -1312,15 +1320,35 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         });
     }
 
-    function updateGoalColumns (columns, goals) { // eslint-disable-line no-unused-vars
-        // TODO: configure visibility and names based on goals
+    function updateConversionGoalColumns (columns, goals) {
+        if (!goals) return;
+
+        goals.forEach(function (goal) {
+            columns.forEach(function (column) {
+                if (column.field !== goal.id) return;
+                column.shown = true;
+                column.name = goal.name;
+            });
+        });
     }
 
+    function updateOptimizationGoalColumns (columns, goals) {
+        if (!goals) return;
+        
+        goals.forEach(function (goal) {
+            columns.forEach(function (column) {
+                if (!goal.fields[column.field]) return;
+                column.shown = true;
+                column.name = goal.name + ' (' + goal.conversion + ')';
+            });
+        });
+    }
 
     return {
         COLUMNS: COLUMNS,
         createColumns: createColumns,
         createCategories: createCategories,
-        updateGoalColumns: updateGoalColumns,
+        updateConversionGoalColumns: updateConversionGoalColumns,
+        updateOptimizationGoalColumns: updateOptimizationGoalColumns,
     };
 }]);
