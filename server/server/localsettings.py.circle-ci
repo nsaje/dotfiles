@@ -70,9 +70,6 @@ FROM_EMAIL = 'help-test@zemanta.com'
 LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
 
 # Metrics reporting
-STATSD_HOST = 'localhost'
-STATSD_PORT = 8125
-
 STATSD_INFLUX_HOST = 'localhost'
 STATSD_INFLUX_PORT = 8135
 
