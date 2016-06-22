@@ -332,7 +332,8 @@ class Agency(models.Model):
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     def write_history(self, changes_text, changes=None,
-                      history_type=None, user=None, system_user=None,
+                      history_type=constants.HistoryType.CREDIT,
+                      user=None, system_user=None,
                       action_type=None):
         if not changes and not changes_text:
             # don't write history in case of no changes
@@ -473,9 +474,9 @@ class Account(models.Model):
         campaign_settings_url = account_settings_url.replace('http://', 'https://')
         return campaign_settings_url
 
-
-    def write_history(self, changes_text, changes, history_type=None,
-                            user=None, system_user=None, action_type=None):
+    def write_history(self, changes_text, changes=None,
+                      history_type=constants.HistoryType.ACCOUNT,
+                      user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             # don't write history in case of no changes
             return None
@@ -648,8 +649,8 @@ class Campaign(models.Model, PermissionMixin):
         current_settings = self.get_current_settings()
         return current_settings.landing_mode
 
-
-    def write_history(self, changes_text, changes=None, history_type=None,
+    def write_history(self, changes_text, changes=None,
+                      history_type=constants.HistoryType.CAMPAIGN,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             # don't write history in case of no changes
@@ -1666,7 +1667,6 @@ class AdGroup(models.Model):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save(request)
-
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,

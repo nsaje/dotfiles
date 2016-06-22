@@ -1,5 +1,6 @@
 import dash.constants
 import dash.models
+import utils.json_helper
 
 
 def write_global_history(changes_text,
@@ -8,14 +9,13 @@ def write_global_history(changes_text,
                          history_type=dash.constants.HistoryType.ACCOUNT,
                          action_type=None
                          ):
-    if not changes and not changes_text:
+    if not changes_text:
         # don't write history in case of no changes
         return None
 
     return dash.models.History.objects.create(
         created_by=user,
         system_user=system_user,
-        changes=json_helper.json_serializable_changes(changes),
         changes_text=changes_text or "",
         type=history_type,
         level=dash.constants.HistoryLevel.GLOBAL,

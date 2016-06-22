@@ -877,11 +877,10 @@ class HistoryTest(TestCase):
         )
         adgss.save(None)
 
-        hist = models.create_ad_group_history(
-            ad_group,
-            constants.HistoryType.AD_GROUP,
-            model_to_dict(adgss),
-            '')
+        ad_group.write_history(
+            '',
+            changes=model_to_dict(adgss),
+            history_type=constants.HistoryType.AD_GROUP)
 
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual(4.999, hist.changes['cpc_cc'])
@@ -903,11 +902,10 @@ class HistoryTest(TestCase):
             adg_hist.changes_text
         )
 
-        hist = models.create_ad_group_history(
-            ad_group,
-            constants.HistoryType.AD_GROUP,
-            {'cpc_cc': 5.101},
-            '')
+        ad_group.write_history(
+            '',
+            changes={'cpc_cc': 5.101},
+            history_type=constants.HistoryType.AD_GROUP)
 
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual({'cpc_cc': 5.101}, hist.changes)
