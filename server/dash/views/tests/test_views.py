@@ -585,10 +585,11 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-'''
+        expected_content = '\r\n'.join([
+            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+        ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -600,11 +601,12 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-'''
+        expected_content = '\r\n'.join([
+            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+        ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -616,9 +618,10 @@ http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-'''
+        expected_content = '\r\n'.join([
+            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+        ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -629,10 +632,11 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-'''
+        expected_content = '\r\n'.join([
+            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+        ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
 
@@ -644,11 +648,13 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
-http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-'''
+        expected_content = '\r\n'.join([
+            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+        ]) + '\r\n'
+
         self.assertEqual(response.content, expected_content)
 
     def test_get_ad_selected(self):
@@ -656,10 +662,11 @@ http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
-'''
+        expected_content = '\r\n'.join([
+            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+        ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
 
