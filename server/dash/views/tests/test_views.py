@@ -644,7 +644,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content='''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
 http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
 http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
@@ -656,7 +656,7 @@ http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,cente
 
         response = self._get_csv_from_server(data)
 
-        expected_content='''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
 http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
 http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 '''
@@ -2724,7 +2724,7 @@ class PublishersBlacklistStatusTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account.name = 'ZemAccount'
         account.save(req)
-        
+
         for i in xrange(10):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),
