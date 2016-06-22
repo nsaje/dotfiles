@@ -64,7 +64,7 @@ class AccountCreditView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
-        item.save(request=request)
+        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
 
         return self.create_api_response(item.instance.pk)
 
@@ -156,6 +156,12 @@ class AccountCreditItemView(api_common.BaseApiView):
         if item is None:
             item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         item.delete()
+
+        account.add_to_history(
+            'Deleted credit',
+            action_type=constants.HistoryActionType.CREDIT_CHANGE,
+            user=request.user
+        )
         return self.create_api_response()
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_post')
@@ -184,7 +190,7 @@ class AccountCreditItemView(api_common.BaseApiView):
         if item_form.errors:
             raise exc.ValidationError(errors=item_form.errors)
 
-        item_form.save(request=request)
+        item_form.save(request=request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
         return self.create_api_response(credit_id)
 
     def _get_response(self, account_id, item):
@@ -237,7 +243,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
-        item.save(request=request)
+        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
         campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
@@ -377,7 +383,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
-        item.save(request=request)
+        item.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
         state_changed = campaign_stop.perform_landing_mode_check(
             campaign,
             campaign.get_current_settings()
@@ -397,6 +403,10 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         except AssertionError:
             raise exc.ValidationError('Budget item is not pending')
         campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
+        campaign.write_history(
+            'Deleted budget',
+            action_type=constants.HistoryActionType.BUDGET_CHANGE,
+            user=request.user)
         return self.create_api_response(True)
 
     def _validate_amount(self, data, item):

@@ -2955,7 +2955,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
-    def save(self, request=None, *args, **kwargs):
+    def save(self, request=None, action_type=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
             self.created_by = request.user
@@ -2965,9 +2965,11 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             credit=self,
         )
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(
+            user=request and request.user,
+            action_type=action_type)
 
-    def add_to_history(self, user=None):
+    def add_to_history(self, user=None, action_type=None):
         history_type = constants.HistoryType.CREDIT
 
         changes = self.get_model_state_changes(
@@ -2991,12 +2993,14 @@ class CreditLineItem(FootprintModel, HistoryMixin):
                 changes_text,
                 changes=changes,
                 history_type=history_type,
+                action_type=action_type,
                 user=user)
         elif self.agency is not None:
             self.agency.write_history(
                 changes_text,
                 changes=changes,
                 history_type=history_type,
+                action_type=action_type,
                 user=user)
 
     def __unicode__(self):
@@ -3194,7 +3198,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
-    def save(self, request=None, *args, **kwargs):
+    def save(self, request=None, action_type=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
             self.created_by = request.user
@@ -3204,9 +3208,9 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             budget=self,
         )
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(user=request and request.user, action_type)
 
-    def add_to_history(self, user=None):
+    def add_to_history(self, user=None, action_type=None):
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )
@@ -3226,6 +3230,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             changes_text,
             changes=changes,
             history_type=constants.HistoryType.BUDGET,
+            action_type=action_type,
             user=user
         )
 
