@@ -331,9 +331,9 @@ class Agency(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
-    def write_history(self, changes_text, changes=changes,
-                      history_type=history_type,
-                      user=None, system_user=None, action_type=None):
+    def write_history(self, changes_text, changes=None,
+                      history_type=None, user=None, system_user=None,
+                      action_type=None):
         if not changes and not changes_text:
             # don't write history in case of no changes
             return None
@@ -649,14 +649,14 @@ class Campaign(models.Model, PermissionMixin):
         return current_settings.landing_mode
 
 
-    def write_history(changes_text, changes=None, history_type=None
+    def write_history(self, changes_text, changes=None, history_type=None,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             # don't write history in case of no changes
             return None
 
         _, account, agency = _generate_parents(campaign=self)
-        return History.objects.creates(
+        return History.objects.create(
             campaign=self,
             account=account,
             agency=agency,
@@ -966,10 +966,9 @@ class CampaignSettings(SettingsBase):
             else:
                 self.created_by = request.user
         super(CampaignSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(user=request.user if request else self.created_by)
 
-    def add_to_history(self):
-        history_type = constants.HistoryType.CAMPAIGN
+    def add_to_history(self, user):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
@@ -977,11 +976,12 @@ class CampaignSettings(SettingsBase):
         if not changes and not self.post_init_newly_created:
             return
         changes_text = self.get_changes_text_from_dict(changes)
-        self.campaign.write_history(self.changes_text or changes_text,
+        self.campaign.write_history(
+            self.changes_text or changes_text,
             changes=changes,
-            history_type=history_type,
-            user=self.created_by,
-            system_user=self.system_user,
+            history_type=constants.HistoryType.CAMPAIGN,
+            user=user,
+            system_user=self.system_user
         )
 
     @classmethod
@@ -1668,16 +1668,16 @@ class AdGroup(models.Model):
             new_settings.save(request)
 
 
-    def write_history(self,
-                      changes_text, changes=None, user=None, system_user=None,
-                      history_type=dash.constants.HistoryType.AD_GROUP,
+    def write_history(self, changes_text, changes=None,
+                      user=None, system_user=None,
+                      history_type=constants.HistoryType.AD_GROUP,
                       action_type=None):
         if not changes_text:
             return  # nothing to write
 
         campaign, account, agency = _generate_parents(ad_group=self)
         history = History.objects.create(
-            ad_group=ad_group,
+            ad_group=self,
             campaign=campaign,
             account=account,
             agency=agency,
