@@ -158,11 +158,34 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_influx.assert_has_calls(
             [
-                mock.call('automation.autopilot_plus.adgroups_on', 2, autopilot='budget_autopilot'),
-                mock.call('automation.autopilot_plus.adgroups_on', 1, autopilot='cpc_autopilot'),
-                mock.call('automation.autopilot_plus.spend', Decimal('50'), autopilot='budget_autopilot', type='expected'),
-                mock.call('automation.autopilot_plus.spend', Decimal('35'), autopilot='budget_autopilot', type='yesterday'),
-                mock.call('automation.autopilot_plus.spend', Decimal('10'), autopilot='cpc_autopilot', type='yesterday')
+                mock.call(
+                    'automation.autopilot_plus.adgroups_on',
+                    2,
+                    autopilot='budget_autopilot'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.adgroups_on',
+                    1,
+                    autopilot='cpc_autopilot'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('50'),
+                    autopilot='budget_autopilot',
+                    type='expected'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('35'),
+                    autopilot='budget_autopilot',
+                    type='yesterday'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('10'),
+                    autopilot='cpc_autopilot',
+                    type='yesterday'
+                )
             ]
         )
 
@@ -179,9 +202,27 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_influx.assert_has_calls(
             [
-                mock.call('automation.autopilot_plus.spend', Decimal('50'), autopilot='cpc_autopilot', type='actual'),
-                mock.call('automation.autopilot_plus.spend', Decimal('210'), autopilot='budget_autopilot', type='actual'),
-                mock.call('automation.autopilot_plus.sources_on', 1, autopilot='cpc_autopilot'),
-                mock.call('automation.autopilot_plus.sources_on', 4, autopilot='budget_autopilot')
+                mock.call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('50'),
+                    autopilot='cpc_autopilot',
+                    type='actual'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.spend',
+                    Decimal('210'),
+                    autopilot='budget_autopilot',
+                    type='actual'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.sources_on',
+                    1,
+                    autopilot='cpc_autopilot'
+                ),
+                mock.call(
+                    'automation.autopilot_plus.sources_on',
+                    4,
+                    autopilot='budget_autopilot'
+                )
             ]
         )

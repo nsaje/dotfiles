@@ -23,4 +23,3 @@ class Command(ExceptionCommand):
             .aggregate(conversions=Sum('conversions')).get('conversions') or 0
         n_conversions_aggregate = reports.models.AdGroupGoalConversionStats.objects\
             .aggregate(conversions=Sum('conversions')).get('conversions') or 0
-
