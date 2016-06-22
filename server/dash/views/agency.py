@@ -766,11 +766,18 @@ class AccountConversionPixels(api_common.BaseApiView):
             new_settings.changes_text = changes_text
             new_settings.save(request)
 
-            account.write_history(changes_text, user=request.user)
+            account.write_history(
+                changes_text,
+                user=request.user,
+                action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE)
 
         email_helper.send_account_pixel_notification(account, request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_PIXEL, account=account)
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.CREATE_CONVERSION_PIXEL,
+            account=account
+        )
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -822,10 +829,16 @@ class ConversionPixel(api_common.BaseApiView):
                 new_settings.changes_text = changes_text
                 new_settings.save(request)
 
-                account.write_history(changes_text, user=request.user)
+                account.write_history(
+                    changes_text,
+                    user=request.user,
+                    action_type=constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE
+                )
 
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
-                                                account=account)
+            helpers.log_useraction_if_necessary(
+                request,
+                constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
+                account=account)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -971,8 +984,10 @@ class AccountSettings(api_common.BaseApiView):
 
         settings = self.save_settings(request, account, form)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
-                                            account=account)
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+            account=account)
         response = {
             'settings': self.get_dict(request, settings, account),
             'can_archive': account.can_archive(),
@@ -1028,8 +1043,11 @@ class AccountSettings(api_common.BaseApiView):
             settings.changes_text = changes_text
             settings.save(request)
 
-            account.write_history(changes_text, user=request.user)
-
+            account.write_history(
+                changes_text,
+                user=request.user,
+                action_type=constants.HistoryActionType.SETTINGS_CHANGE
+            )
             return settings
 
     def _validate_essential_account_settings(self, user, form):

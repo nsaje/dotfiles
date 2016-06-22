@@ -20,6 +20,32 @@ def get_useractiontype(level):
     raise Exception('Invalid level')
 
 
+def get_historyactiontype(level):
+    if level == constants.PublisherBlacklistLevel.GLOBAL:
+        return constants.HistoryActionType.GLOBAL_PUBLISHER_BLACKLIST_CHANGE
+    elif level in (constants.PublisherBlacklistLevel.ACCOUNT,
+                   constants.PublisherBlacklistLevel.CAMPAIGN,
+                    constants.PublisherBlacklistLevel.ADGROUP):
+        return constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE
+
+    # dev error
+    raise Exception('Invalid level')
+
+
+def get_historyentity(ad_group, level):
+    if level == constants.PublisherBlacklistLevel.GLOBAL:
+        return None
+    elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+        return ad_group.campaign.account
+    elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+        return ad_group.campaign
+    elif level == constants.PublisherBlacklistLevel.ADGROUP:
+        return ad_group
+
+    # dev error
+    raise Exception('Invalid level')
+
+
 def get_key(ad_group, level):
     if level == constants.PublisherBlacklistLevel.ACCOUNT:
         return ad_group.campaign.account
