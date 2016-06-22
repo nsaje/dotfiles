@@ -74,7 +74,8 @@ FIELDNAMES = {
 FIELDNAMES_ID_MAPPING = [('account', 'account_id'),
                          ('campaign', 'campaign_id'),
                          ('ad_group', 'ad_group_id'),
-                         ('content_ad', 'content_ad_id'),
+                         # content ad is never a required field, but title is
+                         ('title', 'content_ad_id'),
                          ('agency', 'agency_id'),
                          ]
 
