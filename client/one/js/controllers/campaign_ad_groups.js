@@ -66,9 +66,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.exportOptions = [
-      {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
-      {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
-      {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
+        {name: 'By Campaign (totals)', value: constants.exportType.CAMPAIGN},
+        {name: 'Current View', value: constants.exportType.AD_GROUP, defaultOption: true},
+        {name: 'By Content Ad', value: constants.exportType.CONTENT_AD},
     ];
 
     $scope.columns = [
@@ -397,7 +397,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-
         );
         zemPostclickMetricsService.insertConversionGoalColumns(
             $scope.columns,
@@ -713,16 +712,68 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.getInfoboxData();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.AD_GROUP);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange, false);
+
+        var options = {
+            enableSelection: true,
+            enableTotalsSelection: true,
+            maxSelectedRows: 4,
+        };
+
+        // GridApi is defined by zem-grid in initialization, therefor
+        // it will be available in the next cycle; postpone initialization using $timeout
+        $scope.grid = {
+            api: undefined,
+            options: options,
+            dataSource: dataSource,
+        };
+
+        $scope.$watch('grid.api', function (newValue, oldValue) {
+            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
+            initializeGridApi();
+        });
+    }
+
+    function initializeGridApi () {
+        // Initialize GridApi listeners
+        $scope.grid.api.onRowsSelectionChanged($scope, function () {
+            var selectedRows = $scope.grid.api.getSelectedRows();
+
+            $scope.selectedTotals = false;
+            $scope.selectedAdGroupIds = [];
+
+            selectedRows.forEach(function (row) {
+                if (row.level === 0) {
+                    $scope.selectedTotals = true;
+                }
+                if (row.level === 1) {
+                    $scope.selectedAdGroupIds.push(row.data.breakdownId);
+                }
+            });
+
+            $location.search('ad_group_ids', $scope.selectedAdGroupIds.join(','));
+            $location.search('ad_group_totals', $scope.selectedTotals ? 1 : null);
+            getDailyStats();
+        });
+
+        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+            rows.forEach(function (row) {
+                if (row.level === 0)
+                    row.selected = $scope.selectedTotals;
+                if (row.level === 1) {
+                    row.selected = $scope.selectedAdGroupIds.indexOf(row.data.breakdownId) >= 0;
+                }
+            });
+        });
     }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
@@ -747,7 +798,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.getContentInsights();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setDateRange(newValue, true);
+            $scope.grid.dataSource.setDateRange(newValue, true);
         }
     });
 
@@ -760,7 +811,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue);
         }
     }, true);
 
@@ -772,7 +823,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getTableData();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
         }
     });
 

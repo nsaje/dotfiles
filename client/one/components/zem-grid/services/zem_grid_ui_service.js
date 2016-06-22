@@ -2,7 +2,6 @@
 'use strict';
 
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
-
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -45,35 +44,39 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             gridWidth += width;
         });
 
-        var scrollerWidth = 20; // TODO: find exact value (based on browser version)
-        var headerWidth = grid.header.ui.element[0].offsetWidth - scrollerWidth;
+        var headerWidth = grid.header.ui.element[0].offsetWidth;
+        if (grid.body.rows.length > zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE) {
+            // Check if scroller will be present and incorporate this into header width
+            headerWidth -= zemGridConstants.gridStyle.DEFAULT_SCROLLER_WIDTH;
+        }
         keepAspectRatio(columnWidths, maxColumnWidths, headerWidth);
         gridWidth = Math.max(headerWidth, gridWidth);
 
         grid.ui.columnsWidths = columnWidths;
         grid.ui.width = gridWidth;
+        grid.ui.headerWidth = headerWidth;
     }
 
     function calculateColumnWidth (grid, column, font) {
         if (!column.data) return -1;
 
         var width = getTextWidth(column.data.name, font);
-        width = Math.max(width, 20);        // Column without text (e.g. only icon)
-        if (column.data.help) width += 20;  // TODO: find better solution for icon widths
+        width = Math.max(width, zemGridConstants.gridStyle.DEFAULT_ICON_SIZE);  // Column without text (e.g. only icon)
+        if (column.data.help) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
             var data = row.data.stats[column.field];
-            if (data) {
-                // Format data to string and predict width based on it
-                var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
-                var valueWidth = getTextWidth(parsedValue, font);
-                if (column.type === zemGridConstants.gridColumnType.BREAKDOWN) {
-                    // Special case for breakdown column - add padding based on row level
-                    valueWidth += (row.level - 1) * 20;
-                }
-                width = Math.max(width, valueWidth);
+            if (!data) return;
+
+            // Format data to string and predict width based on it
+            var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
+            var valueWidth = getTextWidth(parsedValue, font);
+            if (column.type === zemGridConstants.gridColumnType.BREAKDOWN) {
+                // Special case for breakdown column - add padding based on row level
+                valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
             }
+            width = Math.max(width, valueWidth);
         });
 
         if (grid.footer.row) {
@@ -148,9 +151,17 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             breakdownSplitWidths[breakdownSplitWidths.length - 1] += grid.ui.columnsWidths[idx];
         });
 
-        var paginationCellPadding = breakdownSplitWidths[0] + 8;
+        var paginationCellPadding = breakdownSplitWidths[0] + zemGridConstants.gridStyle.CELL_PADDING;
         var paginationCellWidth = breakdownSplitWidths[0] + breakdownSplitWidths[1];
         var loadMoreCellWidth = breakdownSplitWidths[2];
+
+        if (breakdownSplitWidths.length === 1) {
+            // Fallback if BREAKDOWN column has not been found
+            paginationCellPadding = 50;
+            paginationCellWidth = 200;
+            loadMoreCellWidth = grid.ui.width - 250;
+        }
+
         element.find('.breakdown-pagination-cell').css({
             'width': paginationCellWidth + 'px',
             'max-width': paginationCellWidth + 'px',
@@ -200,7 +211,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
     function getBreakdownColumnStyle (row) {
         return {
-            'padding-left': (row.level - 1) * 20 + 'px',
+            'padding-left': (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING + 'px',
         };
     }
 
