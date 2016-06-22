@@ -165,6 +165,67 @@ describe('CampaignBudgetItemModalCtrl', function () {
             expect($scope.maxDate).toBe('12/31/2015');
         });
 
+        it ('sets defaults for future budgets correctly', function () {
+            var startDate = moment().add(1, 'days'),
+                endDate = moment().add(5, 'days');
+
+            $scope.selectedBudgetId = null;
+            $scope.availableCredit = [];
+            $scope.budget = {};
+            $scope.getAvailableCredit = function () {
+                return [
+                    {
+                        startDate: startDate.format('MM/DD/YYYY'),
+                        endDate: endDate.format('MM/DD/YYYY'),
+                        id: 1,
+                        available: '300',
+                        total: '500',
+                        licenseFee: '15%',
+                    }
+                ];
+            };
+
+            $scope.init();
+            $scope.$digest();
+            expect(
+                moment($scope.budgetItem.startDate).format('MM/DD/YYYY')
+            ).toBe(
+                startDate.format('MM/DD/YYYY')
+            );
+            expect($scope.budgetItem.amount).toBe(300);
+        });
+
+        it ('sets defaults for active budgets correctly', function () {
+            var today = moment(),
+                startDate = moment().subtract(1, 'days'),
+                endDate = moment().add(5, 'days');
+
+            $scope.selectedBudgetId = null;
+            $scope.availableCredit = [];
+            $scope.budget = {};
+            $scope.getAvailableCredit = function () {
+                return [
+                    {
+                        startDate: startDate.format('MM/DD/YYYY'),
+                        endDate: endDate.format('MM/DD/YYYY'),
+                        id: 1,
+                        available: '300',
+                        total: '500',
+                        licenseFee: '15%',
+                    }
+                ];
+            };
+
+            $scope.init();
+            $scope.$digest();
+            expect(
+                moment($scope.budgetItem.startDate).format('MM/DD/YYYY')
+            ).toBe(
+                today.format('MM/DD/YYYY')
+            );
+            expect($scope.budgetItem.amount).toBe(300);
+        });
+
         it ('sets variables correctly for existing items', function () {
             var deferred = $q.defer();
             $scope.selectedBudgetId = 1;

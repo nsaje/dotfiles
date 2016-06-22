@@ -2392,7 +2392,7 @@ class ContentAd(models.Model):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
     crop_areas = models.CharField(max_length=128, null=True)
-    image_crop = models.CharField(max_length=25, null=True)
+    image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -2413,7 +2413,9 @@ class ContentAd(models.Model):
         if self.image_id is None:
             return None
 
-        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
+        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, '{image_id}.jpg'.format(
+            image_id=self.image_id
+        ))
 
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
@@ -3576,6 +3578,12 @@ class History(models.Model):
         choices=constants.HistoryType.get_choices(),
         null=False,
         blank=False,
+    )
+    # TODO: once the transition period is over make action_type non-nullable
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryActionType.get_choices(),
+        null=True,
+        blank=True,
     )
 
     changes_text = models.TextField(blank=False, null=False)

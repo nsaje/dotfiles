@@ -1,7 +1,7 @@
 import json
 
 import boto.exception
-from mock import patch, MagicMock
+from mock import patch, Mock, MagicMock
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
@@ -249,7 +249,7 @@ class UploadCsvTestCase(TestCase):
                 'candidates': [candidate.id],
                 'errors': {
                     str(candidate.id): {
-                        'tracker_urls': ['Invalid tracker URLs'],
+                        'tracker_urls': ['Tracker URLs have to be HTTPS'],
                         'image_url': ['Invalid image URL'],
                         'url': ['Invalid URL'],
                         'label': ['Label too long (max 25 characters)'],
@@ -427,7 +427,7 @@ class UploadMultipleTestCase(TestCase):
                 'candidates': [candidate.get_dict()],
                 'errors': {
                     str(candidate.id): {
-                        'tracker_urls': ['Invalid tracker URLs'],
+                        'tracker_urls': ['Tracker URLs have to be HTTPS'],
                         'image_url': ['Invalid image URL'],
                         'url': ['Invalid URL'],
                         'label': ['Label too long (max 25 characters)'],
@@ -532,6 +532,7 @@ class UploadSaveTestCase(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
+    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
     @patch('utils.redirector_helper.insert_redirect')
     def test_ok(self, mock_insert_redirect, mock_s3_put):
@@ -556,7 +557,15 @@ class UploadSaveTestCase(TestCase):
                 'error_report': None,
             }
         }, json.loads(response.content))
+        self.assertEqual(
+            models.History.objects.filter(
+                ad_group=ad_group_id,
+                level=constants.HistoryLevel.AD_GROUP,
+            ).latest('created_dt').changes_text,
+            'Imported batch "batch 2" with 1 content ad.',
+        )
 
+    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_errors(self, mock_s3_put):
         batch_id = 3
@@ -575,6 +584,35 @@ class UploadSaveTestCase(TestCase):
                                         kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id})
             }
         }, json.loads(response.content))
+        self.assertEqual(
+            models.History.objects.filter(
+                ad_group=ad_group_id,
+                type=constants.HistoryType.AD_GROUP,
+            ).latest('created_dt').changes_text,
+            'Imported batch "batch 3" with 0 content ads.',
+        )
+
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    @patch('utils.redirector_helper.insert_redirect')
+    def test_redirector_error(self, mock_insert_redirect, mock_s3_put):
+        mock_insert_redirect.side_effect = Exception()
+
+        batch_id = 2
+        ad_group_id = 3
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(500, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'ServerError',
+                'message': 'An error occurred.'
+            },
+        }, json.loads(response.content))
+        self.assertEqual(0, models.ContentAd.objects.count())
 
     def test_invalid_batch_status(self):
         batch_id = 4
@@ -734,6 +772,7 @@ class UploadErrorReport(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
+    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'get')
     def test_existing(self, mock_s3_get):
         mock_s3_get.return_value = 'url,title,image_url,tracker_urls,display_url,brand_name,description,'\
@@ -750,6 +789,7 @@ class UploadErrorReport(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(mock_s3_get.return_value, response.content)
 
+    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'get')
     def test_non_existing(self, mock_s3_get):
         mock_s3_get.side_effect = boto.exception.S3ResponseError(status=404, reason='')

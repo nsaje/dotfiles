@@ -569,7 +569,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getTableData();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setDateRange(newValue, true);
+            $scope.grid.dataSource.setDateRange(newValue, true);
         }
     });
 
@@ -600,7 +600,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getDailyStats();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
         }
     }, true);
 
@@ -612,7 +612,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getTableData();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.dataSource.setFilter($scope.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
         }
     });
 
@@ -704,16 +704,22 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         initColumns();
 
         if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeDataSource();
+            initializeGrid();
         }
     };
 
-    function initializeDataSource () {
+    function initializeGrid () {
         var metadata = zemGridEndpointService.createMetaData($scope,
             $scope.level, $state.params.id, constants.breakdown.ACCOUNT);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        $scope.dataSource = zemDataSourceService.createInstance(endpoint);
-        $scope.dataSource.setDateRange($scope.dateRange, false);
+        var dataSource = zemDataSourceService.createInstance(endpoint);
+        dataSource.setDateRange($scope.dateRange, false);
+
+        $scope.grid = {
+            api: undefined,
+            options: undefined,
+            dataSource: dataSource,
+        };
     }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

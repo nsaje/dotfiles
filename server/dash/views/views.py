@@ -1904,6 +1904,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
     def _trigger_manual_ob_blacklist_action(self, count_ob_blacklisted_publishers,
                                             request, ad_group, state, publishers_list):
+        if not publishers_list:
+            return
         if count_ob_blacklisted_publishers <= constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD \
            or count_ob_blacklisted_publishers > constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
             return

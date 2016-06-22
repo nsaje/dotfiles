@@ -235,7 +235,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
-                    'action_is_waiting': True,
+                    'action_is_waiting': False,
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
@@ -446,7 +446,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
-                    'action_is_waiting': True,
+                    'action_is_waiting': False,
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
