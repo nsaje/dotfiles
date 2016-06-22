@@ -243,6 +243,11 @@ class AccountCreditViewTest(BCMViewTestCase):
         item = models.CreditLineItem.objects.get(comment='TESTCASE_PUT')
         self.assertEqual(item.pk, item_id)
 
+        hist = models.History.objects.filter(
+            type=constants.HistoryType.CREDIT
+        ).order_by('-created_dt').first()
+        self.assertEquals(self.user, hist.created_by)
+
 
 class AccountCreditItemViewTest(BCMViewTestCase):
 
@@ -354,6 +359,12 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(item.amount, 1000)
         self.assertEqual(json.loads(response.content)['data'], "2")
 
+        hist = models.History.objects.filter(
+            type=constants.HistoryType.CREDIT
+        ).order_by('-created_dt').first()
+        self.assertEquals(self.user, hist.created_by)
+        self.assertEquals(item.account, hist.account)
+
     def test_get_agency(self):
         agency = models.Agency.objects.get(pk=1)
         account = models.Account.objects.get(pk=1)
@@ -438,7 +449,15 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         credit = models.CreditLineItem.objects.get(pk=1)
         credit.account = None
         credit.agency = agency
-        credit.save()
+        credit.amount = 1000000
+        credit.save(request=fake_request(self.user))
+
+        hist = models.History.objects.filter(
+            type=constants.HistoryType.CREDIT,
+            level=constants.HistoryLevel.AGENCY,
+        ).order_by('-created_dt').first()
+        self.assertEquals(self.user, hist.created_by)
+        self.assertEquals(credit.agency, hist.agency)
 
         url = reverse('accounts_credit_item', kwargs={
             'account_id': 3,
@@ -683,6 +702,12 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         insert_id = int(json.loads(response.content)['data'])
         self.assertEqual(models.BudgetLineItem.objects.get(pk=insert_id).comment, 'Comment')
 
+        hist = models.History.objects.filter(
+            type=constants.HistoryType.BUDGET,
+            level=constants.HistoryLevel.CAMPAIGN,
+        ).order_by('-created_dt').first()
+        self.assertEquals(self.user, hist.created_by)
+
 
 class CampaignBudgetItemViewTest(BCMViewTestCase):
 
@@ -771,6 +796,12 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             json.loads(response.content)['data'],
             {'id': 1, 'state_changed': True}
         )
+
+        hist = models.History.objects.filter(
+            type=constants.HistoryType.BUDGET,
+            level=constants.HistoryLevel.CAMPAIGN,
+        ).order_by('-created_dt').first()
+        self.assertEquals(self.user, hist.created_by)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')

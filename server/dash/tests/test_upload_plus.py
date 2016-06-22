@@ -147,8 +147,8 @@ class PersistCandidatesTestCase(TestCase):
         self.assertTrue(s3_key.startswith('contentads/errors/3/test_upload'))
         self.assertTrue(s3_key.endswith('.csv'))
         self.assertEqual(
-            'url,title,image_url,impression_trackers,display_url,brand_name,description,call_to_action,label,'
-            'image_crop,errors\r\nhttp://zemanta.com/blog,Zemanta blog,http://zemanta.com/img.jpg,,zemanta.com,'
+            'Url,Title,Image Url,Impression Trackers,Display Url,Brand Name,Description,Call To Action,Label,'
+            'Image Crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog,http://zemanta.com/img.jpg,,zemanta.com,'
             'Zemanta,Zemanta blog,Read more,content ad 1,entropy,"Content unreachable,'
             ' Image could not be processed"\r\n', content)
 
@@ -237,7 +237,7 @@ class ValidateCandidatesTestCase(TestCase):
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'brand_name': [u'Missing brand name'],
                 'call_to_action': [u'Missing call to action'],
-                'tracker_urls': [u'Invalid tracker URLs']
+                'tracker_urls': [u'Tracker URLs have to be HTTPS']
             }
         }, errors)
 

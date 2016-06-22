@@ -91,6 +91,15 @@ class AdGroupSettingsForm(forms.Form):
 
     enable_ga_tracking = forms.NullBooleanField(required=False)
 
+    ga_tracking_type = forms.TypedChoiceField(
+        required=False,
+        choices=constants.GATrackingType.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    ga_property_id = forms.CharField(max_length=25, required=False)
+
     enable_adobe_tracking = forms.NullBooleanField(required=False)
 
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
@@ -147,6 +156,22 @@ class AdGroupSettingsForm(forms.Form):
     def clean_enable_ga_tracking(self):
         # return True if the field is not set or set to True
         return self.cleaned_data.get('enable_ga_tracking', True) is not False
+
+    def clean_ga_property_id(self):
+        property_id = self.cleaned_data.get('ga_property_id').strip()
+        tracking_type = self.cleaned_data.get('ga_tracking_type')
+        enable_ga_tracking = self.cleaned_data.get('enable_ga_tracking')
+
+        if not enable_ga_tracking or tracking_type == constants.GATrackingType.EMAIL:
+            return None  # property ID should not be set when email type is selected
+
+        if not property_id:
+            raise forms.ValidationError('Web property ID is required.')
+
+        if not re.match(constants.GA_PROPERTY_ID_REGEX, property_id):
+            raise forms.ValidationError('Web property ID is not valid.')
+
+        return property_id
 
     def clean_enable_adobe_tracking(self):
         # return False if the field is not set or set to False
@@ -597,38 +622,12 @@ class AdGroupAdsUploadForm(forms.Form):
             'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
         }
     )
-    display_url = DisplayURLField(
-        required=True,
-        label="Display URL",
-        # max_length is should be validated _after_ http:// has been stripped out
-        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
-        error_messages={
-            'invalid': 'Display URL is invalid.',
-            'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    brand_name = forms.CharField(
-        required=True,
-        max_length=25,
-        label="Brand name",
-        error_messages={
-            'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
     description = forms.CharField(
         required=True,
         max_length=140,
         label="Description",
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    call_to_action = forms.CharField(
-        required=True,
-        label="Call to action",
-        max_length=25,
-        error_messages={
-            'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
         }
     )
 
@@ -752,10 +751,43 @@ class AdGroupAdsUploadForm(forms.Form):
 
         return data
 
+
+class AdGroupAdsUploadExtendedForm(AdGroupAdsUploadForm):
+    """
+    This form supports old content upload where more brand name, display url and call to action fields were
+    required.
+    """
+    display_url = DisplayURLField(
+        required=True,
+        label="Display URL",
+        # max_length is should be validated _after_ http:// has been stripped out
+        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
+        error_messages={
+            'invalid': 'Display URL is invalid.',
+            'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    brand_name = forms.CharField(
+        required=True,
+        max_length=25,
+        label="Brand name",
+        error_messages={
+            'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    call_to_action = forms.CharField(
+        required=True,
+        label="Call to action",
+        max_length=25,
+        error_messages={
+            'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+
     # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
-        super(AdGroupAdsUploadForm, self).clean()
+        super(AdGroupAdsUploadExtendedForm, self).clean()
 
         if self.errors:
             return
@@ -766,8 +798,13 @@ class AdGroupAdsUploadForm(forms.Form):
         for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
                 if column_and_field_name not in self.csv_column_names:  # and is not present as a CSV column
-                    self.add_error(column_and_field_name, forms.ValidationError(
-                        "{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
+                    self.add_error(
+                        column_and_field_name,
+                        forms.ValidationError(
+                            "{0} has to be present here or as a column in CSV.".format(
+                                self.fields[column_and_field_name].label)
+                        )
+                    )
 
 
 class CreditLineItemForm(forms.ModelForm):
@@ -786,6 +823,12 @@ class CreditLineItemForm(forms.ModelForm):
         if end_date < today:
             raise forms.ValidationError('End date has to be greater or equal to today.')
         return end_date
+
+    def save(self, force_insert=False, force_update=False, commit=True, request=None):
+        m = super(CreditLineItemForm, self).save(commit=False)
+        if commit:
+            m.save(request=request)
+        return m
 
     class Meta:
         model = models.CreditLineItem
@@ -812,6 +855,12 @@ class BudgetLineItemForm(forms.ModelForm):
             if end_date <= today:
                 raise forms.ValidationError('End date has to be in the future.')
         return end_date
+
+    def save(self, force_insert=False, force_update=False, commit=True, request=None):
+        m = super(BudgetLineItemForm, self).save(commit=False)
+        if commit:
+            m.save(request=request)
+        return m
 
     class Meta:
         model = models.BudgetLineItem
@@ -1032,7 +1081,7 @@ class ContentAdCandidateForm(forms.Form):
         }
     )
     title = forms.CharField(
-        max_length=256,
+        max_length=90,
         error_messages={
             'required': 'Missing title',
             'max_length': 'Title too long (max %(limit_value)d characters)',
@@ -1116,6 +1165,8 @@ class ContentAdCandidateForm(forms.Form):
         validate_url = validators.URLValidator(schemes=['https'])
 
         for url in tracker_urls:
+            if url.lower().startswith('http://'):
+                raise forms.ValidationError('Tracker URLs have to be HTTPS')
             try:
                 # URL is considered invalid if it contains any unicode chars
                 url = url.encode('ascii')
@@ -1132,7 +1183,6 @@ class ContentAdCandidateForm(forms.Form):
         if not image_crop:
             return constants.ImageCrop.CENTER
 
-        print constants.ImageCrop.get_all()
         if image_crop.lower() in constants.ImageCrop.get_all():
             return image_crop.lower()
 
@@ -1148,8 +1198,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_width = forms.IntegerField(
         required=False,
-        min_value=2,
-        max_value=4000,
+        min_value=500,
+        max_value=5000,
         error_messages={
             'min_value': 'Image too small (min width %(limit_value)d px)',
             'max_value': 'Image too big (max width %(limit_value)d px)',
@@ -1157,8 +1207,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_height = forms.IntegerField(
         required=False,
-        min_value=2,
-        max_value=3000,
+        min_value=500,
+        max_value=5000,
         error_messages={
             'min_value': 'Image too small (min height %(limit_value)d px)',
             'max_value': 'Image too big (max height %(limit_value)d px)',

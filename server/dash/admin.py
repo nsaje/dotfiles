@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
+from django.contrib.admin.utils import flatten_fieldsets
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -828,6 +829,7 @@ class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
+    raw_id_fields = ('ad_group_source', )
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
     list_display = (
         'ad_group_source',
@@ -839,6 +841,7 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
 
 
 class AdGroupSourceStateAdmin(admin.ModelAdmin):
+    raw_id_fields = ('ad_group_source', )
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
     list_display = (
         'ad_group_source',
@@ -1466,6 +1469,88 @@ class FacebookAccount(admin.ModelAdmin):
     pass
 
 
+class HistoryAdmin(admin.ModelAdmin):
+    actions = None
+
+    list_display = (
+        'id',
+        'agency_',
+        'account_',
+        'campaign_',
+        'ad_group_',
+        'created_dt',
+        'created_by',
+        'system_user',
+        'changes_text',
+    )
+
+    list_filter = (
+        'type',
+        'level',
+        'system_user',
+    )
+
+    search_fields = [
+        'agency__id',
+        'agency__name',
+        'account__name',
+        'account__id',
+        'campaign__name',
+        'campaign__id',
+        'ad_group__name',
+        'ad_group__id',
+        'changes_text',
+        'created_by__email',
+    ]
+
+    def get_readonly_fields(self, request, obj=None):
+        return list(set(
+            [field.name for field in self.opts.local_fields] +
+            [field.name for field in self.opts.local_many_to_many]
+        ))
+
+    def agency_(self, obj):
+        return '<a href="{agency_url}">{agency}</a>'.format(
+            agency_url=reverse('admin:dash_agency_change', args=(obj.agency.id,)),
+            agency=obj.agency
+        ) if obj.agency else '-'
+    agency_.allow_tags = True
+    agency_.admin_order_field = 'agency'
+
+    def account_(self, obj):
+        return '<a href="{account_url}">{account}</a>'.format(
+            account_url=reverse('admin:dash_account_change', args=(obj.account.id,)),
+            account=obj.account
+        ) if obj.account else '-'
+    account_.allow_tags = True
+    account_.admin_order_field = 'account'
+
+    def campaign_(self, obj):
+        return '<a href="{campaign_url}">{campaign}</a>'.format(
+            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
+            campaign=obj.campaign
+        ) if obj.campaign else '-'
+    campaign_.allow_tags = True
+    campaign_.admin_order_field = 'campaign'
+
+    def ad_group_(self, obj):
+        return '<a href="{ad_group_url}">{ad_group}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
+            ad_group=obj.ad_group
+        ) if obj.ad_group else '-'
+    ad_group_.allow_tags = True
+    ad_group_.admin_order_field = 'ad_group'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1493,3 +1578,4 @@ admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
 admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
+admin.site.register(models.History, HistoryAdmin)

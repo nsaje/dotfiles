@@ -56,6 +56,10 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
             function () {
                 $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
             }
+        ).finally(
+            function () {
+                $scope.isCancelDisabled = false;
+            }
         );
     };
 
@@ -167,6 +171,12 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
     });
 
     $scope.cancel = function () {
+        if ($scope.uploadStatus === constants.uploadBatchStatus.DONE ||
+            $scope.uploadStatus === constants.uploadBatchStatus.FAILED) {
+            $modalInstance.close();
+            return;
+        }
+
         api.uploadPlus.cancel($state.params.id, $scope.batchId).then(function () {
             $scope.cancelErrors = null;
             stopPolling();

@@ -28,6 +28,7 @@ oneApp.factory('zemGridObject', [function () {
 
         this.meta = {           // meta information and functionality
             api: null,          // zemGridApi - api for exposed/public zem-grid functionality
+            options: null,      // Options (enableSelection, maxSelectedRows, etc.)
             service: null,      // zemGridDataService - access to data
             pubsub: null,       // zemGridPubSub - internal message queue
             data: null,         // meta-data retrieved through Endpoint - columns definitions
@@ -63,6 +64,7 @@ oneApp.factory('zemGridObject', [function () {
 
     function createColumn (data) {
         return {
+            type: data.type,    // Reuse data type - type of column (text, link, icon, etc.)
             field: data.field,  // Reuse data field - some kind of id  (data retrieval, storage, etc.)
             data: data,         // Column meta-data retrieved from endpoint
             visible: true,      // Visibility flag

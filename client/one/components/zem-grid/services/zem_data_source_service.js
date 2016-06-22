@@ -29,6 +29,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
     };
 
+    var FILTER = {
+        FILTERED_MEDIA_SOURCES: 1,
+        SHOW_ARCHIVED_SOURCES: 2,
+        SHOW_BLACKLISTED_PUBLISHERS: 3,
+    };
+
     function DataSource (endpoint) {
         var metaData = null;
         var data = null;
@@ -44,20 +50,23 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         // Define default pagination (limits) for all levels when
         // size is not passed when requesting new data
         // TODO: default values will be defined by Breakdown selector (TBD)
-        var defaultPagination = [20, 3, 5, 7];
+        var defaultPagination = [14, 3, 5, 7];
 
         //
         // Public API
         //
+        this.FILTER = FILTER;
         this.getData = getData;
         this.getMetaData = getMetaData;
         this.saveData = saveData;
 
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
+        this.setFilter = setFilter;
         this.setBreakdown = setBreakdown;
         this.getDateRange = getDateRange;
         this.getOrder = getOrder;
+        this.getFilter = getFilter;
         this.getBreakdown = getBreakdown;
         this.getBreakdownLevel = getBreakdownLevel;
 
@@ -125,6 +134,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 } else {
                     deferred.resolve(data);
                 }
+            }, function (err) {
+                breakdowns.forEach(function (breakdown) {
+                    breakdown.meta.error = true;
+                });
+                deferred.reject(err);
             }).finally(function () {
                 breakdowns.forEach(function (breakdown) {
                     breakdown.meta.loading = false;
@@ -204,6 +218,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             current.rows = current.rows.concat(breakdown.rows);
             current.pagination.limit = current.rows.length;
             current.pagination.count = breakdown.pagination.count;
+            current.pagination.complete = breakdown.pagination.complete;
         }
 
         function findBreakdown (breakdownId, subtree) {
@@ -259,6 +274,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function setOrder (order, fetch) {
             config.order = order;
+            if (fetch) {
+                return getData();
+            }
+        }
+
+        function setFilter (filter, value, fetch) {
+            switch (filter) {
+            case FILTER.SHOW_ARCHIVED_SOURCES: config.showArchived = value; break;
+            case FILTER.SHOW_BLACKLISTED_PUBLISHERS: config.showBlacklistedPublishers = value; break;
+            case FILTER.FILTERED_MEDIA_SOURCES: config.filteredSources = value; break;
+            }
+
             if (fetch) {
                 return getData();
             }
@@ -325,6 +352,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getOrder () {
             return config.order;
+        }
+
+        function getFilter (filter) {
+            switch (filter) {
+            case FILTER.SHOW_ARCHIVED_SOURCES: return config.showArchived;
+            case FILTER.SHOW_BLACKLISTED_PUBLISHERS: return config.showBlacklistedPublishers;
+            case FILTER.FILTERED_MEDIA_SOURCES: return config.filteredSources;
+            }
+
+            if (fetch) {
+                return getData();
+            }
         }
 
         function getBreakdown () {
