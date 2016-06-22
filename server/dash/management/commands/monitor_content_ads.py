@@ -22,3 +22,4 @@ class Command(ExceptionCommand):
             ).earliest('modified_dt')
             hours_since = int((datetime.datetime.utcnow() - cas.modified_dt).total_seconds() / 3600)
         except dash.models.ContentAdSource.DoesNotExist:
+            pass
