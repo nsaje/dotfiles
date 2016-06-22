@@ -1510,12 +1510,16 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
 
 CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
-    ['url', 'url'],
-    ['title', 'title'],
-    ['image_url', 'image_url'],
-    ['description', 'description (optional)'],
-    ['crop_areas', 'crop areas (optional)'],
-    ['tracker_urls', 'tracker url (optional)']
+    ['url', 'URL'],
+    ['title', 'Title'],
+    ['image_url', 'Image URL'],
+    ['image_crop', 'Image crop (optional)'],
+    ['display_url', 'Display URL (optional)'],
+    ['brand_name', 'Brand name (optional)'],
+    ['call_to_action', 'Call to action (optional)'],
+    ['description', 'Description (optional)'],    
+    ['impression_trackers', 'Impression trackers (optional)'],
+    ['label', 'Label (optional)'],
 ])
 
 
@@ -1563,11 +1567,17 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'call_to_action': content_ad.call_to_action,
             }
 
+            if content_ad.label:
+                content_ad_dict['label'] = content_ad.label
+
+            if content_ad.image_crop:
+                content_ad_dict['image_crop'] = content_ad.image_crop
+
             if content_ad.crop_areas:
                 content_ad_dict['crop_areas'] = content_ad.crop_areas
 
             if content_ad.tracker_urls:
-                content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
+                content_ad_dict['impression_trackers'] = ' '.join(content_ad.tracker_urls)
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():

@@ -585,9 +585,9 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
+        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -600,10 +600,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Examp
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
-http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,Example description,,\r
+        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
+http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -616,8 +616,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,Examp
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
+        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -629,9 +629,9 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Examp
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
+        expected_content = '''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -644,24 +644,21 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Examp
 
         response = self._get_csv_from_server(data)
 
-        expected_lines = ['url,title,image_url,description (optional),crop areas (optional),tracker url (optional)',
-                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com',
-                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,Example description,,',
-                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,Example description,,']
-
-        lines = response.content.splitlines()
-
-        self.assertEqual(len(lines), len(expected_lines))
-        self.assertItemsEqual(lines, expected_lines)
+        expected_content='''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
+http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
+http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
+'''
+        self.assertEqual(response.content, expected_content)
 
     def test_get_ad_selected(self):
         data = {'content_ad_ids_selected': '1,2'}
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
+        expected_content='''URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
