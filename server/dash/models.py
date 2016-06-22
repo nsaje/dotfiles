@@ -3208,7 +3208,9 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             budget=self,
         )
-        self.add_to_history(user=request and request.user, action_type)
+        self.add_to_history(
+            user=request and request.user,
+            action_type=action_type)
 
     def add_to_history(self, user=None, action_type=None):
         changes = self.get_model_state_changes(

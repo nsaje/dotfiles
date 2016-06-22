@@ -157,7 +157,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         item.delete()
 
-        account.add_to_history(
+        account.write_history(
             'Deleted credit',
             action_type=constants.HistoryActionType.CREDIT_CHANGE,
             user=request.user
