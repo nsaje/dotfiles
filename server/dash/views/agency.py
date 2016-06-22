@@ -766,9 +766,7 @@ class AccountConversionPixels(api_common.BaseApiView):
             new_settings.changes_text = changes_text
             new_settings.save(request)
 
-            history_helpers.write_account_history(
-                account, changes_text, user=request.user
-            )
+            account.write_history(changes_text, user=request.user)
 
         email_helper.send_account_pixel_notification(account, request)
 
@@ -824,9 +822,7 @@ class ConversionPixel(api_common.BaseApiView):
                 new_settings.changes_text = changes_text
                 new_settings.save(request)
 
-                history_helpers.write_account_history(
-                    account, changes_text, user=request.user
-                )
+                account.write_history(changes_text, user=request.user)
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
                                                 account=account)
@@ -1032,11 +1028,7 @@ class AccountSettings(api_common.BaseApiView):
             settings.changes_text = changes_text
             settings.save(request)
 
-            history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
-            )
+            account.write_history(changes_text, user=request.user)
 
             return settings
 
@@ -1406,9 +1398,7 @@ class AccountUsers(api_common.BaseApiView):
             new_settings.changes_text = changes_text
             new_settings.save(request)
 
-            history_helpers.write_account_history(
-                account, changes_text, user=request.user
-            )
+            account.write_history(changes_text, user=request.user)
 
         return self.create_api_response(
             {'user': self._get_user_dict(user)},
@@ -1448,11 +1438,7 @@ class AccountUsers(api_common.BaseApiView):
             new_settings.changes_text = changes_text
             new_settings.save(request)
 
-            history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
-            )
+            account.write_history(changes_text, user=request.user)
 
         return self.create_api_response({
             'user_id': user.id
@@ -1487,11 +1473,7 @@ class UserActivation(api_common.BaseApiView):
             new_settings.changes_text = changes_text
             new_settings.save(request)
 
-            history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
-            )
+            account.write_history(changes_text, user=request.user)
 
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(

@@ -408,8 +408,7 @@ def _add_entry_to_history(request, campaign, action_type, history_action_type, c
     new_settings.changes_text = changes_text
     new_settings.save(request)
 
-    dash.history_helpers.write_campaign_history(
-        campaign,
+    campaign.write_history(
         changes_text,
         user=request.user,
         action_type=history_action_type

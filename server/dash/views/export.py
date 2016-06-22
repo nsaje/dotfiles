@@ -227,8 +227,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account)
 
-        history_helpers.write_account_history(
-            account,
+        account.write_history(
             'Exported report: {}'.format(filename),
             user=request.user,
            history_type=constants.HistoryActionType.REPORTING_MANAGE)
@@ -241,8 +240,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account)
 
-        history_helpers.write_account_history(
-            account,
+        account.write_history(
             'Scheduled report.',
             user=request.user,
             history_type=constants.HistoryActionType.REPORTING_MANAGE)
@@ -258,8 +256,7 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign)
 
-        history_helpers.write_campaign_history(
-            campaign,
+        campaign.write_history(
             'Exported report: {}'.format(filename),
             user=request.user,
            history_type=constants.HistoryActionType.REPORTING_MANAGE)
@@ -272,8 +269,7 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign)
 
-        history_helpers.write_campaign_history(
-            campaign,
+        campaign.write_history(
             'Scheduled report',
             user=request.user,
            history_type=constants.HistoryActionType.REPORTING_MANAGE)
@@ -345,11 +341,10 @@ class AccountSourcesExport(ExportApiView):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account, by_source=True)
 
-        history_helpers.write_account_history(
-            account,
+        account.write_history(
             'Exported media sources report: {}'.format(filename),
             user=request.user,
-           history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
@@ -359,11 +354,10 @@ class AccountSourcesExport(ExportApiView):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account, by_source=True)
 
-        history_helpers.write_account_history(
-            account,
+        account.write_history(
             'Scheduled media sources report',
             user=request.user,
-           history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
@@ -376,8 +370,7 @@ class CampaignSourcesExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign, by_source=True)
 
-        history_helpers.write_campaign_history(
-            campaign,
+        campaign.write_history(
             'Exported media sources report: {}'.format(filename),
             user=request.user,
             history_type=constants.HistoryActionType.REPORTING_MANAGE)
@@ -390,8 +383,7 @@ class CampaignSourcesExport(ExportApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
 
-        history_helpers.write_campaign_history(
-            campaign,
+        campaign.write_history(
             'Scheduled media sources report',
             user=request.user,
             history_type=constants.HistoryActionType.REPORTING_MANAGE)

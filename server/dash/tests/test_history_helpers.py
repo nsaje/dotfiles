@@ -19,8 +19,7 @@ class HistoryHelperTests(TestCase):
         self.assertEqual(0, dash.models.History.objects.all().count())
 
         campaign = ad_group.campaign
-        dash.history_helpers.write_campaign_history(
-            campaign,
+        campaign.write_history(
             None,
             user=user,
             history_type=dash.constants.HistoryType.CAMPAIGN
@@ -28,8 +27,7 @@ class HistoryHelperTests(TestCase):
         self.assertEqual(0, dash.models.History.objects.all().count())
 
         account = campaign.account
-        dash.history_helpers.write_account_history(
-            account,
+        account.write_history(
             '',
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
             history_type=dash.constants.HistoryType.ACCOUNT
@@ -55,8 +53,7 @@ class HistoryHelperTests(TestCase):
     def test_write_campaign(self):
         user = User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
-        dash.history_helpers.write_campaign_history(
-            campaign,
+        campaign.write_history(
             'Funky test',
             user=user,
             history_type=dash.constants.HistoryType.CAMPAIGN
@@ -71,8 +68,7 @@ class HistoryHelperTests(TestCase):
 
     def test_write_account(self):
         account = dash.models.Account.objects.get(pk=1)
-        dash.history_helpers.write_account_history(
-            account,
+        account.write_history(
             'Funky test',
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
             history_type=dash.constants.HistoryType.ACCOUNT
