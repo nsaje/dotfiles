@@ -108,7 +108,7 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     if 'campaign_goals' in response:
         base['campaign_goals'] = response['campaign_goals']
 
-    if 'conversion_goals':
+    if 'conversion_goals' in response:
         base['conversion_goals'] = response['conversion_goals']
 
     return [base]
