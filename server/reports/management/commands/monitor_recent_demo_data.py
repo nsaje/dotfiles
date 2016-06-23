@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 import reports.api
 import dash.models
 
-from utils.statsd_helper import statsd_gauge
 from utils.command_helpers import last_n_days, ExceptionCommand
 
 
@@ -34,7 +33,3 @@ class Command(ExceptionCommand):
         total_impressions = demo_totals.get('impressions') or 0
         total_visits = demo_totals.get('visits') or 0
         total_conversions = sum(x.get('conversions') or 0 for x in demo_totals.get('goals', {}).itervalues())
-
-        statsd_gauge('demo.total_recent_impressions', total_impressions)
-        statsd_gauge('demo.total_recent_visits', total_visits)
-        statsd_gauge('demo.total_recent_conversions', total_conversions)

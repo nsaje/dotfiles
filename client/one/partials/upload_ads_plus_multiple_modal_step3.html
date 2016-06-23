@@ -1,5 +1,11 @@
-<div class="modal-body text-center">
-    <h1>Your ad was successfully uploaded</h1>
-    <button type="button" class="btn btn-default" ng-click="restart()">Upload more ads</button>
-    <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+<div class="modal-body">
+    <div class="uploading_completed">
+        <img ng-src="{{ config.static_url }}/one/img/check_mark-circle.svg"/>
+        <h1>Uploading completed</h1>
+        <p><strong>534 ads</strong> were successfully added to the <strong>###ADGROUPNAME###</strong> ad group.</p>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-gray" ng-click="close()">Close</button>
+    <button type="button" class="btn btn-add pull-right" ng-click="restart()">Upload more ads</button>
 </div>

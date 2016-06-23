@@ -20,8 +20,6 @@ import automation.constants
 from dash.constants import AdGroupSettingsState, AdGroupSettingsAutopilotState
 import reports.api_contentads
 from utils import pagerduty_helper
-from utils.statsd_helper import statsd_timer
-from utils import statsd_helper
 from utils import dates_helper
 from utils import k1_helper
 
@@ -29,9 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
-@statsd_timer('automation.autopilot_plus', 'run_autopilot')
 def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
-                  send_mail=False, initialization=False, report_to_statsd=False):
+                  send_mail=False, initialization=False, report_to_influx=False):
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
     else:
@@ -61,9 +58,9 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
     actionlog.zwei_actions.send(actions)
     if send_mail:
         autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
-    if report_to_statsd:
-        _report_adgroups_data_to_statsd(ad_group_settings_on_ap)
-        _report_new_budgets_on_ap_to_statsd(ad_group_settings_on_ap)
+    if report_to_influx:
+        _report_adgroups_data_to_influx(ad_group_settings_on_ap)
+        _report_new_budgets_on_ap_to_influx(ad_group_settings_on_ap)
     return changes_data
 
 
@@ -311,7 +308,7 @@ def _report_autopilot_exception(element, e):
     )
 
 
-def _report_adgroups_data_to_statsd(ad_groups_settings):
+def _report_adgroups_data_to_influx(ad_groups_settings):
     num_on_budget_ap = 0
     total_budget_on_budget_ap = Decimal(0.0)
     num_on_cpc_ap = 0
@@ -337,25 +334,17 @@ def _report_adgroups_data_to_statsd(ad_groups_settings):
 
     influx.gauge('automation.autopilot_plus.adgroups_on', num_on_budget_ap, autopilot='budget_autopilot')
     influx.gauge('automation.autopilot_plus.adgroups_on', num_on_cpc_ap, autopilot='cpc_autopilot')
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot', num_on_budget_ap)
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot', num_on_cpc_ap)
 
     influx.gauge('automation.autopilot_plus.spend', total_budget_on_budget_ap,
                  autopilot='budget_autopilot', type='expected')
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_expected_budget',
-                               total_budget_on_budget_ap)
 
     influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_budget_ap,
                  autopilot='budget_autopilot', type='yesterday')
     influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_cpc_ap,
                  autopilot='cpc_autopilot', type='yesterday')
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_yesterday_spend',
-                               yesterday_spend_on_budget_ap)
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot_yesterday_spend',
-                               yesterday_spend_on_cpc_ap)
 
 
-def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
+def _report_new_budgets_on_ap_to_influx(ad_group_settings):
     total_budget_on_budget_ap = Decimal(0.0)
     total_budget_on_cpc_ap = Decimal(0.0)
     total_budget_on_all_ap = Decimal(0.0)
@@ -376,14 +365,6 @@ def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
     influx.gauge('automation.autopilot_plus.spend', total_budget_on_cpc_ap, autopilot='cpc_autopilot', type='actual')
     influx.gauge('automation.autopilot_plus.spend', total_budget_on_budget_ap,
                  autopilot='budget_autopilot', type='actual')
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_actual_budget',
-                               total_budget_on_budget_ap)
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot_actual_budget',
-                               total_budget_on_cpc_ap)
-    statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_all_autopilot_actual_budget',
-                               total_budget_on_all_ap)
 
     influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_cpc_ap, autopilot='cpc_autopilot')
     influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_budget_ap, autopilot='budget_autopilot')
-    statsd_helper.statsd_gauge('automation.autopilot_plus.num_sources_on_cpc_ap', num_sources_on_cpc_ap)
-    statsd_helper.statsd_gauge('automation.autopilot_plus.num_sources_on_budget_ap', num_sources_on_budget_ap)

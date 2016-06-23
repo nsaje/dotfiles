@@ -30,7 +30,6 @@ from dash import views
 import reports.constants
 from reports import budget_helpers
 from utils import encryption_helpers
-from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters
@@ -153,21 +152,18 @@ class DemoManager(models.Manager):
     def get_queryset(self):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
-            with statsd_helper.statsd_block_timer('dash.models', 'account_demo_objects'):
-                queryset = queryset.filter(
-                    campaign__adgroup__in=AdGroup.demo_objects.all()
-                ).distinct()
+            queryset = queryset.filter(
+                campaign__adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         elif queryset.model is Campaign:
-            with statsd_helper.statsd_block_timer('dash.models', 'campaign_demo_objects'):
-                queryset = queryset.filter(
-                    adgroup__in=AdGroup.demo_objects.all()
-                ).distinct()
+            queryset = queryset.filter(
+                adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         else:
             assert queryset.model is AdGroup
-            with statsd_helper.statsd_block_timer('dash.models', 'adgroup_demo_objects'):
-                queryset = queryset.filter(
-                    id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
-                )
+            queryset = queryset.filter(
+                id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
+            )
         return queryset
 
 
@@ -916,23 +912,18 @@ class CampaignSettings(SettingsBase):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
             self.campaign,
             history_type,
             changes,
-            self.changes_text or changes_text,
+            changes_text,
             user=self.created_by,
             system_user=self.system_user,
         )
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         return get_changes_text_from_dict(cls, changes, separator=separator)
 
@@ -2072,9 +2063,6 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
-
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         if changes is None:
             return 'Created settings'
@@ -2108,15 +2096,12 @@ class AdGroupSettings(SettingsBase):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             self.ad_group,
             history_type,
             changes,
-            self.changes_text or changes_text,
+            changes_text,
             user=self.created_by,
             system_user=self.system_user
         )
@@ -2282,10 +2267,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return None, ''
-
+        changes_text = self.get_changes_text_from_dict(changes)
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
@@ -2427,7 +2409,9 @@ class ContentAd(models.Model):
         if self.image_id is None:
             return None
 
-        return '{z3_image_url}{image_id}.jpg'.format(z3_image_url=settings.Z3_API_IMAGE_URL, image_id=self.image_id)
+        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, '{image_id}.jpg'.format(
+            image_id=self.image_id
+        ))
 
     def get_image_url(self, width=None, height=None):
         if self.image_id is None:
@@ -3590,6 +3574,12 @@ class History(models.Model):
         choices=constants.HistoryType.get_choices(),
         null=False,
         blank=False,
+    )
+    # TODO: once the transition period is over make action_type non-nullable
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryActionType.get_choices(),
+        null=True,
+        blank=True,
     )
 
     changes_text = models.TextField(blank=False, null=False)

@@ -10,8 +10,6 @@ from dash import scheduled_report
 from dash import export
 
 from utils.command_helpers import ExceptionCommand
-from utils.statsd_helper import statsd_timer
-from utils.statsd_helper import statsd_gauge
 from utils import email_helper
 
 logger = logging.getLogger(__name__)
@@ -19,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
     @influx.timer('dash.scheduled_reports.send_scheduled_export_reports_job')
-    @statsd_timer('dash.scheduled_reports', 'send_scheduled_export_reports_job')
     def handle(self, *args, **options):
         logger.info('Sending Scheduled Export Report Emails')
 
@@ -63,13 +60,9 @@ class Command(ExceptionCommand):
 
         influx.gauge('dash.scheduled_reposts.num_reports.total', len(due_scheduled_reports), type='due')
         influx.gauge('dash.scheduled_reposts.num_reports.total', num_reports_logs_made, type='logs_made')
-        statsd_gauge('dash.scheduled_reports.num_reports_due', len(due_scheduled_reports))
-        statsd_gauge('dash.scheduled_reports.num_reports_logs_made', num_reports_logs_made)
 
         influx.gauge('dash.scheduled_reports.num_reports.status', num_success_logs, status='success')
         influx.gauge('dash.scheduled_reports.num_reports.status', num_failed_logs, status='failed')
-        statsd_gauge('dash.scheduled_reports.num_reports_logs_sucessful', num_success_logs)
-        statsd_gauge('dash.scheduled_reports.num_reports_logs_failed', num_failed_logs)
 
         logger.info('Finished Sending Scheduled Export Report Emails - OK: %s Fail: %s - Total: %s Expected: %s',
                     num_success_logs, num_failed_logs, num_reports_logs_made, len(due_scheduled_reports))

@@ -428,6 +428,18 @@ class ContentAdTest(TestCase):
         image_url = content_ad.get_image_url()
         self.assertEqual(image_url, None)
 
+    def test_original_image_url(self):
+        content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+
+        content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
+        image_url = content_ad.get_original_image_url()
+        self.assertEqual(image_url, None)
+
 
 def created_by_patch(sender, instance, **kwargs):
     u = zemauthmodels.User.objects.get(id=1)
