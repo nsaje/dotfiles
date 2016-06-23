@@ -332,7 +332,6 @@ class Agency(models.Model):
                       user=None, system_user=None,
                       action_type=None):
         if not changes and not changes_text:
-            # don't write history in case of no changes
             return None
         return History.objects.create(
             agency=self,
@@ -474,7 +473,6 @@ class Account(models.Model):
                       history_type=constants.HistoryType.ACCOUNT,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
-            # don't write history in case of no changes
             return None
 
         _, _, agency = _generate_parents(account=self)
@@ -653,7 +651,6 @@ class Campaign(models.Model, PermissionMixin):
                       history_type=constants.HistoryType.CAMPAIGN,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
-            # don't write history in case of no changes
             return None
 
         _, account, agency = _generate_parents(campaign=self)
