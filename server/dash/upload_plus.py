@@ -37,22 +37,22 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
 
 @transaction.atomic
 def invoke_external_validation(candidate, skip_url_validation=False):
-    lambda_helper.invoke_lambda(
-        settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
-        {
-            'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
-            'candidateID': candidate.pk,
-            'pageUrl': candidate.url,
-            'adGroupID': candidate.ad_group.pk,
-            'batchID': candidate.batch.pk,
-            'imageUrl': candidate.image_url,
-            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
-            'skipUrlValidation': skip_url_validation,
-        },
-        async=True,
-    )
-    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    # lambda_helper.invoke_lambda(
+    #     settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
+    #     {
+    #         'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
+    #         'candidateID': candidate.pk,
+    #         'pageUrl': candidate.url,
+    #         'adGroupID': candidate.ad_group.pk,
+    #         'batchID': candidate.batch.pk,
+    #         'imageUrl': candidate.image_url,
+    #         'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
+    #         'skipUrlValidation': skip_url_validation,
+    #     },
+    #     async=True,
+    # )
+    candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
     candidate.save()
 
 
@@ -133,7 +133,9 @@ def _save_error_report(batch_id, filename, errors):
     writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
 
     writer.writeheader()
-    for error_dict in errors:
+
+    errors_sorted = sorted(errors, key=lambda x: x['candidate'].id)
+    for error_dict in errors_sorted:
         row = {_transform_field(k): v for k, v in error_dict['candidate'].get_dict().items() if k in fields}
         row['Errors'] = error_dict['errors']
         writer.writerow(row)
