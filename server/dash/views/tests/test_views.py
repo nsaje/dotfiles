@@ -848,7 +848,9 @@ class AdGroupContentAdStateTest(TestCase):
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
-        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
+        self.assertEqual('Content ad(s) 1, 2, 3 set to Enabled.', hist.changes_text)
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -867,6 +869,8 @@ class AdGroupContentAdStateTest(TestCase):
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
@@ -1158,6 +1162,8 @@ class AdGroupContentAdArchive(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
 
     def test_add_to_history_shorten(self):
@@ -1175,6 +1181,8 @@ class AdGroupContentAdArchive(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.'
@@ -1336,6 +1344,7 @@ class AdGroupContentAdRestore(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Restored.')
 
     def test_add_to_history_shorten(self):
@@ -1353,6 +1362,8 @@ class AdGroupContentAdRestore(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.'
