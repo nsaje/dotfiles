@@ -23,6 +23,10 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
                 archived: row.archived,
             };
         });
+
+        if (breakdown.campaign_goals) convertedBreakdown.campaignGoals = breakdown.campaign_goals;
+        if (breakdown.conversion_goals) convertedBreakdown.conversionGoals = breakdown.conversion_goals;
+
         return convertedBreakdown;
     }
 

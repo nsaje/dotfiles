@@ -29,8 +29,8 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
 
                 if (breakdowns.length === 1 && breakdowns[0].totals) {
                     var breakdown = breakdowns[0];
-                    zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversion_goals);
-                    zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaign_goals);
+                    zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
+                    zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
                 }
 
                 deferred.resolve(breakdowns);

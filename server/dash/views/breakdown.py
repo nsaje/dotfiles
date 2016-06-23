@@ -93,7 +93,8 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
 
     # only take rows from limit
     rows = response['rows'][offset:offset + limit]
-    return [{
+
+    base = {
         'breakdown_id': None,
         'rows': rows,
         'totals': response['totals'],
@@ -102,7 +103,15 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
             'limit': len(rows),
             'count': response.get('pagination', {}).get('count'),  # TODO some views dont support pagination
         }
-    }]
+    }
+
+    if 'campaign_goals' in response:
+        base['campaign_goals'] = response['campaign_goals']
+
+    if 'conversion_goals':
+        base['conversion_goals'] = response['conversion_goals']
+
+    return [base]
 
 
 def get_report_all_accounts_accounts(user, filtered_sources, start_date, end_date,
