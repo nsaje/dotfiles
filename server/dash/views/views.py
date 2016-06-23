@@ -61,6 +61,7 @@ from dash import upload
 from dash import infobox_helpers
 from dash import publisher_helpers
 from dash import history_helpers
+from dash import blacklist
 
 import reports.api_publishers
 import reports.projections
@@ -1641,37 +1642,73 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         publishers = []
         if select_all:
             publishers = self._query_all_publishers(ad_group, start_date, end_date)
-        # update with pending statuses
-        if level in (constants.PublisherBlacklistLevel.ADGROUP,
-                     constants.PublisherBlacklistLevel.CAMPAIGN,
-                     constants.PublisherBlacklistLevel.ACCOUNT,):
-            self._handle_adgroup_blacklist(
-                request,
-                ad_group,
-                level,
-                state,
-                publishers,
-                publishers_selected,
-                publishers_not_selected
-            )
 
-        if level == constants.PublisherBlacklistLevel.GLOBAL:
-            self._handle_global_blacklist(
-                request,
-                ad_group,
-                state,
-                publishers,
-                publishers_selected,
-                publishers_not_selected
-            )
-
-        if level == constants.PublisherBlacklistLevel.ADGROUP:
-            k1_helper.update_blacklist(ad_group.pk, msg='PublishersBlacklistStatus.post')
+        self._handle_blacklisting(request, ad_group, level, state, publishers, publishers_selected,
+                                  publishers_not_selected)
 
         response = {
             "success": True,
         }
         return self.create_api_response(response)
+
+    def _handle_blacklisting(self, request, ad_group, level, state, publishers, publishers_selected,
+                             publishers_not_selected):
+        source_domains = self._generate_source_publishers(
+            publishers, publishers_selected, publishers_not_selected
+        )
+
+        constraints = {}
+        history_ad_groups = []
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            constraints['ad_group'] = ad_group
+            history_ad_groups = [ad_group]
+        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            constraints['campaign'] = ad_group.campaign
+            history_ad_groups = models.AdGroup.objects.filter(campaign=constraints['campaign'])
+        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+            constraints['account'] = ad_group.campaign.account
+            history_ad_groups = models.AdGroup.objects.filter(
+                campaign__account=constraints['account']
+            )
+
+        for source, domains in source_domains.iteritems():
+            source_constraints = {'source': source}
+            source_constraints.update(constraints)
+            blacklist.update(ad_group, source_constraints, state, domains,
+                             everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
+
+        for history_ad_group in history_ad_groups:
+            self._write_adgroup_history(
+                request,
+                history_ad_group,
+                source_domains,
+                state,
+                level
+            )
+
+    def _generate_source_publishers(self, pubs, pubs_selected, pubs_ignored):
+        source_publishers = {}
+        source_ids = set()
+
+        pubs_ignored_set = set(
+            (publisher['source_id'], publisher['domain']) for publisher in pubs_ignored
+        )
+
+        for publisher in pubs + pubs_selected:
+            source_id, domain = publisher['source_id'], publisher['domain']
+            if (source_id, domain, ) in pubs_ignored_set:
+                continue
+            source_publishers.setdefault(source_id, set()).add(domain)
+            source_ids.add(source_id)
+
+        sources_map = {
+            source.pk: source for source in models.Source.objects.filter(pk__in=source_ids)
+        }
+
+        return {
+            sources_map[source_id]: domains
+            for source_id, domains in source_publishers.iteritems()
+        }
 
     def _query_all_publishers(self, ad_group, start_date, end_date):
         source_cache_by_slug = {
@@ -1698,368 +1735,16 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             publisher['source_id'] = source_cache_by_slug[source_slug].id
         return publishers
 
-    def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
-        ignored_publishers = set(
-            [
-                (pub['domain'], ad_group.id, pub['source_id'], )
-                for pub in publishers_not_selected
-            ]
-        )
-
-        publisher_blacklist = self._create_adgroup_blacklist(
-            request,
-            ad_group,
-            publishers + publishers_selected,
-            state,
-            level,
-            ignored_publishers
-        )
-
-        # when blacklisting at campaign or account level we also need
-        # to generate blacklist entries on external sources
-        # for all adgroups in campaign or account
-        related_publisher_blacklist = self._create_campaign_and_account_blacklist(
-            ad_group, level, publishers + publishers_selected)
-
-        if len(publisher_blacklist) > 0:
-            actionlogs_to_send = []
-            with transaction.atomic():
-                actionlogs_to_send.extend(
-                    api.create_publisher_blacklist_actions(
-                        ad_group,
-                        state,
-                        level,
-                        publisher_blacklist + related_publisher_blacklist,
-                        request,
-                        send=False
-                    )
-                )
-            actionlog.zwei_actions.send(actionlogs_to_send)
-            self._write_adgroup_history(
-                request,
-                publisher_blacklist + related_publisher_blacklist,
-                state,
-                level
-            )
-
-    def _create_campaign_and_account_blacklist(self, ad_group, level, publishers):
-        if level not in (constants.PublisherBlacklistLevel.CAMPAIGN,
-                         constants.PublisherBlacklistLevel.ACCOUNT):
-            return []
-
-        ad_groups_on_level = []
-        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            ad_groups_on_level = models.AdGroup.objects.filter(
-                campaign=ad_group.campaign
-            ).exclude(
-                id=ad_group.id
-            )
-        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
-            ad_groups_on_level = models.AdGroup.objects.filter(
-                campaign__account=ad_group.campaign.account
-            ).exclude(
-                id=ad_group.id
-            )
-
-        # filter archived
-        filtered_ad_groups = [adg for adg in ad_groups_on_level if not adg.is_archived()]
-        supported_ad_groups = []
-        # filter all adgroups that do not have bidder media sources added
-        # (they don't exist on bidder at all)
-        for filtered_ad_group in filtered_ad_groups:
-            supports_blacklist = False
-            for source in filtered_ad_group.sources.all():
-                if source.can_modify_publisher_blacklist_automatically():
-                    supports_blacklist = True
-                    break
-            if supports_blacklist:
-                supported_ad_groups.append(filtered_ad_group)
-        filtered_ad_groups = supported_ad_groups
-
-        ret = []
-        source_cache = {}
-        for publisher in publishers:
-            domain = publisher['domain']
-            if domain not in source_cache:
-                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
-            source = source_cache[domain]
-
-            # don't generate publisher entries on adgroup and campaign level
-            # for Outbrain since it only supports account level blacklisting
-            if source.source_type.type == constants.SourceType.OUTBRAIN:
-                continue
-
-            # get all adgroups
-            for ad_group in filtered_ad_groups:
-                ret.append({
-                    'domain': domain,
-                    'ad_group_id': ad_group.id,
-                    'source': source,
-                })
-
-        return ret
-
-    def _create_adgroup_blacklist(self, request, ad_group, publishers, state, level,
-                                  ignored_publishers):
-        adgroup_blacklist = set([])
-        failed_publisher_mappings = set([])
-        count_failed_publisher = 0
-        source_cache = {}
-
-        # OB currently has a limit of blocked publishers per marketer
-        count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            account=ad_group.campaign.account,
-            source__source_type__type=constants.SourceType.OUTBRAIN,
-            status__in=(constants.PublisherStatus.BLACKLISTED, constants.PublisherStatus.PENDING)
-        ).count()
-
-        for publisher in publishers:
-            domain = publisher['domain']
-            if domain not in source_cache:
-                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
-            source = source_cache[domain]
-
-            if not source:
-                failed_publisher_mappings.add(publisher['domain'])
-                count_failed_publisher += 1
-                continue
-
-            # we currently display sources for which we don't yet have publisher
-            # blacklisting support
-            if not source.can_modify_publisher_blacklist_automatically():
-                continue
-
-            if (domain, ad_group.id, source.id,) in ignored_publishers:
-                continue
-
-            if level != constants.PublisherBlacklistLevel.ACCOUNT and\
-                    source.source_type.type == constants.SourceType.OUTBRAIN:
-                # only allow outbrain for account level
-                continue
-
-            if level == constants.PublisherBlacklistLevel.ACCOUNT and\
-                    source.source_type.type == constants.SourceType.OUTBRAIN and\
-                    count_ob_blacklisted_publishers >= constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
-                # don't request more than 10 publisher on Outbrain per
-                # account to be attempted to be blacklisted
-                # because actions will fail and manual cleanup will be
-                # necessary
-                logger.error('Attempted to blacklist more than 10 publishers per account on Outbrain')
-                continue
-
-            if level == constants.PublisherBlacklistLevel.ACCOUNT and\
-                    source.source_type.type == constants.SourceType.OUTBRAIN and\
-                    count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
-                count_ob_blacklisted_publishers += 1
-
-            # store blacklisted publishers and push to other sources
-            existing_entry = models.PublisherBlacklist.objects.filter(
-                name=publisher['domain'],
-                source=source).filter(
-                    publisher_helpers.create_queryset_by_key(ad_group, level)
-            ).first()
-
-            # don't create pending pub. blacklist entry
-            if existing_entry is not None and existing_entry.status == state:
-                continue
-
-            if existing_entry is None and state == constants.PublisherStatus.ENABLED:
-                continue
-
-            if existing_entry is not None:
-                existing_entry.status = constants.PublisherStatus.BLACKLISTED
-                existing_entry.save()
-            else:
-                new_publ = models.PublisherBlacklist(
-                    name=publisher['domain'],
-                    source=source,
-                    status=constants.PublisherStatus.BLACKLISTED
-                )
-                new_publ.fill_keys(ad_group, level)
-                new_publ.save()
-
-            external_id = publisher.get('external_id')
-            adgroup_blacklist.add(
-                (domain, ad_group.id, source, external_id)
-            )
-        if len(failed_publisher_mappings) > 0:
-            logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
-                count=count_failed_publisher,
-                slug=','.join(failed_publisher_mappings))
-            )
-
-        kv_blacklist = [
-            {
-                'domain': dom,
-                'ad_group_id': adgroup_id,
-                'source': source_val,
-                'external_id': ext_id,
-            }
-            for (dom, adgroup_id, source_val, ext_id,) in adgroup_blacklist
-        ]
-
-        self._trigger_manual_ob_blacklist_action(
-            count_ob_blacklisted_publishers,
-            request,
-            ad_group,
-            state,
-            [
-                {'domain': dom, 'external_id': ext_id}
-                for (dom, adgroup_id, source_val, ext_id,) in adgroup_blacklist
-                if source_val.source_type.type == constants.SourceType.OUTBRAIN
-            ]
-        )
-
-        return kv_blacklist
-
-    def _trigger_manual_ob_blacklist_action(self, count_ob_blacklisted_publishers,
-                                            request, ad_group, state, publishers_list):
-        if not publishers_list:
-            return
-        if count_ob_blacklisted_publishers <= constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD \
-           or count_ob_blacklisted_publishers > constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
-            return
-        action_name = {
-            constants.PublisherStatus.BLACKLISTED: 'Blacklist',
-            constants.PublisherStatus.ENABLED: 'Whitelist',
-        }[state]
-        domains = '\n'.join('- {} ({})'.format(pub['domain'], pub['external_id']) for pub in publishers_list)
-
-        action = actionlog.models.ActionLog(
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST,
-            action_type=actionlog.constants.ActionType.MANUAL,
-            expiration_dt=None,
-            state=actionlog.constants.ActionState.WAITING,
-            ad_group_source=models.AdGroupSource.objects.filter(
-                ad_group=ad_group,
-                source__tracking_slug=constants.SourceType.OUTBRAIN
-            ).first(),
-            payload={
-                'ad_group_id': ad_group.pk,
-                'state': state,
-                'publishers': publishers_list
-            },
-            message=u'{} the following publishers on Outbrain for account {} (#{}):\n{}'.format(
-                action_name, ad_group.campaign.account.name, ad_group.campaign.account.pk, domains
-            )
-        )
-        action.save(request)
-
-    def _handle_global_blacklist(self, request, ad_group, state, publishers, publishers_selected, publishers_not_selected):
-        existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            everywhere=True
-        ).values('name', 'source__id')
-
-        existing_blacklisted_publishers = set(map(
-            lambda pub: (pub['name'], pub['source__id'],),
-            existing_blacklisted_publishers
-        ))
-
-        ignored_publishers = set(
-            [(pub['domain'], pub['source_id']) for pub in publishers_not_selected]
-        )
-
-        global_blacklist = self._create_global_blacklist(
-            ad_group,
-            publishers + publishers_selected,
-            state,
-            existing_blacklisted_publishers.union(ignored_publishers),
-            ignored_publishers
-        )
-
-        if len(global_blacklist) > 0:
-            actionlogs_to_send = []
-            with transaction.atomic():
-                actionlogs_to_send.extend(
-                    api.create_global_publisher_blacklist_actions(
-                        ad_group,
-                        request,
-                        state,
-                        global_blacklist,
-                        send=False
-                    )
-                )
-            actionlog.zwei_actions.send(actionlogs_to_send)
-            self._write_history(
-                request,
-                ad_group,
-                state,
-                global_blacklist,
-                constants.PublisherBlacklistLevel.GLOBAL
-            )
-
-    def _create_global_blacklist(self, ad_group, publishers, state, existing_blacklisted_publishers, ignored_publishers):
-        blacklist = []
-        source_cache = {}
-        with transaction.atomic():
-            for publisher in publishers:
-                domain = publisher['domain']
-
-                source_id = publisher.get('source_id')
-                if source_id not in source_cache:
-                    source_cache[source_id] = models.Source.objects.filter(id=source_id).first()
-                source = source_cache.get(source_id)
-
-                # we currently display sources for which we don't yet have publisher
-                # blacklisting support
-                if not source.can_modify_publisher_blacklist_automatically():
-                    continue
-
-                if source is None:
-                    continue
-
-                if (domain, source_id,) in ignored_publishers:
-                    continue
-
-                if state == constants.PublisherStatus.BLACKLISTED and\
-                        (domain, source_id,) in existing_blacklisted_publishers:
-                    continue
-
-                if source.source_type.type == constants.SourceType.OUTBRAIN:
-                    # Outbrain only has account level blacklist
-                    continue
-
-                # store blacklisted publishers and push to other sources
-                new_entry = None
-                existing_entry = models.PublisherBlacklist.objects.filter(
-                    name=domain,
-                    source=source,
-                    everywhere=True
-                ).first()
-                if existing_entry is not None:
-                    existing_entry.status = constants.PublisherStatus.BLACKLISTED
-                    existing_entry.save()
-                else:
-                    new_entry = models.PublisherBlacklist.objects.create(
-                        name=publisher['domain'],
-                        source=source,
-                        everywhere=True,
-                        status=constants.PublisherStatus.BLACKLISTED
-                    )
-                blacklist.append(new_entry or existing_entry)
-
-        ret = [
-            {
-                'domain': pub.name,
-                'source': pub.source
-            }
-            for pub in blacklist
-        ]
-        return ret
-
-    def _write_adgroup_history(self, request, publishers, state, level):
-        history_entries = {}
-        for publisher in publishers:
-            adgid = publisher['ad_group_id']
-            history_entries[adgid] = history_entries.get(adgid, [])
-            history_entries[adgid].append(publisher)
-
-        for adgid, adg_publishers in history_entries.iteritems():
-            ad_group = models.AdGroup.objects.get(pk=adgid)
-            self._write_history(request, ad_group, state, adg_publishers, level)
+    def _write_adgroup_history(self, request, ad_group, source_domains, state, level):
+        self._write_history(request, ad_group, state, [
+            {'source': source, 'domain': d}
+            for source, domains in source_domains.iteritems()
+            for d in domains
+        ], level)
 
     def _write_history(self, request, ad_group, state, blacklist, level):
-        action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled"
+        action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED \
+                        else "Enabled"
 
         level_description = ""
         if level == constants.PublisherBlacklistLevel.GLOBAL:

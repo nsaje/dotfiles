@@ -43,6 +43,12 @@ class BlacklistTestCase(TestCase):
         ]
         self.ob.source_type.save()
 
+        # One always globally blacklisted:
+        dash.models.PublisherBlacklist.objects.create(
+            everywhere=True,
+            name='www.donaldjtrump.com'
+        )
+
     def test_global_blacklist_wrong_constraings(self):
         with self.assertRaises(Exception):
             dash.blacklist.update(self.ad_group, {'ad_group': self.ad_group},
@@ -59,23 +65,23 @@ class BlacklistTestCase(TestCase):
     def test_global_blacklist(self):
         dash.blacklist.update(self.ad_group, {}, BLACKLISTED, self.domains, everywhere=True)
         self.assertEqual(
-            set(self.domains),
             set(dash.models.PublisherBlacklist.objects.filter(
                 status=BLACKLISTED,
                 everywhere=True
-            ).values_list('name', flat=True))
+            ).values_list('name', flat=True)),
+            set(self.domains + ['www.donaldjtrump.com'])
         )
 
     def test_global_blacklist_per_source(self):
         dash.blacklist.update(self.ad_group, {'source': self.source}, BLACKLISTED,
                               self.domains, everywhere=True)
         self.assertEqual(
-            set(self.domains),
             set(dash.models.PublisherBlacklist.objects.filter(
                 everywhere=True,
                 status=BLACKLISTED,
                 source=self.source
-            ).values_list('name', flat=True))
+            ).values_list('name', flat=True)),
+            set(self.domains)
         )
 
     def test_global_blacklist_per_source_but_already_global(self):
@@ -101,7 +107,7 @@ class BlacklistTestCase(TestCase):
             everywhere=True
         )
         dash.blacklist.update(self.ad_group, {}, ENABLED, self.domains, everywhere=True)
-        self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 0)
+        self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 1)
 
     def test_global_enabling_per_source(self):
         dash.models.PublisherBlacklist.objects.create(
@@ -116,8 +122,8 @@ class BlacklistTestCase(TestCase):
         dash.blacklist.update(self.ad_group, {'source': self.source}, ENABLED,
                               self.domains, everywhere=True)
         self.assertEqual(
-            dash.models.PublisherBlacklist.objects.all().get().name,
-            'www.google.com'
+            set(dash.models.PublisherBlacklist.objects.all().values_list('name', flat=True)),
+            set(['www.google.com', 'www.donaldjtrump.com'])
         )
 
     def test_account_blacklist(self):
@@ -252,6 +258,7 @@ class BlacklistTestCase(TestCase):
             set(dash.models.PublisherBlacklist.objects.all().values_list('source', 'name')),
             set([
                 (1, 'www.zemanta.com'),
+                (None, 'www.donaldjtrump.com'),
             ])
         )
 
@@ -264,6 +271,7 @@ class BlacklistTestCase(TestCase):
                 (1, 'www.zemanta.com'),
                 (1, 'www.zemanata.com'),
                 (1, 'www.google.com'),
+                (None, 'www.donaldjtrump.com'),
             ])
         )
         pass
@@ -287,6 +295,7 @@ class BlacklistTestCase(TestCase):
             set(dash.models.PublisherBlacklist.objects.all().values_list('source', 'name')),
             set([
                 (1, 'www.zemanta.com'),
+                (None, 'www.donaldjtrump.com'),
             ])
         )
 
@@ -300,6 +309,7 @@ class BlacklistTestCase(TestCase):
                 (1, u'www.google.com'),
                 (1, u'www.zemanta.com'),
                 (1, u'www.zemanata.com'),
+                (None, 'www.donaldjtrump.com'),
             ])
         )
         mock_k1_ping.assert_called_with(1, msg='blacklist.update')
@@ -317,6 +327,7 @@ class BlacklistTestCase(TestCase):
                 (7, u'www.google.com'),
                 (7, u'www.zemanta.com'),
                 (7, u'www.zemanata.com'),
+                (None, 'www.donaldjtrump.com'),
             ])
         )
         mock_k1_ping.assert_called_with(1, msg='blacklist.update')
@@ -354,10 +365,10 @@ class BlacklistTestCase(TestCase):
         dash.blacklist.update(self.ad_group, {'ad_group': self.ad_group, 'source': self.source},
                               ENABLED, self.domains)
         mock_k1_ping.assert_called_with(1, msg='blacklist.update')
-        self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 0)
+        self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 1)
 
         mock_k1_ping.reset_mock()
         dash.blacklist.update(self.ad_group, {'ad_group': self.ad_group, 'source': self.source},
                               ENABLED, self.domains)
-        self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 0)
+        self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 1)
         mock_k1_ping.assert_called_with(1, msg='blacklist.update')

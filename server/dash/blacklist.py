@@ -79,7 +79,15 @@ def _update_source(constraints, status, domains, request=None, ad_group=None):
             **constraints
         ).exclude(name__in=globally_blacklisted).delete()
         return
+
+    already_blacklisted = set(dash.models.PublisherBlacklist.objects.filter(
+        everywhere=False,
+        name__in=domains,
+        **constraints
+    ).values_list('name', flat=True))
     for domain in domains:
+        if domain in already_blacklisted:
+            continue
         dash.models.PublisherBlacklist.objects.create(
             name=domain,
             everywhere=False,
