@@ -1,0 +1,36 @@
+<div>
+    <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover></div>
+
+    <div class="loader-container">
+        <div class="loader" ng-show="history.length && requestInProgress"></div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="arrow" ng-class="getOrderClass('datetime')">
+                        <a href class="order" ng-click="changeOrder('datetime')">Date</a>
+                    </th>
+                    <th class="arrow" ng-class="getOrderClass('changedBy')">
+                        <a href class="order" ng-click="changeOrder('changedBy')">User</a>
+                    </th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-if="requestInProgress && !history.length">
+                    <td colspan="3" class="loader-row">
+                        <div class="loader"></div>
+                    </td>
+                </tr>
+                <tr ng-show="(!history || !history.length) && !requestInProgress">
+                    <td class="no-data" colspan="3">No data</td>
+                </tr>
+
+                <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
+                    <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                    <td>{{ item.changedBy }}</td>
+                    <td>{{ item.changesText }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

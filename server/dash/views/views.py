@@ -490,7 +490,6 @@ class CampaignAdGroups(api_common.BaseApiView):
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
-        ad_group_settings.changes_text = changes_text
         ad_group_settings.save(request)
 
         history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
@@ -999,11 +998,6 @@ class AdGroupSources(api_common.BaseApiView):
 
     def _add_to_history(self, ad_group_source, request):
         changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-
-        settings = ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
-        settings.save(request)
-
         history_helpers.write_ad_group_history(
             ad_group_source.ad_group,
             changes_text,
@@ -2086,10 +2080,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             level_description=level_description,
             pubs=pubs_string
         )
-        settings = ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
-        settings.save(request)
-
         history_helpers.write_ad_group_history(
             ad_group,
             changes_text,

@@ -20,6 +20,13 @@ def write_ad_group_history(ad_group,
     )
 
 
+def get_ad_group_history(ad_group):
+    return dash.models.History.objects.all().filter(
+        ad_group=ad_group,
+        level=dash.constants.HistoryLevel.AD_GROUP,
+    ).order_by('-created_dt')
+
+
 def write_campaign_history(campaign,
                            changes_text,
                            user=None,
@@ -38,6 +45,13 @@ def write_campaign_history(campaign,
     )
 
 
+def get_campaign_history(campaign):
+    return dash.models.History.objects.all().filter(
+        campaign=campaign,
+        level=dash.constants.HistoryLevel.CAMPAIGN,
+    ).order_by('-created_dt')
+
+
 def write_account_history(account,
                           changes_text,
                           user=None,
@@ -54,3 +68,10 @@ def write_account_history(account,
         user=user,
         system_user=system_user
     )
+
+
+def get_account_history(account):
+    return dash.models.History.objects.all().filter(
+        account=account,
+        level=dash.constants.HistoryLevel.ACCOUNT,
+    ).order_by('-created_dt')
