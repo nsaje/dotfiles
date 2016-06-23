@@ -2531,6 +2531,7 @@ class PublishersBlacklistStatusTest(TestCase):
         hist = history_helpers.get_campaign_history(adg9.campaign)
         self.assertEqual(2, hist.count())
         for h in hist:
+            self.assertIsNotNone(h.created_by)
             self.assertEqual(
                 constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
                 h.action_type)
