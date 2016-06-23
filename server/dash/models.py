@@ -912,23 +912,18 @@ class CampaignSettings(SettingsBase):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_campaign_history(
             self.campaign,
             history_type,
             changes,
-            self.changes_text or changes_text,
+            changes_text,
             user=self.created_by,
             system_user=self.system_user,
         )
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         return get_changes_text_from_dict(cls, changes, separator=separator)
 
@@ -2068,9 +2063,6 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-        if new_settings.changes_text is not None:
-            return new_settings.changes_text
-
         changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
         if changes is None:
             return 'Created settings'
@@ -2104,15 +2096,12 @@ class AdGroupSettings(SettingsBase):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
         changes_text = self.get_changes_text_from_dict(changes)
         create_ad_group_history(
             self.ad_group,
             history_type,
             changes,
-            self.changes_text or changes_text,
+            changes_text,
             user=self.created_by,
             system_user=self.system_user
         )
@@ -2278,10 +2267,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return None, ''
-
+        changes_text = self.get_changes_text_from_dict(changes)
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
@@ -3588,6 +3574,12 @@ class History(models.Model):
         choices=constants.HistoryType.get_choices(),
         null=False,
         blank=False,
+    )
+    # TODO: once the transition period is over make action_type non-nullable
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.HistoryActionType.get_choices(),
+        null=True,
+        blank=True,
     )
 
     changes_text = models.TextField(blank=False, null=False)

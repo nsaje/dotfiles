@@ -72,11 +72,6 @@ urlpatterns += [
         name='ad_group_settings'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/history/',
-        login_required(dash.views.agency.AdGroupHistory.as_view()),
-        name='ad_group_history'
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/$',
         login_required(dash.views.views.AdGroupSources.as_view()),
         name='ad_group_sources'
@@ -274,10 +269,6 @@ urlpatterns += [
         name='campaign_ad_groups'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/history/',
-        login_required(dash.views.agency.CampaignHistory.as_view()),
-    ),
-    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
         login_required(dash.views.agency.CampaignSettings.as_view()),
     ),
@@ -301,11 +292,6 @@ urlpatterns += [
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/content-insights/',
         login_required(dash.views.agency.CampaignContentInsights.as_view()),
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/history/',
-        login_required(dash.views.agency.AccountHistory.as_view()),
-        name='account_history'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/settings/',

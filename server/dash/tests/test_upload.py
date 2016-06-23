@@ -11,6 +11,7 @@ from dash import models
 from dash import upload
 from dash import image_helper
 from dash import constants
+from dash import history_helpers
 
 from actionlog.models import ActionLog
 
@@ -250,7 +251,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_unicode_tracker_urls(self):
         self.tracker_urls = u'http://exampleś.com'
@@ -258,7 +259,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_invalid_tracker_urls_not_https(self):
         self.tracker_urls = 'http://example.com/p.gif'
@@ -266,7 +267,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_multiple_tracker_urls(self):
         self.tracker_urls = 'https://example.com/p1.gif https://example.com/p2.gif'
@@ -282,7 +283,7 @@ class CleanRowTest(TestCase):
         expected_data = dict(self.default_expected_data)
         expected_data.pop('tracker_urls')
         self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid tracker URLs'])
+        self.assertEqual(errors, ['Invalid impression tracker URLs'])
 
     def test_no_upload_form_fields(self):
         self.upload_form_display_url = ''
@@ -296,7 +297,7 @@ class CleanRowTest(TestCase):
         expected_data.pop('description')
         expected_data.pop('call_to_action')
         self.assertEqual(data, expected_data)
-        self.assertItemsEqual(errors, 
+        self.assertItemsEqual(errors,
             [u'Display URL has to be present in CSV or default value should be submitted in the upload form.',
             u'Brand name has to be present in CSV or default value should be submitted in the upload form.',
             u'Description has to be present in CSV or default value should be submitted in the upload form.',
@@ -473,8 +474,8 @@ class ProcessCallbackTest(TestCase):
 
         self.mock_actionlog_send.assert_called_with([action])
 
-        settings = ad_group_source.ad_group.get_current_settings()
-        self.assertEqual(settings.changes_text,
+        hist = history_helpers.get_ad_group_history(ad_group_source.ad_group).first()
+        self.assertEqual(hist.changes_text,
                          u'Imported batch "Test batch name" with 10 content ads.')
 
     @override_settings(
@@ -516,8 +517,8 @@ class ProcessCallbackTest(TestCase):
 
         results = [(row, cleaned_data, errors)]
         upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
-        self.assertEqual(batch.num_errors, 1) 
-        
+        self.assertEqual(batch.num_errors, 1)
+
         new_content_ad_count = models.ContentAd.objects.all().count()
         new_action_count = ActionLog.objects.all().count()
 
@@ -590,9 +591,9 @@ class ProcessCallbackTest(TestCase):
 
         results = [(row, cleaned_data, errors)]
         upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
-        
+
         # first test if there really were errors we're expecting (there could be other exceptions)
-        # ideally we should check if specific exception we were expecting happened, 
+        # ideally we should check if specific exception we were expecting happened,
         self.assertEqual(batch.num_errors, 1)
 
         new_content_ad_count = models.ContentAd.objects.all().count()

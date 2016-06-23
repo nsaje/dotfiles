@@ -1617,3 +1617,41 @@ class HistoryType(ConstantBase):
         CREDIT: 'Credit History',
         AD_GROUP_SOURCE: 'Ad Group Source History',
     }
+
+
+class HistoryActionType(ConstantBase):
+    GOAL_CHANGE = 1
+    BUDGET_CHANGE = 2
+    CREDIT_CHANGE = 3
+    PUBLISHER_BLACKLIST_CHANGE = 4
+    GLOBAL_PUBLISHER_BLACKLIST_CHANGE = 5
+    REPORTING_MANAGE = 6
+    CONTENT_AD_STATE_CHANGE = 7
+    SETTINGS_CHANGE = 8
+    CREATE = 9
+    CONTENT_AD_CREATE = 10
+    CONVERSION_PIXEL_CREATE = 11
+    CONVERSION_PIXEL_ARCHIVE_RESTORE = 12
+    ARCHIVE_RESTORE = 13
+    CONTENT_AD_ARCHIVE_RESTORE = 14
+    MEDIA_SOURCE_SETTINGS_CHANGE = 15
+    MEDIA_SOURCE_ADD = 16
+
+    _VALUES = {
+        GOAL_CHANGE: 'Change Campaign Goal',
+        BUDGET_CHANGE: 'Change Budget',
+        CREDIT_CHANGE: 'Change Credit',
+        PUBLISHER_BLACKLIST_CHANGE: 'Set Publisher Blacklist',
+        GLOBAL_PUBLISHER_BLACKLIST_CHANGE: 'Set Global Publisher Blacklist',
+        REPORTING_MANAGE: 'Manage Reporting',
+        CONTENT_AD_STATE_CHANGE: 'Set Content Ad(s) State',
+        SETTINGS_CHANGE: 'Change Settings',
+        CREATE: 'Create',
+        CONTENT_AD_CREATE: 'Create Content Ad',
+        CONVERSION_PIXEL_CREATE: 'Create Conversion Pixel',
+        CONVERSION_PIXEL_ARCHIVE_RESTORE: 'Archive/Restore Conversion Pixel',
+        ARCHIVE_RESTORE: 'Archive/Restore',
+        CONTENT_AD_ARCHIVE_RESTORE: 'Archive/Restore Content Ad(s)',
+        MEDIA_SOURCE_SETTINGS_CHANGE: 'Set Media Source Settings',
+        MEDIA_SOURCE_ADD: 'Add Media Source',
+    }
