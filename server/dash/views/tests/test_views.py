@@ -448,10 +448,17 @@ class CampaignAdGroups(TestCase):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
-        hist = history_helpers.get_ad_group_history(ad_group).first()
+        hist = history_helpers.get_ad_group_history(ad_group)
+        self.assertEqual(hist.first().created_by, self.user)
+        self.assertEqual(hist.first().action_type, constants.HistoryActionType.CREATE)
+
+        self.assertIsNone(hist[1].created_by)
+        self.assertIsNone(hist[2].created_by)
+        self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE,
+                         hist[2].action_type)
 
         self.assertIsNotNone(ad_group_settings.id)
-        self.assertIsNotNone(hist.changes_text)
+        self.assertIsNotNone(hist.first().changes_text)
         self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
@@ -2510,6 +2517,12 @@ class PublishersBlacklistStatusTest(TestCase):
         useractionlogs = models.UserActionLog.objects.filter(
             action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
         )
+        hist = history_helpers.get_campaign_history(adg9.campaign)
+        self.assertEqual(2, hist.count())
+        for h in hist:
+            self.assertEqual(
+                constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
+                h.action_type)
         self.assertEqual(2, useractionlogs.count())
         for useractionlog in useractionlogs:
             self.assertTrue(useractionlog.ad_group.id in (1, 9))

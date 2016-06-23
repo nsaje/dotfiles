@@ -477,6 +477,8 @@ class ProcessCallbackTest(TestCase):
         hist = history_helpers.get_ad_group_history(ad_group_source.ad_group).first()
         self.assertEqual(hist.changes_text,
                          u'Imported batch "Test batch name" with 10 content ads.')
+        self.assertEqual(hist.action_type,
+                         constants.HistoryActionType.CONTENT_AD_CREATE)
 
     @override_settings(
         SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
