@@ -448,6 +448,12 @@ class UploadStatusTestCase(TestCase):
         batch_id = 1
         ad_group_id = 2
 
+        candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
+        expected_candidate = candidate.to_dict()
+        expected_candidate['errors'] = {
+            '__all__': ['Content ad still processing'],
+        }
+
         response = _get_client().get(
             reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
@@ -457,10 +463,7 @@ class UploadStatusTestCase(TestCase):
             'success': True,
             'data': {
                 'candidates': {
-                    '1': {
-                        'image_status': constants.AsyncUploadJobStatus.PENDING_START,
-                        'url_status': constants.AsyncUploadJobStatus.PENDING_START,
-                    }
+                    str(candidate.id): expected_candidate,
                 }
             }
         }, json.loads(response.content))
@@ -469,6 +472,10 @@ class UploadStatusTestCase(TestCase):
         batch_id = 2
         ad_group_id = 3
 
+        candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
+        expected_candidate = candidate.to_dict()
+        expected_candidate['errors'] = {}
+
         response = _get_client().get(
             reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
@@ -478,10 +485,7 @@ class UploadStatusTestCase(TestCase):
             'success': True,
             'data': {
                 'candidates': {
-                    '2': {
-                        'image_status': constants.AsyncUploadJobStatus.OK,
-                        'url_status': constants.AsyncUploadJobStatus.OK,
-                    }
+                    str(candidate.id): expected_candidate,
                 }
             }
         }, json.loads(response.content))
@@ -490,6 +494,13 @@ class UploadStatusTestCase(TestCase):
         batch_id = 3
         ad_group_id = 4
 
+        candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
+        expected_candidate = candidate.to_dict()
+        expected_candidate['errors'] = {
+            'image_url': ['Image could not be processed'],
+            'url': ['Content unreachable'],
+        }
+
         response = _get_client().get(
             reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
@@ -499,10 +510,7 @@ class UploadStatusTestCase(TestCase):
             'success': True,
             'data': {
                 'candidates': {
-                    '3': {
-                        'image_status': constants.AsyncUploadJobStatus.FAILED,
-                        'url_status': constants.AsyncUploadJobStatus.FAILED,
-                    }
+                    str(candidate.id): expected_candidate,
                 }
             }
         }, json.loads(response.content))

@@ -1332,6 +1332,35 @@ class ContentAdFormTestCase(TestCase):
             'image_url': ['Image could not be processed']
         }, f.errors)
 
+    def test_no_image_url_and_invalid_status(self):
+        data = self._get_valid_data()
+        data['image_url'] = None
+        data['image_status'] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Missing image URL']
+        }, f.errors)
+
+    def test_invalid_url(self):
+        data = self._get_valid_data()
+        data['url_status'] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'url': ['Content unreachable']
+        }, f.errors)
+
+    def test_no_url_and_invalid_status(self):
+        data = self._get_valid_data()
+        data['url'] = None
+        data['url_status'] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'url': ['Missing URL']
+        }, f.errors)
+
     def test_missing_image_id(self):
         data = self._get_valid_data()
         del data['image_id']

@@ -76,6 +76,18 @@ def persist_candidates(batch):
     return content_ads
 
 
+def get_candidates_with_errors(candidates):
+    errors = validate_candidates(candidates)
+    result = []
+    for candidate in candidates:
+        candidate_dict = candidate.to_dict()
+        candidate_dict['errors'] = {}
+        if candidate.id in errors:
+            candidate_dict['errors'] = errors[candidate.id]
+        result.append(candidate_dict)
+    return result
+
+
 def _prepare_candidates(batch):
     candidates = models.ContentAdCandidate.objects.filter(
         batch=batch,

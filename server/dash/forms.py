@@ -1284,11 +1284,11 @@ class ContentAdForm(ContentAdCandidateForm):
             return cleaned_data
 
         image_error = self._validate_image_status(cleaned_data)
-        if image_error:
+        if 'image_url' in cleaned_data and cleaned_data['image_url'] and image_error:
             self.add_error('image_url', image_error)
 
         url_error = self._validate_url_status(cleaned_data)
-        if url_error:
+        if 'url' in cleaned_data and cleaned_data['url'] and url_error:
             self.add_error('url', url_error)
 
         return cleaned_data

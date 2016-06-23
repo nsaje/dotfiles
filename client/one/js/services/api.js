@@ -2546,11 +2546,18 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.checkStatus = function (adGroupId, batchId) {
+        this.checkStatus = function (adGroupId, batchId, candidates) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/status/';
+            var config = {
+                params: {},
+            };
 
-            $http.get(url).
+            if (candidates) {
+                config.params.candidates = candidates.join(',');
+            }
+
+            $http.get(url, config).
                 success(function (data) {
                     var result = {
                         candidates: convertStatusFromApi(data.data.candidates),
@@ -2607,43 +2614,44 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             };
         }
 
+        function convertCandidateFromApi (candidate) {
+            return {
+                id: candidate.id,
+                label: candidate.label,
+                url: candidate.url,
+                title: candidate.title,
+                imageStatus: candidate.image_status,
+                urlStatus: candidate.url_status,
+                imageUrl: candidate.image_url,
+                imageId: candidate.image_id,
+                imageHash: candidate.image_hash,
+                imageWidth: candidate.image_width,
+                imageHeight: candidate.image_height,
+                imageCrop: candidate.image_crop,
+                hostedImageUrl: candidate.hosted_image_url,
+                displayUrl: candidate.display_url,
+                brandName: candidate.brand_name,
+                description: candidate.description,
+                callToAction: candidate.call_to_action,
+                trackerUrls: candidate.tracker_urls,
+                primaryTrackerUrl: candidate.primary_tracker_url,
+                secondaryTrackerUrl: candidate.secondary_tracker_url,
+                errors: convertCandidateErrorsFromApi(candidate.errors),
+            };
+        }
+
         function convertCandidatesFromApi (candidates) {
             var result = [];
             angular.forEach(candidates, function (candidate) {
-                result.push({
-                    id: candidate.id,
-                    label: candidate.label,
-                    url: candidate.url,
-                    title: candidate.title,
-                    imageStatus: candidate.image_status,
-                    urlStatus: candidate.url_status,
-                    imageUrl: candidate.image_url,
-                    imageId: candidate.image_id,
-                    imageHash: candidate.image_hash,
-                    imageWidth: candidate.image_width,
-                    imageHeight: candidate.image_height,
-                    imageCrop: candidate.image_crop,
-                    hostedImageUrl: candidate.hosted_image_url,
-                    displayUrl: candidate.display_url,
-                    brandName: candidate.brand_name,
-                    description: candidate.description,
-                    callToAction: candidate.call_to_action,
-                    trackerUrls: candidate.tracker_urls,
-                    primaryTrackerUrl: candidate.primary_tracker_url,
-                    secondaryTrackerUrl: candidate.secondary_tracker_url,
-                    errors: convertCandidateErrorsFromApi(candidate.errors),
-                });
+                result.push(convertCandidateFromApi(candidate));
             });
             return result;
         }
 
-        function convertStatusFromApi (statuses) {
+        function convertStatusFromApi (candidates) {
             var result = [];
-            angular.forEach(statuses, function (candidateStatus, candidateId) {
-                result[candidateId] = {
-                    imageStatus: candidateStatus.image_status,
-                    urlStatus: candidateStatus.url_status,
-                };
+            angular.forEach(candidates, function (candidate, candidateId) {
+                result[candidateId] = convertCandidateFromApi(candidate);
             });
             return result;
         }

@@ -130,18 +130,10 @@ class UploadMultiple(api_common.BaseApiView):
         for candidate in candidates:
             upload_plus.invoke_external_validation(candidate, skip_url_validation)
 
-        errors = upload_plus.validate_candidates(candidates)
-        candidates_response = []
-        for candidate in candidates:
-            candidate_dict = candidate.to_dict()
-            candidate_dict['errors'] = {}
-            if candidate.id in errors:
-                candidate_dict['errors'] = errors[candidate.id]
-            candidates_response.append(candidate_dict)
-
+        candidates_result = upload_plus.get_candidates_with_errors(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
-            'candidates': candidates_response,
+            'candidates': candidates_result,
         })
 
 
@@ -161,17 +153,13 @@ class UploadStatus(api_common.BaseApiView):
         candidate_ids = request.GET.get('candidates')
 
         if candidate_ids:
+            candidate_ids = candidate_ids.strip().split(',')
             candidates = candidates.filter(id__in=candidate_ids)
 
-        result = {}
-        for candidate in candidates:
-            result[candidate.id] = {
-                'image_status': candidate.image_status,
-                'url_status': candidate.url_status,
-            }
-
+        candidates_result = {candidate['id']: candidate for candidate
+                             in upload_plus.get_candidates_with_errors(candidates)}
         return self.create_api_response({
-            'candidates': result
+            'candidates': candidates_result,
         })
 
 

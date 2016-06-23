@@ -275,6 +275,51 @@ class ValidateCandidatesTestCase(TestCase):
             }
         }, errors)
 
+    def test_get_candidates_with_errors(self):
+        data = [invalid_candidate]
+
+        # prepare candidate
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        batch, candidates = dash.upload_plus.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+
+        result = dash.upload_plus.get_candidates_with_errors(candidates)
+        self.assertEqual([{
+            'hosted_image_url': None,
+            'image_crop': 'landscape',
+            'primary_tracker_url': '',
+            'image_hash': None,
+            'description': '',
+            'call_to_action': '',
+            'title': '',
+            'url': 'ftp://zemanta.com/test-content-ad',
+            'errors': {
+                'image_crop': [u'Image crop landscape is not supported'],
+                'description': [u'Missing description'],
+                '__all__': [u'Content ad still processing'],
+                'title': [u'Missing title'],
+                'url': [u'Invalid URL'],
+                'display_url': [u'Display URL too long (max 25 characters)'],
+                'brand_name': [u'Missing brand name'],
+                'label': [u'Label too long (max 25 characters)'],
+                'call_to_action': [u'Missing call to action'],
+                'image_url': [u'Invalid image URL'],
+                'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
+            },
+            'display_url': 'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com'
+                           'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
+            'brand_name': '',
+            'image_width': None,
+            'label': 'testtesttesttesttesttesttesttesttesttest',
+            'image_id': None,
+            'image_height': None,
+            'image_url': 'file://zemanta.com/test-image.jpg',
+            'url_status': 1,
+            'image_status': 1,
+            'secondary_tracker_url': '',
+            'id': 4,
+            'tracker_urls': 'http://t.zemanta.com/px1.png http://t.zemanta.com/px2.png',
+        }], result)
+
 
 @patch('utils.lambda_helper.invoke_lambda')
 class UploadPlusTest(TestCase):
