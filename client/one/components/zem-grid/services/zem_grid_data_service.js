@@ -38,7 +38,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
 
         function loadMetaData () {
             var deferred = $q.defer();
-            dataSource.getMetaData().then(
+            dataSource.getMetaData(true).then(
                 function (data) {
                     zemGridParser.parseMetaData(grid, data);
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);

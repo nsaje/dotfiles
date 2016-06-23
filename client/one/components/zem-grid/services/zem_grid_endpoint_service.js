@@ -27,7 +27,7 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
                     return breakdown;
                 });
 
-                if (breakdowns.length === 1 && breakdowns[0].totals) {
+                if (config.level === 1) { // Base level data comes with some additional metadata (e.g. goals)
                     var breakdown = breakdowns[0];
                     zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
                     zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
