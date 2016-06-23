@@ -12,22 +12,6 @@ oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config)
     statusIcons[constants.emoticon.NEUTRAL] = 'neutral_face.svg';
     statusClasses[constants.emoticon.NEUTRAL] = 'img-icon-neutral';
 
-    function updateRow (ctrl) {
-        ctrl.overall = {
-            file: statusIcons[constants.emoticon.NEUTRAL],
-            class: statusClasses[constants.emoticon.NEUTRAL],
-        };
-
-        if (ctrl.row) {
-            ctrl.isFieldVisible = isFieldVisible(ctrl.row.level);
-        }
-
-        if (ctrl.data) {
-            ctrl.overall = getOverallIcon(ctrl.data.overall);
-            ctrl.statusList = getStatusList(ctrl.data.list);
-        }
-    }
-
     function isFieldVisible (rowLevel) {
         return rowLevel === 1;
     }
@@ -71,8 +55,24 @@ oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config)
             ctrl.config = config;
 
             scope.$watch('ctrl.row', function () {
-                updateRow(ctrl);
+                updateRow();
             });
+
+            function updateRow () {
+                ctrl.overall = {
+                    file: statusIcons[constants.emoticon.NEUTRAL],
+                    class: statusClasses[constants.emoticon.NEUTRAL],
+                };
+
+                if (ctrl.row) {
+                    ctrl.isFieldVisible = isFieldVisible(ctrl.row.level);
+                }
+
+                if (ctrl.data) {
+                    ctrl.overall = getOverallIcon(ctrl.data.overall);
+                    ctrl.statusList = getStatusList(ctrl.data.list);
+                }
+            }
         },
         controller: [function () {}],
     };

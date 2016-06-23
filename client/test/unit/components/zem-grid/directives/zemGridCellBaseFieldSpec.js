@@ -19,12 +19,19 @@ describe('zemGridCellBaseField', function () {
         element = $compile(template)(scope);
     }));
 
-    it('should display N/A if field\'s value is not defined', function () {
+    it('should display default column\'s value or N/A if field\'s value is not defined', function () {
         scope.ctrl.data = undefined;
         // Update row reference to trigger the watch on 'ctrl.row' in directive
         scope.ctrl.row = {};
         scope.$digest();
         expect(element.text().trim()).toEqual('N/A');
+
+        scope.ctrl.col.data = {
+            defaultValue: 'default',
+        };
+        scope.ctrl.row = {};
+        scope.$digest();
+        expect(element.text().trim()).toEqual('default');
     });
 
     it('should correctly display text values', function () {
@@ -50,7 +57,7 @@ describe('zemGridCellBaseField', function () {
 
     it('should correctly display percent values', function () {
         var tests = [
-            {value: undefined, expectedResult: 'N/A'},
+            {value: undefined, expectedResult: '0.00%'},
             {value: 0, expectedResult: '0.00%'},
             {value: 50, expectedResult: '50.00%'},
             {value: 123.45, expectedResult: '123.45%'},
@@ -58,6 +65,7 @@ describe('zemGridCellBaseField', function () {
 
         scope.ctrl.col.data = {
             type: 'percent',
+            defaultValue: '0.00%',
         };
 
         tests.forEach(function (test) {
