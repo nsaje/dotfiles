@@ -1317,7 +1317,7 @@ class AdGroupSourceSettingsWriter(object):
             new_settings.system_user = system_user
         else:
             new_settings.created_by = request.user
-        new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+        new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
         self.notify(settings_obj, old_settings_obj, request, system_user)
         return new_settings
 
