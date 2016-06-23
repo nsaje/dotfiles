@@ -13,12 +13,29 @@ describe('test zemGridDataFormatter', function () {
 
     it('should return unformatted values for unknown types', function () {
         tests = [
+            {value: undefined, expectedResult: 'N/A'},
             {value: 'abc', expectedResult: 'abc'},
             {value: 123, expectedResult: 123},
         ];
 
         options = {
             type: 'unknown',
+        };
+
+        tests.forEach(function (test) {
+            expect(zemGridDataFormatter.formatValue(test.value, options)).toEqual(test.expectedResult);
+        });
+    });
+
+    it('should correctly format text values', function () {
+        tests = [
+            {value: undefined, expectedResult: ''},
+            {value: 'abcde', expectedResult: 'abcde'},
+            {value: 12345, expectedResult: '12345'},
+        ];
+
+        options = {
+            type: 'text',
         };
 
         tests.forEach(function (test) {
