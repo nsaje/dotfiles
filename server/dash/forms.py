@@ -1168,13 +1168,13 @@ class ContentAdCandidateForm(forms.Form):
 
         for url in tracker_urls:
             if url.lower().startswith('http://'):
-                raise forms.ValidationError('Tracker URLs have to be HTTPS')
+                raise forms.ValidationError('Impression tracker URLs have to be HTTPS')
             try:
                 # URL is considered invalid if it contains any unicode chars
                 url = url.encode('ascii')
                 validate_url(url)
             except (forms.ValidationError, UnicodeEncodeError):
-                raise forms.ValidationError('Invalid tracker URLs')
+                raise forms.ValidationError('Invalid impression tracker URLs')
 
             result.append(url)
 
