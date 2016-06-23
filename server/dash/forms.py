@@ -1256,6 +1256,24 @@ class ContentAdForm(ContentAdCandidateForm):
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000
 
+    def _validate_image(self, cleaned_data):
+        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
+           not cleaned_data['image_id'] or\
+           not cleaned_data['image_hash'] or\
+           not cleaned_data['image_width'] or\
+           not cleaned_data['image_height']:
+            return 'Image could not be processed'
+
+        if cleaned_data['image_width'] < self.MIN_IMAGE_SIZE or cleaned_data['image_height'] < self.MIN_IMAGE_SIZE:
+            return 'Image too small (minimum size is {min}x{min} px)'.format(min=self.MIN_IMAGE_SIZE)
+
+        if cleaned_data['image_width'] > self.MAX_IMAGE_SIZE or cleaned_data['image_height'] > self.MAX_IMAGE_SIZE:
+            return 'Image too big (maximum size is {max}x{max} px)'.format(max=self.MAX_IMAGE_SIZE)
+
+    def _validate_url(self, cleaned_data):
+        if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
+            return 'Content unreachable'
+
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
 
@@ -1263,22 +1281,14 @@ class ContentAdForm(ContentAdCandidateForm):
                             constants.AsyncUploadJobStatus.WAITING_RESPONSE]
         if cleaned_data['image_status'] in pending_statuses or cleaned_data['url_status'] in pending_statuses:
             self.add_error(None, 'Content ad still processing')
-            return self.cleaned_data
+            return cleaned_data
 
-        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
-           not cleaned_data['image_id'] or\
-           not cleaned_data['image_hash'] or\
-           not cleaned_data['image_width'] or\
-           not cleaned_data['image_height']:
-            self.add_error('image_url', 'Image could not be processed')
-        elif cleaned_data['image_width'] < self.MIN_IMAGE_SIZE or cleaned_data['image_height'] < self.MIN_IMAGE_SIZE:
-            self.add_error(
-                'image_url', 'Image too small (minimum size is {min}x{min} px)'.format(min=self.MIN_IMAGE_SIZE))
-        elif cleaned_data['image_width'] > self.MAX_IMAGE_SIZE or cleaned_data['image_height'] > self.MAX_IMAGE_SIZE:
-            self.add_error(
-                'image_url', 'Image too big (maximum size is {max}x{max} px)'.format(max=self.MAX_IMAGE_SIZE))
+        image_error = self._validate_image(cleaned_data)
+        if image_error:
+            self.add_error('image_url', image_error)
 
-        if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
-            self.add_error('url', 'Content unreachable')
+        url_error = self._validate_url(cleaned_data)
+        if url_error:
+            self.add_error('url', url_error)
 
-        return self.cleaned_data
+        return cleaned_data
