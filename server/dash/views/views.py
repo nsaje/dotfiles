@@ -34,7 +34,6 @@ import influx
 from dash.views import helpers
 
 from utils import lc_helper
-from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers
@@ -92,13 +91,11 @@ def create_name(objects, name):
     return name
 
 
-@statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
     return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL, 'debug': settings.DEBUG})
 
 
-@statsd_helper.statsd_timer('dash', 'supply_dash_redirect')
 @login_required
 def supply_dash_redirect(request):
     # We do not authorization validation here since it only redirects to third-party
@@ -145,7 +142,6 @@ def supply_dash_redirect(request):
 class User(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'user_get')
     def get(self, request, user_id):
         response = {}
 
@@ -181,7 +177,6 @@ def demo_mode(request):
 class AccountArchive(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'account_archive_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
@@ -200,7 +195,6 @@ class AccountArchive(api_common.BaseApiView):
 class AccountRestore(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'account_restore_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
@@ -221,7 +215,6 @@ class AccountRestore(api_common.BaseApiView):
 class CampaignArchive(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'campaign_archive_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
@@ -240,7 +233,6 @@ class CampaignArchive(api_common.BaseApiView):
 class CampaignRestore(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'campaign_restore_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
@@ -275,7 +267,6 @@ class AdGroupOverview(api_common.BaseApiView):
             ) or 0
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -460,7 +451,6 @@ class AdGroupOverview(api_common.BaseApiView):
 class AdGroupArchive(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_archive_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
@@ -479,7 +469,6 @@ class AdGroupArchive(api_common.BaseApiView):
 class AdGroupRestore(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_restore_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
@@ -500,7 +489,6 @@ class AdGroupRestore(api_common.BaseApiView):
 class CampaignAdGroups(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
@@ -592,7 +580,6 @@ class CampaignAdGroups(api_common.BaseApiView):
 class CampaignOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
@@ -630,7 +617,6 @@ class CampaignOverview(api_common.BaseApiView):
         return self.create_api_response(response)
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'campaign_overview_basic')
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
@@ -702,7 +688,6 @@ class CampaignOverview(api_common.BaseApiView):
         return settings, daily_cap_value
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc,
                               start_date, end_date):
         settings = []
@@ -764,7 +749,6 @@ class CampaignOverview(api_common.BaseApiView):
 class AccountOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'account_overview')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
 
@@ -901,7 +885,6 @@ class AccountOverview(api_common.BaseApiView):
 class AvailableSources(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
     def get(self, request):
         show_archived = request.GET.get('show_archived') == 'true'
         user_ad_groups = models.AdGroup.objects.all().filter_by_user(request.user)
@@ -930,7 +913,6 @@ class AvailableSources(api_common.BaseApiView):
 class AdGroupSources(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
@@ -972,7 +954,6 @@ class AdGroupSources(api_common.BaseApiView):
         })
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
     def put(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
@@ -1024,7 +1005,6 @@ class AdGroupSources(api_common.BaseApiView):
 class Account(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'account_put')
     def put(self, request):
         if not request.user.has_perm('zemauth.all_accounts_accounts_add_account'):
             raise exc.MissingDataError()
@@ -1060,7 +1040,6 @@ class Account(api_common.BaseApiView):
 class AccountCampaigns(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_campaigns_view'):
             raise exc.MissingDataError()
@@ -1098,7 +1077,6 @@ class AccountCampaigns(api_common.BaseApiView):
 class AdGroupSourceSettings(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
         resource = json.loads(request.body)
         ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
@@ -1225,7 +1203,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 class AdGroupAdsUpload(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1241,7 +1218,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
         })
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1298,7 +1274,6 @@ class AdGroupAdsUpload(api_common.BaseApiView):
 class AdGroupAdsUploadReport(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
         helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1319,7 +1294,6 @@ class AdGroupAdsUploadReport(api_common.BaseApiView):
 class AdGroupAdsUploadCancel(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
     def get(self, request, ad_group_id, batch_id):
         helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1343,7 +1317,6 @@ class AdGroupAdsUploadCancel(api_common.BaseApiView):
 class AdGroupAdsUploadStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
         helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1400,7 +1373,6 @@ class AdGroupAdsUploadStatus(api_common.BaseApiView):
 class AdGroupContentAdArchive(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.ForbiddenError(message="Not allowed")
@@ -1454,7 +1426,6 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
 class AdGroupContentAdRestore(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_restore_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.ForbiddenError(message="Not allowed")
@@ -1492,7 +1463,6 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
 class AdGroupContentAdState(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -1548,7 +1518,6 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
 class AdGroupContentAdCSV(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
         try:
             ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -1634,7 +1603,6 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 class PublishersBlacklistStatus(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
             raise exc.AuthorizationError()
@@ -2139,7 +2107,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 class AllAccountsOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
     def get(self, request):
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
@@ -2274,7 +2241,6 @@ class Demo(api_common.BaseApiView):
         }
 
 
-@statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')
 
@@ -2362,7 +2328,6 @@ def oauth_redirect(request, source_name):
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
 
 
-@statsd_helper.statsd_timer('dash', 'sharethrough_approval')
 @csrf_exempt
 def sharethrough_approval(request):
     data = json.loads(request.body)

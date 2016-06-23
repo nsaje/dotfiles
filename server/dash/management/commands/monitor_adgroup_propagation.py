@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 
 from dash import models
 from utils import redirector_helper
-from utils import statsd_helper
 from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 import influx
 
@@ -78,8 +77,5 @@ class Command(ExceptionCommand):
         )
 
         if not options['no_statsd']:
-            statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.exceptions', nr_exceptions)
             influx.gauge('propagation_consistency.ad_group_r1', nr_exceptions, state='exceptions')
-            statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.not_in_sync', nr_not_in_sync)
             influx.gauge('propagation_consistency.ad_group_r1', nr_exceptions, state='out_of_sync')
-

@@ -17,7 +17,6 @@ import automation.settings
 import automation.helpers
 from utils import pagerduty_helper, url_helper
 from utils.email_helper import format_email, email_manager_list
-from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +150,6 @@ def _send_campaign_stopped_notification_email(
 
 
 @influx.timer('automation.budgetdepletion.budget_campaigns', operation='notify_depleting')
-@statsd_timer('automation.budgetdepletion', 'notify_depleting_budget_campaigns')
 def notify_depleting_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)
@@ -168,7 +166,6 @@ def notify_depleting_budget_campaigns():
 
 
 @influx.timer('automation.budgetdepletion.budget_campaigns', operation='stop_and_notify_depleted')
-@statsd_timer('automation.budgetdepletion', 'stop_and_notify_depleted_budget_campaigns')
 def stop_and_notify_depleted_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)

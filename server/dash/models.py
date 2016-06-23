@@ -30,7 +30,6 @@ from dash import views
 import reports.constants
 from reports import budget_helpers
 from utils import encryption_helpers
-from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters
@@ -153,21 +152,18 @@ class DemoManager(models.Manager):
     def get_queryset(self):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
-            with statsd_helper.statsd_block_timer('dash.models', 'account_demo_objects'):
-                queryset = queryset.filter(
-                    campaign__adgroup__in=AdGroup.demo_objects.all()
-                ).distinct()
+            queryset = queryset.filter(
+                campaign__adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         elif queryset.model is Campaign:
-            with statsd_helper.statsd_block_timer('dash.models', 'campaign_demo_objects'):
-                queryset = queryset.filter(
-                    adgroup__in=AdGroup.demo_objects.all()
-                ).distinct()
+            queryset = queryset.filter(
+                adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         else:
             assert queryset.model is AdGroup
-            with statsd_helper.statsd_block_timer('dash.models', 'adgroup_demo_objects'):
-                queryset = queryset.filter(
-                    id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
-                )
+            queryset = queryset.filter(
+                id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
+            )
         return queryset
 
 
@@ -2846,7 +2842,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     ]
 
     _demo_fields = {
-        'comment': utils.demo_anonymizer.fake_sentence,
+        'comment': utils.demo_anonymizer.fake_io,
     }
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
@@ -3149,7 +3145,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     ]
 
     _demo_fields = {
-        'comment': utils.demo_anonymizer.fake_sentence,
+        'comment': lambda: 'Monthly budget',
     }
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
