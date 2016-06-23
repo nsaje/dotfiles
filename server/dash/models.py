@@ -445,7 +445,7 @@ class Account(models.Model):
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -458,7 +458,7 @@ class Account(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def admin_link(self):
         if self.id:
@@ -630,7 +630,9 @@ class Campaign(models.Model, PermissionMixin):
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -643,7 +645,9 @@ class Campaign(models.Model, PermissionMixin):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def is_in_landing(self):
         current_settings = self.get_current_settings()
@@ -861,13 +865,17 @@ class AccountSettings(SettingsBase):
             value = constants.AccountType.get_text(value)
         return value
 
-    def save(self, request, *args, **kwargs):
+    def save(self,
+             request,
+             action_type=None,
+             changes_text=None,
+             *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
         super(AccountSettings, self).save(*args, **kwargs)
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(request and request.user, action_type, changes_text)
 
-    def add_to_history(self, user=None):
+    def add_to_history(self, user, action_type, history_changes_text):
         history_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
             self.get_settings_dict()
@@ -875,12 +883,14 @@ class AccountSettings(SettingsBase):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return
-        changes_text = self.get_changes_text_from_dict(changes)
+
+        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.account.write_history(
             changes_text,
             changes=changes,
             history_type=history_type,
-            user=user
+            action_type=action_type,
+            user=user,
         )
 
     class Meta:
@@ -960,16 +970,19 @@ class CampaignSettings(SettingsBase):
 
     objects = QuerySetManager()
 
-    def save(self, request, *args, **kwargs):
+    def save(self,
+             request,
+             action_type=None,
+             *args, **kwargs):
         if self.pk is None:
             if request is None:
                 self.created_by = None
             else:
                 self.created_by = request.user
         super(CampaignSettings, self).save(*args, **kwargs)
-        self.add_to_history(user=request.user if request else self.created_by)
+        self.add_to_history(request and request.user, action_type)
 
-    def add_to_history(self, user):
+    def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
@@ -978,6 +991,7 @@ class CampaignSettings(SettingsBase):
             self.changes_text or changes_text,
             changes=changes,
             history_type=constants.HistoryType.CAMPAIGN,
+            action_type=action_type,
             user=user,
             system_user=self.system_user
         )
@@ -1648,7 +1662,9 @@ class AdGroup(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -1661,7 +1677,9 @@ class AdGroup(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
@@ -2165,27 +2183,31 @@ class AdGroupSettings(SettingsBase):
         # Strip the first '?' as we don't want to send it as a part of query string
         return self.tracking_code.lstrip('?')
 
-    def save(self, request, *args, **kwargs):
+    def save(self,
+             request,
+             action_type=None,
+             changes_text=None,
+             *args, **kwargs):
         if self.pk is None:
             if request is None:
                 self.created_by = None
             else:
                 self.created_by = request.user
         super(AdGroupSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(request and request.user, action_type, changes_text)
 
-    def add_to_history(self):
+    def add_to_history(self, user, action_type, history_changes_text):
         history_type = constants.HistoryType.AD_GROUP
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        changes_text = self.get_changes_text_from_dict(changes)
+        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.ad_group.write_history(
             self.changes_text or changes_text,
             changes=changes,
             history_type=history_type,
-            action_type=constants.HistoryActionType.SETTINGS_CHANGE,
-            user=self.created_by,
+            action_type=action_type,
+            user=user,
             system_user=self.system_user
         )
 
@@ -2333,7 +2355,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             value = str(value)
         return value
 
-    def save(self, request, *args, **kwargs):
+    def save(self, request, action_type=None, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating settings object not allowed.')
 
@@ -2341,9 +2363,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(request and request.user, action_type)
 
-    def add_to_history(self, user):
+    def add_to_history(self, user, action_type):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
 
@@ -2361,7 +2383,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             changes=changes,
             user=user,
             history_type=history_type,
-            action_type=constants.HistoryActionType.SETTINGS_CHANGE,
+            action_type=action_type,
             system_user=self.system_user,
         )
 
@@ -2952,10 +2974,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             credit=self,
         )
         self.add_to_history(
-            user=request and request.user,
-            action_type=action_type)
+            request and request.user,
+            action_type)
 
-    def add_to_history(self, user=None, action_type=None):
+    def add_to_history(self, user, action_type):
         history_type = constants.HistoryType.CREDIT
 
         changes = self.get_model_state_changes(
@@ -3195,10 +3217,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             budget=self,
         )
         self.add_to_history(
-            user=request and request.user,
-            action_type=action_type)
+            request and request.user,
+            action_type)
 
-    def add_to_history(self, user=None, action_type=None):
+    def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )

@@ -259,7 +259,7 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign.write_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-           history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)

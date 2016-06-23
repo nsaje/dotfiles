@@ -229,7 +229,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
         with transaction.atomic():
             ad_group.save(request)
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.SETTINGS_CHANGE)
 
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
@@ -306,7 +308,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
         if new_settings.state != new_state:
             new_settings.state = new_state
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
             actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
@@ -864,13 +866,10 @@ class AccountSettings(api_common.BaseApiView):
                 facebook_account.save()
 
             account.save(request)
-            settings.save(request)
-
-            account.write_history(
-                changes_text,
-                user=request.user,
-                action_type=constants.HistoryActionType.SETTINGS_CHANGE
-            )
+            settings.save(
+                request,
+                action_type=constants.HistoryActionType.SETTINGS_CHANGE,
+                changes_text=changes_text)
             return settings
 
     def _validate_essential_account_settings(self, user, form):
@@ -1166,9 +1165,7 @@ class AccountUsers(api_common.BaseApiView):
             # add history entry
             new_settings = account.get_current_settings().copy_settings()
             new_settings.changes_text = changes_text
-            new_settings.save(request)
-
-            account.write_history(changes_text, user=request.user)
+            new_settings.save(request, changes_text=changes_text)
 
         return self.create_api_response(
             {'user': self._get_user_dict(user)},
@@ -1201,7 +1198,6 @@ class AccountUsers(api_common.BaseApiView):
 
         if len(account.users.filter(pk=user.pk)):
             account.users.remove(user)
-
             changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
             account.write_history(changes_text, user=request.user)
 

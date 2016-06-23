@@ -189,13 +189,6 @@ class AccountArchive(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.archive(request)
 
-        account.write_history(
-            'Archived account',
-            user=request.user,
-            history_type=constants.HistoryType.ACCOUNT,
-            action_type=constants.HistoryActionType.ARCHIVE_RESTORE
-        )
-
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
@@ -217,13 +210,6 @@ class AccountRestore(api_common.BaseApiView):
 
         actionlog.sync.AccountSync(account).trigger_all(self.request)
 
-        account.write_history(
-            'Restored account',
-            user=request.user,
-            history_type=constants.HistoryType.ACCOUNT,
-            action_type=constants.HistoryActionType.ARCHIVE_RESTORE
-        )
-
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
@@ -243,11 +229,6 @@ class CampaignArchive(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.archive(request)
 
-        campaign.write_history(
-            'Archived campaign',
-            user=request.user,
-            history_type=constants.HistoryType.CAMPAIGN,
-            action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
@@ -269,11 +250,6 @@ class CampaignRestore(api_common.BaseApiView):
 
         actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
 
-        campaign.write_history(
-            'Restored campaign',
-            user=request.user,
-            history_type=constants.HistoryType.CAMPAIGN,
-            action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
@@ -492,11 +468,6 @@ class AdGroupArchive(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.archive(request)
 
-        ad_group.write_history(
-            'Archived ad group',
-            user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
-            action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
@@ -519,11 +490,6 @@ class AdGroupRestore(api_common.BaseApiView):
         for ad_group_source in ad_group.adgroupsource_set.all():
             api.refresh_publisher_blacklist(ad_group_source, request)
 
-        ad_group.write_history(
-            'Restored ad group',
-            user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
-            action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
@@ -538,7 +504,7 @@ class CampaignAdGroups(api_common.BaseApiView):
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
-        ad_group_settings.save(request)
+        ad_group_settings.save(None)
 
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
         actionlog.zwei_actions.send(actions)
@@ -1031,14 +997,13 @@ class AdGroupSources(api_common.BaseApiView):
 
         default_settings = helpers.get_source_default_settings(source)
         ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
-        ad_group_source.save(request)
+        ad_group_source.save(None)
 
         external_name = ad_group_source.get_external_name()
         actionlog.api.create_campaign(ad_group_source, external_name, request)
-        self._add_to_history(ad_group_source, request)
 
         ad_group.write_history(
-            'Created media source campaign',
+            '{} campaign created.'.format(ad_group_source.source.name),
             user=request.user,
             history_type=constants.HistoryType.AD_GROUP,
             action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
@@ -1054,14 +1019,6 @@ class AdGroupSources(api_common.BaseApiView):
             api.add_content_ad_sources(ad_group_source)
 
         return self.create_api_response(None)
-
-    def _add_to_history(self, ad_group_source, request):
-        changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-        ad_group_source.ad_group.write_history(
-            changes_text,
-            user=request.user,
-            history_type=constants.HistoryType.AD_GROUP_SOURCE
-        )
 
 
 class Account(api_common.BaseApiView):
@@ -1086,6 +1043,7 @@ class Account(api_common.BaseApiView):
             user=request.user,
             history_type=constants.HistoryType.ACCOUNT,
             action_type=constants.HistoryActionType.CREATE)
+
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.CREATE_ACCOUNT,
@@ -1122,13 +1080,8 @@ class AccountCampaigns(api_common.BaseApiView):
         settings.name = name
         settings.campaign_manager = (account_settings.default_account_manager
                                      if account_settings.default_account_manager else request.user)
-        settings.save(request)
+        settings.save(request, action_type=constants.HistoryActionType.CREATE)
 
-        account.write_history(
-            'Created campaign',
-            user=request.user,
-            history_type=constants.HistoryType.CAMPAIGN,
-            action_type=constants.HistoryActionType.CREATE)
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.CREATE_CAMPAIGN,
@@ -1238,12 +1191,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
         settings_writer.set(resource, request)
-
-        ad_group.write_history(
-            'Change media source settings',
-            user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
-            action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
         helpers.log_useraction_if_necessary(
             request,
             constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
@@ -1331,12 +1278,7 @@ class AdGroupAdsUpload(api_common.BaseApiView):
         new_settings.description = upload_form_cleaned_fields['description']
         new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
 
-        new_settings.save(request)
-
-        ad_group.write_history(
-            'Uploaded content ads',
-            user=request.user,
-            action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
+        new_settings.save(request, action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
         helpers.log_useraction_if_necessary(
             request, constants.UserActionType.UPLOAD_CONTENT_ADS,
             ad_group=ad_group)
