@@ -970,7 +970,7 @@ class HistoryTest(TestCase):
         hist = campaign.write_history(
             '',
             changes={'name': 'Awesomer'},
-            history_type= constants.HistoryType.CAMPAIGN)
+            history_type=constants.HistoryType.CAMPAIGN)
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'name': 'Awesomer'}, hist.changes)
@@ -1027,7 +1027,7 @@ class HistoryTest(TestCase):
             "",
             changes={'amount': 200},
             history_type=constants.HistoryType.BUDGET
-       )
+        )
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'amount': 200}, hist.changes)

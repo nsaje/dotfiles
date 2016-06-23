@@ -25,7 +25,7 @@ def get_historyactiontype(level):
         return constants.HistoryActionType.GLOBAL_PUBLISHER_BLACKLIST_CHANGE
     elif level in (constants.PublisherBlacklistLevel.ACCOUNT,
                    constants.PublisherBlacklistLevel.CAMPAIGN,
-                    constants.PublisherBlacklistLevel.ADGROUP):
+                   constants.PublisherBlacklistLevel.ADGROUP):
         return constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE
 
     # dev error

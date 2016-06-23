@@ -306,7 +306,7 @@ class AllAccountsSourcesExport(ExportApiView):
         history_helpers.write_global_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-           history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
@@ -317,7 +317,7 @@ class AllAccountsSourcesExport(ExportApiView):
         history_helpers.write_global_history(
             'Scheduled report',
             user=request.user,
-           history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
@@ -487,7 +487,6 @@ class ScheduledReports(api_common.BaseApiView):
                 'campaign': scheduled_report.report.campaign,
                 'account': scheduled_report.report.account,
             }
-
 
         report = scheduled_report.report
         entity = report.ad_group or report.campaign or report.account
