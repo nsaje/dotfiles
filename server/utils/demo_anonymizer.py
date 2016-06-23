@@ -68,3 +68,7 @@ def fake_brand():
 
 def fake_sentence():
     return _fake_factory.sentence()
+
+
+def fake_io():
+    return 'https://s3.amazonaws.com/z1-static/demo/Zemanta+One+-+Acme.pdf'

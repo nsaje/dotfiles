@@ -2741,7 +2741,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     ]
 
     _demo_fields = {
-        'comment': utils.demo_anonymizer.fake_sentence,
+        'comment': utils.demo_anonymizer.fake_io,
     }
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
@@ -3040,7 +3040,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     ]
 
     _demo_fields = {
-        'comment': utils.demo_anonymizer.fake_sentence,
+        'comment': lambda: 'Monthly budget',
     }
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
