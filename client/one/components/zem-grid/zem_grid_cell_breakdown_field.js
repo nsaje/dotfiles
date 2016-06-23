@@ -3,11 +3,19 @@
 
 oneApp.directive('zemGridCellBreakdownField', [function () {
 
-    var LEVELS_WITH_INTERNAL_LINKS = [
-        constants.level.ALL_ACCOUNTS,
-        constants.level.ACCOUNTS,
-        constants.level.CAMPAIGNS,
+    var BREAKDOWNS_WITH_INTERNAL_LINKS = [
+        constants.breakdown.ACCOUNT,
+        constants.breakdown.CAMPAIGN,
+        constants.breakdown.AD_GROUP,
     ];
+
+    function getFieldType (breakdown, rowLevel) {
+        // Display internal links for rows on first level in 'Account', 'Campaign' or 'Ad Group' breakdowns
+        if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 && rowLevel === 1) {
+            return 'internalLink';
+        }
+        return 'base';
+    }
 
     return {
         restrict: 'E',
@@ -22,16 +30,24 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.data', function () {
-                if (ctrl.data) {
-                    ctrl.fieldType = 'base';
-                    // Display internal link for row level 1 on 'All acounts', 'Account' or 'Campaign' level.
-                    if (ctrl.row.level === 1 && LEVELS_WITH_INTERNAL_LINKS.indexOf(ctrl.grid.meta.data.level) !== -1) {
-                        ctrl.fieldType = 'internalLink';
-                    }
-                }
+            scope.$watch('ctrl.row', function () {
+                updateRow();
             });
+
+            function updateRow () {
+                if (ctrl.data) {
+                    ctrl.fieldType = getFieldType(ctrl.grid.meta.data.breakdown, ctrl.row.level);
+                }
+            }
         },
-        controller: [function () {}],
+        controller: ['zemGridUIService', function (zemGridUIService) {
+            var vm = this;
+            vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
+
+            function getBreakdownColumnStyle () {
+                if (!this.row) return; // can happen because of virtual scroll; TODO: find better solution
+                return zemGridUIService.getBreakdownColumnStyle(vm.row);
+            }
+        }],
     };
 }]);

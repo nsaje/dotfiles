@@ -9,6 +9,7 @@ from utils import exc
 from dash import models, constants, forms
 from dash import campaign_goals
 from dash import infobox_helpers
+from dash import history_helpers
 from zemauth.models import User
 from dash.constants import CampaignGoalPerformance as cgp
 
@@ -96,8 +97,8 @@ class CampaignGoalsTestCase(TestCase):
         campaign_goals.set_campaign_goal_primary(self.request, self.campaign, goal.pk)
         self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
 
-        settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Campaign goal "Time on Site - Seconds" set as primary')
+        hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertEqual(hist.changes_text, 'Campaign goal "Time on Site - Seconds" set as primary')
 
     def test_cpa_goal_primary(self):
         campaign_goals.set_campaign_goal_primary(
@@ -131,8 +132,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(goal.type, 1)
         self.assertEqual(goal.campaign_id, 1)
 
-        settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Added campaign goal "Time on Site - Seconds"')
+        hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertEqual(hist.changes_text, 'Added campaign goal "Time on Site - Seconds"')
 
         with self.assertRaises(exc.ValidationError):
             goal_form = forms.CampaignGoalForm({}, campaign_id=self.campaign.pk)
@@ -160,8 +161,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoalValue.objects.all().count())
         self.assertFalse(models.CampaignGoal.objects.all().count())
 
-        settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
+        hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertEqual(hist.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
 
         conv_goal = models.ConversionGoal.objects.create(
             goal_id='123',
@@ -185,8 +186,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoal.objects.all().count())
         self.assertFalse(models.ConversionGoal.objects.all().count())
 
-        settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Deleted conversion goal "123"')
+        hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertEqual(hist.changes_text, 'Deleted conversion goal "123"')
 
     def test_add_campaign_goal_value(self):
         goal = models.CampaignGoal.objects.create(
@@ -205,8 +206,8 @@ class CampaignGoalsTestCase(TestCase):
             [Decimal('10'), Decimal('15')]
         )
 
-        settings = self.campaign.get_current_settings()
-        self.assertEqual(settings.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
+        self.assertEqual(hist.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
 
     def test_get_campaign_goal_values(self):
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 1)

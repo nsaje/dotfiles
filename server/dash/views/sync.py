@@ -6,7 +6,6 @@ import actionlog.sync
 from dash.views import helpers
 from dash import models
 from utils import api_common
-from utils import statsd_helper
 
 
 logger = logging.getLogger(__name__)
@@ -61,7 +60,6 @@ class TriggerAdGroupSyncThread(Thread):
 
 class AccountSync(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_sync_get')
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         accounts = models.Account.objects.all().filter_by_user(request.user)
@@ -73,7 +71,6 @@ class AccountSync(api_common.BaseApiView):
 
 
 class AccountSyncProgress(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'account_is_sync_in_progress')
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         accounts = models.Account.objects.all().filter_by_user(request.user)
@@ -85,7 +82,6 @@ class AccountSyncProgress(api_common.BaseApiView):
 
 class CampaignSync(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_sync_get')
     def get(self, request):
         account_id = request.GET.get('account_id')
         campaign_id = request.GET.get('campaign_id')
@@ -109,7 +105,6 @@ class CampaignSync(api_common.BaseApiView):
 
 
 class CampaignSyncProgress(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_is_sync_in_progress')
     def get(self, request):
         account_id = request.GET.get('account_id')
         campaign_id = request.GET.get('campaign_id')
@@ -130,7 +125,6 @@ class CampaignSyncProgress(api_common.BaseApiView):
 
 
 class AdGroupSync(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_sync')
     def get(self, request, ad_group_id):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
@@ -144,7 +138,6 @@ class AdGroupSync(api_common.BaseApiView):
 
 
 class AdGroupCheckSyncProgress(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_is_sync_in_progress')
     def get(self, request, ad_group_id):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
@@ -156,7 +149,6 @@ class AdGroupCheckSyncProgress(api_common.BaseApiView):
 
 
 class AdGroupPublisherBlacklistCheckSyncProgress(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_is_sync_in_progress')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 

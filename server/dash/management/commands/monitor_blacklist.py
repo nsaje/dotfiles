@@ -12,7 +12,6 @@ import dash.constants
 import dash.models
 import dash.publisher_helpers
 
-from utils import statsd_helper
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
@@ -29,7 +28,6 @@ class Command(ExceptionCommand):
         ),
     )
 
-    @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
     def handle(self, *args, **options):
         logger.info('Monitor publisher blacklisting.')
 
@@ -46,13 +44,11 @@ class Command(ExceptionCommand):
             status=dash.constants.PublisherStatus.PENDING
         ).count()
         influx.gauge('dash.blacklisted_publisher.status', count_pending, status='pending')
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher.pending', count_pending)
 
         count_blacklisted = dash.models.PublisherBlacklist.objects.filter(
             status=dash.constants.PublisherStatus.BLACKLISTED
         ).count()
         influx.gauge('dash.blacklisted_publisher.status', count_blacklisted, status='blacklisted')
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher.blacklisted', count_blacklisted)
 
     def monitor_adgroup_level(self, blacklisted_before):
         blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
@@ -92,8 +88,6 @@ class Command(ExceptionCommand):
 
         influx.gauge('dash.blacklisted_publisher.stats', aggregated_impressions, type='impressions')
         influx.gauge('dash.blacklisted_publisher.stats', aggregated_clicks, type='clicks')
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', aggregated_impressions)
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', aggregated_clicks)
         logger.info('Checking for statistics for blacklisted publishers... Done.')
 
     def monitor_global_level(self, blacklisted_before):
@@ -139,8 +133,6 @@ class Command(ExceptionCommand):
 
         influx.gauge('dash.blacklisted_publisher.stats', aggregated_impressions, type='global_impressions')
         influx.gauge('dash.blacklisted_publisher.stats', aggregated_clicks, type='global_clicks')
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', aggregated_impressions)
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', aggregated_clicks)
         logger.info('Checking for statistics for globally blacklisted publishers... Done.')
 
     def generate_adgroup_blacklist_hash(self, blacklisted_before):

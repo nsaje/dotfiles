@@ -1265,7 +1265,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         f = forms.ContentAdCandidateForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'tracker_urls': ['Invalid tracker URLs']
+            'tracker_urls': ['Impression tracker URLs have to be HTTPS']
         }, f.errors)
 
     def test_unicode_tracker_urls(self):
@@ -1274,7 +1274,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         f = forms.ContentAdCandidateForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'tracker_urls': ['Invalid tracker URLs']
+            'tracker_urls': ['Invalid impression tracker URLs']
         }, f.errors)
 
 
@@ -1355,7 +1355,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_width': ['Image too small (min width 500 px)']
+            'image_width': ['Image too small (min width 300 px)']
         }, f.errors)
 
     def test_image_max_width(self):
@@ -1364,7 +1364,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_width': ['Image too big (max width 5000 px)']
+            'image_width': ['Image too big (max width 10000 px)']
         }, f.errors)
 
     def test_image_min_height(self):
@@ -1373,7 +1373,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_height': ['Image too small (min height 500 px)']
+            'image_height': ['Image too small (min height 300 px)']
         }, f.errors)
 
     def test_image_max_height(self):
@@ -1382,7 +1382,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_height': ['Image too big (max height 5000 px)']
+            'image_height': ['Image too big (max height 10000 px)']
         }, f.errors)
 
     def test_invalid_url_status(self):

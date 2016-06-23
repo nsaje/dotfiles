@@ -10,7 +10,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
 
     function parseMetaData (grid, metadata) {
         grid.meta.data = metadata;
-        grid.header.columns = metadata.columns.map (function (data) {
+        grid.header.columns = metadata.columns.map(function (data) {
             return zemGridObject.createColumn(data);
         });
     }
@@ -40,18 +40,27 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
             }
         });
 
-        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, level, parent);
+        if (!breakdown.pagination.complete || breakdown.pagination.count === 0) {
+            // Add breakdown row only if there is more data to be loaded
+            // OR there is no data at all (to show empty msg)
+            var row = createBreakdownRow(grid, breakdown, parent);
+            rows.push(row);
+        }
+
+        return rows;
+    }
+
+    function createBreakdownRow (grid, breakdown, parent) {
+        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, breakdown.level, parent);
 
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
         var emptyStats = {};
         grid.meta.data.columns.forEach(function (col) {
-            emptyStats[col.field] = '';
+            emptyStats[col.field] = {};
         });
         row.data.stats = emptyStats;
-        rows.push(row);
-
-        return rows;
+        return row;
     }
 
     return {

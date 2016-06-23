@@ -1,2 +1,5 @@
 *.txt -crlf
 *.sh -crlf
+
+# Disable LF normalization for all files
+* -text

@@ -824,6 +824,12 @@ class CreditLineItemForm(forms.ModelForm):
             raise forms.ValidationError('End date has to be greater or equal to today.')
         return end_date
 
+    def save(self, force_insert=False, force_update=False, commit=True, request=None):
+        m = super(CreditLineItemForm, self).save(commit=False)
+        if commit:
+            m.save(request=request)
+        return m
+
     class Meta:
         model = models.CreditLineItem
         fields = [
@@ -849,6 +855,12 @@ class BudgetLineItemForm(forms.ModelForm):
             if end_date <= today:
                 raise forms.ValidationError('End date has to be in the future.')
         return end_date
+
+    def save(self, force_insert=False, force_update=False, commit=True, request=None):
+        m = super(BudgetLineItemForm, self).save(commit=False)
+        if commit:
+            m.save(request=request)
+        return m
 
     class Meta:
         model = models.BudgetLineItem
@@ -1153,12 +1165,14 @@ class ContentAdCandidateForm(forms.Form):
         validate_url = validators.URLValidator(schemes=['https'])
 
         for url in tracker_urls:
+            if url.lower().startswith('http://'):
+                raise forms.ValidationError('Impression tracker URLs have to be HTTPS')
             try:
                 # URL is considered invalid if it contains any unicode chars
                 url = url.encode('ascii')
                 validate_url(url)
             except (forms.ValidationError, UnicodeEncodeError):
-                raise forms.ValidationError('Invalid tracker URLs')
+                raise forms.ValidationError('Invalid impression tracker URLs')
 
             result.append(url)
 
@@ -1184,8 +1198,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_width = forms.IntegerField(
         required=False,
-        min_value=500,
-        max_value=5000,
+        min_value=300,
+        max_value=10000,
         error_messages={
             'min_value': 'Image too small (min width %(limit_value)d px)',
             'max_value': 'Image too big (max width %(limit_value)d px)',
@@ -1193,8 +1207,8 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_height = forms.IntegerField(
         required=False,
-        min_value=500,
-        max_value=5000,
+        min_value=300,
+        max_value=10000,
         error_messages={
             'min_value': 'Image too small (min height %(limit_value)d px)',
             'max_value': 'Image too big (max height %(limit_value)d px)',

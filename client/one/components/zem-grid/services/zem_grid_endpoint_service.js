@@ -1,7 +1,9 @@
 /* globals oneApp */
+/* eslint-disable camelcase*/
+
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', '$q', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($rootScope, $controller, $http, $q, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function StatsEndpoint (baseUrl, metaData) {
 
@@ -31,10 +33,18 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
             return deferred.promise;
         };
 
-        this.saveData = function (value, stats, column) { // eslint-disable-line no-unused-vars
-            // TODO: actually save value - depends on Columns definitions refactorings...
+        this.saveData = function (value, stats, column) {
+            var api = zemGridEndpointApi.getApi(metaData.level, metaData.breakdown, column);
+
             var deferred = $q.defer();
-            deferred.resolve();
+            var levelEntityId = metaData.id;
+            var breakdownEntityId = stats.breakdownId;
+            api.save(levelEntityId, breakdownEntityId, value).then(function (data) {
+                // TODO: handle data
+                deferred.resolve(data);
+            }, function (err) {
+                deferred.reject(err);
+            });
             return deferred.promise;
         };
 
@@ -56,6 +66,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
                     pagination.count = pagination.offset + pagination.limit;
                 }
             }
+            pagination.complete = (pagination.offset + pagination.limit) === pagination.count;
         }
     }
 
@@ -77,6 +88,7 @@ oneApp.factory('zemGridEndpointService', ['$rootScope', '$controller', '$http', 
         return {
             id: id,
             level: level,
+            breakdown: breakdown,
             columns: columns,
             categories: categories,
             breakdownGroups: breakdownGroups,

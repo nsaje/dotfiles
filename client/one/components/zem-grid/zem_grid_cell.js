@@ -9,21 +9,12 @@ oneApp.directive('zemGridCell', [function () {
         scope: {},
         controllerAs: 'ctrl',
         bindToController: {
-            position: '=',
             col: '=',
             data: '=',
             row: '=',
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: [function () {
-            this.toggleCollapse = function () {
-                this.grid.meta.api.setCollapsedRows(this.row, !this.row.collapsed);
-            };
-
-            this.toggleSelection = function () {
-                this.grid.meta.api.setSelectedRows(this.row, !this.row.selected);
-            };
-        }],
+        controller: [function () {}],
     };
 }]);

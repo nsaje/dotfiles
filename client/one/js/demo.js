@@ -159,16 +159,6 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.campaignHistory.get = resetIfErrorWrapper(
-            defaultGetWrapper(
-                '/api/campaigns/{id}/history/',
-                $delegate.campaignHistory.get,
-                function () { return function () {
-                    resetDemo();
-                }; }
-            )
-        );
-
         /* ADD ADGROUP */
         $delegate.campaignAdGroups.create = function demo (id) {
             var deferred = $q.defer(),
@@ -313,8 +303,8 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.adGroupHistory.get = resetIfErrorWrapper(
-            defaultGetWrapper('/api/ad_groups/{id}/history/', $delegate.adGroupHistory.get)
+        $delegate.history.get = resetIfErrorWrapper(
+            defaultGetWrapper('/api/{id}/history/', $delegate.history.get)
         );
 
         /* Ad group media sources */

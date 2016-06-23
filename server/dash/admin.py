@@ -858,11 +858,8 @@ class UserActionLogResource(resources.ModelResource):
         model = models.UserActionLog
 
     def _changes_text(self, settings=None):
-        changes_text = '/'
-
-        if settings:
-            changes_text = settings.changes_text if settings.changes_text else '- no description -'
-        return changes_text
+        # TODO: This might need some revision
+        return '/'
 
     def _get_name(self, obj):
         return obj.name if obj else '/'
@@ -965,11 +962,11 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
 
         if settings_url_name and settings:
             settings_link = u'<a href="{url}">{name}</a>'.format(
-                name=settings.changes_text or '- no changes description -',
+                name='- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
         elif not settings_url_name and settings:
-            settings_link = settings.changes_text or '- no changes description -'
+            settings_link = '- no changes description -'
 
         return u'{} / {}'.format(obj_link, settings_link)
 
@@ -1354,7 +1351,7 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
         return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
@@ -1474,10 +1471,10 @@ class HistoryAdmin(admin.ModelAdmin):
 
     list_display = (
         'id',
-        'agency',
-        'account',
-        'campaign',
-        'ad_group',
+        'agency_',
+        'account_',
+        'campaign_',
+        'ad_group_',
         'created_dt',
         'created_by',
         'system_user',
@@ -1508,6 +1505,38 @@ class HistoryAdmin(admin.ModelAdmin):
             [field.name for field in self.opts.local_fields] +
             [field.name for field in self.opts.local_many_to_many]
         ))
+
+    def agency_(self, obj):
+        return '<a href="{agency_url}">{agency}</a>'.format(
+            agency_url=reverse('admin:dash_agency_change', args=(obj.agency.id,)),
+            agency=obj.agency
+        ) if obj.agency else '-'
+    agency_.allow_tags = True
+    agency_.admin_order_field = 'agency'
+
+    def account_(self, obj):
+        return '<a href="{account_url}">{account}</a>'.format(
+            account_url=reverse('admin:dash_account_change', args=(obj.account.id,)),
+            account=obj.account
+        ) if obj.account else '-'
+    account_.allow_tags = True
+    account_.admin_order_field = 'account'
+
+    def campaign_(self, obj):
+        return '<a href="{campaign_url}">{campaign}</a>'.format(
+            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
+            campaign=obj.campaign
+        ) if obj.campaign else '-'
+    campaign_.allow_tags = True
+    campaign_.admin_order_field = 'campaign'
+
+    def ad_group_(self, obj):
+        return '<a href="{ad_group_url}">{ad_group}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
+            ad_group=obj.ad_group
+        ) if obj.ad_group else '-'
+    ad_group_.allow_tags = True
+    ad_group_.admin_order_field = 'ad_group'
 
     def has_add_permission(self, request):
         return False

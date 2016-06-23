@@ -3,6 +3,14 @@
 
 oneApp.directive('zemGridCellInternalLink', [function () {
 
+    function getState (level) {
+        switch (level) {
+        case constants.level.ALL_ACCOUNTS: return 'main.accounts.campaigns';
+        case constants.level.ACCOUNTS: return 'main.campaigns.ad_groups';
+        case constants.level.CAMPAIGNS: return 'main.adGroups.ads';
+        }
+    }
+
     return {
         restrict: 'E',
         replace: true,
@@ -16,22 +24,21 @@ oneApp.directive('zemGridCellInternalLink', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_internal_link.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.data', function () {
+            scope.$watch('ctrl.row', function () {
+                updateRow();
+            });
+
+            function updateRow () {
                 if (ctrl.data && ctrl.row.data.breakdownId) {
                     ctrl.id = ctrl.row.data.breakdownId;
-                    if (ctrl.grid.meta.data.level === constants.level.ALL_ACCOUNTS) {
-                        ctrl.state = 'main.accounts.campaigns';
-                    }
-                    if (ctrl.grid.meta.data.level === constants.level.ACCOUNTS) {
-                        ctrl.state = 'main.campaigns.ad_groups';
-                    }
-                    if (ctrl.grid.meta.data.level === constants.level.CAMPAIGNS) {
-                        ctrl.state = 'main.adGroups.ads';
-                    }
-                    ctrl.zemInLinkReady = true;
+                    ctrl.state = getState(ctrl.grid.meta.data.level);
                 }
-            });
+            }
         },
-        controller: [function () {}],
+        controller: [function () {
+            // Set some dummy values to initialize zem-in-link
+            this.id = -1;
+            this.state = 'unknown';
+        }],
     };
 }]);

@@ -6,8 +6,6 @@ from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 import django.views.defaults
 
-import utils.statsd_helper
-
 from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
@@ -30,10 +28,6 @@ import dash.views.upload
 
 
 admin.site.login = login_required(admin.site.login)
-
-# Decorators for auth views for statsd.
-auth_views.logout_then_login = utils.statsd_helper.statsd_timer('auth', 'signout_response_time')(
-    auth_views.logout_then_login)
 
 
 # RedirectView.permanent will be False
@@ -76,11 +70,6 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/',
         login_required(dash.views.agency.AdGroupSettings.as_view()),
         name='ad_group_settings'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/history/',
-        login_required(dash.views.agency.AdGroupHistory.as_view()),
-        name='ad_group_history'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/$',
@@ -280,10 +269,6 @@ urlpatterns += [
         name='campaign_ad_groups'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/history/',
-        login_required(dash.views.agency.CampaignHistory.as_view()),
-    ),
-    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/settings/',
         login_required(dash.views.agency.CampaignSettings.as_view()),
     ),
@@ -307,11 +292,6 @@ urlpatterns += [
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/content-insights/',
         login_required(dash.views.agency.CampaignContentInsights.as_view()),
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/history/',
-        login_required(dash.views.agency.AccountHistory.as_view()),
-        name='account_history'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/settings/',

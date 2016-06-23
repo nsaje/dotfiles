@@ -61,6 +61,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
                 },
                 function (err) {
                     // TODO: Handle errors
+                    grid.meta.loading = false;
                     deferred.reject(err);
                 }
             );

@@ -28,7 +28,6 @@ from dash import threads
 from dash import history_helpers
 
 import utils.url_helper
-import utils.statsd_helper
 import influx
 
 logger = logging.getLogger(__name__)
@@ -670,28 +669,15 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         if changed:
             content_ad_source.save()
 
-    utils.statsd_helper.statsd_incr(
-        'propagation_consistency.content_ad.active_nonexisting.{}'.format(ad_group_source.source.tracking_slug),
-        nr_nonexisting_active_content_ads
-    )
     influx.incr('propagation_consistency.content_ad',
                 nr_nonexisting_active_content_ads,
                 status='active_nonexisting', media_source=ad_group_source.source.tracking_slug)
 
-    utils.statsd_helper.statsd_incr(
-        'propagation_consistency.content_ad.inconsistent_internal_state.{}'.format(ad_group_source.source.tracking_slug),
-        nr_inconsistent_internal_states
-    )
     influx.incr('propagation_consistency.content_ad',
                 nr_inconsistent_internal_states,
                 status='inconsistent_internal_state', media_source=ad_group_source.source.tracking_slug)
 
     if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.ACTIVE:
-        utils.statsd_helper.statsd_incr(
-            'propagation_consistency.content_ad.inconsistent_internal_state_active_adgroups.{}'.format(
-                ad_group_source.source.tracking_slug),
-            nr_inconsistent_internal_states
-        )
         influx.incr('propagation_consistency.content_ad',
                     nr_inconsistent_internal_states,
                     status='inconsistent_internal_state_active_adgroups', media_source=ad_group_source.source.tracking_slug)
@@ -1239,10 +1225,6 @@ def update_content_ads_archived_state(request, content_ads, ad_group, archived):
 
 
 def save_change_to_history(ad_group, description, request):
-    settings = ad_group.get_current_settings().copy_settings()
-    settings.changes_text = description
-    settings.save(request)
-
     history_helpers.write_ad_group_history(
         ad_group,
         description,

@@ -237,7 +237,7 @@ class ValidateCandidatesTestCase(TestCase):
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'brand_name': [u'Missing brand name'],
                 'call_to_action': [u'Missing call to action'],
-                'tracker_urls': [u'Invalid tracker URLs']
+                'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
             }
         }, errors)
 

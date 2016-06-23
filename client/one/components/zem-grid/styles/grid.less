@@ -1,9 +1,9 @@
 @zem-grid-text-color: #454545;
 @zem-grid-bg-color: #ffffff;
 @zem-grid-level-1-bg-color: #f4f4f4;
-@zem-grid-level-2-bg-color: #ececec;
-@zem-grid-level-3-bg-color: #e8e8e8;
-@zem-grid-level-4-bg-color: #e2e2e2;
+@zem-grid-level-2-bg-color: #f0f0f0;
+@zem-grid-level-3-bg-color: #ebebeb;
+@zem-grid-level-4-bg-color: #e8e8e8;
 @zem-grid-header-footer-bg-color: #f6f6f6;
 @zem-grid-cell-border-color: #dddddd;
 
@@ -23,10 +23,7 @@
 }
 
 .zem-grid-container {
-  border: solid lightgray 1px;
   width: 100%;
-  padding: 20px;
-
   font-size: 13px;
   color: @zem-grid-text-color;
 
@@ -55,59 +52,78 @@
         padding: 0 8px;
         overflow: hidden;
 
-        min-width: 50px;
+        min-width: 40px;
         max-width: 300px;
         font-size: 13px;
         white-space: nowrap;
         // TODO: Change to more sophisticated way of trimming long text in cells
         text-overflow: ellipsis;
+
       }
 
-      .load-more-cell {
-        max-width: none; // Ignore max-width configured on cell
+      .zem-grid-cell-checkbox {
+        max-width: 40px;
+        input {
+          width: 100%;
+          margin: 0px;
+          display: inline-block;
+          vertical-align: middle;
+
+        }
+      }
+
+      .zem-grid-cell-collapse {
+        max-width: 40px;
+        width: 100%;
+        display: inline-block;
+        text-align: center;
       }
 
       &.level-1 {
         background-color: @zem-grid-level-1-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 20px;
+        &:hover {
+          background-color: darken(@zem-grid-level-1-bg-color, 3%);
         }
       }
 
       &.level-2 {
         background-color: @zem-grid-level-2-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 40px;
+        &:hover {
+          background-color: darken(@zem-grid-level-2-bg-color, 3%);
         }
       }
 
       &.level-3 {
         background-color: @zem-grid-level-3-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 60px;
+        &:hover {
+          background-color: darken(@zem-grid-level-3-bg-color, 3%);
         }
       }
 
       &.level-4 {
         background-color: @zem-grid-level-4-bg-color;
-        .zem-grid-cell:first-child,
-        .pagination-cell {
-          padding-left: 80px;
+        &:hover {
+          background-color: darken(@zem-grid-level-4-bg-color, 3%);
         }
       }
 
       &.level-last {
-        .zem-grid-cell:not(:first-child):not(.pagination-cell) {
-          background-color: @zem-grid-bg-color;
+        background-color: @zem-grid-bg-color;
+        &:hover {
+          background-color: darken(@zem-grid-bg-color, 3%);
         }
       }
     }
 
+    .loading-cell {
+      color: #00cc18;
+      background-image: url('img/loader.gif');
+      background-position: 10px center;
+      background-repeat: no-repeat;
+      background-size: 20px 20px;
+    }
+
     .zem-grid-header, .zem-grid-footer {
-      font-weight: 600;
       border-bottom: 1px solid @zem-grid-cell-border-color;
       background-color: @zem-grid-header-footer-bg-color;
 
@@ -121,8 +137,18 @@
       }
     }
 
+    .zem-grid-header {
+      font-weight: 500;
+    }
+    .zem-grid-footer {
+      .zem-grid-cell-breakdown-field {
+        font-weight: 500;
+      }
+    }
+
     .zem-grid-body {
-      height: 525px;
+      max-height: 545px;
+      min-height: 35px;
       overflow: auto;
 
       background-color: white;
@@ -140,6 +166,23 @@
     // Workaround for links without href attribute
     a {
       cursor: pointer;
+    }
+
+    .zem-grid-cell-performance-indicator {
+      position: relative;
+
+      .zem-icon {
+        width: 15px;
+        height: 15px;
+      }
+
+      .performance-popover-trigger {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
     }
   }
 }
