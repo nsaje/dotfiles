@@ -17,16 +17,9 @@ else:
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 STATS_DB_NAME = 'stats'
-STATS_E2E_DB_NAME = 'stats_e2e'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'circle_test',
-        'USER': 'ubuntu',
-        'PASSWORD': ''
-    },
-    'e2e': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'circle_test',
         'USER': 'ubuntu',
@@ -40,14 +33,6 @@ DATABASES = {
         'HOST': '',
         'PORT': 5439,
     },
-    STATS_E2E_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'circle_test',
-        'USER': 'e2ecci',
-        'PASSWORD': Secret('kms:region=us-east-1:CiB50kZLFNrp4uMD3sEwg9I9xA3R2c03wBYCqilvrmwhiBKZAQEBAgB4edJGSxTa6eLjA97BMIPSPcQN0dnNN8AWAqopb65sIYgAAABwMG4GCSqGSIb3DQEHBqBhMF8CAQAwWgYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/RLbU3xBuasYmmYoCARCALSx2b2/UxDAszGrYIhdg99L2xZ2jOctlNiCFTeeEiDCTJRpjMWcCtF7j7/JqBQ==').get(),
-        'HOST': 'development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'PORT': 5439,
-    }
 }
 
 BASE_URL = 'https://one.zemanta.com'

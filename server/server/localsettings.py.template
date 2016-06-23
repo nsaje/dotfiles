@@ -12,8 +12,7 @@ ENABLE_DJANGO_EXTENSIONS = DEBUG
 SECRET_KEY = Secret('plain::=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l').get()
 
 STATS_DB_NAME = 'stats'
-STATS_E2E_DB_NAME = 'stats_e2e'
-
+STATS_TEST_DB_NAME = 'stats_test'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -21,12 +20,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DJANGO_DATABASE', ''),
-        'USER': '',
-        'PASSWORD': ''
-    },
-    'e2e': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
         'USER': '',
         'PASSWORD': ''
     },
@@ -38,7 +31,7 @@ DATABASES = {
         'HOST': '',
         'PORT': 5439
     },
-    STATS_E2E_DB_NAME: {
+    STATS_TEST_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '',
         'USER': '',
