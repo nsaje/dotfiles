@@ -2493,14 +2493,14 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual('zemanta.com', publisher_blacklist.name)
 
         adg1 = models.AdGroup.objects.get(pk=1)
-        hist1 = history_helpers.get_ad_group_history(adg1).first()
+        hist1 = history_helpers.get_campaign_history(adg1.campaign).first()
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             hist1.changes_text
         )
 
         adg9 = models.AdGroup.objects.get(pk=9)
-        hist9 = history_helpers.get_ad_group_history(adg9).first()
+        hist9 = history_helpers.get_campaign_history(adg9.campaign).first()
 
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
