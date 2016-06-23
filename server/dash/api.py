@@ -342,8 +342,8 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     cons = consistency.SettingsStateConsistence(ad_group_source)
     settings_changes = cons.get_needed_state_updates()
     if settings_changes:
-        settings_actions = actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source,
-                                                                      request=request, send=False)
+        settings_actions = actionlog.api.set_ad_group_source_settings(
+            settings_changes, ad_group_source, send=False)
         actions.extend(settings_actions)
     else:
         fetch_action = actionlog.api.init_fetch_ad_group_source_settings(ad_group_source, request)
@@ -1345,7 +1345,7 @@ class AdGroupSourceSettingsWriter(object):
         if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
             new_settings = latest_settings
             new_settings.pk = None  # make a copy of the latest settings
-            new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+            new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
             logger.info(
                 'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                 self.ad_group_source
