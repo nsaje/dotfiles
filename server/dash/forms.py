@@ -824,8 +824,7 @@ class CreditLineItemForm(forms.ModelForm):
             raise forms.ValidationError('End date has to be greater or equal to today.')
         return end_date
 
-    def save(self, force_insert=False, force_update=False, commit=True,
-             request=None, action_type=None):
+    def save(self, commit=True, request=None, action_type=None):
         m = super(CreditLineItemForm, self).save(commit=False)
         if commit:
             m.save(request=request, action_type=action_type)
@@ -857,8 +856,7 @@ class BudgetLineItemForm(forms.ModelForm):
                 raise forms.ValidationError('End date has to be in the future.')
         return end_date
 
-    def save(self, force_insert=False, force_update=False, commit=True,
-             request=None, action_type=None):
+    def save(self, commit=True, request=None, action_type=None):
         m = super(BudgetLineItemForm, self).save(commit=False)
         if commit:
             m.save(request=request, action_type=action_type)
