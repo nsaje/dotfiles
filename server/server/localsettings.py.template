@@ -69,9 +69,6 @@ FROM_EMAIL = 'help-test@zemanta.com'
 LOG_FILE = '/path/to/log.log'
 
 # Stats
-STATSD_HOST = 'localhost'
-STATSD_PORT = 8125
-
 STATSD_INFLUX_HOST = ''
 STATSD_INFLUX_PORT = 8135
 

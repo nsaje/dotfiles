@@ -1,12 +1,8 @@
-import re
 import datetime
 import json
 import re
 import logging
-import newrelic.agent
-import dateutil.parser
 
-from collections import OrderedDict
 from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
@@ -27,10 +23,8 @@ from dash import conversions_helper
 from dash import facebook_helper
 from dash import content_insights_helper
 from dash import history_helpers
-import automation.settings
 from reports import redshift
 from utils import api_common
-from utils import statsd_helper
 from utils import exc
 from utils import email_helper
 from utils import k1_helper
@@ -46,7 +40,6 @@ CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 class AdGroupSettings(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.AuthorizationError()
@@ -65,7 +58,6 @@ class AdGroupSettings(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
     def put(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
             raise exc.AuthorizationError()
@@ -277,7 +269,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
 class AdGroupSettingsState(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
             raise exc.AuthorizationError()
@@ -289,7 +280,6 @@ class AdGroupSettingsState(api_common.BaseApiView):
             'state': current_settings.state,
         })
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
             raise exc.AuthorizationError()
@@ -332,7 +322,6 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
 class CampaignConversionGoals(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -368,7 +357,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
             'available_pixels': available_pixels
         })
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
     def post(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -393,7 +381,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
 class ConversionGoal(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
     def delete(self, request, campaign_id, conversion_goal_id):
         campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
         campaign_goals.delete_conversion_goal(request, conversion_goal_id, campaign)
@@ -403,7 +390,6 @@ class ConversionGoal(api_common.BaseApiView):
 
 class CampaignGoalValidation(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_goal_validate_put')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.can_see_campaign_goals'):
             raise exc.MissingDataError()
@@ -432,7 +418,6 @@ class CampaignGoalValidation(api_common.BaseApiView):
 
 class CampaignSettings(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
@@ -452,7 +437,6 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
@@ -652,7 +636,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         return constants.ConversionPixelStatus.INACTIVE
 
-    @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
     def get(self, request, account_id):
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
@@ -675,7 +658,6 @@ class AccountConversionPixels(api_common.BaseApiView):
             'conversion_pixel_tag_prefix': settings.CONVERSION_PIXEL_PREFIX + str(account.id) + '/',
         })
 
-    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
     def post(self, request, account_id):
         account = helpers.get_account(request.user, account_id)  # check access to account
 
@@ -721,7 +703,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
 class ConversionPixel(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
         try:
             conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
@@ -768,7 +749,6 @@ class ConversionPixel(api_common.BaseApiView):
 
 class AccountSettings(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
@@ -790,7 +770,6 @@ class AccountSettings(api_common.BaseApiView):
             response['sales_reps'] = self.get_user_list(account_settings, 'campaign_settings_sales_rep')
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'account_agency_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
@@ -1085,7 +1064,6 @@ class AccountSettings(api_common.BaseApiView):
 
 class AccountUsers(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.AuthorizationError()
@@ -1101,7 +1079,6 @@ class AccountUsers(api_common.BaseApiView):
             'agency_managers': agency_managers if account.agency else None,
         })
 
-    @statsd_helper.statsd_timer('dash.api', 'account_access_users_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.AuthorizationError()
@@ -1173,7 +1150,6 @@ class AccountUsers(api_common.BaseApiView):
             pretty_message=message or u'Please specify the user\'s first name, last name and email.'
         )
 
-    @statsd_helper.statsd_timer('dash.api', 'account_access_users_delete')
     def delete(self, request, account_id, user_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.AuthorizationError()
@@ -1211,7 +1187,6 @@ class AccountUsers(api_common.BaseApiView):
 
 class UserActivation(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_post')
     def post(self, request, account_id, user_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
             raise exc.AuthorizationError()

@@ -11,10 +11,8 @@ import reports.api
 import reports.refresh
 import reports.models
 from reports import redshift
-from utils.statsd_helper import statsd_timer
 import influx
 
-from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +82,6 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
 
 
-@statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
 @influx.timer('reports.stats_update_adgroup_postclick')
 @transaction.atomic
 def stats_update_adgroup_postclick(datetime, ad_group, rows):
@@ -182,7 +179,6 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
     reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
 
-@statsd_helper.statsd_timer('reports', 'goals_update_adgroup')
 @influx.timer('reports.goals_update_adgroup')
 @transaction.atomic
 def goals_update_adgroup(datetime, ad_group, rows):
@@ -256,7 +252,6 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
 
     for row in rows:
         if 'content_ad_source' not in row:
-            statsd_helper.statsd_incr('reports.update.err_missing_content_ad_data')
             raise Exception('missing content ad data')
 
         content_ad_source = row['content_ad_source']
@@ -280,7 +275,6 @@ def update_touchpoint_conversions(date, account_id, slug, conversion_touchpoint_
     redshift.insert_touchpoint_conversions(conversion_touchpoint_pairs)
 
 
-@statsd_timer('reports.update', 'process_report')
 @influx.timer('reports.update.process_report')
 @transaction.atomic
 def process_report(date, parsed_report_rows, report_type):
@@ -319,7 +313,6 @@ def process_report(date, parsed_report_rows, report_type):
         raise
 
 
-@statsd_timer('reports.update', '_delete_and_restore_bulk_stats')
 @influx.timer('reports.update._delete_and_restore_bulk_stats')
 def _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats):
     for obj in bulk_contentad_stats:

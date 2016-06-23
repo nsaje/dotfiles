@@ -20,7 +20,6 @@ from reports import redshift
 from reports import daily_statements
 from utils import json_helper
 from utils import s3helpers
-from utils import statsd_helper
 from utils import sqs_helper
 from utils import converters
 
@@ -209,7 +208,6 @@ def _get_b1_pub_data_s3_key(date):
     try:
         pub_data = next(iter(pub_data))
     except StopIteration:
-        statsd_helper.statsd_incr('reports.refresh.b1_pub_data.empty')
         raise exc.S3FileEmpty("B1 publishers S3 data file is empty")
 
     return pub_data.name
@@ -453,10 +451,6 @@ def refresh_contentadstats_diff(date, campaign):
 
         if all(row[key] == 0 for key in metric_keys):
             continue
-
-        for key in metric_keys:
-            if row[key] > 0:
-                statsd_helper.statsd_incr('reports.refresh.contentadstats_diff_{}'.format(key), row[key])
 
         diff_rows.append(row)
 
