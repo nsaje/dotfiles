@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNavigationService', function ($scope, $state, $q, api, zemNavigationService) { // eslint-disable-line max-len
+oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $q, $modal, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.canEditAccount = false;
     $scope.salesReps = [];
     $scope.settings = {};
@@ -21,6 +21,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.canArchive = false;
     $scope.canRestore = true;
     $scope.agencyManagers = null;
+    $scope.facebookPageChanged = false;
 
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
@@ -105,6 +106,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
+        $scope.facebookPageChanged = false;
         api.accountSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
@@ -129,8 +131,33 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
     $scope.saveSettings = function () {
         $scope.saved = null;
         $scope.discarded = null;
-        $scope.requestInProgress = true;
 
+        if ($scope.facebookPageChanged) {
+            var facebookPageChangedModalInstance = $modal.open({
+                templateUrl: '/partials/facebook_page_changed_modal.html',
+                controller: function ($scope, $modalInstance) {
+                    $scope.ok = function () {
+                        $modalInstance.close();
+                    };
+
+                    $scope.cancel = function () {
+                        $modalInstance.dismiss('cancel');
+                    };
+                },
+                size: 'lg'
+            });
+            facebookPageChangedModalInstance.result.then(function () {
+                executeSaveSettings();
+            }, function () {
+                $scope.getSettings(true);
+            });
+        } else {
+            executeSaveSettings();
+        }
+    };
+
+    function executeSaveSettings() {
+        $scope.requestInProgress = true;
         api.accountSettings.save($scope.settings).then(
             function (data) {
                 $scope.errors = {};
@@ -148,11 +175,12 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', 'api', 'zemNa
         ).finally(function () {
             $scope.requestInProgress = false;
         });
-    };
+    }
 
     $scope.clearFacebookPage = function () {
         $scope.settings.facebookPage = null;
         $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
+        $scope.facebookPageChanged = true;
     };
 
     $scope.refreshPage = function () {

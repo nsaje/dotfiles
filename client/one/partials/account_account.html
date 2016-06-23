@@ -107,17 +107,17 @@
             <label for="fb-page-input" class="col-xs-2 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_facebook_page')" popover-placement="bottom"></zem-internal-feature>
                 Facebook page
-                <zem-help-popover content="Link to the facebook page." placement="top"></zem-help-popover>
+                <zem-help-popover content="Facebook Page to which ads will be connected to. This is a requirement for advertising on Facebook and Instagram." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
                 <div class="row">
                     <div class="col-xs-10 input-group fb-logo" ng-if="settings.facebookStatus && settings.facebookStatus == constants.facebookStatus.EMPTY">
                         <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg"></i>
-                        <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage">
+                        <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage" ng-change="facebookPageChanged = true">
                     </div>
                 </div>
                 <div ng-if="settings.facebookStatus && settings.facebookStatus != constants.facebookStatus.EMPTY" class="row">
-                    <div class="col-xs-1 fb-page">
+                    <div class="col-xs-2 fb-page">
                         <img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg">
                     </div>
                     <div class="col-xs-10 fb-page">
