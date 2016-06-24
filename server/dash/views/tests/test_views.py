@@ -337,7 +337,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
 
-        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1))
+        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
@@ -455,7 +455,7 @@ class CampaignAdGroups(TestCase):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
-        hist = history_helpers.get_ad_group_history(ad_group)
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(hist.first().created_by, self.user)
         self.assertEqual(hist.first().action_type, constants.HistoryActionType.CREATE)
 
@@ -745,7 +745,7 @@ class AdGroupContentAdStateTest(TestCase):
             'success': True
         })
 
-        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1))
+        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
 
     def test_state_set_all(self):
@@ -1234,7 +1234,7 @@ class AdGroupContentAdRestore(TestCase):
 
         mock_send_mail.assert_called_with(
             ad_group, response.wsgi_request, 'Content ad(s) 2 Restored.')
-        hist = history_helpers.get_ad_group_history(ad_group)
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
