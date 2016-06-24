@@ -99,14 +99,24 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.selectedCandidate = null;
     };
 
-    $scope.removeCandidate = function (candidate) {
-        $scope.candidates = $scope.candidates.filter(function (el) {
-            return candidate.id !== el.id;
-        });
+    $scope.isUploadDisabled = function () {
+        return $scope.anyErrors || !$scope.candidates.length || getWaitingCandidateIds().length;
+    };
 
-        if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
-            $scope.selectedCandidate = null;
-        }
+    $scope.removeCandidate = function (candidate) {
+        api.uploadPlus.removeCandidate(
+            candidate.id,
+            $state.params.id,
+            $scope.batchId
+        ).then(function () {
+            $scope.candidates = $scope.candidates.filter(function (el) {
+                return candidate.id !== el.id;
+            });
+
+            if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
+                $scope.closeEditForm();
+            }
+        });
     };
 
     $scope.addSecondaryTracker = function (candidate) {

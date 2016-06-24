@@ -2590,7 +2590,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.updateCandidate = function (candidate, adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/update_candidate/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' +
+                    batchId + '/candidate/' + candidate.id + '/';
             var config = {
                 params: {},
             };
@@ -2605,6 +2606,21 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     deferred.resolve({
                         candidates: convertCandidatesFromApi(data.data.candidates),
                     });
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.removeCandidate = function (candidateId, adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' +
+                    batchId + '/candidate/' + candidateId + '/';
+
+            $http.delete(url).
+                success(function () {
+                    deferred.resolve();
                 }).error(function (data) {
                     deferred.reject(data);
                 });

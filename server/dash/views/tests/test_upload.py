@@ -838,13 +838,14 @@ class UploadErrorReport(TestCase):
         self.assertTemplateUsed(response, '404.html')
 
 
-class UpdateCandidateTest(TestCase):
+class CandidateTest(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
     def test_update_candidate(self):
         batch_id = 5
         ad_group_id = 4
+        candidate_id = 4
 
         resource = {
             'candidate': {
@@ -865,7 +866,14 @@ class UpdateCandidateTest(TestCase):
         }
 
         response = _get_client().put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             json.dumps(resource),
             follow=True,
         )
@@ -923,9 +931,34 @@ class UpdateCandidateTest(TestCase):
             'success': True}
         self.assertEqual(expected, response)
 
+    def test_delete_candidate(self):
+        batch_id = 5
+        ad_group_id = 4
+        candidate_id = 4
+
+        response = _get_client().delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({
+            'success': True,
+        }, json.loads(response.content))
+
+        with self.assertRaises(models.ContentAdCandidate.DoesNotExist):
+            models.ContentAdCandidate.objects.get(id=candidate_id)
+
     def test_non_existing_candidate(self):
         batch_id = 5
         ad_group_id = 4
+        candidate_id = 555
 
         resource = {
             'candidate': {
@@ -946,8 +979,40 @@ class UpdateCandidateTest(TestCase):
         }
 
         response = _get_client().put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             json.dumps(resource),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Candidate does not exist',
+            }
+        }, json.loads(response.content))
+
+    def test_delete_non_existing_candidate(self):
+        batch_id = 5
+        ad_group_id = 4
+        candidate_id = 555
+
+        response = _get_client().delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -962,9 +1027,17 @@ class UpdateCandidateTest(TestCase):
     def test_wrong_batch_id(self):
         batch_id = 4
         ad_group_id = 1
+        candidate_id = 4
 
         response = _get_client().put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -972,16 +1045,68 @@ class UpdateCandidateTest(TestCase):
             'success': False,
             'data': {
                 'error_code': 'MissingDataError',
-                'message': None,
+                'message': 'Upload batch does not exist',
+            }
+        }, json.loads(response.content))
+
+    def test_delete_wrong_batch_id(self):
+        batch_id = 4
+        ad_group_id = 1
+        candidate_id = 4
+
+        response = _get_client().delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
 
     def test_permission(self):
         batch_id = 4
         ad_group_id = 5
+        candidate_id = 4
 
         response = _get_client(superuser=False).put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+    def test_delete_permission(self):
+        batch_id = 4
+        ad_group_id = 5
+        candidate_id = 4
+
+        response = _get_client(superuser=False).delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             follow=True,
         )
         self.assertEqual(404, response.status_code)

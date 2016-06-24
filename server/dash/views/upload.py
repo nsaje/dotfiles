@@ -268,9 +268,9 @@ class UploadErrorReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
-class UpdateCandidate(api_common.BaseApiView):
+class Candidate(api_common.BaseApiView):
 
-    def put(self, request, ad_group_id, batch_id):
+    def put(self, request, ad_group_id, batch_id, candidate_id):
         if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
             raise Http404('Forbidden')
 
@@ -278,7 +278,7 @@ class UpdateCandidate(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError()
+            raise exc.MissingDataError('Upload batch does not exist')
 
         resource = json.loads(request.body)
 
@@ -290,3 +290,23 @@ class UpdateCandidate(api_common.BaseApiView):
         return self.create_api_response({
             'candidates': upload_plus.get_candidates_with_errors(batch.contentadcandidate_set.all()),
         })
+
+    def delete(self, request, ad_group_id, batch_id, candidate_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Upload batch does not exist')
+
+        try:
+            candidate = batch.contentadcandidate_set.get(id=candidate_id)
+        except models.ContentAdCandidate.DoesNotExist:
+            raise exc.MissingDataError('Candidate does not exist')
+
+        candidate.delete()
+        return self.create_api_response({})
+
+
