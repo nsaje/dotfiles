@@ -2,9 +2,8 @@
 'use strict';
 
 oneApp.factory('zemGridEndpointColumns', [function () {
-    // TODO: conversion goals/optimisation metrics names, visibility, etc. -- update columns based on goals data
-    // FIXME: Categories -- Diff conflict in ad_group_publishers
-    // TODO: state - saveData, constants, messages, archived - move to directives
+    var CONVERSION_GOAL_FIELD_PREFIX = 'conversion_goal_';
+    var AVG_COST_PER_CONVERSION_GOAL_PREFIX = 'avg_cost_per_conversion_goal_';
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // BASE COLUMNS DEFINITIONS
@@ -944,7 +943,6 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         },
     };
 
-    var CONVERSION_GOAL_FIELD_PREFIX = 'conversion_goal_';
     for (var i = 1; i <= 5; i++) {
         COLUMNS['conversionGoal' + i] = {
             name: 'Conversion Goal ' + i,
@@ -960,7 +958,6 @@ oneApp.factory('zemGridEndpointColumns', [function () {
         };
     }
 
-    var AVG_COST_PER_CONVERSION_GOAL_PREFIX = 'avg_cost_per_conversion_goal_';
     for (i = 0; i < 6; i++) {
         COLUMNS['avgCostPerConversionGoal' + i] = {
             name: 'Avg. CPA',
@@ -1295,14 +1292,12 @@ oneApp.factory('zemGridEndpointColumns', [function () {
 
     function createColumns ($scope, level, breakdown) {
         // Create columns definitions array based on base level and breakdown
-        var columns = getColumns(level, breakdown);
+        var columns = angular.copy(getColumns(level, breakdown));
         checkPermissions($scope, columns);
         return columns;
     }
 
     function createCategories () {
-        // TODO: check if column is required in category
-        // Create categories in correct format
         return CATEGORIES.map(function (category) {
             var fields = category.columns.map(function (column) {
                 return column.field;
