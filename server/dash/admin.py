@@ -1521,6 +1521,8 @@ class SelfManagedFilter(SimpleListFilter):
                 created_by__email__isnull=False
             ).exclude(
                 created_by__email__icontains="@zemanta"
+            ).exclude(
+                created_by__is_test_user=True
             )
         elif self.value() == 'system-user':
             return queryset.filter(
