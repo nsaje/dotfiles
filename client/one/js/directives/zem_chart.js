@@ -156,11 +156,8 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 }
             };
 
-            angular.element($window).bind('resize', function () {
-                $scope.updateSize();
-            });
 
-            $scope.updateSize = function () {
+            var updateSize = function () {
                 var chart = $('.chart').highcharts();
 
                 var w = $('.chart').parent().width(),
@@ -170,6 +167,12 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                     chart.setSize(w, h, false);
                 }
             };
+
+            var w = angular.element($window);
+            w.bind('resize', updateSize);
+            $scope.$on('$destroy', function () {
+                w.unbind('resize', updateSize);
+            });
 
             $scope.$watch('data', function (newValue, oldValue) {
                 var i = 0,
