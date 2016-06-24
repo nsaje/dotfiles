@@ -1066,7 +1066,34 @@ class BreakdownForm(forms.Form):
         return [x for x in self.cleaned_data['breakdown'].split('/') if x]
 
 
-class ContentAdCandidateForm(forms.Form):
+class ContentAdCandidateForm(forms.ModelForm):
+
+    def clean_image_crop(self):
+        image_crop = self.cleaned_data.get('image_crop')
+        if not image_crop:
+            return constants.ImageCrop.CENTER
+
+        return image_crop.lower()
+
+    class Meta:
+        model = models.ContentAdCandidate
+        fields = [
+            'label',
+            'url',
+            'title',
+            'image_url',
+            'image_crop',
+            'display_url',
+            'brand_name',
+            'description',
+            'call_to_action',
+            'tracker_urls',
+            'primary_tracker_url',
+            'secondary_tracker_url',
+        ]
+
+
+class ContentAdForm(forms.Form):
     label = forms.CharField(
         max_length=25,
         required=False,
@@ -1093,8 +1120,12 @@ class ContentAdCandidateForm(forms.Form):
             'required': 'Missing image URL',
         }
     )
-    image_crop = forms.CharField(
-        required=False,
+    image_crop = forms.ChoiceField(
+        choices=constants.ImageCrop.get_choices(),
+        error_messages={
+            'invalid_choice': 'Choose a valid image crop',
+            'required': 'Choose a valid image crop',
+        },
     )
     display_url = forms.CharField(
         max_length=25,
@@ -1124,9 +1155,6 @@ class ContentAdCandidateForm(forms.Form):
             'max_length': 'Call to action too long (max %(limit_value)d characters)',
         },
     )
-    tracker_urls = forms.CharField(
-        required=False,
-    )
     primary_tracker_url = forms.CharField(
         max_length=936,
         required=False,
@@ -1134,6 +1162,9 @@ class ContentAdCandidateForm(forms.Form):
             'max_length': 'URL too long (max %(limit_value)d characters)',
         }
     )
+    tracker_urls = forms.CharField(
+        required=False,
+    )  # TODO: remove when upload v2.1 is public
     secondary_tracker_url = forms.CharField(
         max_length=936,
         required=False,
@@ -1141,6 +1172,28 @@ class ContentAdCandidateForm(forms.Form):
             'max_length': 'URL too long (max %(limit_value)d characters)',
         }
     )
+    image_id = forms.CharField(
+        required=False,
+    )
+    image_hash = forms.CharField(
+        required=False,
+    )
+    image_width = forms.IntegerField(
+        required=False,
+    )
+    image_height = forms.IntegerField(
+        required=False,
+    )
+
+    image_status = forms.IntegerField(
+        required=False,
+    )
+    url_status = forms.IntegerField(
+        required=False,
+    )
+
+    MIN_IMAGE_SIZE = 300
+    MAX_IMAGE_SIZE = 10000
 
     def _validate_url(self, url):
         validate_url = validators.URLValidator(schemes=['http', 'https'])
@@ -1208,56 +1261,9 @@ class ContentAdCandidateForm(forms.Form):
 
         return result
 
-    def clean_image_crop(self):
-        image_crop = self.cleaned_data.get('image_crop')
-        if not image_crop:
-            return constants.ImageCrop.CENTER
-
-        if image_crop.lower() in constants.ImageCrop.get_all():
-            return image_crop.lower()
-
-        raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
-
-    def clean(self):
-        super(ContentAdCandidateForm, self).clean()
-
-        primary_tracker_url = self.cleaned_data.get('primary_tracker_url')
-        if primary_tracker_url:
-            self.cleaned_data['tracker_urls'].append(primary_tracker_url)
-
-        secondary_tracker_url = self.cleaned_data.get('secondary_tracker_url')
-        if secondary_tracker_url:
-            self.cleaned_data['tracker_urls'].append(secondary_tracker_url)
-
-        return self.cleaned_data
-
-
-class ContentAdForm(ContentAdCandidateForm):
-    image_id = forms.CharField(
-        required=False,
-    )
-    image_hash = forms.CharField(
-        required=False,
-    )
-    image_width = forms.IntegerField(
-        required=False,
-    )
-    image_height = forms.IntegerField(
-        required=False,
-    )
-
-    image_status = forms.IntegerField(
-        required=False,
-    )
-    url_status = forms.IntegerField(
-        required=False,
-    )
-
-    MIN_IMAGE_SIZE = 300
-    MAX_IMAGE_SIZE = 10000
-
     def _validate_image_status(self, cleaned_data):
-        if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
+        image_status = cleaned_data['image_status']
+        if image_status != constants.AsyncUploadJobStatus.OK or\
            not cleaned_data['image_id'] or\
            not cleaned_data['image_hash'] or\
            not cleaned_data['image_width'] or\
@@ -1271,11 +1277,22 @@ class ContentAdForm(ContentAdCandidateForm):
             return 'Image too big (maximum size is {max}x{max} px)'.format(max=self.MAX_IMAGE_SIZE)
 
     def _validate_url_status(self, cleaned_data):
-        if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
+        url_status = cleaned_data['url_status']
+        if url_status != constants.AsyncUploadJobStatus.OK:
             return 'Content unreachable'
+
+    def _set_tracker_urls(self, cleaned_data):
+        primary_tracker_url = cleaned_data.get('primary_tracker_url')
+        if primary_tracker_url:
+            cleaned_data['tracker_urls'].append(primary_tracker_url)
+
+        secondary_tracker_url = self.cleaned_data.get('secondary_tracker_url')
+        if secondary_tracker_url:
+            cleaned_data['tracker_urls'].append(secondary_tracker_url)
 
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
+        self._set_tracker_urls(cleaned_data)
 
         pending_statuses = [constants.AsyncUploadJobStatus.PENDING_START,
                             constants.AsyncUploadJobStatus.WAITING_RESPONSE]

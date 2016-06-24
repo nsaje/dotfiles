@@ -1,3 +1,4 @@
+import json
 import os
 from urlparse import urlparse
 
@@ -79,9 +80,8 @@ class UploadCsv(api_common.BaseApiView):
         with transaction.atomic():
             self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
             batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name, filename)
-        skip_url_validation = upload_plus.has_skip_validation_magic_word(filename)
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate, skip_url_validation)
+            upload_plus.invoke_external_validation(candidate, batch)
         errors = upload_plus.validate_candidates(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
@@ -126,9 +126,8 @@ class UploadMultiple(api_common.BaseApiView):
                 filename,
             )
 
-        skip_url_validation = upload_plus.has_skip_validation_magic_word(filename)
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate, skip_url_validation)
+            upload_plus.invoke_external_validation(candidate, batch)
 
         candidates_result = upload_plus.get_candidates_with_errors(candidates)
         return self.create_api_response({
@@ -267,3 +266,23 @@ class UploadErrorReport(api_common.BaseApiView):
 
         name = basefnm.rsplit('_', 1)[0] + '_errors'
         return self.create_csv_response(name, content=content)
+
+
+class UpdateCandidate(api_common.BaseApiView):
+
+    def put(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError()
+
+        resource = json.loads(request.body)
+        upload_plus.update_candidate(resource['candidate'], resource['defaults'], batch)
+
+        return self.create_api_response({
+            'candidates': upload_plus.get_candidates_with_errors(batch.contentadcandidate_set.all()),
+        })

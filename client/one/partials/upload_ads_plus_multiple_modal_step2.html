@@ -90,7 +90,7 @@
                     Image URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="image-url-input" ng-model="selectedCandidate.imageUrl" ng-focus="clearCandidateErrors('image')" />
+                    <input type="text" class="form-control" id="image-url-input" ng-model="selectedCandidate.imageUrl" ng-focus="clearCandidateErrors('imageUrl')" />
                     <label for="image-url-input" ng-repeat="error in selectedCandidate.errors.imageUrl" class="control-label small error">{{ error }}</label>
                     <div class="help-block">
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
@@ -113,7 +113,11 @@
                     </ui-select>
                     <label for="image-crop-input" ng-repeat="error in selectedCandidate.errors.imageCrop" class="control-label small error">{{ error }}</label>
                 </div>
-                <div class="col-xs-2 control-label p-l-none"><label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label></div>
+                <div class="col-xs-2 control-label p-l-none">
+                    <label class="checkbox-label checkbox-label-default">
+                        <input type="checkbox" ng-model="selectedCandidate.defaults.imageCrop" />Use as default
+                    </label>
+                </div>
             </div>
 
             <div class="form-group" ng-class="{'has-error': selectedCandidate.errors.description}">
@@ -126,7 +130,9 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ selectedCandidate.description.length }}/140
-                    <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
+                    <label class="checkbox-label checkbox-label-default">
+                        <input type="checkbox" ng-model="selectedCandidate.defaults.description"/>Use as default
+                    </label>
                 </div>
             </div>
 
@@ -140,7 +146,9 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ selectedCandidate.displayUrl.length }}/25
-                    <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
+                    <label class="checkbox-label checkbox-label-default">
+                        <input type="checkbox" ng-model="selectedCandidate.defaults.displayUrl"/>Use as default
+                    </label>
                 </div>
             </div>
 
@@ -155,7 +163,9 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ selectedCandidate.brandName.length }}/25
-                    <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
+                    <label class="checkbox-label checkbox-label-default">
+                        <input type="checkbox" ng-model="defaults.brandName"/>Use as default
+                    </label>
                 </div>
             </div>
 
@@ -168,7 +178,22 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ selectedCandidate.callToAction.length }}/25
-                    <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
+                    <label class="checkbox-label checkbox-label-default">
+                        <input type="checkbox" ng-model="selectedCandidate.defaults.callToAction" />Use as default
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" ng-class="{'has-error': selectedCandidate.errors.label}">
+                <label for="url-input" class="col-xs-2 control-label">
+                    Label:
+                </label>
+                <div class="col-xs-8">
+                    <input type="text" class="form-control" id="label-input" ng-model="selectedCandidate.label" ng-focus="clearCandidateErrors('label')" />
+                    <label for="label-input" ng-repeat="error in selectedCandidate.errors.label" class="control-label small error">{{ error }}</label>
+                </div>
+                <div class="col-xs-2 control-label small p-l-none">
+                    {{ selectedCandidate.label.length }}/25
                 </div>
             </div>
 
@@ -228,7 +253,7 @@
             <div class="form-group">
                 <div class="col-xs-2 control-label"></div>
                 <div class="col-xs-8">
-                    <button type="button" class="btn btn-add" ng-click="closeEditForm()">Update ad</button>
+                    <button type="button" class="btn btn-add" ng-click="updateCandidate()">Update ad</button>
                 </div>
                 <div class="col-xs-2"></div>
             </div>

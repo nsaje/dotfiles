@@ -13,6 +13,7 @@ from utils import s3helpers, lambda_helper, k1_helper
 logger = logging.getLogger(__name__)
 
 S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{batch_id}/{filename}'
+VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
 
 MAPPED_ERROR_CSV_FIELD = {
     'tracker_urls': 'impression_trackers',
@@ -36,7 +37,8 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
 
 
 @transaction.atomic
-def invoke_external_validation(candidate, skip_url_validation=False):
+def invoke_external_validation(candidate, batch):
+    skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
         {
@@ -51,8 +53,12 @@ def invoke_external_validation(candidate, skip_url_validation=False):
         },
         async=True,
     )
-    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    candidate.image_id = None
+    candidate.image_hash = None
+    candidate.image_width = None
+    candidate.image_height = None
     candidate.save()
 
 
@@ -200,6 +206,52 @@ def validate_candidates(candidates):
     return errors
 
 
+def _should_invoke_external_validation(candidate, old_url, old_image_url):
+    if candidate.url != old_url:
+        return True
+
+    if candidate.image_url != old_image_url:
+        return True
+
+    return False
+
+
+def _reinvoke_external_validation(candidate, batch, old_url, old_image_url):
+    if not _should_invoke_external_validation(candidate, old_url, old_image_url):
+        return
+
+    invoke_external_validation(candidate, batch)
+
+
+def _update_defaults(data, defaults, batch):
+    defaults = set(defaults) & VALID_DEFAULTS_FIELDS
+    if not defaults:
+        return
+
+    batch.contentadcandidate_set.all().update(**{
+        field: data[field] for field in defaults
+    })
+
+
+def _update_candidate(data, batch):
+    form = forms.ContentAdCandidateForm(data)
+    form.is_valid()  # used only to clean data of any possible unsupported fields
+    candidate = batch.contentadcandidate_set.get(id=data['id'])
+    old_url = candidate.url
+    old_image_url = candidate.image_url
+
+    for field, val in form.cleaned_data.items():
+        setattr(candidate, field, val)
+    candidate.save()
+    _reinvoke_external_validation(candidate, batch, old_url, old_image_url)
+
+
+@transaction.atomic
+def update_candidate(data, defaults, batch):
+    _update_candidate(data, batch)
+    _update_defaults(data, defaults, batch)
+
+
 @transaction.atomic
 def process_callback(callback_data):
     try:
@@ -207,6 +259,10 @@ def process_callback(callback_data):
         candidate = models.ContentAdCandidate.objects.get(pk=candidate_id)
     except models.ContentAdCandidate.DoesNotExist:
         logger.exception('No candidate with id %s', callback_data['id'])
+        return
+
+    if callback_data['image']['originUrl'] != candidate.image_url or\
+       callback_data['url']['originUrl'] != candidate.url:
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
@@ -229,22 +285,13 @@ def process_callback(callback_data):
 def _create_candidates(content_ads_data, ad_group, batch):
     candidates_added = []
     for content_ad in content_ads_data:
+        form = forms.ContentAdCandidateForm(content_ad)
+        form.is_valid()  # used only to clean data of any possible unsupported fields
         candidates_added.append(
             models.ContentAdCandidate.objects.create(
                 ad_group=ad_group,
                 batch=batch,
-                label=content_ad.get('label', ''),
-                url=content_ad.get('url', ''),
-                title=content_ad.get('title', ''),
-                image_url=content_ad.get('image_url', ''),
-                image_crop=content_ad.get('image_crop', constants.ImageCrop.CENTER),
-                display_url=content_ad.get('display_url', ''),
-                brand_name=content_ad.get('brand_name', ''),
-                description=content_ad.get('description', ''),
-                call_to_action=content_ad.get('call_to_action', ''),
-                tracker_urls=content_ad.get('tracker_urls', ''),
-                primary_tracker_url=content_ad.get('primary_tracker_url', ''),
-                secondary_tracker_url=content_ad.get('secondary_tracker_url', ''),
+                **form.cleaned_data
             )
         )
     return candidates_added

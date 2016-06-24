@@ -89,6 +89,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
 
     $scope.openEditForm = function (candidate) {
         $scope.selectedCandidate = angular.copy(candidate);
+        $scope.selectedCandidate.defaults = {};
         $scope.selectedCandidate.useTrackers = !!$scope.selectedCandidate.primaryTrackerUrl ||
             !!$scope.selectedCandidate.secondaryTrackerUrl;
         $scope.selectedCandidate.useSecondaryTracker = !!$scope.selectedCandidate.secondaryTrackerUrl;
@@ -212,9 +213,22 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         ).then(function (result) {
             $scope.step++;
             $scope.candidates = result.candidates;
-            startPolling(result.batchId);
+            $scope.batchId = result.batchId;
+            startPolling($scope.batchId);
         }, function (data) {
             $scope.errors = data.errors;
+        });
+    };
+
+    $scope.updateCandidate = function () {
+        api.uploadPlus.updateCandidate(
+            $scope.selectedCandidate,
+            $state.params.id,
+            $scope.batchId
+        ).then(function (result) {
+            updateCandidates(result.candidates);
+            startPolling($scope.batchId);
+            $scope.closeEditForm();
         });
     };
 

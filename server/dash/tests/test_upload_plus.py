@@ -266,7 +266,7 @@ class ValidateCandidatesTestCase(TestCase):
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'image_url': [u'Invalid image URL'],
-                'image_crop': [u'Image crop landscape is not supported'],
+                'image_crop': [u'Choose a valid image crop'],
                 'description': [u'Missing description'],
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'brand_name': [u'Missing brand name'],
@@ -282,6 +282,7 @@ class ValidateCandidatesTestCase(TestCase):
         ad_group = dash.models.AdGroup.objects.get(id=1)
         batch, candidates = dash.upload_plus.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
 
+        self.maxDiff = None
         result = dash.upload_plus.get_candidates_with_errors(candidates)
         self.assertEqual([{
             'hosted_image_url': None,
@@ -293,7 +294,7 @@ class ValidateCandidatesTestCase(TestCase):
             'title': '',
             'url': 'ftp://zemanta.com/test-content-ad',
             'errors': {
-                'image_crop': [u'Image crop landscape is not supported'],
+                'image_crop': [u'Choose a valid image crop'],
                 'description': [u'Missing description'],
                 '__all__': [u'Content ad still processing'],
                 'title': [u'Missing title'],
@@ -342,14 +343,14 @@ class UploadPlusTest(TestCase):
         ]
 
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        _, candidates = dash.upload_plus.insert_candidates(
+        batch, candidates = dash.upload_plus.insert_candidates(
             content_ads_data,
             ad_group,
             'Test batch',
             'test_upload.csv',
         )
         for candidate in candidates:
-            dash.upload_plus.invoke_external_validation(candidate)
+            dash.upload_plus.invoke_external_validation(candidate, batch)
 
         self.assertEqual(mock_lambda.call_count, 2)
 
@@ -396,7 +397,8 @@ class UploadPlusTest(TestCase):
                 "width": 1500,
                 "hash": "0000000000000000",
                 "id": "demo/demo-123/srv/some-batch/31eb9a632e3547039169d1b650155e14",
-                "height": 245
+                "height": 245,
+                "originUrl": "http://static1.squarespace.com/image.jpg",
             }
         })
 

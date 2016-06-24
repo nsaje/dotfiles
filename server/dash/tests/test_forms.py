@@ -1089,91 +1089,10 @@ class ContentAdCandidateFormTestCase(TestCase):
             'brand_name': 'Zemanta',
             'description': 'Description',
             'call_to_action': 'Read more',
-            'tracker_urls': ['https://zemanta.com/px1', 'https://zemanta.com/px2'],
+            'tracker_urls': '',
             'primary_tracker_url': 'https://zemanta.com/px1',
             'secondary_tracker_url': 'https://zemanta.com/px2',
         })
-
-    def test_label_too_long(self):
-        data = self._get_valid_data()
-        data['label'] = 'a' * 26
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'label': ['Label too long (max 25 characters)']
-        }, f.errors)
-
-    def test_missing_url(self):
-        data = self._get_valid_data()
-        del data['url']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'url': ['Missing URL']
-        }, f.errors)
-
-    def test_url_too_long(self):
-        data = self._get_valid_data()
-        data['url'] = 'http://example.com/' + ('repeat' * 200)
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'url': ['URL too long (max 936 characters)']
-        }, f.errors)
-
-    def test_invalid_url(self):
-        data = self._get_valid_data()
-        data['url'] = 'ttp://example.com'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'url': ['Invalid URL']
-        }, f.errors)
-
-    def test_missing_title(self):
-        data = self._get_valid_data()
-        del data['title']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'title': ['Missing title']
-        }, f.errors)
-
-    def test_title_too_long(self):
-        data = self._get_valid_data()
-        data['title'] = 'repeat' * 19
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'title': ['Title too long (max 90 characters)']
-        }, f.errors)
-
-    def test_missing_image_url(self):
-        data = self._get_valid_data()
-        del data['image_url']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'image_url': ['Missing image URL']
-        }, f.errors)
-
-    def test_invalid_image_url(self):
-        data = self._get_valid_data()
-        data['image_url'] = 'ttp://example.com'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'image_url': ['Invalid image URL']
-        }, f.errors)
-
-    def test_invalid_image_crop(self):
-        data = self._get_valid_data()
-        data['image_crop'] = 'landscape'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'image_crop': ['Image crop landscape is not supported']
-        }, f.errors)
 
     def test_capitalized_image_crop(self):
         data = self._get_valid_data()
@@ -1181,120 +1100,19 @@ class ContentAdCandidateFormTestCase(TestCase):
         f = forms.ContentAdCandidateForm(data)
         self.assertTrue(f.is_valid())
 
+    def test_skipped_image_crop(self):
+        data = self._get_valid_data()
+        del data['image_crop']
+        f = forms.ContentAdCandidateForm(data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(f.cleaned_data['image_crop'], 'center')
+
     def test_empty_image_crop(self):
         data = self._get_valid_data()
         data['image_crop'] = ''
         f = forms.ContentAdCandidateForm(data)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data['image_crop'], 'center')
-
-    def test_missing_display_url(self):
-        data = self._get_valid_data()
-        del data['display_url']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'display_url': ['Missing display URL']
-        }, f.errors)
-
-    def test_display_url_too_long(self):
-        data = self._get_valid_data()
-        data['display_url'] = 'repeat' * 6
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'display_url': ['Display URL too long (max 25 characters)']
-        }, f.errors)
-
-    def test_missing_brand_name(self):
-        data = self._get_valid_data()
-        del data['brand_name']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'brand_name': ['Missing brand name']
-        }, f.errors)
-
-    def test_brand_name_too_long(self):
-        data = self._get_valid_data()
-        data['brand_name'] = 'repeat' * 6
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'brand_name': ['Brand name too long (max 25 characters)']
-        }, f.errors)
-
-    def test_missing_description(self):
-        data = self._get_valid_data()
-        del data['description']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'description': ['Missing description']
-        }, f.errors)
-
-    def test_description_too_long(self):
-        data = self._get_valid_data()
-        data['description'] = 'repeat' * 29
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'description': ['Description too long (max 140 characters)']
-        }, f.errors)
-
-    def test_missing_call_to_action(self):
-        data = self._get_valid_data()
-        del data['call_to_action']
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'call_to_action': ['Missing call to action']
-        }, f.errors)
-
-    def test_call_to_action_too_long(self):
-        data = self._get_valid_data()
-        data['call_to_action'] = 'repeat' * 6
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'call_to_action': ['Call to action too long (max 25 characters)']
-        }, f.errors)
-
-    def test_http_primary_tracker(self):
-        data = self._get_valid_data()
-        data['primary_tracker_url'] = 'http://zemanta.com/'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'primary_tracker_url': ['Impression tracker URLs have to be HTTPS']
-        }, f.errors)
-
-    def test_http_secondary_tracker(self):
-        data = self._get_valid_data()
-        data['secondary_tracker_url'] = 'http://zemanta.com/'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'secondary_tracker_url': ['Impression tracker URLs have to be HTTPS']
-        }, f.errors)
-
-    def test_unicode_primary_tracker(self):
-        data = self._get_valid_data()
-        data['primary_tracker_url'] = 'https://zemanta.com/š'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'primary_tracker_url': ['Invalid impression tracker URLs']
-        }, f.errors)
-
-    def test_unicode_secondary_tracker(self):
-        data = self._get_valid_data()
-        data['secondary_tracker_url'] = 'https://zemanta.com/š'
-        f = forms.ContentAdCandidateForm(data)
-        self.assertFalse(f.is_valid())
-        self.assertEqual({
-            'secondary_tracker_url': ['Invalid impression tracker URLs']
-        }, f.errors)
 
 
 class ContentAdFormTestCase(TestCase):
@@ -1342,7 +1160,7 @@ class ContentAdFormTestCase(TestCase):
             'image_url': ['Missing image URL']
         }, f.errors)
 
-    def test_invalid_url(self):
+    def test_not_reachable_url(self):
         data = self._get_valid_data()
         data['url_status'] = constants.AsyncUploadJobStatus.FAILED
         f = forms.ContentAdForm(data)
@@ -1440,4 +1258,205 @@ class ContentAdFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({
             'url': ['Content unreachable']
+        }, f.errors)
+
+    def test_label_too_long(self):
+        data = self._get_valid_data()
+        data['label'] = 'a' * 26
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'label': ['Label too long (max 25 characters)']
+        }, f.errors)
+
+    def test_missing_url(self):
+        data = self._get_valid_data()
+        del data['url']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'url': ['Missing URL']
+        }, f.errors)
+
+    def test_url_too_long(self):
+        data = self._get_valid_data()
+        data['url'] = 'http://example.com/' + ('repeat' * 200)
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'url': ['URL too long (max 936 characters)']
+        }, f.errors)
+
+    def test_invalid_url(self):
+        data = self._get_valid_data()
+        data['url'] = 'ttp://example.com'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'url': ['Invalid URL']
+        }, f.errors)
+
+    def test_missing_title(self):
+        data = self._get_valid_data()
+        del data['title']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'title': ['Missing title']
+        }, f.errors)
+
+    def test_title_too_long(self):
+        data = self._get_valid_data()
+        data['title'] = 'repeat' * 19
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'title': ['Title too long (max 90 characters)']
+        }, f.errors)
+
+    def test_missing_image_url(self):
+        data = self._get_valid_data()
+        del data['image_url']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Missing image URL']
+        }, f.errors)
+
+    def test_invalid_image_url(self):
+        data = self._get_valid_data()
+        data['image_url'] = 'ttp://example.com'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_url': ['Invalid image URL']
+        }, f.errors)
+
+    def test_invalid_image_crop(self):
+        data = self._get_valid_data()
+        data['image_crop'] = 'landscape'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'image_crop': ['Choose a valid image crop']
+        }, f.errors)
+
+    def test_capitalized_image_crop(self):
+        data = self._get_valid_data()
+        data['image_crop'] = 'Center'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+
+    def test_empty_image_crop(self):
+        data = self._get_valid_data()
+        data['image_crop'] = ''
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+
+    def test_missing_display_url(self):
+        data = self._get_valid_data()
+        del data['display_url']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'display_url': ['Missing display URL']
+        }, f.errors)
+
+    def test_display_url_too_long(self):
+        data = self._get_valid_data()
+        data['display_url'] = 'repeat' * 6
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'display_url': ['Display URL too long (max 25 characters)']
+        }, f.errors)
+
+    def test_missing_brand_name(self):
+        data = self._get_valid_data()
+        del data['brand_name']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'brand_name': ['Missing brand name']
+        }, f.errors)
+
+    def test_brand_name_too_long(self):
+        data = self._get_valid_data()
+        data['brand_name'] = 'repeat' * 6
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'brand_name': ['Brand name too long (max 25 characters)']
+        }, f.errors)
+
+    def test_missing_description(self):
+        data = self._get_valid_data()
+        del data['description']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'description': ['Missing description']
+        }, f.errors)
+
+    def test_description_too_long(self):
+        data = self._get_valid_data()
+        data['description'] = 'repeat' * 29
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'description': ['Description too long (max 140 characters)']
+        }, f.errors)
+
+    def test_missing_call_to_action(self):
+        data = self._get_valid_data()
+        del data['call_to_action']
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'call_to_action': ['Missing call to action']
+        }, f.errors)
+
+    def test_call_to_action_too_long(self):
+        data = self._get_valid_data()
+        data['call_to_action'] = 'repeat' * 6
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'call_to_action': ['Call to action too long (max 25 characters)']
+        }, f.errors)
+
+    def test_http_primary_tracker(self):
+        data = self._get_valid_data()
+        data['primary_tracker_url'] = 'http://zemanta.com/'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'primary_tracker_url': ['Impression tracker URLs have to be HTTPS']
+        }, f.errors)
+
+    def test_http_secondary_tracker(self):
+        data = self._get_valid_data()
+        data['secondary_tracker_url'] = 'http://zemanta.com/'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'secondary_tracker_url': ['Impression tracker URLs have to be HTTPS']
+        }, f.errors)
+
+    def test_unicode_primary_tracker(self):
+        data = self._get_valid_data()
+        data['primary_tracker_url'] = 'https://zemanta.com/š'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'primary_tracker_url': ['Invalid impression tracker URLs']
+        }, f.errors)
+
+    def test_unicode_secondary_tracker(self):
+        data = self._get_valid_data()
+        data['secondary_tracker_url'] = 'https://zemanta.com/š'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'secondary_tracker_url': ['Invalid impression tracker URLs']
         }, f.errors)

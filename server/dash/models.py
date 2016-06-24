@@ -2622,20 +2622,21 @@ class ContentAdSource(models.Model):
 
 
 class ContentAdCandidate(models.Model):
-    label = models.TextField(null=True)
-    url = models.TextField(null=True)
-    title = models.TextField(null=True)
-    image_url = models.TextField(null=True)
-    image_crop = models.TextField(null=True)
+    label = models.TextField(null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+    title = models.TextField(null=True, blank=True)
+    image_url = models.TextField(null=True, blank=True)
+    image_crop = models.TextField(null=True, blank=True)
 
-    display_url = models.TextField(null=True)
-    brand_name = models.TextField(null=True)
-    description = models.TextField(null=True)
-    call_to_action = models.TextField(null=True)
+    display_url = models.TextField(null=True, blank=True)
+    brand_name = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    call_to_action = models.TextField(null=True, blank=True)
 
-    tracker_urls = models.TextField(null=True)
-    primary_tracker_url = models.TextField(null=True)
-    secondary_tracker_url = models.TextField(null=True)
+    # TODO: remove when upload v2.1 is public
+    tracker_urls = models.TextField(null=True, blank=True)
+    primary_tracker_url = models.TextField(null=True, blank=True)
+    secondary_tracker_url = models.TextField(null=True, blank=True)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
