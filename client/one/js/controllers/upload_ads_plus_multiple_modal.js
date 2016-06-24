@@ -13,8 +13,9 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.step = 1;
     $scope.selectedCandidate = null;
     $scope.batchNameEdit = false;
-    $scope.batchName = moment().format('M/D/YYYY h:mm A');
-    $scope.fileInput = {};
+    $scope.formData = {
+        batchName: moment().format('M/D/YYYY h:mm A'),
+    };
 
     var pollInterval;
     var startPolling = function (batchId) {
@@ -165,7 +166,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     $scope.saveUpload = function () {
-        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.batchName).then(
+        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.formData.batchName).then(
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
                 $scope.step++;
@@ -219,8 +220,8 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
 
         var formData = {
-            file: $scope.fileInput.file,
-            batchName: $scope.batchName,
+            file: $scope.formData.file,
+            batchName: $scope.formData.batchName,
         };
 
         api.uploadPlus.uploadMultiple(

@@ -1,9 +1,9 @@
 <div class="modal-body contentad-picker" ng-class="{editing: !!selectedCandidate}">
     <div class="clearfix"></div>
     <div class="candidate-table custom_scroller">
-        <h4 class="candidate-title">
+        <h4 class="batch-name">
             <span>Batch name:</span>
-            <input type="text" class="form-control" ng-readonly="!batchNameEdit" ng-model="batchName" id="title-input" ng-blur="disableBatchNameEdit()" />
+            <input type="text" class="form-control" ng-readonly="!batchNameEdit" ng-model="formData.batchName" id="batch-name-input" ng-blur="disableBatchNameEdit()" />
             <a href class="btn btn-secondary only-icon" ng-click="toggleBatchNameEdit()">
                 <img ng-src="{{ config.static_url }}/one/img/button-edit.svg" ng-if="!batchNameEdit"/>
                 <img ng-src="{{ config.static_url }}/one/img/button-check_mark.svg" ng-if="batchNameEdit"/>
