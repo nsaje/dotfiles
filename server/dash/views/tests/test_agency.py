@@ -280,7 +280,7 @@ class AdGroupSettingsTest(TestCase):
                 ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             ])
 
-            hist = history_helpers.get_ad_group_history(ad_group)
+            hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -1128,7 +1128,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual('Archived conversion pixel with unique identifier test.',
                          hist.changes_text)
 
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1))
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE, hist.action_type)
 
     def test_put_archive_no_permissions(self):
@@ -1367,7 +1367,7 @@ class CampaignConversionGoalsTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual({'success': True}, decoded_response)
 
-        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=2))
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=2)).first()
         self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
 
     def test_post_campaign_no_permission(self):
@@ -1660,7 +1660,7 @@ class ConversionGoalTestCase(TestCase):
         with self.assertRaises(models.ConversionGoal.DoesNotExist):
             models.ConversionGoal.objects.get(id=1)
 
-        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1))
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
 
     def test_delete_campaign_no_permissions(self):
@@ -1845,7 +1845,7 @@ class CampaignSettingsTest(TestCase):
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
 
-        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1))
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -2421,7 +2421,7 @@ class AccountSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
         self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')
 
-        hist = history_helpers.get_account_history(account)
+        hist = history_helpers.get_account_history(account).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     def test_put_no_permission_can_modify_account_type(self):
