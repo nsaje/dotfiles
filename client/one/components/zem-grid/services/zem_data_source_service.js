@@ -77,8 +77,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         //
         // Definitions
         //
-        function getMetaData () {
-            if (metaData) return $q.resolve(metaData);
+        function getMetaData (forceFetch) {
+            if (metaData && !forceFetch) return $q.resolve(metaData);
 
             var deferred = $q.defer();
             endpoint.getMetaData().then(function (_metaData) {

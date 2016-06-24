@@ -29,13 +29,16 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
             dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
             loadMetaData().then(function () {
                 grid.meta.initialized = true;
-                loadData();
+                loadData().then(function () {
+                    // Workaround - goals are defined after initial data is loaded; therefor reload metadata
+                    loadMetaData();
+                });
             });
         }
 
         function loadMetaData () {
             var deferred = $q.defer();
-            dataSource.getMetaData().then(
+            dataSource.getMetaData(true).then(
                 function (data) {
                     zemGridParser.parseMetaData(grid, data);
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
