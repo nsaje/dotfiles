@@ -1473,7 +1473,7 @@ class HistoryResource(resources.ModelResource):
 
     class Meta:
         model = models.History
-        exclude=['type', 'changes']
+        exclude = ['type', 'changes']
 
     def _get_name(self, obj):
         return obj.name if obj else '/'
@@ -1508,7 +1508,7 @@ class HistoryResource(resources.ModelResource):
 
 
 class SelfManagedFilter(SimpleListFilter):
-    title = 'Self Managed User' # or use _('country') for translated title
+    title = 'Self Managed User'
     parameter_name = 'created_by'
 
     def lookups(self, request, model_admin):
