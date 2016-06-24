@@ -113,7 +113,7 @@
                 <div class="row">
                     <div class="col-xs-10 input-group fb-logo" ng-if="settings.facebookStatus && settings.facebookStatus == constants.facebookStatus.EMPTY">
                         <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg"></i>
-                        <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage" ng-change="facebookPageChanged = true">
+                        <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage" ng-change="onFacebookPageChange()">
                     </div>
                 </div>
                 <div ng-if="settings.facebookStatus && settings.facebookStatus != constants.facebookStatus.EMPTY" class="row">

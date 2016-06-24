@@ -182,6 +182,10 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
         $scope.facebookPageChanged = true;
     };
+    
+    $scope.onFacebookPageChange = function () {
+        $scope.facebookPageChanged = true;
+    }
 
     $scope.refreshPage = function () {
         zemNavigationService.reload();
