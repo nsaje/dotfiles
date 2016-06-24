@@ -75,10 +75,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.batchNameEdit = false;
     };
 
-    $scope.nextStep = function () {
-        $scope.step++;
-    };
-
     $scope.restart = function () {
         $scope.step = 1;
     };
@@ -166,6 +162,15 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
 
         return constants.contentAdCandidateStatus.OK;
+    };
+
+    $scope.saveUpload = function () {
+        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.batchName).then(
+            function (data) {
+                $scope.numSuccessful = data.numSuccessful;
+                $scope.step++;
+            }
+        );
     };
 
     $scope.clearCandidateErrors = function (field) {

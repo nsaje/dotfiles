@@ -2570,13 +2570,19 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.save = function (adGroupId, batchId) {
+        this.save = function (adGroupId, batchId, batchName) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/save/';
+            var data = {};
 
-            $http.post(url).
+            if (batchName) {
+                data.batch_name = batchName;
+            }
+
+            $http.post(url, data).
                 success(function (data) {
                     var result = {
+                        numSuccessful: data.data.num_successful,
                         numErrors: data.data.num_errors,
                         errorReport: data.data.error_report,
                     };
