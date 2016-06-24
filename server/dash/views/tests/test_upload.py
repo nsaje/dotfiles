@@ -888,14 +888,14 @@ class UpdateCandidateTest(TestCase):
                     'image_height': None,
                     'image_id': None,
                     'image_status': 2,
-                    'image_url': 'http://zemanta.com/img.jpg',
+                    'image_url': 'http://zemanta.com/img1.jpg',
                     'image_width': None,
                     'label': 'content ad 1',
                     'primary_tracker_url': None,
                     'secondary_tracker_url': None,
-                    'title': 'Zemanta blog',
+                    'title': 'Zemanta blog 1',
                     'tracker_urls': '',
-                    'url': 'http://zemanta.com/blog',
+                    'url': 'http://zemanta.com/blog1',
                     'url_status': 2
                 }, {
                     'brand_name': 'New brand name',

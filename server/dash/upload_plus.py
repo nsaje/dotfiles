@@ -206,23 +206,6 @@ def validate_candidates(candidates):
     return errors
 
 
-def _should_invoke_external_validation(candidate, old_url, old_image_url):
-    if candidate.url != old_url:
-        return True
-
-    if candidate.image_url != old_image_url:
-        return True
-
-    return False
-
-
-def _reinvoke_external_validation(candidate, batch, old_url, old_image_url):
-    if not _should_invoke_external_validation(candidate, old_url, old_image_url):
-        return
-
-    invoke_external_validation(candidate, batch)
-
-
 def _update_defaults(data, defaults, batch):
     defaults = set(defaults) & VALID_DEFAULTS_FIELDS
     if not defaults:
@@ -234,22 +217,22 @@ def _update_defaults(data, defaults, batch):
 
 
 def _update_candidate(data, batch):
+    candidate = batch.contentadcandidate_set.get(id=data['id'])
     form = forms.ContentAdCandidateForm(data)
     form.is_valid()  # used only to clean data of any possible unsupported fields
-    candidate = batch.contentadcandidate_set.get(id=data['id'])
-    old_url = candidate.url
-    old_image_url = candidate.image_url
-
     for field, val in form.cleaned_data.items():
         setattr(candidate, field, val)
+
+    if candidate.has_changed('url') or candidate.has_changed('image_url'):
+        invoke_external_validation(candidate, batch)
+
     candidate.save()
-    _reinvoke_external_validation(candidate, batch, old_url, old_image_url)
 
 
 @transaction.atomic
 def update_candidate(data, defaults, batch):
-    _update_candidate(data, batch)
     _update_defaults(data, defaults, batch)
+    _update_candidate(data, batch)
 
 
 @transaction.atomic

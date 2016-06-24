@@ -2621,7 +2621,7 @@ class ContentAdSource(models.Model):
         return unicode(self).encode('ascii', 'ignore')
 
 
-class ContentAdCandidate(models.Model):
+class ContentAdCandidate(FootprintModel):
     label = models.TextField(null=True, blank=True)
     url = models.TextField(null=True, blank=True)
     title = models.TextField(null=True, blank=True)

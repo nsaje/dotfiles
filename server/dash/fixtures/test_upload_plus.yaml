@@ -350,9 +350,9 @@
     url_status: 2  # waiting
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
-    url: 'http://zemanta.com/blog'
-    title: 'Zemanta blog'
-    image_url: 'http://zemanta.com/img.jpg'
+    url: 'http://zemanta.com/blog1'
+    title: 'Zemanta blog 1'
+    image_url: 'http://zemanta.com/img1.jpg'
     image_crop: 'faces'
     display_url: 'yourbrand.com'
     brand_name: 'BranName'
