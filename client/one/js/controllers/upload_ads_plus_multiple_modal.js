@@ -44,14 +44,14 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     var updateCandidates = function (candidates) {
-        angular.forEach(candidates, function (newCandidate) {
+        angular.forEach(candidates, function (updatedCandidate) {
             var index = $.map($scope.candidates, function (candidate, ix) {
-                if (candidate.id === newCandidate.id) {
+                if (candidate.id === updatedCandidate.id) {
                     return ix;
                 }
             })[0];
 
-            $scope.candidates.splice(index, 1, newCandidate);
+            $scope.candidates.splice(index, 1, updatedCandidate);
         });
     };
 
