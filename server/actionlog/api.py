@@ -58,7 +58,11 @@ def init_enable_ad_group(ad_group, request, order=None, send=True):
                 'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
             }
             new_actionlogs.extend(
-                set_ad_group_source_settings(changes, source_settings.ad_group_source, request=request, order=order, send=send)
+                set_ad_group_source_settings(changes,
+                                             source_settings.ad_group_source,
+                                             request=request,
+                                             order=order,
+                                             send=send)
             )
 
     return new_actionlogs
@@ -71,7 +75,15 @@ def init_pause_ad_group(ad_group, request, order=None, send=True):
             'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
         }
 
-        new_actionlogs.extend(set_ad_group_source_settings(changes, ad_group_source, request=request, order=order, send=send))
+        new_actionlogs.extend(
+            set_ad_group_source_settings(
+                changes,
+                ad_group_source,
+                request=request,
+                order=order,
+                send=send
+            )
+        )
 
     return new_actionlogs
 
