@@ -43,8 +43,8 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
     };
 
-    var updateCandidates = function (candidates) {
-        angular.forEach(candidates, function (updatedCandidate) {
+    var updateCandidates = function (updatedCandidates) {
+        angular.forEach(updatedCandidates, function (updatedCandidate) {
             var index = $.map($scope.candidates, function (candidate, ix) {
                 if (candidate.id === updatedCandidate.id) {
                     return ix;
