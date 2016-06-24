@@ -26,6 +26,13 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
                     checkPaginationCount(config, breakdown);
                     return breakdown;
                 });
+
+                if (config.level === 1) { // Base level data comes with some additional metadata (e.g. goals)
+                    var breakdown = breakdowns[0];
+                    zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
+                    zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
+                }
+
                 deferred.resolve(breakdowns);
             }).error(function (data) {
                 deferred.reject(data);

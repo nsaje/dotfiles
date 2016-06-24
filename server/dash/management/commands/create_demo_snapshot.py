@@ -178,7 +178,7 @@ def _create_fake_credit(account):
     return dash.models.CreditLineItem(
         id=1,
         account=account,
-        amount=5000.0,
+        amount=50000.0,
         start_date=datetime.date.today(),
         end_date=datetime.date.today() + datetime.timedelta(days=30),
         status=constants.CreditLineItemStatus.SIGNED,

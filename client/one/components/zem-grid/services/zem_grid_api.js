@@ -158,6 +158,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         }
 
         function registerListener (event, scope, callback) {
+            scope = scope || grid.meta.scope;
             var handler = $rootScope.$on(event, callback);
             scope.$on('$destroy', handler);
         }

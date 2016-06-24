@@ -212,7 +212,10 @@ class UploadSave(api_common.BaseApiView):
                 num_uploaded,
                 pluralize(num_uploaded),
             )
-            history_helpers.write_ad_group_history(ad_group, changes_text, user=request.user)
+            ad_group.write_history(
+                changes_text,
+                user=request.user,
+                action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
             helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
                                                 ad_group=ad_group)
 

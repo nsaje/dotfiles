@@ -49,13 +49,15 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             initialize();
 
             function initialize () {
-                // Initialize header columns based on the stored data and default values
-                zemGridStorageService.loadColumns(vm.grid);
-                initVisibleColumns();
-                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED, initVisibleColumns);
+                initializeColumns();
+                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.METADATA_UPDATED, initializeColumns);
+                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED, initializeColumns);
             }
 
-            function initVisibleColumns () {
+            function initializeColumns () {
+                // Initialize header columns based on the stored data and default values
+                zemGridStorageService.loadColumns(vm.grid);
+
                 vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
                     return column.visible;
                 });
