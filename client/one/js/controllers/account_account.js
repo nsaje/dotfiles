@@ -22,6 +22,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     $scope.canRestore = true;
     $scope.agencyManagers = null;
     $scope.facebookPageChanged = false;
+    $scope.facebookAccountStatusChecker = null;
 
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
@@ -118,6 +119,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
                 }
+                checkFacebookAccountStatus();
             },
             function (data) {
                 // error
@@ -127,6 +129,30 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
             $scope.requestInProgress = false;
         });
     };
+
+    function checkFacebookAccountStatus() {
+        var facebookPage = $scope.settings.facebookPage;
+        var facebookStatus = $scope.settings.facebookStatus;
+        if (facebookPage == null || facebookStatus === 'Connected111') {
+            return;
+        }
+        console.log('Checking if Facebook is connected: ' + facebookPage);
+        api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(
+            function (data) {
+                var facebookAccountStatus = data.data.status;
+                $scope.settings.facebookStatus = facebookAccountStatus;
+            },
+            function (errors) {
+                console.error('Facebook account status retrieval failed: ' + errors);
+            }
+        );
+        if ($scope.facebookAccountStatusChecker != null) {
+            // prevent the creation of multiple Facebook account checkers (for example, when Facebook page URL is
+            // updated multiple times).
+            clearTimeout($scope.facebookAccountStatusChecker);
+        }
+        $scope.facebookAccountStatusChecker = setTimeout(checkFacebookAccountStatus, 30 * 1000);
+    }
 
     $scope.saveSettings = function () {
         $scope.saved = null;
@@ -166,6 +192,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 $scope.canRestore = data.canRestore;
                 zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
                 $scope.saved = true;
+                checkFacebookAccountStatus();
             },
             function (data) {
                 $scope.errors = data;

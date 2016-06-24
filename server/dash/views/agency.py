@@ -1295,3 +1295,23 @@ class History(api_common.BaseApiView):
                 'changes_text': history_entry.changes_text,
             })
         return history
+
+
+class FacebookAccountStatus(api_common.BaseApiView):
+
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        credentials = facebook_helper.get_credentials()
+        try:
+            fb_account_id = account.facebookaccount.ad_account_id
+            account_status = facebook_helper.get_ad_account_status(fb_account_id, credentials['access_token'])
+            # account_status = models.constants.FacebookPageRequestType.get_text(
+            #     account.facebookaccount.status)
+            account_status = models.constants.FacebookPageRequestType.get_text(account_status)
+        except models.FacebookAccount.DoesNotExist:
+            account_status = models.constants.FacebookPageRequestType.get_text(
+                models.constants.FacebookPageRequestType.EMPTY)
+
+        return self.create_api_response({
+            'status': account_status
+        })

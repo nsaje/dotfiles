@@ -498,6 +498,11 @@ urlpatterns += [
         name='breakdown_ad_groups'
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/facebook_account_status/',
+        login_required(dash.views.agency.FacebookAccountStatus.as_view()),
+        name='facebook_account_status'
+    ),
+    url(
         r'^api/demov3/$',
         login_required(dash.views.views.Demo.as_view()),
         name='demov3'
