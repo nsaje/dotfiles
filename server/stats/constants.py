@@ -1,5 +1,3 @@
-
-
 class StructureDimension:
     ACCOUNT = 'account'
     CAMPAIGN = 'campaign'
@@ -93,10 +91,26 @@ def get_time_dimension(breakdown):
 
 def get_structure_dimension(breakdown):
     breakdown = breakdown[1:]
-    dimension = set(breakdown) & set(StructureDimension._ALL)
+    dimension = set(breakdown) & {get_dimension_identifier(d) for d in StructureDimension._ALL}
+
     if len(dimension) == 0:
         return None
     return dimension.pop()
+
+
+def get_level_dimension(constraints):
+    dimensions = [
+        StructureDimension.AD_GROUP,
+        StructureDimension.CAMPAIGN,
+        StructureDimension.ACCOUNT
+    ]
+
+    for d in dimensions:
+        d = get_dimension_identifier(d)
+        if d in constraints.keys():
+            return d
+
+    return None
 
 
 def get_target_dimension(breakdown):
