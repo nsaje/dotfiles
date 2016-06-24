@@ -2409,28 +2409,8 @@ class PublishersBlacklistStatusTest(TestCase):
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             hist1.changes_text
         )
-
-        adg9 = models.AdGroup.objects.get(pk=9)
-        hist9 = history_helpers.get_campaign_history(adg9.campaign).first()
-
-        self.assertEqual(
-            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
-            hist9.changes_text
-        )
-
-        useractionlogs = models.UserActionLog.objects.filter(
-            action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
-        )
-        hist = history_helpers.get_campaign_history(adg9.campaign)
-        self.assertEqual(3, hist.count())
-        for h in hist:
-            self.assertIsNotNone(h.created_by)
-            self.assertEqual(
-                constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
-                h.action_type)
-        self.assertEqual(3, useractionlogs.count())
-        for useractionlog in useractionlogs:
-            self.assertTrue(useractionlog.ad_group.id in (1, 9, 10))
+        hist = history_helpers.get_campaign_history(adg1.campaign)
+        self.assertEqual(1, hist.count())
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):

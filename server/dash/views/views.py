@@ -1676,14 +1676,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             blacklist.update(ad_group, source_constraints, state, domains,
                              everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
 
-        for history_ad_group in history_ad_groups:
-            self._write_adgroup_history(
-                request,
-                history_ad_group,
-                source_domains,
-                state,
-                level
-            )
+        self._write_history(request, ad_group, state, [
+            {'source': source, 'domain': d}
+            for source, domains in source_domains.iteritems()
+            for d in domains
+        ], level)
 
     def _generate_source_publishers(self, pubs, pubs_selected, pubs_ignored):
         source_publishers = {}
@@ -1733,13 +1730,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     models.Source.objects.get(bidder_slug=source_slug)
             publisher['source_id'] = source_cache_by_slug[source_slug].id
         return publishers
-
-    def _write_adgroup_history(self, request, ad_group, source_domains, state, level):
-        self._write_history(request, ad_group, state, [
-            {'source': source, 'domain': d}
-            for source, domains in source_domains.iteritems()
-            for d in domains
-        ], level)
 
     def _write_history(self, request, ad_group, state, blacklist, level):
         action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED \
