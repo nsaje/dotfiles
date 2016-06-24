@@ -4,6 +4,7 @@ import calendar
 from decimal import Decimal
 from django.test import TestCase, mock
 from django.db import connection
+from django.utils import timezone
 
 import zemauth.models
 
@@ -464,7 +465,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
 
-    def test_count_weekly_active_users(self):
+    @mock.patch('django.utils.timezone.now')
+    def test_count_weekly_active_users(self, mock_now):
         # should be 0 by default
         self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
@@ -473,10 +475,12 @@ class InfoBoxAccountHelpersTest(TestCase):
             if 'zemanta' not in u.email:
                 continue
 
-            dash.models.UserActionLog.objects.create(
-                action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
+            mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+            dash.models.History.objects.create(
+                action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
+                type=dash.constants.HistoryType.AD_GROUP,
+                level=dash.constants.HistoryLevel.AD_GROUP,
                 ad_group=dash.models.AdGroup.objects.get(pk=1),
-                created_dt=datetime.datetime.utcnow() - datetime.timedelta(hours=24),
                 created_by=u,
             )
 
@@ -484,26 +488,27 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
+        mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         john = self._make_a_john()
-        ual = dash.models.UserActionLog.objects.create(
-            action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
+        ual = dash.models.History.objects.create(
+            action_type=dash.constants.HistoryActionType.CONTENT_AD_CREATE,
+            type=dash.constants.HistoryType.AD_GROUP,
+            level=dash.constants.HistoryLevel.AD_GROUP,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
             created_by=john,
         )
-        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-        ual.save()
 
         self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-        ual = dash.models.UserActionLog.objects.create(
-            action_type=dash.constants.UserActionType.SET_CAMPAIGN_SETTINGS,
+        mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual = dash.models.History.objects.create(
+            action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE,
+            type=dash.constants.HistoryType.AD_GROUP,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
-            created_dt=datetime.datetime.utcnow(),
+            level=dash.constants.HistoryLevel.AD_GROUP,
             created_by=john
         )
-        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-        ual.save()
 
         self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())

@@ -393,9 +393,10 @@ def count_weekly_logged_in_users():
 
 
 def get_weekly_active_users():
-    return [action.created_by for action in dash.models.UserActionLog.objects.filter(
+    return [action.created_by for action in dash.models.History.objects.filter(
         created_dt__gte=_one_week_ago(),
         created_dt__lte=_until_today(),
+        created_by__isnull=False,
     ).exclude(
         created_by__email__contains='@zemanta'
     ).exclude(
@@ -404,9 +405,10 @@ def get_weekly_active_users():
 
 
 def count_weekly_selfmanaged_actions():
-    return dash.models.UserActionLog.objects.filter(
+    return dash.models.History.objects.filter(
         created_dt__gte=_one_week_ago(),
         created_dt__lte=_until_today(),
+        created_by__isnull=False,
     ).exclude(
         created_by__email__contains='@zemanta'
     ).exclude(
