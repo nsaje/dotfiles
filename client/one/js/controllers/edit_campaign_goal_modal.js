@@ -10,7 +10,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.loadingPixels = true;
     $scope.pixel = {};
     $scope.savingInProgress = false;
-
+    $scope.prevValue = null;
 
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
@@ -24,6 +24,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 $scope.unit = kpiDefault.unit;
             }
         });
+        $scope.prevValue = $scope.campaignGoal.value;
     }
 
     $scope.errors = {
@@ -126,6 +127,11 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             return false;
         }
         return true;
+    };
+
+    $scope.cancel = function () {
+        $scope.campaignGoal.value = $scope.prevValue;
+        $scope.$dismiss();
     };
 
     $scope.save = function () {
