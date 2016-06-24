@@ -23,7 +23,6 @@ from dash import api
 from dash import history_helpers
 
 from utils import exc
-from utils import statsd_helper
 from utils import email_helper
 from utils import k1_helper
 
@@ -202,32 +201,31 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     if len(demo_objects) > 0:
         timer_name += '_demo'
 
-    with statsd_helper.statsd_block_timer('dash.views.table', timer_name):
-        demo_adgroups = _get_adgroups_for(modelcls, demo_objects)
-        real_corresponding_adgroups = [x.real_ad_group
-                                       for x in models.DemoAdGroupRealAdGroup.objects
-                                       .filter(demo_ad_group__in=demo_adgroups)]
+    demo_adgroups = _get_adgroups_for(modelcls, demo_objects)
+    real_corresponding_adgroups = [x.real_ad_group
+                                   for x in models.DemoAdGroupRealAdGroup.objects
+                                   .filter(demo_ad_group__in=demo_adgroups)]
 
-        normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
-        adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
+    normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
+    adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
 
-        adgroup_settings = models.AdGroupSettings.objects.\
-            filter(ad_group__in=adgroups).\
-            group_current_settings()
-        archived_adgroup_ids = [setting.ad_group_id for setting in adgroup_settings if setting.archived]
-        inactive_adgroup_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=adgroups)
-        inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
+    adgroup_settings = models.AdGroupSettings.objects.\
+        filter(ad_group__in=adgroups).\
+        group_current_settings()
+    archived_adgroup_ids = [setting.ad_group_id for setting in adgroup_settings if setting.archived]
+    inactive_adgroup_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=adgroups)
+    inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
 
-        active_ad_group_sources = models.AdGroupSource.objects \
-            .filter(
-                # deprecated sources are not shown in the demo at all
-                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
-                Q(ad_group__in=normal_adgroups)
-            ).\
-            exclude(pk__in=inactive_adgroup_source_ids).\
-            exclude(ad_group__in=archived_adgroup_ids).\
-            select_related('source__source_type').\
-            select_related('ad_group')
+    active_ad_group_sources = models.AdGroupSource.objects \
+        .filter(
+            # deprecated sources are not shown in the demo at all
+            Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
+            Q(ad_group__in=normal_adgroups)
+        ).\
+        exclude(pk__in=inactive_adgroup_source_ids).\
+        exclude(ad_group__in=archived_adgroup_ids).\
+        select_related('source__source_type').\
+        select_related('ad_group')
 
     return active_ad_group_sources
 
@@ -660,7 +658,7 @@ def get_selected_content_ads(
     if not include_archived:
         content_ads = content_ads.exclude_archived()
 
-    return content_ads.order_by('created_dt')
+    return content_ads.order_by('created_dt', 'id')
 
 
 def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
@@ -1143,7 +1141,7 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
             )
 
     k1_helper.update_ad_groups((ad_group.pk for ad_group in campaign_ad_groups),
-                              msg='views.helpers.save_campaign_settings_and_propagate')
+                               msg='views.helpers.save_campaign_settings_and_propagate')
 
     actionlog.zwei_actions.send(actions)
 
@@ -1151,8 +1149,14 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
 def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
     changes = old_settings.get_setting_changes(new_settings)
     if changes:
-        history_changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator=', ')
-        history_helpers.write_campaign_history(campaign, history_changes_text, user=request.user)
+        history_changes_text = models.CampaignSettings.get_changes_text(
+            old_settings,
+            new_settings,
+            separator=', ')
+        campaign.write_history(
+            history_changes_text,
+            user=request.user,
+            action_type=constants.HistoryActionType.SETTINGS_CHANGE)
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
         log_useraction_if_necessary(request, user_action_type, campaign=campaign)

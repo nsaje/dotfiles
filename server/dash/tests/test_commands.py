@@ -17,8 +17,8 @@ class MonitorPublisherBlacklistTest(TestCase):
         self.patcher = mock.patch('reports.redshift.get_cursor')
         self.get_cursor = self.patcher.start()
 
-    @mock.patch('utils.statsd_helper.statsd_gauge')
-    def test_run_adgroup(self, statsd_gauge_mock):
+    @mock.patch('influx.gauge')
+    def test_run_adgroup(self, influx_gauge_mock):
         dash.models.PublisherBlacklist.objects.create(
             name='bollocks.com',
             ad_group=dash.models.AdGroup.objects.get(pk=1),
@@ -40,15 +40,15 @@ class MonitorPublisherBlacklistTest(TestCase):
         ]
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
-        statsd_gauge_mock.assert_has_calls(
+        influx_gauge_mock.assert_has_calls(
             [
-                mock.call('dash.blacklisted_publisher_stats.impressions', 1000),
-                mock.call('dash.blacklisted_publisher_stats.clicks', 5),
+                mock.call('dash.blacklisted_publisher.stats', 1000, type='impressions'),
+                mock.call('dash.blacklisted_publisher.stats', 5, type='clicks'),
             ]
         )
 
-    @mock.patch('utils.statsd_helper.statsd_gauge')
-    def test_run_global(self, statsd_gauge_mock):
+    @mock.patch('influx.gauge')
+    def test_run_global(self, influx_gauge_mock):
         dash.models.PublisherBlacklist.objects.create(
             name='bollocks.com',
             everywhere=True,
@@ -73,15 +73,15 @@ class MonitorPublisherBlacklistTest(TestCase):
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
-        statsd_gauge_mock.assert_has_calls(
+        influx_gauge_mock.assert_has_calls(
             [
-                mock.call('dash.blacklisted_publisher_stats.global_impressions', 1000),
-                mock.call('dash.blacklisted_publisher_stats.global_clicks', 5),
+                mock.call('dash.blacklisted_publisher.stats', 1000, type='global_impressions'),
+                mock.call('dash.blacklisted_publisher.stats', 5, type='global_clicks'),
             ]
         )
 
-    @mock.patch('utils.statsd_helper.statsd_gauge')
-    def test_run_outbrain(self, statsd_gauge_mock):
+    @mock.patch('influx.gauge')
+    def test_run_outbrain(self, influx_gauge_mock):
         dash.models.PublisherBlacklist.objects.create(
             name='Awesome Publisher',
             account=dash.models.Account.objects.get(pk=1),
@@ -103,9 +103,9 @@ class MonitorPublisherBlacklistTest(TestCase):
         ]
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
-        statsd_gauge_mock.assert_has_calls(
+        influx_gauge_mock.assert_has_calls(
             [
-                mock.call('dash.blacklisted_publisher_stats.impressions', 1000),
-                mock.call('dash.blacklisted_publisher_stats.clicks', 5),
+                mock.call('dash.blacklisted_publisher.stats', 1000, type='impressions'),
+                mock.call('dash.blacklisted_publisher.stats', 5, type='clicks'),
             ]
         )

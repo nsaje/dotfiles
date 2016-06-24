@@ -98,7 +98,9 @@ class CampaignGoalsTestCase(TestCase):
         self.assertTrue(models.CampaignGoal.objects.all()[0].primary)
 
         hist = history_helpers.get_campaign_history(self.campaign).first()
-        self.assertEqual(hist.changes_text, 'Campaign goal "Time on Site - Seconds" set as primary')
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
+        self.assertEqual('Campaign goal "Time on Site - Seconds" set as primary', hist.changes_text)
 
     def test_cpa_goal_primary(self):
         campaign_goals.set_campaign_goal_primary(
@@ -133,6 +135,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(goal.campaign_id, 1)
 
         hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Added campaign goal "Time on Site - Seconds"')
 
         with self.assertRaises(exc.ValidationError):
@@ -162,6 +166,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.CampaignGoal.objects.all().count())
 
         hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Deleted campaign goal "Time on Site - Seconds"')
 
         conv_goal = models.ConversionGoal.objects.create(
@@ -187,6 +193,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertFalse(models.ConversionGoal.objects.all().count())
 
         hist = history_helpers.get_campaign_history(self.campaign).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Deleted conversion goal "123"')
 
     def test_add_campaign_goal_value(self):
@@ -207,6 +215,8 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Changed campaign goal value: "15 Time on Site - Seconds"')
 
     def test_get_campaign_goal_values(self):

@@ -3,7 +3,6 @@ import logging
 
 from slugify import slugify
 
-from utils.statsd_helper import statsd_incr
 import dash.models
 import reports.api
 import reports.update
@@ -21,12 +20,10 @@ def refresh_demo_data(start_date, end_date):
         ad_map, source_map = _copy_content_ads()
         _refresh_stats_data(start_date, end_date, ad_map, source_map)
         _refresh_conversion_data(start_date, end_date)
-        statsd_incr('reports.refresh_demo_data_successful')
         influx.incr('reports.refresh_demo_data', 1, state='successful')
 
     except:
         logger.exception('Refreshing demo data failed')
-        statsd_incr('reports.refresh_demo_data_failed')
         influx.incr('reports.refresh_demo_data', 1, state='failed')
 
 

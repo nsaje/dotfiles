@@ -21,7 +21,6 @@ eins:
     - "CONF_ENV=demo"
     - "ZWEI_CALLBACK_BASE_URL=http://0.0.0.0"
     - "GUNICORN_WORKERS=1"
-    - "STATSD_PORT_8125_UDP_ADDR=localhost"
     - "TELEGRAF_PORT_8135_UDP_ADDR=localhost"
 
 postgres:

@@ -30,7 +30,6 @@ from dash import views
 import reports.constants
 from reports import budget_helpers
 from utils import encryption_helpers
-from utils import statsd_helper
 from utils import exc
 from utils import dates_helper
 from utils import converters
@@ -153,21 +152,18 @@ class DemoManager(models.Manager):
     def get_queryset(self):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
-            with statsd_helper.statsd_block_timer('dash.models', 'account_demo_objects'):
-                queryset = queryset.filter(
-                    campaign__adgroup__in=AdGroup.demo_objects.all()
-                ).distinct()
+            queryset = queryset.filter(
+                campaign__adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         elif queryset.model is Campaign:
-            with statsd_helper.statsd_block_timer('dash.models', 'campaign_demo_objects'):
-                queryset = queryset.filter(
-                    adgroup__in=AdGroup.demo_objects.all()
-                ).distinct()
+            queryset = queryset.filter(
+                adgroup__in=AdGroup.demo_objects.all()
+            ).distinct()
         else:
             assert queryset.model is AdGroup
-            with statsd_helper.statsd_block_timer('dash.models', 'adgroup_demo_objects'):
-                queryset = queryset.filter(
-                    id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
-                )
+            queryset = queryset.filter(
+                id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
+            )
         return queryset
 
 
@@ -331,6 +327,23 @@ class Agency(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
+    def write_history(self, changes_text, changes=None,
+                      history_type=constants.HistoryType.CREDIT,
+                      user=None, system_user=None,
+                      action_type=None):
+        if not changes and not changes_text:
+            return None
+        return History.objects.create(
+            agency=self,
+            created_by=user,
+            system_user=system_user,
+            changes=json_helper.json_serializable_changes(changes),
+            changes_text=changes_text or "",
+            type=history_type,
+            level=constants.HistoryLevel.AGENCY,
+            action_type=action_type
+        )
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)
@@ -427,7 +440,7 @@ class Account(models.Model):
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -440,7 +453,7 @@ class Account(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def admin_link(self):
         if self.id:
@@ -455,6 +468,25 @@ class Account(models.Model):
         )
         campaign_settings_url = account_settings_url.replace('http://', 'https://')
         return campaign_settings_url
+
+    def write_history(self, changes_text, changes=None,
+                      history_type=constants.HistoryType.ACCOUNT,
+                      user=None, system_user=None, action_type=None):
+        if not changes and not changes_text:
+            return None
+
+        _, _, agency = _generate_parents(account=self)
+        return History.objects.create(
+            account=self,
+            agency=agency,
+            created_by=user,
+            system_user=system_user,
+            changes=json_helper.json_serializable_changes(changes),
+            changes_text=changes_text or "",
+            type=history_type,
+            level=constants.HistoryLevel.ACCOUNT,
+            action_type=action_type
+        )
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
@@ -592,7 +624,9 @@ class Campaign(models.Model, PermissionMixin):
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -605,11 +639,33 @@ class Campaign(models.Model, PermissionMixin):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def is_in_landing(self):
         current_settings = self.get_current_settings()
         return current_settings.landing_mode
+
+    def write_history(self, changes_text, changes=None,
+                      history_type=constants.HistoryType.CAMPAIGN,
+                      user=None, system_user=None, action_type=None):
+        if not changes and not changes_text:
+            return None
+
+        _, account, agency = _generate_parents(campaign=self)
+        return History.objects.create(
+            campaign=self,
+            account=account,
+            agency=agency,
+            created_by=user,
+            system_user=system_user,
+            changes=json_helper.json_serializable_changes(changes),
+            changes_text=changes_text or "",
+            type=history_type,
+            level=constants.HistoryLevel.CAMPAIGN,
+            action_type=action_type
+        )
 
     def save(self, request, *args, **kwargs):
         self.modified_by = None
@@ -802,13 +858,17 @@ class AccountSettings(SettingsBase):
             value = constants.AccountType.get_text(value)
         return value
 
-    def save(self, request, *args, **kwargs):
+    def save(self,
+             request,
+             action_type=None,
+             changes_text=None,
+             *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
         super(AccountSettings, self).save(*args, **kwargs)
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(request and request.user, action_type, changes_text)
 
-    def add_to_history(self, user=None):
+    def add_to_history(self, user, action_type, history_changes_text):
         history_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
             self.get_settings_dict()
@@ -816,13 +876,14 @@ class AccountSettings(SettingsBase):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return
-        changes_text = self.get_changes_text_from_dict(changes)
-        create_account_history(
-            self.account,
-            history_type,
-            changes,
+
+        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
+        self.account.write_history(
             changes_text,
-            user=user
+            changes=changes,
+            history_type=history_type,
+            action_type=action_type,
+            user=user,
         )
 
     class Meta:
@@ -902,28 +963,30 @@ class CampaignSettings(SettingsBase):
 
     objects = QuerySetManager()
 
-    def save(self, request, *args, **kwargs):
+    def save(self,
+             request,
+             action_type=None,
+             *args, **kwargs):
         if self.pk is None:
             if request is None:
                 self.created_by = None
             else:
                 self.created_by = request.user
         super(CampaignSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(request and request.user, action_type)
 
-    def add_to_history(self):
-        history_type = constants.HistoryType.CAMPAIGN
+    def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
         changes_text = self.get_changes_text_from_dict(changes)
-        create_campaign_history(
-            self.campaign,
-            history_type,
-            changes,
-            changes_text,
-            user=self.created_by,
-            system_user=self.system_user,
+        self.campaign.write_history(
+            self.changes_text or changes_text,
+            changes=changes,
+            history_type=constants.HistoryType.CAMPAIGN,
+            action_type=action_type,
+            user=user,
+            system_user=self.system_user
         )
 
     @classmethod
@@ -1592,7 +1655,9 @@ class AdGroup(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -1605,7 +1670,32 @@ class AdGroup(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+
+    def write_history(self, changes_text, changes=None,
+                      user=None, system_user=None,
+                      history_type=constants.HistoryType.AD_GROUP,
+                      action_type=None):
+        if not changes and not changes_text:
+            return  # nothing to write
+
+        campaign, account, agency = _generate_parents(ad_group=self)
+        history = History.objects.create(
+            ad_group=self,
+            campaign=campaign,
+            account=account,
+            agency=agency,
+            created_by=user,
+            system_user=system_user,
+            changes=json_helper.json_serializable_changes(changes),
+            changes_text=changes_text or "",
+            type=history_type,
+            level=constants.HistoryLevel.AD_GROUP,
+            action_type=action_type
+        )
+        return history
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
@@ -2086,27 +2176,31 @@ class AdGroupSettings(SettingsBase):
         # Strip the first '?' as we don't want to send it as a part of query string
         return self.tracking_code.lstrip('?')
 
-    def save(self, request, *args, **kwargs):
+    def save(self,
+             request,
+             action_type=None,
+             changes_text=None,
+             *args, **kwargs):
         if self.pk is None:
             if request is None:
                 self.created_by = None
             else:
                 self.created_by = request.user
         super(AdGroupSettings, self).save(*args, **kwargs)
-        self.add_to_history()
+        self.add_to_history(request and request.user, action_type, changes_text)
 
-    def add_to_history(self):
+    def add_to_history(self, user, action_type, history_changes_text):
         history_type = constants.HistoryType.AD_GROUP
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        changes_text = self.get_changes_text_from_dict(changes)
-        create_ad_group_history(
-            self.ad_group,
-            history_type,
-            changes,
-            changes_text,
-            user=self.created_by,
+        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
+        self.ad_group.write_history(
+            self.changes_text or changes_text,
+            changes=changes,
+            history_type=history_type,
+            action_type=action_type,
+            user=user,
             system_user=self.system_user
         )
 
@@ -2254,7 +2348,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             value = str(value)
         return value
 
-    def save(self, request, *args, **kwargs):
+    def save(self, request, action_type=None, *args, **kwargs):
         if self.pk is not None:
             raise AssertionError('Updating settings object not allowed.')
 
@@ -2262,9 +2356,9 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             self.created_by = request.user
 
         super(AdGroupSourceSettings, self).save(*args, **kwargs)
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(request and request.user, action_type)
 
-    def add_to_history(self, user):
+    def add_to_history(self, user, action_type):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
         history_type = constants.HistoryType.AD_GROUP_SOURCE
 
@@ -2277,12 +2371,12 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             'Source: {}.'.format(self.ad_group_source.source.name),
             changes
         )
-        create_ad_group_history(
-            current_settings.ad_group,
-            history_type,
-            changes,
+        current_settings.ad_group.write_history(
             changes_text,
+            changes=changes,
             user=user,
+            history_type=history_type,
+            action_type=action_type,
             system_user=self.system_user,
         )
 
@@ -2745,7 +2839,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     ]
 
     _demo_fields = {
-        'comment': utils.demo_anonymizer.fake_sentence,
+        'comment': utils.demo_anonymizer.fake_io,
     }
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
@@ -2862,7 +2956,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
-    def save(self, request=None, *args, **kwargs):
+    def save(self, request=None, action_type=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
             self.created_by = request.user
@@ -2872,9 +2966,11 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             credit=self,
         )
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(
+            request and request.user,
+            action_type)
 
-    def add_to_history(self, user=None):
+    def add_to_history(self, user, action_type):
         history_type = constants.HistoryType.CREDIT
 
         changes = self.get_model_state_changes(
@@ -2894,17 +2990,19 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         )
 
         if self.account is not None:
-            create_account_history(self.account,
-                                   history_type,
-                                   changes,
-                                   changes_text,
-                                   user=user)
+            self.account.write_history(
+                changes_text,
+                changes=changes,
+                history_type=history_type,
+                action_type=action_type,
+                user=user)
         elif self.agency is not None:
-            create_agency_history(self.agency,
-                                  history_type,
-                                  changes,
-                                  changes_text,
-                                  user=user)
+            self.agency.write_history(
+                changes_text,
+                changes=changes,
+                history_type=history_type,
+                action_type=action_type,
+                user=user)
 
     def __unicode__(self):
         parent = self.agency or self.account
@@ -3044,7 +3142,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     ]
 
     _demo_fields = {
-        'comment': utils.demo_anonymizer.fake_sentence,
+        'comment': lambda: 'Monthly budget',
     }
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
@@ -3101,7 +3199,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
-    def save(self, request=None, *args, **kwargs):
+    def save(self, request=None, action_type=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
             self.created_by = request.user
@@ -3111,9 +3209,11 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             snapshot=model_to_dict(self),
             budget=self,
         )
-        self.add_to_history(user=request and request.user)
+        self.add_to_history(
+            request and request.user,
+            action_type)
 
-    def add_to_history(self, user=None):
+    def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )
@@ -3129,11 +3229,11 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             'Budget: #{}.'.format(self.id) if self.id else None,
             changes
         )
-        create_campaign_history(
-            self.campaign,
-            constants.HistoryType.BUDGET,
-            changes,
+        self.campaign.write_history(
             changes_text,
+            changes=changes,
+            history_type=constants.HistoryType.BUDGET,
+            action_type=action_type,
             user=user
         )
 
@@ -3579,7 +3679,9 @@ class History(models.Model):
         null=False,
         blank=False,
     )
-    # TODO: once the transition period is over make action_type non-nullable
+
+    # action type is user initiated action type
+    # non user initiated action type is None
     action_type = models.PositiveSmallIntegerField(
         choices=constants.HistoryActionType.get_choices(),
         null=True,
@@ -3630,78 +3732,6 @@ class History(models.Model):
     class Meta:
         verbose_name = 'History'
         verbose_name_plural = 'History'
-
-
-def create_ad_group_history(ad_group, history_type, changes, changes_text, user=None, system_user=None):
-    if not changes and not changes_text:
-        # don't write history in case of no changes
-        return None
-    campaign, account, agency = _generate_parents(ad_group=ad_group)
-    history = History.objects.create(
-        ad_group=ad_group,
-        campaign=campaign,
-        account=account,
-        agency=agency,
-        created_by=user,
-        system_user=system_user,
-        changes=json_helper.json_serializable_changes(changes),
-        changes_text=changes_text or "",
-        type=history_type,
-        level=constants.HistoryLevel.AD_GROUP,
-    )
-    return history
-
-
-def create_campaign_history(campaign, history_type, changes, changes_text, user=None, system_user=None):
-    if not changes and not changes_text:
-        # don't write history in case of no changes
-        return None
-
-    _, account, agency = _generate_parents(campaign=campaign)
-    return History.objects.create(
-        campaign=campaign,
-        account=account,
-        agency=agency,
-        created_by=user,
-        system_user=system_user,
-        changes=json_helper.json_serializable_changes(changes),
-        changes_text=changes_text or "",
-        type=history_type,
-        level=constants.HistoryLevel.CAMPAIGN,
-    )
-
-
-def create_account_history(account, history_type, changes, changes_text, user=None, system_user=None):
-    if not changes and not changes_text:
-        # don't write history in case of no changes
-        return None
-
-    _, _, agency = _generate_parents(account=account)
-    return History.objects.create(
-        account=account,
-        agency=agency,
-        created_by=user,
-        system_user=system_user,
-        changes=json_helper.json_serializable_changes(changes),
-        changes_text=changes_text or "",
-        type=history_type,
-        level=constants.HistoryLevel.ACCOUNT,
-    )
-
-
-def create_agency_history(agency, history_type, changes, changes_text, user=None, system_user=None):
-    if not changes and not changes_text:
-        # don't write history in case of no changes
-        return None
-    return History.objects.create(
-        agency=agency,
-        created_by=user,
-        system_user=system_user,
-        changes=json_helper.json_serializable_changes(changes),
-        changes_text=changes_text or "",
-        type=history_type,
-        level=constants.HistoryLevel.AGENCY,
-    )
 
 
 def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):

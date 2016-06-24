@@ -448,10 +448,17 @@ class CampaignAdGroups(TestCase):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
-        hist = history_helpers.get_ad_group_history(ad_group).first()
+        hist = history_helpers.get_ad_group_history(ad_group)
+        self.assertEqual(hist.first().created_by, self.user)
+        self.assertEqual(hist.first().action_type, constants.HistoryActionType.CREATE)
+
+        self.assertIsNone(hist[1].created_by)
+        self.assertIsNone(hist[2].created_by)
+        self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE,
+                         hist[2].action_type)
 
         self.assertIsNotNone(ad_group_settings.id)
-        self.assertIsNotNone(hist.changes_text)
+        self.assertIsNotNone(hist.first().changes_text)
         self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
@@ -589,7 +596,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
         ]) + '\r\n'
@@ -605,7 +612,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
 'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
@@ -622,7 +629,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
         ]) + '\r\n'
 
@@ -636,7 +643,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
         ]) + '\r\n'
@@ -652,7 +659,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
@@ -666,7 +673,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
         ]) + '\r\n'
@@ -841,7 +848,9 @@ class AdGroupContentAdStateTest(TestCase):
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
-        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
+        self.assertEqual('Content ad(s) 1, 2, 3 set to Enabled.', hist.changes_text)
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -860,6 +869,8 @@ class AdGroupContentAdStateTest(TestCase):
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
@@ -1151,6 +1162,8 @@ class AdGroupContentAdArchive(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
 
     def test_add_to_history_shorten(self):
@@ -1168,6 +1181,8 @@ class AdGroupContentAdArchive(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.'
@@ -1329,6 +1344,7 @@ class AdGroupContentAdRestore(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Restored.')
 
     def test_add_to_history_shorten(self):
@@ -1346,6 +1362,8 @@ class AdGroupContentAdRestore(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.'
@@ -2386,19 +2404,33 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual('zemanta.com', publisher_blacklist.name)
 
         adg1 = models.AdGroup.objects.get(pk=1)
-        hist1 = history_helpers.get_ad_group_history(adg1).first()
+        hist1 = history_helpers.get_campaign_history(adg1.campaign).first()
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             hist1.changes_text
         )
 
         adg9 = models.AdGroup.objects.get(pk=9)
-        hist9 = history_helpers.get_ad_group_history(adg9).first()
+        hist9 = history_helpers.get_campaign_history(adg9.campaign).first()
 
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             hist9.changes_text
         )
+
+        useractionlogs = models.UserActionLog.objects.filter(
+            action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
+        )
+        hist = history_helpers.get_campaign_history(adg9.campaign)
+        self.assertEqual(3, hist.count())
+        for h in hist:
+            self.assertIsNotNone(h.created_by)
+            self.assertEqual(
+                constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
+                h.action_type)
+        self.assertEqual(3, useractionlogs.count())
+        for useractionlog in useractionlogs:
+            self.assertTrue(useractionlog.ad_group.id in (1, 9, 10))
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):

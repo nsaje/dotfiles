@@ -1351,7 +1351,7 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
     def has_change_permission(self, request, obj=None):
         return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')

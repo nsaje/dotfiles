@@ -11,14 +11,7 @@ postgres:
 #      - "$HOME/docker-vols/postgres-eins:/var/lib/postgresql"
 
 
-# this is fake statsd that only prints stats on stdout
-statsd:
-    container_name: statsd
-    image: verb/socat
-    entrypoint: /usr/bin/socat
-    command: udp-recv:8125 -
-    tty: true
-
+# this is fake telegraf that only prints stats on stdout
 telegraf:
     container_name: telegraf
     image: verb/socat

@@ -313,7 +313,7 @@ class CreateCampaignManualActionsTest(TestCase):
 
         self._fire_campaign_creation_callback(ad_group_source)
 
-        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, request=None, send=False)
+        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, send=False)
         self.assertTrue(mock_send.called)
 
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):

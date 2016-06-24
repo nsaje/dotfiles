@@ -2,7 +2,6 @@
 import logging
 
 from utils import api_common
-from utils import statsd_helper
 
 from dash import models
 from dash.views import helpers
@@ -13,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 class NavigationDataView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.navigation', 'get_navigation_data')
     def get(self, request, level_, id_):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
@@ -57,7 +55,6 @@ class NavigationDataView(api_common.BaseApiView):
 
 
 class NavigationAllAccountsDataView(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.navigation', 'get_all_accounts_navigation_data')
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
@@ -82,7 +79,6 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
 
 class NavigationTreeView(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.navigation', 'get_all_accounts_navigation_tree')
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         user = request.user

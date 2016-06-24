@@ -5,7 +5,6 @@ from django.db import connections
 
 import influx
 
-from utils.statsd_helper import statsd_timer
 
 from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection
@@ -24,7 +23,6 @@ def _get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
     return 'aws_access_key_id=%s;aws_secret_access_key=%s' % (aws_access_key_id, aws_secret_access_key)
 
 
-@statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, campaign_id):
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id != %s'
     params = [date.isoformat(), campaign_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
@@ -42,21 +40,18 @@ def get_cursor(read_only=False):
     return MyCursor(connections[settings.STATS_DB_NAME].cursor())
 
 
-@statsd_timer('reports.redshift', 'delete_contentadstatsdiff')
 def delete_contentadstats_diff(date, campaign_id):
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id = %s'
     params = [date.isoformat(), campaign_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'delete_touchpointconversions')
 def delete_touchpoint_conversions(date, account_id, slug):
     query = 'DELETE FROM touchpointconversions WHERE date = %s AND account_id = %s AND slug = %s'
     params = [date.isoformat(), account_id, slug]
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'insert_contentadstats')
 def insert_contentadstats(rows):
     if not rows:
         return
@@ -73,7 +68,6 @@ def insert_contentadstats(rows):
     cursor.close()
 
 
-@statsd_timer('reports.redshift', 'load_contentadstats')
 def load_contentadstats(s3_key):
     query = "COPY contentadstats FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 
@@ -83,7 +77,6 @@ def load_contentadstats(s3_key):
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'insert_touchpointconversions')
 def insert_touchpoint_conversions(rows):
     if not rows:
         return
@@ -100,7 +93,6 @@ def insert_touchpoint_conversions(rows):
     cursor.close()
 
 
-@statsd_timer('reports.redshift', 'sum_contentadstats')
 def sum_contentadstats():
     query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats WHERE content_ad_id != %s'
     params = [REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
@@ -114,7 +106,6 @@ def sum_contentadstats():
     return result[0]
 
 
-@statsd_timer('reports.redshift', 'sum_of_stats')
 def sum_of_stats(with_diffs=False):
     query = '''SELECT SUM(impressions) as impressions, SUM(visits) as visits,
     SUM(clicks) as clicks,
@@ -145,7 +136,6 @@ def sum_of_stats(with_diffs=False):
     return result[0]
 
 
-@statsd_timer('reports.redshift', 'get_pixel_last_verified_dt')
 def get_pixels_last_verified_dt(account_id=None):
     query = 'SELECT account_id, slug, max(conversion_timestamp) FROM touchpointconversions'
     params = []
@@ -164,27 +154,23 @@ def get_pixels_last_verified_dt(account_id=None):
     return {(row[0], row[1]): row[2] for row in result}
 
 
-@statsd_timer('reports.redshift', 'vacuum_contentadstats')
 @influx.timer('reports.redshift', operation='vacuum_contentadstats')
 def vacuum_contentadstats():
     query = 'VACUUM FULL contentadstats'
     _execute(query, [])
 
 
-@statsd_timer('reports.redshift', 'vacuum_touchpoint_conversions')
 def vacuum_touchpoint_conversions():
     query = 'VACUUM FULL touchpointconversions'
     _execute(query, [])
 
 
-@statsd_timer('reports.redshift', 'delete_publishers')
 def delete_publishers(date):
     query = 'DELETE FROM publishers_1 WHERE date = %s'
     params = [date.isoformat()]
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'load_publishers')
 def load_publishers(s3_key):
     query = "COPY publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 

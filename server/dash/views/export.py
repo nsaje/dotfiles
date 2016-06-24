@@ -15,8 +15,8 @@ from dash import models
 from dash import export
 from dash import constants
 from dash import scheduled_report
+from dash import history_helpers
 from utils import api_common
-from utils import statsd_helper
 from utils import exc
 
 
@@ -59,7 +59,6 @@ class ExportAllowed(api_common.BaseApiView):
     ALL_ACC_BD_CAMP_MAX_DAYS = 160
 
     @influx.timer('dash.export_plus.allowed_get', type='default')
-    @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -135,7 +134,6 @@ class SourcesExportAllowed(api_common.BaseApiView):
     ALL_ACC_BD_ACC_MAX_DAYS = 62
 
     @influx.timer('dash.export_plus.allowed_get', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         user = request.user
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
@@ -221,20 +219,26 @@ class SourcesExportAllowed(api_common.BaseApiView):
 
 class AccountCampaignsExport(api_common.BaseApiView):
     @influx.timer('dash.export_plus.account', type='campaigns')
-    @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account)
 
+        account.write_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'accounts_campaigns_scheduled_report_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account)
 
+        account.write_history(
+            'Scheduled report.',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
@@ -242,20 +246,26 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
 class CampaignAdGroupsExport(ExportApiView):
     @influx.timer('dash.export_plus.campaign', type='ad_group')
-    @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign)
 
+        campaign.write_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_scheduled_report_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign)
 
+        campaign.write_history(
+            'Scheduled report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, campaign=campaign)
 
         return self.create_api_response(response)
@@ -263,20 +273,26 @@ class CampaignAdGroupsExport(ExportApiView):
 
 class AdGroupAdsExport(ExportApiView):
     @influx.timer('dash.export_plus.ad_group', type='ads')
-    @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export.get_report_from_request(request, ad_group=ad_group)
 
+        ad_group.write_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, ad_group=ad_group)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_scheduled_report_put')
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group)
 
+        ad_group.write_history(
+            'Scheduled report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, ad_group=ad_group)
 
         return self.create_api_response(response)
@@ -284,18 +300,24 @@ class AdGroupAdsExport(ExportApiView):
 
 class AllAccountsSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.all_accounts', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
         content, filename = export.get_report_from_request(request, by_source=True)
 
+        history_helpers.write_global_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'all_accounts_sources_scheduled_report_put')
     def put(self, request):
         response = _add_scheduled_report_from_request(request, by_source=True)
 
+        history_helpers.write_global_history(
+            'Scheduled report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
@@ -303,20 +325,26 @@ class AllAccountsSourcesExport(ExportApiView):
 
 class AccountSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.account', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         content, filename = export.get_report_from_request(request, account=account, by_source=True)
 
+        account.write_history(
+            'Exported media sources report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'account_sources_scheduled_report_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account, by_source=True)
 
+        account.write_history(
+            'Scheduled media sources report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
@@ -324,20 +352,26 @@ class AccountSourcesExport(ExportApiView):
 
 class CampaignSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.campaign', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export.get_report_from_request(request, campaign=campaign, by_source=True)
 
+        campaign.write_history(
+            'Exported media sources report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_sources_scheduled_report_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
 
+        campaign.write_history(
+            'Scheduled media sources report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, campaign=campaign)
 
         return self.create_api_response(response)
@@ -345,20 +379,26 @@ class CampaignSourcesExport(ExportApiView):
 
 class AdGroupSourcesExport(ExportApiView):
     @influx.timer('dash.export_plus.ad_group', type='sources')
-    @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export.get_report_from_request(request, ad_group=ad_group, by_source=True)
 
+        ad_group.write_history(
+            'Exported media sources report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request, ad_group=ad_group)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_scheduled_report_put')
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group, by_source=True)
 
+        ad_group.write_history(
+            'Scheduled media sources report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request, ad_group=ad_group)
 
         return self.create_api_response(response)
@@ -366,18 +406,24 @@ class AdGroupSourcesExport(ExportApiView):
 
 class AllAccountsExport(ExportApiView):
     @influx.timer('dash.export_plus.all_accounts', type='default')
-    @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
         content, filename = export.get_report_from_request(request)
 
+        history_helpers.write_global_history(
+            'Exported report: {}'.format(filename),
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
 
-    @statsd_helper.statsd_timer('dash.api', 'all_accounts_scheduled_report_put')
     def put(self, request):
         response = _add_scheduled_report_from_request(request)
 
+        history_helpers.write_global_history(
+            'Scheduled report',
+            user=request.user,
+            history_type=constants.HistoryActionType.REPORTING_MANAGE)
         log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
@@ -409,7 +455,6 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
 
 
 class ScheduledReports(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_get')
     def get(self, request, account_id=None):
         if account_id:
             account = helpers.get_account(request.user, account_id)
@@ -421,7 +466,6 @@ class ScheduledReports(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_delete')
     def delete(self, request, scheduled_report_id):
         scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
 
@@ -444,7 +488,23 @@ class ScheduledReports(api_common.BaseApiView):
                 'account': scheduled_report.report.account,
             }
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_SCHEDULED_REPORT, **log_data)
+        report = scheduled_report.report
+        entity = report.ad_group or report.campaign or report.account
+        if entity:
+            entity.write_history(
+                'Deleted scheduled report',
+                action_type=constants.HistoryActionType.REPORTING_MANAGE
+            )
+        else:
+            history_helpers.write_global_history(
+                'Deleted scheduled report',
+                action_type=constants.HistoryActionType.REPORTING_MANAGE
+            )
+
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.DELETE_SCHEDULED_REPORT,
+            **log_data)
 
     def format_reports(self, reports):
         result = []
@@ -494,7 +554,6 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
     @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_allowed_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -528,7 +587,6 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 8072
 
     @influx.timer('dash.export')
-    @statsd_helper.statsd_timer('dash.export', 'campiagn_ad_group_export_allowed_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 

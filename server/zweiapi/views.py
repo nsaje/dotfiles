@@ -31,7 +31,6 @@ import reports.update
 import reports.api_publishers
 
 from utils import request_signer
-from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +47,6 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
 
 
 @csrf_exempt
-@statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 @influx.timer('zweiapi.views.zwei_callback')
 def zwei_callback(request, action_id):
     newrelic.agent.set_background_task(flag=True)
@@ -128,18 +126,15 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
     stats_rows = []
     for article, data_row in zip(articles, data_rows):
         if 'id' not in data_row:
-            statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             influx.incr('reports.update.err_content_ad_no_id', 1)
             raise Exception('\'id\' field not present in data row.')
 
         if data_row['id'] not in content_ad_sources and ad_group_source.can_manage_content_ads:
             if suppress_invalid_content_ad_check:
                 # Stats for an unknown id, but we decided to skip
-                statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id_skipped')
                 influx.incr('reports.update.err_unknown_content_ad_id_skipped', 1)
                 continue
             else:
-                statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
                 influx.incr('reports.update.err_unknown_content_ad_id', 1)
                 raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
                     ad_group.id,
@@ -398,10 +393,6 @@ def _fetch_reports_callback(action, data):
             ad_group.id,
             source.id,
             date
-        )
-        statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
-        statsd_helper.statsd_incr(
-            'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
         )
         influx.incr('reports.update.update_traffic_metrics_skipped', 1, source_type=source.source_type.type)
 

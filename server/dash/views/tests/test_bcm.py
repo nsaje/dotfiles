@@ -4,6 +4,7 @@ import json
 from mock import patch
 import datetime
 from decimal import Decimal
+from dash import history_helpers
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
@@ -243,10 +244,13 @@ class AccountCreditViewTest(BCMViewTestCase):
         item = models.CreditLineItem.objects.get(comment='TESTCASE_PUT')
         self.assertEqual(item.pk, item_id)
 
-        hist = models.History.objects.filter(
-            type=constants.HistoryType.CREDIT
-        ).order_by('-created_dt').first()
+        hist = history_helpers.get_account_history(
+            models.Account.objects.get(pk=1)).first()
         self.assertEquals(self.user, hist.created_by)
+        self.assertEqual(
+            constants.HistoryActionType.CREATE,
+            hist.action_type
+        )
 
 
 class AccountCreditItemViewTest(BCMViewTestCase):
@@ -364,6 +368,10 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         ).order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
         self.assertEquals(item.account, hist.account)
+        self.assertEqual(
+            constants.HistoryActionType.CREDIT_CHANGE,
+            hist.action_type
+        )
 
     def test_get_agency(self):
         agency = models.Agency.objects.get(pk=1)
@@ -699,6 +707,11 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_lmode.called)
 
+        hist = history_helpers.get_campaign_history(
+            models.Campaign.objects.get(pk=1)).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CREATE, hist.action_type)
+
         insert_id = int(json.loads(response.content)['data'])
         self.assertEqual(models.BudgetLineItem.objects.get(pk=insert_id).comment, 'Comment')
 
@@ -785,6 +798,11 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         )
         self.assertTrue(mock_lmode.called)
         self.assertEqual(models.BudgetLineItem.objects.get(pk=1).comment, 'Test case test_post')
+
+        hist = history_helpers.get_campaign_history(
+            models.Campaign.objects.get(pk=1)).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.BUDGET_CHANGE, hist.action_type)
 
         mock_lmode.return_value = True
         with patch('utils.dates_helper.local_today') as mock_now:

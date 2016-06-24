@@ -2,7 +2,7 @@ from decimal import Decimal
 import json
 
 from dash import models, constants, forms
-from utils import statsd_helper, api_common, exc
+from utils import api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
 from django.db.models import Q
@@ -10,14 +10,12 @@ from django.db.models import Q
 
 class AccountCreditView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
         return self._get_response(account.id, account.agency)
 
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_delete')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
@@ -38,7 +36,6 @@ class AccountCreditView(api_common.BaseApiView):
             response_data['canceled'].append(credit.pk)
         return self.create_api_response(response_data)
 
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
@@ -64,7 +61,7 @@ class AccountCreditView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
-        item.save(request=request)
+        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
 
         return self.create_api_response(item.instance.pk)
 
@@ -134,7 +131,6 @@ class AccountCreditView(api_common.BaseApiView):
 
 class AccountCreditItemView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_item_get')
     def get(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
@@ -145,7 +141,6 @@ class AccountCreditItemView(api_common.BaseApiView):
             item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         return self._get_response(account.id, item)
 
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_item_delete')
     def delete(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
@@ -156,9 +151,14 @@ class AccountCreditItemView(api_common.BaseApiView):
         if item is None:
             item = models.CreditLineItem.objects.get(agency=account.agency, pk=credit_id)
         item.delete()
+
+        account.write_history(
+            'Deleted credit',
+            action_type=constants.HistoryActionType.CREDIT_CHANGE,
+            user=request.user
+        )
         return self.create_api_response()
 
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_item_post')
     def post(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
@@ -184,7 +184,7 @@ class AccountCreditItemView(api_common.BaseApiView):
         if item_form.errors:
             raise exc.ValidationError(errors=item_form.errors)
 
-        item_form.save(request=request)
+        item_form.save(request=request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
         return self.create_api_response(credit_id)
 
     def _get_response(self, account_id, item):
@@ -217,12 +217,10 @@ class AccountCreditItemView(api_common.BaseApiView):
 
 class CampaignBudgetView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         return self._get_response(request.user, campaign)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -237,7 +235,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
-        item.save(request=request)
+        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
         campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
 
         return self.create_api_response(item.instance.pk)
@@ -348,7 +346,6 @@ class CampaignBudgetView(api_common.BaseApiView):
 
 class CampaignBudgetItemView(api_common.BaseApiView):
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_get')
     def get(self, request, campaign_id, budget_id):
         item = models.BudgetLineItem.objects.get(
             campaign_id=campaign_id,
@@ -356,7 +353,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         )
         return self._get_response(item)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_post')
     def post(self, request, campaign_id, budget_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -377,7 +373,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
-        item.save(request=request)
+        item.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
         state_changed = campaign_stop.perform_landing_mode_check(
             campaign,
             campaign.get_current_settings()
@@ -388,7 +384,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             'state_changed': state_changed,
         })
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
     def delete(self, request, campaign_id, budget_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
@@ -397,6 +392,10 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         except AssertionError:
             raise exc.ValidationError('Budget item is not pending')
         campaign_stop.perform_landing_mode_check(campaign, campaign.get_current_settings())
+        campaign.write_history(
+            'Deleted budget',
+            action_type=constants.HistoryActionType.BUDGET_CHANGE,
+            user=request.user)
         return self.create_api_response(True)
 
     def _validate_amount(self, data, item):

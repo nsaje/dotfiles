@@ -13,14 +13,12 @@ from django.shortcuts import resolve_url
 import influx
 
 import gauth
-from utils import statsd_helper
 from utils import email_helper
 from zemauth.models import User
 from zemauth import forms
 
 
 @influx.timer('auth.signin_response_time')
-@statsd_helper.statsd_timer('auth', 'signin_response_time')
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
@@ -40,7 +38,6 @@ def login(request, *args, **kwargs):
     return auth_views.login(request, *args, **kwargs)
 
 
-@statsd_helper.statsd_timer('auth', 'set_password')
 def set_password(request, uidb64=None, token=None, template_name=None):
     assert uidb64 is not None and token is not None  # checked by URLconf
 
@@ -78,7 +75,6 @@ def set_password(request, uidb64=None, token=None, template_name=None):
     return TemplateResponse(request, template_name, context)
 
 
-@statsd_helper.statsd_timer('auth', 'password_reset')
 def password_reset(request, template_name=None):
     form = forms.PasswordResetForm()
     success = False
@@ -97,7 +93,6 @@ def password_reset(request, template_name=None):
     return TemplateResponse(request, template_name, context)
 
 
-@statsd_helper.statsd_timer('auth', 'google_callback')
 def google_callback(request, *args, **kwargs):
     if 'error' in request.GET or 'code' not in request.GET:
         return _fail_response()
