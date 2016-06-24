@@ -10,7 +10,7 @@ if (!fs.existsSync(path.join(__dirname, 'protractor.localconf.json'))) {
 }
 
 exports.config = {
-    specs: ['e2e/demo.js'],
+    specs: ['e2e/scenarios.js'],
     rootElement: 'div',
     chromeOnly: true,
     baseUrl: localConfig.baseUrl, // only works when calling browser.get()
