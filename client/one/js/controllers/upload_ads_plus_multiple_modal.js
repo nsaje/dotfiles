@@ -17,6 +17,25 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.fileInput = {};
 
     var pollInterval;
+    var startPolling = function (batchId) {
+        if (angular.isDefined(pollInterval)) {
+            return;
+        }
+
+        pollInterval = $interval(function () {
+            var waitingCandidates = getWaitingCandidateIds();
+            if (!waitingCandidates.length) {
+                stopPolling();
+                return;
+            }
+            api.uploadPlus.checkStatus($state.params.id, batchId, waitingCandidates).then(
+                function (data) {
+                    updateCandidates(data.candidates);
+                }
+            );
+        }, 1000);
+    };
+
     var stopPolling = function () {
         if (angular.isDefined(pollInterval)) {
             $interval.cancel(pollInterval);
@@ -46,25 +65,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
             return candidate.id;
         });
         return ret;
-    };
-
-    $scope.startPolling = function (batchId) {
-        if (angular.isDefined(pollInterval)) {
-            return;
-        }
-
-        pollInterval = $interval(function () {
-            var waitingCandidates = getWaitingCandidateIds();
-            if (!waitingCandidates.length) {
-                stopPolling();
-                return;
-            }
-            api.uploadPlus.checkStatus($state.params.id, batchId, waitingCandidates).then(
-                function (data) {
-                    updateCandidates(data.candidates);
-                }
-            );
-        }, 1000);
     };
 
     $scope.toggleBatchNameEdit = function () {
@@ -212,7 +212,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         ).then(function (result) {
             $scope.step++;
             $scope.candidates = result.candidates;
-            $scope.startPolling(result.batchId);
+            startPolling(result.batchId);
         }, function (data) {
             $scope.errors = data.errors;
         });
