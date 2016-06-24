@@ -342,8 +342,8 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     cons = consistency.SettingsStateConsistence(ad_group_source)
     settings_changes = cons.get_needed_state_updates()
     if settings_changes:
-        settings_actions = actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source,
-                                                                      request=request, send=False)
+        settings_actions = actionlog.api.set_ad_group_source_settings(
+            settings_changes, ad_group_source, send=False)
         actions.extend(settings_actions)
     else:
         fetch_action = actionlog.api.init_fetch_ad_group_source_settings(ad_group_source, request)
@@ -1196,7 +1196,11 @@ def add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, st
 
     description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
 
-    save_change_to_history(ad_group, description, request)
+    ad_group.write_history(
+        description,
+        user=request.user,
+        action_type=constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
+    )
 
     email_helper.send_ad_group_notification_email(ad_group, request, description)
 
@@ -1206,7 +1210,11 @@ def add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads,
 
     description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
 
-    save_change_to_history(ad_group, description, request)
+    ad_group.write_history(
+        description,
+        user=request.user,
+        action_type=constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE
+    )
 
     email_helper.send_ad_group_notification_email(ad_group, request, description)
 
@@ -1222,14 +1230,6 @@ def update_content_ads_archived_state(request, content_ads, ad_group, archived):
             for content_ad in content_ads:
                 content_ad.archived = archived
                 content_ad.save()
-
-
-def save_change_to_history(ad_group, description, request):
-    history_helpers.write_ad_group_history(
-        ad_group,
-        description,
-        user=request.user,
-    )
 
 
 def format_bulk_ids_into_description(ids, description_template):
@@ -1317,7 +1317,7 @@ class AdGroupSourceSettingsWriter(object):
             new_settings.system_user = system_user
         else:
             new_settings.created_by = request.user
-        new_settings.save(request)
+        new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
         self.notify(settings_obj, old_settings_obj, request, system_user)
         return new_settings
 
@@ -1345,7 +1345,7 @@ class AdGroupSourceSettingsWriter(object):
         if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
             new_settings = latest_settings
             new_settings.pk = None  # make a copy of the latest settings
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE)
             logger.info(
                 'settings for ad_group_source=%s did not change, but state is inconsistent, triggering actions',
                 self.ad_group_source
