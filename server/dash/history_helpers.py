@@ -6,7 +6,6 @@ import utils.json_helper
 def write_global_history(changes_text,
                          user=None,
                          system_user=None,
-                         history_type=dash.constants.HistoryType.ACCOUNT,
                          action_type=None
                          ):
     if not changes_text:

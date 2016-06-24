@@ -3069,7 +3069,6 @@ class HistoryTest(TestCase):
             ad_group=ad_group,
             campaign=campaign,
             account=account,
-            type=constants.HistoryType.AD_GROUP,
             level=constants.HistoryLevel.AD_GROUP,
             changes={'name': 'test'},
             changes_text="Name changed to 'test'",
@@ -3079,7 +3078,6 @@ class HistoryTest(TestCase):
         models.History.objects.create(
             campaign=campaign,
             account=account,
-            type=constants.HistoryType.CAMPAIGN,
             level=constants.HistoryLevel.CAMPAIGN,
             changes={'targeting': ['US']},
             changes_text="Geographic targeting changed to 'US'",
@@ -3088,7 +3086,6 @@ class HistoryTest(TestCase):
         )
         models.History.objects.create(
             account=account,
-            type=constants.HistoryType.ACCOUNT,
             level=constants.HistoryLevel.ACCOUNT,
             changes={'account_manager': 1},
             changes_text="Account manager changed to 'Janez Novak'",

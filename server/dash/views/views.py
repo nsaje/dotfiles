@@ -465,7 +465,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group.write_history(
             changes_text,
             user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
             action_type=constants.HistoryActionType.CREATE)
         response = {
             'name': ad_group.name,
@@ -951,7 +950,6 @@ class AdGroupSources(api_common.BaseApiView):
         ad_group.write_history(
             '{} campaign created.'.format(ad_group_source.source.name),
             user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
             action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
         helpers.set_ad_group_source_settings(
             None, ad_group_source,
@@ -984,7 +982,6 @@ class Account(api_common.BaseApiView):
         account.write_history(
             'Created account',
             user=request.user,
-            history_type=constants.HistoryType.ACCOUNT,
             action_type=constants.HistoryActionType.CREATE)
 
         response = {

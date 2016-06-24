@@ -1611,24 +1611,6 @@ class HistoryLevel(ConstantBase):
     }
 
 
-class HistoryType(ConstantBase):
-    AD_GROUP = 1
-    CAMPAIGN = 2
-    BUDGET = 3
-    ACCOUNT = 4
-    CREDIT = 5
-    AD_GROUP_SOURCE = 6
-
-    _VALUES = {
-        AD_GROUP: 'Ad Group History',
-        CAMPAIGN: 'Campaign History',
-        BUDGET: 'Budget History',
-        ACCOUNT: 'Account History',
-        CREDIT: 'Credit History',
-        AD_GROUP_SOURCE: 'Ad Group Source History',
-    }
-
-
 class HistoryActionType(ConstantBase):
     GOAL_CHANGE = 1
     BUDGET_CHANGE = 2

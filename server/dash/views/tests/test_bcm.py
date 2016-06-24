@@ -363,9 +363,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(item.amount, 1000)
         self.assertEqual(json.loads(response.content)['data'], "2")
 
-        hist = models.History.objects.filter(
-            type=constants.HistoryType.CREDIT
-        ).order_by('-created_dt').first()
+        hist = models.History.objects.order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
         self.assertEquals(item.account, hist.account)
         self.assertEqual(
@@ -461,7 +459,6 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         credit.save(request=fake_request(self.user))
 
         hist = models.History.objects.filter(
-            type=constants.HistoryType.CREDIT,
             level=constants.HistoryLevel.AGENCY,
         ).order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
@@ -716,7 +713,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(models.BudgetLineItem.objects.get(pk=insert_id).comment, 'Comment')
 
         hist = models.History.objects.filter(
-            type=constants.HistoryType.BUDGET,
             level=constants.HistoryLevel.CAMPAIGN,
         ).order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
@@ -816,7 +812,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         )
 
         hist = models.History.objects.filter(
-            type=constants.HistoryType.BUDGET,
             level=constants.HistoryLevel.CAMPAIGN,
         ).order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
