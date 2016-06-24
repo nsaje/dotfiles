@@ -852,7 +852,7 @@ class BudgetLineItemForm(forms.ModelForm):
         end_date = self.cleaned_data['end_date']
         if not self.instance.pk:
             today = dates_helper.local_today()
-            if end_date <= today:
+            if end_date < today:
                 raise forms.ValidationError('End date has to be in the future.')
         return end_date
 
