@@ -455,7 +455,7 @@ class CampaignAdGroups(TestCase):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
-        hist = history_helpers.get_ad_group_history(ad_group).first()
+        hist = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(hist.first().created_by, self.user)
         self.assertEqual(hist.first().action_type, constants.HistoryActionType.CREATE)
 
@@ -2132,7 +2132,7 @@ class PublishersBlacklistStatusTest(TestCase):
             hist9.changes_text
         )
 
-        hist = history_helpers.get_campaign_history(adg9.campaign).first()
+        hist = history_helpers.get_campaign_history(adg9.campaign)
         self.assertEqual(2, hist.count())
         for h in hist:
             self.assertIsNotNone(h.created_by)
