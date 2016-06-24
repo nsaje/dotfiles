@@ -146,7 +146,7 @@ class UploadStatus(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError()
+            raise exc.MissingDataError('Upload batch does not exist')
 
         candidates = batch.contentadcandidate_set.all()
         candidate_ids = request.GET.get('candidates')
@@ -184,7 +184,7 @@ class UploadSave(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError()
+            raise exc.MissingDataError('Upload batch does not exist')
 
         with transaction.atomic():
             try:
@@ -226,7 +226,7 @@ class UploadCancel(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError()
+            raise exc.MissingDataError('Upload batch does not exist')
 
         try:
             upload_plus.cancel_upload(batch)
@@ -248,7 +248,7 @@ class UploadErrorReport(api_common.BaseApiView):
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError()
+            raise exc.MissingDataError('Upload batch does not exist')
 
         if batch.status != constants.UploadBatchStatus.DONE:
             raise exc.ValidationError()
@@ -259,7 +259,7 @@ class UploadErrorReport(api_common.BaseApiView):
         try:
             content = s3helpers.S3Helper().get(batch.error_report_key)
         except boto.exception.S3ResponseError:
-            raise exc.MissingDataError()
+            raise exc.MissingDataError('Error report does not exist')
 
         basefnm, _ = os.path.splitext(
             os.path.basename(batch.error_report_key))
@@ -281,7 +281,11 @@ class UpdateCandidate(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         resource = json.loads(request.body)
-        upload_plus.update_candidate(resource['candidate'], resource['defaults'], batch)
+
+        try:
+            upload_plus.update_candidate(resource['candidate'], resource['defaults'], batch)
+        except models.ContentAdCandidate.DoesNotExist:
+            raise exc.MissingDataError('Candidate does not exist')
 
         return self.create_api_response({
             'candidates': upload_plus.get_candidates_with_errors(batch.contentadcandidate_set.all()),

@@ -238,6 +238,16 @@
   model: dash.uploadbatch
   pk: 4
 
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 5'
+    status: 3  # in progress
+    ad_group: 4
+    original_filename: 'test_upload.csv'
+    batch_size: 2
+  model: dash.uploadbatch
+  pk: 5
+
 # Content ad candidates
 - fields:
     ad_group: 2
@@ -308,3 +318,50 @@
     image_hash: null
   model: dash.contentadcandidate
   pk: 3
+
+- fields:
+    ad_group: 4
+    batch_id: 5
+    image_status: 3  # ok
+    url_status: 3  # ok
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 1'
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'entropy'
+    display_url: 'zemanta.com'
+    brand_name: 'Zemanta'
+    description: 'Zemanta blog'
+    call_to_action: 'Read more'
+    image_width: 500
+    image_height: 500
+    image_hash: '54321cba'
+    primary_tracker_url: 'https://t.zemanta.com/px1.png'
+    secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    image_id: 'abc12345'
+  model: dash.contentadcandidate
+  pk: 4
+
+- fields:
+    ad_group: 4
+    batch_id: 5
+    image_status: 2  # waiting
+    url_status: 2  # waiting
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 1'
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'faces'
+    display_url: 'yourbrand.com'
+    brand_name: 'BranName'
+    description: 'Custom description'
+    call_to_action: 'Contact us'
+    tracker_urls: ''
+    image_id: null
+    image_width: null
+    image_height: null
+    image_hash: null
+  model: dash.contentadcandidate
+  pk: 5

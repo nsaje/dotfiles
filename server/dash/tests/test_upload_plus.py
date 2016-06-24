@@ -317,7 +317,7 @@ class ValidateCandidatesTestCase(TestCase):
             'url_status': 1,
             'image_status': 1,
             'secondary_tracker_url': '',
-            'id': 4,
+            'id': candidates[0].id,
             'tracker_urls': 'http://t.zemanta.com/px1.png http://t.zemanta.com/px2.png',
         }], result)
 

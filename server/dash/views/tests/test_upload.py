@@ -494,7 +494,7 @@ class UploadStatusTestCase(TestCase):
         batch_id = 3
         ad_group_id = 4
 
-        candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
+        candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id, batch_id=batch_id)
         expected_candidate = candidate.to_dict()
         expected_candidate['errors'] = {
             'image_url': ['Image could not be processed'],
@@ -654,7 +654,7 @@ class UploadSaveTestCase(TestCase):
             'success': False,
             'data': {
                 'error_code': 'MissingDataError',
-                'message': None,
+                'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
 
@@ -742,7 +742,7 @@ class UploadCancelTestCase(TestCase):
             'success': False,
             'data': {
                 'error_code': 'MissingDataError',
-                'message': None,
+                'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
 
@@ -805,7 +805,7 @@ class UploadErrorReport(TestCase):
             'success': False,
             'data': {
                 'error_code': 'MissingDataError',
-                'message': None,
+                'message': 'Error report does not exist',
             }
         }, json.loads(response.content))
 
@@ -822,7 +822,7 @@ class UploadErrorReport(TestCase):
             'success': False,
             'data': {
                 'error_code': 'MissingDataError',
-                'message': None,
+                'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
 
@@ -832,6 +832,156 @@ class UploadErrorReport(TestCase):
 
         response = _get_client(superuser=False).get(
             reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+
+class UpdateCandidateTest(TestCase):
+
+    fixtures = ['test_upload_plus.yaml']
+
+    def test_update_candidate(self):
+        batch_id = 5
+        ad_group_id = 4
+
+        resource = {
+            'candidate': {
+                'id': 4,
+                'label': 'new label',
+                'url': 'http://zemanta.com/blog',
+                'title': 'New title',
+                'image_url': 'http://zemanta.com/img.jpg',
+                'image_crop': 'center',
+                'display_url': 'newurl.com',
+                'brand_name': 'New brand name',
+                'description': 'New description',
+                'call_to_action': 'New cta',
+                'primary_tracker_url': '',
+                'secondary_tracker_url': '',
+            },
+            'defaults': [],
+        }
+
+        response = _get_client().put(
+            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps(resource),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = json.loads(response.content)
+        expected = {
+            'data': {
+                'candidates': [{
+                    'brand_name':
+                    'BranName',
+                    'call_to_action': 'Contact us',
+                    'description': 'Custom description',
+                    'display_url': 'yourbrand.com',
+                    'errors': {'__all__': ['Content ad still processing']},
+                    'hosted_image_url': None,
+                    'id': 5,
+                    'image_crop': 'faces',
+                    'image_hash': None,
+                    'image_height': None,
+                    'image_id': None,
+                    'image_status': 2,
+                    'image_url': 'http://zemanta.com/img.jpg',
+                    'image_width': None,
+                    'label': 'content ad 1',
+                    'primary_tracker_url': None,
+                    'secondary_tracker_url': None,
+                    'title': 'Zemanta blog',
+                    'tracker_urls': '',
+                    'url': 'http://zemanta.com/blog',
+                    'url_status': 2
+                }, {
+                    'brand_name': 'New brand name',
+                    'call_to_action': 'New cta',
+                    'description': 'New description',
+                    'display_url': 'newurl.com',
+                    'errors': {},
+                    'hosted_image_url': '/abc12345.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
+                    'id': 4,
+                    'image_crop': 'center',
+                    'image_hash': '54321cba',
+                    'image_height': 500,
+                    'image_id': 'abc12345',
+                    'image_status': 3,
+                    'image_url': 'http://zemanta.com/img.jpg',
+                    'image_width': 500,
+                    'label': 'new label',
+                    'primary_tracker_url': '',
+                    'secondary_tracker_url': '',
+                    'title': 'New title',
+                    'tracker_urls': '',
+                    'url': 'http://zemanta.com/blog',
+                    'url_status': 3
+                }]},
+            'success': True}
+        self.assertEqual(expected, response)
+
+    def test_non_existing_candidate(self):
+        batch_id = 5
+        ad_group_id = 4
+
+        resource = {
+            'candidate': {
+                'id': 555,
+                'label': 'new label',
+                'url': 'http://zemanta.com/blog',
+                'title': 'New title',
+                'image_url': 'http://zemanta.com/img.jpg',
+                'image_crop': 'center',
+                'display_url': 'newurl.com',
+                'brand_name': 'New brand name',
+                'description': 'New description',
+                'call_to_action': 'New cta',
+                'primary_tracker_url': '',
+                'secondary_tracker_url': '',
+            },
+            'defaults': [],
+        }
+
+        response = _get_client().put(
+            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps(resource),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Candidate does not exist',
+            }
+        }, json.loads(response.content))
+
+    def test_wrong_batch_id(self):
+        batch_id = 4
+        ad_group_id = 1
+
+        response = _get_client().put(
+            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': None,
+            }
+        }, json.loads(response.content))
+
+    def test_permission(self):
+        batch_id = 4
+        ad_group_id = 5
+
+        response = _get_client(superuser=False).put(
+            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
