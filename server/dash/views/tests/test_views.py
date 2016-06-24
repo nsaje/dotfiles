@@ -1055,7 +1055,7 @@ class AdGroupContentAdArchive(TestCase):
             }})
 
         mock_send_mail.assert_called_with(ad_group, response.wsgi_request, 'Content ad(s) 2 Archived.')
-        hist = history_helpers.get_ad_group_history(ad_gruop)
+        hist = history_helpers.get_ad_group_history(ad_group).first()
         self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
@@ -2132,7 +2132,7 @@ class PublishersBlacklistStatusTest(TestCase):
             hist9.changes_text
         )
 
-        hist = history_helpers.get_campaign_history(adg9.campaign)
+        hist = history_helpers.get_campaign_history(adg9.campaign).first()
         self.assertEqual(2, hist.count())
         for h in hist:
             self.assertIsNotNone(h.created_by)
