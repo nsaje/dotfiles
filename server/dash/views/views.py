@@ -1508,13 +1508,13 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
     ['url', 'URL'],
     ['title', 'Title'],
     ['image_url', 'Image URL'],
-    ['image_crop', 'Image crop (optional)'],
-    ['display_url', 'Display URL (optional)'],
-    ['brand_name', 'Brand name (optional)'],
-    ['call_to_action', 'Call to action (optional)'],
-    ['description', 'Description (optional)'],
-    ['impression_trackers', 'Impression trackers (optional)'],
-    ['label', 'Label (optional)'],
+    ['image_crop', 'Image crop'],
+    ['display_url', 'Display URL'],
+    ['brand_name', 'Brand name'],
+    ['call_to_action', 'Call to action'],
+    ['description', 'Description'],
+    ['impression_trackers', 'Impression trackers'],
+    ['label', 'Label'],
 ])
 
 

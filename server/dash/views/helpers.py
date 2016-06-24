@@ -658,7 +658,7 @@ def get_selected_content_ads(
     if not include_archived:
         content_ads = content_ads.exclude_archived()
 
-    return content_ads.order_by('created_dt')
+    return content_ads.order_by('created_dt', 'id')
 
 
 def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,

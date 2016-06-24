@@ -17,7 +17,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
 
         age: {name: 'Age', query: 'age'},
         gender: {name: 'Gender', query: 'gender'},
-        ageGender: {name: 'Age and Gender', query: 'agegender'},
+        ageGender: {name: 'Age and Gender', query: 'age_gender'},
         country: {name: 'Country', query: 'country'},
         state: {name: 'State', query: 'state'},
         dma: {name: 'DMA', query: 'dma'},
