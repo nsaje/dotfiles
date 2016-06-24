@@ -207,8 +207,6 @@ class UploadSave(api_common.BaseApiView):
                 changes_text,
                 user=request.user,
                 action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
-                                                ad_group=ad_group)
 
         error_report = None
         if batch.error_report_key:

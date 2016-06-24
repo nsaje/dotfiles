@@ -95,7 +95,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 current_settings, new_settings, request.user, separator='\n')
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
-            helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
             if 'autopilot_daily_budget' in changes or 'autopilot_state' in changes and \
                     changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group, send_mail=True)
@@ -705,12 +704,6 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         email_helper.send_account_pixel_notification(account, request)
 
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.CREATE_CONVERSION_PIXEL,
-            account=account
-        )
-
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
@@ -760,12 +753,6 @@ class ConversionPixel(api_common.BaseApiView):
                     user=request.user,
                     action_type=constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE
                 )
-
-            helpers.log_useraction_if_necessary(
-                request,
-                constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
-                account=account)
-
         return self.create_api_response({
             'id': conversion_pixel.id,
             'archived': conversion_pixel.archived,
@@ -800,13 +787,7 @@ class AccountSettings(api_common.BaseApiView):
         resource = json.loads(request.body)
 
         form = forms.AccountSettingsForm(resource.get('settings', {}))
-
         settings = self.save_settings(request, account, form)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
-            account=account)
         response = {
             'settings': self.get_dict(request, settings, account),
             'can_archive': account.can_archive(),

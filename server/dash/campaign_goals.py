@@ -412,11 +412,6 @@ def _add_entry_to_history(request, campaign, action_type, history_action_type, c
         user=request.user,
         action_type=history_action_type
     )
-    helpers.log_useraction_if_necessary(
-        request,
-        action_type,
-        campaign=campaign
-    )
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):

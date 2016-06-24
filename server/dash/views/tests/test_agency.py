@@ -200,9 +200,8 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+    def test_put(self, mock_k1_ping, mock_actionlog_api,
                  mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
@@ -280,12 +279,12 @@ class AdGroupSettingsTest(TestCase):
                     ad_group, old_settings, new_settings, ANY, send=False),
                 ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             ])
-            mock_log_useraction.assert_called_with(
-                response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
+
+            hist = history_helpers.get_ad_group_history(ad_group)
+            self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_ad_group')
     def test_put_low_cpc(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
                          mock_order_ad_group_settings_update):
@@ -380,9 +379,8 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put_add_ga_analytics(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+    def test_put_add_ga_analytics(self, mock_k1_ping, mock_actionlog_api,
                                   mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
@@ -510,8 +508,7 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
+    def test_put_firsttime_create_settings(self, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
@@ -594,10 +591,8 @@ class AdGroupSettingsTest(TestCase):
                 current_settings.get_settings_dict()
             )
 
-            mock_log_useraction.assert_called_with(
-                response.wsgi_request,
-                constants.UserActionType.SET_AD_GROUP_SETTINGS,
-                ad_group=ad_group)
+            hist = history_helpers.get_ad_group_history(ad_group).first()
+            self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -990,8 +985,7 @@ class AccountConversionPixelsTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_post(self, mock_log_useraction):
+    def test_post(self):
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'slug'}),
@@ -1017,10 +1011,8 @@ class AccountConversionPixelsTestCase(TestCase):
             hist.action_type)
         self.assertEqual('Added conversion pixel with unique identifier slug.',
                          hist.changes_text)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.CREATE_CONVERSION_PIXEL,
-            account=models.Account.objects.get(pk=1))
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
     def test_post_slug_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())
@@ -1112,8 +1104,7 @@ class ConversionPixelTestCase(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction):
+    def test_put(self):
         add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
@@ -1136,10 +1127,9 @@ class ConversionPixelTestCase(TestCase):
             hist.action_type)
         self.assertEqual('Archived conversion pixel with unique identifier test.',
                          hist.changes_text)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
-            account=models.Account.objects.get(pk=1))
+
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1))
+        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE, hist.action_type)
 
     def test_put_archive_no_permissions(self):
         response = self.client.put(
@@ -1360,8 +1350,7 @@ class CampaignConversionGoalsTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_post(self, mock_log_useraction):
+    def test_post(self):
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -1377,11 +1366,9 @@ class CampaignConversionGoalsTestCase(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertEqual({'success': True}, decoded_response)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.CREATE_CONVERSION_GOAL,
-            campaign=models.Campaign.objects.get(pk=2)
-        )
+
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=2))
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
 
     def test_post_campaign_no_permission(self):
         response = self.client.post(
@@ -1660,8 +1647,7 @@ class ConversionGoalTestCase(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_delete(self, mock_log_useraction):
+    def test_delete(self):
         conversion_goal = models.ConversionGoal.objects.get(id=1)
 
         response = self.client.delete(
@@ -1673,11 +1659,9 @@ class ConversionGoalTestCase(TestCase):
 
         with self.assertRaises(models.ConversionGoal.DoesNotExist):
             models.ConversionGoal.objects.get(id=1)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.DELETE_CONVERSION_GOAL,
-            campaign=models.Campaign.objects.get(pk=1)
-        )
+
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1))
+        self.assertEqual(constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
 
     def test_delete_campaign_no_permissions(self):
         models.Account.objects.get(id=1).users.remove(User.objects.get(id=1))
@@ -1808,10 +1792,9 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_log_useraction, _):
+    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, _):
         add_permissions(self.user, [
             'can_modify_campaign_manager',
             'can_modify_campaign_iab_category',
@@ -1861,15 +1844,13 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.iab_category, 'IAB17')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_CAMPAIGN_SETTINGS,
-            campaign=campaign)
+
+        hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1))
+        self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_goals_added(self, p1, p2, p3):
+    def test_put_goals_added(self, p1, p3):
         add_permissions(self.user, [
             'can_see_campaign_goals'
         ])
@@ -1938,9 +1919,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(models.ConversionGoal.objects.all()[0].name, 'test')
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_goals_modified(self, p1, p2, p3):
+    def test_put_goals_modified(self, p1, p3):
         goal = models.CampaignGoal.objects.create(
             type=1,
             primary=True,
@@ -1986,9 +1966,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(values[1].value, Decimal('0.2000'))
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_goals_removed(self, p1, p2, p3):
+    def test_put_goals_removed(self, p1, p3):
 
         campaign_id = 1
 
@@ -2388,8 +2367,7 @@ class AccountSettingsTest(TestCase):
 
     @patch('requests.get')
     @patch('requests.post')
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction, mock_request, mock_page_id):
+    def test_put(self, mock_request, mock_page_id):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
             'can_modify_account_manager',
@@ -2442,14 +2420,11 @@ class AccountSettingsTest(TestCase):
         })
         self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
         self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
-            account=account
-        )
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put_no_permission_can_modify_account_type(self, mock_log_useraction):
+        hist = history_helpers.get_account_history(account)
+        self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
+
+    def test_put_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions([
             'can_modify_allowed_sources'
         ])
@@ -2474,8 +2449,7 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put_no_permission_can_modify_allowed_sources(self, mock_log_useraction):
+    def test_put_no_permission_can_modify_allowed_sources(self):
         client = self._get_client_with_permissions([])
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
