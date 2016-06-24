@@ -219,7 +219,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
         account.write_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -230,7 +230,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
         account.write_history(
             'Scheduled report.',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -244,7 +244,7 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign.write_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -255,7 +255,7 @@ class CampaignAdGroupsExport(ExportApiView):
         campaign.write_history(
             'Scheduled report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -269,7 +269,7 @@ class AdGroupAdsExport(ExportApiView):
         ad_group.write_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -280,7 +280,7 @@ class AdGroupAdsExport(ExportApiView):
         ad_group.write_history(
             'Scheduled report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -293,7 +293,7 @@ class AllAccountsSourcesExport(ExportApiView):
         history_helpers.write_global_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -303,7 +303,7 @@ class AllAccountsSourcesExport(ExportApiView):
         history_helpers.write_global_history(
             'Scheduled report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -317,7 +317,7 @@ class AccountSourcesExport(ExportApiView):
         account.write_history(
             'Exported media sources report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -328,7 +328,7 @@ class AccountSourcesExport(ExportApiView):
         account.write_history(
             'Scheduled media sources report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -342,7 +342,7 @@ class CampaignSourcesExport(ExportApiView):
         campaign.write_history(
             'Exported media sources report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -353,7 +353,7 @@ class CampaignSourcesExport(ExportApiView):
         campaign.write_history(
             'Scheduled media sources report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -367,7 +367,7 @@ class AdGroupSourcesExport(ExportApiView):
         ad_group.write_history(
             'Exported media sources report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -378,7 +378,7 @@ class AdGroupSourcesExport(ExportApiView):
         ad_group.write_history(
             'Scheduled media sources report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
@@ -391,7 +391,7 @@ class AllAccountsExport(ExportApiView):
         history_helpers.write_global_history(
             'Exported report: {}'.format(filename),
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_csv_response(filename, content=content)
 
@@ -401,7 +401,7 @@ class AllAccountsExport(ExportApiView):
         history_helpers.write_global_history(
             'Scheduled report',
             user=request.user,
-            history_type=constants.HistoryActionType.REPORTING_MANAGE)
+            action_type=constants.HistoryActionType.REPORTING_MANAGE)
 
         return self.create_api_response(response)
 
