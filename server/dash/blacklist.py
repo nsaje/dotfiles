@@ -13,17 +13,21 @@ ALLOWED_LEVEL_CONSTRAINTS = (
     'account',
 )
 
-UNSUPPORTED_SOURCES = (
-    dash.constants.SourceType.GRAVITY,
-    dash.constants.SourceType.OUTBRAIN,
-)
-
 NOT_ENABLED_BLACKLIST_STATUSES = (
     dash.constants.PublisherStatus.BLACKLISTED,
     dash.constants.PublisherStatus.PENDING
 )
 
+ACTION_TO_MESSAGE = {
+    dash.constants.PublisherStatus.BLACKLISTED: 'Blacklist',
+    dash.constants.PublisherStatus.ENABLED: 'Enable',
+}
+
 logger = logging.getLogger(__name__)
+
+
+class BlacklistException(Exception):
+    pass
 
 
 def update(ad_group, constraints, status, domains, everywhere=False,
@@ -58,7 +62,7 @@ def _get_sources(ad_group):
     return set([
         ad_group_source.source
         for ad_group_source in ad_group_sources
-        if ad_group_source.source.source_type.type not in UNSUPPORTED_SOURCES
+        if ad_group_source.source.can_modify_publisher_blacklist_automatically()
     ])
 
 
@@ -67,8 +71,13 @@ def _update_source(constraints, status, domains, request=None, ad_group=None):
 
     if not source.can_modify_publisher_blacklist_automatically():
         return
-    if not _handle_outbrain(source, constraints, status, domains, request, ad_group):
-        return
+
+    if source.source_type.type == dash.constants.SourceType.OUTBRAIN:
+        try:
+            _handle_outbrain(source, constraints, status, domains, request, ad_group)
+        except BlacklistException:
+            logger.exception('Blacklist exception when using constraints: %s', str(constraints))
+            return
 
     if status == dash.constants.PublisherStatus.ENABLED:
         globally_blacklisted = _get_globally_blacklisted_publishers_list()
@@ -85,9 +94,7 @@ def _update_source(constraints, status, domains, request=None, ad_group=None):
         name__in=domains,
         **constraints
     ).values_list('name', flat=True))
-    for domain in domains:
-        if domain in already_blacklisted:
-            continue
+    for domain in set(domains) - already_blacklisted:
         dash.models.PublisherBlacklist.objects.create(
             name=domain,
             everywhere=False,
@@ -128,14 +135,11 @@ def _global_blacklist(constraints, status, domains):
             status=status,
             **constraints
         )
-    return True
 
 
 def _handle_outbrain(source, constraints, status, domains, request, ad_group):
-    if source.source_type.type != dash.constants.SourceType.OUTBRAIN:
-        return True
     if 'account' not in constraints:
-        return False
+        raise BlacklistException('OB blacklist is allowed only on account level')
 
     ob_domains = dash.models.PublisherBlacklist.objects.filter(
         account=constraints['account'],
@@ -151,20 +155,14 @@ def _handle_outbrain(source, constraints, status, domains, request, ad_group):
         )
 
     if count_ob > dash.constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
-        logger.error('Attempted to blacklist more than 30 publishers per account on Outbrain')
-        return False
+        raise BlacklistException('Attempted to blacklist more publishers than allowed per account on Outbrain')
 
     if count_ob > dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD:
         _trigger_manual_ob_blacklist_action(request, ad_group, status, domains)
 
-    return True
-
 
 def _trigger_manual_ob_blacklist_action(request, ad_group, state, domains):
-    action_name = {
-        dash.constants.PublisherStatus.BLACKLISTED: 'Blacklist',
-        dash.constants.PublisherStatus.ENABLED: 'Enable',
-    }[state]
+    action_name = ACTION_TO_MESSAGE[state]
     domains = ', '.join(domain for domain in domains)
 
     action = actionlog.models.ActionLog(

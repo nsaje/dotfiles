@@ -1657,18 +1657,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         )
 
         constraints = {}
-        history_ad_groups = []
         if level == constants.PublisherBlacklistLevel.ADGROUP:
             constraints['ad_group'] = ad_group
-            history_ad_groups = [ad_group]
         elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
             constraints['campaign'] = ad_group.campaign
-            history_ad_groups = models.AdGroup.objects.filter(campaign=constraints['campaign'])
         elif level == constants.PublisherBlacklistLevel.ACCOUNT:
             constraints['account'] = ad_group.campaign.account
-            history_ad_groups = models.AdGroup.objects.filter(
-                campaign__account=constraints['account']
-            )
 
         for source, domains in source_domains.iteritems():
             source_constraints = {'source': source}
