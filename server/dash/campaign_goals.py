@@ -1,5 +1,5 @@
 import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -85,12 +85,15 @@ COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPV,
 )
 
+ROUNDING = ROUND_DOWN
+
 
 def get_performance_value(goal_type, metric_value, target_value):
+    rounded_metric_value = metric_value.quantize(Decimal('.01'), rounding=ROUNDING)
     if goal_type in INVERSE_PERFORMANCE_CAMPAIGN_GOALS:
-        performance = (2 * target_value - metric_value) / target_value
+        performance = (2 * target_value - rounded_metric_value) / target_value
     else:
-        performance = metric_value / target_value
+        performance = rounded_metric_value / target_value
     return max(Decimal('0'), min(performance, Decimal('2')))
 
 
@@ -412,7 +415,10 @@ def _add_entry_to_history(request, campaign, action_type, changes_text):
 
 
 def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
-    if goal_type in COST_DEPENDANT_GOALS and cost and not metric_value:
+    rounded_cost = (cost and Decimal(cost) or Decimal('0')).quantize(
+        Decimal('.01'), rounding=ROUNDING
+    )
+    if goal_type in COST_DEPENDANT_GOALS and rounded_cost and not metric_value:
         return constants.CampaignGoalPerformance.UNDERPERFORMING
     if planned_value is None or metric_value is None:
         return constants.CampaignGoalPerformance.AVERAGE
