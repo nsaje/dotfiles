@@ -58,7 +58,7 @@ def init_enable_ad_group(ad_group, request, order=None, send=True):
                 'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
             }
             new_actionlogs.extend(
-                set_ad_group_source_settings(changes, source_settings.ad_group_source, request, order=order, send=send)
+                set_ad_group_source_settings(changes, source_settings.ad_group_source, request=request, order=order, send=send)
             )
 
     return new_actionlogs
@@ -71,7 +71,7 @@ def init_pause_ad_group(ad_group, request, order=None, send=True):
             'state': dash.constants.AdGroupSourceSettingsState.INACTIVE,
         }
 
-        new_actionlogs.extend(set_ad_group_source_settings(changes, ad_group_source, request, order=order, send=send))
+        new_actionlogs.extend(set_ad_group_source_settings(changes, ad_group_source, request=request, order=order, send=send))
 
     return new_actionlogs
 
@@ -121,7 +121,7 @@ def init_set_ad_group_manual_property(ad_group_source, request, prop, value):
         _handle_error(action, e, request)
 
 
-def set_ad_group_source_settings(changes, ad_group_source, request, order=None, send=True):
+def set_ad_group_source_settings(changes, ad_group_source, request=None, order=None, send=True):
     extra = {}
     if changes.get('cpc_cc') is not None:
         changes['cpc_cc'] = int(changes['cpc_cc'] * 10000)
