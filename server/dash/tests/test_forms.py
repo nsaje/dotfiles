@@ -244,7 +244,7 @@ class AdGroupSettingsFormTest(TestCase):
     @patch('utils.dates_helper.local_today')
     def test_max_cpc_setting_value_too_high(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['cpc_cc'] = 4.01
+        self.data['cpc_cc'] = 10.01
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
