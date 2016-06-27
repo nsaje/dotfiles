@@ -121,7 +121,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
         delete $scope.selectedCandidate.errors[field];
     };
 
-    $scope.getContentErrors = function (candidate) {
+    $scope.getContentErrorsMsg = function (candidate) {
         if (!candidate.errors) {
             return '';
         }
@@ -140,7 +140,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
         return errs.length + ' content errors';
     };
 
-    $scope.getImageErrors = function (candidate) {
+    $scope.getImageErrorsMsg = function (candidate) {
         if (!candidate.errors || !candidate.errors.imageUrl) {
             return '';
         }

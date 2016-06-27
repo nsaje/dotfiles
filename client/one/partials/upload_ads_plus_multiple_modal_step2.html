@@ -28,13 +28,13 @@
                     {{ candidate.url }}
                 </td>
                 <td class="errors">
-                    <div ng-if="getContentErrors(candidate)">
+                    <div ng-if="getContentErrorsMsg(candidate)">
                         <img ng-src="{{ config.static_url }}/one/img/error-content.svg"/>
-                        <span class="error-text">{{ getContentErrors(candidate) }}</span>
+                        <span class="error-text">{{ getContentErrorsMsg(candidate) }}</span>
                     </div>
-                    <div ng-if="getImageErrors(candidate)">
+                    <div ng-if="getImageErrorsMsg(candidate)">
                         <img ng-src="{{ config.static_url }}/one/img/error-image.svg"/>
-                        <span class="error-text">{{ getImageErrors(candidate) }}</span>
+                        <span class="error-text">{{ getImageErrorsMsg(candidate) }}</span>
                     </div>
                 </td>
                 <td class="action">
