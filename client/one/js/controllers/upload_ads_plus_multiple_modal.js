@@ -71,17 +71,13 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
     $scope.removeSecondaryTracker = function (candidate) {
         candidate.useSecondaryTracker = false;
         candidate.secondaryTrackerUrl = undefined;
-        $scope.clearCandidateErrors('secondaryTrackerUrl');
+        $scope.clearSelectedCandidateErrors('secondaryTrackerUrl');
     };
 
-    var candidateHasErrors = function (candidate) {
-        for (var key in candidate.errors) {
-            if (candidate.errors.hasOwnProperty(key) && candidate.errors[key]) {
-                return true;
-            }
-        }
-
-        return false;
+    var hasErrors = function (candidate) {
+        return candidate.errors.some(function (error) {
+            return !!error;
+        });
     };
 
     var checkAllCandidateErrors = function (candidates) {
@@ -90,7 +86,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
         }
 
         for (var i = 0; i < candidates.length; i++) {
-            if (candidateHasErrors(candidates[i])) {
+            if (hasErrors(candidates[i])) {
                 return true;
             }
         }
@@ -106,14 +102,14 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
             return constants.contentAdCandidateStatus.LOADING;
         }
 
-        if (candidateHasErrors(candidate)) {
+        if (hasErrors(candidate)) {
             return constants.contentAdCandidateStatus.ERRORS;
         }
 
         return constants.contentAdCandidateStatus.OK;
     };
 
-    $scope.clearCandidateErrors = function (field) {
+    $scope.clearSelectedCandidateErrors = function (field) {
         if (!$scope.selectedCandidate || !$scope.selectedCandidate.errors) {
             return;
         }

@@ -64,7 +64,7 @@
                     URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="url-input" ng-model="selectedCandidate.url" ng-focus="clearCandidateErrors('url')" />
+                    <input type="text" class="form-control" id="url-input" ng-model="selectedCandidate.url" ng-focus="clearSelectedCandidateErrors('url')" />
                     <label for="url-input" ng-repeat="error in selectedCandidate.errors.url" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
@@ -77,7 +77,7 @@
                     Ad Title:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="title-input" ng-model="selectedCandidate.title" ng-focus="clearCandidateErrors('title')" />
+                    <input type="text" class="form-control" id="title-input" ng-model="selectedCandidate.title" ng-focus="clearSelectedCandidateErrors('title')" />
                     <label for="title-input" ng-repeat="error in selectedCandidate.errors.title" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
@@ -90,7 +90,7 @@
                     Image URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="image-url-input" ng-model="selectedCandidate.imageUrl" ng-focus="clearCandidateErrors('image')" />
+                    <input type="text" class="form-control" id="image-url-input" ng-model="selectedCandidate.imageUrl" ng-focus="clearSelectedCandidateErrors('image')" />
                     <label for="image-url-input" ng-repeat="error in selectedCandidate.errors.imageUrl" class="control-label small error">{{ error }}</label>
                     <div class="help-block">
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
@@ -105,7 +105,7 @@
                 </label>
 
                 <div class="col-xs-8">
-                    <ui-select theme="select2" search-enabled="false" id="image-crop-input" class="form-control" ng-model="selectedCandidate.imageCrop" ng-focus="clearCandidateErrors('imageCrop')">
+                    <ui-select theme="select2" search-enabled="false" id="image-crop-input" class="form-control" ng-model="selectedCandidate.imageCrop" ng-focus="clearSelectedCandidateErrors('imageCrop')">
                         <ui-select-match placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
                         <ui-select-choices repeat="crop.value as crop in imageCrops">
                             {{crop.name}}
@@ -121,7 +121,7 @@
                     Description:
                 </label>
                 <div class="col-xs-8">
-                    <textarea type="text" class="form-control" rows="3" id="description-input" ng-model="selectedCandidate.description" ng-focus="clearCandidateErrors('description')"></textarea>
+                    <textarea type="text" class="form-control" rows="3" id="description-input" ng-model="selectedCandidate.description" ng-focus="clearSelectedCandidateErrors('description')"></textarea>
                     <label for="description-input" ng-repeat="error in selectedCandidate.errors.description" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
@@ -135,7 +135,7 @@
                     Display URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="display-url-input" ng-model="selectedCandidate.displayUrl" ng-focus="clearCandidateErrors('displayUrl')" />
+                    <input type="text" class="form-control" id="display-url-input" ng-model="selectedCandidate.displayUrl" ng-focus="clearSelectedCandidateErrors('displayUrl')" />
                     <label for="display-url-input" ng-repeat="error in selectedCandidate.errors.displayUrl" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
@@ -150,7 +150,7 @@
                 </label>
 
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="brand-name-input" ng-model="selectedCandidate.brandName" ng-focus="clearCandidateErrors('brandName')" />
+                    <input type="text" class="form-control" id="brand-name-input" ng-model="selectedCandidate.brandName" ng-focus="clearSelectedCandidateErrors('brandName')" />
                     <label for="brand-name-input" ng-repeat="error in selectedCandidate.errors.brandName" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
@@ -189,7 +189,7 @@
                         Primary tracker:
                     </label>
                     <div class="col-xs-8">
-                        <input type="text" class="form-control" id="impression-trackers-input" ng-model="selectedCandidate.primaryTrackerUrl" ng-focus="clearCandidateErrors('primaryTrackerUrl')" />
+                        <input type="text" class="form-control" id="impression-trackers-input" ng-model="selectedCandidate.primaryTrackerUrl" ng-focus="clearSelectedCandidateErrors('primaryTrackerUrl')" />
                         <label for="call-to-action-input" ng-repeat="error in selectedCandidate.errors.primaryTrackerUrl" class="control-label small error">{{ error }}</label>
                         <div class="help-block">
                             Paste your impression tracker link to track impressions.
@@ -201,7 +201,7 @@
                 <div class="form-group" ng-if="!!selectedCandidate.useSecondaryTracker">
                     <label class="col-xs-2 control-label p-t-none">Secondary tracker:</label>
                     <div class="col-xs-8">
-                        <input type="text" class="form-control" id="impression-trackers-input" ng-model="selectedCandidate.secondaryTrackerUrl" ng-focus="clearCandidateErrors('secondaryTrackerUrl')" />
+                        <input type="text" class="form-control" id="impression-trackers-input" ng-model="selectedCandidate.secondaryTrackerUrl" ng-focus="clearSelectedCandidateErrors('secondaryTrackerUrl')" />
                         <label for="call-to-action-input" ng-repeat="error in selectedCandidate.errors.secondaryTrackerUrl" class="control-label small error">{{ error }}</label>
                         <div class="help-block">
                             Paste your impression tracker link to track impressions.
