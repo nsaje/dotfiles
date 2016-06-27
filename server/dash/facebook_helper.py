@@ -155,7 +155,8 @@ def add_system_user_permissions(connected_object_id, role, business_id, system_u
 
 
 def get_credentials():
-    return json.loads(models.SourceCredentials.objects.get(source__bidder_slug='facebook').decrypt())
+    credentials = models.SourceCredentials.objects.get(source__bidder_slug='facebook').decrypt()
+    return json.loads(credentials)
 
 
 def stop_facebook_media_sources(account):
