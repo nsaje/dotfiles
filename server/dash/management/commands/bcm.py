@@ -15,6 +15,22 @@ MODELS = (
     MODEL_BUDGETS,
 )
 
+ACTION_DELETE = 'delete'
+ACTION_UPDATE = 'update'
+ACTION_RELEASE = 'release'
+ACTION_LIST = 'list'
+ACTIONS = (
+    ACTION_DELETE,
+    ACTION_UPDATE,
+    ACTION_RELEASE,
+    ACTION_LIST,
+)
+VALID_ACTIONS = {
+    MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST),
+    MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST),
+}
+
+
 UPDATABLE_FIELDS = {
     'amount': int,
     'start_date': str,
@@ -98,7 +114,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # Positional arguments
-        parser.add_argument('action', nargs=1, choices=('update', 'delete'), type=str)
+        parser.add_argument('action', nargs=1, choices=ACTIONS, type=str)
         parser.add_argument('model', nargs=1, choices=MODELS, type=str)
         parser.add_argument('ids', nargs='*', type=int)
 
@@ -159,11 +175,17 @@ class Command(BaseCommand):
             sys.exit(1)
 
     def _handle(self, action, model, ids, options):
+        if action not in VALID_ACTIONS[model]:
+            raise CommandError('Cannot manage {} with action {}'.format(model, action))
+
         object_list = self._get_objects(model, ids, credit_ids=options.get('credit'))
         if not object_list:
             raise CommandError('No matching {}'.format(model))
 
-        self._print_object_list(action, model, object_list)
+        self._print_object_list(action, model, object_list, list_only=action == ACTION_LIST)
+
+        if action == ACTION_LIST:
+            return
 
         if not options.get('no_confirm') and not self._confirm('Are you sure?'):
             self._print('Canceled.')
@@ -178,7 +200,7 @@ class Command(BaseCommand):
             raise CommandError('Wrong fields.')
 
     def _handle_action(self, action, model, object_list, options):
-        if action == 'update':
+        if action == ACTION_UPDATE:
             updates = self._get_updates(options)
             if not updates:
                 raise CommandError('Nothing to change')
@@ -196,25 +218,40 @@ class Command(BaseCommand):
             if set(updates.keys()) & set(INVALIDATE_DAILY_STATEMENTS_FIELDS):
                 self._print('WARNING: Daily statements should be reprocessed')
 
-        elif action == 'delete':
+        elif action == ACTION_DELETE:
             for obj in object_list:
                 if model == MODEL_CREDITS:
                     delete_credit(obj)
                 else:
                     delete_budget(obj)
 
+        elif action == ACTION_RELEASE:
+            for obj in object_list:
+                try:
+                    obj.free_inactive_allocated_assets()
+                    self._print(
+                        'Released {} from budget {}'.format(
+                            obj.freed_cc * utils.converters.CC_TO_DECIMAL_DOLAR,
+                            str(obj)
+                        )
+                    )
+                except AssertionError:
+                    raise CommandError('Could not free assets. Budget status is {}'.format(
+                        obj.state_text()
+                    ))
+
     def _get_objects(self, model, ids, credit_ids=None):
         if model == MODEL_CREDITS:
-            return dash.models.CreditLineItem.objects.filter(pk__in=ids)
+            return dash.models.CreditLineItem.objects.filter(pk__in=ids).order_by('id')
         elif model == MODEL_BUDGETS:
             if credit_ids:
                 return dash.models.BudgetLineItem.objects.filter(
                     credit_id__in=credit_ids,
-                )
+                ).order_by('id')
             else:
                 return dash.models.BudgetLineItem.objects.filter(
                     pk__in=ids
-                )
+                ).order_by('id')
         return None
 
     def _confirm(self, message):
@@ -223,8 +260,9 @@ class Command(BaseCommand):
     def _print(self, msg):
         self.stdout.write('{}\n'.format(msg))
 
-    def _print_object_list(self, action, model, object_list):
-        self._print('You will {} the following {}:'.format(action, model))
+    def _print_object_list(self, action, model, object_list, list_only=False):
+        if not list_only:
+            self._print('You will {} the following {}:'.format(action, model))
         for budget in object_list if model == MODEL_BUDGETS else []:
             self._print_budget(budget)
         for credit in object_list if model == MODEL_CREDITS else []:
