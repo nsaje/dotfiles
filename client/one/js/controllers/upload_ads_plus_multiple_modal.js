@@ -16,6 +16,13 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
     $scope.batchName = moment().format('M/D/YYYY h:mm A');
     $scope.fileInput = {};
 
+    $scope.MAX_URL_LENGTH = 936;
+    $scope.MAX_TITLE_LENGTH = 90;
+    $scope.MAX_DESCRIPTION_LENGTH = 140;
+    $scope.MAX_DISPLAY_URL_LENGTH = 25;
+    $scope.MAX_BRAND_NAME_LENGTH = 25;
+    $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
+
     $scope.toggleBatchNameEdit = function () {
         $scope.batchNameEdit = !$scope.batchNameEdit;
     };

@@ -68,7 +68,7 @@
                     <label for="url-input" ng-repeat="error in selectedCandidate.errors.url" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
-                    {{ selectedCandidate.url.length }}/936
+                    {{ selectedCandidate.url.length }}/{{ MAX_URL_LENGTH }}
                 </div>
             </div>
 
@@ -81,7 +81,7 @@
                     <label for="title-input" ng-repeat="error in selectedCandidate.errors.title" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
-                    {{ selectedCandidate.title.length }}/90
+                    {{ selectedCandidate.title.length }}/{{ MAX_TITLE_LENGTH }}
                 </div>
             </div>
 
@@ -125,7 +125,7 @@
                     <label for="description-input" ng-repeat="error in selectedCandidate.errors.description" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
-                    {{ selectedCandidate.description.length }}/140
+                    {{ selectedCandidate.description.length }}/{{ MAX_DESCRIPTION_LENGTH }}
                     <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                     <label for="display-url-input" ng-repeat="error in selectedCandidate.errors.displayUrl" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
-                    {{ selectedCandidate.displayUrl.length }}/25
+                    {{ selectedCandidate.displayUrl.length }}/{{ MAX_DISPLAY_URL_LENGTH }}
                     <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
@@ -154,7 +154,7 @@
                     <label for="brand-name-input" ng-repeat="error in selectedCandidate.errors.brandName" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
-                    {{ selectedCandidate.brandName.length }}/25
+                    {{ selectedCandidate.brandName.length }}/{{ MAX_BRAND_NAME_LENGTH }}
                     <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
@@ -167,7 +167,7 @@
                     <div ui-select2="callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="selectedCandidate.callToAction" zem-select2-model-transform="text"></div>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
-                    {{ selectedCandidate.callToAction.length }}/25
+                    {{ selectedCandidate.callToAction.length }}/{{ MAX_CALL_TO_ACTION_LENGTH }}
                     <label class="checkbox-label checkbox-label-default"><input type="checkbox" />Use as default</label>
                 </div>
             </div>
