@@ -2962,7 +2962,7 @@ class CampaignOverviewTest(TestCase):
         ), flight_setting['value'])
 
         device_setting = self._get_setting(settings, 'targeting')
-        self.assertEqual('Device: Mobile, Desktop', device_setting['value'])
+        self.assertEqual('Device: Tablet, Mobile, Desktop', device_setting['value'])
 
         location_setting = [s for s in settings if 'location' in s['value'].lower()][0]
         self.assertEqual('Location: US', location_setting['value'])

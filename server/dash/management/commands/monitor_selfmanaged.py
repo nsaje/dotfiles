@@ -24,6 +24,8 @@ class Command(BaseCommand):
             created_by__email__icontains="@zemanta"
         ).exclude(
             created_by__is_test_user=True
+        ).exclude(
+            action_type__isnull=True
         ).count()
 
         influx.gauge('dash.self_managed_actions.history', history_sf_count)

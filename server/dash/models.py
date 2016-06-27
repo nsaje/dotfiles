@@ -25,6 +25,7 @@ import utils.string_helper
 import utils.demo_anonymizer
 
 from dash import constants
+from dash import image_helper
 from dash import region_targeting_helper
 from dash import views
 import reports.constants
@@ -2512,18 +2513,13 @@ class ContentAd(models.Model):
         ))
 
     def get_image_url(self, width=None, height=None):
-        if self.image_id is None:
-            return None
-
         if width is None:
             width = self.image_width
 
         if height is None:
             height = self.image_height
 
-        path = '/{}.jpg?w={}&h={}&fit=crop&crop=faces&fm=jpg'.format(
-            self.image_id, width, height)
-        return urlparse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
+        return image_helper.get_image_url(self.image_id, width, height, self.image_crop)
 
     def url_with_tracking_codes(self, tracking_codes):
         if not tracking_codes:
@@ -2625,19 +2621,22 @@ class ContentAdSource(models.Model):
         return unicode(self).encode('ascii', 'ignore')
 
 
-class ContentAdCandidate(models.Model):
-    label = models.TextField(null=True)
-    url = models.TextField(null=True)
-    title = models.TextField(null=True)
-    image_url = models.TextField(null=True)
-    image_crop = models.TextField(null=True)
+class ContentAdCandidate(FootprintModel):
+    label = models.TextField(null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+    title = models.TextField(null=True, blank=True)
+    image_url = models.TextField(null=True, blank=True)
+    image_crop = models.TextField(null=True, blank=True)
 
-    display_url = models.TextField(null=True)
-    brand_name = models.TextField(null=True)
-    description = models.TextField(null=True)
-    call_to_action = models.TextField(null=True)
+    display_url = models.TextField(null=True, blank=True)
+    brand_name = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    call_to_action = models.TextField(null=True, blank=True)
 
-    tracker_urls = models.TextField(null=True)
+    # TODO: remove when upload v2.1 is public
+    tracker_urls = models.TextField(null=True, blank=True)
+    primary_tracker_url = models.TextField(null=True, blank=True)
+    secondary_tracker_url = models.TextField(null=True, blank=True)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
@@ -2658,8 +2657,38 @@ class ContentAdCandidate(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
-    def get_dict(self):
-        return model_to_dict(self)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'label': self.label,
+            'url': self.url,
+            'title': self.title,
+            'image_url': self.image_url,
+            'image_id': self.image_id,
+            'image_hash': self.image_hash,
+            'image_width': self.image_width,
+            'image_height': self.image_height,
+            'image_crop': self.image_crop,
+            'display_url': self.display_url,
+            'description': self.description,
+            'brand_name': self.brand_name,
+            'call_to_action': self.call_to_action,
+            'tracker_urls': self.tracker_urls,
+            'image_status': self.image_status,
+            'url_status': self.url_status,
+            'hosted_image_url': self.get_image_url(160, 160),
+            'primary_tracker_url': self.primary_tracker_url,
+            'secondary_tracker_url': self.secondary_tracker_url,
+        }
+
+    def get_image_url(self, width=None, height=None):
+        if width is None:
+            width = self.image_width
+
+        if height is None:
+            height = self.image_height
+
+        return image_helper.get_image_url(self.image_id, width, height, self.image_crop)
 
 
 class Article(models.Model):
@@ -3252,7 +3281,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         if date is None:
             date = dates_helper.local_today()
         total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
-        return Decimal(self.amount) - total_spend
+        return self.allocated_amount() - total_spend
 
     def state(self, date=None):
         if date is None:
@@ -3680,7 +3709,9 @@ class History(models.Model):
         blank=False,
     )
 
-    # action type is user initiated action type
+    # action type should only be set if this history entry is a direct
+    # consequence of a user action(backend actions that insert history
+    # should either have action_type set to None or have system user set)
     # non user initiated action type is None
     action_type = models.PositiveSmallIntegerField(
         choices=constants.HistoryActionType.get_choices(),

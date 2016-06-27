@@ -27,11 +27,11 @@ oneApp.controller('UploadAdsPlusModalCtrl', ['$scope', '$modalInstance', 'api', 
 
     var updateUploadStatus = function (candidates) {
         var count = 0;
-        angular.forEach(candidates, function (status) {
-            if (status.imageStatus !== constants.asyncUploadJobStatus.PENDING_START &&
-                status.imageStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE &&
-                status.urlStatus !== constants.asyncUploadJobStatus.PENDING_START &&
-                status.urlStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE) {
+        angular.forEach(candidates, function (candidate) {
+            if (candidate.imageStatus !== constants.asyncUploadJobStatus.PENDING_START &&
+                candidate.imageStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE &&
+                candidate.urlStatus !== constants.asyncUploadJobStatus.PENDING_START &&
+                candidate.urlStatus !== constants.asyncUploadJobStatus.WAITING_RESPONSE) {
                 count += 1;
             }
         });

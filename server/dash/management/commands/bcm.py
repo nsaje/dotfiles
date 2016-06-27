@@ -104,11 +104,11 @@ def _delete_budget_traces(budget):
 
 
 def _updates_to_sql(updates):
-    sql, args = '', []
+    sql, args = [], []
     for field, value in updates.iteritems():
-        sql += field + ' = %s'
+        sql.append(field + ' = %s')
         args.append(value)
-    return sql, args
+    return ', '.join(sql), args
 
 
 class Command(BaseCommand):
@@ -138,6 +138,8 @@ class Command(BaseCommand):
         parser.add_argument('--agencies', dest='agencies', nargs='?', type=str)
 
         parser.add_argument('--no-confirm', dest='no_confirm', action='store_true')
+        parser.add_argument('--skip-spend-validation', dest='skip_spend_validation',
+                            action='store_true')
 
         for field, field_type in UPDATABLE_FIELDS.iteritems():
             parser.add_argument('--' + field, dest=field, nargs='?', type=field_type)
@@ -146,15 +148,17 @@ class Command(BaseCommand):
         updates = {}
         for field in UPDATABLE_FIELDS:
             value = options.get(field)
-            if value:
+            if value is not None:
                 updates[field] = value
         return updates
 
-    def _validate(self, model, object_list):
+    def _validate(self, model, object_list, options):
         self._validate_dates(model, object_list)
         if model == MODEL_CREDITS:
             self._validate_credit_amounts(object_list)
         else:
+            if not options.get('skip_spend_validation'):
+                self._validate_budget_amounts(object_list)
             self._validate_credit_amounts(set([
                 obj.credit for obj in object_list
             ]))
@@ -180,6 +184,11 @@ class Command(BaseCommand):
         for credit in credit_list:
             if credit.amount < credit.get_allocated_amount():
                 raise ValidationError('Amounts in budgets don\'t match credit\'s')
+
+    def _validate_budget_amounts(self, budget_list):
+        for budget in budget_list:
+            if budget.get_available_amount() < 0:
+                raise ValidationError('Budget amount is lower than spend')
 
     def handle(self, **options):
         action = options['action'][0]
@@ -228,7 +237,7 @@ class Command(BaseCommand):
                 update_budgets(object_list, updates)
 
             object_list = [type(obj).objects.get(pk=obj.pk) for obj in object_list]
-            self._validate(model, object_list)
+            self._validate(model, object_list, options)
 
             for obj in object_list:
                 obj.save()

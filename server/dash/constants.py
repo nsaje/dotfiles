@@ -72,11 +72,13 @@ class ExportStatus(ConstantBase):
 
 class AdTargetDevice(ConstantBase):
     DESKTOP = 'desktop'
+    TABLET = 'tablet'
     MOBILE = 'mobile'
 
     _VALUES = {
         DESKTOP: 'Desktop',
-        MOBILE: 'Mobile/Tablet'
+        TABLET: 'Tablet',
+        MOBILE: 'Mobile'
     }
 
 
