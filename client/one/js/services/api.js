@@ -2592,7 +2592,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     if (data.data && data.data.errors) {
                         errors = convertSaveErrorsFromApi(data.data.errors);
                     }
-                    return deferred.reject(errors);
+                    deferred.reject(errors);
                 });
 
             return deferred.promise;
