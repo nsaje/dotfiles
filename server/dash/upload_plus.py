@@ -133,7 +133,9 @@ def _save_error_report(batch_id, filename, errors):
     writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
 
     writer.writeheader()
-    for error_dict in errors:
+
+    errors_sorted = sorted(errors, key=lambda x: x['candidate'].id)
+    for error_dict in errors_sorted:
         row = {_transform_field(k): v for k, v in error_dict['candidate'].get_dict().items() if k in fields}
         row['Errors'] = error_dict['errors']
         writer.writerow(row)

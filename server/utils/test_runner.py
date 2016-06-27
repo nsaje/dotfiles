@@ -77,7 +77,7 @@ class SplitTestsRunner(runner.DiscoverRunner):
 
         if self.redshift_tests:
             stats_conn = connections.databases.pop(settings.STATS_DB_NAME, None)
-            stats_meta_conn = connections.databases.pop(settings.STATS_E2E_DB_NAME, None)
+            stats_meta_conn = connections.databases.pop(settings.STATS_TEST_DB_NAME, None)
 
         old_configs = super(SplitTestsRunner, self).setup_databases(**kwargs)
 
@@ -86,7 +86,7 @@ class SplitTestsRunner(runner.DiscoverRunner):
             connections.databases[settings.STATS_DB_NAME] = stats_conn
 
         if stats_meta_conn is not None:
-            connections.databases[settings.STATS_E2E_DB_NAME] = stats_meta_conn
+            connections.databases[settings.STATS_TEST_DB_NAME] = stats_meta_conn
 
         if self.redshift_tests:
             print 'Running tests including Redshift database'
@@ -95,7 +95,7 @@ class SplitTestsRunner(runner.DiscoverRunner):
             settings.DATABASES[settings.STATS_DB_NAME]['NAME'] = test_db_name
             call_command('redshift_createdb',
                          settings.STATS_DB_NAME,
-                         settings.STATS_E2E_DB_NAME,
+                         settings.STATS_TEST_DB_NAME,
                          verbosity=0)
             call_command('redshift_migrate', verbosity=0)
             print 'Using "{}" Redshift database'.format(test_db_name)
@@ -109,7 +109,7 @@ class SplitTestsRunner(runner.DiscoverRunner):
         if not self.keepdb and self.redshift_tests:
             call_command('redshift_dropdb',
                          settings.STATS_DB_NAME,
-                         settings.STATS_E2E_DB_NAME,
+                         settings.STATS_TEST_DB_NAME,
                          verbosity=0)
 
     def teardown_test_environment(self, **kwargs):

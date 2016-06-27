@@ -448,10 +448,17 @@ class CampaignAdGroups(TestCase):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
-        hist = history_helpers.get_ad_group_history(ad_group).first()
+        hist = history_helpers.get_ad_group_history(ad_group)
+        self.assertEqual(hist.first().created_by, self.user)
+        self.assertEqual(hist.first().action_type, constants.HistoryActionType.CREATE)
+
+        self.assertIsNone(hist[1].created_by)
+        self.assertIsNone(hist[2].created_by)
+        self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE,
+                         hist[2].action_type)
 
         self.assertIsNotNone(ad_group_settings.id)
-        self.assertIsNotNone(hist.changes_text)
+        self.assertIsNotNone(hist.first().changes_text)
         self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(len(waiting_sources), 1)
@@ -589,7 +596,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
         ]) + '\r\n'
@@ -605,7 +612,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
 'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
@@ -622,7 +629,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
         ]) + '\r\n'
 
@@ -636,7 +643,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
         ]) + '\r\n'
@@ -652,7 +659,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
@@ -666,7 +673,7 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop (optional),Display URL (optional),Brand name (optional),Call to action (optional),Description (optional),Impression trackers (optional),Label (optional)',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
             'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
             'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
         ]) + '\r\n'
@@ -841,7 +848,9 @@ class AdGroupContentAdStateTest(TestCase):
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
-        self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 set to Enabled.')
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
+        self.assertEqual('Content ad(s) 1, 2, 3 set to Enabled.', hist.changes_text)
 
     def test_add_to_history_shorten(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -860,6 +869,8 @@ class AdGroupContentAdStateTest(TestCase):
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
@@ -1151,6 +1162,8 @@ class AdGroupContentAdArchive(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Archived.')
 
     def test_add_to_history_shorten(self):
@@ -1168,6 +1181,8 @@ class AdGroupContentAdArchive(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.'
@@ -1329,6 +1344,7 @@ class AdGroupContentAdRestore(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Content ad(s) 1, 2, 3 Restored.')
 
     def test_add_to_history_shorten(self):
@@ -1346,6 +1362,8 @@ class AdGroupContentAdRestore(TestCase):
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertIsNotNone(hist.created_by)
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
         self.assertEqual(
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.'
@@ -2125,25 +2143,8 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
-        mock_k1_ping.assert_called_with(1, msg='PublishersBlacklistStatus.post')
+        mock_k1_ping.assert_called_with(1, msg='blacklist.update')
 
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(1, publisher_blacklist_action.count())
-        self.assertDictEqual(
-            {
-                u"key": [1],
-                u"state": 2,
-                u"level": u"adgroup",
-                u"publishers": [{
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
-                    u"domain": u"掌上留园－6park",
-                    u"ad_group_id": 1
-                }]
-            }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
@@ -2184,33 +2185,11 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
-        mock_k1_ping.assert_called_with(1, msg='PublishersBlacklistStatus.post')
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(1, publisher_blacklist_action.count())
-        self.assertDictEqual(
-            {
-                u"key": [1],
-                u"state": 1,
-                u"level": u"adgroup",
-                u"publishers": [{
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
-                    u"domain": u"zemanta.com",
-                    u"ad_group_id": 1
-                }]
-            }, publisher_blacklist_action.first().payload['args'])
+        mock_k1_ping.assert_called_with(1, msg='blacklist.update')
 
         self.assertTrue(res['success'])
 
-        self.assertEqual(1, models.PublisherBlacklist.objects.count())
-
-        publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.BLACKLISTED, publisher_blacklist.status)
-        self.assertEqual(1, publisher_blacklist.ad_group.id)
-        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
-        self.assertEqual('zemanta.com', publisher_blacklist.name)
+        self.assertEqual(0, models.PublisherBlacklist.objects.count())
 
     @patch('reports.redshift.get_cursor')
     def test_post_global_blacklist(self, cursor):
@@ -2233,20 +2212,6 @@ class PublishersBlacklistStatusTest(TestCase):
         }
         res = self._post_publisher_blacklist(1, payload)
 
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(1, publisher_blacklist_action.count())
-        self.assertDictEqual(
-            {
-                u"key": None,
-                u"state": 2,
-                u"level": u"global",
-                u"publishers": [{
-                    u"domain": u"zemanta.com",
-                }]
-            }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
@@ -2285,22 +2250,6 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
-
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-
-        self.assertEqual(1, publisher_blacklist_action.count())
-        self.assertDictEqual(
-            {
-                u"key": None,
-                u"state": 2,
-                u"level": u"global",
-                u"publishers": [{
-                    u"domain": u"zemanta.com",
-                }]
-            }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
@@ -2342,11 +2291,6 @@ class PublishersBlacklistStatusTest(TestCase):
         }
         res = self._post_publisher_blacklist(1, payload)
 
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
         self.assertEqual(0, models.PublisherBlacklist.objects.count())
 
@@ -2382,11 +2326,6 @@ class PublishersBlacklistStatusTest(TestCase):
         }
         res = self._post_publisher_blacklist(1, payload)
 
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
@@ -2427,11 +2366,6 @@ class PublishersBlacklistStatusTest(TestCase):
         }
         res = self._post_publisher_blacklist(1, payload)
 
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
 
@@ -2457,29 +2391,6 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(1, publisher_blacklist_action.count())
-        self.assertDictEqual(
-            {
-                u"key": [1],
-                u"state": 2,
-                u"level": u"campaign",
-                u"publishers": [{
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
-                    u"domain": u"zemanta.com",
-                    u"ad_group_id": 1
-                },
-                    {
-                        u'ad_group_id': 9,
-                        u'domain': u'zemanta.com',
-                        u'exchange': u'adiant',
-                        u'source_id': 7
-                }
-                ]
-            }, publisher_blacklist_action.first().payload['args'])
 
         self.assertTrue(res['success'])
 
@@ -2493,26 +2404,13 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual('zemanta.com', publisher_blacklist.name)
 
         adg1 = models.AdGroup.objects.get(pk=1)
-        hist1 = history_helpers.get_ad_group_history(adg1).first()
+        hist1 = history_helpers.get_campaign_history(adg1.campaign).first()
         self.assertEqual(
             'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             hist1.changes_text
         )
-
-        adg9 = models.AdGroup.objects.get(pk=9)
-        hist9 = history_helpers.get_ad_group_history(adg9).first()
-
-        self.assertEqual(
-            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
-            hist9.changes_text
-        )
-
-        useractionlogs = models.UserActionLog.objects.filter(
-            action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(2, useractionlogs.count())
-        for useractionlog in useractionlogs:
-            self.assertTrue(useractionlog.ad_group.id in (1, 9))
+        hist = history_helpers.get_campaign_history(adg1.campaign)
+        self.assertEqual(1, hist.count())
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
@@ -2540,12 +2438,7 @@ class PublishersBlacklistStatusTest(TestCase):
             }]
         }
         res = self._post_publisher_blacklist('1', payload)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
-
         self.assertEqual(0, models.PublisherBlacklist.objects.count())
 
     @patch('reports.redshift.get_cursor')
@@ -2576,10 +2469,6 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist('1', payload)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
@@ -2610,25 +2499,6 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
-
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(1, publisher_blacklist_action.count())
-        self.assertDictEqual(
-            {
-                u"key": [1, ''],
-                u"state": 2,
-                u"level": u"account",
-                u"publishers": [{
-                    u"exchange": u"outbrain",
-                    u"source_id": 3,
-                    u"domain": u"Test",
-                    u"ad_group_id": 1,
-                    u"external_id": u"sfdafkl1230899012asldas"
-                }]
-            }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
@@ -2670,12 +2540,6 @@ class PublishersBlacklistStatusTest(TestCase):
             res = self._post_publisher_blacklist(1, payload)
             self.assertTrue(res['success'])
 
-            publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-                action_type=actionlog.constants.ActionType.AUTOMATIC,
-                action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-            )
-            self.assertEqual(0, publisher_blacklist_action.count())
-
     @patch('reports.redshift.get_cursor')
     def test_post_outbrain_over_quota(self, cursor):
         for i in xrange(30):
@@ -2711,11 +2575,6 @@ class PublishersBlacklistStatusTest(TestCase):
         }
         res = self._post_publisher_blacklist(1, payload)
 
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(0, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
 
         self.assertEqual(30, models.PublisherBlacklist.objects.count())
@@ -2728,7 +2587,7 @@ class PublishersBlacklistStatusTest(TestCase):
         account.name = 'ZemAccount'
         account.save(req)
 
-        for i in xrange(10):
+        for i in xrange(11):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),
                 source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
@@ -2766,11 +2625,10 @@ class PublishersBlacklistStatusTest(TestCase):
         )
         self.assertEqual(
             publisher_blacklist_action.message,
-            u'''Blacklist the following publishers on Outbrain for account ZemAccount (#1):
-- Test (sfdafkl1230899012asldas)'''
+            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1): Test'
         )
         self.assertTrue(res['success'])
-        self.assertEqual(11, models.PublisherBlacklist.objects.count())
+        self.assertEqual(12, models.PublisherBlacklist.objects.count())
 
         # Revert
         publisher_blacklist_action.delete()
@@ -2788,11 +2646,9 @@ class PublishersBlacklistStatusTest(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL,
             action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
-        self.assertEqual(11, models.PublisherBlacklist.objects.count())
         self.assertEqual(
             publisher_blacklist_action.message,
-            '''Whitelist the following publishers on Outbrain for account ZemAccount (#1):
-- Test (sfdafkl1230899012asldas)'''
+            u'Enable the following publishers on Outbrain for account ZemAccount (#1): Test'
         )
 
 

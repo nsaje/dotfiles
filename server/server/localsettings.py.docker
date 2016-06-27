@@ -10,7 +10,6 @@ DEBUG = True
 SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
 STATS_DB_NAME = 'stats'
-STATS_E2E_DB_NAME = 'stats_e2e'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -23,12 +22,6 @@ DATABASES = {
         'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
         'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
-    'e2e': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': ''
-    },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
@@ -37,14 +30,6 @@ DATABASES = {
         'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
         'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
-    STATS_E2E_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': 5439
-    }
 }
 
 ALLOWED_HOSTS = []

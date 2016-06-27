@@ -658,7 +658,7 @@ def get_selected_content_ads(
     if not include_archived:
         content_ads = content_ads.exclude_archived()
 
-    return content_ads.order_by('created_dt')
+    return content_ads.order_by('created_dt', 'id')
 
 
 def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
@@ -1149,8 +1149,14 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
 def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
     changes = old_settings.get_setting_changes(new_settings)
     if changes:
-        history_changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator=', ')
-        history_helpers.write_campaign_history(campaign, history_changes_text, user=request.user)
+        history_changes_text = models.CampaignSettings.get_changes_text(
+            old_settings,
+            new_settings,
+            separator=', ')
+        campaign.write_history(
+            history_changes_text,
+            user=request.user,
+            action_type=constants.HistoryActionType.SETTINGS_CHANGE)
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
         log_useraction_if_necessary(request, user_action_type, campaign=campaign)

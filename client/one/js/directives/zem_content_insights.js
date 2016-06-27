@@ -49,14 +49,19 @@ oneApp.directive('zemContentInsights', function () {
                 }
             });
 
-            var w = angular.element($window);
-            w.bind('resize', function () {
+            var resize = function () {
                 $scope.$watch(function () {
                     return w.innerWidth();
                 }, function () {
                     $scope.updateTableState();
                 }, true);
                 $scope.$digest();
+            };
+
+            var w = angular.element($window);
+            w.bind('resize', resize);
+            $scope.$on('$destroy', function () {
+                w.unbind('resize', resize);
             });
 
             $timeout($scope.updateTableState, 0);

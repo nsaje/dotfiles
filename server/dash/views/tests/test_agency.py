@@ -917,6 +917,9 @@ class AccountConversionPixelsTestCase(TestCase):
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(
+            constants.HistoryActionType.CONVERSION_PIXEL_CREATE,
+            hist.action_type)
         self.assertEqual('Added conversion pixel with unique identifier slug.',
                          hist.changes_text)
         mock_log_useraction.assert_called_with(
@@ -1033,6 +1036,9 @@ class ConversionPixelTestCase(TestCase):
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(
+            constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE,
+            hist.action_type)
         self.assertEqual('Archived conversion pixel with unique identifier test.',
                          hist.changes_text)
         mock_log_useraction.assert_called_with(

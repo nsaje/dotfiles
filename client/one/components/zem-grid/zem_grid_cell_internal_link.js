@@ -29,7 +29,7 @@ oneApp.directive('zemGridCellInternalLink', [function () {
             });
 
             function updateRow () {
-                if (ctrl.data && ctrl.row.data.breakdownId) {
+                if (ctrl.data && ctrl.row.data.breakdownId && ctrl.row.level === 1) {
                     ctrl.id = ctrl.row.data.breakdownId;
                     ctrl.state = getState(ctrl.grid.meta.data.level);
                 }

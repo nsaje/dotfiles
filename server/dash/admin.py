@@ -14,6 +14,7 @@ from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
 from django.contrib.admin.utils import flatten_fieldsets
+from django.contrib.admin import SimpleListFilter
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -858,8 +859,10 @@ class UserActionLogResource(resources.ModelResource):
         model = models.UserActionLog
 
     def _changes_text(self, settings=None):
-        # TODO: This might need some revision
-        return '/'
+        changes_text = '/'
+        if settings:
+            changes_text = settings.changes_text if settings.changes_text else '- no description -'
+        return changes_text
 
     def _get_name(self, obj):
         return obj.name if obj else '/'
@@ -962,11 +965,11 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
 
         if settings_url_name and settings:
             settings_link = u'<a href="{url}">{name}</a>'.format(
-                name='- no changes description -',
+                name=settings.changes_text or '- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
         elif not settings_url_name and settings:
-            settings_link = '- no changes description -'
+            settings_link = settings.changes_text or '- no changes description -'
 
         return u'{} / {}'.format(obj_link, settings_link)
 
@@ -1466,7 +1469,70 @@ class FacebookAccount(admin.ModelAdmin):
     pass
 
 
-class HistoryAdmin(admin.ModelAdmin):
+class HistoryResource(resources.ModelResource):
+
+    class Meta:
+        model = models.History
+        exclude = ['type', 'changes']
+
+    def _get_name(self, obj):
+        return obj.name if obj else '/'
+
+    def dehydrate_action_type(self, obj):
+        if not obj.action_type:
+            return '/'
+        return constants.HistoryActionType.get_text(obj.action_type)
+
+    def dehydrate_level(self, obj):
+        return constants.HistoryLevel.get_text(obj.level)
+
+    def dehydrate_ad_group(self, obj):
+        return self._get_name(obj.ad_group)
+
+    def dehydrate_campaign(self, obj):
+        return self._get_name(obj.campaign)
+
+    def dehydrate_account(self, obj):
+        return self._get_name(obj.account)
+
+    def dehydrate_agency(self, obj):
+        return self._get_name(obj.agency)
+
+    def dehydrate_created_by(self, obj):
+        return obj.created_by.email if obj.created_by else '/'
+
+    def dehydrate_system_user(self, obj):
+        if not obj.system_user:
+            return '/'
+        return constants.SystemUserType.get_text(obj.system_user)
+
+
+class SelfManagedFilter(SimpleListFilter):
+    title = 'Self Managed User'
+    parameter_name = 'created_by'
+
+    def lookups(self, request, model_admin):
+        return [('self-managed', 'Self-Managed User'),
+                ('system-user', 'System User')]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'self-managed':
+            return queryset.filter(
+                created_by__email__isnull=False
+            ).exclude(
+                created_by__email__icontains="@zemanta"
+            ).exclude(
+                created_by__is_test_user=True
+            )
+        elif self.value() == 'system-user':
+            return queryset.filter(
+                created_by__email__isnull=True
+            )
+
+        return queryset
+
+
+class HistoryAdmin(ExportMixin, admin.ModelAdmin):
     actions = None
 
     list_display = (
@@ -1482,8 +1548,10 @@ class HistoryAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        'type',
+        SelfManagedFilter,
+        'action_type',
         'level',
+        'type',
         'system_user',
     )
 
@@ -1499,6 +1567,10 @@ class HistoryAdmin(admin.ModelAdmin):
         'changes_text',
         'created_by__email',
     ]
+
+    ordering = ('-created_dt', )
+
+    resource_class = HistoryResource
 
     def get_readonly_fields(self, request, obj=None):
         return list(set(

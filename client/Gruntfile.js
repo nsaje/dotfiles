@@ -266,27 +266,23 @@ module.exports = function (grunt) {
         karma: {
             local: {
                 configFile: 'test/karma.conf.js',
-                singleRun: true
+                singleRun: true,
             },
-            sauce: {
-                configFile: 'test/karma.conf-sauce.js'
-            }
         },
         protractor: {
             debug: {
                 options: {
-                    debug: true
+                    debug: true,
                 },
                 configFile: 'test/protractor.conf.js',
-                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update'
+                chromeDriver:
+                    'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update',
             },
             local: {
                 configFile: 'test/protractor.conf.js',
-                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update'
+                chromeDriver:
+                    'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update',
             },
-            sauce: {
-                configFile: 'test/protractor.conf-sauce.js'
-            }
         },
         jslint: { // configure the task
             // lint your project's server code
@@ -303,12 +299,12 @@ module.exports = function (grunt) {
                     'one/js/controllers/**/*.js',
                     'one/js/filters/**/*.js',
                     'one/components/**/*.js',
-                    'one/js/demo.js'
+                    'one/js/demo.js',
                 ],
                 exclude: [],
                 directives: { // example directives
                     node: true,
-                    todo: true
+                    todo: true,
                 },
                 options: {
                     edition: 'latest', // specify an edition of jslint or use 'dir/mycustom-jslint.js' for own path
@@ -345,8 +341,8 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('default', ['ngconstant:prod', 'build', 'dist']);
-    grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
-    grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
+    grunt.registerTask('test', ['default', 'karma:local']);
+    grunt.registerTask('e2e', ['protractor:local']);
     grunt.registerTask('e2e_debug', ['protractor:debug']);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
     grunt.registerTask('lint', ['ngconstant:dev', 'jslint']);

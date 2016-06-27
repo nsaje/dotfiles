@@ -20,6 +20,9 @@ oneApp.directive('zemGridColumnSelector', [function () {
 
             function init () {
                 initCategories();
+                vm.api.onColumnsLoaded(null, function () {
+                    initCategories();
+                });
             }
 
             function columnChecked (column) {

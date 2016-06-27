@@ -425,9 +425,9 @@ def _add_to_history(request, batch, ad_group):
         batch.name,
         batch.batch_size
     )
-    history_helpers.write_ad_group_history(
-        ad_group,
+    ad_group.write_history(
         changes_text,
         user=request.user,
+        action_type=constants.HistoryActionType.CONTENT_AD_CREATE
     )
     email_helper.send_ad_group_notification_email(ad_group, request, changes_text)

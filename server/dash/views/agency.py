@@ -221,7 +221,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
         with transaction.atomic():
             ad_group.save(request)
-            new_settings.save(request)
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.SETTINGS_CHANGE)
 
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
@@ -296,7 +298,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
         if new_settings.state != new_state:
             new_settings.state = new_state
-            new_settings.save(request)
+            new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
             actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
@@ -682,13 +684,18 @@ class AccountConversionPixels(api_common.BaseApiView):
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
 
             changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
-            history_helpers.write_account_history(
-                account, changes_text, user=request.user
-            )
+            account.write_history(
+                changes_text,
+                user=request.user,
+                action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE)
 
         email_helper.send_account_pixel_notification(account, request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_PIXEL, account=account)
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.CREATE_CONVERSION_PIXEL,
+            account=account
+        )
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -734,12 +741,16 @@ class ConversionPixel(api_common.BaseApiView):
                     'Archived' if data['archived'] else 'Restored',
                     conversion_pixel.slug
                 )
-                history_helpers.write_account_history(
-                    account, changes_text, user=request.user
+                account.write_history(
+                    changes_text,
+                    user=request.user,
+                    action_type=constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE
                 )
 
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
-                                                account=account)
+            helpers.log_useraction_if_necessary(
+                request,
+                constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
+                account=account)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -778,8 +789,10 @@ class AccountSettings(api_common.BaseApiView):
 
         settings = self.save_settings(request, account, form)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
-                                            account=account)
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+            account=account)
         response = {
             'settings': self.get_dict(request, settings, account),
             'can_archive': account.can_archive(),
@@ -832,14 +845,10 @@ class AccountSettings(api_common.BaseApiView):
                 facebook_account.save()
 
             account.save(request)
-            settings.save(request)
-
-            history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
-            )
-
+            settings.save(
+                request,
+                action_type=constants.HistoryActionType.SETTINGS_CHANGE,
+                changes_text=changes_text)
             return settings
 
     def _validate_essential_account_settings(self, user, form):
@@ -1129,9 +1138,11 @@ class AccountUsers(api_common.BaseApiView):
             account.users.add(user)
 
             changes_text = u'Added user {} ({})'.format(user.get_full_name(), user.email)
-            history_helpers.write_account_history(
-                account, changes_text, user=request.user
-            )
+
+            # add history entry
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = changes_text
+            new_settings.save(request, changes_text=changes_text)
 
         return self.create_api_response(
             {'user': self._get_user_dict(user)},
@@ -1163,13 +1174,8 @@ class AccountUsers(api_common.BaseApiView):
 
         if len(account.users.filter(pk=user.pk)):
             account.users.remove(user)
-
             changes_text = u'Removed user {} ({})'.format(user.get_full_name(), user.email)
-            history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
-            )
+            account.write_history(changes_text, user=request.user)
 
         return self.create_api_response({
             'user_id': user.id
@@ -1198,11 +1204,7 @@ class UserActivation(api_common.BaseApiView):
             account = helpers.get_account(request.user, account_id)
 
             changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
-            history_helpers.write_account_history(
-                account,
-                changes_text,
-                user=request.user,
-            )
+            account.write_history(changes_text, user=request.user)
 
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(
