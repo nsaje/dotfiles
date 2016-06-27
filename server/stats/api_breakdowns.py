@@ -1,5 +1,3 @@
-import copy
-
 from utils import exc
 from utils import sort_helper
 
@@ -40,6 +38,9 @@ def query(user, breakdown, constraints, breakdown_page,
 
 
 def validate_breakdown(breakdown):
+    # translation needed because of inconsistent handling of dimension identifiers
+    # TODO needs to be fixed when @greginvm comes back
+    breakdown = [constants.get_dimension_identifier(b) for b in breakdown]
 
     base = constants.get_base_dimension(breakdown)
     if not base:

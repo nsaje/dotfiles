@@ -23,7 +23,7 @@ oneApp.factory('zemGridPubSub', [function () {
         this.notify = notify;
 
         function register (event, listener) {
-            scope.$on(event, listener);
+            return scope.$on(event, listener);
         }
 
         function notify (event, data) {

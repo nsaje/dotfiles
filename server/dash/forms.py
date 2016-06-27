@@ -1264,7 +1264,55 @@ class ContentAdForm(forms.Form):
 
         return result
 
-    def _validate_image_status(self, cleaned_data):
+    def clean_image_crop(self):
+        image_crop = self.cleaned_data.get('image_crop')
+        if not image_crop:
+            return constants.ImageCrop.CENTER
+
+        if image_crop.lower() in constants.ImageCrop.get_all():
+            return image_crop.lower()
+
+        raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
+
+    def clean(self):
+        super(ContentAdCandidateForm, self).clean()
+
+        primary_tracker_url = self.cleaned_data.get('primary_tracker_url')
+        if primary_tracker_url:
+            self.cleaned_data['tracker_urls'].append(primary_tracker_url)
+
+        secondary_tracker_url = self.cleaned_data.get('secondary_tracker_url')
+        if secondary_tracker_url:
+            self.cleaned_data['tracker_urls'].append(secondary_tracker_url)
+
+        return self.cleaned_data
+
+
+class ContentAdForm(ContentAdCandidateForm):
+    image_id = forms.CharField(
+        required=False,
+    )
+    image_hash = forms.CharField(
+        required=False,
+    )
+    image_width = forms.IntegerField(
+        required=False,
+    )
+    image_height = forms.IntegerField(
+        required=False,
+    )
+
+    image_status = forms.IntegerField(
+        required=False,
+    )
+    url_status = forms.IntegerField(
+        required=False,
+    )
+
+    MIN_IMAGE_SIZE = 300
+    MAX_IMAGE_SIZE = 10000
+
+    def _get_image_error_msg(self, cleaned_data):
         image_status = cleaned_data['image_status']
         if image_status != constants.AsyncUploadJobStatus.OK or\
            not cleaned_data['image_id'] or\
@@ -1279,7 +1327,7 @@ class ContentAdForm(forms.Form):
         if cleaned_data['image_width'] > self.MAX_IMAGE_SIZE or cleaned_data['image_height'] > self.MAX_IMAGE_SIZE:
             return 'Image too big (maximum size is {max}x{max} px)'.format(max=self.MAX_IMAGE_SIZE)
 
-    def _validate_url_status(self, cleaned_data):
+    def _get_url_error_msg(self, cleaned_data):
         url_status = cleaned_data['url_status']
         if url_status != constants.AsyncUploadJobStatus.OK:
             return 'Content unreachable'
@@ -1303,12 +1351,12 @@ class ContentAdForm(forms.Form):
             self.add_error(None, 'Content ad still processing')
             return cleaned_data
 
-        image_error = self._validate_image_status(cleaned_data)
-        if 'image_url' in cleaned_data and cleaned_data['image_url'] and image_error:
-            self.add_error('image_url', image_error)
+        image_error_msg = self._get_image_error_msg(cleaned_data)
+        if 'image_url' in cleaned_data and cleaned_data['image_url'] and image_error_msg:
+            self.add_error('image_url', image_error_msg)
 
-        url_error = self._validate_url_status(cleaned_data)
-        if 'url' in cleaned_data and cleaned_data['url'] and url_error:
-            self.add_error('url', url_error)
+        url_error_msg = self._get_url_error_msg(cleaned_data)
+        if 'url' in cleaned_data and cleaned_data['url'] and url_error_msg:
+            self.add_error('url', url_error_msg)
 
         return cleaned_data

@@ -73,7 +73,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
 
         function saveData (value, row, column) {
             var deferred = $q.defer();
-            dataSource.saveData(value, row.data, column).then(function () {
+            dataSource.saveData(value, row.data, column.data).then(function () {
                 deferred.resolve();
             }, function (err) {
                 deferred.reject(err);
