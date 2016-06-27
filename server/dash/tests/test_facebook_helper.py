@@ -436,7 +436,7 @@ class FacebookAccountTest(TestCase):
 
 
 class FacebookStopMediaSourcesTest(TestCase):
-    fixtures = ['test_facebook.yaml']
+    fixtures = ['test_views.yaml', 'test_facebook.yaml']
 
     @patch('utils.k1_helper.update_ad_groups')
     @patch('dash.models.AdGroupSourceSettings.save')
