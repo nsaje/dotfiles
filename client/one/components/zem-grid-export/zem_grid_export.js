@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, constants */
 'use strict';
 
 oneApp.directive('zemGridExport', function () {
@@ -15,28 +15,30 @@ oneApp.directive('zemGridExport', function () {
         controller: ['$scope', '$modal', 'zemGridExportOptions', function ($scope, $modal, zemGridExportOptions) {
             var vm = this;
 
+            vm.showScheduledReportModal = showScheduledReportModal;
             vm.exportModalTypes = [
                 {name: 'Download', value: 'download'},
                 {name: 'Schedule', value: 'schedule'},
             ];
 
-            vm.showScheduledReportModal = showScheduledReportModal;
-
             initialize();
 
             function initialize () {
+                // Workaround: for now we are relaying on legacy modals, therefor we
+                // need to match API (values mostly expected on $scope)
+                // TODO: Refactor Modals - will be part of tasks planned after releasing zem-grid
                 var metaData = vm.api.getMetaData();
                 $scope.level = metaData.level;
-                $scope.baseUrl = zemGridExportOptions.getBaseUrl(metaData.level, metaData.id);
+                $scope.baseUrl = zemGridExportOptions.getBaseUrl(metaData.level, metaData.breakdown, metaData.id);
                 $scope.options = zemGridExportOptions.getOptions(metaData.level, metaData.breakdown);
                 $scope.defaultOption = zemGridExportOptions.getDefaultOption($scope.options);
+                $scope.exportSources = metaData.breakdown === constants.breakdown.MEDIA_SOURCE;
 
                 var dataService = vm.api.getDataService();
                 var dateRange = dataService.getDateRange();
                 $scope.startDate = dateRange.startDate;
                 $scope.endDate = dateRange.endDate;
                 $scope.order = dataService.getOrder();
-                $scope.exportSources = false; // FIXME
 
                 $scope.getAdditionalColumns = getAdditionalColumns;
                 $scope.hasPermission = vm.hasPermission;

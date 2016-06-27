@@ -1,8 +1,12 @@
 <div>
-    <div class="zem-grid-button-bar">
-        <zem-grid-column-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" api="ctrl.api"></zem-grid-column-selector>
-        <zem-grid-breakdown-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" api="ctrl.api"></zem-grid-breakdown-selector>
+    <!-- TODO: refactor button-bar -->
+    <!-- create dedicated component for button bar and expect external actions on left side -->
+    <div class="zem-grid-button-bar" ng-if="ctrl.grid.meta.initialized" >
+        <zem-grid-export class="pull-right" api="ctrl.api"></zem-grid-export>
+        <zem-grid-column-selector class="pull-right" api="ctrl.api"></zem-grid-column-selector>
+        <zem-grid-breakdown-selector class="pull-right" api="ctrl.api"></zem-grid-breakdown-selector>
     </div>
+
     <div class="zem-grid-container loader-container">
         <div class="loader" ng-show="ctrl.grid.meta.loading"></div>
         <div class="zem-grid" ng-if="ctrl.grid.meta.initialized">
@@ -12,7 +16,6 @@
         </div>
     </div>
 
-    <!-- FIXME: Move inline templates to files in templates directory -->
     <!-- Popover templates -->
     <script id="performanceIndicatorPopover.html" type="text/ng-template">
         <ul class="icon-list">
@@ -20,47 +23,5 @@
                 <img class="zem-icon {{status.class}}" ng-src="{{ctrl.config.static_url}}/one/img/{{status.file}}" /> {{status.text}}
             </li>
         </ul>
-    </script>
-    <!-- Modal templates -->
-    <script id="stateSelectorModal.html" type="text/ng-template">
-        <div class='state-selector-modal zem-grid-modal'>
-            <ul ng-if="ctrl.isEditable" class="state-list editable">
-                <li zem-lazy-popover-text="{{ ctrl.active || ctrl.enablingAutopilotSourcesAllowed ? '' : 'To enable this Media Source please add more funds to Autopilot\'s total Daily Budget.' }}"
-                    zem-lazy-popover-placement="right"
-                    zem-lazy-popover-animation-class="fade"
-                    zem-lazy-popover-append-to-body="true">
-                    <span ng-if="!ctrl.active && !ctrl.enablingAutopilotSourcesAllowed" class="state-item">
-                        <span class="state-icon active"></span><span class="state-text">Enabled</span>
-                    </span>
-                    <a ng-if="ctrl.active || ctrl.enablingAutopilotSourcesAllowed" class="state-item" ng-click="ctrl.setState(ctrl.stateValues.enabled)">
-                        <span class="state-icon active"></span><span class="state-text">Enabled</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="state-item" ng-click="ctrl.setState(ctrl.stateValues.paused)">
-                        <span class="state-icon paused"></span><span class="state-text">Paused</span>
-                    </a>
-                </li>
-            </ul>
-            <ul ng-if="!ctrl.isEditable" class="state-list uneditable">
-                <li ng-if="ctrl.active">
-                    <span class="state-item">
-                        <span class="state-icon active"></span>
-                        <span class="state-text">Enabled</span>
-                    </span>
-                </li>
-                <li ng-if="!ctrl.active">
-                    <span class="state-item">
-                        <span class="state-icon paused"></span>
-                        <span class="state-text">Paused</span>
-                    </span>
-                </li>
-                <li>
-                    <span class="state-item disabled-message">
-                        {{ctrl.disabledMessage}}
-                    </span>
-                </li>
-            </ul>
-        </div>
     </script>
 </div>
