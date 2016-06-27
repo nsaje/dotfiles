@@ -46,7 +46,7 @@ oneApp.factory('zemGridExportOptions', [function () {
     function getBaseUrl (level, breakdown, id) {
         var baseUrl;
         if (level === constants.level.ALL_ACCOUNTS) {
-            baseUrl = '/api/all_accounts/';
+            baseUrl = '/api/accounts/';
         } else {
             baseUrl = '/api/' + level + '/' + id + '/';
         }
