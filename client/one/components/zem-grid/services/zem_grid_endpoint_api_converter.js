@@ -7,6 +7,7 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
         convertConfigToApi: convertConfigToApi,
+        convertField: convertField,
     };
 
     function convertBreakdownFromApi (config, breakdown, metaData) {
@@ -24,8 +25,15 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
             };
         });
 
-        if (breakdown.campaign_goals) convertedBreakdown.campaignGoals = breakdown.campaign_goals;
-        if (breakdown.conversion_goals) convertedBreakdown.conversionGoals = breakdown.conversion_goals;
+        if (breakdown.campaign_goals) {
+            convertedBreakdown.campaignGoals = breakdown.campaign_goals;
+        }
+        if (breakdown.conversion_goals) {
+            convertedBreakdown.conversionGoals = breakdown.conversion_goals;
+        }
+        if (breakdown.enabling_autopilot_sources_allowed) {
+            convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
+        }
 
         return convertedBreakdown;
     }

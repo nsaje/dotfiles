@@ -54,9 +54,8 @@ oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config)
         link: function (scope, element, attributes, ctrl) {
             ctrl.config = config;
 
-            scope.$watch('ctrl.row', function () {
-                updateRow();
-            });
+            scope.$watch('ctrl.row', updateRow);
+            scope.$watch('ctrl.data', updateRow);
 
             function updateRow () {
                 ctrl.overall = {

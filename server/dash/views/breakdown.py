@@ -111,6 +111,9 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     if 'conversion_goals' in response:
         base['conversion_goals'] = response['conversion_goals']
 
+    if 'enabling_autopilot_sources_allowed' in response:
+        base['enabling_autopilot_sources_allowed'] = response['enabling_autopilot_sources_allowed']
+
     return [base]
 
 

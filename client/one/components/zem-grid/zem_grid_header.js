@@ -12,13 +12,13 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
-        link: function postLink (scope, element) {
-            var pubsub = scope.ctrl.grid.meta.pubsub;
-            scope.ctrl.grid.header.ui.element = element;
+        link: function (scope, element, attributes, ctrl) {
+            var pubsub = ctrl.grid.meta.pubsub;
+            ctrl.grid.header.ui.element = element;
 
             function resizeColumns () {
                 $timeout(function () {
-                    zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+                    zemGridUIService.resizeGridColumns(ctrl.grid);
                 }, 0, false);
             }
 

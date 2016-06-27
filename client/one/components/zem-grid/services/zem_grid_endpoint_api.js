@@ -15,14 +15,14 @@ oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function 
 
     function CampaignsAdGroupState () {
         this.save = function (levelEntityId, breakdownEntityId, value) {
-            return api.adGroupContentAdState.post(levelEntityId, value, [breakdownEntityId]);
+            return api.adGroupSettingsState.post(breakdownEntityId, value);
         };
     }
 
     AdGroupsContentAdState.SUPPORTED_FIELDS = [COLUMNS.bidCpcSetting.field, COLUMNS.dailyBudgetSetting.field];
     function AdGroupsContentAdState () {
         this.save = function (levelEntityId, breakdownEntityId, value) {
-            return api.adGroupSettingsState.post(breakdownEntityId, value);
+            return api.adGroupContentAdState.save(levelEntityId, value, [breakdownEntityId]);
         };
     }
 
@@ -50,7 +50,7 @@ oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function 
         if (level === constants.level.AD_GROUPS &&
             breakdown === constants.breakdown.CONTENT_AD &&
             column.field === COLUMNS.stateAdGroup.field) {
-            return new CampaignsAdGroupState();
+            return new AdGroupsContentAdState();
         }
     }
 

@@ -3,6 +3,8 @@
     <span ng-switch="ctrl.col.type|groupColumnTypes">
         <zem-grid-cell-breakdown-field ng-switch-when="breakdown" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-breakdown-field>
 
+        <zem-grid-cell-state-selector ng-switch-when="state" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-state-selector>
+
         <zem-grid-cell-performance-indicator ng-switch-when="performanceIndicator" data="ctrl.data" row="ctrl.row"></zem-grid-cell-performance-indicator>
 
         <zem-grid-cell-base-field ng-switch-when="base" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-base-field>
