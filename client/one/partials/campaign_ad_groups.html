@@ -54,5 +54,15 @@
         </div>
     </div>
 
-    <zem-grid data-data-source="grid.dataSource" api="grid.api" options="grid.options" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')"></zem-grid>
+    <div ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
+
+        <zem-grid-export ng-if="grid.api"
+                         api="grid.api"
+                         zem-has-permission="hasPermission"
+                         zem-is-permission-internal="isPermissionInternal"
+        ></zem-grid-export>
+
+        <zem-grid data-data-source="grid.dataSource" api="grid.api" options="grid.options"> </zem-grid>
+    </div>
 </div>
