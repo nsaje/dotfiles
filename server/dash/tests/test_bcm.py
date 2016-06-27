@@ -1537,6 +1537,15 @@ class BCMCommandTestCase(TestCase):
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.freed_cc, 1234)
 
+    def test_update_budget_multiple_fields(self):
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk),
+                           '--freed_cc', '100000',
+                           '--amount', '150',
+                           '--no-confirm')
+        self.b1.refresh_from_db()
+        self.assertEqual(self.b1.freed_cc, 100000)
+        self.assertEqual(self.b1.amount, 150)
+
     def test_update_budget_freed_cc_too_large_value(self):
         with self.assertRaises(SystemExit):
             self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--freed_cc', '2000001',
