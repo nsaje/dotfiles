@@ -245,6 +245,10 @@ class Command(BaseCommand):
 
         elif action == ACTION_RELEASE:
             for obj in object_list:
+                if obj.freed_cc:
+                    if self._confirm('Budget was already released. Do you want to clear it?'):
+                        obj.freed_cc = 0
+                        obj.save()
                 try:
                     obj.free_inactive_allocated_assets()
                     self._print(
