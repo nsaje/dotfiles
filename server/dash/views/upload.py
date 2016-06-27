@@ -10,7 +10,6 @@ from django.template.defaultfilters import pluralize
 
 from dash import constants
 from dash import forms
-from dash import history_helpers
 from dash import models
 from dash import upload_plus
 
@@ -313,5 +312,3 @@ class Candidate(api_common.BaseApiView):
 
         candidate.delete()
         return self.create_api_response({})
-
-
