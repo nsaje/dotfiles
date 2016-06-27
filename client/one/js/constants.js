@@ -623,6 +623,11 @@ var constants = {
         EMAIL: 1,
         API: 2,
     },
+    contentAdCandidateStatus: {
+        LOADING: 'loading',
+        OK: 'ok',
+        ERRORS: 'errors',
+    },
 };
 
 var options = {
