@@ -3680,7 +3680,9 @@ class History(models.Model):
         blank=False,
     )
 
-    # action type is user initiated action type
+    # action type should only be set if this history entry is a direct
+    # consequence of a user action(backend actions that insert history
+    # should either have action_type set to None or have system user set)
     # non user initiated action type is None
     action_type = models.PositiveSmallIntegerField(
         choices=constants.HistoryActionType.get_choices(),

@@ -14,7 +14,7 @@ from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
 from django.contrib.admin.utils import flatten_fieldsets
-from django.contrib.admin import SimpleListFilter
+from django.contrib.admin import SimpleListFilter, DateFieldListFilter
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -1523,6 +1523,8 @@ class SelfManagedFilter(SimpleListFilter):
                 created_by__email__icontains="@zemanta"
             ).exclude(
                 created_by__is_test_user=True
+            ).exclude(
+                action_type__isnull=True
             )
         elif self.value() == 'system-user':
             return queryset.filter(
@@ -1549,6 +1551,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
 
     list_filter = (
         SelfManagedFilter,
+        ('created_dt', DateFieldListFilter),
         'action_type',
         'level',
         'type',
