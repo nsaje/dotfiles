@@ -25,6 +25,8 @@ from zemauth.models import User as ZemUser
 import actionlog.api_contentads
 import actionlog.zwei_actions
 
+MAX_ADS_PER_UPLOAD = 100
+
 
 class BaseApiForm(forms.Form):
 
@@ -748,6 +750,9 @@ class AdGroupAdsUploadForm(forms.Form):
 
         if data is None:
             raise forms.ValidationError('Unknown file encoding.')
+
+        if len(data) > MAX_ADS_PER_UPLOAD:
+            raise forms.ValidationError('Too many ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
 
         return data
 
