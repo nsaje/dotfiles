@@ -130,23 +130,22 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         });
     };
 
-    function checkFacebookAccountStatus() {
+    function checkFacebookAccountStatus () {
         var facebookPage = $scope.settings.facebookPage;
         var facebookStatus = $scope.settings.facebookStatus;
-        if (facebookPage == null || facebookStatus === 'Connected111') {
+        if (facebookPage === null || facebookStatus === 'Connected') {
             return;
         }
-        console.log('Checking if Facebook is connected: ' + facebookPage);
         api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(
             function (data) {
                 var facebookAccountStatus = data.data.status;
                 $scope.settings.facebookStatus = facebookAccountStatus;
             },
             function (errors) {
-                console.error('Facebook account status retrieval failed: ' + errors);
+                $scope.settings.facebookStatus = 'Error';
             }
         );
-        if ($scope.facebookAccountStatusChecker != null) {
+        if ($scope.facebookAccountStatusChecker !== null) {
             // prevent the creation of multiple Facebook account checkers (for example, when Facebook page URL is
             // updated multiple times).
             clearTimeout($scope.facebookAccountStatusChecker);
@@ -170,7 +169,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                         $modalInstance.dismiss('cancel');
                     };
                 },
-                size: 'lg'
+                size: 'lg',
             });
             facebookPageChangedModalInstance.result.then(function () {
                 executeSaveSettings();
@@ -182,7 +181,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         }
     };
 
-    function executeSaveSettings() {
+    function executeSaveSettings () {
         $scope.requestInProgress = true;
         api.accountSettings.save($scope.settings).then(
             function (data) {
@@ -212,7 +211,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     
     $scope.onFacebookPageChange = function () {
         $scope.facebookPageChanged = true;
-    }
+    };
 
     $scope.refreshPage = function () {
         zemNavigationService.reload();

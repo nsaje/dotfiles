@@ -1457,7 +1457,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
-        
+
         this.getFacebookAccountStatus = function (accountId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/facebook_account_status/';
@@ -1474,7 +1474,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 });
 
             return deferred.promise;
-        }
+        };
     }
 
     function CampaignAdGroups () {
