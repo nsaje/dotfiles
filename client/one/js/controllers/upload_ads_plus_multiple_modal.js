@@ -169,7 +169,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         api.uploadPlus.save($state.params.id, $scope.batchId, $scope.formData.batchName).then(
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
-                $scope.step++;
+                $scope.step = 3;
             },
             function (errors) {
                 $scope.saveErrors = errors;
@@ -238,7 +238,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         api.uploadPlus.uploadMultiple(
             $state.params.id, formData
         ).then(function (result) {
-            $scope.step++;
+            $scope.step = 2;
             $scope.candidates = result.candidates;
             $scope.batchId = result.batchId;
             startPolling($scope.batchId);
