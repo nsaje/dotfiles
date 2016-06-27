@@ -141,7 +141,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 var facebookAccountStatus = data.data.status;
                 $scope.settings.facebookStatus = facebookAccountStatus;
             },
-            function (errors) {
+            function () {
                 $scope.settings.facebookStatus = 'Error';
             }
         );
@@ -208,7 +208,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
         $scope.facebookPageChanged = true;
     };
-    
+
     $scope.onFacebookPageChange = function () {
         $scope.facebookPageChanged = true;
     };
