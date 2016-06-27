@@ -1305,8 +1305,18 @@ class FacebookAccountStatus(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         credentials = facebook_helper.get_credentials()
         try:
-            fb_account_id = account.facebookaccount.ad_account_id
-            account_status = facebook_helper.get_ad_account_status(fb_account_id, credentials['access_token'])
+            pages = facebook_helper.get_all_pages(credentials['business_id'], credentials['access_token'])
+            if pages is None:
+                raise exc.BaseError('Error while accessing facebook page api.')
+            page_status = pages.get(account.facebookaccount.page_id)
+            if page_status is None:
+                account_status = models.constants.FacebookPageRequestType.ERROR
+            elif page_status == 'CONFIRMED':
+                account_status = models.constants.FacebookPageRequestType.CONNECTED
+            elif page_status == 'PENDING':
+                account_status = models.constants.FacebookPageRequestType.PENDING
+            else:
+                account_status = models.constants.FacebookPageRequestType.INVALID
             account_status = models.constants.FacebookPageRequestType.get_text(account_status)
         except models.FacebookAccount.DoesNotExist:
             account_status = models.constants.FacebookPageRequestType.get_text(
