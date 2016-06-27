@@ -544,6 +544,32 @@ class CampaignGoalsTestCase(TestCase):
             Decimal('1.5'),
         )
 
+    def get_performance_value_rounding(self):
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('0.55'),
+                Decimal('1'),
+            ),
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('0.55555'),
+                Decimal('1'),
+            ),
+        )
+        self.assertEqual(
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('0.56'),
+                Decimal('1'),
+            ),
+            campaign_goals.get_performance_value(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('0.55655'),
+                Decimal('1'),
+            ),
+        )
+
     def test_get_goal_performance_status(self):
         self.assertEqual(
             campaign_goals.get_goal_performance_status(
@@ -595,6 +621,53 @@ class CampaignGoalsTestCase(TestCase):
             constants.CampaignGoalPerformance.AVERAGE,
         )
 
+    def test_get_goal_performance_status_cost_dependant(self):
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                Decimal('1.1'),
+                Decimal('1.0'),
+                cost=Decimal('100000000')
+            ),
+            constants.CampaignGoalPerformance.AVERAGE,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                None,
+                Decimal('1.0'),
+                cost=Decimal('100000000')
+            ),
+            constants.CampaignGoalPerformance.UNDERPERFORMING,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                None,
+                Decimal('1.0'),
+                cost=None  # same as 0
+            ),
+            constants.CampaignGoalPerformance.AVERAGE,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                None,
+                Decimal('1.0'),
+                cost=Decimal('0.000')
+            ),
+            constants.CampaignGoalPerformance.AVERAGE,
+        )
+        self.assertEqual(
+            campaign_goals.get_goal_performance_status(
+                constants.CampaignGoalKPI.CPC,
+                None,
+                Decimal('1.0'),
+                cost=Decimal('0.00001')  # should be rounded to 0
+            ),
+            constants.CampaignGoalPerformance.AVERAGE,
+        )
+
     def test_generate_series(self):
         campaign = models.Campaign.objects.get(pk=1)
 
@@ -630,15 +703,15 @@ class CampaignGoalsTestCase(TestCase):
             constants.CampaignGoalKPI.get_text(
                 constants.CampaignGoalKPI.MAX_BOUNCE_RATE
             ): [[
-                    (datetime.date(2016, 1, 5), 5.0),
-                    (datetime.date(2016, 1, 6), 5.0),
-                    (datetime.date(2016, 1, 7), 5.0),
-                    (datetime.date(2016, 1, 8), 5.0),
-                    (datetime.date(2016, 1, 9), 5.0),
-                    (datetime.date(2016, 1, 10), 5.0),
-                ], [
-                    (datetime.date(2016, 1, 10), 10.0),
-                    (datetime.date(2016, 1, 10), 10.0),
+                (datetime.date(2016, 1, 5), 5.0),
+                (datetime.date(2016, 1, 6), 5.0),
+                (datetime.date(2016, 1, 7), 5.0),
+                (datetime.date(2016, 1, 8), 5.0),
+                (datetime.date(2016, 1, 9), 5.0),
+                (datetime.date(2016, 1, 10), 5.0),
+            ], [
+                (datetime.date(2016, 1, 10), 10.0),
+                (datetime.date(2016, 1, 10), 10.0),
             ]]
         }, metrics_basic)
 

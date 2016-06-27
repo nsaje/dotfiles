@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 /* eslint-disable camelcase*/
 
 'use strict';
@@ -28,9 +28,7 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
                 });
 
                 if (config.level === 1) { // Base level data comes with some additional metadata (e.g. goals)
-                    var breakdown = breakdowns[0];
-                    zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
-                    zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
+                    extendMetaData(breakdowns[0], metaData);
                 }
 
                 deferred.resolve(breakdowns);
@@ -40,14 +38,15 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             return deferred.promise;
         };
 
-        this.saveData = function (value, stats, column) {
+        this.saveData = function (value, row, column) {
             var api = zemGridEndpointApi.getApi(metaData.level, metaData.breakdown, column);
 
             var deferred = $q.defer();
             var levelEntityId = metaData.id;
-            var breakdownEntityId = stats.breakdownId;
+            var breakdownEntityId = row.breakdownId;
             api.save(levelEntityId, breakdownEntityId, value).then(function (data) {
-                // TODO: handle data
+                var convertedField = zemGridEndpointApiConverter.convertField(data[column.field], column.type);
+                data = angular.extend({}, row.stats[column.field], convertedField);
                 deferred.resolve(data);
             }, function (err) {
                 deferred.reject(err);
@@ -101,6 +100,17 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             breakdownGroups: breakdownGroups,
             localStoragePrefix: 'zem-grid-endpoint-' + level + '-' + breakdown,
         };
+    }
+
+    function extendMetaData (breakdown, metaData) {
+        zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
+        zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
+
+        metaData.enablingAutopilotSourcesAllowed = true;
+        if (breakdown.enablingAutopilotSourcesAllowed !== undefined) {
+            metaData.enablingAutopilotSourcesAllowed = breakdown.enablingAutopilotSourcesAllowed;
+            delete breakdown.enablingAutopilotSourcesAllowed;
+        }
     }
 
     function createEndpoint (metaData) {

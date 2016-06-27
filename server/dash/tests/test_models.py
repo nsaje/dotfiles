@@ -133,7 +133,7 @@ class AdGroupSettingsTest(TestCase):
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Max CPC bid set to "$1.000", '
-            'Device targeting set to "Mobile/Tablet", '
+            'Device targeting set to "Mobile", '
             'Display URL set to "example.com", '
             'Brand name set to "Example", '
             'State set to "Enabled", '
@@ -419,10 +419,10 @@ class ContentAdTest(TestCase):
     def test_get_image_url(self):
         content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
         image_url = content_ad.get_image_url(500, 600)
-        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=faces&fm=jpg')
+        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center&fm=jpg')
 
         image_url = content_ad.get_image_url()
-        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=faces&fm=jpg')
+        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=center&fm=jpg')
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_image_url()
@@ -660,7 +660,7 @@ class CampaignTestCase(TestCase):
 
         self.assertEqual(settings.name, '')
         self.assertEqual(settings.iab_category, 'IAB24')
-        self.assertEqual(settings.target_devices, ['mobile', 'desktop'])
+        self.assertEqual(settings.target_devices, ['tablet', 'mobile', 'desktop'])
         self.assertEqual(settings.target_regions, ['US'])
 
 

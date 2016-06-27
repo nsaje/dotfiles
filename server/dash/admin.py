@@ -1523,6 +1523,8 @@ class SelfManagedFilter(SimpleListFilter):
                 created_by__email__icontains="@zemanta"
             ).exclude(
                 created_by__is_test_user=True
+            ).exclude(
+                action_type__isnull=True
             )
         elif self.value() == 'system-user':
             return queryset.filter(
@@ -1549,6 +1551,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
 
     list_filter = (
         SelfManagedFilter,
+        ('created_dt', admin.DateFieldListFilter),
         'action_type',
         'level',
         'type',
