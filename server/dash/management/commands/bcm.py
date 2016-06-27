@@ -1,11 +1,11 @@
 import sys
-import decimal
 
 from django.db import connection, transaction, DatabaseError
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
 import utils.converters
+import utils.command_helpers
 import dash.models
 
 MODEL_CREDITS = 'credits'
@@ -28,6 +28,13 @@ ACTIONS = (
 VALID_ACTIONS = {
     MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST),
     MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST),
+}
+
+CONSTRAINTS = {
+    'credits': 'credit_id__in',
+    'agencies': 'agency_id__in',
+    'accounts': 'account_id__in',
+    'campaigns': 'campaign_id__in',
 }
 
 
@@ -106,10 +113,17 @@ def _updates_to_sql(updates):
 
 class Command(BaseCommand):
     help = """Manage credits and budgets
-    Usage: ./manage.py bcm update|delete budgets|credits ids [options]
+    Usage: ./manage.py bcm list|update|delete|release budgets|credits ids [options]
 
     Options can be any fields that have to be updated.
-    Special option is --credits - update budgets that belong to specified credits
+
+    Special options (constraints):
+      --credits - update budgets that belong to specified credits
+      --campaigns - update budgets that belong to specified campaigns
+      --accounts - update credits that belong to specified accounts
+      --agency - update credits that belong to specified agencies
+    All constraint values have to be comma separated list of ids.
+    Example: --campaigns 1,2,3
     """
 
     def add_arguments(self, parser):
@@ -118,7 +132,11 @@ class Command(BaseCommand):
         parser.add_argument('model', nargs=1, choices=MODELS, type=str)
         parser.add_argument('ids', nargs='*', type=int)
 
-        parser.add_argument('--credits', dest='credit', nargs='*', type=int)
+        parser.add_argument('--credits', dest='credits', nargs='?', type=str)
+        parser.add_argument('--campaigns', dest='campaigns', nargs='?', type=str)
+        parser.add_argument('--accounts', dest='accounts', nargs='?', type=str)
+        parser.add_argument('--agencies', dest='agencies', nargs='?', type=str)
+
         parser.add_argument('--no-confirm', dest='no_confirm', action='store_true')
 
         for field, field_type in UPDATABLE_FIELDS.iteritems():
@@ -178,7 +196,7 @@ class Command(BaseCommand):
         if action not in VALID_ACTIONS[model]:
             raise CommandError('Cannot manage {} with action {}'.format(model, action))
 
-        object_list = self._get_objects(model, ids, credit_ids=options.get('credit'))
+        object_list = self._get_objects(model, ids, options)
         if not object_list:
             raise CommandError('No matching {}'.format(model))
 
@@ -240,19 +258,28 @@ class Command(BaseCommand):
                         obj.state_text()
                     ))
 
-    def _get_objects(self, model, ids, credit_ids=None):
+    def _get_objects(self, model, ids, options):
+        constraints = {}
+        for opt in CONSTRAINTS:
+            if opt not in options:
+                continue
+            value = utils.command_helpers.parse_id_list(options, opt)
+            if value:
+                constraints[CONSTRAINTS[opt]] = value
+        if not constraints:
+            constraints = {'pk__in': ids}
+        objects = None
         if model == MODEL_CREDITS:
-            return dash.models.CreditLineItem.objects.filter(pk__in=ids).order_by('id')
+            objects = dash.models.CreditLineItem.objects
         elif model == MODEL_BUDGETS:
-            if credit_ids:
-                return dash.models.BudgetLineItem.objects.filter(
-                    credit_id__in=credit_ids,
-                ).order_by('id')
-            else:
-                return dash.models.BudgetLineItem.objects.filter(
-                    pk__in=ids
-                ).order_by('id')
-        return None
+            objects = dash.models.BudgetLineItem.objects
+        else:
+            return None
+        try:
+            return objects.filter(**constraints).order_by('id')
+        except:
+            raise CommandError('Invalid constraints')
+            return None
 
     def _confirm(self, message):
         return raw_input('{} [yN] '.format(message)).lower() == 'y'
