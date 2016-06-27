@@ -3252,7 +3252,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         if date is None:
             date = dates_helper.local_today()
         total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
-        return Decimal(self.amount) - total_spend
+        return self.allocated_amount() - total_spend
 
     def state(self, date=None):
         if date is None:
