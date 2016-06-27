@@ -611,10 +611,7 @@ class DisplayURLField(forms.URLField):
         return display_url
 
 
-class AdGroupAdsUploadForm(forms.Form):
-    content_ads = forms.FileField(
-        error_messages={'required': 'Please choose a file to upload.'}
-    )
+class AdGroupAdsUploadBaseForm(forms.Form):
     batch_name = forms.CharField(
         required=True,
         max_length=255,
@@ -622,6 +619,12 @@ class AdGroupAdsUploadForm(forms.Form):
             'required': 'Please enter a name for this upload.',
             'max_length': 'Batch name is too long (%(show_value)d/%(limit_value)d).'
         }
+    )
+
+
+class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
+    content_ads = forms.FileField(
+        error_messages={'required': 'Please choose a file to upload.'}
     )
 
     def _get_csv_header(self, lines):

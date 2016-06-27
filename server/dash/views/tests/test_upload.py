@@ -546,12 +546,15 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual({
             'success': True,
             'data': {
+                'num_successful': 1,
                 'num_errors': 0,
                 'error_report': None,
             }
@@ -566,18 +569,83 @@ class UploadSaveTestCase(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_errors(self, mock_s3_put):
-        batch_id = 3
-        ad_group_id = 4
+    @patch('utils.redirector_helper.insert_redirect')
+    def test_change_batch_name(self, mock_insert_redirect, mock_s3_put):
+        mock_insert_redirect.return_value = {
+            'redirect': {
+                'url': 'http://example.com',
+            },
+            'redirectid': 'abc123',
+        }
+        batch_id = 2
+        ad_group_id = 3
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({
+                'batch_name': 'new batch name'
+            }),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual({
             'success': True,
             'data': {
+                'num_successful': 1,
+                'num_errors': 0,
+                'error_report': None,
+            }
+        }, json.loads(response.content))
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(batch.name, 'new batch name')
+
+    def test_invalid_batch_name(self):
+        batch_id = 2
+        ad_group_id = 3
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({
+                'batch_name': 'new batch name' * 50
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'data': None,
+                'error_code': 'ValidationError',
+                'errors': {
+                    'batch_name': ['Batch name is too long (700/255).'],
+                },
+                'message': None,
+            },
+        }, json.loads(response.content))
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(batch.name, 'batch 2')
+
+    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    def test_errors(self, mock_s3_put):
+        batch_id = 3
+        ad_group_id = 4
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({
+            'success': True,
+            'data': {
+                'num_successful': 0,
                 'num_errors': 1,
                 'error_report': reverse('upload_plus_error_report',
                                         kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id})
@@ -601,6 +669,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(500, response.status_code)
@@ -622,6 +692,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(400, response.status_code)
@@ -647,6 +719,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -667,6 +741,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client(superuser=False).post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -838,13 +914,14 @@ class UploadErrorReport(TestCase):
         self.assertTemplateUsed(response, '404.html')
 
 
-class UpdateCandidateTest(TestCase):
+class CandidateTest(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
     def test_update_candidate(self):
         batch_id = 5
         ad_group_id = 4
+        candidate_id = 4
 
         resource = {
             'candidate': {
@@ -865,7 +942,14 @@ class UpdateCandidateTest(TestCase):
         }
 
         response = _get_client().put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             json.dumps(resource),
             follow=True,
         )
@@ -923,9 +1007,34 @@ class UpdateCandidateTest(TestCase):
             'success': True}
         self.assertEqual(expected, response)
 
+    def test_delete_candidate(self):
+        batch_id = 5
+        ad_group_id = 4
+        candidate_id = 4
+
+        response = _get_client().delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({
+            'success': True,
+        }, json.loads(response.content))
+
+        with self.assertRaises(models.ContentAdCandidate.DoesNotExist):
+            models.ContentAdCandidate.objects.get(id=candidate_id)
+
     def test_non_existing_candidate(self):
         batch_id = 5
         ad_group_id = 4
+        candidate_id = 555
 
         resource = {
             'candidate': {
@@ -946,8 +1055,40 @@ class UpdateCandidateTest(TestCase):
         }
 
         response = _get_client().put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             json.dumps(resource),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Candidate does not exist',
+            }
+        }, json.loads(response.content))
+
+    def test_delete_non_existing_candidate(self):
+        batch_id = 5
+        ad_group_id = 4
+        candidate_id = 555
+
+        response = _get_client().delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -962,9 +1103,17 @@ class UpdateCandidateTest(TestCase):
     def test_wrong_batch_id(self):
         batch_id = 4
         ad_group_id = 1
+        candidate_id = 4
 
         response = _get_client().put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -972,16 +1121,68 @@ class UpdateCandidateTest(TestCase):
             'success': False,
             'data': {
                 'error_code': 'MissingDataError',
-                'message': None,
+                'message': 'Upload batch does not exist',
+            }
+        }, json.loads(response.content))
+
+    def test_delete_wrong_batch_id(self):
+        batch_id = 4
+        ad_group_id = 1
+        candidate_id = 4
+
+        response = _get_client().delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
 
     def test_permission(self):
         batch_id = 4
         ad_group_id = 5
+        candidate_id = 4
 
         response = _get_client(superuser=False).put(
-            reverse('upload_plus_update_candidate', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+    def test_delete_permission(self):
+        batch_id = 4
+        ad_group_id = 5
+        candidate_id = 4
+
+        response = _get_client(superuser=False).delete(
+            reverse(
+                'upload_plus_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
             follow=True,
         )
         self.assertEqual(404, response.status_code)

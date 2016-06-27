@@ -171,8 +171,9 @@ urlpatterns += [
         login_required(dash.views.upload.UploadErrorReport.as_view()), name='upload_plus_error_report'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/update_candidate/',
-        login_required(dash.views.upload.UpdateCandidate.as_view()), name='upload_plus_update_candidate'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus'
+        '/(?P<batch_id>\d+)/candidate/(?P<candidate_id>\d+)/',
+        login_required(dash.views.upload.Candidate.as_view()), name='upload_plus_candidate'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
