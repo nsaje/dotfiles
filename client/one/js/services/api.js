@@ -2546,11 +2546,18 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.checkStatus = function (adGroupId, batchId) {
+        this.checkStatus = function (adGroupId, batchId, candidates) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/status/';
+            var config = {
+                params: {},
+            };
 
-            $http.get(url).
+            if (candidates) {
+                config.params.candidates = candidates.join(',');
+            }
+
+            $http.get(url, config).
                 success(function (data) {
                     var result = {
                         candidates: convertStatusFromApi(data.data.candidates),
@@ -2563,17 +2570,67 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.save = function (adGroupId, batchId) {
+        this.save = function (adGroupId, batchId, batchName) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/save/';
+            var data = {};
 
-            $http.post(url).
+            if (batchName) {
+                data.batch_name = batchName;
+            }
+
+            $http.post(url, data).
                 success(function (data) {
                     var result = {
+                        numSuccessful: data.data.num_successful,
                         numErrors: data.data.num_errors,
                         errorReport: data.data.error_report,
                     };
                     deferred.resolve(result);
+                }).error(function (data) {
+                    var errors = null;
+                    if (data.data && data.data.errors) {
+                        errors = convertSaveErrorsFromApi(data.data.errors);
+                    }
+                    deferred.reject(errors);
+                });
+
+            return deferred.promise;
+        };
+
+        this.updateCandidate = function (candidate, adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' +
+                    batchId + '/candidate/' + candidate.id + '/';
+            var config = {
+                params: {},
+            };
+
+            var data = {
+                candidate: convertCandidateToApi(candidate),
+                defaults: getDefaultFields(candidate),
+            };
+
+            $http.put(url, data, config).
+                success(function (data) {
+                    deferred.resolve({
+                        candidates: convertCandidatesFromApi(data.data.candidates),
+                    });
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.removeCandidate = function (candidateId, adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' +
+                    batchId + '/candidate/' + candidateId + '/';
+
+            $http.delete(url).
+                success(function () {
+                    deferred.resolve();
                 }).error(function (data) {
                     deferred.reject(data);
                 });
@@ -2589,6 +2646,55 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+
+        function getDefaultFields (defaults) {
+            var ret = [];
+
+            if (defaults.description) {
+                ret.push('description');
+            }
+
+            if (defaults.imageCrop) {
+                ret.push('image_crop');
+            }
+
+            if (defaults.brandName) {
+                ret.push('brand_name');
+            }
+
+            if (defaults.callToAction) {
+                ret.push('call_to_action');
+            }
+
+            if (defaults.displayUrl) {
+                ret.push('display_url');
+            }
+
+            return ret;
+        }
+
+        function convertCandidateToApi (candidate) {
+            var ret = {
+                id: candidate.id,
+                label: candidate.label,
+                url: candidate.url,
+                title: candidate.title,
+                image_url: candidate.imageUrl,
+                image_crop: candidate.imageCrop,
+                display_url: candidate.displayUrl,
+                brand_name: candidate.brandName,
+                description: candidate.description,
+                call_to_action: candidate.callToAction,
+            };
+
+            if (candidate.useTrackers) {
+                ret.primary_tracker_url = candidate.primaryTrackerUrl;
+                ret.secondary_tracker_url = candidate.secondaryTrackerUrl;
+            }
+
+            return ret;
+        }
 
         function convertCandidateErrorsFromApi (errors) {
             return {
@@ -2607,43 +2713,44 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             };
         }
 
+        function convertCandidateFromApi (candidate) {
+            return {
+                id: candidate.id,
+                label: candidate.label,
+                url: candidate.url,
+                title: candidate.title,
+                imageStatus: candidate.image_status,
+                urlStatus: candidate.url_status,
+                imageUrl: candidate.image_url,
+                imageId: candidate.image_id,
+                imageHash: candidate.image_hash,
+                imageWidth: candidate.image_width,
+                imageHeight: candidate.image_height,
+                imageCrop: candidate.image_crop,
+                hostedImageUrl: candidate.hosted_image_url,
+                displayUrl: candidate.display_url,
+                brandName: candidate.brand_name,
+                description: candidate.description,
+                callToAction: candidate.call_to_action,
+                trackerUrls: candidate.tracker_urls,
+                primaryTrackerUrl: candidate.primary_tracker_url,
+                secondaryTrackerUrl: candidate.secondary_tracker_url,
+                errors: convertCandidateErrorsFromApi(candidate.errors),
+            };
+        }
+
         function convertCandidatesFromApi (candidates) {
             var result = [];
             angular.forEach(candidates, function (candidate) {
-                result.push({
-                    id: candidate.id,
-                    label: candidate.label,
-                    url: candidate.url,
-                    title: candidate.title,
-                    imageStatus: candidate.image_status,
-                    urlStatus: candidate.url_status,
-                    imageUrl: candidate.image_url,
-                    imageId: candidate.image_id,
-                    imageHash: candidate.image_hash,
-                    imageWidth: candidate.image_width,
-                    imageHeight: candidate.image_height,
-                    imageCrop: candidate.image_crop,
-                    hostedImageUrl: candidate.hosted_image_url,
-                    displayUrl: candidate.display_url,
-                    brandName: candidate.brand_name,
-                    description: candidate.description,
-                    callToAction: candidate.call_to_action,
-                    trackerUrls: candidate.tracker_urls,
-                    primaryTrackerUrl: candidate.primary_tracker_url,
-                    secondaryTrackerUrl: candidate.secondary_tracker_url,
-                    errors: convertCandidateErrorsFromApi(candidate.errors),
-                });
+                result.push(convertCandidateFromApi(candidate));
             });
             return result;
         }
 
-        function convertStatusFromApi (statuses) {
+        function convertStatusFromApi (candidates) {
             var result = [];
-            angular.forEach(statuses, function (candidateStatus, candidateId) {
-                result[candidateId] = {
-                    imageStatus: candidateStatus.image_status,
-                    urlStatus: candidateStatus.url_status,
-                };
+            angular.forEach(candidates, function (candidate, candidateId) {
+                result[candidateId] = convertCandidateFromApi(candidate);
             });
             return result;
         }
@@ -2666,6 +2773,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
 
             return converted;
+        }
+
+        function convertSaveErrorsFromApi (errors) {
+            return {
+                batchName: errors.batch_name,
+            };
         }
     }
 

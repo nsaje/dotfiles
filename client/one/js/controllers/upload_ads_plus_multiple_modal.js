@@ -1,5 +1,5 @@
 /* globals $, oneApp, constants, options, defaults, angular, moment */
-oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$modalInstance', 'api', function ($scope, $state, $modalInstance, api) { // eslint-disable-line max-len
+oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$state', '$modalInstance', 'api', function ($interval, $scope, $state, $modalInstance, api) { // eslint-disable-line max-len
     $scope.imageCrops = options.imageCrops;
     $scope.callToActionOptions = defaults.callToAction;
     $scope.candidateStatuses = constants.contentAdCandidateStatus;
@@ -13,8 +13,9 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
     $scope.step = 1;
     $scope.selectedCandidate = null;
     $scope.batchNameEdit = false;
-    $scope.batchName = moment().format('M/D/YYYY h:mm A');
-    $scope.fileInput = {};
+    $scope.formData = {
+        batchName: moment().format('M/D/YYYY h:mm A'),
+    };
 
     $scope.MAX_URL_LENGTH = 936;
     $scope.MAX_TITLE_LENGTH = 90;
@@ -22,6 +23,58 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
     $scope.MAX_DISPLAY_URL_LENGTH = 25;
     $scope.MAX_BRAND_NAME_LENGTH = 25;
     $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
+    $scope.MAX_LABEL_LENGTH = 25;
+
+    var pollInterval;
+    var startPolling = function (batchId) {
+        if (angular.isDefined(pollInterval)) {
+            return;
+        }
+
+        pollInterval = $interval(function () {
+            var waitingCandidates = getWaitingCandidateIds();
+            if (!waitingCandidates.length) {
+                stopPolling();
+                return;
+            }
+            api.uploadPlus.checkStatus($state.params.id, batchId, waitingCandidates).then(
+                function (data) {
+                    updateCandidates(data.candidates);
+                }
+            );
+        }, 1000);
+    };
+
+    var stopPolling = function () {
+        if (angular.isDefined(pollInterval)) {
+            $interval.cancel(pollInterval);
+            pollInterval = undefined;
+        }
+    };
+
+    var updateCandidates = function (updatedCandidates) {
+        angular.forEach(updatedCandidates, function (updatedCandidate) {
+            var index = $.map($scope.candidates, function (candidate, ix) {
+                if (candidate.id === updatedCandidate.id) {
+                    return ix;
+                }
+            })[0];
+
+            $scope.candidates.splice(index, 1, updatedCandidate);
+        });
+    };
+
+    var getWaitingCandidateIds = function () {
+        var ret = $scope.candidates.filter(function (candidate) {
+            if ($scope.getStatus(candidate) === constants.contentAdCandidateStatus.LOADING) {
+                return true;
+            }
+            return false;
+        }).map(function (candidate) {
+            return candidate.id;
+        });
+        return ret;
+    };
 
     $scope.toggleBatchNameEdit = function () {
         $scope.batchNameEdit = !$scope.batchNameEdit;
@@ -29,10 +82,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
 
     $scope.disableBatchNameEdit = function () {
         $scope.batchNameEdit = false;
-    };
-
-    $scope.nextStep = function () {
-        $scope.step++;
     };
 
     $scope.restart = function () {
@@ -45,6 +94,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
 
     $scope.openEditForm = function (candidate) {
         $scope.selectedCandidate = angular.copy(candidate);
+        $scope.selectedCandidate.defaults = {};
         $scope.selectedCandidate.useTrackers = !!$scope.selectedCandidate.primaryTrackerUrl ||
             !!$scope.selectedCandidate.secondaryTrackerUrl;
         $scope.selectedCandidate.useSecondaryTracker = !!$scope.selectedCandidate.secondaryTrackerUrl;
@@ -54,14 +104,24 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
         $scope.selectedCandidate = null;
     };
 
-    $scope.removeCandidate = function (candidate) {
-        $scope.candidates = $scope.candidates.filter(function (el) {
-            return candidate.id !== el.id;
-        });
+    $scope.isUploadDisabled = function () {
+        return $scope.anyErrors || !$scope.candidates.length || getWaitingCandidateIds().length;
+    };
 
-        if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
-            $scope.selectedCandidate = null;
-        }
+    $scope.removeCandidate = function (candidate) {
+        api.uploadPlus.removeCandidate(
+            candidate.id,
+            $state.params.id,
+            $scope.batchId
+        ).then(function () {
+            $scope.candidates = $scope.candidates.filter(function (el) {
+                return candidate.id !== el.id;
+            });
+
+            if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
+                $scope.closeEditForm();
+            }
+        });
     };
 
     $scope.addSecondaryTracker = function (candidate) {
@@ -109,12 +169,32 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
         return constants.contentAdCandidateStatus.OK;
     };
 
+    $scope.saveUpload = function () {
+        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.formData.batchName).then(
+            function (data) {
+                $scope.numSuccessful = data.numSuccessful;
+                $scope.step = 3;
+            },
+            function (errors) {
+                $scope.saveErrors = errors;
+            }
+        );
+    };
+
     $scope.clearSelectedCandidateErrors = function (field) {
         if (!$scope.selectedCandidate || !$scope.selectedCandidate.errors) {
             return;
         }
 
         delete $scope.selectedCandidate.errors[field];
+    };
+
+    $scope.clearBatchNameErrors = function () {
+        if (!$scope.saveErrors) {
+            return;
+        }
+
+        $scope.saveErrors.batchName = undefined;
     };
 
     $scope.getContentErrorsMsg = function (candidate) {
@@ -155,17 +235,31 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
         }
 
         var formData = {
-            file: $scope.fileInput.file,
-            batchName: $scope.batchName,
+            file: $scope.formData.file,
+            batchName: $scope.formData.batchName,
         };
 
         api.uploadPlus.uploadMultiple(
             $state.params.id, formData
         ).then(function (result) {
-            $scope.step++;
+            $scope.step = 2;
             $scope.candidates = result.candidates;
+            $scope.batchId = result.batchId;
+            startPolling($scope.batchId);
         }, function (data) {
             $scope.errors = data.errors;
+        });
+    };
+
+    $scope.updateCandidate = function () {
+        api.uploadPlus.updateCandidate(
+            $scope.selectedCandidate,
+            $state.params.id,
+            $scope.batchId
+        ).then(function (result) {
+            updateCandidates(result.candidates);
+            startPolling($scope.batchId);
+            $scope.closeEditForm();
         });
     };
 
@@ -183,5 +277,9 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$scope',  '$state', '$moda
 
     $scope.$watchCollection('candidates', function () {
         $scope.anyErrors = checkAllCandidateErrors($scope.candidates);
+    });
+
+    $scope.$on('$destroy', function () {
+        stopPolling();
     });
 }]);
