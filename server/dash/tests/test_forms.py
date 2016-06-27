@@ -541,7 +541,7 @@ class AdGroupAdsUploadFormTest(TestCase):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Impression Trackers'], lines)
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': ['Too many ads (max. 100)']})
+        self.assertEqual(form.errors, {'content_ads': ['Too many content ads (max. 100)']})
 
     def test_csv_max_ads_empty_lines(self):
         lines = [['Url', 'Title', 'Image Url', 'Impression Trackers']]

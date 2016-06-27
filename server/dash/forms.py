@@ -752,7 +752,7 @@ class AdGroupAdsUploadForm(forms.Form):
             raise forms.ValidationError('Unknown file encoding.')
 
         if len(data) > MAX_ADS_PER_UPLOAD:
-            raise forms.ValidationError('Too many ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
+            raise forms.ValidationError('Too many content ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
 
         return data
 
