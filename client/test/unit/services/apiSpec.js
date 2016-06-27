@@ -84,6 +84,10 @@ describe('api', function () {
                 value: constants.adTargetDevice.DESKTOP,
                 checked: false
             }, {
+                name: 'Tablet',
+                value: constants.adTargetDevice.TABLET,
+                checked: false
+            }, {
                 name: 'Mobile',
                 value: constants.adTargetDevice.MOBILE,
                 checked: true
