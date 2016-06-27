@@ -8,10 +8,8 @@ oneApp.directive('zemGridExport', function () {
         scope: {},
         bindToController: {
             api: '=api',
-            hasPermission: '=zemHasPermission',
-            isPermissionInternal: '=zemIsPermissionInternal',
         },
-        templateUrl: '/components/zem-grid-export/zem_grid_export.html',
+        templateUrl: '/components/zem-grid-actions/templates/zem_grid_export.html',
         controller: ['$scope', '$modal', 'zemGridExportOptions', function ($scope, $modal, zemGridExportOptions) {
             var vm = this;
 
@@ -41,8 +39,8 @@ oneApp.directive('zemGridExport', function () {
                 $scope.order = dataService.getOrder();
 
                 $scope.getAdditionalColumns = getAdditionalColumns;
-                $scope.hasPermission = vm.hasPermission;
-                $scope.isPermissionInternal = vm.isPermissionInternal;
+                $scope.hasPermission = vm.api.hasPermission;
+                $scope.isPermissionInternal = vm.api.isPermissionInternal;
             }
 
             function getAdditionalColumns () {

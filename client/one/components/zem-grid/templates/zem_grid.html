@@ -1,12 +1,4 @@
 <div>
-    <!-- TODO: refactor button-bar -->
-    <!-- create dedicated component for button bar and expect external actions on left side -->
-    <div class="zem-grid-button-bar" ng-if="ctrl.grid.meta.initialized" >
-        <zem-grid-export class="pull-right" api="ctrl.api"></zem-grid-export>
-        <zem-grid-column-selector class="pull-right" api="ctrl.api"></zem-grid-column-selector>
-        <zem-grid-breakdown-selector class="pull-right" api="ctrl.api"></zem-grid-breakdown-selector>
-    </div>
-
     <div class="zem-grid-container loader-container">
         <div class="loader" ng-show="ctrl.grid.meta.loading"></div>
         <div class="zem-grid" ng-if="ctrl.grid.meta.initialized">
