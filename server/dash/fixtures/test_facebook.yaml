@@ -25,6 +25,7 @@
         modified_by: 100
         allowed_sources: [100,200]
         name: 'test account 100'
+        users: [2, 100]
     model: dash.account
     pk: 100
 

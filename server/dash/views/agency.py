@@ -1305,8 +1305,6 @@ class FacebookAccountStatus(api_common.BaseApiView):
         try:
             fb_account_id = account.facebookaccount.ad_account_id
             account_status = facebook_helper.get_ad_account_status(fb_account_id, credentials['access_token'])
-            # account_status = models.constants.FacebookPageRequestType.get_text(
-            #     account.facebookaccount.status)
             account_status = models.constants.FacebookPageRequestType.get_text(account_status)
         except models.FacebookAccount.DoesNotExist:
             account_status = models.constants.FacebookPageRequestType.get_text(

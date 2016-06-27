@@ -3209,3 +3209,28 @@ class TestHistoryMixin(TestCase):
             ({}, 'Settings: 5.'),
             mix.construct_changes('Created settings.', 'Settings: 5.', {})
         )
+
+
+class AdFacebookAccountStatusTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_facebook.yaml']
+
+    @patch('dash.facebook_helper.get_ad_account_status')
+    def test_get(self, get_ad_account_status_mock):
+        get_ad_account_status_mock.return_value = models.constants.FacebookPageRequestType.CONNECTED
+        client = self._get_client_with_permissions([])
+        response = client.get(
+            reverse('facebook_account_status', kwargs={'account_id': 100}),
+            follow=True
+        )
+        content = json.loads(response.content)
+        self.assertDictEqual(content['data'], {u'status': u'Connected'})
+        get_ad_account_status_mock.assert_called_with('dummy_id', 'fake_access_token')
+
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=2)
+        add_permissions(user, permissions_list)
+        user.save()
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client
