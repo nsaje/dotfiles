@@ -601,6 +601,34 @@ class UploadSaveTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(batch.name, 'new batch name')
 
+    def test_invalid_batch_name(self):
+        batch_id = 2
+        ad_group_id = 3
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({
+                'batch_name': 'new batch name' * 50
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'data': None,
+                'error_code': 'ValidationError',
+                'errors': {
+                    'batch_name': ['Batch name is too long (700/255).'],
+                },
+                'message': None,
+            },
+        }, json.loads(response.content))
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(batch.name, 'batch 2')
+
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_errors(self, mock_s3_put):

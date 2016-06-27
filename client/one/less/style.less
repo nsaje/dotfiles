@@ -3658,7 +3658,7 @@ zem-editable-currency-field {
             input {
                 display: inline-block;
                 width: 90.7%;
-                color: #2fa8c7;
+                color: @default-color;
                 font-size: 18px;
                 font-weight: 500;
                 padding: 0 5px;
@@ -3668,6 +3668,16 @@ zem-editable-currency-field {
             input[readonly] {
                 border: none;
                 background: none;
+            }
+
+            &.has-error {
+                span {
+                    color: red;
+                }
+
+                input {
+                    color: red;
+                }
             }
         }
 

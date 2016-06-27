@@ -2588,7 +2588,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     };
                     deferred.resolve(result);
                 }).error(function (data) {
-                    deferred.reject(data);
+                    var errors = null;
+                    if (data.data && data.data.errors) {
+                        errors = convertSaveErrorsFromApi(data.data.errors);
+                    }
+                    return deferred.reject(errors);
                 });
 
             return deferred.promise;
@@ -2769,6 +2773,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
 
             return converted;
+        }
+
+        function convertSaveErrorsFromApi (errors) {
+            return {
+                batchName: errors.batch_name,
+            };
         }
     }
 

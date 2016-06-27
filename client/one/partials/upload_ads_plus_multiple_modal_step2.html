@@ -1,14 +1,15 @@
 <div class="modal-body contentad-picker" ng-class="{editing: !!selectedCandidate}">
     <div class="clearfix"></div>
     <div class="candidate-table custom_scroller">
-        <h4 class="batch-name">
+        <div class="batch-name form-group" ng-class="{'has-error': saveErrors.batchName}">
             <span>Batch name:</span>
-            <input type="text" class="form-control" ng-readonly="!batchNameEdit" ng-model="formData.batchName" id="batch-name-input" ng-blur="disableBatchNameEdit()" />
+            <input type="text" class="form-control" ng-readonly="!batchNameEdit" ng-model="formData.batchName" id="batch-name-input" ng-blur="disableBatchNameEdit()" ng-focus="clearBatchNameErrors()" />
             <a href class="btn btn-secondary only-icon" ng-click="toggleBatchNameEdit()">
                 <img ng-src="{{ config.static_url }}/one/img/button-edit.svg" ng-if="!batchNameEdit"/>
                 <img ng-src="{{ config.static_url }}/one/img/button-check_mark.svg" ng-if="batchNameEdit"/>
             </a>
-        </h4>
+            <!-- <label for="batch-name-input" ng-repeat="error in saveErrors.batchName" class="control-label small error">{{ error }}</label> -->
+        </div>
         <table class="table">
             <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate.id}">
                 <td class="status">

@@ -185,11 +185,17 @@ class UploadSave(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError('Upload batch does not exist')
 
-        resource = json.loads(request.body)
+        resource = {
+            'batch_name': batch.name,
+        }
+        resource.update(json.loads(request.body))
+        form = forms.AdGroupAdsUploadBaseForm(resource)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
         with transaction.atomic():
-            if 'batch_name' in resource:
-                batch.name = resource['batch_name']
-                batch.save()
+            batch.name = form.cleaned_data['batch_name']
+            batch.save()
 
             try:
                 content_ads = upload_plus.persist_candidates(batch)

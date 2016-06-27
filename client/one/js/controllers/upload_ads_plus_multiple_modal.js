@@ -170,6 +170,9 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
                 $scope.step++;
+            },
+            function (errors) {
+                $scope.saveErrors = errors;
             }
         );
     };
@@ -180,6 +183,14 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
 
         delete $scope.selectedCandidate.errors[field];
+    };
+
+    $scope.clearBatchNameErrors = function () {
+        if (!$scope.saveErrors) {
+            return;
+        }
+
+        $scope.saveErrors.batchName = undefined;
     };
 
     $scope.getContentErrors = function (candidate) {
