@@ -19,17 +19,17 @@ describe('zemGridCellBaseField', function () {
         element = $compile(template)(scope);
     }));
 
-    it('should display default column\'s value or N/A if field\'s value is not defined', function () {
+    it('should display N/A if field\'s value is not defined', function () {
         scope.ctrl.data = undefined;
-        // Update row reference to trigger the watch on 'ctrl.row' in directive
-        scope.ctrl.row = {};
         scope.$digest();
         expect(element.text().trim()).toEqual('N/A');
+    });
 
+    it('should display default column\'s value if field\'s value is not defined and default value is set', function () {
+        scope.ctrl.data = undefined;
         scope.ctrl.col.data = {
             defaultValue: 'default',
         };
-        scope.ctrl.row = {};
         scope.$digest();
         expect(element.text().trim()).toEqual('default');
     });
@@ -49,7 +49,6 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
-            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -72,7 +71,6 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
-            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -94,7 +92,6 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
-            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -114,7 +111,6 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
-            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -123,8 +119,8 @@ describe('zemGridCellBaseField', function () {
     it('should correctly display number values', function () {
         var tests = [
             {value: undefined, expectedResult: 'N/A'},
-            {value: 1234.5, expectedResult: '1,235'},
-            {value: 1234.5, fractionSize: 2, expectedResult: '1,234.50'},
+            {value: 1234.50, expectedResult: '1,235'},
+            {value: 1234.56, fractionSize: 2, expectedResult: '1,234.56'},
             {value: 0.10000, fractionSize: 3, expectedResult: '0.100'},
         ];
 
@@ -137,7 +133,6 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
-            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });
@@ -147,7 +142,7 @@ describe('zemGridCellBaseField', function () {
         var tests = [
             {value: undefined, expectedResult: 'N/A'},
             {value: 1234.5, fractionSize: 2, expectedResult: '$1,234.50'},
-            {value: 0.10000, fractionSize: 3, expectedResult: '$0.100'},
+            {value: 0.1234, fractionSize: 3, expectedResult: '$0.123'},
             {value: 0.10000, expectedResult: '$0.10'},
         ];
 
@@ -160,7 +155,6 @@ describe('zemGridCellBaseField', function () {
             scope.ctrl.data = {
                 value: test.value,
             };
-            scope.ctrl.row = {};
             scope.$digest();
             expect(element.text().trim()).toEqual(test.expectedResult);
         });

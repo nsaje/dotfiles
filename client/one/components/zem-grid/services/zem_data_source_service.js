@@ -1,4 +1,4 @@
-/* globals oneApp,angular */
+/* globals oneApp, angular */
 'use strict';
 
 oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($rootScope, $http, $q) { // eslint-disable-line max-len
@@ -148,11 +148,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             return deferred.promise;
         }
 
-        function saveData (value, stats, column) {
+        function saveData (value, row, column) {
             var deferred = $q.defer();
-            endpoint.saveData(value, stats, column).then(function () {
-                stats.data[column.field] = value;
-                notifyListeners(EVENTS.ON_STATS_UPDATED, stats, column);
+            endpoint.saveData(value, row, column).then(function (data) {
+                row.stats[column.field] = data;
+                notifyListeners(EVENTS.ON_STATS_UPDATED, row, column);
                 deferred.resolve();
             }, function (err) {
                 deferred.reject(err);

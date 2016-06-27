@@ -249,7 +249,6 @@ if TESTING:
     if len(sys.argv) > 1 and '--redshift' not in sys.argv:
         # if not redshift testing
         DATABASES.pop(STATS_DB_NAME, None)
-        DATABASES.pop(STATS_E2E_DB_NAME, None)
         STATS_DB_NAME = 'default'
 
 # App specific
@@ -273,27 +272,6 @@ DEFAULT_TIME_ZONE = 'America/New_York'
 SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 
 CONVERSION_PIXEL_PREFIX = 'https://p1.zemanta.com/p/'
-
-if os.environ.get('E2E'):
-    print 'Using E2E database !!!'
-    DATABASES['default'] = DATABASES['e2e']
-
-if os.environ.get('E2E_REDDB'):
-    DATABASES[STATS_DB_NAME]['NAME'] = os.environ.get('E2E_REDDB')
-    print 'Using e2e Redshift DB named', DATABASES[STATS_DB_NAME]['NAME']
-
-    credentials = {
-        'USER': DATABASES[STATS_E2E_DB_NAME]['USER'],
-        'PASSWORD': DATABASES[STATS_E2E_DB_NAME]['PASSWORD'],
-        'HOST': DATABASES[STATS_E2E_DB_NAME]['HOST']
-    }
-
-    DATABASES[STATS_DB_NAME].update(credentials)
-
-if 'e2e' in DATABASES:
-    DATABASES['e2e'] = {}
-    del DATABASES['e2e']
-
 
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
