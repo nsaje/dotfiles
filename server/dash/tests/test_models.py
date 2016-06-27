@@ -660,7 +660,7 @@ class CampaignTestCase(TestCase):
 
         self.assertEqual(settings.name, '')
         self.assertEqual(settings.iab_category, 'IAB24')
-        self.assertEqual(settings.target_devices, ['mobile', 'desktop'])
+        self.assertEqual(settings.target_devices, ['tablet', 'mobile', 'desktop'])
         self.assertEqual(settings.target_regions, ['US'])
 
 
