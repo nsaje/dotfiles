@@ -13,8 +13,9 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.step = 1;
     $scope.selectedCandidate = null;
     $scope.batchNameEdit = false;
-    $scope.batchName = moment().format('M/D/YYYY h:mm A');
-    $scope.fileInput = {};
+    $scope.formData = {
+        batchName: moment().format('M/D/YYYY h:mm A'),
+    };
 
     var pollInterval;
     var startPolling = function (batchId) {
@@ -73,10 +74,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
 
     $scope.disableBatchNameEdit = function () {
         $scope.batchNameEdit = false;
-    };
-
-    $scope.nextStep = function () {
-        $scope.step++;
     };
 
     $scope.restart = function () {
@@ -168,12 +165,32 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return constants.contentAdCandidateStatus.OK;
     };
 
+    $scope.saveUpload = function () {
+        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.formData.batchName).then(
+            function (data) {
+                $scope.numSuccessful = data.numSuccessful;
+                $scope.step = 3;
+            },
+            function (errors) {
+                $scope.saveErrors = errors;
+            }
+        );
+    };
+
     $scope.clearCandidateErrors = function (field) {
         if (!$scope.selectedCandidate || !$scope.selectedCandidate.errors) {
             return;
         }
 
         delete $scope.selectedCandidate.errors[field];
+    };
+
+    $scope.clearBatchNameErrors = function () {
+        if (!$scope.saveErrors) {
+            return;
+        }
+
+        $scope.saveErrors.batchName = undefined;
     };
 
     $scope.getContentErrors = function (candidate) {
@@ -214,14 +231,14 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
 
         var formData = {
-            file: $scope.fileInput.file,
-            batchName: $scope.batchName,
+            file: $scope.formData.file,
+            batchName: $scope.formData.batchName,
         };
 
         api.uploadPlus.uploadMultiple(
             $state.params.id, formData
         ).then(function (result) {
-            $scope.step++;
+            $scope.step = 2;
             $scope.candidates = result.candidates;
             $scope.batchId = result.batchId;
             startPolling($scope.batchId);

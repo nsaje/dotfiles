@@ -10,7 +10,6 @@ from django.template.defaultfilters import pluralize
 
 from dash import constants
 from dash import forms
-from dash import history_helpers
 from dash import models
 from dash import upload_plus
 
@@ -186,18 +185,28 @@ class UploadSave(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError('Upload batch does not exist')
 
+        resource = {
+            'batch_name': batch.name,
+        }
+        resource.update(json.loads(request.body))
+        form = forms.AdGroupAdsUploadBaseForm(resource)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
         with transaction.atomic():
+            batch.name = form.cleaned_data['batch_name']
+            batch.save()
+
             try:
                 content_ads = upload_plus.persist_candidates(batch)
             except upload_plus.InvalidBatchStatus as e:
                 raise exc.ValidationError(message=e.message)
 
             self._create_redirect_ids(content_ads)
-            num_uploaded = batch.batch_size - batch.num_errors
             changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
                 batch.name,
-                num_uploaded,
-                pluralize(num_uploaded),
+                len(content_ads),
+                pluralize(len(content_ads)),
             )
             ad_group.write_history(
                 changes_text,
@@ -211,6 +220,7 @@ class UploadSave(api_common.BaseApiView):
             error_report = reverse('upload_plus_error_report',
                                    kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
         return self.create_api_response({
+            'num_successful': len(content_ads),
             'num_errors': batch.num_errors,
             'error_report': error_report,
         })
@@ -308,5 +318,3 @@ class Candidate(api_common.BaseApiView):
 
         candidate.delete()
         return self.create_api_response({})
-
-

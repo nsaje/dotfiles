@@ -546,12 +546,15 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual({
             'success': True,
             'data': {
+                'num_successful': 1,
                 'num_errors': 0,
                 'error_report': None,
             }
@@ -566,18 +569,83 @@ class UploadSaveTestCase(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_errors(self, mock_s3_put):
-        batch_id = 3
-        ad_group_id = 4
+    @patch('utils.redirector_helper.insert_redirect')
+    def test_change_batch_name(self, mock_insert_redirect, mock_s3_put):
+        mock_insert_redirect.return_value = {
+            'redirect': {
+                'url': 'http://example.com',
+            },
+            'redirectid': 'abc123',
+        }
+        batch_id = 2
+        ad_group_id = 3
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({
+                'batch_name': 'new batch name'
+            }),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual({
             'success': True,
             'data': {
+                'num_successful': 1,
+                'num_errors': 0,
+                'error_report': None,
+            }
+        }, json.loads(response.content))
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(batch.name, 'new batch name')
+
+    def test_invalid_batch_name(self):
+        batch_id = 2
+        ad_group_id = 3
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({
+                'batch_name': 'new batch name' * 50
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'data': None,
+                'error_code': 'ValidationError',
+                'errors': {
+                    'batch_name': ['Batch name is too long (700/255).'],
+                },
+                'message': None,
+            },
+        }, json.loads(response.content))
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(batch.name, 'batch 2')
+
+    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    def test_errors(self, mock_s3_put):
+        batch_id = 3
+        ad_group_id = 4
+
+        response = _get_client().post(
+            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({
+            'success': True,
+            'data': {
+                'num_successful': 0,
                 'num_errors': 1,
                 'error_report': reverse('upload_plus_error_report',
                                         kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id})
@@ -601,6 +669,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(500, response.status_code)
@@ -622,6 +692,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(400, response.status_code)
@@ -647,6 +719,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client().post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -667,6 +741,8 @@ class UploadSaveTestCase(TestCase):
 
         response = _get_client(superuser=False).post(
             reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            json.dumps({}),
+            content_type='application/json',
             follow=True,
         )
         self.assertEqual(404, response.status_code)
