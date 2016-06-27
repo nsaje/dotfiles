@@ -14,7 +14,7 @@ from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
 from django.contrib.admin.utils import flatten_fieldsets
-from django.contrib.admin import SimpleListFilter, DateFieldListFilter
+from django.contrib.admin import SimpleListFilter
 
 from import_export import resources
 from import_export.admin import ExportMixin
@@ -1551,7 +1551,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
 
     list_filter = (
         SelfManagedFilter,
-        ('created_dt', DateFieldListFilter),
+        ('created_dt', admin.DateFieldListFilter),
         'action_type',
         'level',
         'type',
