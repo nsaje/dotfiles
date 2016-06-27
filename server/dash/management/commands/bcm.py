@@ -1,11 +1,11 @@
 import sys
-import decimal
 
 from django.db import connection, transaction, DatabaseError
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
 import utils.converters
+import utils.command_helpers
 import dash.models
 
 MODEL_CREDITS = 'credits'
@@ -14,6 +14,29 @@ MODELS = (
     MODEL_CREDITS,
     MODEL_BUDGETS,
 )
+
+ACTION_DELETE = 'delete'
+ACTION_UPDATE = 'update'
+ACTION_RELEASE = 'release'
+ACTION_LIST = 'list'
+ACTIONS = (
+    ACTION_DELETE,
+    ACTION_UPDATE,
+    ACTION_RELEASE,
+    ACTION_LIST,
+)
+VALID_ACTIONS = {
+    MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST),
+    MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST),
+}
+
+CONSTRAINTS = {
+    'credits': 'credit_id__in',
+    'agencies': 'agency_id__in',
+    'accounts': 'account_id__in',
+    'campaigns': 'campaign_id__in',
+}
+
 
 UPDATABLE_FIELDS = {
     'amount': int,
@@ -81,29 +104,42 @@ def _delete_budget_traces(budget):
 
 
 def _updates_to_sql(updates):
-    sql, args = '', []
+    sql, args = [], []
     for field, value in updates.iteritems():
-        sql += field + ' = %s'
+        sql.append(field + ' = %s')
         args.append(value)
-    return sql, args
+    return ', '.join(sql), args
 
 
 class Command(BaseCommand):
     help = """Manage credits and budgets
-    Usage: ./manage.py bcm update|delete budgets|credits ids [options]
+    Usage: ./manage.py bcm list|update|delete|release budgets|credits ids [options]
 
     Options can be any fields that have to be updated.
-    Special option is --credits - update budgets that belong to specified credits
+
+    Special options (constraints):
+      --credits - update budgets that belong to specified credits
+      --campaigns - update budgets that belong to specified campaigns
+      --accounts - update credits that belong to specified accounts
+      --agency - update credits that belong to specified agencies
+    All constraint values have to be comma separated list of ids.
+    Example: --campaigns 1,2,3
     """
 
     def add_arguments(self, parser):
         # Positional arguments
-        parser.add_argument('action', nargs=1, choices=('update', 'delete'), type=str)
+        parser.add_argument('action', nargs=1, choices=ACTIONS, type=str)
         parser.add_argument('model', nargs=1, choices=MODELS, type=str)
         parser.add_argument('ids', nargs='*', type=int)
 
-        parser.add_argument('--credits', dest='credit', nargs='*', type=int)
+        parser.add_argument('--credits', dest='credits', nargs='?', type=str)
+        parser.add_argument('--campaigns', dest='campaigns', nargs='?', type=str)
+        parser.add_argument('--accounts', dest='accounts', nargs='?', type=str)
+        parser.add_argument('--agencies', dest='agencies', nargs='?', type=str)
+
         parser.add_argument('--no-confirm', dest='no_confirm', action='store_true')
+        parser.add_argument('--skip-spend-validation', dest='skip_spend_validation',
+                            action='store_true')
 
         for field, field_type in UPDATABLE_FIELDS.iteritems():
             parser.add_argument('--' + field, dest=field, nargs='?', type=field_type)
@@ -112,15 +148,17 @@ class Command(BaseCommand):
         updates = {}
         for field in UPDATABLE_FIELDS:
             value = options.get(field)
-            if value:
+            if value is not None:
                 updates[field] = value
         return updates
 
-    def _validate(self, model, object_list):
+    def _validate(self, model, object_list, options):
         self._validate_dates(model, object_list)
         if model == MODEL_CREDITS:
             self._validate_credit_amounts(object_list)
         else:
+            if not options.get('skip_spend_validation'):
+                self._validate_budget_amounts(object_list)
             self._validate_credit_amounts(set([
                 obj.credit for obj in object_list
             ]))
@@ -147,6 +185,11 @@ class Command(BaseCommand):
             if credit.amount < credit.get_allocated_amount():
                 raise ValidationError('Amounts in budgets don\'t match credit\'s')
 
+    def _validate_budget_amounts(self, budget_list):
+        for budget in budget_list:
+            if budget.get_available_amount() < 0:
+                raise ValidationError('Budget amount is lower than spend')
+
     def handle(self, **options):
         action = options['action'][0]
         model = options['model'][0]
@@ -159,11 +202,17 @@ class Command(BaseCommand):
             sys.exit(1)
 
     def _handle(self, action, model, ids, options):
-        object_list = self._get_objects(model, ids, credit_ids=options.get('credit'))
+        if action not in VALID_ACTIONS[model]:
+            raise CommandError('Cannot manage {} with action {}'.format(model, action))
+
+        object_list = self._get_objects(model, ids, options)
         if not object_list:
             raise CommandError('No matching {}'.format(model))
 
-        self._print_object_list(action, model, object_list)
+        self._print_object_list(action, model, object_list, list_only=action == ACTION_LIST)
+
+        if action == ACTION_LIST:
+            return
 
         if not options.get('no_confirm') and not self._confirm('Are you sure?'):
             self._print('Canceled.')
@@ -178,7 +227,7 @@ class Command(BaseCommand):
             raise CommandError('Wrong fields.')
 
     def _handle_action(self, action, model, object_list, options):
-        if action == 'update':
+        if action == ACTION_UPDATE:
             updates = self._get_updates(options)
             if not updates:
                 raise CommandError('Nothing to change')
@@ -188,7 +237,7 @@ class Command(BaseCommand):
                 update_budgets(object_list, updates)
 
             object_list = [type(obj).objects.get(pk=obj.pk) for obj in object_list]
-            self._validate(model, object_list)
+            self._validate(model, object_list, options)
 
             for obj in object_list:
                 obj.save()
@@ -196,26 +245,54 @@ class Command(BaseCommand):
             if set(updates.keys()) & set(INVALIDATE_DAILY_STATEMENTS_FIELDS):
                 self._print('WARNING: Daily statements should be reprocessed')
 
-        elif action == 'delete':
+        elif action == ACTION_DELETE:
             for obj in object_list:
                 if model == MODEL_CREDITS:
                     delete_credit(obj)
                 else:
                     delete_budget(obj)
 
-    def _get_objects(self, model, ids, credit_ids=None):
+        elif action == ACTION_RELEASE:
+            for obj in object_list:
+                if obj.freed_cc:
+                    if self._confirm('Budget was already released. Do you want to clear it?'):
+                        obj.freed_cc = 0
+                        obj.save()
+                try:
+                    obj.free_inactive_allocated_assets()
+                    self._print(
+                        'Released {} from budget {}'.format(
+                            obj.freed_cc * utils.converters.CC_TO_DECIMAL_DOLAR,
+                            str(obj)
+                        )
+                    )
+                except AssertionError:
+                    raise CommandError('Could not free assets. Budget status is {}'.format(
+                        obj.state_text()
+                    ))
+
+    def _get_objects(self, model, ids, options):
+        constraints = {}
+        for opt in CONSTRAINTS:
+            if opt not in options:
+                continue
+            value = utils.command_helpers.parse_id_list(options, opt)
+            if value:
+                constraints[CONSTRAINTS[opt]] = value
+        if not constraints:
+            constraints = {'pk__in': ids}
+        objects = None
         if model == MODEL_CREDITS:
-            return dash.models.CreditLineItem.objects.filter(pk__in=ids)
+            objects = dash.models.CreditLineItem.objects
         elif model == MODEL_BUDGETS:
-            if credit_ids:
-                return dash.models.BudgetLineItem.objects.filter(
-                    credit_id__in=credit_ids,
-                )
-            else:
-                return dash.models.BudgetLineItem.objects.filter(
-                    pk__in=ids
-                )
-        return None
+            objects = dash.models.BudgetLineItem.objects
+        else:
+            return None
+        try:
+            return objects.filter(**constraints).order_by('id')
+        except:
+            raise CommandError('Invalid constraints')
+            return None
 
     def _confirm(self, message):
         return raw_input('{} [yN] '.format(message)).lower() == 'y'
@@ -223,8 +300,9 @@ class Command(BaseCommand):
     def _print(self, msg):
         self.stdout.write('{}\n'.format(msg))
 
-    def _print_object_list(self, action, model, object_list):
-        self._print('You will {} the following {}:'.format(action, model))
+    def _print_object_list(self, action, model, object_list, list_only=False):
+        if not list_only:
+            self._print('You will {} the following {}:'.format(action, model))
         for budget in object_list if model == MODEL_BUDGETS else []:
             self._print_budget(budget)
         for credit in object_list if model == MODEL_CREDITS else []:

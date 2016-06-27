@@ -191,6 +191,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         if (row.type === zemGridConstants.gridRowType.BREAKDOWN) {
             classes.push('breakdown');
         }
+
+        if (row.data.archived) {
+            classes.push('archived');
+        }
+
         return classes;
     }
 

@@ -80,49 +80,53 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
         m = models.MVMaster
 
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.ACCOUNT,
+            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
             constants.TimeDimension.MONTH,
-        ]), 'mv_account')
+        ], {}), 'mv_account')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.SOURCE,
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
             constants.TimeDimension.MONTH,
-        ]), 'mv_account')
+        ], {}), 'mv_account')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.ACCOUNT,
-            constants.StructureDimension.SOURCE,
+            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
             constants.TimeDimension.MONTH,
-        ]), 'mv_account')
+        ], {}), 'mv_account')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.ACCOUNT,
-            constants.StructureDimension.SOURCE,
+            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
             constants.DeliveryDimension.AGE,
-        ]), 'mv_account_delivery')
+        ], {}), 'mv_account_delivery')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.ACCOUNT,
+            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
             constants.DeliveryDimension.AGE,
-        ]), 'mv_account_delivery')
+        ], {}), 'mv_account_delivery')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.ACCOUNT,
-            constants.StructureDimension.CAMPAIGN,
-        ]), 'mv_campaign')
+            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
+            constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN),
+        ], {}), 'mv_campaign')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.CAMPAIGN,
-            constants.StructureDimension.SOURCE,
-        ]), 'mv_campaign')
+            constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN),
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+        ], {}), 'mv_campaign')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.CAMPAIGN,
-            constants.StructureDimension.SOURCE,
+            constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN),
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
             constants.DeliveryDimension.AGE,
-        ]), 'mv_campaign_delivery')
+        ], {}), 'mv_campaign_delivery')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.AD_GROUP,
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
             constants.TimeDimension.MONTH,
-        ]), 'mv_master')
+        ], {}), 'mv_master')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.AD_GROUP,
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
             constants.DeliveryDimension.AGE,
-        ]), 'mv_master')
+        ], {}), 'mv_master')
         self.assertEqual(m.get_best_view([
-            constants.StructureDimension.CONTENT_AD,
+            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
             constants.DeliveryDimension.AGE,
-        ]), 'mv_master')
+        ], {}), 'mv_master')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_campaign')

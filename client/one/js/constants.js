@@ -43,6 +43,7 @@ var constants = {
     },
     adTargetDevice: {
         DESKTOP: 'desktop',
+        TABLET: 'tablet',
         MOBILE: 'mobile',
     },
     chartMetric: {
@@ -659,7 +660,8 @@ var options = {
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
-        {name: 'Mobile/Tablet', value: constants.adTargetDevice.MOBILE},
+        {name: 'Tablet', value: constants.adTargetDevice.TABLET},
+        {name: 'Mobile', value: constants.adTargetDevice.MOBILE},
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

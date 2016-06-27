@@ -1,6 +1,7 @@
 import backtosql
 
 from stats import constants as sc
+from stats import helpers
 
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
@@ -78,7 +79,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
                                        {'expr': 'total_time_on_site', 'divisor': 'visits'}, AGGREGATES)
 
     @classmethod
-    def get_best_view(cls, breakdown):
+    def get_best_view(cls, breakdown, constraints):
         """
         Selects the most suitable materialized view for the selected breakdown.
         """
@@ -86,11 +87,14 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         base = sc.get_base_dimension(breakdown)
         structure = sc.get_structure_dimension(breakdown)
         delivery = sc.get_delivery_dimension(breakdown)
+        level = sc.get_level_dimension(constraints)
 
         # find first one that matches
-        breakdown = set(x for x in (base, structure, delivery) if x)
+        breakdown = set(x for x in (base, structure, delivery, level) if x)
 
         for available, view in MATERIALIZED_VIEWS:
+            available = {sc.get_dimension_identifier(a) for a in available}
+
             if len(breakdown - available) == 0:
                 return view
 
@@ -109,7 +113,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
             breakdown_constraints_q.join_operator = breakdown_constraints_q.OR
 
         context = {
-            'view': cls.get_best_view(breakdown),
+            'view': cls.get_best_view(breakdown, constraints),
             'breakdown': cls.get_breakdown(breakdown),
             'constraints': backtosql.Q(cls, **constraints),
             'breakdown_constraints': breakdown_constraints_q,

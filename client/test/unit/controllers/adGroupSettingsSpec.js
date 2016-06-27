@@ -60,10 +60,12 @@ describe('AdGroupSettingsCtrlSpec', function () {
         it('return true if targetDevices are equal to default targetDevices', function () {
             $scope.settings.targetDevices = [
                 {value: 'mobile', checked: true},
+                {value: 'tablet', checked: false},
                 {value: 'desktop', checked: false},
             ];
             $scope.defaultSettings.targetDevices = [
                 {value: 'mobile', checked: true},
+                {value: 'tablet', checked: false},
                 {value: 'desktop', checked: false},
             ];
 
@@ -73,10 +75,12 @@ describe('AdGroupSettingsCtrlSpec', function () {
         it('return true if targetDevices are equal to default targetDevices', function () {
             $scope.settings.targetDevices = [
                 {value: 'mobile', checked: true},
+                {value: 'tablet', checked: false},
                 {value: 'desktop', checked: false},
             ];
             $scope.defaultSettings.targetDevices = [
                 {value: 'mobile', checked: true},
+                {value: 'tablet', checked: false},
                 {value: 'desktop', checked: true},
             ];
 

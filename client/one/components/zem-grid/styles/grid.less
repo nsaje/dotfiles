@@ -1,4 +1,5 @@
 @zem-grid-text-color: #454545;
+@zem-grid-archived-text-color: #d9d9d9;
 @zem-grid-bg-color: #ffffff;
 @zem-grid-level-1-bg-color: #f4f4f4;
 @zem-grid-level-2-bg-color: #f0f0f0;
@@ -8,181 +9,323 @@
 @zem-grid-cell-border-color: #dddddd;
 
 .zem-grid-button-bar {
-  padding-top: 20px;
-  padding-bottom: 10px;
-  .dropdown .btn-apply {
-    width: 180px;
-    margin: 10px 20px;
-  }
+    padding-top: 20px;
+    padding-bottom: 10px;
+    .dropdown .btn-apply {
+        width: 180px;
+        margin: 10px 20px;
+    }
 
-  &:after {
-    clear: both;
-    content: "";
-    display: block;
-  }
+    &:after {
+        clear: both;
+        content: "";
+        display: block;
+    }
 }
 
 .zem-grid-container {
-  width: 100%;
-  font-size: 13px;
-  color: @zem-grid-text-color;
-
-  .loader { // Initial loader
-    margin: 50px; // Don't cover header and footer
-  }
-
-  .zem-grid {
     width: 100%;
-    overflow: hidden;
-    background-color: @zem-grid-bg-color;
+    font-size: 13px;
+    color: @zem-grid-text-color;
 
-    .zem-grid-row {
-      height: 35px;
+    .loader { // Initial loader
+        margin: 50px; // Don't cover header and footer
+    }
 
-      font-size: 0; // Hide whitespaces between inline elements
-      white-space: nowrap; // Show all cells in the same row
-
-      .zem-grid-cell {
-        display: inline-block;
-        vertical-align: middle;
-        height: 35px;
-        line-height: 35px;
-        border-bottom: 1px solid @zem-grid-cell-border-color;
-        text-align: left;
-        padding: 0 8px;
+    .zem-grid {
+        width: 100%;
         overflow: hidden;
-
-        min-width: 40px;
-        max-width: 300px;
-        font-size: 13px;
-        white-space: nowrap;
-        // TODO: Change to more sophisticated way of trimming long text in cells
-        text-overflow: ellipsis;
-
-      }
-
-      .zem-grid-cell-checkbox {
-        max-width: 40px;
-        input {
-          width: 100%;
-          margin: 0px;
-          display: inline-block;
-          vertical-align: middle;
-
-        }
-      }
-
-      .zem-grid-cell-collapse {
-        max-width: 40px;
-        width: 100%;
-        display: inline-block;
-        text-align: center;
-      }
-
-      &.level-1 {
-        background-color: @zem-grid-level-1-bg-color;
-        &:hover {
-          background-color: darken(@zem-grid-level-1-bg-color, 3%);
-        }
-      }
-
-      &.level-2 {
-        background-color: @zem-grid-level-2-bg-color;
-        &:hover {
-          background-color: darken(@zem-grid-level-2-bg-color, 3%);
-        }
-      }
-
-      &.level-3 {
-        background-color: @zem-grid-level-3-bg-color;
-        &:hover {
-          background-color: darken(@zem-grid-level-3-bg-color, 3%);
-        }
-      }
-
-      &.level-4 {
-        background-color: @zem-grid-level-4-bg-color;
-        &:hover {
-          background-color: darken(@zem-grid-level-4-bg-color, 3%);
-        }
-      }
-
-      &.level-last {
         background-color: @zem-grid-bg-color;
-        &:hover {
-          background-color: darken(@zem-grid-bg-color, 3%);
+
+        .zem-grid-row {
+            height: 45px;
+
+            font-size: 0; // Hide whitespaces between inline elements
+            white-space: nowrap; // Show all cells in the same row
+
+            .zem-grid-cell {
+                display: inline-block;
+                vertical-align: middle;
+                height: 45px;
+                line-height: 45px;
+                border-bottom: 1px solid @zem-grid-cell-border-color;
+                text-align: left;
+                padding: 0 8px;
+                overflow: hidden;
+
+                min-width: 40px;
+                max-width: 300px;
+                font-size: 13px;
+                white-space: nowrap;
+                // TODO: Change to more sophisticated way of trimming long text in cells
+                text-overflow: ellipsis;
+
+            }
+
+            .zem-grid-cell-checkbox {
+                max-width: 40px;
+                input {
+                    width: 100%;
+                    margin: 0px;
+                    display: inline-block;
+                    vertical-align: middle;
+
+                }
+            }
+
+            .zem-grid-cell-collapse {
+                max-width: 40px;
+                width: 100%;
+                display: inline-block;
+                text-align: center;
+            }
+
+            &.level-1 {
+                background-color: @zem-grid-level-1-bg-color;
+                &:hover {
+                    background-color: darken(@zem-grid-level-1-bg-color, 3%);
+                }
+            }
+
+            &.level-2 {
+                background-color: @zem-grid-level-2-bg-color;
+                &:hover {
+                    background-color: darken(@zem-grid-level-2-bg-color, 3%);
+                }
+            }
+
+            &.level-3 {
+                background-color: @zem-grid-level-3-bg-color;
+                &:hover {
+                    background-color: darken(@zem-grid-level-3-bg-color, 3%);
+                }
+            }
+
+            &.level-4 {
+                background-color: @zem-grid-level-4-bg-color;
+                &:hover {
+                    background-color: darken(@zem-grid-level-4-bg-color, 3%);
+                }
+            }
+
+            &.level-last {
+                background-color: @zem-grid-bg-color;
+                &:hover {
+                    background-color: darken(@zem-grid-bg-color, 3%);
+                }
+            }
         }
-      }
+
+        .loading-cell {
+            color: #00cc18;
+            background-image: url('img/loader.gif');
+            background-position: 10px center;
+            background-repeat: no-repeat;
+            background-size: 20px 20px;
+        }
+
+        .zem-grid-header, .zem-grid-footer {
+            border-bottom: 1px solid @zem-grid-cell-border-color;
+            background-color: @zem-grid-header-footer-bg-color;
+
+            a {
+                color: @zem-grid-text-color;
+            }
+
+            .zem-grid-cell {
+                background-color: @zem-grid-header-footer-bg-color;
+                border-bottom: 0px;
+            }
+        }
+
+        .zem-grid-header {
+            font-weight: 500;
+        }
+        .zem-grid-footer {
+            .zem-grid-cell-breakdown-field {
+                font-weight: 500;
+            }
+        }
+
+        .zem-grid-body {
+            max-height: 540px;
+            min-height: 45px;
+            overflow: auto;
+
+            background-color: white;
+
+            .zem-grid-table {
+                position: relative;
+                width: 100%;
+            }
+
+            .zem-grid-row {
+                position: absolute;
+
+                &.archived,
+                &.archived a {
+                    color: @zem-grid-archived-text-color;
+                }
+            }
+        }
+
+        // Workaround for links without href attribute
+        a {
+            cursor: pointer;
+        }
+
+        .zem-grid-cell-performance-indicator {
+            position: relative;
+
+            .zem-icon {
+                width: 15px;
+                height: 15px;
+            }
+
+            .performance-popover-trigger {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .zem-grid-cell-state-selector {
+            .state-selector-modal-toggle {
+                position: relative;
+                display: inline-block;
+                vertical-align: middle;
+                height: 20px;
+                margin-top: -1px;
+                padding: 5px 20px 5px 5px;
+                background-color: transparent;
+                border: 1px solid transparent;
+                border-radius: 3px;
+                outline: none;
+
+                &:hover,
+                &.modal-open {
+                    background-color: @zem-grid-bg-color;
+                    border-color: #2fa8c7;
+
+                    .arrow-down {
+                        display: inline-block;
+                    }
+                }
+
+                &.modal-open {
+                    border-bottom: 0;
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+
+                .state-icon {
+                    vertical-align: top;
+                }
+
+                .arrow-down {
+                    position: absolute;
+                    right: 5px;
+                    top: 5px;
+                    width: 10px;
+                    height: 10px;
+                    display: none;
+                    vertical-align: middle;
+                    background: url('img/arrow-up.svg');
+                    background-size: 10px 10px;
+                    -webkit-transform: rotate(180deg);
+                    -moz-transform: rotate(180deg);
+                    -ms-transform: rotate(180deg);
+                    -o-transform: rotate(180deg);
+                    transform: rotate(180deg);
+                }
+            }
+        }
+    }
+}
+
+// Modals
+.zem-grid-modal {
+    display: block;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+
+    &.state-selector-modal {
+        width: auto;
+        background-color: @zem-grid-bg-color;
+        border: 1px solid #2fa8c7;
+        border-top-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+
+        &:before {
+            // Hack to hide a part of top border so that modal looks connected to toggle button
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 34px;
+            height: 1px;
+            background-color: @zem-grid-bg-color;
+        }
+
+        .state-list {
+            list-style: none;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0;
+            padding: 0;
+
+            .state-item {
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+                padding: 3px 5px;
+                color: @zem-grid-text-color;
+            }
+
+            a:hover {
+                background-color: @zem-grid-header-footer-bg-color;
+                cursor: pointer;
+            }
+
+            .state-icon {
+                margin-right: 5px;
+            }
+
+            .state-text {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .disabled-message {
+                font-size: 12px;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+// State icons
+.state-icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: 9px;
+    height: 9px;
+    background-size: 36px;
+    background-position: 23px;
+
+    &.active {
+        background-image: url('img/active_circle_icon.svg');
     }
 
-    .loading-cell {
-      color: #00cc18;
-      background-image: url('img/loader.gif');
-      background-position: 10px center;
-      background-repeat: no-repeat;
-      background-size: 20px 20px;
+    &.paused {
+        background-image: url('img/pause_icon.svg');
     }
 
-    .zem-grid-header, .zem-grid-footer {
-      border-bottom: 1px solid @zem-grid-cell-border-color;
-      background-color: @zem-grid-header-footer-bg-color;
-
-      a {
-        color: @zem-grid-text-color;
-      }
-
-      .zem-grid-cell {
-        background-color: @zem-grid-header-footer-bg-color;
-        border-bottom: 0px;
-      }
+    &.autopilot {
+        background-image: url('img/auto_pilot_icon.svg');
     }
-
-    .zem-grid-header {
-      font-weight: 500;
-    }
-    .zem-grid-footer {
-      .zem-grid-cell-breakdown-field {
-        font-weight: 500;
-      }
-    }
-
-    .zem-grid-body {
-      max-height: 545px;
-      min-height: 35px;
-      overflow: auto;
-
-      background-color: white;
-
-      .zem-grid-table {
-        position: relative;
-        width: 100%;
-      }
-
-      .zem-grid-row {
-        position: absolute;
-      }
-    }
-
-    // Workaround for links without href attribute
-    a {
-      cursor: pointer;
-    }
-
-    .zem-grid-cell-performance-indicator {
-      position: relative;
-
-      .zem-icon {
-        width: 15px;
-        height: 15px;
-      }
-
-      .performance-popover-trigger {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
-    }
-  }
 }

@@ -1489,34 +1489,78 @@ class BCMCommandTestCase(TestCase):
             campaign_id=1,
         )
 
+    def _call_command(self, *args, **kwargs):
+        output = StringIO.StringIO()
+        if 'stdout' not in kwargs:
+            kwargs['stdout'] = output
+        call_command(*args, **kwargs)
+        return output.getvalue()
+
+    def test_list_budget(self):
+        self.assertEqual(
+            self._call_command('bcm', 'list', 'budgets', str(self.b1.pk), str(self.b2.pk)),
+            ''' - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($200, freed $0.0000)
+ - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($500, freed $0.0000)
+'''.format(self.b1.pk, self.b2.pk)
+        )
+
+    def test_list_credit(self):
+        self.assertEqual(
+            self._call_command('bcm', 'list', 'credits', str(self.c.pk)),
+            ''' - #{} test account 2, 2015-11-30 - 2015-12-02 ($1000, fee 0.1000%, flat $0.0000)
+'''.format(self.c.pk)
+        )
+
     def test_update_budget_amount(self):
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '300', '--no-confirm')
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '300',
+                           '--no-confirm')
         self.b1.refresh_from_db()
         self.b2.refresh_from_db()
         self.assertEqual(self.b1.amount, 300)
         self.assertEqual(self.b2.amount, 500)
 
     def test_update_budget_start_date(self):
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date', str(TODAY),
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date', str(TODAY),
+                           '--no-confirm')
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.start_date, TODAY)
 
     def test_update_budget_end_date(self):
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date', str(TODAY),
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date', str(TODAY),
+                           '--no-confirm')
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.end_date, TODAY)
 
     def test_update_budget_freed_cc(self):
-        call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--freed_cc', '1234',
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--freed_cc', '1234',
+                           '--no-confirm')
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.freed_cc, 1234)
 
+    def test_update_budget_multiple_fields(self):
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk),
+                           '--freed_cc', '100000',
+                           '--amount', '150',
+                           '--no-confirm')
+        self.b1.refresh_from_db()
+        self.assertEqual(self.b1.freed_cc, 100000)
+        self.assertEqual(self.b1.amount, 150)
+
+    def test_update_budget_freed_cc_too_large_value(self):
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--freed_cc', '2000001',
+                               '--no-confirm')
+        self.b1.refresh_from_db()
+        self.assertEqual(self.b1.freed_cc, 0)
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--freed_cc', '2000001',
+                           '--no-confirm', '--skip-spend-validation')
+        self.b1.refresh_from_db()
+        self.assertEqual(self.b1.freed_cc, 2000001)
+
+
     def test_update_multiple_budget_freed_cc(self):
-        call_command('bcm', 'update', 'budgets', '--credits', str(self.c.pk), '--freed_cc', '4321',
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'budgets', '--credits', str(self.c.pk),
+                           '--freed_cc', '4321', '--no-confirm')
         self.b1.refresh_from_db()
         self.b2.refresh_from_db()
         self.assertEqual(self.b1.freed_cc, 4321)
@@ -1525,8 +1569,8 @@ class BCMCommandTestCase(TestCase):
     def test_update_budget_amount_with_too_large_value(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '800',
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--amount', '800',
+                               '--no-confirm', stderr=err)
         self.b1.refresh_from_db()
         self.b2.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
@@ -1535,8 +1579,8 @@ class BCMCommandTestCase(TestCase):
     def test_update_budget_start_date_with_too_early_date(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date',
-                         str(TODAY - datetime.timedelta(2)), '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--start_date',
+                               str(TODAY - datetime.timedelta(2)), '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.start_date, TODAY - datetime.timedelta(1))
@@ -1544,72 +1588,71 @@ class BCMCommandTestCase(TestCase):
     def test_update_budget_end_date_with_invalid_date(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date',
-                         str(TODAY - datetime.timedelta(100)), '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--end_date',
+                               str(TODAY - datetime.timedelta(100)), '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
         self.b1.refresh_from_db()
 
-        # Specify wrong field
     def test_update_budget_with_nonexisting_fields(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--flat_fee_cc', '1500',
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--flat_fee_cc', '1500',
+                               '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--license_fee', '0.20',
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--license_fee', '0.20',
+                               '--no-confirm', stderr=err)
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
     def test_update_credit_amount(self):
-        # Update fields
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '1500', '--no-confirm')
+        self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '1500',
+                           '--no-confirm')
         self.c.refresh_from_db()
         self.assertEqual(self.c.amount, 1500)
 
     def test_update_credit_start_date(self):
         date = TODAY - datetime.timedelta(2)
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--start_date', str(date),
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--start_date', str(date),
+                           '--no-confirm')
         self.c.refresh_from_db()
         self.assertEqual(self.c.start_date, date)
 
     def test_update_credit_end_date(self):
         date = TODAY + datetime.timedelta(2)
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
+                           '--no-confirm')
         self.c.refresh_from_db()
         self.assertEqual(self.c.end_date, date)
 
     def test_update_credit_license_fee(self):
         msg = StringIO.StringIO()
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--license_fee', '0.3',
-                     '--no-confirm', stdout=msg)
+        self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--license_fee', '0.3',
+                           '--no-confirm', stdout=msg)
         self.c.refresh_from_db()
         self.assertEqual(self.c.license_fee, Decimal('0.3'))
         self.assertIn('WARNING: Daily statements', msg.getvalue())
 
     def test_update_credit_flat_fee(self):
-        call_command('bcm', 'update', 'credits', str(self.c.pk), '--flat_fee_cc', '1234',
-                     '--no-confirm')
+        self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--flat_fee_cc', '1234',
+                           '--no-confirm')
         self.c.refresh_from_db()
         self.assertEqual(self.c.flat_fee_cc, 1234)
 
     def test_update_credit_with_nonexisting_fields(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'credits', str(self.c.pk), '--freed_cc', '1234',
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--freed_cc', '1234',
+                               '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Wrong fields.\n')
 
     def test_update_credit_with_too_little_amount(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '50',
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--amount', '50',
+                               '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(self.c.amount, 1000)
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
@@ -1617,8 +1660,8 @@ class BCMCommandTestCase(TestCase):
     def test_update_credit_with_too_large_flat_fee(self):
         err = StringIO.StringIO()
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'credits', str(self.c.pk), '--flat_fee_cc', '15000000',
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'credits', str(self.c.pk),
+                               '--flat_fee_cc', '15000000', '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
@@ -1626,16 +1669,16 @@ class BCMCommandTestCase(TestCase):
         err = StringIO.StringIO()
         date = TODAY - datetime.timedelta(100)
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
+                               '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
         err = StringIO.StringIO()
         date = TODAY
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'credits', str(self.c.pk), '--end_date', str(date),
+                               '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
@@ -1643,22 +1686,122 @@ class BCMCommandTestCase(TestCase):
         err = StringIO.StringIO()
         date = TODAY
         with self.assertRaises(SystemExit):
-            call_command('bcm', 'update', 'credits', str(self.c.pk), '--start_date', str(date),
-                         '--no-confirm', stderr=err)
+            self._call_command('bcm', 'update', 'credits', str(self.c.pk),
+                               '--start_date', str(date), '--no-confirm', stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), 'Validation failed.\n')
 
+    def test_release_credit(self):
+        err = StringIO.StringIO()
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'release', 'credits', str(self.c.pk), '--no-confirm',
+                               stderr=err)
+        self.assertEqual(err.getvalue(), 'Cannot manage credits with action release\n')
+
+    def test_release_active_budget(self):
+        err = StringIO.StringIO()
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'release', 'budgets', str(self.b1.pk), '--no-confirm',
+                               stderr=err)
+        self.assertEqual(err.getvalue(), 'Could not free assets. Budget status is Active\n')
+
+    def test_release_nonactive_budget(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(5),
+            campaign_id=1,
+        )
+        self._call_command('bcm', 'release', 'budgets', str(b.pk), '--no-confirm')
+
     def test_delete_credit(self):
         self.assertTrue(models.CreditLineItem.objects.filter(pk__in=[self.c.pk]))
-        call_command('bcm', 'delete', 'credits', str(self.c.pk), '--no-confirm')
+        self._call_command('bcm', 'delete', 'credits', str(self.c.pk), '--no-confirm')
         self.assertFalse(models.CreditLineItem.objects.filter(pk__in=[self.c.pk]))
 
     def test_delete_budgets(self):
         self.assertEqual(len(self.c.budgets.all()), 2)
-        call_command('bcm', 'delete', 'budgets', str(self.b1.pk), str(self.b2.pk), '--no-confirm')
+        self._call_command('bcm', 'delete', 'budgets', str(self.b1.pk), str(self.b2.pk),
+                           '--no-confirm')
         self.assertEqual(len(self.c.budgets.all()), 0)
 
     def test_delete_budgets_with_credit_id(self):
         self.assertEqual(len(self.c.budgets.all()), 2)
-        call_command('bcm', 'delete', 'budgets', '--credits', str(self.c.pk), '--no-confirm')
+        self._call_command('bcm', 'delete', 'budgets', '--credits', str(self.c.pk), '--no-confirm')
         self.assertEqual(len(self.c.budgets.all()), 0)
+
+    def test_budget_constraints(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(5),
+            campaign_id=1,
+        )
+
+        out = self._call_command('bcm', 'list', 'budgets', '--credits', str(self.c.pk))
+        self.assertIn('#' + str(self.b1.pk), out)
+        self.assertIn('#' + str(self.b2.pk), out)
+        self.assertNotIn('#' + str(b.pk), out)
+
+        out = self._call_command('bcm', 'list', 'budgets', '--campaigns', '1')
+        self.assertIn('#' + str(self.b1.pk), out)
+        self.assertIn('#' + str(self.b2.pk), out)
+        self.assertIn('#' + str(b.pk), out)
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'budgets', '--accounts', '1')
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'budgets', '--agencies', '1')
+
+    def test_credit_constraints(self):
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        agency = models.Agency()
+        agency.name = '123'
+        agency.save(request)
+
+        c = create_credit(
+            agency_id=agency.pk,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+
+        out = self._call_command('bcm', 'list', 'credits', '--accounts', '2')
+        print out
+        self.assertIn('#' + str(self.c.pk), out)
+        self.assertNotIn('#' + str(c.pk), out)
+
+        out = self._call_command('bcm', 'list', 'credits', '--agencies', str(agency.pk))
+        self.assertNotIn('#' + str(self.c.pk), out)
+        self.assertIn('#' + str(c.pk), out)
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'credits', '--campaigns', '1')
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'credits', '--credits', '1')

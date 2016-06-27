@@ -133,7 +133,7 @@ class AdGroupSettingsTest(TestCase):
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Max CPC bid set to "$1.000", '
-            'Device targeting set to "Mobile/Tablet", '
+            'Device targeting set to "Mobile", '
             'Display URL set to "example.com", '
             'Brand name set to "Example", '
             'State set to "Enabled", '
@@ -660,7 +660,7 @@ class CampaignTestCase(TestCase):
 
         self.assertEqual(settings.name, '')
         self.assertEqual(settings.iab_category, 'IAB24')
-        self.assertEqual(settings.target_devices, ['mobile', 'desktop'])
+        self.assertEqual(settings.target_devices, ['tablet', 'mobile', 'desktop'])
         self.assertEqual(settings.target_regions, ['US'])
 
 
