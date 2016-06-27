@@ -1179,6 +1179,8 @@ class AdGroupAdsTable(object):
             rows = campaign_goals.create_goals(campaign, rows)
             total_row = campaign_goals.create_goal_totals(campaign, total_row)
 
+        rows = self.sort_rows(rows, order)
+
         response = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
@@ -1218,6 +1220,15 @@ class AdGroupAdsTable(object):
             )
 
         return response
+
+    def sort_rows(self, rows, order):
+        if order:
+            if 'state' in order:
+                rows = sort_rows_by_order_and_archived(rows, order)
+            else:
+                rows = sort_results(rows, [order])
+
+        return rows
 
     def _get_total_row(self, user, stats):
         totals = {}
