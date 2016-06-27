@@ -146,7 +146,7 @@ class Command(BaseCommand):
         updates = {}
         for field in UPDATABLE_FIELDS:
             value = options.get(field)
-            if value:
+            if value is not None:
                 updates[field] = value
         return updates
 
