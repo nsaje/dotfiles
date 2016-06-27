@@ -13,8 +13,9 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.step = 1;
     $scope.selectedCandidate = null;
     $scope.batchNameEdit = false;
-    $scope.batchName = moment().format('M/D/YYYY h:mm A');
-    $scope.fileInput = {};
+    $scope.formData = {
+        batchName: moment().format('M/D/YYYY h:mm A'),
+    };
 
     $scope.MAX_URL_LENGTH = 936;
     $scope.MAX_TITLE_LENGTH = 90;
@@ -22,6 +23,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.MAX_DISPLAY_URL_LENGTH = 25;
     $scope.MAX_BRAND_NAME_LENGTH = 25;
     $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
+    $scope.MAX_LABEL_LENGTH = 25;
 
     var pollInterval;
     var startPolling = function (batchId) {
@@ -82,10 +84,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.batchNameEdit = false;
     };
 
-    $scope.nextStep = function () {
-        $scope.step++;
-    };
-
     $scope.restart = function () {
         $scope.step = 1;
     };
@@ -96,6 +94,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
 
     $scope.openEditForm = function (candidate) {
         $scope.selectedCandidate = angular.copy(candidate);
+        $scope.selectedCandidate.defaults = {};
         $scope.selectedCandidate.useTrackers = !!$scope.selectedCandidate.primaryTrackerUrl ||
             !!$scope.selectedCandidate.secondaryTrackerUrl;
         $scope.selectedCandidate.useSecondaryTracker = !!$scope.selectedCandidate.secondaryTrackerUrl;
@@ -105,14 +104,24 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.selectedCandidate = null;
     };
 
-    $scope.removeCandidate = function (candidate) {
-        $scope.candidates = $scope.candidates.filter(function (el) {
-            return candidate.id !== el.id;
-        });
+    $scope.isUploadDisabled = function () {
+        return $scope.anyErrors || !$scope.candidates.length || getWaitingCandidateIds().length;
+    };
 
-        if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
-            $scope.selectedCandidate = null;
-        }
+    $scope.removeCandidate = function (candidate) {
+        api.uploadPlus.removeCandidate(
+            candidate.id,
+            $state.params.id,
+            $scope.batchId
+        ).then(function () {
+            $scope.candidates = $scope.candidates.filter(function (el) {
+                return candidate.id !== el.id;
+            });
+
+            if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
+                $scope.closeEditForm();
+            }
+        });
     };
 
     $scope.addSecondaryTracker = function (candidate) {
@@ -160,12 +169,32 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return constants.contentAdCandidateStatus.OK;
     };
 
+    $scope.saveUpload = function () {
+        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.formData.batchName).then(
+            function (data) {
+                $scope.numSuccessful = data.numSuccessful;
+                $scope.step = 3;
+            },
+            function (errors) {
+                $scope.saveErrors = errors;
+            }
+        );
+    };
+
     $scope.clearSelectedCandidateErrors = function (field) {
         if (!$scope.selectedCandidate || !$scope.selectedCandidate.errors) {
             return;
         }
 
         delete $scope.selectedCandidate.errors[field];
+    };
+
+    $scope.clearBatchNameErrors = function () {
+        if (!$scope.saveErrors) {
+            return;
+        }
+
+        $scope.saveErrors.batchName = undefined;
     };
 
     $scope.getContentErrorsMsg = function (candidate) {
@@ -206,18 +235,31 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
 
         var formData = {
-            file: $scope.fileInput.file,
-            batchName: $scope.batchName,
+            file: $scope.formData.file,
+            batchName: $scope.formData.batchName,
         };
 
         api.uploadPlus.uploadMultiple(
             $state.params.id, formData
         ).then(function (result) {
-            $scope.step++;
+            $scope.step = 2;
             $scope.candidates = result.candidates;
-            startPolling(result.batchId);
+            $scope.batchId = result.batchId;
+            startPolling($scope.batchId);
         }, function (data) {
             $scope.errors = data.errors;
+        });
+    };
+
+    $scope.updateCandidate = function () {
+        api.uploadPlus.updateCandidate(
+            $scope.selectedCandidate,
+            $state.params.id,
+            $scope.batchId
+        ).then(function (result) {
+            updateCandidates(result.candidates);
+            startPolling($scope.batchId);
+            $scope.closeEditForm();
         });
     };
 
