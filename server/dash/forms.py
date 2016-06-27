@@ -1096,7 +1096,7 @@ class ContentAdCandidateForm(forms.ModelForm):
         ]
 
 
-class ContentAdForm(forms.Form):
+class ContentAdForm(ContentAdCandidateForm):
     label = forms.CharField(
         max_length=25,
         required=False,
@@ -1175,6 +1175,7 @@ class ContentAdForm(forms.Form):
             'max_length': 'URL too long (max %(limit_value)d characters)',
         }
     )
+
     image_id = forms.CharField(
         required=False,
     )
@@ -1273,44 +1274,6 @@ class ContentAdForm(forms.Form):
             return image_crop.lower()
 
         raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
-
-    def clean(self):
-        super(ContentAdCandidateForm, self).clean()
-
-        primary_tracker_url = self.cleaned_data.get('primary_tracker_url')
-        if primary_tracker_url:
-            self.cleaned_data['tracker_urls'].append(primary_tracker_url)
-
-        secondary_tracker_url = self.cleaned_data.get('secondary_tracker_url')
-        if secondary_tracker_url:
-            self.cleaned_data['tracker_urls'].append(secondary_tracker_url)
-
-        return self.cleaned_data
-
-
-class ContentAdForm(ContentAdCandidateForm):
-    image_id = forms.CharField(
-        required=False,
-    )
-    image_hash = forms.CharField(
-        required=False,
-    )
-    image_width = forms.IntegerField(
-        required=False,
-    )
-    image_height = forms.IntegerField(
-        required=False,
-    )
-
-    image_status = forms.IntegerField(
-        required=False,
-    )
-    url_status = forms.IntegerField(
-        required=False,
-    )
-
-    MIN_IMAGE_SIZE = 300
-    MAX_IMAGE_SIZE = 10000
 
     def _get_image_error_msg(self, cleaned_data):
         image_status = cleaned_data['image_status']
