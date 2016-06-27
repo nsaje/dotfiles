@@ -104,11 +104,11 @@ def _delete_budget_traces(budget):
 
 
 def _updates_to_sql(updates):
-    sql, args = '', []
+    sql, args = [], []
     for field, value in updates.iteritems():
-        sql += field + ' = %s'
+        sql.append(field + ' = %s')
         args.append(value)
-    return sql, args
+    return ', '.join(sql), args
 
 
 class Command(BaseCommand):
