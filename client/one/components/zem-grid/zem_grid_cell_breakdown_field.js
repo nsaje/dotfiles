@@ -10,6 +10,9 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
     ];
 
     function getFieldType (breakdown, rowLevel) {
+        if (rowLevel === 0) {
+            return 'totalsLabel';
+        }
         // Display internal links for rows on first level in 'Account', 'Campaign' or 'Ad Group' breakdowns
         if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 && rowLevel === 1) {
             return 'internalLink';
@@ -30,12 +33,11 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', function () {
-                updateRow();
-            });
+            scope.$watch('ctrl.row', updateRow);
+            scope.$watch('ctrl.data', updateRow);
 
             function updateRow () {
-                if (ctrl.data) {
+                if (ctrl.row) {
                     ctrl.fieldType = getFieldType(ctrl.grid.meta.data.breakdown, ctrl.row.level);
                 }
             }

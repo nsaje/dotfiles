@@ -1,0 +1,12 @@
+<span class="zem-grid-cell-state-selector" ng-show="ctrl.isFieldVisible">
+    <span ng-show="ctrl.showLoader" class="loader-image"></span>
+    <span ng-show="ctrl.isRowArchived && !ctrl.showLoader" class="archived-text">Archived</span>
+    <button ng-show="!ctrl.isRowArchived && !ctrl.showLoader"
+            zem-grid-modal="stateSelectorModal.html"
+            top="19"
+            class="state-selector-modal-toggle">
+        <span ng-show="ctrl.active" class="state-icon active"></span>
+        <span ng-show="!ctrl.active" class="state-icon paused"></span>
+        <span class="arrow-down"></span>
+    </button>
+</span>

@@ -1,10 +1,6 @@
 <div class="zem-grid-row-breakdown">
     <div class="zem-grid-cell breakdown-pagination-cell">
-        <div ng-style="ctrl.getBreakdownColumnStyle()">
-            <span>
-                {{ ctrl.getPaginationText() }}
-            </span>
-        </div>
+        <div ng-style="ctrl.getBreakdownColumnStyle()" ng-bind="ctrl.getPaginationText()"></div>
     </div>
 
     <div class="zem-grid-cell breakdown-load-more-cell loading-cell" ng-show="ctrl.row.data.meta.loading"></div>
@@ -16,7 +12,7 @@
     </div>
 
     <div class="zem-grid-cell breakdown-load-more-cell"
-         ng-show="!ctrl.row.data.meta.loading && (ctrl.row.data.pagination.complete || ctrl.row.data.meta.error)">
-        <span> {{ ctrl.getCompleteText() }} </span>
+         ng-show="!ctrl.row.data.meta.loading && (ctrl.row.data.pagination.complete || ctrl.row.data.meta.error)"
+         ng-bind="ctrl.getCompleteText()">
     </div>
 </div>

@@ -1718,3 +1718,69 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(len(self.c.budgets.all()), 2)
         self._call_command('bcm', 'delete', 'budgets', '--credits', str(self.c.pk), '--no-confirm')
         self.assertEqual(len(self.c.budgets.all()), 0)
+
+    def test_budget_constraints(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b = create_budget(
+            credit=c,
+            amount=200,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(5),
+            campaign_id=1,
+        )
+
+        out = self._call_command('bcm', 'list', 'budgets', '--credits', str(self.c.pk))
+        self.assertIn('#' + str(self.b1.pk), out)
+        self.assertIn('#' + str(self.b2.pk), out)
+        self.assertNotIn('#' + str(b.pk), out)
+
+        out = self._call_command('bcm', 'list', 'budgets', '--campaigns', '1')
+        self.assertIn('#' + str(self.b1.pk), out)
+        self.assertIn('#' + str(self.b2.pk), out)
+        self.assertIn('#' + str(b.pk), out)
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'budgets', '--accounts', '1')
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'budgets', '--agencies', '1')
+
+    def test_credit_constraints(self):
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        agency = models.Agency()
+        agency.name = '123'
+        agency.save(request)
+
+        c = create_credit(
+            agency_id=agency.pk,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY - datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+
+        out = self._call_command('bcm', 'list', 'credits', '--accounts', '2')
+        print out
+        self.assertIn('#' + str(self.c.pk), out)
+        self.assertNotIn('#' + str(c.pk), out)
+
+        out = self._call_command('bcm', 'list', 'credits', '--agencies', str(agency.pk))
+        self.assertNotIn('#' + str(self.c.pk), out)
+        self.assertIn('#' + str(c.pk), out)
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'credits', '--campaigns', '1')
+
+        with self.assertRaises(SystemExit):
+            self._call_command('bcm', 'list', 'credits', '--credits', '1')

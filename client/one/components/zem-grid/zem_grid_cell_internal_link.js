@@ -24,9 +24,8 @@ oneApp.directive('zemGridCellInternalLink', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_internal_link.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', function () {
-                updateRow();
-            });
+            scope.$watch('ctrl.row', updateRow);
+            scope.$watch('ctrl.data', updateRow);
 
             function updateRow () {
                 if (ctrl.data && ctrl.row.data.breakdownId && ctrl.row.level === 1) {
