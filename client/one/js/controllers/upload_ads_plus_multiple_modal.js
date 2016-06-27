@@ -16,6 +16,13 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.batchName = moment().format('M/D/YYYY h:mm A');
     $scope.fileInput = {};
 
+    $scope.MAX_URL_LENGTH = 936;
+    $scope.MAX_TITLE_LENGTH = 90;
+    $scope.MAX_DESCRIPTION_LENGTH = 140;
+    $scope.MAX_DISPLAY_URL_LENGTH = 25;
+    $scope.MAX_BRAND_NAME_LENGTH = 25;
+    $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
+
     var pollInterval;
     var startPolling = function (batchId) {
         if (angular.isDefined(pollInterval)) {
@@ -115,17 +122,13 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.removeSecondaryTracker = function (candidate) {
         candidate.useSecondaryTracker = false;
         candidate.secondaryTrackerUrl = undefined;
-        $scope.clearCandidateErrors('secondaryTrackerUrl');
+        $scope.clearSelectedCandidateErrors('secondaryTrackerUrl');
     };
 
-    var candidateHasErrors = function (candidate) {
-        for (var key in candidate.errors) {
-            if (candidate.errors.hasOwnProperty(key) && candidate.errors[key]) {
-                return true;
-            }
-        }
-
-        return false;
+    var hasErrors = function (candidate) {
+        return candidate.errors.some(function (error) {
+            return !!error;
+        });
     };
 
     var checkAllCandidateErrors = function (candidates) {
@@ -134,7 +137,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         }
 
         for (var i = 0; i < candidates.length; i++) {
-            if (candidateHasErrors(candidates[i])) {
+            if (hasErrors(candidates[i])) {
                 return true;
             }
         }
@@ -150,14 +153,14 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
             return constants.contentAdCandidateStatus.LOADING;
         }
 
-        if (candidateHasErrors(candidate)) {
+        if (hasErrors(candidate)) {
             return constants.contentAdCandidateStatus.ERRORS;
         }
 
         return constants.contentAdCandidateStatus.OK;
     };
 
-    $scope.clearCandidateErrors = function (field) {
+    $scope.clearSelectedCandidateErrors = function (field) {
         if (!$scope.selectedCandidate || !$scope.selectedCandidate.errors) {
             return;
         }
@@ -165,7 +168,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         delete $scope.selectedCandidate.errors[field];
     };
 
-    $scope.getContentErrors = function (candidate) {
+    $scope.getContentErrorsMsg = function (candidate) {
         if (!candidate.errors) {
             return '';
         }
@@ -184,7 +187,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return errs.length + ' content errors';
     };
 
-    $scope.getImageErrors = function (candidate) {
+    $scope.getImageErrorsMsg = function (candidate) {
         if (!candidate.errors || !candidate.errors.imageUrl) {
             return '';
         }

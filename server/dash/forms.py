@@ -1256,7 +1256,7 @@ class ContentAdForm(ContentAdCandidateForm):
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000
 
-    def _validate_image_status(self, cleaned_data):
+    def _get_image_error_msg(self, cleaned_data):
         if cleaned_data['image_status'] != constants.AsyncUploadJobStatus.OK or\
            not cleaned_data['image_id'] or\
            not cleaned_data['image_hash'] or\
@@ -1270,7 +1270,7 @@ class ContentAdForm(ContentAdCandidateForm):
         if cleaned_data['image_width'] > self.MAX_IMAGE_SIZE or cleaned_data['image_height'] > self.MAX_IMAGE_SIZE:
             return 'Image too big (maximum size is {max}x{max} px)'.format(max=self.MAX_IMAGE_SIZE)
 
-    def _validate_url_status(self, cleaned_data):
+    def _get_url_error_msg(self, cleaned_data):
         if cleaned_data['url_status'] != constants.AsyncUploadJobStatus.OK:
             return 'Content unreachable'
 
@@ -1283,12 +1283,12 @@ class ContentAdForm(ContentAdCandidateForm):
             self.add_error(None, 'Content ad still processing')
             return cleaned_data
 
-        image_error = self._validate_image_status(cleaned_data)
-        if 'image_url' in cleaned_data and cleaned_data['image_url'] and image_error:
-            self.add_error('image_url', image_error)
+        image_error_msg = self._get_image_error_msg(cleaned_data)
+        if 'image_url' in cleaned_data and cleaned_data['image_url'] and image_error_msg:
+            self.add_error('image_url', image_error_msg)
 
-        url_error = self._validate_url_status(cleaned_data)
-        if 'url' in cleaned_data and cleaned_data['url'] and url_error:
-            self.add_error('url', url_error)
+        url_error_msg = self._get_url_error_msg(cleaned_data)
+        if 'url' in cleaned_data and cleaned_data['url'] and url_error_msg:
+            self.add_error('url', url_error_msg)
 
         return cleaned_data

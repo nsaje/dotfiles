@@ -3280,7 +3280,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         if date is None:
             date = dates_helper.local_today()
         total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
-        return Decimal(self.amount) - total_spend
+        return self.allocated_amount() - total_spend
 
     def state(self, date=None):
         if date is None:
@@ -3708,7 +3708,9 @@ class History(models.Model):
         blank=False,
     )
 
-    # action type is user initiated action type
+    # action type should only be set if this history entry is a direct
+    # consequence of a user action(backend actions that insert history
+    # should either have action_type set to None or have system user set)
     # non user initiated action type is None
     action_type = models.PositiveSmallIntegerField(
         choices=constants.HistoryActionType.get_choices(),
