@@ -44,7 +44,7 @@
         account: 100
         ad_account_id: 'dummy_id'
         page_url: 'http://fakebook.fake/dummy_page_url'
-        status: 2,
+        status: 2
         page_id: '123'
     model: dash.facebookaccount
     pk: 100

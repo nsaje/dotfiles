@@ -3222,7 +3222,7 @@ class AdFacebookAccountStatusTest(TestCase):
 
     @patch('dash.facebook_helper.get_all_pages')
     def test_get(self, get_all_pages_mock):
-        get_all_pages_mock.return_value = {'123': 'CONNECTED'}
+        get_all_pages_mock.return_value = {'123': 'CONFIRMED'}
         client = self._get_client_with_permissions([])
         response = client.get(
             reverse('facebook_account_status', kwargs={'account_id': 100}),
@@ -3230,7 +3230,7 @@ class AdFacebookAccountStatusTest(TestCase):
         )
         content = json.loads(response.content)
         self.assertDictEqual(content['data'], {u'status': u'Connected'})
-        get_all_pages_mock.assert_called_with('dummy_id', 'fake_access_token')
+        get_all_pages_mock.assert_called_with('fake_business_id', 'fake_access_token')
 
     def _get_client_with_permissions(self, permissions_list):
         password = 'secret'
