@@ -10,7 +10,6 @@ from dash.facebook_helper import FB_PAGES_URL, FB_API_VERSION, FB_PAGE_ID_URL, F
 
 
 class FacebookPageAccessTest(TestCase):
-
     @staticmethod
     def get_credentials():
         return {
@@ -146,8 +145,9 @@ class FacebookPageAccessTest(TestCase):
         status = facebook_helper.send_page_access_request(page_id, credentials['business_id'],
                                                           credentials['access_token'])
 
-        mock_post.assert_called_once_with(FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
-                                          data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
+        mock_post.assert_called_once_with(
+            FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
+            data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
         self.assertEqual(status, constants.FacebookPageRequestType.INVALID)
 
     @patch('requests.post')
@@ -360,8 +360,9 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         ad_account_id = facebook_helper.create_ad_account(name, page_id, credentials['app_id'],
                                                           credentials['business_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
-                                     json.dumps(self._get_account_params(name, page_id)), headers=self._get_headers())
+        mock.assert_called_once_with(
+            FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
+            json.dumps(self._get_account_params(name, page_id)), headers=self._get_headers())
         self.assertEqual("1000", ad_account_id)
 
     @patch('requests.post')
@@ -373,7 +374,8 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         ad_account_id = facebook_helper.create_ad_account(name, page_id, credentials['app_id'],
                                                           credentials['business_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
+        mock.assert_called_once_with(FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION,
+                                                                     business_id='fake_business_id'),
                                      json.dumps(self._get_account_params(name, page_id)), headers=self._get_headers())
         self.assertIsNone(ad_account_id)
 
