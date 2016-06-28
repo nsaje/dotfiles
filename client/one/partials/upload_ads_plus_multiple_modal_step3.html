@@ -2,7 +2,7 @@
     <div class="uploading_completed">
         <img ng-src="{{ config.static_url }}/one/img/check_mark-circle.svg"/>
         <h1>Uploading completed</h1>
-        <p><strong>{{ numSuccessful }} <ng-pluralize count="numSuccessful" when="{'one': 'ad', 'other': 'ads'}"></strong> were successfully added to the ad group <strong>{{ adGroup.name }}</strong>.</p>
+        <p><strong>{{ numSuccessful }} <ng-pluralize count="numSuccessful" when="{'one': 'ad', 'other': 'ads'}"></ng-pluralize></strong> <ng-pluralize count="numSuccessful" when="{'one': 'was', 'other': 'were'}"></ng-pluralize> successfully added to the ad group <strong>{{ adGroup.name }}</strong>.</p>
     </div>
 </div>
 <div class="modal-footer">
