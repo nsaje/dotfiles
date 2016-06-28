@@ -311,17 +311,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         },
         {
             name: 'Yesterday Spend',
-            field: 'yesterday_cost',
-            checked: false,
-            type: 'currency',
-            help: 'Amount that you have spent yesterday for promotion on specific media source.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
-            name: 'Yesterday Spend',
             field: 'e_yesterday_cost',
             checked: false,
             type: 'currency',
