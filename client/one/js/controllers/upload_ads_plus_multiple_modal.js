@@ -76,6 +76,18 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return ret;
     };
 
+    var editFormScrollCallback = null;
+    var resetEditFormScroll = function () {
+        if (!editFormScrollCallback) {
+            return;
+        }
+        editFormScrollCallback();
+    };
+
+    $scope.registerEditFormScroll = function (callback) {
+        editFormScrollCallback = callback;
+    };
+
     $scope.toggleBatchNameEdit = function () {
         $scope.batchNameEdit = !$scope.batchNameEdit;
     };
@@ -98,6 +110,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.selectedCandidate.useTrackers = !!$scope.selectedCandidate.primaryTrackerUrl ||
             !!$scope.selectedCandidate.secondaryTrackerUrl;
         $scope.selectedCandidate.useSecondaryTracker = !!$scope.selectedCandidate.secondaryTrackerUrl;
+        resetEditFormScroll();
     };
 
     $scope.closeEditForm = function () {
