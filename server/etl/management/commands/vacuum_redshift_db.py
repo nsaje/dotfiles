@@ -2,9 +2,10 @@ from utils.command_helpers import ExceptionCommand
 
 from etl import maintenance
 
+import influx
 
 class Command(ExceptionCommand):
-
+    @influx.timer('etl.vacuum_redshift_db')
     def handle(self, *args, **options):
         tables = [
             'publishers_1',

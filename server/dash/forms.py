@@ -25,6 +25,8 @@ from zemauth.models import User as ZemUser
 import actionlog.api_contentads
 import actionlog.zwei_actions
 
+MAX_ADS_PER_UPLOAD = 100
+
 
 class BaseApiForm(forms.Form):
 
@@ -61,12 +63,12 @@ class AdGroupSettingsForm(forms.Form):
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
-        max_value=4,
+        max_value=10,
         decimal_places=4,
         required=False,
         error_messages={
             'min_value': 'Maximum CPC can\'t be lower than $0.03.',
-            'max_value': 'Maximum CPC can\'t be higher than $4.00.'
+            'max_value': 'Maximum CPC can\'t be higher than $10.00.'
         }
     )
     daily_budget_cc = forms.DecimalField(
@@ -744,6 +746,9 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
 
         if data is None:
             raise forms.ValidationError('Unknown file encoding.')
+
+        if len(data) > MAX_ADS_PER_UPLOAD:
+            raise forms.ValidationError('Too many content ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
 
         return data
 

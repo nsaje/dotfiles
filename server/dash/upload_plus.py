@@ -244,8 +244,8 @@ def process_callback(callback_data):
         logger.exception('No candidate with id %s', callback_data['id'])
         return
 
-    if callback_data['image']['originUrl'] != candidate.image_url or\
-       callback_data['url']['originUrl'] != candidate.url:
+    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != candidate.image_url or\
+       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != candidate.url:
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED

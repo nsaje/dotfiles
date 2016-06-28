@@ -2666,26 +2666,30 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
 
-        function getDefaultFields (defaults) {
+        function getDefaultFields (candidate) {
             var ret = [];
 
-            if (defaults.description) {
+            if (!candidate.defaults) {
+                return ret;
+            }
+
+            if (candidate.defaults.description) {
                 ret.push('description');
             }
 
-            if (defaults.imageCrop) {
+            if (candidate.defaults.imageCrop) {
                 ret.push('image_crop');
             }
 
-            if (defaults.brandName) {
+            if (candidate.defaults.brandName) {
                 ret.push('brand_name');
             }
 
-            if (defaults.callToAction) {
+            if (candidate.defaults.callToAction) {
                 ret.push('call_to_action');
             }
 
-            if (defaults.displayUrl) {
+            if (candidate.defaults.displayUrl) {
                 ret.push('display_url');
             }
 

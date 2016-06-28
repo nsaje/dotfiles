@@ -244,7 +244,7 @@ class AdGroupSettingsFormTest(TestCase):
     @patch('utils.dates_helper.local_today')
     def test_max_cpc_setting_value_too_high(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['cpc_cc'] = 4.01
+        self.data['cpc_cc'] = 10.01
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
@@ -524,6 +524,20 @@ class AdGroupAdsUploadFormTest(TestCase):
     def test_csv_empty_lines(self):
         csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Impression Trackers'], [],
                                            [self.url, self.title, self.image_url, self.tracker_urls], []])
+        form = self._init_form(csv_file, None)
+        self.assertTrue(form.is_valid())
+
+    def test_csv_max_ads(self):
+        lines = [[self.url, self.title, self.image_url, self.tracker_urls]] * 101
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Impression Trackers'], lines)
+        form = self._init_form(csv_file, None)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'content_ads': ['Too many content ads (max. 100)']})
+
+    def test_csv_max_ads_empty_lines(self):
+        lines = [['Url', 'Title', 'Image Url', 'Impression Trackers']]
+        lines += [[self.url, self.title, self.image_url, self.tracker_urls], []] * 100
+        csv_file = self._get_csv_file([], lines)
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
 

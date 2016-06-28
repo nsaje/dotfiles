@@ -135,13 +135,13 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     var hasErrors = function (candidate) {
-        if (!candidate || !candidate.errors) {
-            return false;
+        for (var key in candidate.errors) {
+            if (candidate.errors.hasOwnProperty(key) && candidate.errors[key]) {
+                return true;
+            }
         }
 
-        return candidate.errors.some(function (error) {
-            return !!error;
-        });
+        return false;
     };
 
     var checkAllCandidateErrors = function (candidates) {
