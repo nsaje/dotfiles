@@ -145,7 +145,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 deferred.reject(err);
             }).finally(function () {
                 var idx = activeRequests.indexOf(promise);
-                if (idx > -1) activeRequests.slice(idx, 1);
+                if (idx > -1) activeRequests.splice(idx, 1);
                 breakdowns.forEach(function (breakdown) {
                     breakdown.meta.loading = false;
                 });
