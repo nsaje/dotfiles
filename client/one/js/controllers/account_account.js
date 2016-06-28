@@ -133,7 +133,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     function checkFacebookAccountStatus () {
         var facebookPage = $scope.settings.facebookPage;
         var facebookStatus = $scope.settings.facebookStatus;
-        if (facebookPage === null || facebookStatus === 'Connected') {
+        if (facebookPage === null || facebookStatus === constants.facebookStatus.CONNECTED) {
             return;
         }
         api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(

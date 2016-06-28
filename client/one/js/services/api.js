@@ -1464,9 +1464,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             $http.get(url).
                 success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
                     deferred.resolve(data);
                 }).
                 error(function (data, status, headers) {

@@ -1309,19 +1309,24 @@ class FacebookAccountStatus(api_common.BaseApiView):
             if pages is None:
                 raise exc.BaseError('Error while accessing facebook page api.')
             page_status = pages.get(account.facebookaccount.page_id)
-            if page_status is None:
-                account_status = models.constants.FacebookPageRequestType.ERROR
-            elif page_status == 'CONFIRMED':
-                account_status = models.constants.FacebookPageRequestType.CONNECTED
-            elif page_status == 'PENDING':
-                account_status = models.constants.FacebookPageRequestType.PENDING
-            else:
-                account_status = models.constants.FacebookPageRequestType.INVALID
-            account_status = models.constants.FacebookPageRequestType.get_text(account_status)
+            account_status = self._get_account_status(page_status)
         except models.FacebookAccount.DoesNotExist:
-            account_status = models.constants.FacebookPageRequestType.get_text(
-                models.constants.FacebookPageRequestType.EMPTY)
+            account_status = models.constants.FacebookPageRequestType.EMPTY
+        except exc.BaseError:
+            account_status = models.constants.FacebookPageRequestType.ERROR
 
+        account_status_as_string = models.constants.FacebookPageRequestType.get_text(account_status)
         return self.create_api_response({
-            'status': account_status
+            'status': account_status_as_string
         })
+
+    @staticmethod
+    def _get_account_status(page_status):
+        if page_status is None:
+            return models.constants.FacebookPageRequestType.ERROR
+        elif page_status == 'CONFIRMED':
+            return models.constants.FacebookPageRequestType.CONNECTED
+        elif page_status == 'PENDING':
+            return models.constants.FacebookPageRequestType.PENDING
+        else:
+            return models.constants.FacebookPageRequestType.INVALID
