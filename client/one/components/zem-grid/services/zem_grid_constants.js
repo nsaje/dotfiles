@@ -7,6 +7,11 @@ oneApp.constant('zemGridConstants', {
         NUM_OF_ROWS_PER_PAGE: 12,
         NUM_OF_PRERENDERED_ROWS: 3,
     },
+    gridColumnOrder: {
+        NONE: 'none',
+        ASC: 'asc',
+        DESC: 'desc',
+    },
     gridRowType: {
         STATS: 1,
         BREAKDOWN: 2,

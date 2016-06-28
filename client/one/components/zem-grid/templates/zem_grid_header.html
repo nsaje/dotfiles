@@ -6,18 +6,16 @@
             <!-- Basic styling - TODO: refactor and fully support current Table styles -->
             <zem-internal-feature ng-if="column.data.internal"></zem-internal-feature>
             <span ng-switch="column.data.order">
-                <a ng-switch-when='true'
-                   href class="col-title order"
-                   ng-class="column.data.nameCssClass"
-                   ng-click="ctrl.setOrder(column)">
+                <a ng-switch-when='true' href ng-class="column.data.nameCssClass" ng-click="ctrl.setOrder(column)">
                     {{ column.data.name }}
                 </a>
-                <span ng-switch-default
-                      class="col-title"
-                      ng-class="column.data.nameCssClass">
+                <span ng-switch-default ng-class="column.data.nameCssClass">
                     {{ column.data.name }}
                 </span>
             </span>
+
+            <span ng-class="ctrl.getHeaderColumnOrderClass(column)"></span>
+
             <zem-help-popover ng-if="column.data.help"
                               content="{{ column.data.help }}"
                               placement="{{ $last ? 'left' : 'top' }}">
