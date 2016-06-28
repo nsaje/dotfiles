@@ -38,6 +38,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
     function DataSource (endpoint) {
         var metaData = null;
         var data = null;
+        var activeRequests = [];
 
         var config = {
             order: '-clicks',
@@ -102,6 +103,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 limit = size;
                 breakdowns = [breakdown];
             } else {
+                abortActiveRequests();
                 initializeRoot();
             }
 
@@ -117,14 +119,16 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             // All retrieved data is applied to data tree and if not the last level subsequent data is fetch,
             // with newly retrieved breakdowns (breakdownIds)
             //
+            var deferred = $q.defer();
             var config = prepareConfig(level, breakdowns, offset, limit);
+            var promise = endpoint.getData(config);
 
+            activeRequests.push(promise);
             breakdowns.forEach(function (breakdown) {
                 breakdown.meta.loading = true;
             });
 
-            var deferred = $q.defer();
-            endpoint.getData(config).then(function (breakdowns) {
+            promise.then(function (breakdowns) {
                 applyBreakdowns(breakdowns);
                 if (level < selectedBreakdown.length) {
                     // Chain request for each successive level
@@ -140,6 +144,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 });
                 deferred.reject(err);
             }).finally(function () {
+                var idx = activeRequests.indexOf(promise);
+                if (idx > -1) activeRequests.slice(idx, 1);
                 breakdowns.forEach(function (breakdown) {
                     breakdown.meta.loading = false;
                 });
@@ -177,6 +183,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             angular.extend(newConfig, config);
 
             return newConfig;
+        }
+
+        function abortActiveRequests () {
+            activeRequests.forEach(function (promise) {
+                promise.abort();
+            });
         }
 
         function getChildBreakdowns (breakdowns) {
@@ -297,6 +309,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             // which level levels can stay the same (re-fetching is not needed)
             var diff = findDifference(breakdown, selectedBreakdown);
             if (diff < 0) return fetch ? $q.resolve(data) : undefined;
+
+            abortActiveRequests();
 
             // Breakdown levels are 1-based therefor (diff + 1) is level
             // that is different and needs to be replaced
