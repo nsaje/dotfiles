@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
-from utils import url_helper, request_signer
+from utils import url_helper, request_signer, converters
 
 
 logger = logging.getLogger(__name__)
@@ -828,3 +828,37 @@ def get_facebook_account(request):
     except dash.models.FacebookAccount.DoesNotExist:
         facebook_account = None
     return _response_ok(facebook_account)
+
+
+@csrf_exempt
+def update_ad_group_source_state(request):
+    _validate_signature(request)
+
+    data = json.loads(request.body)
+    ad_group_id = data.get('ad_group_id')
+    bidder_slug = data.get('bidder_slug')
+    conf = data.get('conf')
+    if not (ad_group_id and bidder_slug and conf):
+        return _response_error("Must provide ad_group_id, bidder_slug and conf", status=404)
+
+    try:
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group__id=ad_group_id,
+                                                                source__bidder_slug=bidder_slug)
+    except dash.models.AdGroupSource.DoesNotExist:
+        return _response_error(
+            "No AdGroupSource exists for ad_group_id: %s with bidder_slug %s" % (ad_group_id, bidder_slug),
+            status=404)
+    ad_group_source_settings = ad_group_source.get_current_settings()
+    new_settings = ad_group_source_settings.copy_settings()
+
+    for key, val in conf.items():
+        if key == 'cpc_cc':
+            new_settings.cpc_cc = converters.cc_to_decimal(val)
+        elif key == 'daily_budget_cc':
+            new_settings.daily_budget_cc = converters.cc_to_decimal(val)
+        elif key == 'state':
+            new_settings.state = val
+
+    new_settings.system_user = dash.constants.SystemUserType.K1_USER
+    new_settings.save(None)
+    return _response_ok([])
