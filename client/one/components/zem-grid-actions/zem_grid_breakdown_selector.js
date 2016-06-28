@@ -9,7 +9,7 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
         bindToController: {
             api: '=',
         },
-        templateUrl: '/components/zem-grid/templates/zem_grid_breakdown_selector.html',
+        templateUrl: '/components/zem-grid-actions/templates/zem_grid_breakdown_selector.html',
         controller: [function () {
             var vm = this;
 

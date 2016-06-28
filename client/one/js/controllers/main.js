@@ -97,6 +97,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.includes('**.history') && $scope.hasPermission('zemauth.account_history_view')) {
             return 'main.accounts.history';
         }
+        if ($state.includes('**.settings') && $scope.hasPermission('zemauth.account_account_view')) {
+            return 'main.accounts.settings';
+        }
 
         // otherwise get default state
         if ($scope.hasPermission('zemauth.account_campaigns_view')) {
@@ -152,6 +155,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
         if ($state.includes('**.history') && $scope.hasPermission('zemauth.ad_group_history_view')) {
             return 'main.adGroups.history';
+        }
+        if ($state.includes('**.settings') && $scope.hasPermission('dash.settings_view')) {
+            return 'main.adGroups.settings';
         }
 
         // otherwise get default state

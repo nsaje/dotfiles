@@ -2,7 +2,7 @@
 /* eslint-disable camelcase*/
 'use strict';
 
-oneApp.factory('zemGridEndpointApiConverter', [function () {
+oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zemGridConstants) {
 
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
@@ -56,23 +56,22 @@ oneApp.factory('zemGridEndpointApiConverter', [function () {
     function convertStatsFromApi (row, metaData) {
         var convertedStats = {};
         metaData.columns.forEach(function (column) {
-            if (row[column.field]) {
-                convertedStats[column.field] = convertField(row[column.field], column.type);
-            }
+            convertedStats[column.field] = convertField(row[column.field], column.type);
         });
         convertedStats = setEditableFields(convertedStats, row.editable_fields);
         return convertedStats;
     }
 
     function convertField (value, type) {
-        // TODO: On CAMPAIGN_AD_GROUPS level stateText is dynamically calculated based on state and row.archived. It
-        // can't be converted from api, because no stateText field is returned from server.
+        if (!value || !type) {
+            return null;
+        }
         switch (type) {
         // TODO: convertExternalLinkField
         // TODO: convertThumbnailField
         // TODO: convertSubmissionStatusField
         // TODO: convertTextWithPopupField
-        case 'performanceIndicator': return value;
+        case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR: return value;
         default: return convertValueToDefaultObject(value);
         }
     }

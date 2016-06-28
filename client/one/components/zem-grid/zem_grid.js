@@ -11,6 +11,8 @@ oneApp.directive('zemGrid', [function () {
             dataSource: '=',
             api: '=',
             options: '=',
+            hasPermission: '=zemHasPermission',
+            isPermissionInternal: '=zemIsPermissionInternal',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
         controller: ['$scope', '$element', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridApi', function ($scope, $element, zemGridObject, zemGridPubSub, zemGridDataService, zemGridApi) { // eslint-disable-line max-len
@@ -23,6 +25,8 @@ oneApp.directive('zemGrid', [function () {
 
             // Define Grid API and assign to api variable to enable binding between zem-grid and controller
             this.grid.meta.api = zemGridApi.createInstance(this.grid);
+            this.grid.meta.api.hasPermission = this.hasPermission;
+            this.grid.meta.api.isPermissionInternal = this.isPermissionInternal;
             this.api = this.grid.meta.api;
 
             // Initialize data service; starts loading data

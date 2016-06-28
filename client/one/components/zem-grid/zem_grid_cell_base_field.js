@@ -16,10 +16,10 @@ oneApp.directive('zemGridCellBaseField', ['zemGridDataFormatter', function (zemG
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_base_field.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', updateRow);
-            scope.$watch('ctrl.data', updateRow);
+            scope.$watch('ctrl.row', update);
+            scope.$watch('ctrl.data', update);
 
-            function updateRow () {
+            function update () {
                 var value = ctrl.data ? ctrl.data.value : undefined;
                 ctrl.parsedValue = zemGridDataFormatter.formatValue(value, ctrl.column.data);
             }

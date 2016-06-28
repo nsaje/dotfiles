@@ -24,10 +24,10 @@ oneApp.directive('zemGridCellInternalLink', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_internal_link.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', updateRow);
-            scope.$watch('ctrl.data', updateRow);
+            scope.$watch('ctrl.row', update);
+            scope.$watch('ctrl.data', update);
 
-            function updateRow () {
+            function update () {
                 if (ctrl.data && ctrl.row.data.breakdownId && ctrl.row.level === 1) {
                     ctrl.id = ctrl.row.data.breakdownId;
                     ctrl.state = getState(ctrl.grid.meta.data.level);

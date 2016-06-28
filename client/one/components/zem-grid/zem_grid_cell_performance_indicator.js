@@ -54,10 +54,10 @@ oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config)
         link: function (scope, element, attributes, ctrl) {
             ctrl.config = config;
 
-            scope.$watch('ctrl.row', updateRow);
-            scope.$watch('ctrl.data', updateRow);
+            scope.$watch('ctrl.row', update);
+            scope.$watch('ctrl.data', update);
 
-            function updateRow () {
+            function update () {
                 ctrl.overall = {
                     file: statusIcons[constants.emoticon.NEUTRAL],
                     class: statusClasses[constants.emoticon.NEUTRAL],

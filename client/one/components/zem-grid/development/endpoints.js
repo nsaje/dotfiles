@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', function ($rootScope, $controller, $http, $q, $timeout) { // eslint-disable-line max-len
+oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'zemGridConstants', function ($rootScope, $controller, $http, $q, $timeout, zemGridConstants) { // eslint-disable-line max-len
 
     function MockEndpoint (metaData) {
         this.getMetaData = function () {
@@ -35,7 +35,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     var COLUMNS = {
         breakdown_name: {
             name: 'Mocked Level',
-            type: 'breakdown',
+            type: zemGridConstants.gridColumnTypes.BREAKDOWN,
             help: 'Mocked level.',
             shown: true,
             checked: true,
@@ -43,14 +43,14 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         thumbnail: {
             name: 'Thumbnail',
-            type: 'thumbnail',
+            type: zemGridConstants.gridColumnTypes.THUMBNAIL,
             shown: true,
             checked: true,
             unselectable: false,
         },
         status: {
             name: 'Status',
-            type: 'text',
+            type: zemGridConstants.gridColumnTypes.STATUS,
             help: 'Status of an account (enabled or paused).',
             shown: true,
             checked: true,
@@ -58,7 +58,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         performance: {
             nameCssClass: 'performance-icon',
-            type: 'performanceIndicator',
+            type: zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR,
             help: 'Goal performance indicator',
             shown: true,
             checked: true,
@@ -66,7 +66,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         submission_status: {
             name: 'Submission Status',
-            type: 'submissionStatus',
+            type: zemGridConstants.gridColumnTypes.SUBMISSION_STATUS,
             help: 'Current submission status.',
             shown: true,
             checked: true,
@@ -74,7 +74,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         default_account_manager: {
             name: 'Account Manager',
-            type: 'text',
+            type: zemGridConstants.gridColumnTypes.TEXT,
             help: 'Account manager responsible for the campaign and the communication with the client.',
             shown: true,
             checked: true,
@@ -82,7 +82,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         cost: {
             name: 'Spend',
-            type: 'currency',
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
             help: 'Amount spent per account',
             shown: true,
             checked: true,
@@ -92,7 +92,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         pacing: {
             name: 'Pacing',
-            type: 'percent',
+            type: zemGridConstants.gridColumnTypes.PERCENT,
             help: '',
             shown: true,
             checked: true,
@@ -100,7 +100,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         clicks: {
             name: 'Clicks',
-            type: 'number',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
             help: 'The number of times a content ad has been clicked.',
             shown: true,
             checked: true,
@@ -108,14 +108,14 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         time_on_site: {
             name: 'Time on Site',
-            type: 'seconds',
+            type: zemGridConstants.gridColumnTypes.SECONDS,
             shown: true,
             checked: true,
             unselectable: false,
         },
         last_sync: {
             name: 'Last OK Sync (EST)',
-            type: 'datetime',
+            type: zemGridConstants.gridColumnTypes.DATE_TIME,
             help: 'Dashboard reporting data is synchronized on an hourly basis.',
             shown: true,
             checked: true,
@@ -123,7 +123,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         },
         text_with_popup: {
             name: 'Text with Popup',
-            type: 'textWithPopup',
+            type: zemGridConstants.gridColumnTypes.TEXT_WITH_POPUP,
             help: 'Test text with popup.',
             shown: true,
             checked: true,
@@ -367,40 +367,41 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         var data;
 
         switch (type) {
-        case 'text':
-            if (field === 'status') {
-                data = getMockedStatus();
-            } else if (field === 'default_account_manager') {
+        case zemGridConstants.gridColumnTypes.TEXT:
+            if (field === 'default_account_manager') {
                 data = getMockedAccountManager();
             } else {
                 data = 'abcde';
             }
             break;
-        case 'number':
+        case zemGridConstants.gridColumnTypes.STATUS:
+            data = getMockedStatus();
+            break;
+        case zemGridConstants.gridColumnTypes.NUMBER:
             data = getMockedNumber(key === 'Total');
             break;
-        case 'currency':
+        case zemGridConstants.gridColumnTypes.CURRENCY:
             data = getMockedCurrency(key === 'Total');
             break;
-        case 'percent':
+        case zemGridConstants.gridColumnTypes.PERCENT:
             data = getMockedPercentage();
             break;
-        case 'seconds':
+        case zemGridConstants.gridColumnTypes.SECONDS:
             data = getMockedSeconds();
             break;
-        case 'datetime':
+        case zemGridConstants.gridColumnTypes.DATE_TIME:
             data = getMockedDateTime();
             break;
-        case 'thumbnail':
+        case zemGridConstants.gridColumnTypes.THUMBNAIL:
             data = getMockedThumbnail();
             break;
-        case 'submissionStatus':
+        case zemGridConstants.gridColumnTypes.SUBMISSION_STATUS:
             data = getMockedSubmissionStatus();
             break;
-        case 'performanceIndicator':
+        case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR:
             data = getMockedPerformance();
             break;
-        case 'textWithPopup':
+        case zemGridConstants.gridColumnTypes.TEXT_WITH_POPUP:
             data = getMockedFieldWithPopup();
             break;
         }
