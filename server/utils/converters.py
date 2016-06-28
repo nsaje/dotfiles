@@ -24,3 +24,9 @@ def nano_to_cc(num):
 
 def nano_to_decimal(num):
     return Decimal(nano_to_cc(num) * CC_TO_DECIMAL_DOLAR)
+
+
+def cc_to_decimal(val_cc):
+    if val_cc is None:
+        return None
+    return Decimal(val_cc) / 10000

@@ -702,3 +702,50 @@ class K1ApiTest(TestCase):
 
         fb_account = dash.models.FacebookAccount.objects.get(pk=1)
         self.assertEqual(fb_account.ad_account_id, 'act_123')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_ad_group_source_state(self, mock_verify_wsgi_request):
+        response = self.client.post(
+            reverse('k1api.update_ad_group_source_state'),
+            json.dumps({'ad_group_id': 1,
+                        'bidder_slug': 'adblade',
+                        'conf': {'state': 2}}),
+            'application/json'
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        a = dash.models.AdGroupSource.objects.get(ad_group__id=1,
+                                                  source__bidder_slug='adblade')
+
+        self.assertEqual(a.get_current_settings().state, 2)
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_ad_group_source_state_no_ad_group(self, mock_verify_wsgi_request):
+        response = self.client.post(
+            reverse('k1api.update_ad_group_source_state'),
+            json.dumps({'ad_group_id': 12345,
+                        'bidder_slug': 'adblade',
+                        'conf': {'state': 2}}),
+            'application/json'
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data['error'], 'No AdGroupSource exists for ad_group_id: 12345 with bidder_slug adblade')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_ad_group_source_state_incorrect_body(self, mock_verify_wsgi_request):
+        response = self.client.post(
+            reverse('k1api.update_ad_group_source_state'),
+            json.dumps({'conf': {'state': 2}}),
+            'application/json'
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data['error'], 'Must provide ad_group_id, bidder_slug and conf')

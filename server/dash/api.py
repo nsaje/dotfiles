@@ -16,6 +16,7 @@ import utils.exc
 from utils import redirector_helper
 from utils import email_helper
 from utils import k1_helper
+from utils import converters
 
 from dash import exc
 from dash import models
@@ -25,7 +26,6 @@ from dash import region_targeting_helper
 from dash import views
 from dash import publisher_helpers
 from dash import threads
-from dash import history_helpers
 
 import utils.url_helper
 import influx
@@ -46,17 +46,11 @@ BLOCKED_AD_GROUP_SETTINGS = [
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
 
 
-def cc_to_decimal(val_cc):
-    if val_cc is None:
-        return None
-    return decimal.Decimal(val_cc) / 10000
-
-
 @transaction.atomic
 def update_ad_group_source_state(ad_group_source, conf):
     for key, val in conf.items():
         if key in ('cpc_cc', 'daily_budget_cc'):
-            conf[key] = cc_to_decimal(val)
+            conf[key] = converters.cc_to_decimal(val)
 
     ad_group_source_state = ad_group_source.get_latest_state()
 
