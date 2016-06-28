@@ -5,6 +5,7 @@ from mock import patch, Mock
 from django.test import TestCase, override_settings
 from django.conf import settings
 
+import dash.models
 from utils import redirector_helper
 
 
@@ -136,6 +137,56 @@ class InsertRedirectTest(TestCase):
         with self.assertRaises(Exception):
             redirector_helper.insert_redirect(url, 0, 0)
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
+
+
+@override_settings(
+    R1_REDIRECTS_BATCH_API_URL='https://r1.example.com/api/redirects/batch/',
+    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
+)
+@patch('utils.request_signer._secure_opener.open')
+class InsertRedirectsBatchTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_insert_redirects_batch(self, mock_urlopen):
+        content_ads = [
+            dash.models.ContentAd.objects.get(id=1),
+            dash.models.ContentAd.objects.get(id=2),
+        ]
+
+        redirect_id = "u123456"
+        response = Mock()
+        response.read.return_value = json.dumps({
+            "status": "ok",
+            "data": {
+                1: {
+                    "redirectid": redirect_id,
+                    "redirect": {
+                        "url": content_ads[0].url
+                    },
+                },
+                2: {
+                    "redirectid": redirect_id,
+                    "redirect": {
+                        "url": content_ads[1].url
+                    },
+                },
+            },
+        })
+        response.getcode = lambda: 200
+        mock_urlopen.return_value = response
+
+        response_dict = redirector_helper.insert_redirects_batch(content_ads)
+        for content_ad in content_ads:
+            self.assertEqual(response_dict[str(content_ad.id)]["redirectid"], redirect_id)
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_BATCH_API_URL)
+        self.assertEqual(call.data, json.dumps([
+            {"url": content_ads[0].url, "creativeid": 1, "adgroupid": content_ads[0].ad_group_id},
+            {"url": content_ads[1].url, "creativeid": 2, "adgroupid": content_ads[1].ad_group_id},
+        ]))
 
 
 @override_settings(

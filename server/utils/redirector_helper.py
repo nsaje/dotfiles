@@ -26,7 +26,7 @@ def insert_redirect(url, content_ad_id, ad_group_id):
     # Demo V3 hack
     if settings.R1_DEMO_MODE:
         data = {
-            'redirect': { 'url': 'http://example.com/FAKE'},
+            'redirect': {'url': 'http://example.com/FAKE'},
             'redirectid': 'XXXXXXXXXXXXX'
         }
         return data
@@ -41,6 +41,29 @@ def insert_redirect(url, content_ad_id, ad_group_id):
         return _call_api_retry(settings.R1_REDIRECTS_API_URL, data)
     except Exception as e:
         logger.exception('Exception in insert_redirect')
+        raise e
+
+
+def insert_redirects_batch(content_ads):
+    if settings.R1_DEMO_MODE:
+        data = {
+            content_ad.id: {
+                'redirect': {'url': 'http://example.com/FAKE'},
+                'redirectid': 'XXXXXXXXXXXXX'
+            } for content_ad in content_ads
+        }
+        return data
+
+    try:
+        data = json.dumps([{
+            'url': content_ad.url,
+            'creativeid': content_ad.id,
+            'adgroupid': content_ad.ad_group_id,
+        } for content_ad in content_ads])
+
+        return _call_api_retry(settings.R1_REDIRECTS_BATCH_API_URL, data)
+    except Exception as e:
+        logger.exception('Exception in insert_redirect_batch')
         raise e
 
 
