@@ -1,7 +1,7 @@
 /* globals oneApp, constants */
 'use strict';
 
-oneApp.directive('zemGridCellBreakdownField', [function () {
+oneApp.directive('zemGridCellBreakdownField', ['zemGridConstants', function (zemGridConstants) {
 
     var BREAKDOWNS_WITH_INTERNAL_LINKS = [
         constants.breakdown.ACCOUNT,
@@ -11,13 +11,13 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
 
     function getFieldType (breakdown, rowLevel) {
         if (rowLevel === 0) {
-            return 'totalsLabel';
+            return zemGridConstants.gridColumnTypes.TOTALS_LABEL;
         }
         // Display internal links for rows on first level in 'Account', 'Campaign' or 'Ad Group' breakdowns
         if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 && rowLevel === 1) {
-            return 'internalLink';
+            return zemGridConstants.gridColumnTypes.INTERNAL_LINK;
         }
-        return 'base';
+        return zemGridConstants.gridColumnTypes.BASE_FIELD;
     }
 
     return {
@@ -33,10 +33,12 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
         link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', updateRow);
-            scope.$watch('ctrl.data', updateRow);
+            ctrl.types = zemGridConstants.gridColumnTypes;
 
-            function updateRow () {
+            scope.$watch('ctrl.row', update);
+            scope.$watch('ctrl.data', update);
+
+            function update () {
                 if (ctrl.row) {
                     ctrl.fieldType = getFieldType(ctrl.grid.meta.data.breakdown, ctrl.row.level);
                 }

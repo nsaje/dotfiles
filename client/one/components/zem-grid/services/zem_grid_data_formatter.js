@@ -1,19 +1,19 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridDataFormatter', ['$filter', function ($filter) {
+oneApp.factory('zemGridDataFormatter', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
     return {
         formatValue: formatValue,
     };
 
     function formatValue (value, options) {
         switch (options.type) {
-        case 'text': return formatText(value, options);
-        case 'percent': return formatPercent(value, options);
-        case 'seconds': return formatSeconds(value, options);
-        case 'datetime': return formatDateTime(value, options);
-        case 'number': return formatNumber(value, options);
-        case 'currency': return formatCurrency(value, options);
+        case zemGridConstants.gridColumnTypes.TEXT: return formatText(value, options);
+        case zemGridConstants.gridColumnTypes.PERCENT: return formatPercent(value, options);
+        case zemGridConstants.gridColumnTypes.SECONDS: return formatSeconds(value, options);
+        case zemGridConstants.gridColumnTypes.DATE_TIME: return formatDateTime(value, options);
+        case zemGridConstants.gridColumnTypes.NUMBER: return formatNumber(value, options);
+        case zemGridConstants.gridColumnTypes.CURRENCY: return formatCurrency(value, options);
         default: return value || options.defaultValue || 'N/A';
         }
     }

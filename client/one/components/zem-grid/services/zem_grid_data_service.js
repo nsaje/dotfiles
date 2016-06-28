@@ -26,6 +26,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
 
 
         function initialize () {
+            dataSource.onStatsUpdated(grid.meta.scope, handleSourceStatsUpdate);
             dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
             loadMetaData().then(function () {
                 grid.meta.initialized = true;
@@ -79,6 +80,10 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
                 deferred.reject(err);
             });
             return deferred.promise;
+        }
+
+        function handleSourceStatsUpdate () {
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
         }
 
         function handleSourceDataUpdate (event, data) {

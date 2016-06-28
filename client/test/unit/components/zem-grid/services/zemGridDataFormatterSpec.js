@@ -75,14 +75,14 @@ describe('test zemGridDataFormatter', function () {
         });
     });
 
-    it('should correctly format datetime values', function () {
+    it('should correctly format dateTime values', function () {
         tests = [
             {value: undefined, expectedResult: 'N/A'},
             {value: 1457086451517, expectedResult: '3/4/2016 5:14 AM'},
         ];
 
         options = {
-            type: 'datetime',
+            type: 'dateTime',
         };
 
         tests.forEach(function (test) {

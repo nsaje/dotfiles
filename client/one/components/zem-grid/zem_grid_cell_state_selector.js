@@ -38,10 +38,10 @@ oneApp.directive('zemGridCellStateSelector', [function () {
             ctrl.stateValues = getStateValues(ctrl.grid.meta.data.level, ctrl.grid.meta.data.breakdown);
             ctrl.setState = setState;
 
-            scope.$watch('ctrl.row', updateRow);
-            scope.$watch('ctrl.data', updateRow);
+            scope.$watch('ctrl.row', update);
+            scope.$watch('ctrl.data', update);
 
-            function updateRow () {
+            function update () {
                 // TODO: Save loader visibility to row object so that it is not reset for this row when DOM element is
                 // reused to display different row
                 ctrl.showLoader = false;
@@ -78,7 +78,7 @@ oneApp.directive('zemGridCellStateSelector', [function () {
 
                 ctrl.grid.meta.service.saveData(state, ctrl.row, ctrl.column)
                 .then(function () {
-                    updateRow();
+                    update();
                     ctrl.showLoader = false;
                 })
                 .catch(function () {

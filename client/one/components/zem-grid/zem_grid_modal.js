@@ -82,7 +82,11 @@ oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$docum
             relativePositionLeft = parseInt(attributes.left) || 0;
 
             element.on('click', function () {
-                prepareModal(this, scope);
+                if (modal) {
+                    closeModal();
+                } else {
+                    prepareModal(this, scope);
+                }
             });
 
             // Set simple api to interact with modal from directive on which zemGridModal was applied

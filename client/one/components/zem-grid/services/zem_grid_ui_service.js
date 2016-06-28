@@ -72,7 +72,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             // Format data to string and predict width based on it
             var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
             var valueWidth = getTextWidth(parsedValue, font);
-            if (column.type === zemGridConstants.gridColumnType.BREAKDOWN) {
+            if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level
                 valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
             }
@@ -143,7 +143,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         var element = grid.ui.element;
         var breakdownSplitWidths = [0];
         grid.header.visibleColumns.forEach(function (column, idx) {
-            if (column.type === zemGridConstants.gridColumnType.BREAKDOWN) {
+            if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 breakdownSplitWidths.push(grid.ui.columnsWidths[idx]);
                 breakdownSplitWidths.push(0);
                 return;
@@ -203,11 +203,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         var classes = [];
         classes.push('zem-grid-cell');
 
-        if (column.type === zemGridConstants.gridColumnType.CHECKBOX) {
+        if (column.type === zemGridConstants.gridColumnTypes.CHECKBOX) {
             classes.push('zem-grid-cell-checkbox');
         }
 
-        if (column.type === zemGridConstants.gridColumnType.COLLAPSE) {
+        if (column.type === zemGridConstants.gridColumnTypes.COLLAPSE) {
             classes.push('zem-grid-cell-collapse');
         }
 

@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridDataValidator', [function () {
+oneApp.factory('zemGridDataValidator', ['zemGridConstants', function (zemGridConstants) {
     return {
         validate: validate,
     };
@@ -10,7 +10,7 @@ oneApp.factory('zemGridDataValidator', [function () {
         var isValid = true;
 
         switch (options.type) {
-        case 'currency': isValid = validateCurrency(value, options); break;
+        case zemGridConstants.gridColumnTypes.CURRENCY: isValid = validateCurrency(value, options); break;
         }
 
         return isValid;
