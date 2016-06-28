@@ -1,7 +1,6 @@
 import httplib
 import json
 import logging
-from StdSuites.AppleScript_Suite import constants
 
 import requests
 
