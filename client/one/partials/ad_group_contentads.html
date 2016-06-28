@@ -109,7 +109,16 @@
             <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/one/img/arrow-last.svg"></div>
         </div>
     </div>
-    <zem-grid data-data-source="grid.dataSource" api="grid.api" options="grid.options" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')"></zem-grid>
+
+    <div ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+        <zem-grid-action-bar api="grid.api"></zem-grid-action-bar>
+        <zem-grid data-data-source="grid.dataSource"
+                  api="grid.api"
+                  options="grid.options"
+                  zem-has-permission="hasPermission"
+                  zem-is-permission-internal="isPermissionInternal">
+        </zem-grid>
+    </div>
 </div>
 
 <!-- We have the popup defined here, so it's not repeated for each row -->

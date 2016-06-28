@@ -1,8 +1,4 @@
 <div>
-    <div class="zem-grid-button-bar">
-        <zem-grid-column-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" api="ctrl.api"></zem-grid-column-selector>
-        <zem-grid-breakdown-selector class="pull-right" ng-if="ctrl.grid.meta.initialized" api="ctrl.api"></zem-grid-breakdown-selector>
-    </div>
     <div class="zem-grid-container loader-container">
         <div class="loader" ng-show="ctrl.grid.meta.loading"></div>
         <div class="zem-grid" ng-if="ctrl.grid.meta.initialized">

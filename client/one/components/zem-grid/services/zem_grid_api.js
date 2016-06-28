@@ -23,6 +23,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         //
         // Public API
         //
+        this.isInitialized = isInitialized;
         this.getMetaData = getMetaData;
         this.getDataService = getDataService;
         this.getRows = getRows;
@@ -98,6 +99,10 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             zemGridStorageService.saveColumns(grid);
             notifyListeners(EVENTS.COLUMNS_VISIBILITY_CHANGED, columns);
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
+        }
+
+        function isInitialized () {
+            return grid.meta.initialized;
         }
 
         function getMetaData () {
