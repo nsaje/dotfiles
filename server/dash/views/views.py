@@ -998,7 +998,10 @@ class AdGroupSources(api_common.BaseApiView):
             ad_group=ad_group)
 
         helpers.set_ad_group_source_settings(
-            None, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+            None, ad_group_source,
+            mobile_only=ad_group_settings.is_mobile_only(),
+            max_cpc=ad_group_settings.cpc_cc
+        )
 
         if settings.K1_CONSISTENCY_SYNC:
             api.add_content_ad_sources(ad_group_source)

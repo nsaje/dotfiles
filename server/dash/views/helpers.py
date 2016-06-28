@@ -1066,10 +1066,13 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False, create_action=False):
+def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False,
+                                 create_action=False, max_cpc=None):
     cpc_cc = ad_group_source.source.default_cpc_cc
     if mobile_only:
         cpc_cc = ad_group_source.source.default_mobile_cpc_cc
+    if max_cpc:
+        cpc_cc = min(max_cpc, cpc_cc)
 
     resource = {
         'daily_budget_cc': ad_group_source.source.default_daily_budget_cc,
