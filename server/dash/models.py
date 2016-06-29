@@ -231,12 +231,24 @@ class HistoryMixin(object):
 
     def get_model_state_changes(self, new_dict, current_dict=None):
         current_dict = current_dict or self.post_init_state
+
+        # we want to display sensible defaults in case a new settings
+        # objects was created
+        if self.post_init_newly_created:
+            # remove defaults from changes
+            # this means that new settings changes for newly created settings
+            # will always include defaults as fields that were changed:
+            for key in self.get_defaults_dict():
+                if not key in current_dict:
+                    continue
+                del current_dict[key]
+
         changes = OrderedDict()
         for field_name in self.history_fields:
             if field_name not in new_dict:
                 continue
             new_value = new_dict[field_name]
-            if current_dict[field_name] != new_value:
+            if current_dict.get(field_name) != new_value:
                 changes[field_name] = new_value
         return changes
 
@@ -264,9 +276,13 @@ class HistoryMixin(object):
             return u'{} set to "{}"'.format(prop, val)
 
     def get_changes_text_from_dict(self, changes, separator=', '):
-        if not changes:
-            return 'Created settings'
-        return self.get_history_changes_text(changes, separator=separator)
+        statements = []
+        if not changes or self.post_init_newly_created and changes:
+            statements.append('Created settings')
+        changes_text = self.get_history_changes_text(changes, separator=separator)
+        if changes_text:
+            statements.append(changes_text)
+        return '. '.join(statements)
 
     def construct_changes(self, created_text, created_text_id, changes):
         '''
@@ -1005,10 +1021,10 @@ class CampaignSettings(SettingsBase):
 
     @classmethod
     def get_defaults_dict(cls):
-        return {
-            'target_devices': constants.AdTargetDevice.get_all(),
-            'target_regions': ['US']
-        }
+        return OrderedDict([
+            ('target_devices', constants.AdTargetDevice.get_all()),
+            ('target_regions', ['US'])
+        ])
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
@@ -2080,17 +2096,17 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_defaults_dict(cls):
-        return {
-            'state': constants.AdGroupSettingsState.INACTIVE,
-            'start_date': dates_helper.utc_today(),
-            'cpc_cc': None,
-            'daily_budget_cc': 10.0000,
-            'target_devices': constants.AdTargetDevice.get_all(),
-            'target_regions': ['US'],
-            'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-            'autopilot_daily_budget': 0.00,
-            'landing_mode': False,
-        }
+        return OrderedDict([
+            ('state', constants.AdGroupSettingsState.INACTIVE),
+            ('start_date', dates_helper.utc_today()),
+            ('cpc_cc', None),
+            ('daily_budget_cc', 10.0000),
+            ('target_devices', constants.AdTargetDevice.get_all()),
+            ('target_regions', ['US']),
+            ('autopilot_state', constants.AdGroupSettingsAutopilotState.INACTIVE),
+            ('autopilot_daily_budget', 0.00),
+            ('landing_mode', False),
+        ])
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
@@ -2366,7 +2382,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        changes_text = self.get_changes_text_from_dict(changes)
         _, changes_text = self.construct_changes(
             'Created settings.',
             'Source: {}.'.format(self.ad_group_source.source.name),
@@ -2383,6 +2398,10 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Deleting settings object not allowed.')
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {}
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -3144,6 +3163,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if not (0 <= self.license_fee < 1):
             raise ValidationError('License fee must be between 0 and 100%.')
 
+    @classmethod
+    def get_defaults_dict(cls):
+        return {}
+
     class QuerySet(models.QuerySet):
 
         def filter_active(self, date=None):
@@ -3445,6 +3468,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
                     -delta.quantize(Decimal('1.00'))
                 )
             )
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {}
 
     class QuerySet(models.QuerySet):
 
