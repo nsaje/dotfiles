@@ -12,20 +12,29 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.callToActionOptions = defaults.callToAction;
     $scope.candidateStatuses = constants.contentAdCandidateStatus;
 
+    var reset = function () {
+        $scope.step = 1;
+        $scope.selectedCandidate = undefined;
+        $scope.batchNameEdit = false;
+        $scope.uploadFormData = {};
+        $scope.uploadFormData.batchName = moment().utc().add(
+            $scope.user ? $scope.user.timezoneoffset : 0, 'seconds').format('M/D/YYYY h:mm A');
+        $scope.candidates = undefined;
+        $scope.selectedCandidate = undefined;
+        $scope.anyErrors = false;
+        $scope.batchId = undefined;
+        $scope.numSuccessful = undefined;
+        $scope.saveErrors = undefined;
+        $scope.uploadFormErrors = undefined;
+        $scope.stopPolling();
+    };
+
     $scope.partials = [
         '/partials/upload_ads_plus_multiple_modal_step1.html',
         '/partials/upload_ads_plus_multiple_modal_step2.html',
         '/partials/upload_ads_plus_multiple_modal_step3.html',
     ];
 
-    $scope.step = 1;
-    $scope.selectedCandidate = undefined;
-    $scope.batchNameEdit = false;
-    $scope.uploadFormData = {};
-    $scope.uploadFormData.batchName = moment().utc().add(
-        $scope.user ? $scope.user.timezoneoffset : 0, 'seconds').format('M/D/YYYY h:mm A');
-
-    $scope.pollInterval = undefined;
     $scope.startPolling = function () {
         if (angular.isDefined($scope.pollInterval)) {
             return;
@@ -159,7 +168,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     $scope.switchToFileUpload = function () {
-        $scope.step = 1;
+        reset();
     };
 
     $scope.switchToContentAdPicker = function () {
@@ -305,4 +314,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.$on('$destroy', function () {
         $scope.stopPolling();
     });
+
+    reset();
 }]);
