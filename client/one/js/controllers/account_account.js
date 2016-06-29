@@ -21,8 +21,9 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     $scope.canArchive = false;
     $scope.canRestore = true;
     $scope.agencyManagers = null;
-    $scope.facebookPageChanged = false;
-    $scope.facebookAccountStatusChecker = null;
+    $scope.facebookPage = {
+        changed: false
+    };
 
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
@@ -107,7 +108,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
-        $scope.facebookPageChanged = false;
+        $scope.facebookPage.changed = false;
         api.accountSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
@@ -119,7 +120,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
                 }
-                checkFacebookAccountStatus();
             },
             function (data) {
                 // error
@@ -130,34 +130,11 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         });
     };
 
-    function checkFacebookAccountStatus () {
-        var facebookPage = $scope.settings.facebookPage;
-        var facebookStatus = $scope.settings.facebookStatus;
-        if (facebookPage === null || facebookStatus === constants.facebookStatus.CONNECTED) {
-            return;
-        }
-        api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(
-            function (data) {
-                var facebookAccountStatus = data.data.status;
-                $scope.settings.facebookStatus = facebookAccountStatus;
-            },
-            function () {
-                $scope.settings.facebookStatus = 'Error';
-            }
-        );
-        if ($scope.facebookAccountStatusChecker !== null) {
-            // prevent the creation of multiple Facebook account checkers (for example, when Facebook page URL is
-            // updated multiple times).
-            clearTimeout($scope.facebookAccountStatusChecker);
-        }
-        $scope.facebookAccountStatusChecker = setTimeout(checkFacebookAccountStatus, 30 * 1000);
-    }
-
     $scope.saveSettings = function () {
         $scope.saved = null;
         $scope.discarded = null;
 
-        if ($scope.facebookPageChanged) {
+        if ($scope.facebookPage.changed) {
             var facebookPageChangedModalInstance = $modal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
                 controller: function ($scope, $modalInstance) {
@@ -191,7 +168,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 $scope.canRestore = data.canRestore;
                 zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
                 $scope.saved = true;
-                checkFacebookAccountStatus();
             },
             function (data) {
                 $scope.errors = data;
@@ -202,16 +178,6 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
             $scope.requestInProgress = false;
         });
     }
-
-    $scope.clearFacebookPage = function () {
-        $scope.settings.facebookPage = null;
-        $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
-        $scope.facebookPageChanged = true;
-    };
-
-    $scope.onFacebookPageChange = function () {
-        $scope.facebookPageChanged = true;
-    };
 
     $scope.refreshPage = function () {
         zemNavigationService.reload();
