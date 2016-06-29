@@ -1401,10 +1401,12 @@ class GATrackingType(ConstantBase):
 class SystemUserType(ConstantBase):
     CAMPAIGN_STOP = 1
     AUTOPILOT = 2
+    K1_USER = 3
 
     _VALUES = {
         CAMPAIGN_STOP: 'Campaign Stop',
-        AUTOPILOT: 'Zemanta Autopilot'
+        AUTOPILOT: 'Zemanta Autopilot',
+        K1_USER: 'System User '
     }
 
 

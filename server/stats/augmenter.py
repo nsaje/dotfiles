@@ -31,14 +31,13 @@ def augment(breakdown, stats_rows, target_dimension):
         augment_source(stats_rows)
 
     for row in stats_rows:
-        augment_row_delivery(row)
-        augment_row_time(row)
-
         row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
-        row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
         row['parent_breakdown_id'] = helpers.create_breakdown_id(
             constants.get_parent_breakdown(breakdown), row) if breakdown else None
 
+        augment_row_delivery(row)
+        augment_row_time(row)
+        row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
 
 
 def augment_accounts(stats_rows):

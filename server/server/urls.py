@@ -658,6 +658,11 @@ urlpatterns += [
         k1api.views.get_facebook_account,
         name='k1api.get_facebook_account',
     ),
+    url(
+        r'^k1api/update_ad_group_source_state$',
+        k1api.views.update_ad_group_source_state,
+        name='k1api.update_ad_group_source_state',
+    ),
 ]
 
 # Crossvalidation Api
