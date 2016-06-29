@@ -177,8 +177,9 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     }
 
     function resizeGridColumns (grid) {
-        // Don't resize when column widths were already calculated
-        // and table was emptied because of setting order
+        // Ignore resizing request when grid was emptied while column widths are already available
+        // This can happen when DataSource destroys data tree (e.g. ordering event) and to
+        // prevent column collapse we just wait for table to be filled again
         if (grid.body.rows.length === 0 && grid.ui.columnsWidths.length > 0) return;
 
         calculateColumnWidths(grid);
