@@ -1318,12 +1318,11 @@ class Agencies(api_common.BaseApiView):
     def get(self, request):
         if not request.user.has_perm('zemauth.can_filter_by_agency'):
             raise exc.AuthorizationError()
-
-        # TODO: agency archival not supported yet
-        # show_archived = request.GET.get('show_archived') == 'true'
         agencies = list(models.Agency.objects.all().values(
             'id', 'name'
         ))
         return self.create_api_response({
-            'agencies': agencies
+            'agencies': map(
+                lambda agency: {'id': str(agency['id']), 'name': agency['name']},
+                agencies)
         })

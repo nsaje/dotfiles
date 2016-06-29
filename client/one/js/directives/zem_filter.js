@@ -18,6 +18,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
         },
         controller: ['$scope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, zemFilterService, zemUserSettings, api) {
             $scope.availableSources = [];
+            $scope.agencies = [];
             $scope.config = config;
             $scope.enablePublisherFilter = false;
             $scope.showPublisherSelected = 'all';
@@ -43,6 +44,16 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.sourceIdToFilter = '';
             };
 
+            $scope.addFilteredAgency = function (agencyId) {
+                if (!agencyId || agencyId === '') {
+                    return;
+                }
+
+                console.log('addFiltered', agencyId);
+                zemFilterService.addFilteredAgency(agencyId);
+                $scope.agencyIdToFilter = '';
+            };
+
             $scope.exclusivelyFilterSource = function (sourceId) {
                 zemFilterService.exclusivelyFilterSource(sourceId);
             };
@@ -64,7 +75,15 @@ oneApp.directive('zemFilter', ['config', function (config) {
             };
 
             $scope.isFilterOn = function () {
-                return zemFilterService.isSourceFilterOn() || zemFilterService.isPublisherBlacklistFilterOn();
+                return zemFilterService.isSourceFilterOn() || 
+                    zemFilterService.isAgencyFilterOn() ||
+                    zemFilterService.isPublisherBlacklistFilterOn();
+            };
+
+            $scope.isAgencyFiltered = function (agency) {
+                console.log('isfiltered', agency);
+                console.log(agency.id);
+                return zemFilterService.isAgencyFiltered(agency.id);
             };
 
             $scope.removeFiltering = function () {
@@ -73,6 +92,10 @@ oneApp.directive('zemFilter', ['config', function (config) {
 
             $scope.removeFilteredSource = function (sourceId) {
                 zemFilterService.removeFilteredSource(sourceId);
+            };
+
+            $scope.removeFilteredAgency = function (agencyId) {
+                zemFilterService.removeFilteredAgency(agencyId);
             };
 
             $scope.$watch('showArchivedSelected', function (newValue, oldValue) {

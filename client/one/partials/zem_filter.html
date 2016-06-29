@@ -34,11 +34,11 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_agency')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Agency</div>
 
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No agencies', dropdownCssClass: 'select2-filter'}" ng-model="agencyIdToFilter" ng-change="addAgency(agencyIdToFilter)" class="add-agency-filter" data-placeholder="+ Agency">
+                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No agencies', dropdownCssClass: 'select2-filter'}" ng-model="agencyIdToFilter" ng-change="addFilteredAgency(agencyIdToFilter)" class="add-agency-filter" data-placeholder="+ Agency">
                     <option value=""></option>
                     <option ng-repeat="agency in agencies | orderBy:'name'" value="{{agency.id}}">{{agency.name}}</option>
                 </select>
-                <div class="filtered-agencies" ng-repeat="agency in availableAgencies| orderBy:'name' | filter:isAgencyFiltered" ng-click="removeAgency(agency.id)">
+                <div class="filtered-agency" ng-repeat="agency in agencies | orderBy:'name' | filter:isAgencyFiltered" ng-click="removeFilteredAgency(agency.id)">
                     {{agency.name}}
                     <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
                 </div>

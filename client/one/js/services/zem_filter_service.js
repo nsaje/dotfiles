@@ -7,6 +7,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     // to never replace the reference (no assignments to this variable) so the array is
     // always modified in place.
     var filteredSources = [];
+    var filteredAgencies = [];
     var showArchived = false;
     var showBlacklistedPublisher = false;
     var blacklistedPublisherFilter = null;
@@ -14,14 +15,26 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     function init (user) {
         var filteredSourcesLocation = $location.search().filtered_sources;
         if (filteredSourcesLocation) {
-        // replace the array in place
             Array.prototype.splice.apply(filteredSources, [0, filteredSources.length].concat(filteredSourcesLocation.split(',')));
+        }
+
+        var filteredAgenciesLocation = $location.search().filtered_agencies;
+        if (filteredAgenciesLocation) {
+            Array.prototype.splice.apply(filteredAgencies, [0, filteredAgencies.length].concat(filteredAgenciesLocation.split(',')));
         }
 
         showArchived = $location.search().show_archived || false;
 
         if ('zemauth.can_see_publishers' in user.permissions) {
             blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;
+        }
+    }
+
+    function setFilteredAgenciesLocation () {
+        if (filteredAgencies.length > 0) {
+            $location.search('filtered_agencies', filteredAgencies.join(','));
+        } else {
+            $location.search('filtered_agencies', null);
         }
     }
 
@@ -53,9 +66,24 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         return filteredSources;
     }
 
+    function getFilteredAgencies () {
+        return filteredAgencies;
+    }
+
     function isSourceFiltered (sourceId) {
         for (var i = 0; i < filteredSources.length; i++) {
             if (filteredSources[i] === sourceId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function isAgencyFiltered (agencyId) {
+        console.log('isAgencyFiltered', filteredAgencies);
+        for (var i = 0; i < filteredAgencies.length; i++) {
+            if (filteredAgencies[i] === agencyId) {
                 return true;
             }
         }
@@ -73,6 +101,10 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
 
     function isSourceFilterOn () {
         return filteredSources.length > 0;
+    }
+
+    function isAgencyFilterOn () {
+        return filteredAgencies.length > 0;
     }
 
     function addFilteredSource (sourceId) {
@@ -93,16 +125,35 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         setFilteredSourcesLocation();
     }
 
+    function addFilteredAgency (agencyId) {
+        if (filteredAgencies.indexOf(agencyId) === -1) {
+            filteredAgencies.push(agencyId);
+            filteredAgencies.sort(function (a, b) { return parseInt(a) - parseInt(b); });
+        }
+
+        setFilteredAgenciesLocation();
+    }
+
+    function removeFilteredAgency (agencyId) {
+        var ix = filteredAgencies.indexOf(agencyId);
+        if (ix > -1) {
+            filteredAgencies.splice(ix, 1);
+        }
+
+        setFilteredAgenciesLocation();
+    }
+
     function exclusivelyFilterSource (sourceId) {
         filteredSources.splice(0, filteredSources.length, sourceId);
-
         setFilteredSourcesLocation();
     }
 
     function removeFiltering () {
         filteredSources.splice(0, filteredSources.length);
+        filteredAgencies.splice(0, filteredAgencies.length);
 
         setFilteredSourcesLocation();
+        setFilteredAgenciesLocation();
         setShowArchivedLocation();
 
         blacklistedPublisherFilter = null;
@@ -141,11 +192,16 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         getShowArchived: getShowArchived,
         setShowArchived: setShowArchived,
         getFilteredSources: getFilteredSources,
+        getFilteredAgencies: getFilteredAgencies,
         isSourceFiltered: isSourceFiltered,
         isSourceFilterOn: isSourceFilterOn,
+        isAgencyFiltered: isAgencyFiltered,
+        isAgencyFilterOn: isAgencyFilterOn,
         addFilteredSource: addFilteredSource,
+        addFilteredAgency: addFilteredAgency,
         exclusivelyFilterSource: exclusivelyFilterSource,
         removeFilteredSource: removeFilteredSource,
+        removeFilteredAgency: removeFilteredAgency,
         removeFiltering: removeFiltering,
         isPublisherBlacklistFilterOn: isPublisherBlacklistFilterOn,
         getBlacklistedPublishers: getBlacklistedPublishers,
