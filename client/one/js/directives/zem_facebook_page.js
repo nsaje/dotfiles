@@ -67,6 +67,7 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
 
             $scope.clearFacebookPage = function () {
                 $scope.facebookPage = null;
+                $scope.facebook.page = null;
                 $scope.facebookStatus = constants.facebookStatus.EMPTY;
                 $scope.facebookPageChanged = true;
             };

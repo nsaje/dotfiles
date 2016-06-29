@@ -21,7 +21,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     $scope.canArchive = false;
     $scope.canRestore = true;
     $scope.agencyManagers = null;
-    $scope.facebookPage = {
+    $scope.facebookPageChangedInfo = {
         changed: false
     };
 
@@ -108,7 +108,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
-        $scope.facebookPage.changed = false;
+        $scope.facebookPageChangedInfo.changed = false;
         api.accountSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
@@ -134,7 +134,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         $scope.saved = null;
         $scope.discarded = null;
 
-        if ($scope.facebookPage.changed) {
+        if ($scope.facebookPageChangedInfo.changed) {
             var facebookPageChangedModalInstance = $modal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
                 controller: function ($scope, $modalInstance) {
