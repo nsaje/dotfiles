@@ -16,7 +16,7 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
         },
         controller: ['$scope', 'api', function ($scope, api) {
             $scope.facebookAccountStatusChecker = null;
-        
+
             $scope.$watch('facebookPage', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
                     $scope.checkFacebookAccountStatus();
@@ -61,6 +61,6 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
                 $scope.facebookStatus = constants.facebookStatus.EMPTY;
                 $scope.facebookPageChanged = true;
             };
-        },
+        }]
     };
 }]);
