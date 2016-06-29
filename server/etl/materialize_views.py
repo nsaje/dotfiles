@@ -7,7 +7,6 @@ import dash.models
 import dash.constants
 
 from redshiftapi import db
-from utils import converters
 
 from etl import models
 from etl import helpers
@@ -17,7 +16,7 @@ from etl import materialize_helpers
 logger = logging.getLogger(__name__)
 
 
-class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersSource(materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts source id and slug into redshift. Its than used to construct the mv_master view.
     """
@@ -35,11 +34,8 @@ class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.Ma
                 source.bidder_slug,
             )
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_source.sql'
 
-
-class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersCampaignFactors(materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
     """
@@ -58,11 +54,8 @@ class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_h
                     factors[1],
                 )
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_campaign_factors.sql'
 
-
-class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersAdGroupStructure(materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts ad group structure (campaign id, account id, agency id) into redshift. Its than
     used to construct the mv_master view.
@@ -82,11 +75,8 @@ class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_
                 ad_group.id,
             )
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_adgroup_structure.sql'
 
-
-class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_helpers.Materialize):
+class MVHelpersNormalizedStats(materialize_helpers.Materialize):
     """
     Writes a temporary table that has data from stats transformed into the correct format for mv_master construction.
     It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost
@@ -104,9 +94,6 @@ class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_h
         })
 
         return sql, params
-
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_clean_stats.sql'
 
 
 class MasterView(materialize_helpers.MaterializeViaCSVDaily):
