@@ -185,6 +185,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_request_demo_v3', 'Can request demo v3.'),
             ('can_upload_with_picker', 'Can use upload with content ad picker.'),
             ('can_set_ga_api_tracking', 'Can set GA API tracking.'),
+            ('can_filter_by_agency', 'Can filter by agency'),
+            ('can_filter_by_account_type', 'Can filter by account type'),
         )
 
     def get_full_name(self):
