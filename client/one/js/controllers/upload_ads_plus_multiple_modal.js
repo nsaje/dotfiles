@@ -3,6 +3,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.imageCrops = options.imageCrops;
     $scope.callToActionOptions = defaults.callToAction;
     $scope.candidateStatuses = constants.contentAdCandidateStatus;
+    $scope.editFormScrollApi = {};
 
     $scope.partials = [
         '/partials/upload_ads_plus_multiple_modal_step1.html',
@@ -76,18 +77,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return ret;
     };
 
-    var editFormScrollCallback = null;
-    var resetEditFormScroll = function () {
-        if (!editFormScrollCallback) {
-            return;
-        }
-        editFormScrollCallback();
-    };
-
-    $scope.registerEditFormScroll = function (callback) {
-        editFormScrollCallback = callback;
-    };
-
     $scope.toggleBatchNameEdit = function () {
         $scope.batchNameEdit = !$scope.batchNameEdit;
     };
@@ -110,7 +99,10 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.selectedCandidate.useTrackers = !!$scope.selectedCandidate.primaryTrackerUrl ||
             !!$scope.selectedCandidate.secondaryTrackerUrl;
         $scope.selectedCandidate.useSecondaryTracker = !!$scope.selectedCandidate.secondaryTrackerUrl;
-        resetEditFormScroll();
+
+        if ($scope.editFormScrollApi.scroll) {
+            $scope.editFormScrollApi.scroll();
+        }
     };
 
     $scope.closeEditForm = function () {

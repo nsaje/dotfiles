@@ -3,13 +3,14 @@
 
 oneApp.directive('zemScrollToTop', function () {
     return {
+        restrict: 'A',
         scope: {
-            register: '=zemScrollToTop',
+            api: '=zemScrollToTop',
         },
         link: function (scope, element) {
-            scope.register(function () {
+            scope.api.scroll = function () {
                 $(element)[0].scrollTop = 0;
-            });
+            };
         },
     };
 });
