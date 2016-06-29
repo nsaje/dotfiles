@@ -120,11 +120,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                     column.order = zemGridConstants.gridColumnOrder.DESC;
                     break;
                 default:
-                    if (column.data.initialOrder) {
-                        column.order = column.data.initialOrder;
-                    } else {
-                        column.order = zemGridConstants.gridColumnOrder.DESC;
-                    }
+                    column.order = column.data.initialOrder || zemGridConstants.gridColumnOrder.DESC;
                 }
             }
 
