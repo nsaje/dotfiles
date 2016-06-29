@@ -29,7 +29,7 @@ class TableWithoutDateMixin(object):
 
     def clear_data(self, cursor, date_from, date_to):
         logger.info('Truncate table "%s"', self.table_name())
-        sql, params = self.prepare_drop_query()
+        sql, params = self.prepare_truncate_query()
         cursor.execute(sql, params)
 
     def prepare_truncate_query(self):
