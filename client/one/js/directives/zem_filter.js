@@ -44,16 +44,6 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.sourceIdToFilter = '';
             };
 
-            $scope.addFilteredAgency = function (agencyId) {
-                if (!agencyId || agencyId === '') {
-                    return;
-                }
-
-                console.log('addFiltered', agencyId);
-                zemFilterService.addFilteredAgency(agencyId);
-                $scope.agencyIdToFilter = '';
-            };
-
             $scope.exclusivelyFilterSource = function (sourceId) {
                 zemFilterService.exclusivelyFilterSource(sourceId);
             };
@@ -80,18 +70,28 @@ oneApp.directive('zemFilter', ['config', function (config) {
                     zemFilterService.isPublisherBlacklistFilterOn();
             };
 
-            $scope.isAgencyFiltered = function (agency) {
-                console.log('isfiltered', agency);
-                console.log(agency.id);
-                return zemFilterService.isAgencyFiltered(agency.id);
-            };
-
             $scope.removeFiltering = function () {
                 zemFilterService.removeFiltering();
             };
 
             $scope.removeFilteredSource = function (sourceId) {
                 zemFilterService.removeFilteredSource(sourceId);
+            };
+
+            $scope.isAgencyFiltered = function (agency) {
+                console.log('isfiltered', agency);
+                console.log(agency.id);
+                return zemFilterService.isAgencyFiltered(agency.id);
+            };
+
+            $scope.addFilteredAgency = function (agencyId) {
+                if (!agencyId || agencyId === '') {
+                    return;
+                }
+
+                console.log('addFiltered', agencyId);
+                zemFilterService.addFilteredAgency(agencyId);
+                $scope.agencyIdToFilter = '';
             };
 
             $scope.removeFilteredAgency = function (agencyId) {

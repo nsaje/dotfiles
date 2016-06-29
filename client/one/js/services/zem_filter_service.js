@@ -80,17 +80,6 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         return false;
     }
 
-    function isAgencyFiltered (agencyId) {
-        console.log('isAgencyFiltered', filteredAgencies);
-        for (var i = 0; i < filteredAgencies.length; i++) {
-            if (filteredAgencies[i] === agencyId) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     function isArchivedFilterOn () {
         return showArchived;
     }
@@ -103,26 +92,19 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         return filteredSources.length > 0;
     }
 
+    function isAgencyFiltered (agencyId) {
+        console.log('isAgencyFiltered', filteredAgencies);
+        for (var i = 0; i < filteredAgencies.length; i++) {
+            if (filteredAgencies[i] === agencyId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function isAgencyFilterOn () {
         return filteredAgencies.length > 0;
-    }
-
-    function addFilteredSource (sourceId) {
-        if (filteredSources.indexOf(sourceId) === -1) {
-            filteredSources.push(sourceId);
-            filteredSources.sort(function (a, b) { return parseInt(a) - parseInt(b); });
-        }
-
-        setFilteredSourcesLocation();
-    }
-
-    function removeFilteredSource (sourceId) {
-        var ix = filteredSources.indexOf(sourceId);
-        if (ix > -1) {
-            filteredSources.splice(ix, 1);
-        }
-
-        setFilteredSourcesLocation();
     }
 
     function addFilteredAgency (agencyId) {
@@ -141,6 +123,24 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         }
 
         setFilteredAgenciesLocation();
+    }
+
+    function addFilteredSource (sourceId) {
+        if (filteredSources.indexOf(sourceId) === -1) {
+            filteredSources.push(sourceId);
+            filteredSources.sort(function (a, b) { return parseInt(a) - parseInt(b); });
+        }
+
+        setFilteredSourcesLocation();
+    }
+
+    function removeFilteredSource (sourceId) {
+        var ix = filteredSources.indexOf(sourceId);
+        if (ix > -1) {
+            filteredSources.splice(ix, 1);
+        }
+
+        setFilteredSourcesLocation();
     }
 
     function exclusivelyFilterSource (sourceId) {
@@ -197,11 +197,11 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         isSourceFilterOn: isSourceFilterOn,
         isAgencyFiltered: isAgencyFiltered,
         isAgencyFilterOn: isAgencyFilterOn,
-        addFilteredSource: addFilteredSource,
         addFilteredAgency: addFilteredAgency,
+        removeFilteredAgency: removeFilteredAgency,
+        addFilteredSource: addFilteredSource,
         exclusivelyFilterSource: exclusivelyFilterSource,
         removeFilteredSource: removeFilteredSource,
-        removeFilteredAgency: removeFilteredAgency,
         removeFiltering: removeFiltering,
         isPublisherBlacklistFilterOn: isPublisherBlacklistFilterOn,
         getBlacklistedPublishers: getBlacklistedPublishers,
