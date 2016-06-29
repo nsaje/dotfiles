@@ -210,11 +210,6 @@ class AdGroupSettingsForm(forms.Form):
 
         return target_regions
 
-    def clean_cpc_cc(self):
-        cpc_cc = self.cleaned_data.get('cpc_cc')
-        validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
-        return cpc_cc
-
     def clean_autopilot_state(self):
         autopilot_state = self.cleaned_data.get('autopilot_state')
         return autopilot_state

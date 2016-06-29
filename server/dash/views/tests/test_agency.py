@@ -287,6 +287,101 @@ class AdGroupSettingsTest(TestCase):
     @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_ad_group')
+    def test_put_low_cpc(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+                         mock_order_ad_group_settings_update):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+            # we need this to track call order across multiple mocks
+            mock_manager = Mock()
+            mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
+            mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
+
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
+
+            add_permissions(self.user, [
+                'settings_view',
+                'can_set_ad_group_max_cpc',
+                'can_set_adgroup_to_auto_pilot',
+                'can_view_retargeting_settings'
+            ])
+            new_settings = {}
+            new_settings.update(self.settings_dict)
+            new_settings['settings']['cpc_cc'] = '0.04'
+
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(new_settings),
+                follow=True
+            )
+            print response
+            mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
+
+            self.assertEqual(json.loads(response.content), {
+                'data': {
+                    'action_is_waiting': False,
+                    'default_settings': {
+                        'target_devices': ['mobile'],
+                        'target_regions': ['NC', '501'],
+                    },
+                    'settings': {
+                        'cpc_cc': '0.040',
+                        'daily_budget_cc': '200.00',
+                        'end_date': str(datetime.date.today()),
+                        'id': '1',
+                        'name': 'Test ad group name',
+                        'start_date': '2015-05-01',
+                        'state': 2,
+                        'target_devices': ['desktop'],
+                        'target_regions': ['693', 'GB'],
+                        'tracking_code': '',
+                        'adobe_tracking_param': '',
+                        'autopilot_state': 2,
+                        'autopilot_daily_budget': '50.00',
+                        'retargeting_ad_groups': [2],
+                        'enable_ga_tracking': False,
+                        'ga_property_id': 'UA-123456789-1',
+                        'ga_tracking_type': 1,
+                        'enable_adobe_tracking': False,
+                        'adobe_tracking_param': 'cid',
+                        'tracking_code': 'def=123',
+                        'autopilot_min_budget': '0',
+                        'autopilot_optimization_goal': None
+                    }
+                },
+                'success': True
+            })
+
+            new_settings = ad_group.get_current_settings()
+
+            self.assertEqual(new_settings.display_url, 'example.com')
+            self.assertEqual(new_settings.brand_name, 'Example')
+            self.assertEqual(new_settings.description, 'Example description')
+            self.assertEqual(new_settings.call_to_action, 'Call to action')
+
+            for ags in ad_group.adgroupsource_set.all():
+                cpc = ags.get_current_settings().cpc_cc
+                # All cpc are adjusted to be lower or equal to 0.04
+                self.assertTrue(cpc <= Decimal('0.04'))
+
+            mock_manager.assert_has_calls([
+                call.mock_order_ad_group_settings_update(
+                    ad_group, old_settings, new_settings, ANY, send=False),
+                ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
+            ])
+            mock_log_useraction.assert_called_with(
+                response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('utils.k1_helper.update_ad_group')
     def test_put_add_ga_analytics(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
                                   mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
@@ -2228,7 +2323,8 @@ class AccountSettingsTest(TestCase):
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1000)
-        self.assertEqual(response.status_code, 401, msg='Agency manager doesn''t have permission for changing allowed sources')
+        self.assertEqual(response.status_code, 401,
+                         msg='Agency manager doesn''t have permission for changing allowed sources')
 
         add_permissions(user, ['can_modify_allowed_sources'])
 
@@ -2685,28 +2781,28 @@ class AccountUsersTest(TestCase):
 
         self.assertIsNone(response.json()['data']['agency_managers'])
         self.assertItemsEqual([
-                {
-                    u'name': u'',
-                    u'is_active': False,
-                    u'id': 2,
-                    u'last_login': u'2014-06-16',
-                    u'email': u'user@test.com'
-                },
-                {
-                    u'name': u'',
-                    u'is_active': False,
-                    u'id': 3,
-                    u'last_login': u'2014-06-16',
-                    u'email': u'john@test.com'
-                },
-                {
-                    u'name': u'',
-                    u'is_active': True,
-                    u'id': 1,
-                    u'last_login': user.last_login.date().isoformat(),
-                    u'email': u'superuser@test.com'
-                }
-            ],
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'id': 2,
+                u'last_login': u'2014-06-16',
+                u'email': u'user@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'id': 3,
+                u'last_login': u'2014-06-16',
+                u'email': u'john@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': True,
+                u'id': 1,
+                u'last_login': user.last_login.date().isoformat(),
+                u'email': u'superuser@test.com'
+            }
+        ],
             response.json()['data']['users']
         )
 
@@ -2729,40 +2825,40 @@ class AccountUsersTest(TestCase):
         )
 
         self.assertItemsEqual([
-                {
-                    u'name': u'',
-                    u'is_active': True,
-                    u'id': 1,
-                    u'last_login': user.last_login.date().isoformat(),
-                    u'email': u'superuser@test.com'
-                }
-            ],
+            {
+                u'name': u'',
+                u'is_active': True,
+                u'id': 1,
+                u'last_login': user.last_login.date().isoformat(),
+                u'email': u'superuser@test.com'
+            }
+        ],
             response.json()['data']['agency_managers']
         )
 
         self.assertItemsEqual([
-                {
-                    u'name': u'',
-                    u'is_active': False,
-                    u'id': 2,
-                    u'last_login': u'2014-06-16',
-                    u'email': u'user@test.com'
-                },
-                {
-                    u'name': u'',
-                    u'is_active': False,
-                    u'id': 3,
-                    u'last_login': u'2014-06-16',
-                    u'email': u'john@test.com'
-                },
-                {
-                    u'name': u'',
-                    u'is_active': True,
-                    u'id': 1,
-                    u'last_login': user.last_login.date().isoformat(),
-                    u'email': u'superuser@test.com'
-                }
-            ],
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'id': 2,
+                u'last_login': u'2014-06-16',
+                u'email': u'user@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'id': 3,
+                u'last_login': u'2014-06-16',
+                u'email': u'john@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': True,
+                u'id': 1,
+                u'last_login': user.last_login.date().isoformat(),
+                u'email': u'superuser@test.com'
+            }
+        ],
             response.json()['data']['users']
         )
 
@@ -2783,14 +2879,14 @@ class CampaignContentInsightsTest(TestCase):
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
-                'data': {
-                    'metric': 'CTR',
-                    'summary': 'Title',
-                    'best_performer_rows': [],
-                    'worst_performer_rows': [],
-                },
-                'success': True,
-            }, json.loads(response.content))
+            'data': {
+                'metric': 'CTR',
+                'summary': 'Title',
+                'best_performer_rows': [],
+                'worst_performer_rows': [],
+            },
+            'success': True,
+        }, json.loads(response.content))
 
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_basic_archived(self, mock_get_stats):
@@ -2816,14 +2912,14 @@ class CampaignContentInsightsTest(TestCase):
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
-                'data': {
-                    'metric': 'CTR',
-                    'summary': 'Title',
-                    'best_performer_rows': [],
-                    'worst_performer_rows': [],
-                },
-                'success': True,
-            }, json.loads(response.content))
+            'data': {
+                'metric': 'CTR',
+                'summary': 'Title',
+                'best_performer_rows': [],
+                'worst_performer_rows': [],
+            },
+            'success': True,
+        }, json.loads(response.content))
 
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_basic_title_ctr(self, mock_get_stats):
@@ -2848,24 +2944,24 @@ class CampaignContentInsightsTest(TestCase):
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
-                'data': {
-                    'metric': 'CTR',
-                    'summary': 'Title',
-                    'best_performer_rows': [
-                        {
-                            'summary': 'Test Ad',
-                            'metric': '10.00%',
-                        }
-                    ],
-                    'worst_performer_rows': [
-                        {
-                            'summary': 'Test Ad',
-                            'metric': '10.00%',
-                        }
-                    ],
-                },
-                'success': True,
-            }, json.loads(response.content))
+            'data': {
+                'metric': 'CTR',
+                'summary': 'Title',
+                'best_performer_rows': [
+                    {
+                        'summary': 'Test Ad',
+                        'metric': '10.00%',
+                    }
+                ],
+                'worst_performer_rows': [
+                    {
+                        'summary': 'Test Ad',
+                        'metric': '10.00%',
+                    }
+                ],
+            },
+            'success': True,
+        }, json.loads(response.content))
 
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_duplicate_title_ctr(self, mock_get_stats):
@@ -2903,24 +2999,24 @@ class CampaignContentInsightsTest(TestCase):
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
-                'data': {
-                    'metric': 'CTR',
-                    'summary': 'Title',
-                    'best_performer_rows': [
-                        {
-                            'summary': 'Test Ad',
-                            'metric': '50.00%',
-                        }
-                    ],
-                    'worst_performer_rows': [
-                        {
-                            'summary': 'Test Ad',
-                            'metric': '50.00%',
-                        }
-                    ],
-                },
-                'success': True,
-            }, json.loads(response.content))
+            'data': {
+                'metric': 'CTR',
+                'summary': 'Title',
+                'best_performer_rows': [
+                    {
+                        'summary': 'Test Ad',
+                        'metric': '50.00%',
+                    }
+                ],
+                'worst_performer_rows': [
+                    {
+                        'summary': 'Test Ad',
+                        'metric': '50.00%',
+                    }
+                ],
+            },
+            'success': True,
+        }, json.loads(response.content))
 
     @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
     def test_order_title_ctr(self, mock_get_stats):
@@ -2959,28 +3055,28 @@ class CampaignContentInsightsTest(TestCase):
         response = cis.get(fake_request(self.user()), 1)
         self.assertEqual(httplib.OK, response.status_code)
         self.assertDictEqual({
-                'data': {
-                    'metric': 'CTR',
-                    'summary': 'Title',
-                    'best_performer_rows': [
-                        {
-                            'metric': '1.00%',
-                            'summary': 'Awesome Ad',
-                        },
-                        {
-                            'metric': '0.10%',
-                            'summary': 'Test Ad',
-                        }
-                    ],
-                    'worst_performer_rows': [
-                        {
-                            'metric': '1.00%',
-                            'summary': 'Awesome Ad',
-                        },
-                    ],
-                },
-                'success': True,
-            }, json.loads(response.content))
+            'data': {
+                'metric': 'CTR',
+                'summary': 'Title',
+                'best_performer_rows': [
+                    {
+                        'metric': '1.00%',
+                        'summary': 'Awesome Ad',
+                    },
+                    {
+                        'metric': '0.10%',
+                        'summary': 'Test Ad',
+                    }
+                ],
+                'worst_performer_rows': [
+                    {
+                        'metric': '1.00%',
+                        'summary': 'Awesome Ad',
+                    },
+                ],
+            },
+            'success': True,
+        }, json.loads(response.content))
 
 
 class HistoryTest(TestCase):
