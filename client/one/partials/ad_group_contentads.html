@@ -110,7 +110,8 @@
         </div>
     </div>
 
-    <div ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+    <div class="zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
         <zem-grid-action-bar api="grid.api"></zem-grid-action-bar>
         <zem-grid data-data-source="grid.dataSource"
                   api="grid.api"
