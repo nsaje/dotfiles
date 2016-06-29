@@ -14,7 +14,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.selectedCandidate = null;
     $scope.batchNameEdit = false;
     $scope.formData = {
-        batchName: moment().format('M/D/YYYY h:mm A'),
+        batchName: moment().utc().add($scope.user.timezoneOffset, 'seconds').format('M/D/YYYY h:mm A'),
     };
 
     $scope.MAX_URL_LENGTH = 936;

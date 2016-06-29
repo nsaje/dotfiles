@@ -115,7 +115,9 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
 
         function getRows () {
             var rows = grid.body.rows.slice();
-            if (grid.footer.row) rows.push(grid.footer.row);
+            if (grid.footer.row) {
+                rows.push(grid.footer.row);
+            }
             return rows;
         }
 

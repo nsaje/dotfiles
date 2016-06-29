@@ -1059,8 +1059,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     );
 
     var CAMPAIGN_AD_GROUPS = [
-        COLUMNS.adgroup,
         COLUMNS.stateAdGroup,
+        COLUMNS.adgroup,
         COLUMNS.performance,
         COLUMNS.statusAdGroup,
         COLUMNS.yesterdayCost,
@@ -1102,6 +1102,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.minBidCpc,
         COLUMNS.maxBidCpc,
         COLUMNS.dailyBudget,
+        COLUMNS.yesterdayCost,
+        COLUMNS.eYesterdayCost,
     ].concat(
         BASE_METRICS,
         POSTCLICK_ACQUISITION_METRICS,
