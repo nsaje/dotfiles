@@ -59,7 +59,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 // Initialize header columns based on the stored data and default values
                 zemGridStorageService.loadColumns(vm.grid);
 
-                initializeOrder(vm.grid.meta.service.getOrder());
+                initializeOrder();
 
                 vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
                     return column.visible;
@@ -78,7 +78,8 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 }
             }
 
-            function initializeOrder (order) {
+            function initializeOrder () {
+                var order = vm.grid.meta.service.getOrder();
                 if (!order) return;
 
                 var direction = zemGridConstants.gridColumnOrder.ASC;
@@ -87,7 +88,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                     order = order.substr(1);
                 }
 
-                vm.grid.header.columns.forEach (function (column) {
+                vm.grid.header.columns.forEach(function (column) {
                     if (column.field === order) {
                         column.order = direction;
                     } else {
@@ -104,14 +105,38 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 return zemGridUIService.getHeaderColumnOrderClass(vm.grid, column);
             }
 
+            function toggleColumnOrder (column)  {
+                vm.grid.header.columns.forEach(function (c) {
+                    if (column !== c) {
+                        c.order = zemGridConstants.gridColumnOrder.NONE;
+                    }
+                });
+
+                switch (column.order) {
+                case zemGridConstants.gridColumnOrder.DESC:
+                    column.order = zemGridConstants.gridColumnOrder.ASC;
+                    break;
+                case zemGridConstants.gridColumnOrder.ASC:
+                    column.order = zemGridConstants.gridColumnOrder.DESC;
+                    break;
+                default:
+                    if (column.data.initialOrder) {
+                        column.order = column.data.initialOrder;
+                    } else {
+                        column.order = zemGridConstants.gridColumnOrder.DESC;
+                    }
+                }
+            }
+
             function setOrder (column) {
+                toggleColumnOrder(column);
+
                 var order = column.field;
-                if (column.order === zemGridConstants.gridColumnOrder.ASC) {
+                if (column.order === zemGridConstants.gridColumnOrder.DESC) {
                     order = '-' + column.field;
                 }
 
-                // Workaround - initialize order and resize columns (prevent flickering when rows are emptied)
-                initializeOrder(order);
+                // Resize columns to prevent flickering when rows are emptied
                 zemGridUIService.resizeGridColumns(vm.grid);
 
                 vm.grid.meta.service.setOrder(order, true);

@@ -221,10 +221,10 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     }
 
     function getHeaderColumnOrderClass (grid, column) {
-        if (column.order === zemGridConstants.gridColumnOrder.ASC) {
+        if (column.order === zemGridConstants.gridColumnOrder.DESC) {
             return 'ordered';
         }
-        if (column.order === zemGridConstants.gridColumnOrder.DESC) {
+        if (column.order === zemGridConstants.gridColumnOrder.ASC) {
             return 'ordered-reverse';
         }
         return null;

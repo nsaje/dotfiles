@@ -114,7 +114,9 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         }
 
         function getRows () {
-            return grid.body.rows.concat([grid.footer.row]);
+            var rows = grid.body.rows.slice();
+            if (grid.footer.row) rows.push(grid.footer.row);
+            return rows;
         }
 
         function getSelectedRows () {
@@ -125,7 +127,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
                 }
             });
 
-            if (grid.footer.row.selected) {
+            if (grid.footer.row && grid.footer.row.selected) {
                 selectedData.push(grid.footer.row);
             }
 
