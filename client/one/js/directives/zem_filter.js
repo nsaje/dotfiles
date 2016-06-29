@@ -28,6 +28,12 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 });
             };
 
+            $scope.refreshAgencies = function () {
+                api.agencies.list().then(function (data) {
+                    $scope.agencies = data.data.agencies;
+                });
+            };
+
             $scope.addFilteredSource = function (sourceId) {
                 if (!sourceId || sourceId === '') {
                     return;
@@ -120,6 +126,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.enablePublisherFilter = zemFilterService.getShowBlacklistedPublishers();
                 $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
                 $scope.refreshAvailableSources();
+                $scope.refreshAgencies();
             };
 
             $scope.init();

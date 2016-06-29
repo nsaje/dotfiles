@@ -368,6 +368,10 @@ urlpatterns += [
         login_required(dash.views.views.AvailableSources.as_view()),
     ),
     url(
+        r'^api/agencies/',
+        login_required(dash.views.agency.Agencies.as_view()),
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
         login_required(dash.views.views.AdGroupRestore.as_view()),
         name='ad_group_restore',

@@ -2863,6 +2863,28 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function Agencies() {
+        this.list = function () {
+            var deferred = $q.defer();
+            var url = '/api/agencies/';
+            var config = {
+                params: {},
+            };
+
+            addShowArchived(config.params);
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    deferred.resolve(data);
+                }).
+                error(function (data, status) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function ConversionGoal () {
         function convertFromApi (conversionGoal) {
             var ret = {
@@ -3385,6 +3407,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupAdsUpload: new AdGroupAdsUpload(),
         uploadPlus: new UploadPlus(),
         availableSources: new AvailableSources(),
+        agencies: new Agencies(),
         conversionPixel: new ConversionPixel(),
         conversionGoal: new ConversionGoal(),
         adGroupContentAdState: new AdGroupContentAdState(),
