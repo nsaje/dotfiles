@@ -248,6 +248,23 @@ class UploadCancel(api_common.BaseApiView):
         return self.create_api_response({})
 
 
+class UploadDownload(api_common.BaseApiView):
+
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Upload batch does not exist')
+
+        basefnm, _ = os.path.splitext(os.path.basename(batch.original_filename))
+        content = upload_plus.get_candidates_csv(batch)
+        return self.create_csv_response(basefnm, content=content)
+
+
 class UploadErrorReport(api_common.BaseApiView):
 
     def get(self, request, ad_group_id, batch_id):

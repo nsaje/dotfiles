@@ -159,6 +159,10 @@ urlpatterns += [
         login_required(dash.views.upload.UploadStatus.as_view()), name='upload_plus_status'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/download/',
+        login_required(dash.views.upload.UploadDownload.as_view()), name='upload_plus_download'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/save/',
         login_required(dash.views.upload.UploadSave.as_view()), name='upload_plus_save'
     ),
