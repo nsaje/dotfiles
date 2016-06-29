@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col-xs-10 input-group fb-logo" ng-if="facebookStatus && facebookStatus == constants.facebookStatus.EMPTY">
                 <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg"></i>
-                <input id="fb-page-input" type="text" class="form-control" ng-model="facebookPage" ng-change="onFacebookPageChange()">
+                <input id="fb-page-input" type="text" class="form-control" ng-model="facebook.page" ng-change="onFacebookPageChange()">
             </div>
         </div>
         <div ng-if="facebookStatus && facebookStatus != constants.facebookStatus.EMPTY" class="row">

@@ -1323,7 +1323,7 @@ class FacebookAccountStatus(api_common.BaseApiView):
     @staticmethod
     def _get_account_status(page_status):
         if page_status is None:
-            return models.constants.FacebookPageRequestType.ERROR
+            return models.constants.FacebookPageRequestType.EMPTY
         elif page_status == 'CONFIRMED':
             return models.constants.FacebookPageRequestType.CONNECTED
         elif page_status == 'PENDING':

@@ -8,14 +8,17 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
         scope: {
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
+            config: '=zemConfig',
+            accountId: '=zemAccountId',
             facebookPage: '=zemFacebookPage',
             facebookStatus: '=zemFacebookStatus',
             facebookPageErrors: '=zemFacebookPageErrors',
             facebookPageChanged: '=zemFacebookPageChanged',
-            save: 'zemSave',
         },
         controller: ['$scope', 'api', function ($scope, api) {
             $scope.facebookAccountStatusChecker = null;
+            $scope.constants = constants;
+            $scope.facebook = {page: $scope.facebookPage};
 
             $scope.$watch('facebookPage', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
@@ -23,9 +26,15 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
                 }
             });
 
-            $scope.$watch('facebookStatus', function (newValue, oldValue) {
+            // $scope.$watch('facebookStatus', function (newValue, oldValue) {
+            //     if (newValue !== oldValue) {
+            //         $scope.checkFacebookAccountStatus();
+            //     }
+            // });
+
+            $scope.$watch('facebook.page', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
-                    $scope.checkFacebookAccountStatus();
+                    $scope.facebookPage = $scope.facebook.page;
                 }
             });
 
@@ -35,7 +44,7 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
                 if (facebookPage === null || facebookStatus === constants.facebookStatus.CONNECTED) {
                     return;
                 }
-                api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(
+                api.accountSettings.getFacebookAccountStatus($scope.accountId).then(
                     function (data) {
                         var facebookAccountStatus = data.data.status;
                         $scope.facebookStatus = facebookAccountStatus;
@@ -49,7 +58,7 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
                     // updated multiple times).
                     clearTimeout($scope.facebookAccountStatusChecker);
                 }
-                $scope.facebookAccountStatusChecker = setTimeout(checkFacebookAccountStatus, 30 * 1000);
+                $scope.facebookAccountStatusChecker = setTimeout($scope.checkFacebookAccountStatus, 30 * 1000);
             };
 
             $scope.onFacebookPageChange = function () {
