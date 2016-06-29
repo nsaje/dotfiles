@@ -9,7 +9,9 @@ oneApp.config(['$stateProvider', function ($stateProvider) {
         })
         .state('main.development.grid', {
             url: '/grid',
-            template: '<zem-grid data-data-source="grid.dataSource" api="grid.api" options="grid.options"></zem-grid>',
+            template: '' +
+                '<zem-grid-action-bar api="grid.api"></zem-grid-action-bar>' +
+                '<zem-grid data-data-source="grid.dataSource" api="grid.api" options="grid.options"></zem-grid>',
             controller: 'DevelopmentGridCtrl',
         });
 }]);
