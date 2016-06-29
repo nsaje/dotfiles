@@ -1,5 +1,13 @@
 /* globals $, oneApp, constants, options, defaults, angular, moment */
 oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$state', '$modalInstance', 'api', function ($interval, $scope, $state, $modalInstance, api) { // eslint-disable-line max-len
+    $scope.MAX_URL_LENGTH = 936;
+    $scope.MAX_TITLE_LENGTH = 90;
+    $scope.MAX_DESCRIPTION_LENGTH = 140;
+    $scope.MAX_DISPLAY_URL_LENGTH = 25;
+    $scope.MAX_BRAND_NAME_LENGTH = 25;
+    $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
+    $scope.MAX_LABEL_LENGTH = 25;
+
     $scope.imageCrops = options.imageCrops;
     $scope.callToActionOptions = defaults.callToAction;
     $scope.candidateStatuses = constants.contentAdCandidateStatus;
@@ -11,44 +19,36 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     ];
 
     $scope.step = 1;
-    $scope.selectedCandidate = null;
+    $scope.selectedCandidate = undefined;
     $scope.batchNameEdit = false;
-    $scope.formData = {
-        batchName: moment().utc().add($scope.user.timezoneOffset, 'seconds').format('M/D/YYYY h:mm A'),
-    };
+    $scope.uploadFormData = {};
+    $scope.uploadFormData.batchName = moment().utc().add(
+        $scope.user ? $scope.user.timezoneoffset : 0, 'seconds').format('M/D/YYYY h:mm A');
 
-    $scope.MAX_URL_LENGTH = 936;
-    $scope.MAX_TITLE_LENGTH = 90;
-    $scope.MAX_DESCRIPTION_LENGTH = 140;
-    $scope.MAX_DISPLAY_URL_LENGTH = 25;
-    $scope.MAX_BRAND_NAME_LENGTH = 25;
-    $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
-    $scope.MAX_LABEL_LENGTH = 25;
-
-    var pollInterval;
-    var startPolling = function (batchId) {
-        if (angular.isDefined(pollInterval)) {
+    $scope.pollInterval = undefined;
+    $scope.startPolling = function () {
+        if (angular.isDefined($scope.pollInterval)) {
             return;
         }
 
-        pollInterval = $interval(function () {
+        $scope.pollInterval = $interval(function () {
             var waitingCandidates = getWaitingCandidateIds();
             if (!waitingCandidates.length) {
-                stopPolling();
+                $scope.stopPolling();
                 return;
             }
-            api.uploadPlus.checkStatus($state.params.id, batchId, waitingCandidates).then(
+            api.uploadPlus.checkStatus($state.params.id, $scope.batchId, waitingCandidates).then(
                 function (data) {
                     updateCandidates(data.candidates);
                 }
             );
-        }, 1000);
+        }, 2500);
     };
 
-    var stopPolling = function () {
-        if (angular.isDefined(pollInterval)) {
-            $interval.cancel(pollInterval);
-            pollInterval = undefined;
+    $scope.stopPolling = function () {
+        if (angular.isDefined($scope.pollInterval)) {
+            $interval.cancel($scope.pollInterval);
+            $scope.pollInterval = undefined;
         }
     };
 
@@ -101,7 +101,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     $scope.closeEditForm = function () {
-        $scope.selectedCandidate = null;
+        $scope.selectedCandidate = undefined;
     };
 
     $scope.isUploadDisabled = function () {
@@ -158,6 +158,18 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return false;
     };
 
+    $scope.switchToFileUpload = function () {
+        $scope.step = 1;
+    };
+
+    $scope.switchToContentAdPicker = function () {
+        $scope.step = 2;
+    };
+
+    $scope.switchToSuccessScreen = function () {
+        $scope.step = 3;
+    };
+
     $scope.getStatus = function (candidate) {
         if (candidate.imageStatus === constants.asyncUploadJobStatus.PENDING_START ||
             candidate.imageStatus === constants.asyncUploadJobStatus.WAITING_RESPONSE ||
@@ -173,11 +185,11 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return constants.contentAdCandidateStatus.OK;
     };
 
-    $scope.saveUpload = function () {
-        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.formData.batchName).then(
+    $scope.save = function () {
+        api.uploadPlus.save($state.params.id, $scope.batchId, $scope.uploadFormData.batchName).then(
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
-                $scope.step = 3;
+                $scope.switchToSuccessScreen();
             },
             function (errors) {
                 $scope.saveErrors = errors;
@@ -234,25 +246,24 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     $scope.upload = function () {
-        if ($scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS) {
-            return;
-        }
-
-        var formData = {
-            file: $scope.formData.file,
-            batchName: $scope.formData.batchName,
+        var uploadFormData = {
+            file: $scope.uploadFormData.file,
+            batchName: $scope.uploadFormData.batchName,
         };
 
         api.uploadPlus.uploadMultiple(
-            $state.params.id, formData
-        ).then(function (result) {
-            $scope.step = 2;
-            $scope.candidates = result.candidates;
-            $scope.batchId = result.batchId;
-            startPolling($scope.batchId);
-        }, function (data) {
-            $scope.errors = data.errors;
-        });
+            $state.params.id, uploadFormData
+        ).then(
+            function (result) {
+                $scope.candidates = result.candidates;
+                $scope.batchId = result.batchId;
+                $scope.switchToContentAdPicker();
+                $scope.startPolling();
+            },
+            function (data) {
+                $scope.uploadFormErrors = data.errors;
+            }
+        );
     };
 
     $scope.updateCandidate = function () {
@@ -262,9 +273,17 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
             $scope.batchId
         ).then(function (result) {
             updateCandidates(result.candidates);
-            startPolling($scope.batchId);
+            $scope.startPolling();
             $scope.closeEditForm();
         });
+    };
+
+    $scope.cancel = function () {
+        if ($scope.batchId) {
+            api.uploadPlus.cancel($state.params.id, $scope.batchId);
+        }
+        $scope.stopPolling();
+        $modalInstance.close();
     };
 
     $scope.callToActionSelect2Config = {
@@ -284,6 +303,6 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     });
 
     $scope.$on('$destroy', function () {
-        stopPolling();
+        $scope.stopPolling();
     });
 }]);
