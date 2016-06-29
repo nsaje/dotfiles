@@ -22,6 +22,35 @@ oneApp.directive('zemFilter', ['config', function (config) {
             $scope.config = config;
             $scope.enablePublisherFilter = false;
             $scope.showPublisherSelected = 'all';
+            $scope.accountTypes = [];
+            $scope.defaultAccountTypes = [
+                {
+                    id: String(constants.accountTypes.UNKNOWN),
+                    name: 'Unknown',
+                },
+                {
+                    id: String(constants.accountTypes.TEST),
+                    name: 'Test',
+                },
+                {
+                    id: String(constants.accountTypes.SANDBOX),
+                    name: 'Sandbox',
+                },
+
+                {
+                    id: String(constants.accountTypes.PILOT),
+                    name: 'Pilot',
+                },
+
+                {
+                    id: String(constants.accountTypes.SELF_MANAGED),
+                    name: 'Self-Managed',
+                },
+                {
+                    id: String(constants.accountTypes.MANAGED),
+                    name: 'Managed',
+                },
+            ];
 
             $scope.refreshAvailableSources = function () {
                 api.availableSources.list().then(function (data) {
@@ -33,6 +62,10 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 api.agencies.list().then(function (data) {
                     $scope.agencies = data.data.agencies;
                 });
+            };
+
+            $scope.refreshAccountTypes = function () {
+                $scope.accountTypes = $scope.defaultAccountTypes;
             };
 
             $scope.addFilteredSource = function (sourceId) {
@@ -67,6 +100,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
             $scope.isFilterOn = function () {
                 return zemFilterService.isSourceFilterOn() || 
                     zemFilterService.isAgencyFilterOn() ||
+                    zemFilterService.isAccountTypeFilterOn() ||
                     zemFilterService.isPublisherBlacklistFilterOn();
             };
 
@@ -79,8 +113,6 @@ oneApp.directive('zemFilter', ['config', function (config) {
             };
 
             $scope.isAgencyFiltered = function (agency) {
-                console.log('isfiltered', agency);
-                console.log(agency.id);
                 return zemFilterService.isAgencyFiltered(agency.id);
             };
 
@@ -89,13 +121,29 @@ oneApp.directive('zemFilter', ['config', function (config) {
                     return;
                 }
 
-                console.log('addFiltered', agencyId);
                 zemFilterService.addFilteredAgency(agencyId);
                 $scope.agencyIdToFilter = '';
             };
 
             $scope.removeFilteredAgency = function (agencyId) {
                 zemFilterService.removeFilteredAgency(agencyId);
+            };
+
+            $scope.isAccountTypeFiltered = function (accountType) {
+                return zemFilterService.isAccountTypeFiltered(accountType.id);
+            };
+
+            $scope.addFilteredAccountType = function (accountType) {
+                if (!accountType || accountType === '') {
+                    return;
+                }
+
+                zemFilterService.addFilteredAccountType(accountType);
+                $scope.accountTypeToFilter = '';
+            };
+
+            $scope.removeFilteredAccountType = function (accountTypeId) {
+                zemFilterService.removeFilteredAccountType(accountTypeId);
             };
 
             $scope.$watch('showArchivedSelected', function (newValue, oldValue) {
@@ -150,6 +198,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
                 $scope.refreshAvailableSources();
                 $scope.refreshAgencies();
+                $scope.refreshAccountTypes();
             };
 
             $scope.init();
