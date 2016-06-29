@@ -4948,3 +4948,28 @@ select.media-source-select {
 .custom_scroller::-webkit-scrollbar-corner {
     background-color: transparent;
 }
+
+/* ZEM-INTERNAL-FEATURE-CONTAINER (adds border around whole container) */
+
+.position-properties (@x) {
+	top: @x;
+    bottom: @x;
+    right: @x;
+    left: @x;
+}
+
+.zem-internal-feature-container {
+    position: relative;
+    & > zem-internal-feature {
+        border: 1px solid @internal-color;
+        position: absolute;
+        .position-properties(-5px);
+
+        .internal {
+            position: absolute;
+            border-top: 10px solid @internal-color;
+            border-right: 10px solid transparent;
+        }
+    }
+}
+
