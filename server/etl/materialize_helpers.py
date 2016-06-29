@@ -22,6 +22,24 @@ S3_FILE_URI = 's3://{bucket_name}/{key}'
 CSV_DELIMITER = '\t'
 
 
+class TableWithoutDateMixin(object):
+    """
+    Mixin that instead of deleting rows from materualized view truncates the table.
+    """
+
+    def clear_data(self, cursor, date_from, date_to):
+        logger.info('Truncate table "%s"', self.table_name())
+        sql, params = self.prepare_drop_query()
+        cursor.execute(sql, params)
+
+    def prepare_truncate_query(self):
+        sql = backtosql.generate_sql('etl_truncate_table.sql', {
+            'table': self.table_name(),
+        })
+
+        return sql, {}
+
+
 class Materialize(object):
     def table_name(self):
         raise NotImplementedError()

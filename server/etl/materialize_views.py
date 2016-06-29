@@ -16,7 +16,7 @@ from etl import materialize_helpers
 logger = logging.getLogger(__name__)
 
 
-class MVHelpersSource(materialize_helpers.MaterializeViaCSV):
+class MVHelpersSource(materialize_helpers.TableWithoutDateMixin, materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts source id and slug into redshift. Its than used to construct the mv_master view.
     """
@@ -55,7 +55,7 @@ class MVHelpersCampaignFactors(materialize_helpers.MaterializeViaCSV):
                 )
 
 
-class MVHelpersAdGroupStructure(materialize_helpers.MaterializeViaCSV):
+class MVHelpersAdGroupStructure(materialize_helpers.TableWithoutDateMixin, materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts ad group structure (campaign id, account id, agency id) into redshift. Its than
     used to construct the mv_master view.
