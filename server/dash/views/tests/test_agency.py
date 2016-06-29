@@ -3138,6 +3138,9 @@ class TestHistoryMixin(TestCase):
         def get_human_value(self, key, value):
             return value
 
+        def get_defaults_dict(self):
+            return {}
+
     def test_snapshot(self):
         mix = TestHistoryMixin.HistoryTest()
         self.assertEqual({'test_field': ''}, mix.post_init_state)
@@ -3179,7 +3182,7 @@ class TestHistoryMixin(TestCase):
     def test_get_changes_text_from_dict(self):
         mix = TestHistoryMixin.HistoryTest()
         self.assertEqual(
-            'Test Field set to "johnny"',
+            'Created settings. Test Field set to "johnny"',
             mix.get_changes_text_from_dict({'test_field': 'johnny'})
         )
 
