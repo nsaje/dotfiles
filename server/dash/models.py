@@ -539,6 +539,28 @@ class Account(models.Model):
                 models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
             ).distinct()
 
+        def filter_by_agency(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                agency__in=agencies)
+
+        def filter_by_account_type(self, account_types):
+            if not account_types:
+                return self
+
+            latest_settings = AccountSettings.objects.all().filter(
+                account__in=self
+            ).group_current_settings()
+
+            filtered_accounts = AccountSettings.objects.all().filter(
+                id__in=latest_settings,
+                account_type__in=account_types
+            ).values_list('account__id', flat=True)
+
+            return self & filtered_accounts
+
+
         def exclude_archived(self):
             related_settings = AccountSettings.objects.all().filter(
                 account__in=self
@@ -1740,6 +1762,28 @@ class AdGroup(models.Model):
                 models.Q(campaign__account__groups__user__id=user.id) |
                 models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
+
+        def filter_by_agency(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                campaign__account__agency__in=agencies)
+
+        def filter_by_account_type(self, account_types):
+            if not account_types:
+                return self
+
+            latest_settings = AccountSettings.objects.all().filter(
+                account__campaign__adgroup=self
+            ).group_current_settings()
+
+            filtered_accounts = AccountSettings.objects.all().filter(
+                id__in=latest_settings,
+                account_type__in=account_types
+            ).values_list('account__id', flat=True)
+
+            return self.filter(
+                campaign__account__in=filtered_accounts)
 
         def filter_by_sources(self, sources):
             if not should_filter_by_sources(sources):

@@ -66,9 +66,20 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
+class ViewFilter(object):
+    '''Convenience class for extracting filters from requests'''
+
+    def __init__(self, request):
+        self.filtered_sources = get_filtered_sources(
+            request.user, request.GET.get('filtered_sources'))
+        self.filtered_agencies = get_filtered_agencies(
+            request.GET.get('filtered_agencies'))
+        self.filtered_account_types = get_filtered_account_types(
+            request.GET.get('filtered_account_types'))
+
+
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
-
     if not sources_filter:
         return filtered_sources
 
@@ -83,6 +94,29 @@ def get_filtered_sources(user, sources_filter):
         filtered_sources = filtered_sources.filter(id__in=filtered_ids)
 
     return filtered_sources
+
+
+def get_filtered_agencies(agency_filter):
+    filtered_agencies = None
+    if not agency_filter:
+        return filtered_agencies
+
+    filtered_ids = map(int, agency_filter.split(','))
+    if filtered_ids:
+        filtered_agencies = models.Agency.objects.all().filter(
+            id__in=filtered_ids
+        )
+    return filtered_agencies
+
+
+def get_filtered_account_types(account_type_filter):
+    filtered_account_types = None
+    if not account_type_filter:
+        return filtered_account_types
+
+    filtered_account_types = constants.AccountType.get_all()
+    filtered_ids = map(int, account_type_filter.split(','))
+    return set(filtered_account_types) & set(filtered_ids)
 
 
 def get_additional_columns(additional_columns):
