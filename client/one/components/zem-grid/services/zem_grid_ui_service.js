@@ -1,4 +1,4 @@
-/* globals oneApp, angular */
+/* globals oneApp, angular, constants */
 'use strict';
 
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
@@ -237,6 +237,14 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         };
     }
 
+    function getFieldGoalStatusClass (status) {
+        switch (status) {
+        case constants.emoticon.HAPPY: return 'superperforming-goal';
+        case constants.emoticon.SAD: return 'underperforming-goal';
+        default: return '';
+        }
+    }
+
     return {
         requestAnimationFrame: requestAnimationFrame,
         resizeGridColumns: resizeGridColumns,
@@ -244,5 +252,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         getHeaderColumnClass: getHeaderColumnClass,
         getHeaderColumnOrderClass: getHeaderColumnOrderClass,
         getBreakdownColumnStyle: getBreakdownColumnStyle,
+        getFieldGoalStatusClass: getFieldGoalStatusClass,
     };
 }]);

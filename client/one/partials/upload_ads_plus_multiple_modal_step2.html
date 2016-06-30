@@ -3,7 +3,7 @@
     <div class="candidate-table custom_scroller">
         <div class="batch-name form-group" ng-class="{'has-error': saveErrors.batchName}">
             <span>Batch name:</span>
-            <input type="text" class="form-control" ng-readonly="!batchNameEdit" ng-model="formData.batchName" id="batch-name-input" ng-blur="disableBatchNameEdit()" ng-focus="clearBatchNameErrors()" />
+            <input type="text" class="form-control" ng-readonly="!batchNameEdit" ng-model="uploadFormData.batchName" id="batch-name-input" ng-blur="disableBatchNameEdit()" ng-focus="clearBatchNameErrors()" />
             <a href class="btn btn-secondary only-icon" ng-click="toggleBatchNameEdit()">
                 <img ng-src="{{ config.static_url }}/one/img/button-edit.svg" ng-if="!batchNameEdit"/>
                 <img ng-src="{{ config.static_url }}/one/img/button-check_mark.svg" ng-if="batchNameEdit"/>
@@ -11,7 +11,7 @@
             <!-- <label for="batch-name-input" ng-repeat="error in saveErrors.batchName" class="control-label small error">{{ error }}</label> -->
         </div>
         <table class="table">
-            <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate.id}">
+            <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate.id}" ng-click="openEditForm(candidate)">
                 <td class="status">
                     <ng-switch on="getStatus(candidate)">
                         <img ng-switch-when="loading" class="small-icon" ng-src="{{ config.static_url }}/one/img/loader.svg"/>
@@ -56,7 +56,7 @@
         </button>
     </div>
 
-    <div class="edit-form custom_scroller">
+    <div class="edit-form custom_scroller" ng-if="!!selectedCandidate" zem-scroll-to-top="editFormScrollApi">
         <h4>Edit content ad: {{ selectedCandidate.title }}</h4>
         <form class="file-upload-form form-horizontal">
 
@@ -265,7 +265,7 @@
     <div class="clear"></div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-gray" ng-click="close()">Cancel</button>
-    <button type="button" class="btn btn-add pull-right" ng-click="saveUpload()" ng-disabled="isUploadDisabled()">Upload</button>
-    <span class="error pull-right" ng-if="anyErrors">You need to fix all errors before you can upload batch.</span>
+    <button type="button" class="btn btn-gray" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-add pull-right" ng-click="save()" ng-disabled="isSaveDisabled()">Upload</button>
+    <span class="error pull-right" ng-if="anyCandidateHasErrors">You need to fix all errors before you can upload batch.</span>
 </div>

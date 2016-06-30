@@ -51,22 +51,20 @@ describe('zemCampaignGoals', function () {
 
     });
 
-    describe('addGoal', function (done) {
+    describe('addGoal', function () {
         it('opens a modal window', function () {
             isolate.addGoal().result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
-                })
-                .finally(done);
+                });
         });
     });
-    describe('editGoal', function (done) {
+    describe('editGoal', function () {
         it('opens a modal window', function () {
             isolate.editGoal().result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
-                })
-                .finally(done);
+                });
         });
     });
 

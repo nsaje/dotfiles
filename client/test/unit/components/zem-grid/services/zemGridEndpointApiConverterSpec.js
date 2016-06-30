@@ -34,7 +34,6 @@ describe('zemGridEndpointApiConverter', function () {
                     },
                     clicks: 100,
                     state: 1,
-                    unknown: null,
                 },
                 {
                     breakdown_id: 4,
@@ -86,10 +85,6 @@ describe('zemGridEndpointApiConverter', function () {
                     field: 'state',
                     type: 'state',
                 },
-                {
-                    field: 'unknown',
-                    type: 'unknown',
-                },
             ],
         };
 
@@ -108,7 +103,6 @@ describe('zemGridEndpointApiConverter', function () {
                             isEditable: true,
                             editMessage: null,
                         },
-                        unknown: null,
                     },
                     breakdownId: 3,
                     archived: false,
@@ -126,7 +120,6 @@ describe('zemGridEndpointApiConverter', function () {
                             isEditable: false,
                             editMessage: 'Test edit message.',
                         },
-                        unknown: null,
                     },
                     breakdownId: 4,
                     archived: false,
@@ -144,19 +137,21 @@ describe('zemGridEndpointApiConverter', function () {
                             isEditable: false,
                             editMessage: 'Test edit message.',
                         },
-                        unknown: null,
                     },
                     breakdownId: 5,
                     archived: true,
                 },
             ],
             totals: {
-                breakdown_name: null,
+                breakdown_name: {
+                    value: undefined,
+                },
                 clicks: {
                     value: 1000,
                 },
-                state: null,
-                unknown: null,
+                state: {
+                    value: undefined,
+                },
             },
             breakdownId: 2,
             level: 2,

@@ -38,6 +38,8 @@
 @zem-grid-level-4-bg-color: #e8e8e8;
 @zem-grid-header-footer-bg-color: #f6f6f6;
 @zem-grid-cell-border-color: #dddddd;
+@zem-grid-superperforming-goal-color: #73bf44;
+@zem-grid-underperforming-goal-color: #cb2027;
 
 .zem-grid-container {
     width: 100%;
@@ -180,7 +182,7 @@
         }
 
         .zem-grid-body {
-            max-height: 540px;
+            max-height: 510px;
             min-height: 45px;
             overflow: auto;
 
@@ -204,6 +206,16 @@
         // Workaround for links without href attribute
         a {
             cursor: pointer;
+        }
+
+        .zem-grid-cell-base-field {
+            &.superperforming-goal {
+                color: @zem-grid-superperforming-goal-color;
+            }
+
+            &.underperforming-goal {
+                color: @zem-grid-underperforming-goal-color;
+            }
         }
 
         .zem-grid-cell-performance-indicator {

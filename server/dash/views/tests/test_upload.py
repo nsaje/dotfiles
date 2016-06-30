@@ -532,16 +532,22 @@ class UploadSaveTestCase(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
+    @staticmethod
+    def _mock_insert_redirects_batch(content_ads):
+        return {
+            str(content_ad.id): {
+                'redirect': {
+                    'url': 'http://example.com',
+                },
+                'redirectid': 'abc123',
+            } for content_ad in content_ads
+        }
+
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_ok(self, mock_insert_redirect, mock_s3_put):
-        mock_insert_redirect.return_value = {
-            'redirect': {
-                'url': 'http://example.com',
-            },
-            'redirectid': 'abc123',
-        }
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_ok(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
         batch_id = 2
         ad_group_id = 3
 
@@ -570,14 +576,10 @@ class UploadSaveTestCase(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_change_batch_name(self, mock_insert_redirect, mock_s3_put):
-        mock_insert_redirect.return_value = {
-            'redirect': {
-                'url': 'http://example.com',
-            },
-            'redirectid': 'abc123',
-        }
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_change_batch_name(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+
         batch_id = 2
         ad_group_id = 3
 
@@ -632,7 +634,10 @@ class UploadSaveTestCase(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_errors(self, mock_s3_put):
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_errors(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+
         batch_id = 3
         ad_group_id = 4
 
@@ -661,9 +666,9 @@ class UploadSaveTestCase(TestCase):
         )
 
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_redirector_error(self, mock_insert_redirect, mock_s3_put):
-        mock_insert_redirect.side_effect = Exception()
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_redirector_error(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = Exception()
 
         batch_id = 2
         ad_group_id = 3

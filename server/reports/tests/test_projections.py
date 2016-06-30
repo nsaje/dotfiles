@@ -349,7 +349,7 @@ class ProjectionsTestCase(test.TestCase):
         self.assertEqual(stats.total('license_fee_projection'),
                          Decimal('4000.0020'))
 
-    def test_empty_projections(self):
+    def test_future_projections(self):
         self._create_batch_statements(
             dash.models.BudgetLineItem.objects.all(),
             self.today - datetime.timedelta(3),
@@ -361,18 +361,30 @@ class ProjectionsTestCase(test.TestCase):
             'account',
             projection_date=self.today
         )
-
-        self.assertEqual(stats.row(1), {})
-        self.assertEqual(dict(stats.totals), {
-            'allocated_media_budget': None,
-            'allocated_total_budget': None,
-            'attributed_license_fee': None,
+        print stats.projections, stats.totals
+        self.assertEqual(stats.row(1), {
+            'allocated_media_budget': Decimal('1285.294117647058823529411765'),
+            'allocated_total_budget': Decimal('1794.117647058823529411764706'),
+            'attributed_license_fee': 0,
             'attributed_media_spend': None,
-            'flat_fee': None,
+            'flat_fee': Decimal('0.0'),
             'ideal_media_spend': None,
-            'media_spend_projection': None,
             'license_fee_projection': None,
+            'media_spend_projection': None,
             'pacing': None,
-            'total_fee': None,
+            'total_fee': Decimal('0.0'),
             'total_fee_projection': None
+        })
+        self.assertEqual(dict(stats.totals), {
+            'ideal_media_spend': None,
+            'allocated_media_budget': Decimal('1285.294117647058823529411765'),
+            'flat_fee': Decimal('0.0'),
+            'media_spend_projection': None,
+            'allocated_total_budget': Decimal('1794.117647058823529411764706'),
+            'attributed_license_fee': None,
+            'total_fee_projection': None,
+            'attributed_media_spend': None,
+            'pacing': None,
+            'total_fee': Decimal('0.0'),
+            'license_fee_projection': None
         })
