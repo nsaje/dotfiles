@@ -440,6 +440,7 @@ class AdGroupOverview(api_common.BaseApiView):
             'Campaign pacing:',
             lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
             description='{:.2f}% on plan'.format(pacing),
+            tooltip='Campaign pacing for the current month'
         ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
@@ -714,6 +715,7 @@ class CampaignOverview(api_common.BaseApiView):
             'Campaign pacing:',
             lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
             description='{:.2f}% on plan'.format(pacing),
+            tooltip='Campaign pacing for the current month'
         ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):

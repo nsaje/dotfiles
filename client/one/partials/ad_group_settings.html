@@ -1,6 +1,6 @@
 <div class="page" ng-if="loadRequestInProgress">
     <div class=loader-main-area>
-    	<div class="loader-image"></div>
+        <div class="loader-image"></div>
     </div>
 </div>
 
@@ -130,7 +130,10 @@
                     Retargeting
                     <zem-help-popover content="Content ads will only be shown to people who have already seen an ad from selected ad groups." placement="top"></zem-help-popover>
                 </label>
-                <div ng-if="warnings.retargeting !== undefined" class="col-xs-6 alert alert-info form-alert-box">
+                <div class="col-xs-6 col-md-4">
+                    <input type="checkbox" id="enable-retargeting" ng-model="retargetingEnabled"> Enable retargeting
+                </div>
+                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-info form-alert-box">
                     <div class="form-alert-exclamation">
                         <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
@@ -140,7 +143,7 @@
                 </div>
 
                 <div class="col-xs-6 col-md-4 after-form-alert-box">
-                    <zem-retargeting ng-if="warnings.retargeting === undefined" zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
+                    <zem-retargeting ng-if="retargetingEnabled && warnings.retargeting === undefined" zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
                 </div>
             </div>
 
@@ -242,7 +245,7 @@
                 Autopilot
                 <zem-help-popover content="Bid CPC and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
             </label>
-			<div class="col-xs-12 alert alert-info form-alert-box" ng-if="isInLanding()" >
+            <div class="col-xs-12 alert alert-info form-alert-box" ng-if="isInLanding()" >
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                 </div>
@@ -300,7 +303,7 @@
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
 
-	</form>
+    </form>
 </div>
 <div class="page page-ad-group-settings" ng-if="adGroup && adGroup.archived">
     <p>
