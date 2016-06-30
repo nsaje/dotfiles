@@ -1,10 +1,43 @@
 'use strict';
 
 describe('AdGroupCtrl', function () {
-    var $scope, parentScope, $state, user;
+    var $scope, parentScope, $state, user, api, zemFilterServiceMock;
 
     beforeEach(function () {
         module('one');
+
+        module(function ($provide) {
+            var mockApiFunc = function () {
+                return {
+                    then: function () {
+                        return {
+                            finally: function () {
+                            },
+                        };
+                    },
+                    abort: function () {
+                    },
+                };
+            };
+
+            api = {
+                navigation: {
+                    list: mockApiFunc,
+                },
+            };
+
+            zemFilterServiceMock = {
+                getShowArchived: function () {
+                    return true;
+                },
+                getFilteredSources: function () {},
+                getFilteredAccountTypes: function () {},
+                getFilteredAgencies: function () {},
+            };
+
+            $provide.value('zemFilterService', zemFilterServiceMock);
+            $provide.value('api', api);
+        });
 
         inject(function ($rootScope, $controller, _$state_, zemLocalStorageService) {
             parentScope = $rootScope.$new();
