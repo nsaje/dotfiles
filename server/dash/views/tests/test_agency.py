@@ -3207,6 +3207,28 @@ class HistoryTest(TestCase):
 
 
 class AgenciesTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.assertFalse(self.user.is_superuser)
+
+    def get_agencies(self):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse('agencies', kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return response.json()
+
+    def test_permission(self):
+        response = self.get_agencies()
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_filter_by_agency'])
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
 
     def test_get_wo_permissions(self):
         pass
