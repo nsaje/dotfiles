@@ -560,7 +560,6 @@ class Account(models.Model):
 
             return self & filtered_accounts
 
-
         def exclude_archived(self):
             related_settings = AccountSettings.objects.all().filter(
                 account__in=self
@@ -743,6 +742,28 @@ class Campaign(models.Model, PermissionMixin):
                 models.Q(id__in=Campaign.demo_objects.all()) |
                 models.Q(adgroup__adgroupsource__source__in=sources)
             ).distinct()
+
+        def filter_by_agency(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                account__agency__in=agencies)
+
+        def filter_by_account_type(self, account_types):
+            if not account_types:
+                return self
+
+            latest_settings = AccountSettings.objects.all().filter(
+                account__campaign=self
+            ).group_current_settings()
+
+            filtered_accounts = AccountSettings.objects.all().filter(
+                id__in=latest_settings,
+                account_type__in=account_types
+            ).values_list('account__id', flat=True)
+
+            return self.filter(
+                account__in=filtered_accounts)
 
         def exclude_archived(self):
             related_settings = CampaignSettings.objects.all().filter(

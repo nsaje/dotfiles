@@ -136,8 +136,12 @@ class NavigationTreeView(api_common.BaseApiView):
         return data_ad_groups
 
     def _fetch_campaign_data_from_db(self, user, view_filter):
-        campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(
-            view_filter.filtered_sources).order_by('name')
+        campaigns = models.Campaign.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)\
+            .order_by('name')
 
         map_campaigns_settings = {}
         campaigns_settings = models.CampaignSettings.objects.filter(
