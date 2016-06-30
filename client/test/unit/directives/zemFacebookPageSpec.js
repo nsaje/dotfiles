@@ -1,4 +1,7 @@
 describe('zemFacebookPage', function () {
+    const FACEBOOK_PAGE = 'http://www.facebook.com/zemanta';
+    const FACEBOOK_STATUS_CONNECTED = 'Connected';
+
     var $scope, zemFacebookPageElement, isolate, inputElement;
 
     beforeEach(module('one'));
@@ -29,7 +32,7 @@ describe('zemFacebookPage', function () {
 
         api.accountSettings.getFacebookAccountStatus = function () {
             var deferred = $q.defer();
-            deferred.resolve({data: {status: 'Connected'}});
+            deferred.resolve({data: {status: FACEBOOK_STATUS_CONNECTED}});
             return deferred.promise;
         };
 
@@ -46,9 +49,9 @@ describe('zemFacebookPage', function () {
     });
     
     it('updates the Facebook status when the Facebook page is inserted', function () {
-        inputElement.val('http://www.facebook.com/zemanta').trigger('input');
+        inputElement.val(FACEBOOK_PAGE).trigger('input');
         $scope.$digest();
-        expect($scope.settings.facebookPage).toEqual('http://www.facebook.com/zemanta');
-        expect($scope.settings.facebookStatus).toEqual('Connected');
+        expect($scope.settings.facebookPage).toEqual(FACEBOOK_PAGE);
+        expect($scope.settings.facebookStatus).toEqual(FACEBOOK_STATUS_CONNECTED);
     });
 });
