@@ -45,7 +45,7 @@ describe('AccountCreditCtrl', function () {
         });
     });
 
-    describe('addCreditItem', function (done) {
+    describe('addCreditItem', function () {
         it('sets selected credit item to null', function () {
             $scope.addCreditItem();
             expect($scope.selectedCreditItemId).toBe(null);
@@ -54,11 +54,11 @@ describe('AccountCreditCtrl', function () {
         it('opens a modal', function () {
             $scope.addCreditItem().result.catch(function (error) {
                 expect(error).toBeUndefined();
-            }).finally(done);
+            });
         });
     });
 
-    describe('editCreditItem', function (done) {
+    describe('editCreditItem', function () {
         it('sets selected credit item correctly', function () {
             $scope.editCreditItem(10);
             expect($scope.selectedCreditItemId).toBe(10);
@@ -67,7 +67,7 @@ describe('AccountCreditCtrl', function () {
         it('opens a modal', function () {
             $scope.editCreditItem(10).result.catch(function (error) {
                 expect(error).toBeUndefined();
-            }).finally(done);
+            });
         });
     });
 

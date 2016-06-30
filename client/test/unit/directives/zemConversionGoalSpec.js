@@ -45,13 +45,12 @@ describe('zemConversionGoals', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('addConversionGoal', function (done) {
+    describe('addConversionGoal', function () {
         it('opens a modal window', function () {
             isolate.addConversionGoal().result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
-                })
-                .finally(done);
+                });
         });
     });
 
