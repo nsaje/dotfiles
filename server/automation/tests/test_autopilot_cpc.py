@@ -135,7 +135,7 @@ class AutopilotCpcTestCase(test.TestCase):
 
     @patch('automation.autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES', Decimal('3'))
     def test_round_source_type(self):
-        st = dash.models.SourceType.objects.get(id=1)
+        st = dash.models.SourceType.objects.get(id=2)
         test_cases = (
             # cpc, rounded_cpc
             ('0.15', '0.15'),
