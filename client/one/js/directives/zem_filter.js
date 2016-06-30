@@ -9,20 +9,22 @@ oneApp.directive('zemFilter', ['config', function (config) {
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
             enablePublisherFilter: '=enablePublisherFilter ',
-            showPublisherSelected: '=showPublisherSelected'
+            showPublisherSelected: '=showPublisherSelected',
         },
         link: function ($scope, element) {
             element.on('click', function (e) {
                 e.stopPropagation();
             });
         },
-        controller: ['$scope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, zemFilterService, zemUserSettings, api) {
+        controller: ['$scope', '$state', '$rootScope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, $state, $rootScope, zemFilterService, zemUserSettings, api) {
             $scope.availableSources = [];
             $scope.agencies = [];
             $scope.config = config;
             $scope.enablePublisherFilter = false;
             $scope.showPublisherSelected = 'all';
             $scope.accountTypes = [];
+            $scope.agencyFilterVisible = false;
+            $scope.accountTypeFilterVisible = false;
             $scope.defaultAccountTypes = [
                 {
                     id: String(constants.accountTypes.UNKNOWN),
@@ -146,6 +148,16 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 zemFilterService.removeFilteredAccountType(accountTypeId);
             };
 
+            $rootScope.$on('$stateChangeSuccess', 
+                function(event, toState, toParams, fromState, fromParams){ 
+                    $scope.updateVisibility();
+            });
+
+            $scope.updateVisibility = function () {
+                $scope.agencyFilterVisible = $state.current.level === constants.level.ALL_ACCOUNTS;
+                $scope.accountTypeFilterVisible = $state.current.level === constants.level.ALL_ACCOUNTS;
+            }
+
             $scope.$watch('showArchivedSelected', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
                     zemFilterService.setShowArchived(newValue);
@@ -199,6 +211,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.refreshAvailableSources();
                 $scope.refreshAgencies();
                 $scope.refreshAccountTypes();
+                $scope.updateVisibility();
             };
 
             $scope.init();

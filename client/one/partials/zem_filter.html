@@ -30,7 +30,7 @@
                 </div>
             </li>
 
-            <li ng-show="hasPermission('zemauth.can_filter_by_agency')">
+            <li ng-show="agencyFilterVisible && hasPermission('zemauth.can_filter_by_agency')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_agency')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Agency</div>
 
@@ -44,7 +44,7 @@
                 </div>
             </li>
 
-            <li ng-show="hasPermission('zemauth.can_filter_by_account_type')">
+            <li ng-show="accountTypeFilterVisible && hasPermission('zemauth.can_filter_by_account_type')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_account_type')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Account type</div>
 

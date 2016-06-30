@@ -1,6 +1,6 @@
 /* globals oneApp,constants */
 oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
-    $scope.level = constants.level.CAMPAIGNS;
+    $scope.level = $state.level;
     $scope.contentInsights = {
         summary: null,
         metric: null,

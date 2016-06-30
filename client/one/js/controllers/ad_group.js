@@ -3,7 +3,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
-    $scope.level = constants.level.AD_GROUPS;
+    $scope.level = $state.level;
     $scope.getTabs = function () {
         var tabs = [{
             heading: 'Content Ads',
