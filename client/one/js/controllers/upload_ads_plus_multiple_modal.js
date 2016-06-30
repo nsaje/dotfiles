@@ -121,7 +121,8 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         return $scope.anyCandidateHasErrors || !$scope.candidates.length || getWaitingCandidateIds().length;
     };
 
-    $scope.removeCandidate = function (candidate) {
+    $scope.removeCandidate = function (candidate, event) {
+        event.stopPropagation();  // the whole row has ng-click registered
         api.uploadPlus.removeCandidate(
             candidate.id,
             $state.params.id,
