@@ -169,6 +169,7 @@
 -   fields:
         type: 'adblade3'
         min_daily_budget: '5'
+        cpc_decimal_places: '2'
     model: dash.sourcetype
     pk: 2
 

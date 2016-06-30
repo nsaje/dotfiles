@@ -3,7 +3,6 @@ import logging
 
 from automation.constants import CpcChangeComment
 from automation import autopilot_settings
-from automation import autopilot_helpers
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +22,10 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
             daily_budget,
             yesterdays_spend)
         cpc_change_comments += calculation_comments
-        proposed_cpc = _threshold_source_constraints(proposed_cpc, ag_source.source, cpc_change_comments)
-        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments)
+        source_type = ag_source.source.source_type
+        proposed_cpc, max_decimal_places = _round_source_type(proposed_cpc, source_type)
+        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_decimal_places)
+        proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments)
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
             set(autopilot_settings.CPC_CHANGE_ALLOWED_COMMENTS)
@@ -39,10 +40,11 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
     return recommended_changes
 
 
-def _round_cpc(num):
+def _round_cpc(num, decimal_places=autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES, rounding=decimal.ROUND_HALF_UP):
     return num.quantize(
-        decimal.Decimal('0.001'),
-        rounding=decimal.ROUND_HALF_UP)
+        #decimal.Decimal(str(pow(10, -decimal_places))),
+        pow(10, decimal.Decimal(-decimal_places)),
+        rounding=rounding)
 
 
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
@@ -104,8 +106,8 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
-def _threshold_source_constraints(proposed_cpc, source, cpc_change_comments):
-    min_cpc, max_cpc = _get_source_type_min_max_cpc(source.source_type)
+def _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments):
+    min_cpc, max_cpc = _get_source_type_min_max_cpc(source_type)
     if proposed_cpc > max_cpc:
         cpc_change_comments += [CpcChangeComment.OVER_SOURCE_MAX_CPC]
         return max_cpc
@@ -115,13 +117,21 @@ def _threshold_source_constraints(proposed_cpc, source, cpc_change_comments):
     return proposed_cpc
 
 
+def _round_source_type(proposed_cpc, source_type):
+    source_dec_places = source_type.cpc_decimal_places
+    decimal_places = source_dec_places if source_dec_places and\
+        source_dec_places < autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES else\
+        autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES
+    return _round_cpc(proposed_cpc, decimal_places=decimal_places), decimal_places
+
+
 def _get_source_type_min_max_cpc(source_type):
     return source_type.min_cpc, source_type.max_cpc
 
 
-def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments):
+def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_cpc_decimal_places):
     ag_settings = ad_group.get_current_settings()
     if ag_settings.cpc_cc and proposed_cpc > ag_settings.cpc_cc:
         cpc_change_comments += [CpcChangeComment.OVER_AD_GROUP_MAX_CPC]
-        return ag_settings.cpc_cc
+        return _round_cpc(ag_settings.cpc_cc, decimal_places=max_cpc_decimal_places, rounding=decimal.ROUND_DOWN)
     return proposed_cpc
