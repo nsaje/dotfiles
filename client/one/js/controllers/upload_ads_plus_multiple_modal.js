@@ -1,5 +1,5 @@
 /* globals $, oneApp, constants, options, defaults, angular, moment */
-oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$state', '$modalInstance', 'api', function ($interval, $scope, $state, $modalInstance, api) { // eslint-disable-line max-len
+oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$state', '$modalInstance', '$window', 'api', function ($interval, $scope, $state, $modalInstance, $window, api) { // eslint-disable-line max-len
     $scope.MAX_URL_LENGTH = 936;
     $scope.MAX_TITLE_LENGTH = 90;
     $scope.MAX_DESCRIPTION_LENGTH = 140;
@@ -289,6 +289,11 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
             $scope.startPolling();
             $scope.closeEditForm();
         });
+    };
+
+    $scope.download = function () {
+        var url = '/api/ad_groups/' + $state.params.id + '/contentads/upload_plus/' + $scope.batchId + '/download/';
+        $window.open(url, '_blank');
     };
 
     $scope.cancel = function () {
