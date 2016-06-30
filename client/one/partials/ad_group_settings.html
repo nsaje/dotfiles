@@ -188,12 +188,12 @@
             </div>
             <div class="checkbox col-xs-12">
                 <a ng-if="settings.gaTrackingType === constants.gaTrackingType.EMAIL"
-                   href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports" 
+                   href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports"
                    target="_blank">
                    Download a guide to setting up Automated Google Analytics Report via email
                 </a>
                 <a ng-if="settings.gaTrackingType === constants.gaTrackingType.API"
-                   href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1" 
+                   href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1"
                    target="_blank">
                    Download a guide to setting up Automated Google Analytics Report via API
                 </a>
@@ -240,7 +240,7 @@
             <label class="col-xs-12 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
                 Autopilot
-                <zem-help-popover content="Bid CPC and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
+                <zem-help-popover content="Bids and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
             </label>
 			<div class="col-xs-12 alert alert-info form-alert-box" ng-if="isInLanding()" >
                 <div class="form-alert-exclamation">
@@ -249,10 +249,6 @@
                 <div class="form-alert-body">Autopilot is automatically enabled because the campaign is in landing mode. </div>
             </div>
             <div class="col-xs-12 form-group indented" ng-class="{'has-error': !!errors.autopilotState}">
-                <label class="col-xs-2 control-label">
-                    Autopilot's Status
-                    <zem-help-popover content="State of the Autopilot on this Ad Group" placement="top"></zem-help-popover>
-                </label>
                 <div class="col">
                     <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
                         <label>
