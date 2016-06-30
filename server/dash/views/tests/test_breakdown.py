@@ -126,7 +126,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + 1  # [workaround] see implementation
         )
 
     @patch.object(table.AccountsAccountsTable, 'get')
@@ -338,7 +338,7 @@ class AccountBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + 1  # [workaround] see implementation
         )
 
     @patch.object(table.AccountCampaignsTable, 'get')
@@ -520,7 +520,7 @@ class CampaignBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + 1  # [workaround] see implementation
         )
 
 
@@ -584,5 +584,5 @@ class AdGroupBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + 1  # [workaround] see implementation
         )
