@@ -21,7 +21,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         country: {name: 'Country', query: 'country'},
         state: {name: 'State', query: 'state'},
         dma: {name: 'DMA', query: 'dma'},
-        device: {name: 'Device', query: 'device'},
+        device: {name: 'Device', query: 'device_type'},
 
         day: {name: 'By day', query: 'day'},
         week: {name: 'By week', query: 'week'},
