@@ -42,6 +42,8 @@ ALLOWED_HOSTS = ['*']
 
 BASE_URL = 'https://one.zemanta.com'
 
+ACCOUNT_ACTIVATION_DAYS = 30
+
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_REDIRECT_EXEMPT = [ '^healthcheck$', '^k1api/']
