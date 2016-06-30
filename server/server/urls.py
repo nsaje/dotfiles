@@ -160,7 +160,7 @@ urlpatterns += [
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/download/',
-        login_required(dash.views.upload.UploadDownload.as_view()), name='upload_plus_download'
+        login_required(dash.views.upload.CandidatesDownload.as_view()), name='upload_plus_candidates_download'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/save/',

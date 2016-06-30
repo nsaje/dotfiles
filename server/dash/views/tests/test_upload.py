@@ -761,7 +761,7 @@ class UploadDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().get(
-            reverse('upload_plus_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -778,7 +778,7 @@ class UploadDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().get(
-            reverse('upload_plus_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -801,7 +801,7 @@ class UploadDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client(superuser=False).get(
-            reverse('upload_plus_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
