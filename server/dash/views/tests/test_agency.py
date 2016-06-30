@@ -3230,11 +3230,23 @@ class AgenciesTest(TestCase):
         response = self.get_agencies()
         self.assertTrue(response['success'])
 
-    def test_get_wo_permissions(self):
-        pass
-
     def test_get(self):
-        pass
+        agency = models.Agency(
+            name='test'
+        )
+        agency.save(fake_request(self.user))
+
+        add_permissions(self.user, ['can_filter_by_agency'])
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'agencies': [
+                {
+                    'id': str(agency.id),
+                    'name': 'test',
+                }
+            ]
+        }, response['data'])
 
 
 class TestHistoryMixin(TestCase):
