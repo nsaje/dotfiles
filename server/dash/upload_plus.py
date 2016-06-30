@@ -156,8 +156,7 @@ def _get_csv(fields, rows):
 
 
 def _get_candidates_csv(candidates):
-    fields = [field for field in forms.MANDATORY_CSV_FIELDS]
-    fields += [field for field in forms.OPTIONAL_CSV_FIELDS]
+    fields = list(forms.ALL_CSV_FIELDS)
     fields.remove('tracker_urls')
     fields.remove('crop_areas')  # a hack to ease transition
 
@@ -168,8 +167,7 @@ def _get_candidates_csv(candidates):
 
 
 def _get_error_csv(errors):
-    fields = [field for field in forms.MANDATORY_CSV_FIELDS]
-    fields += [field for field in forms.OPTIONAL_CSV_FIELDS]
+    fields = list(forms.ALL_CSV_FIELDS)
     fields.remove('primary_tracker_url')
     fields.remove('secondary_tracker_url')
     fields.remove('crop_areas')  # a hack to ease transition

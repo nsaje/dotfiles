@@ -582,6 +582,7 @@ MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name',
                        'description', 'call_to_action', 'label', 'image_crop',
                        'primary_tracker_url', 'secondary_tracker_url']
+ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ['errors']
 
 # Example CSV content - must be ignored if mistakenly uploaded
