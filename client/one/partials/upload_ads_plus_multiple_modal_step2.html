@@ -11,7 +11,7 @@
             <!-- <label for="batch-name-input" ng-repeat="error in saveErrors.batchName" class="control-label small error">{{ error }}</label> -->
         </div>
         <table class="table">
-            <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate.id}">
+            <tr ng-repeat="candidate in candidates" ng-class="{selected: candidate.id === selectedCandidate.id}" ng-click="openEditForm(candidate)">
                 <td class="status">
                     <ng-switch on="getStatus(candidate)">
                         <img ng-switch-when="loading" class="small-icon" ng-src="{{ config.static_url }}/one/img/loader.svg"/>

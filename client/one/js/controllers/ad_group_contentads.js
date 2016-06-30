@@ -524,6 +524,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
 
         modalInstance.result.then(function () {
             getTableData();
+        }).catch(function () {
+            getTableData();
         });
 
         return modalInstance;
