@@ -42,7 +42,8 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
 
 def _round_cpc(num, decimal_places=autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES, rounding=decimal.ROUND_HALF_UP):
     return num.quantize(
-        decimal.Decimal(str(pow(10, -decimal_places))),
+        #decimal.Decimal(str(pow(10, -decimal_places))),
+        pow(10, decimal.Decimal(-decimal_places)),
         rounding=rounding)
 
 
