@@ -36,8 +36,8 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         }
     }
 
-    function setFilteredAccountTypeLocation () {
-        if (filteredAgencies.length > 0) {
+    function setFilteredAccountTypesLocation () {
+        if (filteredAccountTypes.length > 0) {
             $location.search('filtered_account_types', filteredAccountTypes.join(','));
         } else {
             $location.search('filtered_account_types', null);
@@ -198,10 +198,11 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     function removeFiltering () {
         filteredSources.splice(0, filteredSources.length);
         filteredAgencies.splice(0, filteredAgencies.length);
+        filteredAccountTypes.splice(0, filteredAccountTypes.length);
 
         setFilteredSourcesLocation();
         setFilteredAgenciesLocation();
-        setFilteredAccountTypes();
+        setFilteredAccountTypesLocation();
         setShowArchivedLocation();
 
         blacklistedPublisherFilter = null;
