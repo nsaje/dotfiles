@@ -539,13 +539,13 @@ class Account(models.Model):
                 models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
             ).distinct()
 
-        def filter_by_agency(self, agencies):
+        def filter_by_agencies(self, agencies):
             if not agencies:
                 return self
             return self.filter(
                 agency__in=agencies)
 
-        def filter_by_account_type(self, account_types):
+        def filter_by_account_types(self, account_types):
             if not account_types:
                 return self
 
@@ -743,13 +743,13 @@ class Campaign(models.Model, PermissionMixin):
                 models.Q(adgroup__adgroupsource__source__in=sources)
             ).distinct()
 
-        def filter_by_agency(self, agencies):
+        def filter_by_agencies(self, agencies):
             if not agencies:
                 return self
             return self.filter(
                 account__agency__in=agencies)
 
-        def filter_by_account_type(self, account_types):
+        def filter_by_account_types(self, account_types):
             if not account_types:
                 return self
 
@@ -1784,13 +1784,13 @@ class AdGroup(models.Model):
                 models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
 
-        def filter_by_agency(self, agencies):
+        def filter_by_agencies(self, agencies):
             if not agencies:
                 return self
             return self.filter(
                 campaign__account__agency__in=agencies)
 
-        def filter_by_account_type(self, account_types):
+        def filter_by_account_types(self, account_types):
             if not account_types:
                 return self
 
