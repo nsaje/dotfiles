@@ -2321,6 +2321,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             if (endDate) {
                 config.params.end_date = endDate.format();
             }
+            addAgencyFilter(config.params);
+            addAccountTypeFilter(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
