@@ -154,8 +154,9 @@ oneApp.directive('zemFilter', ['config', function (config) {
             });
 
             $scope.updateVisibility = function () {
-                $scope.agencyFilterVisible = $state.current.level === constants.level.ALL_ACCOUNTS;
-                $scope.accountTypeFilterVisible = $state.current.level === constants.level.ALL_ACCOUNTS;
+                var isAllAccounts = $state.current.name.startsWith('main.allAccounts');
+                $scope.agencyFilterVisible = isAllAccounts;
+                $scope.accountTypeFilterVisible = isAllAccounts;
             }
 
             $scope.$watch('showArchivedSelected', function (newValue, oldValue) {

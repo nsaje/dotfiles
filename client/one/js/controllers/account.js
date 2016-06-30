@@ -1,7 +1,7 @@
 /*globals oneApp*/
 
 oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'accountData', function ($scope, $state, zemNavigationService, accountData) {
-    $scope.level = $state.level;
+    $scope.level = constants.level.ACCOUNTS;
     $scope.getTabs = function () {
         return [
             {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view') || ($scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},

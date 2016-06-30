@@ -64,7 +64,6 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return zemNavigationService.getAccountsAccess();
                 }],
             },
-            level: undefined,
         });
 
     $stateProvider
@@ -72,25 +71,21 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: 'all_accounts',
             template: basicTemplate,
             controller: 'AllAccountsCtrl',
-            level: constants.level.ALL_ACCOUNTS,
         })
         .state('main.allAccounts.accounts', {
             url: '/accounts',
             templateUrl: '/partials/all_accounts_accounts.html',
             controller: 'AllAccountsAccountsCtrl',
-            level: constants.level.ALL_ACCOUNTS,
         })
         .state('main.allAccounts.sources', {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl',
-            level: constants.level.ALL_ACCOUNTS,
         })
         .state('main.allAccounts.scheduled_reports', {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl',
-            level: constants.level.ALL_ACCOUNTS,
         });
 
     $stateProvider
@@ -103,46 +98,38 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return zemNavigationService.getAccount($stateParams.id);
                 }],
             },
-            level: constants.level.ACCOUNTS,
         })
         .state('main.accounts.campaigns', {
             url: '/campaigns',
             templateUrl: '/partials/account_campaigns.html',
             controller: 'AccountCampaignsCtrl',
-            level: constants.level.ACCOUNTS,
         })
         .state('main.accounts.sources', {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl',
-            level: constants.level.ACCOUNTS,
         })
         .state('main.accounts.history', {
             url: '/history',
             templateUrl: '/partials/account_history.html',
             controller: 'AccountHistoryCtrl',
-            level: constants.level.ACCOUNTS,
         })
         .state('main.accounts.settings', {
             url: '/settings',
             templateUrl: '/partials/account_account.html',
             controller: 'AccountAccountCtrl',
-            level: constants.level.ACCOUNTS,
         })
         .state('main.accounts.archived', {
             url: '/archived',
             templateUrl: '/partials/account_settings.html',
-            level: constants.level.ACCOUNTS,
         }).state('main.accounts.credit', {
             url: '/credit',
             templateUrl: '/partials/account_credit.html',
             controller: 'AccountCreditCtrl',
-            level: constants.level.ACCOUNTS,
         }).state('main.accounts.scheduled_reports', {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl',
-            level: constants.level.ACCOUNTS,
         });
 
     $stateProvider
@@ -155,43 +142,36 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return zemNavigationService.getCampaign($stateParams.id);
                 }],
             },
-            level: constants.level.CAMPAIGNS,
         })
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
             templateUrl: '/partials/campaign_ad_groups.html',
             controller: 'CampaignAdGroupsCtrl',
-            level: constants.level.CAMPAIGNS,
         })
         .state('main.campaigns.sources', {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl',
-            level: constants.level.CAMPAIGNS,
         })
         .state('main.campaigns.settings', {
             url: '/settings',
             templateUrl: '/partials/campaign_settings.html',
             controller: 'CampaignSettingsCtrl',
-            level: constants.level.CAMPAIGNS,
         })
         .state('main.campaigns.archived', {
             url: '/archived',
             templateUrl: '/partials/campaign_settings.html',
             controller: 'CampaignSettingsCtrl',
-            level: constants.level.CAMPAIGNS,
         })
         .state('main.campaigns.history', {
             url: '/history',
             templateUrl: '/partials/campaign_history.html',
             controller: 'CampaignHistoryCtrl',
-            level: constants.level.CAMPAIGNS,
         })
         .state('main.campaigns.budget', {
             url: '/budget',
             templateUrl: '/partials/campaign_budget.html',
             controller: 'CampaignBudgetCtrl',
-            level: constants.level.CAMPAIGNS,
         });
 
 
@@ -205,42 +185,35 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
                     return zemNavigationService.getAdGroup($stateParams.id);
                 }],
             },
-            level: constants.level.AD_GROUPS,
         })
         .state('main.adGroups.adsplus', {
             url: '/ads_plus',
             abstract: true,
-            level: constants.level.AD_GROUPS,
         })
         .state('main.adGroups.ads', {
             url: '/ads',
             templateUrl: '/partials/ad_group_contentads.html',
             controller: 'AdGroupAdsCtrl',
-            level: constants.level.AD_GROUPS,
         })
         .state('main.adGroups.sources', {
             url: '/sources',
             templateUrl: '/partials/ad_group_sources.html',
             controller: 'AdGroupSourcesCtrl',
-            level: constants.level.AD_GROUPS,
         })
         .state('main.adGroups.settings', {
             url: '/settings',
             templateUrl: '/partials/ad_group_settings.html',
             controller: 'AdGroupSettingsCtrl',
-            level: constants.level.AD_GROUPS,
         })
         .state('main.adGroups.history', {
             url: '/history',
             templateUrl: '/partials/ad_group_history.html',
             controller: 'AdGroupHistoryCtrl',
-            level: constants.level.AD_GROUPS,
         })
         .state('main.adGroups.publishers', {
             url: '/publishers',
             templateUrl: '/partials/ad_group_publishers.html',
             controller: 'AdGroupPublishersCtrl',
-            level: constants.level.AD_GROUPS,
         });
 }]);
 
