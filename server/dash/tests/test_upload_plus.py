@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from mock import patch
 from django.test import TestCase, override_settings
 
@@ -149,7 +150,7 @@ class PersistCandidatesTestCase(TestCase):
         self.assertTrue(s3_key.endswith('.csv'))
         self.assertEqual(
             'Url,Title,Image url,Impression trackers,Display url,Brand name,Description,Call to action,Label,'
-            'Image crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog,'
+            'Image crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog čšž,'
             'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,entropy,'
             '"Content unreachable, Image could not be processed"\r\n', content)
 
@@ -472,7 +473,7 @@ class GetCandidatesCsvTestCase(TestCase):
         content = upload_plus.get_candidates_csv(batch)
         self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
                          'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
-                         'Zemanta blog,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
+                         'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
                          'content ad 1,entropy,,\r\n', content)
 
 

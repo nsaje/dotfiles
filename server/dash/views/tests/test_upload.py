@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 import boto.exception
@@ -767,7 +768,7 @@ class UploadDownloadTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
                          'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
-                         'Zemanta blog,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
+                         'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
                          'content ad 1,entropy,,\r\n', response.content)
 
     def test_wrong_batch_id(self):
@@ -1017,6 +1018,7 @@ class CandidateTest(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
+        self.maxDiff = None
         response = json.loads(response.content)
         expected = {
             'data': {
@@ -1039,7 +1041,7 @@ class CandidateTest(TestCase):
                     'label': 'content ad 1',
                     'primary_tracker_url': None,
                     'secondary_tracker_url': None,
-                    'title': 'Zemanta blog 1',
+                    'title': u'Zemanta blog čšž 1',
                     'tracker_urls': '',
                     'url': 'http://zemanta.com/blog1',
                     'url_status': 2
