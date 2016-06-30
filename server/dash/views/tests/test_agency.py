@@ -3206,6 +3206,15 @@ class HistoryTest(TestCase):
         self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
 
 
+class AgenciesTest(TestCase):
+
+    def test_get_wo_permissions(self):
+        pass
+
+    def test_get(self):
+        pass
+
+
 class TestHistoryMixin(TestCase):
 
     class FakeMeta(object):
