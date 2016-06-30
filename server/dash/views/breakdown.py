@@ -54,6 +54,20 @@ def format_breakdown_response(report_rows, offset, limit, breakdown_page):
     return blocks
 
 
+def _workaround_check_pagination_complete(blocks, limit):
+    # We have requested one more row to check if breakdown collection is complete
+    # If we got less data then requested update pagination count to show that current data is last
+    # otherwise remove additional data and update pagination limit
+    for block in blocks:
+        pagination = block['pagination']
+        if pagination['limit'] < limit:
+            pagination['count'] = pagination['offset'] + pagination['limit']
+        else:
+            pagination['limit'] -= 1
+            block['rows'].pop()
+    return blocks
+
+
 def get_report_through_table(get_fn, user, form_data, **kwargs):
     """
     FIXME: This code is temporary! It will only be used for the prototype.
@@ -381,10 +395,11 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit+1,  # [workaround] Request additional row to see if more data is available
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit+1, breakdown_page)
+        report = _workaround_check_pagination_complete(report, limit + 1)
         return self.create_api_response(report)
 
 
@@ -429,10 +444,11 @@ class AccountBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit+1,  # [workaround] Request additional row to see if more data is available
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit+1, breakdown_page)
+        report = _workaround_check_pagination_complete(report, limit + 1)
         return self.create_api_response(report)
 
 
@@ -477,10 +493,11 @@ class CampaignBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit+1,  # [workaround] Request additional row to see if more data is available
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit+1, breakdown_page)
+        report = _workaround_check_pagination_complete(report, limit + 1)
         return self.create_api_response(report)
 
 
@@ -527,8 +544,9 @@ class AdGroupBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit+1,  # [workaround] Request additional row to see if more data is available
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit+1, breakdown_page)
+        report = _workaround_check_pagination_complete(report, limit + 1)
         return self.create_api_response(report)
