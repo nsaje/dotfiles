@@ -29,6 +29,20 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
+    function addAgencyFilter (params) {
+        var filteredAgencies = zemFilterService.getFilteredAgencies();
+        if (filteredAgencies.length > 0) {
+            params.filtered_agencies = filteredAgencies;
+        }
+    }
+
+    function addAccountTypeFilter (params) {
+        var filteredAccountTypes = zemFilterService.getFilteredAccountTypes();
+        if (filteredAccountTypes.length > 0) {
+            params.filtered_account_types = filteredAccountTypes;
+        }
+    }
+
     function addShowArchived (params) {
         if (zemFilterService.getShowArchived()) {
             params.show_archived = zemFilterService.getShowArchived();
@@ -111,6 +125,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 params: {},
             };
             addFilteredSources(config.params);
+            addAgencyFilter(config.params);
+            addAccountTypeFilter(config.params);
 
             $http.get(url, config).
                 success(function (data) {
@@ -135,6 +151,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 params: {},
             };
             addFilteredSources(config.params);
+            addAgencyFilter(config.params);
+            addAccountTypeFilter(config.params);
 
             $http.get(url, config).
                 success(function (data) {
@@ -284,7 +302,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         this.get = function (level, id, startDate, endDate, order) {
             var deferred = $q.defer();
             var url = null;
-            if (level === 'all_accounts') {
+            if (level === constants.level.ALL_ACCOUNTS) {
                 url = '/api/' + level + '/sources/table/';
             } else {
                 url = '/api/' + level + '/' + id + '/sources/table/';
@@ -307,6 +325,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
 
             addFilteredSources(config.params);
+
+            if (level === constants.level.ALL_ACCOUNTS) {
+                addAgencyFilter(config.params);
+                addAccountTypeFilter(config.params);
+            }
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -865,6 +888,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             addFilteredSources(config.params);
             addShowBlacklistedPublisher(config.params);
+
+            addAgencyFilter(config.params);
+            addAccountTypeFilter(config.params);
 
             $http.get(url, config).
                 success(function (response, status) {
@@ -1528,6 +1554,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 config.params.end_date = endDate.format();
             }
 
+            addAgencyFilter(config.params);
+            addAccountTypeFilter(config.params);
+
             $http.get(url, config).
                 success(function (data) {
                     if (data && data.data) {
@@ -1878,6 +1907,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             addShowArchived(config.params);
             addFilteredSources(config.params);
+            addAgencyFilter(config.params);
+            addAccountTypeFilter(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
