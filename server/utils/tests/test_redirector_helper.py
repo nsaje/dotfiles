@@ -188,6 +188,22 @@ class InsertRedirectsBatchTest(TestCase):
             {"url": content_ads[1].url, "creativeid": 2, "adgroupid": content_ads[1].ad_group_id},
         ]))
 
+    @override_settings(
+        R1_DEMO_MODE=True,
+    )
+    def test_demo_mode(self, mock_urlopen):
+        content_ads = [
+            dash.models.ContentAd.objects.get(id=1),
+            dash.models.ContentAd.objects.get(id=2),
+        ]
+        response_dict = redirector_helper.insert_redirects_batch(content_ads)
+        for content_ad in content_ads:
+            self.assertEqual(response_dict[str(content_ad.id)], {
+                'redirect': {'url': 'http://example.com/FAKE'},
+                'redirectid': 'XXXXXXXXXXXXX'
+            })
+        self.assertFalse(mock_urlopen.called)
+
 
 @override_settings(
     R1_REDIRECTS_API_URL='https://r1.example.com/api/redirects/',

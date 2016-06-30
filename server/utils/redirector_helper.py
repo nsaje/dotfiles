@@ -47,7 +47,7 @@ def insert_redirect(url, content_ad_id, ad_group_id):
 def insert_redirects_batch(content_ads):
     if settings.R1_DEMO_MODE:
         data = {
-            content_ad.id: {
+            str(content_ad.id): {
                 'redirect': {'url': 'http://example.com/FAKE'},
                 'redirectid': 'XXXXXXXXXXXXX'
             } for content_ad in content_ads
