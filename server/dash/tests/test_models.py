@@ -1077,7 +1077,16 @@ class HistoryTest(TestCase):
         new_settings.save(req)
 
         history = models.History.objects.all().first()
-        self.assertEqual('Created settings', history.changes_text)
+        self.assertEqual(textwrap.dedent('''
+            Created settings
+            . State set to "Paused"
+            , Max CPC bid set to "$100.000"
+            , Device targeting set to ""
+            , Locations set to "worldwide"
+            , Autopilot set to "Disabled"
+            , Autopilot\'s Daily Budget set to "$0.00"
+            , Landing Mode set to "False"
+            ''').replace('\n', ''), history.changes_text)
 
     def test_create_new_campaign_history(self):
         account = models.Account.objects.get(pk=1)
@@ -1088,14 +1097,17 @@ class HistoryTest(TestCase):
             account=account,
         )
         campaign.save(req)
-        new_settings = models.CampaignSettings(
-            campaign=campaign,
-            name='Tested campaign'
-        )
+        new_settings = campaign.get_current_settings()
+        new_settings.name = 'Tested campaign'
         new_settings.save(req)
 
         history = models.History.objects.all().first()
-        self.assertEqual('Created settings', history.changes_text)
+        self.assertEqual(textwrap.dedent('''
+            Created settings
+            . Name set to "Tested campaign"
+            , Device targeting set to "Tablet, Mobile, Desktop"
+            , Locations set to "United States"
+            ''').replace('\n', ''), history.changes_text)
 
     def test_create_new_account_history(self):
         req = test_helper.fake_request(self.u)
@@ -1191,7 +1203,11 @@ class HistoryTest(TestCase):
         cs.save(req)
 
         hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertEqual('Created settings', hist.changes_text)
+        self.assertEqual(textwrap.dedent('''
+            Created settings
+            . Device targeting set to "Tablet, Mobile, Desktop"
+            , Locations set to "United States"
+            ''').replace('\n', ''), hist.changes_text)
 
     def test_create_ad_group(self):
         req = test_helper.fake_request(self.u)
@@ -1205,7 +1221,16 @@ class HistoryTest(TestCase):
         adgs.save(req)
 
         hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertEqual('Created settings', hist.changes_text)
+        self.assertEqual(textwrap.dedent('''
+            Created settings. State set to "Paused"
+            , Start date set to "{}"
+            , Daily budget set to "$10.00"
+            , Device targeting set to "Tablet, Mobile, Desktop"
+            , Locations set to "United States"
+            , Autopilot set to "Disabled"
+            , Autopilot\'s Daily Budget set to "$0.00"
+            , Landing Mode set to "False"
+            ''').format(datetime.date.today().isoformat()).replace('\n', ''), hist.changes_text)
 
     def test_create_ad_group_source(self):
         s = models.Source.objects.create(
