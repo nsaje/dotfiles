@@ -1,3 +1,4 @@
+import decimal
 from decimal import Decimal
 from mock import patch
 
@@ -146,7 +147,7 @@ class AutopilotCpcTestCase(test.TestCase):
 
         for test_case in test_cases:
             self.assertEqual(autopilot_cpc._round_cpc(
-                Decimal(test_case[0]), st),
+                Decimal(test_case[0]), decimal_places=st.cpc_decimal_places, rounding=decimal.ROUND_HALF_UP),
                 Decimal(test_case[1]))
 
     def test_threshold_ad_group_constraints(self):
