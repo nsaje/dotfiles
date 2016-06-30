@@ -56,7 +56,7 @@
         </button>
     </div>
 
-    <div class="edit-form custom_scroller">
+    <div class="edit-form custom_scroller" ng-if="!!selectedCandidate" zem-scroll-to-top="editFormScrollApi">
         <h4>Edit content ad: {{ selectedCandidate.title }}</h4>
         <form class="file-upload-form form-horizontal">
 
