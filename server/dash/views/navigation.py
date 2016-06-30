@@ -80,7 +80,7 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
 class NavigationTreeView(api_common.BaseApiView):
     def get(self, request):
-        view_filter= helpers.ViewFilter(request)
+        view_filter = helpers.ViewFilter(request)
         user = request.user
 
         campaigns, map_campaign_settings = self._fetch_campaign_data_from_db(
@@ -95,18 +95,17 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_ad_groups_data(self, user, view_filter, map_campaign_settings):
         # load necessary objects
-        ad_groups = models.AdGroup.objects.all().filter_by_user(
-            user
-        ).filter_by_sources(
-            view_filter.filtered_sources
-        ).order_by('name')
+        ad_groups = models.AdGroup.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)\
+            .order_by('name')
 
         map_ad_group_source = dict(
             models.AdGroupSource.objects
             .filter(ad_group__in=ad_groups)
             .filter_by_sources(view_filter.filtered_sources)
-            .filter_by_agencies(view_filter.filtered_agencies)
-            .filter_by_account_types(view_filter.filtered_account_types)
             .values_list('id', 'ad_group_id')
         )
 
@@ -136,9 +135,9 @@ class NavigationTreeView(api_common.BaseApiView):
 
         return data_ad_groups
 
-    def _fetch_campaign_data_from_db(self, user, filtered_sources):
+    def _fetch_campaign_data_from_db(self, user, view_filter):
         campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources).order_by('name')
+            view_filter.filtered_sources).order_by('name')
 
         map_campaigns_settings = {}
         campaigns_settings = models.CampaignSettings.objects.filter(
