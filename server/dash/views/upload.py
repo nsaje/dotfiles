@@ -164,15 +164,10 @@ class UploadStatus(api_common.BaseApiView):
 class UploadSave(api_common.BaseApiView):
 
     def _create_redirect_ids(self, content_ads):
+        redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
         for content_ad in content_ads:
-            redirect = redirector_helper.insert_redirect(
-                content_ad.url,
-                content_ad.pk,
-                content_ad.ad_group_id,
-            )
-
-            content_ad.url = redirect["redirect"]["url"]
-            content_ad.redirect_id = redirect["redirectid"]
+            content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
+            content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
             content_ad.save()
 
     def post(self, request, ad_group_id, batch_id):
