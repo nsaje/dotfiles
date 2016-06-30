@@ -161,7 +161,7 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
             $interval.flush(2500);
             $scope.$root.$digest();
 
-            expect($scope.pollInterval).toBeDefined();
+            expect($scope.pollInterval).not.toBeNull();
         });
 
         it('does nothing on failure', function () {
@@ -203,7 +203,7 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
 
             $interval.flush(2500);
             expect($interval.cancel).toHaveBeenCalled();
-            expect($scope.pollInterval).not.toBeDefined();
+            expect($scope.pollInterval).toBeNull();
         });
 
         it('polls only for candidates that are waiting', function () {
@@ -341,7 +341,7 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
             };
 
             $scope.closeEditForm();
-            expect($scope.selectedCandidate).toBeUndefined();
+            expect($scope.selectedCandidate).toBeNull();
         });
     });
 
@@ -396,7 +396,7 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
             $scope.$root.$digest();
 
             expect($scope.startPolling).toHaveBeenCalled();
-            expect($scope.selectedCandidate).toBeUndefined();
+            expect($scope.selectedCandidate).toBeNull();
         });
     });
 
@@ -432,7 +432,7 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
             deferred.resolve();
             $scope.$root.$digest();
 
-            expect($scope.selectedCandidate).toBeUndefined();
+            expect($scope.selectedCandidate).toBeNull();
             expect($scope.candidates).toEqual([]);
         });
     });
@@ -480,6 +480,58 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
 
             expect($scope.stopPolling).toHaveBeenCalled();
             expect($modalInstance.close).toHaveBeenCalled();
+        });
+    });
+
+    describe('upload reset', function () {
+        it('resets controller variables', function () {
+            $scope.candidates = [{
+                id: 1,
+                url: 'http://example.com/url1',
+                title: 'Title 1',
+                imageUrl: 'http://exmaple.com/img1.jpg',
+                imageCrop: 'center',
+                description: '',
+                displayUrl: 'example.com',
+                brandName: '',
+                callToAction: 'Read more',
+                label: 'title1',
+                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+            }];
+            $scope.selectedCandidate = $scope.candidates[0];
+            $scope.step = 3;
+            $scope.batchId = 1234;
+            $scope.batchNameEdit = true;
+            $scope.uploadFormData = {
+                batchName: 'test batch name',
+                file: 'test file',
+            };
+            $scope.anyCandidateHasErrors = true;
+            $scope.numSuccessful = 123;
+            $scope.saveErrors = {
+                batchName: ['Invalid batch name'],
+            };
+            $scope.uploadFormErrors = {
+                batchName: ['Invalid batch name'],
+            };
+
+            spyOn($scope, 'stopPolling').and.stub();
+
+            $scope.switchToFileUpload();
+            expect($scope.step).toEqual(1);
+            expect($scope.candidates).toEqual([]);
+            expect($scope.selectedCandidate).toBeNull();
+            expect($scope.batchNameEdit).toBe(false);
+            expect($scope.uploadFormData).toEqual({
+                batchName: '7/1/2016 3:05 PM',
+            });
+            expect($scope.anyCandidateHasErrors).toBe(false);
+            expect($scope.batchId).toBeNull();
+            expect($scope.numSuccessful).toBeNull();
+            expect($scope.saveErrors).toBeNull();
+            expect($scope.uploadFormErrors).toBeNull();
+            expect($scope.stopPolling).toHaveBeenCalled();
         });
     });
 });
