@@ -425,7 +425,12 @@ describe('UploadAdsPlusMultipleModalCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.removeCandidate(candidate);
+            var mockEvent = {
+                stopPropagation: function () {},
+            };
+            spyOn(mockEvent, 'stopPropagation');
+            $scope.removeCandidate(candidate, mockEvent);
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
             expect(api.uploadPlus.removeCandidate).toHaveBeenCalledWith(
                 candidate.id, $state.params.id, $scope.batchId);
 
