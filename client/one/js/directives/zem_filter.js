@@ -25,35 +25,6 @@ oneApp.directive('zemFilter', ['config', function (config) {
             $scope.accountTypes = [];
             $scope.agencyFilterVisible = false;
             $scope.accountTypeFilterVisible = false;
-            $scope.defaultAccountTypes = [
-                {
-                    id: String(constants.accountTypes.UNKNOWN),
-                    name: 'Unknown',
-                },
-                {
-                    id: String(constants.accountTypes.TEST),
-                    name: 'Test',
-                },
-                {
-                    id: String(constants.accountTypes.SANDBOX),
-                    name: 'Sandbox',
-                },
-
-                {
-                    id: String(constants.accountTypes.PILOT),
-                    name: 'Pilot',
-                },
-
-                {
-                    id: String(constants.accountTypes.SELF_MANAGED),
-                    name: 'Self-Managed',
-                },
-                {
-                    id: String(constants.accountTypes.MANAGED),
-                    name: 'Managed',
-                },
-            ];
-
             $scope.refreshAvailableSources = function () {
                 api.availableSources.list().then(function (data) {
                     $scope.availableSources = data.data.sources;
@@ -67,7 +38,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
             };
 
             $scope.refreshAccountTypes = function () {
-                $scope.accountTypes = $scope.defaultAccountTypes;
+                $scope.accountTypes = constants.defaultAccountTypes;
             };
 
             $scope.addFilteredSource = function (sourceId) {
