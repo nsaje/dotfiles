@@ -2,10 +2,6 @@
 "use strict";
 
 oneApp.factory('zemFilterService', ['$location', function ($location) {
-    // Because filteredSources is being watched (through getFilteredSources function) from
-    // different controllers, it has to always point to the same array. Special care is taken
-    // to never replace the reference (no assignments to this variable) so the array is
-    // always modified in place.
     var filteredSources = [];
     var filteredAgencies = [];
     var filteredAccountTypes = [];
@@ -16,17 +12,17 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     function init (user) {
         var filteredSourcesLocation = $location.search().filtered_sources;
         if (filteredSourcesLocation) {
-            Array.prototype.splice.apply(filteredSources, [0, filteredSources.length].concat(filteredSourcesLocation.split(',')));
+            filteredSources = filteredSourcesLocation.split(',');
         }
 
         var filteredAgenciesLocation = $location.search().filtered_agencies;
         if (filteredAgenciesLocation) {
-            Array.prototype.splice.apply(filteredAgencies, [0, filteredAgencies.length].concat(filteredAgenciesLocation.split(',')));
+            filteredAgencies = filteredAgenciesLocation.split(',');
         }
 
         var filteredAccountTypesLocation = $location.search().filtered_account_types;
         if (filteredAccountTypesLocation) {
-            Array.prototype.splice.apply(filteredAccountTypes, [0, filteredAccountTypes.length].concat(filteredAccountTypesLocation.split(',')));
+            filteredAccountTypesLocation = filteredAccountTypesLocation.split(',');
         }
 
         showArchived = $location.search().show_archived || false;
