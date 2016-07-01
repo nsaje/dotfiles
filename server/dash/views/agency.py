@@ -241,7 +241,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 {
                     'cpc_cc': ad_group_settings.cpc_cc
                 },
-                request=request,
+                request=None,
                 send_to_zwei=False
             )
 
