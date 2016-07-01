@@ -121,10 +121,10 @@ oneApp.directive('zemFilter', ['config', function (config) {
 
             $rootScope.$on('$stateChangeSuccess', 
                 function(event, toState, toParams, fromState, fromParams){ 
-                    $scope.updateVisibility();
+                    updateVisibility();
             });
 
-            $scope.updateVisibility = function () {
+            function updateVisibility () {
                 var isAllAccounts = $state.current.name.startsWith('main.allAccounts');
                 $scope.agencyFilterVisible = isAllAccounts;
                 $scope.accountTypeFilterVisible = isAllAccounts;
@@ -183,7 +183,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.refreshAvailableSources();
                 $scope.refreshAgencies();
                 $scope.refreshAccountTypes();
-                $scope.updateVisibility();
+                updateVisibility();
             };
 
             $scope.init();
