@@ -19,12 +19,18 @@ class BudgetProjections(object):
     BREAKDOWN_PREFIX = {
         'account': 'campaign__'
     }
-    FUTURE_METRICS = (
-        'flat_fee',
-        'total_fee',
-        'allocated_total_budget',
-        'allocated_media_budget',
-    )
+    FUTURE_METRICS = {
+        'account': (
+            'flat_fee',
+            'total_fee',
+            'allocated_total_budget',
+            'allocated_media_budget',
+        ),
+        'campaign': (
+            'allocated_total_budget',
+            'allocated_media_budget',
+        ),
+    }
 
     @newrelic.agent.function_trace()
     def __init__(self, start_date, end_date, breakdown, projection_date=None, accounts=[], **constraints):
@@ -102,7 +108,7 @@ class BudgetProjections(object):
     def _calculate_totals(self):
         if self.past_days <= 0:
             self.totals = self._blank_projections()
-            for field in BudgetProjections.FUTURE_METRICS:
+            for field in BudgetProjections.FUTURE_METRICS[self.breakdown]:
                 self.totals[field] = sum(row[field] for row in self.projections.values())
             return
 
