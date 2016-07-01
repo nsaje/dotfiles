@@ -6,7 +6,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     $scope.MAX_DISPLAY_URL_LENGTH = 25;
     $scope.MAX_BRAND_NAME_LENGTH = 25;
     $scope.MAX_CALL_TO_ACTION_LENGTH = 25;
-    $scope.MAX_LABEL_LENGTH = 25;
+    $scope.MAX_LABEL_LENGTH = 100;
 
     $scope.imageCrops = options.imageCrops;
     $scope.callToActionOptions = defaults.callToAction;

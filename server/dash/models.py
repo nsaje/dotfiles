@@ -2501,7 +2501,7 @@ class ContentAd(models.Model):
         'redirect_id': lambda: 'u1jvpq0wthxc',
     }
 
-    label = models.CharField(max_length=25, default='')
+    label = models.CharField(max_length=100, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
