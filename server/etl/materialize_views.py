@@ -111,7 +111,7 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
     def insert_data(self, cursor, date_from, date_to, campaign_factors, **kwargs):
         self._prefetch()
 
-        self._execute_insert_stats_into_mv_master(cursor)
+        self._execute_insert_stats_into_mv_master(cursor, date_from, date_to)
 
         breakdown_keys_with_traffic = self._get_breakdowns_with_traffic_results(cursor, date_from, date_to)
 
@@ -271,15 +271,18 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
             )
 
     @classmethod
-    def _execute_insert_stats_into_mv_master(cls, c):
-        sql, params = cls._prepare_insert_stats_query()
+    def _execute_insert_stats_into_mv_master(cls, c, date_from, date_to):
+        sql, params = cls._prepare_insert_stats_query(date_from, date_to)
         c.execute(sql, params)
 
     @classmethod
-    def _prepare_insert_stats_query(cls):
-        # NOTE: mvh_clean_stats includes only data from the selected date range
-        # so no constraints are necessary
-        return backtosql.generate_sql('etl_insert_mv_master_stats.sql', {}), {}
+    def _prepare_insert_stats_query(cls, date_from, date_to):
+        sql = backtosql.generate_sql('etl_insert_mv_master_stats.sql', {})
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
 
     @classmethod
     def _get_breakdowns_with_traffic_results(cls, c, date_from, date_to):
