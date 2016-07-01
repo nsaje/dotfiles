@@ -79,11 +79,11 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
 
         switch (breakdown) {
         case constants.breakdown.MEDIA_SOURCE:
-            structureBreakdowns = [entityBreakdown, childEntityBreakdown, BREAKDOWNS.publisher]; break;
+            structureBreakdowns = [entityBreakdown, childEntityBreakdown]; break;
         case constants.breakdown.PUBLISHER:
             break;
         default:
-            structureBreakdowns = [childEntityBreakdown, BREAKDOWNS.source, BREAKDOWNS.publisher];
+            structureBreakdowns = [childEntityBreakdown, BREAKDOWNS.source];
         }
 
         // childEntityBreakdown can be undefined - filter it out on return
