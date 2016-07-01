@@ -38,16 +38,19 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
 
 @transaction.atomic
 def invoke_external_validation(candidate, batch):
+    form = forms.ContentAdForm(candidate.to_dict())
+    form.is_valid()  # cleaned urls have to be used since validation can change them
+
     skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
         {
             'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
             'candidateID': candidate.pk,
-            'pageUrl': candidate.url,
+            'pageUrl': form.cleaned_data.get('url', ''),
             'adGroupID': candidate.ad_group.pk,
             'batchID': candidate.batch.pk,
-            'imageUrl': candidate.image_url,
+            'imageUrl': form.cleaned_data.get('image_url', ''),
             'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
             'skipUrlValidation': skip_url_validation,
         },
