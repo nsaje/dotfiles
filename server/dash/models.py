@@ -3792,6 +3792,22 @@ class History(models.Model):
         verbose_name_plural = 'History'
 
 
+class Audience(models.Model):
+    id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    ad_group_settings = models.ManyToManyField(AdGroupSettings)
+    pixie_slug = models.CharField(max_length=255)
+    ttl = models.PositiveSmallIntegerField()
+
+
+class Rule(models.Model):
+    audience = models.ForeignKey(Audience, on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.RuleType.get_choices(),
+    )
+    value = models.CharField(max_length=255)
+
+
 def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
     """
     For first given entity in order check if it has any parents and return them.
