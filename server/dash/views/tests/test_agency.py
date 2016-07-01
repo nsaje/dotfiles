@@ -3240,6 +3240,15 @@ class AgenciesTest(TestCase):
         response = self.get_agencies()
         self.assertTrue(response['success'])
         self.assertEqual({
+            'agencies': []
+        }, response['data'])
+
+        agency.users.add(self.user)
+        agency.save(fake_request(self.user))
+
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+        self.assertEqual({
             'agencies': [
                 {
                     'id': str(agency.id),
