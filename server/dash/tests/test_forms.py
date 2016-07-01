@@ -1276,7 +1276,7 @@ class ContentAdFormTestCase(TestCase):
 
     def test_label_too_long(self):
         data = self._get_valid_data()
-        data['label'] = 'a' * 26
+        data['label'] = 'a' * 101
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
