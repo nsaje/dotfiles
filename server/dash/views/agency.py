@@ -1322,7 +1322,8 @@ class Agencies(api_common.BaseApiView):
             'id', 'name'
         ))
         return self.create_api_response({
-            'agencies': map(
-                lambda agency: {'id': str(agency['id']), 'name': agency['name']},
-                agencies)
+            'agencies': [{
+                'id': str(agency['id']),
+                'name': agency['name'],
+            } for agency in agencies]
         })
