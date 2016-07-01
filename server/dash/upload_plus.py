@@ -38,19 +38,16 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
 
 @transaction.atomic
 def invoke_external_validation(candidate, batch):
-    form = forms.ContentAdForm(candidate.to_dict())
-    form.is_valid()  # cleaned urls have to be used since validation can change them
-
     skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
         {
             'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
             'candidateID': candidate.pk,
-            'pageUrl': form.cleaned_data.get('url', ''),
+            'pageUrl': candidate.url,
             'adGroupID': candidate.ad_group.pk,
             'batchID': candidate.batch.pk,
-            'imageUrl': form.cleaned_data.get('image_url', ''),
+            'imageUrl': candidate.image_url,
             'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
             'skipUrlValidation': skip_url_validation,
         },
@@ -268,13 +265,8 @@ def process_callback(callback_data):
         logger.exception('No candidate with id %s', callback_data['id'])
         return
 
-    form = forms.ContentAdForm(candidate.to_dict())
-    form.is_valid()  # cleaned urls have to be used since validation can change them
-    url = form.cleaned_data.get('url', '')
-    image_url = form.cleaned_data.get('image_url', '')
-
-    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != image_url or\
-       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != url:
+    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != candidate.image_url or\
+       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != candidate.url:
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
