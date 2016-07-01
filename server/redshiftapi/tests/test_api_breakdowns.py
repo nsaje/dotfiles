@@ -108,7 +108,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
         AND ((b.content_ad_id=%s AND b.source_id=%s) OR (b.content_ad_id=%s AND b.source_id=ANY(%s)))
         GROUP BY ad_group_id,
                 content_ad_id) a
-        WHERE r >= 10 AND r <= 50
+        WHERE r >= 10 + 1 AND r <= 50
         GROUP BY 1,
                 2
         """)
