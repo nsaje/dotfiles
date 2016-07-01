@@ -73,23 +73,20 @@ def create_breakdown_id(breakdown, row):
     return u"||".join(str(row[constants.get_dimension_identifier(dimension)]) for dimension in breakdown)
 
 
-def extract_order_fields(order, breakdown):
+def extract_order_field(order, breakdown):
     # time dimension overrides everything
     # TODO should this be requested by frontend?
     time_dimension = constants.get_time_dimension(breakdown)
     if time_dimension:
         return [time_dimension]
 
-    new_order = []
-    for field in order:
-        prefix = ''
-        if field.startswith('-'):
-            prefix = '-'
-            field = field[1:]
+    unprefixed_order = order
+    prefix = ''
+    if order.startswith('-'):
+        prefix = '-'
+        unprefixed_order = order[1:]
 
-        if field in constants.SpecialDimensionNameKeys:
-            field = constants.get_dimension_name_key(field)
+    if unprefixed_order in constants.SpecialDimensionNameKeys:
+        unprefixed_order = constants.get_dimension_name_key(unprefixed_order)
 
-        new_order.append(prefix + field)
-
-    return new_order
+    return [prefix + unprefixed_order]
