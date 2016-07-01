@@ -1,7 +1,5 @@
 import influx
 
-from contextlib import contextmanager
-
 from etl import daily_statements_k1
 from etl import materialize_k1
 from etl import materialize_views
@@ -21,8 +19,12 @@ MATERIALIZED_VIEWS = [
     materialize_views.MasterView(),
 
     # Derived views from master - from broder to narrower breakdown
+    materialize_views.MVContentAdDelivery(),
+    materialize_views.MVAdGroupDelivery(),
     materialize_views.MVCampaignDelivery(),
     materialize_views.MVAccountDelivery(),
+    materialize_views.MVContentAd(),
+    materialize_views.MVAdGroup(),
     materialize_views.MVCampaign(),
     materialize_views.MVAccount(),
 ]

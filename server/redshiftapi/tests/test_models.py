@@ -117,16 +117,68 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(m.get_best_view([
             constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
             constants.TimeDimension.MONTH,
-        ], {}), 'mv_master')
+        ], {}), 'mv_ad_group')
         self.assertEqual(m.get_best_view([
             constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
             constants.DeliveryDimension.AGE,
-        ], {}), 'mv_master')
+        ], {}), 'mv_ad_group_delivery')
         self.assertEqual(m.get_best_view([
             constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
             constants.DeliveryDimension.AGE,
-        ], {}), 'mv_master')
+        ], {}), 'mv_content_ad_delivery')
+
+        # Campaign level - media sources tab
         self.assertEqual(m.get_best_view([
             constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
             constants.TimeDimension.DAY,
         ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_campaign')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_ad_group')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_content_ad')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.DeliveryDimension.AGE,
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_ad_group_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.DeliveryDimension.AGE,
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_content_ad_delivery')
+
+        # Campaign level - Ad groups tab
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_ad_group')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_ad_group')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_content_ad')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.DeliveryDimension.AGE,
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_ad_group_delivery')
+        self.assertEqual(m.get_best_view([
+            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.DeliveryDimension.AGE,
+            constants.TimeDimension.DAY,
+        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), 'mv_content_ad_delivery')

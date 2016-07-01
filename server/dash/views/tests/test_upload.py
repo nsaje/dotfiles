@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 import boto.exception
@@ -754,6 +755,68 @@ class UploadSaveTestCase(TestCase):
         self.assertTemplateUsed(response, '404.html')
 
 
+class UploadDownloadTestCase(TestCase):
+
+    fixtures = ['test_upload_plus.yaml']
+
+    def test_valid(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client().get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
+                         'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
+                         'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
+                         'content ad 1,entropy,,\r\n', response.content)
+
+    def test_wrong_batch_id(self):
+        batch_id = 1
+        ad_group_id = 1
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client().get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Upload batch does not exist',
+            }
+        }, json.loads(response.content))
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+    def test_permission(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client(superuser=False).get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+
 class UploadCancelTestCase(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
@@ -960,6 +1023,7 @@ class CandidateTest(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
+        self.maxDiff = None
         response = json.loads(response.content)
         expected = {
             'data': {
@@ -982,7 +1046,7 @@ class CandidateTest(TestCase):
                     'label': 'content ad 1',
                     'primary_tracker_url': None,
                     'secondary_tracker_url': None,
-                    'title': 'Zemanta blog 1',
+                    'title': u'Zemanta blog čšž 1',
                     'tracker_urls': '',
                     'url': 'http://zemanta.com/blog1',
                     'url_status': 2

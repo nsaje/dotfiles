@@ -96,7 +96,7 @@ insert into mv_imaginary_ad_group
 select ad_group_id, sum(clicks) from mv_imaginary_master;
 ```
 
-Currently supported derived views: `MVCampaign`, `MVCampaignDelivery`, `MVAccount`, `MVAccountDelivery`.
+Currently supported derived views: `MVCampaign`, `MVCampaignDelivery`, `MVAccount`, `MVAccountDelivery`, `MVAdGroup`, `MVAdGroupDelivery`, `MVContentAd`, `MVContentAdDelivery`.
 
 To see their definition check `migrations/redshift/000X_account/campaign_(delivery).sql`
 

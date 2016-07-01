@@ -648,13 +648,13 @@ var options = {
         help: 'Autopilot will not operate on this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.INACTIVE,
     }, {
-        name: 'Optimize Bid CPCs',
-        help: 'Bid CPCs on active Media Sources in this Ad Group will be optimized.' +
+        name: 'Optimize Bids',
+        help: 'Bids on active Media Sources in this Ad Group will be optimized. ' +
               'Ad Group\'s Maximum CPC constraint will be enforced.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
     }, {
-        name: 'Optimize Bid CPCs and Daily Budgets',
-        help: 'Both Bid CPCs and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
+        name: 'Optimize Bids and Daily Budgets',
+        help: 'Both Bids and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
     },
     ],

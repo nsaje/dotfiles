@@ -23,7 +23,8 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
             yesterdays_spend)
         cpc_change_comments += calculation_comments
         source_type = ag_source.source.source_type
-        proposed_cpc, max_decimal_places = _round_source_type(proposed_cpc, source_type)
+        max_decimal_places = _get_cpc_max_decimal_places(source_type.cpc_decimal_places)
+        proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_decimal_places)
         proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments)
         new_cpc_cc = proposed_cpc
@@ -42,7 +43,6 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
 
 def _round_cpc(num, decimal_places=autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES, rounding=decimal.ROUND_HALF_UP):
     return num.quantize(
-        #decimal.Decimal(str(pow(10, -decimal_places))),
         pow(10, decimal.Decimal(-decimal_places)),
         rounding=rounding)
 
@@ -117,12 +117,9 @@ def _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments
     return proposed_cpc
 
 
-def _round_source_type(proposed_cpc, source_type):
-    source_dec_places = source_type.cpc_decimal_places
-    decimal_places = source_dec_places if source_dec_places and\
-        source_dec_places < autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES else\
+def _get_cpc_max_decimal_places(source_dec_places):
+    return min(source_dec_places, autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES) if source_dec_places else\
         autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES
-    return _round_cpc(proposed_cpc, decimal_places=decimal_places), decimal_places
 
 
 def _get_source_type_min_max_cpc(source_type):

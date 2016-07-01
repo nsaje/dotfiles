@@ -92,7 +92,7 @@ describe('AccountCreditItemModalCtrl', function () {
         });
     });
 
-    describe('discardCreditItem', function (done) {
+    describe('discardCreditItem', function () {
         it('closes the modal', function () {
             spyOn($modalInstance, 'close');
             $scope.discardCreditItem();

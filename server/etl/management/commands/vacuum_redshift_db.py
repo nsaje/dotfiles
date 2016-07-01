@@ -4,6 +4,7 @@ from etl import maintenance
 
 import influx
 
+
 class Command(ExceptionCommand):
     @influx.timer('etl.vacuum_redshift_db')
     def handle(self, *args, **options):
@@ -15,6 +16,10 @@ class Command(ExceptionCommand):
             'mv_account_delivery',
             'mv_campaign',
             'mv_campaign_delivery',
+            'mv_ad_group',
+            'mv_ad_group_delivery',
+            'mv_content_ad',
+            'mv_content_ad_delivery',
             'mv_master',
             'mvh_adgroup_structure',
             'mvh_campaign_factors',

@@ -133,9 +133,7 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
 
-    @patch('automation.autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES', Decimal('3'))
-    def test_round_source_type(self):
-        st = dash.models.SourceType.objects.get(id=2)
+    def test_round_cpc(self):
         test_cases = (
             # cpc, rounded_cpc
             ('0.15', '0.15'),
@@ -147,8 +145,21 @@ class AutopilotCpcTestCase(test.TestCase):
 
         for test_case in test_cases:
             self.assertEqual(autopilot_cpc._round_cpc(
-                Decimal(test_case[0]), decimal_places=st.cpc_decimal_places, rounding=decimal.ROUND_HALF_UP),
+                Decimal(test_case[0]), decimal_places=2, rounding=decimal.ROUND_HALF_UP),
                 Decimal(test_case[1]))
+
+    @patch('automation.autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES', 3)
+    def test_get_cpc_max_decimal_places(self):
+        test_cases = (
+            # source_dec_places, returned_max_decimal_places
+            (1, 1),
+            (4, 3),
+            (3, 3),
+            (None, 3),
+        )
+
+        for test_case in test_cases:
+            self.assertEqual(autopilot_cpc._get_cpc_max_decimal_places(test_case[0]), test_case[1])
 
     def test_threshold_ad_group_constraints(self):
         adgroup = dash.models.AdGroup.objects.get(id=1)
