@@ -3780,7 +3780,7 @@ class History(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
-            raise AssertionError('Updating history object not alowed.')
+            raise AssertionError('Updating history object not allowed.')
 
         super(History, self).save(*args, **kwargs)
 
@@ -3798,6 +3798,8 @@ class Audience(models.Model):
     ad_group_settings = models.ManyToManyField(AdGroupSettings)
     pixie_slug = models.CharField(max_length=255)
     ttl = models.PositiveSmallIntegerField()
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
 
 class Rule(models.Model):
