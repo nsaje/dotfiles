@@ -16,6 +16,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.warnings = {};
     $scope.canArchive = false;
     $scope.canRestore = false;
+    $scope.retargetingEnabled = false;
 
     // isOpen has to be an object property instead
     // of being directly on $scope because
@@ -50,6 +51,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
+                $scope.retargetingEnabled = $scope.settings.retargetingAdGroups && !!$scope.settings.retargetingAdGroups.length;
             },
             function () {
                 // error
@@ -90,6 +92,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
+                $scope.retargetingEnabled = $scope.settings.retargetingAdGroups && !!$scope.settings.retargetingAdGroups.length;
             },
             function () {
                 // error
