@@ -238,6 +238,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         setShowArchived: setShowArchived,
         getFilteredSources: getFilteredSources,
         getFilteredAgencies: getFilteredAgencies,
+        getFilteredAccountTypes: getFilteredAccountTypes,
         isSourceFiltered: isSourceFiltered,
         isSourceFilterOn: isSourceFilterOn,
         isAgencyFiltered: isAgencyFiltered,

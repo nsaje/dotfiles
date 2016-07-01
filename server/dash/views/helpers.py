@@ -69,13 +69,21 @@ def get_stats_end_date(end_time):
 class ViewFilter(object):
     '''Convenience class for extracting filters from requests'''
 
-    def __init__(self, request):
+    def __init__(self, request=None, user=None, data=None):
         self.filtered_sources = get_filtered_sources(
             request.user, request.GET.get('filtered_sources'))
         self.filtered_agencies = get_filtered_agencies(
             request.GET.get('filtered_agencies'))
         self.filtered_account_types = get_filtered_account_types(
             request.GET.get('filtered_account_types'))
+
+        if data:
+            self.filtered_sources = get_filtered_sources(
+                user, request.GET.get('filtered_sources'))
+            self.filtered_agencies = get_filtered_agencies(
+                data.get('filtered_agencies'))
+            self.filtered_account_types = get_filtered_account_types(
+                data.get('filtered_account_types'))
 
 
 def get_filtered_sources(user, sources_filter):

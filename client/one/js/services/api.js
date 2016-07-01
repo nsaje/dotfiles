@@ -23,6 +23,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     function processResponse (resp) {
         return resp.data.success ? resp.data.data : null;
     }
+
     function addFilteredSources (params) {
         if (zemFilterService.getFilteredSources().length > 0) {
             params.filtered_sources = zemFilterService.getFilteredSources().join(',');

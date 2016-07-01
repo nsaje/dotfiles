@@ -83,7 +83,7 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     start_date = constraints['date__gte']
     end_date = constraints['date__lte']
 
-    filtered_sources = constraints.get('source')
+    view_filter = helpers.ViewFilter(user=user, data=form_data)
 
     offset = form_data.get('offset', DEFAULT_OFFSET)
     limit = form_data.get('limit', DEFAULT_LIMIT)
@@ -97,7 +97,7 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
 
     response = get_fn(
         user,
-        filtered_sources,
+        view_filter,
         start_date,
         end_date,
         order,
@@ -133,12 +133,12 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     return [base]
 
 
-def get_report_all_accounts_accounts(user, filtered_sources, start_date, end_date,
+def get_report_all_accounts_accounts(user, view_filter, start_date, end_date,
                                      order, page, size, show_archived,
                                      **kwargs):
     response = table.AccountsAccountsTable().get(
         user,
-        filtered_sources,
+        view_filter,
         start_date,
         end_date,
         order,

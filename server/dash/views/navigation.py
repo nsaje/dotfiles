@@ -80,7 +80,7 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
 class NavigationTreeView(api_common.BaseApiView):
     def get(self, request):
-        view_filter = helpers.ViewFilter(request)
+        view_filter = helpers.ViewFilter(request=request)
         user = request.user
 
         campaigns, map_campaign_settings = self._fetch_campaign_data_from_db(

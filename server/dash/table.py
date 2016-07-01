@@ -793,7 +793,7 @@ class SourcesTable(object):
 
 class AccountsAccountsTable(object):
 
-    def get(self, user, filtered_sources, start_date, end_date, order, page, size, show_archived):
+    def get(self, user, view_filter, start_date, end_date, order, page, size, show_archived):
         # Permission check
         if not user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
@@ -802,8 +802,11 @@ class AccountsAccountsTable(object):
 
         has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_accounts_table')
 
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        # account_ids = set(acc.id for acc in accounts)
+        accounts = models.Account.objects.all()\
+            .filter_by_user( user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)
 
         accounts_settings = models.AccountSettings.objects\
             .filter(account__in=accounts)\
@@ -820,14 +823,14 @@ class AccountsAccountsTable(object):
             end_date,
             breakdown=['account'],
             account=accounts,
-            source=filtered_sources
+            source=view_filter.filtered_sources
         ), user)
 
         totals_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
             account=accounts,
-            source=filtered_sources
+            source=view_filter.filtered_sources
         ), user)
 
         account_budget, account_total_spend = self.get_budgets(accounts)
@@ -848,7 +851,7 @@ class AccountsAccountsTable(object):
             if user.has_perm('zemauth.can_see_projections'):
                 totals_data['total_fee_projection'] = projections.total('total_fee_projection')
 
-        accounts_status_dict = self.get_per_account_running_status_dict(accounts, filtered_sources)
+        accounts_status_dict = self.get_per_account_running_status_dict(accounts, view_filter.filtered_sources)
 
         rows = self.get_rows(
             user,
@@ -872,7 +875,7 @@ class AccountsAccountsTable(object):
                 start_date,
                 end_date,
                 accounts,
-                filtered_sources
+                view_filter.filtered_sources
             ) if has_aggregate_postclick_permission(user) else False
 
         response = {
