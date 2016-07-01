@@ -20,11 +20,11 @@
         <ul class="filter-menu dropdown-menu" dropdown-menu>
             <li>
                 <div class="title">Filter by Media Source</div>
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-filter" data-placeholder="+ Media Source">
+               <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-filter" data-placeholder="+ Media Source">
                     <option value=""></option>
                     <option ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceValidFilterChoice" value="{{source.id}}">{{source.name}}</option>
                 </select>
-                <div class="filtered-source" ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceFiltered" ng-click="removeFilteredSource(source.id)">
+                <div class="filtered" ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceFiltered" ng-click="removeFilteredSource(source.id)">
                     {{source.name}}
                     <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
                 </div>
@@ -38,7 +38,7 @@
                     <option value=""></option>
                     <option ng-repeat="agency in agencies | orderBy:'name'" value="{{agency.id}}">{{agency.name}}</option>
                 </select>
-                <div class="filtered-agency" ng-repeat="agency in agencies | orderBy:'name' | filter:isAgencyFiltered" ng-click="removeFilteredAgency(agency.id)">
+                <div class="filtered" ng-repeat="agency in agencies | orderBy:'name' | filter:isAgencyFiltered" ng-click="removeFilteredAgency(agency.id)">
                     {{agency.name}}
                     <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
                 </div>
@@ -52,7 +52,7 @@
                     <option value=""></option>
                     <option ng-repeat="accountType in accountTypes | orderBy:'name'" value="{{accountType.id}}">{{accountType.name}}</option>
                 </select>
-                <div class="filtered-account-type" ng-repeat="accountType in accountTypes | orderBy:'name' | filter:isAccountTypeFiltered" ng-click="removeFilteredAccountType(accountType.id)">
+                <div class="filtered" ng-repeat="accountType in accountTypes | orderBy:'name' | filter:isAccountTypeFiltered" ng-click="removeFilteredAccountType(accountType.id)">
                     {{accountType.name}}
                     <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
                 </div>
