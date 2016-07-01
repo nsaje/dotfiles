@@ -1665,3 +1665,13 @@ class HistoryActionType(ConstantBase):
         MEDIA_SOURCE_SETTINGS_CHANGE: 'Set Media Source Settings',
         MEDIA_SOURCE_ADD: 'Add Media Source',
     }
+
+
+class RuleType(ConstantBase):
+    STARTS_WITH = 1
+    CONTAINS = 2
+
+    _VALUES = {
+        STARTS_WITH: 'Starts with',
+        CONTAINS: 'Contains',
+    }
