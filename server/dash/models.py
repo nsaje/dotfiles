@@ -373,6 +373,7 @@ class Agency(models.Model):
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
+                models.Q(sales_representative__id=user.id) |
                 models.Q(account__groups__users__id=user.id)
             ).distinct()
 
