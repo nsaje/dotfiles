@@ -268,8 +268,13 @@ def process_callback(callback_data):
         logger.exception('No candidate with id %s', callback_data['id'])
         return
 
-    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != candidate.image_url or\
-       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != candidate.url:
+    form = forms.ContentAdForm(candidate.to_dict())
+    form.is_valid()  # cleaned urls have to be used since validation can change them
+    url = form.cleaned_data.get('url', '')
+    image_url = form.cleaned_data.get('image_url', '')
+
+    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != image_url or\
+       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != url:
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
