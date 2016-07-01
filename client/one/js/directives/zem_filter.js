@@ -120,7 +120,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
             };
 
             $rootScope.$on('$stateChangeSuccess', 
-                function(event, toState, toParams, fromState, fromParams){ 
+                function (event, toState, toParams, fromState, fromParams) {
                     updateVisibility();
             });
 
