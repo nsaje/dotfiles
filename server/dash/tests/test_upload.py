@@ -1,655 +1,562 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from mock import patch, Mock
-import httplib
-import urllib2
-
-from django.http import HttpRequest
+from mock import patch
 from django.test import TestCase, override_settings
 
+from dash import constants
 from dash import models
 from dash import upload
-from dash import image_helper
-from dash import constants
-from dash import history_helpers
 
-from actionlog.models import ActionLog
+import utils.s3helpers
 
-from zemauth.models import User
+valid_candidate = {
+    'label': 'test',
+    'url': 'http://zemanta.com/test-content-ad',
+    'title': 'test content ad',
+    'image_url': 'http://zemanta.com/test-image.jpg',
+    'image_crop': 'faces',
+    'display_url': 'zemanta.com',
+    'brand_name': 'zemanta',
+    'description': 'zemanta content ad',
+    'call_to_action': 'read more',
+    'tracker_urls': 'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png',
+}
+
+invalid_candidate = {
+    'label': 'repeat' * 21,
+    'url': 'ftp://zemanta.com/test-content-ad',
+    'image_url': 'file://zemanta.com/test-image.jpg',
+    'image_crop': 'landscape',
+    'display_url': 'zemanta.com' * 10,
+    'tracker_urls': 'http://t.zemanta.com/px1.png http://t.zemanta.com/px2.png',
+}
 
 
-class ErrorReportTest(TestCase):
-    def _fake_upload_error_report_to_s3(self, content, filename):
-        self.error_report = content
-        return None
+class InsertCandidatesTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
 
-    def test_error_report_all_fields(self):
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-        display_url = 'abc.com'
-        brand_name = 'Brand Inc.'
-        description = 'Very nice!'
-        call_to_action = 'Now!'
-        errors = 'Error message'
+    def test_insert_candidates(self):
+        data = [valid_candidate]
 
-        content_ads = [{
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas,
-            'display_url': display_url,
-            'brand_name': brand_name,
-            'description': description,
-            'call_to_action': call_to_action,
-            'errors': errors,
-        }]
-        filename = 'testname.csv'
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch_name = 'batch1'
+        filename = 'test_upload.csv'
+        self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
 
-        upload._upload_error_report_to_s3 = self._fake_upload_error_report_to_s3
-        upload._save_error_report(content_ads, filename)
+        upload.insert_candidates(data, ad_group, batch_name, filename)
+        self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(batch_name, batch.name)
+        self.assertEqual(ad_group, batch.ad_group)
+        self.assertEqual(1, batch.batch_size)
+        self.assertEqual(filename, batch.original_filename)
+
+        candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(valid_candidate['label'], candidate.label)
+        self.assertEqual(valid_candidate['url'], candidate.url)
+        self.assertEqual(valid_candidate['title'], candidate.title)
+        self.assertEqual(valid_candidate['image_url'], candidate.image_url)
+        self.assertEqual(valid_candidate['image_crop'], candidate.image_crop)
+        self.assertEqual(valid_candidate['display_url'], candidate.display_url)
+        self.assertEqual(valid_candidate['brand_name'], candidate.brand_name)
+        self.assertEqual(valid_candidate['description'], candidate.description)
+        self.assertEqual(valid_candidate['call_to_action'], candidate.call_to_action)
+        self.assertEqual(valid_candidate['tracker_urls'], candidate.tracker_urls)
+
+    def test_empty_candidate(self):
+        data = [{}]
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch_name = 'batch1'
+        filename = 'test_upload.csv'
+        self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        upload.insert_candidates(data, ad_group, batch_name, filename)
+        self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(batch_name, batch.name)
+        self.assertEqual(ad_group, batch.ad_group)
+        self.assertEqual(1, batch.batch_size)
+        self.assertEqual(filename, batch.original_filename)
+
+        candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
+        self.assertEqual('', candidate.label)
+        self.assertEqual('', candidate.url)
+        self.assertEqual('', candidate.title)
+        self.assertEqual('', candidate.image_url)
+        self.assertEqual('center', candidate.image_crop)
+        self.assertEqual('', candidate.display_url)
+        self.assertEqual('', candidate.brand_name)
+        self.assertEqual('', candidate.description)
+        self.assertEqual('', candidate.call_to_action)
+        self.assertEqual('', candidate.tracker_urls)
+
+
+class PersistCandidatesTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
+
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    def test_valid_candidates(self, mock_s3helper_put):
+        batch = models.UploadBatch.objects.get(id=2)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        candidate = batch.contentadcandidate_set.get()
+
+        upload.persist_candidates(batch)
+        self.assertEqual(0, batch.contentadcandidate_set.count())
+        self.assertEqual(1, batch.contentad_set.count())
+        self.assertFalse(mock_s3helper_put.called)
+
+        content_ad = batch.contentad_set.get()
+
+        self.assertEqual(candidate.label, content_ad.label)
+        self.assertEqual(candidate.url, content_ad.url)
+        self.assertEqual(candidate.title, content_ad.title)
+        self.assertEqual(candidate.display_url, content_ad.display_url)
+        self.assertEqual(candidate.description, content_ad.description)
+        self.assertEqual(candidate.brand_name, content_ad.brand_name)
+        self.assertEqual(candidate.call_to_action, content_ad.call_to_action)
+        self.assertEqual([candidate.primary_tracker_url, candidate.secondary_tracker_url], content_ad.tracker_urls)
+        self.assertEqual(candidate.image_id, content_ad.image_id)
+        self.assertEqual(candidate.image_width, content_ad.image_width)
+        self.assertEqual(candidate.image_height, content_ad.image_height)
+        self.assertEqual(candidate.image_hash, content_ad.image_hash)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
+        self.assertEqual(0, batch.num_errors)
+        self.assertEqual(None, batch.error_report_key)
+
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    def test_invalid_candidates(self, mock_s3helper_put):
+        batch = models.UploadBatch.objects.get(id=3)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        upload.persist_candidates(batch)
+        self.assertEqual(0, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        self.assertTrue(mock_s3helper_put.called)
+
+        s3_key, content = mock_s3helper_put.call_args[0]
+        self.assertTrue(s3_key.startswith('contentads/errors/3/test_upload'))
+        self.assertTrue(s3_key.endswith('.csv'))
         self.assertEqual(
-            '''url,title,image_url,crop_areas,display_url,brand_name,description,call_to_action,errors
-http://example.com,test title,http://example.com/image,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",abc.com,Brand Inc.,Very nice!,Now!,Error message\n'''.replace("\n", '\r\n'),
-            self.error_report)
+            'Url,Title,Image url,Impression trackers,Display url,Brand name,Description,Call to action,Label,'
+            'Image crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog čšž,'
+            'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,entropy,'
+            '"Content unreachable, Image could not be processed"\r\n', content)
 
-    def test_error_report_no_optional_fields(self):
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        errors = 'Error message'
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
+        self.assertEqual(1, batch.num_errors)
+        self.assertEqual(s3_key, batch.error_report_key)
 
-        content_ads = [{
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'errors': errors,
-        }]
-        filename = 'testname.csv'
+    @patch.object(utils.s3helpers.S3Helper, 'put')
+    def test_invalid_batch_status(self, mock_s3helper_put):
+        batch = models.UploadBatch.objects.get(id=2)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
 
-        upload._upload_error_report_to_s3 = self._fake_upload_error_report_to_s3
-        upload._save_error_report(content_ads, filename)
-        self.assertEqual(
-            '''url,title,image_url,errors
-http://example.com,test title,http://example.com/image,Error message\n'''.replace("\n", '\r\n'),
-            self.error_report)
+        batch.status = constants.UploadBatchStatus.CANCELLED
+        batch.save()
+
+        with self.assertRaises(upload.InvalidBatchStatus):
+            upload.persist_candidates(batch)
+
+        # check that nothing changed
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.CANCELLED, batch.status)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+        self.assertFalse(mock_s3helper_put.called)
 
 
-class CleanRowTest(TestCase):
-    fixtures = ['test_api.yaml']
+class CancelUploadTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
+
+    def test_cancel(self):
+        ad_group = models.AdGroup.objects.get(id=2)
+        self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+
+        upload.cancel_upload(batch)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.CANCELLED, batch.status)
+        self.assertEqual(0, batch.contentadcandidate_set.count())
+
+    def test_invalid_status(self):
+        ad_group = models.AdGroup.objects.get(id=2)
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+
+        batch.status = constants.UploadBatchStatus.DONE
+        batch.save()
+
+        with self.assertRaises(upload.InvalidBatchStatus):
+            upload.cancel_upload(batch)
+
+
+class ValidateCandidatesTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
+
+    def test_valid_candidate(self):
+        data = [valid_candidate]
+
+        # prepare candidate
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+
+        candidate = candidates[0]
+        candidate.image_status = constants.AsyncUploadJobStatus.OK
+        candidate.url_status = constants.AsyncUploadJobStatus.OK
+        candidate.image_id = '1234'
+        candidate.image_hash = 'abcd'
+        candidate.image_width = 500
+        candidate.image_height = 500
+        candidate.save()
+
+        errors = upload.validate_candidates(candidates)
+        self.assertFalse(errors)
+
+    def test_image_errors(self):
+        data = [valid_candidate]
+
+        # prepare candidate
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+
+        candidate = candidates[0]
+        candidate.image_status = constants.AsyncUploadJobStatus.OK
+        candidate.url_status = constants.AsyncUploadJobStatus.OK
+        candidate.image_id = '1234'
+        candidate.image_hash = 'abcd'
+        candidate.image_width = 100
+        candidate.image_height = 100
+        candidate.save()
+
+        errors = upload.validate_candidates(candidates)
+        self.assertEqual(errors, {
+            candidate.id: {
+                'image_url': ['Image too small (minimum size is 300x300 px)']
+            }
+        })
+
+    def test_invalid_candidate(self):
+        data = [invalid_candidate]
+
+        # prepare candidate
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+
+        errors = upload.validate_candidates(candidates)
+        self.assertEquals({
+            candidates[0].id: {
+                '__all__': ['Content ad still processing'],
+                'label': [u'Label too long (max 100 characters)'],
+                'title': [u'Missing title'],
+                'url': [u'Invalid URL'],
+                'image_url': [u'Invalid image URL'],
+                'image_crop': [u'Choose a valid image crop'],
+                'description': [u'Missing description'],
+                'display_url': [u'Display URL too long (max 25 characters)'],
+                'brand_name': [u'Missing brand name'],
+                'call_to_action': [u'Missing call to action'],
+                'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
+            }
+        }, errors)
+
+    def test_get_candidates_with_errors(self):
+        data = [invalid_candidate]
+
+        # prepare candidate
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
+
+        result = upload.get_candidates_with_errors(candidates)
+        self.assertEqual([{
+            'hosted_image_url': None,
+            'image_crop': 'landscape',
+            'primary_tracker_url': '',
+            'image_hash': None,
+            'description': '',
+            'call_to_action': '',
+            'title': '',
+            'url': 'ftp://zemanta.com/test-content-ad',
+            'errors': {
+                'image_crop': [u'Choose a valid image crop'],
+                'description': [u'Missing description'],
+                '__all__': [u'Content ad still processing'],
+                'title': [u'Missing title'],
+                'url': [u'Invalid URL'],
+                'display_url': [u'Display URL too long (max 25 characters)'],
+                'brand_name': [u'Missing brand name'],
+                'label': [u'Label too long (max 100 characters)'],
+                'call_to_action': [u'Missing call to action'],
+                'image_url': [u'Invalid image URL'],
+                'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
+            },
+            'display_url': 'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com'
+                           'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
+            'brand_name': '',
+            'image_width': None,
+            'label': 'repeat'  * 21,
+            'image_id': None,
+            'image_height': None,
+            'image_url': 'file://zemanta.com/test-image.jpg',
+            'url_status': 1,
+            'image_status': 1,
+            'secondary_tracker_url': '',
+            'id': candidates[0].id,
+            'tracker_urls': 'http://t.zemanta.com/px1.png http://t.zemanta.com/px2.png',
+        }], result)
+
+
+class UpdateCandidateTest(TestCase):
+
+    fixtures = ['test_upload.yaml']
 
     def setUp(self):
-        # default test data
-        self.url = u'http://example.com'
-        self.title = 'test title'
-        self.image_url = 'http://example.com/image'
-        self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-        self.tracker_urls = 'https://example.com/p.gif'
+        candidate_id = 4
+        self.candidate = models.ContentAdCandidate.objects.get(id=candidate_id)
+        self.other_candidate = self.candidate.batch.contentadcandidate_set.exclude(id=candidate_id).get()
+        self.new_candidate = {
+            'id': candidate_id,
+            'label': 'new label',
+            'url': 'http://zemanta.com/blog',
+            'title': 'New title',
+            'image_url': 'http://zemanta.com/img.jpg',
+            'image_crop': 'center',
+            'display_url': 'newurl.com',
+            'brand_name': 'New brand name',
+            'description': 'New description',
+            'call_to_action': 'New cta',
+            'primary_tracker_url': '',
+            'secondary_tracker_url': '',
+        }
+        self.defaults = ['image_crop', 'display_url', 'brand_name', 'description', 'call_to_action']
 
-        self.display_url = ''
-        self.brand_name = ''
-        self.description = ''
-        self.call_to_action = ''
+    def test_update_candidate(self):
+        upload.update_candidate(self.new_candidate, [], self.candidate.batch)
 
-        self.upload_form_display_url = 'abc.com'
-        self.upload_form_brand_name = 'ABC inc.'
-        self.upload_form_description = "Oh my desc!"
-        self.upload_form_call_to_action = "Act!"
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.label, self.new_candidate['label'])
+        self.assertEqual(self.candidate.url, self.new_candidate['url'])
+        self.assertEqual(self.candidate.title, self.new_candidate['title'])
+        self.assertEqual(self.candidate.image_url, self.new_candidate['image_url'])
+        self.assertEqual(self.candidate.image_crop, self.new_candidate['image_crop'])
+        self.assertEqual(self.candidate.display_url, self.new_candidate['display_url'])
+        self.assertEqual(self.candidate.brand_name, self.new_candidate['brand_name'])
+        self.assertEqual(self.candidate.description, self.new_candidate['description'])
+        self.assertEqual(self.candidate.call_to_action, self.new_candidate['call_to_action'])
+        self.assertEqual(self.candidate.primary_tracker_url, self.new_candidate['primary_tracker_url'])
+        self.assertEqual(self.candidate.secondary_tracker_url, self.new_candidate['secondary_tracker_url'])
 
-        self.image_id = 'test_image_id'
-        self.image_width = 100
-        self.image_height = 200
-        self.image_hash = "123"
+        self.other_candidate.refresh_from_db()
+        self.assertNotEqual(self.other_candidate.image_crop, self.new_candidate['image_crop'])
+        self.assertNotEqual(self.other_candidate.display_url, self.new_candidate['display_url'])
+        self.assertNotEqual(self.other_candidate.brand_name, self.new_candidate['brand_name'])
+        self.assertNotEqual(self.other_candidate.description, self.new_candidate['description'])
+        self.assertNotEqual(self.other_candidate.call_to_action, self.new_candidate['call_to_action'])
 
-        self.process_image_patcher = patch('dash.upload.image_helper.process_image')
-        self.mock_process_image = self.process_image_patcher.start()
-        self.mock_process_image.return_value = (
-            self.image_id, self.image_width, self.image_height, self.image_hash)
+    def test_update_with_defaults(self):
+        upload.update_candidate(self.new_candidate, self.defaults, self.candidate.batch)
 
-        self.validate_url_patcher = patch('dash.upload.redirector_helper.validate_url')
-        self.mock_validate_url = self.validate_url_patcher.start()
-        self.mock_validate_url.return_value = True
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.label, self.new_candidate['label'])
+        self.assertEqual(self.candidate.url, self.new_candidate['url'])
+        self.assertEqual(self.candidate.title, self.new_candidate['title'])
+        self.assertEqual(self.candidate.image_url, self.new_candidate['image_url'])
+        self.assertEqual(self.candidate.image_crop, self.new_candidate['image_crop'])
+        self.assertEqual(self.candidate.display_url, self.new_candidate['display_url'])
+        self.assertEqual(self.candidate.brand_name, self.new_candidate['brand_name'])
+        self.assertEqual(self.candidate.description, self.new_candidate['description'])
+        self.assertEqual(self.candidate.call_to_action, self.new_candidate['call_to_action'])
+        self.assertEqual(self.candidate.primary_tracker_url, self.new_candidate['primary_tracker_url'])
+        self.assertEqual(self.candidate.secondary_tracker_url, self.new_candidate['secondary_tracker_url'])
 
-        self.default_expected_data = {
-            'image': {
-                'id': self.image_id,
-                'width': self.image_width,
-                'height': self.image_height,
-                'hash': self.image_hash,
-                'crop_areas': self.crop_areas
+        self.other_candidate.refresh_from_db()
+        self.assertEqual(self.other_candidate.image_crop, self.new_candidate['image_crop'])
+        self.assertEqual(self.other_candidate.display_url, self.new_candidate['display_url'])
+        self.assertEqual(self.other_candidate.brand_name, self.new_candidate['brand_name'])
+        self.assertEqual(self.other_candidate.description, self.new_candidate['description'])
+        self.assertEqual(self.other_candidate.call_to_action, self.new_candidate['call_to_action'])
+
+    def test_unknown_defaults(self):
+        defaults = ['title', 'url', 'label', 'image_url', 'primary_tracker_url', 'secondary_tracker_url']
+        upload.update_candidate(self.new_candidate, defaults, self.candidate.batch)
+
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.label, self.new_candidate['label'])
+        self.assertEqual(self.candidate.url, self.new_candidate['url'])
+        self.assertEqual(self.candidate.title, self.new_candidate['title'])
+        self.assertEqual(self.candidate.image_url, self.new_candidate['image_url'])
+        self.assertEqual(self.candidate.image_crop, self.new_candidate['image_crop'])
+        self.assertEqual(self.candidate.display_url, self.new_candidate['display_url'])
+        self.assertEqual(self.candidate.brand_name, self.new_candidate['brand_name'])
+        self.assertEqual(self.candidate.description, self.new_candidate['description'])
+        self.assertEqual(self.candidate.call_to_action, self.new_candidate['call_to_action'])
+        self.assertEqual(self.candidate.primary_tracker_url, self.new_candidate['primary_tracker_url'])
+        self.assertEqual(self.candidate.secondary_tracker_url, self.new_candidate['secondary_tracker_url'])
+
+        self.other_candidate.refresh_from_db()
+        self.assertNotEqual(self.other_candidate.label, self.new_candidate['label'])
+        self.assertNotEqual(self.other_candidate.url, self.new_candidate['url'])
+        self.assertNotEqual(self.other_candidate.title, self.new_candidate['title'])
+        self.assertNotEqual(self.other_candidate.image_url, self.new_candidate['image_url'])
+        self.assertNotEqual(self.other_candidate.primary_tracker_url, self.new_candidate['primary_tracker_url'])
+        self.assertNotEqual(self.other_candidate.secondary_tracker_url, self.new_candidate['secondary_tracker_url'])
+
+    def test_invalid_candidate_fields(self):
+        new_candidate = {
+            'id': self.candidate.id,
+            'ad_group_id': 55,
+            'batch_id': 1234,
+            'label': 'new label',
+            'url': 'http://zemanta.com/blog',
+            'title': 'New title',
+            'image_url': 'http://zemanta.com/img.jpg',
+            'image_crop': 'center',
+            'display_url': 'newurl.com',
+            'brand_name': 'New brand name',
+            'description': 'New description',
+            'call_to_action': 'New cta',
+            'primary_tracker_url': '',
+            'secondary_tracker_url': '',
+        }
+
+        upload.update_candidate(new_candidate, self.defaults, self.candidate.batch)
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.ad_group_id, 4)
+        self.assertEqual(self.candidate.batch_id, 5)
+
+    @patch('dash.upload.invoke_external_validation')
+    def test_invoke_external_validation(self, mock_invoke):
+        upload.update_candidate(self.new_candidate, [], self.candidate.batch)
+        self.assertFalse(mock_invoke.called)
+
+        new_candidate = {
+            'id': self.candidate.id,
+            'label': 'new label',
+            'url': 'http://zemanta.com/new-blog',
+            'title': 'New title',
+            'image_url': 'http://zemanta.com/new-img.jpg',
+            'image_crop': 'center',
+            'display_url': 'newurl.com',
+            'brand_name': 'New brand name',
+            'description': 'New description',
+            'call_to_action': 'New cta',
+            'primary_tracker_url': '',
+            'secondary_tracker_url': '',
+        }
+
+        upload.update_candidate(new_candidate, [], self.candidate.batch)
+        self.assertTrue(mock_invoke.called)
+
+
+class GetCandidatesCsvTestCase(TestCase):
+
+    fixtures = ['test_upload.yaml']
+
+    def test_candidates_csv(self):
+        batch = models.UploadBatch.objects.get(id=1)
+        content = upload.get_candidates_csv(batch)
+        self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
+                         'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
+                         'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
+                         'content ad 1,entropy,,\r\n', content)
+
+
+@patch('utils.lambda_helper.invoke_lambda')
+class UploadTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    @override_settings(
+        LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME='content-upload',
+        LAMBDA_CONTENT_UPLOAD_NAMESPACE='name/space'
+    )
+    def test_lambda_invoke(self, mock_lambda):
+        content_ads_data = [
+            {
+                'url': 'http://test.url.com/page1',
+                'image_url': 'http://test.url.com/image1.png',
             },
-            'title': self.title,
-            'tracker_urls': self.tracker_urls.split(' '),
-            'url': self.url,
-            'display_url': self.upload_form_display_url,
-            'brand_name': self.upload_form_brand_name,
-            'description': self.upload_form_description,
-            'call_to_action': self.upload_form_call_to_action,
-        }
-
-    def tearDown(self):
-        self.process_image_patcher.stop()
-        self.validate_url_patcher.stop()
-
-    def _run_clean_row(self):
-        row = {
-            'url': self.url,
-            'title': self.title,
-            'image_url': self.image_url,
-            'crop_areas': self.crop_areas,
-            'tracker_urls': self.tracker_urls,
-            'display_url': self.display_url,
-            'brand_name': self.brand_name,
-            'description': self.description,
-            'call_to_action': self.call_to_action,
-        }
-
-        batch_name = 'Test batch name'
-        batch = models.UploadBatch.objects.create(name=batch_name)
-        upload_form_cleaned_fields = {'display_url': self.upload_form_display_url,
-                                      'brand_name': self.upload_form_brand_name,
-                                      'description': self.upload_form_description,
-                                      'call_to_action': self.upload_form_call_to_action}
+            {
+                'url': 'http://test.url.com/page2',
+                'image_url': 'http://test.url.com/image2.png',
+            }
+        ]
 
         ad_group = models.AdGroup.objects.get(pk=1)
+        batch, candidates = upload.insert_candidates(
+            content_ads_data,
+            ad_group,
+            'Test batch',
+            'test_upload.csv',
+        )
+        for candidate in candidates:
+            upload.invoke_external_validation(candidate, batch)
 
-        result_row, data, errors = upload._clean_row(batch, upload_form_cleaned_fields, ad_group, row)
+        self.assertEqual(mock_lambda.call_count, 2)
 
-        self.assertEqual(row, result_row)
+        (lambda_name1, lambda_data1), _ = mock_lambda.call_args_list[0]
+        (lambda_name2, lambda_data2), _ = mock_lambda.call_args_list[1]
 
-        return data, errors
+        self.assertEqual(lambda_name1, 'content-upload')
+        self.assertEqual(lambda_data1['adGroupID'], 1)
+        self.assertEqual(lambda_data1['imageUrl'], 'http://test.url.com/image1.png')
+        self.assertEqual(lambda_data1['pageUrl'], 'http://test.url.com/page1')
+        self.assertEqual(lambda_data1['namespace'], 'name/space')
+        self.assertTrue(lambda_data1['batchID'])
+        self.assertTrue(lambda_data1['candidateID'])
 
-    def test_clean_row(self):
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, [])
+        self.assertEqual(lambda_name2, 'content-upload')
+        self.assertEqual(lambda_data2['adGroupID'], 1)
+        self.assertEqual(lambda_data2['imageUrl'], 'http://test.url.com/image2.png')
+        self.assertEqual(lambda_data2['pageUrl'], 'http://test.url.com/page2')
+        self.assertEqual(lambda_data2['namespace'], 'name/space')
+        self.assertTrue(lambda_data2['batchID'])
+        self.assertTrue(lambda_data2['candidateID'])
 
-    def test_invalid_title(self):
-        self.title = ''
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('title')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Missing title'])
+    def test_process_callback(self, *mocks):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = upload.insert_candidates(
+            [{
+                "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                "image_url": "http://static1.squarespace.com/image.jpg",
 
-    def test_url_without_protocol(self):
-        self.url = u'example.com'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, [])
-
-    def test_invalid_url(self):
-        self.url = u'example'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('url')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid URL'])
-
-    def test_url_strip(self):
-        self.url = u' http://example.com '
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, [])
-
-    def test_unicode_url(self):
-        self.url = u'http://exampleś.com'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('url')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid URL'])
-
-    def test_invalid_image_url(self):
-        self.image_url = 'example/image'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('image')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid Image URL'])
-
-    def test_image_url_strip(self):
-        self.image_url = u' http://example.com/image '
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, [])
-
-    def test_invalid_crop_areas(self):
-        self.crop_areas = '((((177, 122)))'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('image')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid crop areas'])
-
-    def test_image_not_downloaded(self):
-        self.mock_process_image.side_effect = image_helper.ImageProcessingException
-
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('image')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Image could not be processed'])
-
-    def test_content_unreachable(self):
-        self.mock_validate_url.return_value = False
-
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('url')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Content unreachable'])
-
-    def test_invalid_tracker_urls(self):
-        self.tracker_urls = 'invalid_url'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('tracker_urls')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid impression tracker URLs'])
-
-    def test_unicode_tracker_urls(self):
-        self.tracker_urls = u'http://exampleś.com'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('tracker_urls')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid impression tracker URLs'])
-
-    def test_invalid_tracker_urls_not_https(self):
-        self.tracker_urls = 'http://example.com/p.gif'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('tracker_urls')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid impression tracker URLs'])
-
-    def test_multiple_tracker_urls(self):
-        self.tracker_urls = 'https://example.com/p1.gif https://example.com/p2.gif'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data['tracker_urls'] = self.tracker_urls.split(' ')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, [])
-
-    def test_invalid_multiple_tracker_urls(self):
-        self.tracker_urls = 'https://example.com/p1.gif invalid_url'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('tracker_urls')
-        self.assertEqual(data, expected_data)
-        self.assertEqual(errors, ['Invalid impression tracker URLs'])
-
-    def test_no_upload_form_fields(self):
-        self.upload_form_display_url = ''
-        self.upload_form_brand_name = ''
-        self.upload_form_description = ''
-        self.upload_form_call_to_action = ''
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('display_url')
-        expected_data.pop('brand_name')
-        expected_data.pop('description')
-        expected_data.pop('call_to_action')
-        self.assertEqual(data, expected_data)
-        self.assertItemsEqual(errors,
-            [u'Display URL has to be present in CSV or default value should be submitted in the upload form.',
-            u'Brand name has to be present in CSV or default value should be submitted in the upload form.',
-            u'Description has to be present in CSV or default value should be submitted in the upload form.',
-            u'Call to action has to be present in CSV or default value should be submitted in the upload form.'])
-
-    def test_csv_override(self):
-        self.display_url = 'def.com'
-        self.brand_name = 'NewBrand inc.'
-        self.description = 'Better description'
-        self.call_to_action = 'Act Now!'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data['display_url'] = self.display_url
-        expected_data['brand_name'] = self.brand_name
-        expected_data['description'] = self.description
-        expected_data['call_to_action'] = self.call_to_action
-        self.assertItemsEqual(errors, [])
-        self.assertEqual(data, expected_data)
-
-    def test_csv_override_max_lengths(self):
-        self.display_url = 'a' * 300 + ".com"
-        self.brand_name = 'b' * 300
-        self.description = 'c' * 300
-        self.call_to_action = 'd' * 300
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('display_url')
-        expected_data.pop('brand_name')
-        expected_data.pop('description')
-        expected_data.pop('call_to_action')
-        self.assertItemsEqual(errors, [u'Display URL is too long (304/25).',
-                                       u'Brand name is too long (300/25).',
-                                       u'Description is too long (300/140).',
-                                       u'Call to action is too long (300/25).'])
-        self.assertEqual(data, expected_data)
-
-    def test_csv_override_invalid_display_url(self):
-        self.display_url = 'aaaa'
-        data, errors = self._run_clean_row()
-        expected_data = dict(self.default_expected_data)
-        expected_data.pop('display_url')
-        self.assertItemsEqual(errors, [u'Display URL is invalid.'])
-        self.assertEqual(data, expected_data)
-
-
-@patch('dash.upload.redirector_helper.insert_redirect')
-class ProcessCallbackTest(TestCase):
-    fixtures = ['test_api.yaml']
-
-    def setUp(self):
-        self.save_error_report_patcher = patch('dash.upload._save_error_report')
-        self.mock_save_error_report = self.save_error_report_patcher.start()
-        self.mock_save_error_report.return_value = 'mock_key'
-
-        self.actionlog_send_patcher = patch('dash.upload.actionlog.zwei_actions.send')
-        self.mock_actionlog_send = self.actionlog_send_patcher.start()
-
-        progress_update_progress_patcher = patch('dash.threads.UpdateUploadBatchThread')
-        progress_update_progress_patcher.start()
-
-    def tearDown(self):
-        self.save_error_report_patcher.stop()
-        self.actionlog_send_patcher.stop()
-
-    @override_settings(
-        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
-    )
-    @patch('utils.k1_helper.update_content_ads')
-    def test_process_callback(self, mock_k1_ping, mock_redirect_insert):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-
-        redirect_id = "u123456"
-
-        url = 'http://example.com'
-        resolved_url = 'http://example.com?bla'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-        tracker_url_list = ['https://example.com/p.gif']
-
-        row = {
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }
-
-        filename = 'testname.csv'
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        cleaned_data = {
-            'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash,
-                'crop_areas': crop_areas,
+            }],
+            ad_group,
+            'Test batch',
+            'test_upload.csv',
+        )
+        upload.process_callback({
+            "id": candidates[0].pk,
+            "url": {
+                "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                "valid": True,
+                "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
             },
-            'tracker_urls': tracker_url_list,
-            'title': title,
-            'url': url,
-            'display_url': 'brand.com',
-            'brand_name': 'Brand inc.',
-            'description': 'This content is a must read',
-            'call_to_action': 'Act!',
-        }
-
-        errors = []
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-        batch.batch_size = 10
-        batch.save()
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        request = HttpRequest()
-        request.META['SERVER_NAME'] = 'testname'
-        request.META['SERVER_PORT'] = 1234
-        user = User.objects.create_user('user@test.com')
-        request.user = user
-
-        mock_redirect_insert.return_value = {
-            "redirectid": redirect_id,
-            "redirect": {
-                "url": resolved_url
+            "image": {
+                "valid": True,
+                "width": 1500,
+                "hash": "0000000000000000",
+                "id": "demo/demo-123/srv/some-batch/31eb9a632e3547039169d1b650155e14",
+                "height": 245,
+                "originUrl": "http://static1.squarespace.com/image.jpg",
             }
-        }
+        })
 
-        results = [(row, cleaned_data, errors)]
-        upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
-
-        # check for errors first, before proceeding to the rest
-        self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
-        self.assertIn(batch.num_errors, [0, None])
-
-        content_ad = models.ContentAd.objects.latest()
-        self.assertEqual(content_ad.title, title)
-        self.assertEqual(content_ad.url, resolved_url)  # should overwrite with resolved if needed
-        self.assertEqual(content_ad.ad_group_id, ad_group_id)
-        self.assertEqual(content_ad.display_url, cleaned_data['display_url'])
-        self.assertEqual(content_ad.brand_name, cleaned_data['brand_name'])
-        self.assertEqual(content_ad.description, cleaned_data['description'])
-        self.assertEqual(content_ad.call_to_action, cleaned_data['call_to_action'])
-
-        self.assertEqual(content_ad.redirect_id, redirect_id)
-        self.assertEqual(content_ad.image_id, image_id)
-        self.assertEqual(content_ad.image_width, image_width)
-        self.assertEqual(content_ad.image_height, image_height)
-        self.assertEqual(content_ad.image_hash, image_hash)
-        self.assertEqual(content_ad.batch.name, batch_name)
-        self.assertEqual(content_ad.state, constants.ContentAdSourceState.ACTIVE)
-        self.assertEqual(content_ad.crop_areas, crop_areas)
-
-        # Check for pings
-        mock_k1_ping.assert_called_with(
-            ad_group_id, [content_ad.id], msg='upload.process_async'
-        )
-
-        content_ad_source = models.ContentAdSource.objects.get(content_ad_id=content_ad.id)
-        self.assertEqual(content_ad_source.source_id, ad_group_source.source_id)
-        self.assertEqual(
-            content_ad_source.submission_status,
-            constants.ContentAdSubmissionStatus.NOT_SUBMITTED
-        )
-        self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.ACTIVE)
-
-        mock_redirect_insert.assert_called_with(url, content_ad.id, content_ad.ad_group_id)
-
-        action = ActionLog.objects.get(content_ad_source_id=content_ad_source.id)
-        self.assertEqual(action.ad_group_source_id, ad_group_source.id)
-
-        self.mock_actionlog_send.assert_called_with([action])
-
-        hist = history_helpers.get_ad_group_history(ad_group_source.ad_group).first()
-        self.assertEqual(hist.changes_text,
-                         u'Imported batch "Test batch name" with 10 content ads.')
-        self.assertEqual(hist.action_type,
-                         constants.HistoryActionType.CONTENT_AD_CREATE)
-
-    @override_settings(
-        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
-    )
-    def test_process_callback_errors(self, mock_redirect_insert):
-        redirect_id = "u123456"
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        row = {
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }
-
-        filename = 'testname.csv'
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        cleaned_data = None
-        errors = ['Some random error']
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        request = HttpRequest()
-        user = User.objects.create_user('user@test.com')
-        request.user = user
-
-        mock_redirect_insert.return_value = redirect_id
-
-        prev_content_ad_count = models.ContentAd.objects.all().count()
-        prev_action_count = ActionLog.objects.all().count()
-
-        results = [(row, cleaned_data, errors)]
-        upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
-        self.assertEqual(batch.num_errors, 1)
-
-        new_content_ad_count = models.ContentAd.objects.all().count()
-        new_action_count = ActionLog.objects.all().count()
-
-        self.assertEqual(prev_content_ad_count, new_content_ad_count)
-        self.assertEqual(prev_action_count, new_action_count)
-
-        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-
-        self.assertFalse(mock_redirect_insert.called)
-        self.assertFalse(self.mock_actionlog_send.called)
-
-        self.mock_save_error_report.assert_called_with([row], filename)
-
-    @override_settings(
-        SEND_AD_GROUP_SETTINGS_CHANGE_MAIL=False
-    )
-    def test_process_callback_redirector_error(self, mock_redirect_insert):
-        image_id = 'test_image_id'
-        image_width = 100
-        image_height = 200
-        image_hash = "123"
-
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-        tracker_url_list = ['https://example.com/p.gif']
-
-        row = {
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }
-
-        filename = 'testname.csv'
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        cleaned_data = {
-            'image': {
-                'id': image_id,
-                'width': image_width,
-                'height': image_height,
-                'hash': image_hash,
-                'crop_areas': crop_areas
-            },
-            'tracker_urls': tracker_url_list,
-            'title': title,
-            'url': url,
-            'display_url': 'brand.com',
-            'brand_name': 'Brand inc.',
-            'description': 'This content is a must read',
-            'call_to_action': 'Act!',
-        }
-
-        errors = []
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        request = HttpRequest()
-        user = User.objects.create_user('user@test.com')
-        request.user = user
-
-        mock_redirect_insert.side_effect = Exception
-
-        prev_content_ad_count = models.ContentAd.objects.all().count()
-        prev_action_count = ActionLog.objects.all().count()
-
-        results = [(row, cleaned_data, errors)]
-        upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
-
-        # first test if there really were errors we're expecting (there could be other exceptions)
-        # ideally we should check if specific exception we were expecting happened,
-        self.assertEqual(batch.num_errors, 1)
-
-        new_content_ad_count = models.ContentAd.objects.all().count()
-        new_action_count = ActionLog.objects.all().count()
-
-        self.assertEqual(prev_content_ad_count, new_content_ad_count)
-        self.assertEqual(prev_action_count, new_action_count)
-
-        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-
-        self.assertFalse(self.mock_actionlog_send.called)
-
-    @patch('dash.upload._create_redirect_id')
-    def test_process_callback_exception(self, mock_redirect_insert, mock_create_redirect_id):
-        url = 'http://example.com'
-        title = 'test title'
-        image_url = 'http://example.com/image'
-        crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-
-        row = {
-            'url': url,
-            'title': title,
-            'image_url': image_url,
-            'crop_areas': crop_areas
-        }
-
-        filename = 'testname.csv'
-        batch_name = 'Test batch name'
-        ad_group_id = 1
-
-        cleaned_data = None
-        errors = ['Some random error']
-
-        batch = models.UploadBatch.objects.create(name=batch_name)
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        request = HttpRequest()
-        user = User.objects.create_user('user@test.com')
-        request.user = user
-
-        mock_create_redirect_id.side_effect = Exception
-
-        prev_content_ad_count = models.ContentAd.objects.all().count()
-        prev_action_count = ActionLog.objects.all().count()
-
-        results = [(row, cleaned_data, errors)]
-        upload._process_callback(batch, ad_group_id, [ad_group_source], filename, request, results)
-
-        new_content_ad_count = models.ContentAd.objects.all().count()
-        new_action_count = ActionLog.objects.all().count()
-
-        self.assertEqual(prev_content_ad_count, new_content_ad_count)
-        self.assertEqual(prev_action_count, new_action_count)
-
-        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        self.assertFalse(self.mock_actionlog_send.called)
-        self.mock_save_error_report.assert_called_with([row], filename)
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)

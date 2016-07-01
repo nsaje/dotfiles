@@ -11,7 +11,7 @@ from django.template.defaultfilters import pluralize
 from dash import constants
 from dash import forms
 from dash import models
-from dash import upload_plus
+from dash import upload
 
 from dash.views import helpers
 
@@ -78,10 +78,10 @@ class UploadCsv(api_common.BaseApiView):
 
         with transaction.atomic():
             self._update_ad_group_batch_settings(request, ad_group, form.cleaned_data)
-            batch, candidates = upload_plus.insert_candidates(content_ads, ad_group, batch_name, filename)
+            batch, candidates = upload.insert_candidates(content_ads, ad_group, batch_name, filename)
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate, batch)
-        errors = upload_plus.validate_candidates(candidates)
+            upload.invoke_external_validation(candidate, batch)
+        errors = upload.validate_candidates(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
             'candidates': [c.id for c in candidates],
@@ -118,7 +118,7 @@ class UploadMultiple(api_common.BaseApiView):
 
         self._augment_candidates_data(ad_group, form.cleaned_data)
         with transaction.atomic():
-            batch, candidates = upload_plus.insert_candidates(
+            batch, candidates = upload.insert_candidates(
                 content_ads,
                 ad_group,
                 batch_name,
@@ -126,9 +126,9 @@ class UploadMultiple(api_common.BaseApiView):
             )
 
         for candidate in candidates:
-            upload_plus.invoke_external_validation(candidate, batch)
+            upload.invoke_external_validation(candidate, batch)
 
-        candidates_result = upload_plus.get_candidates_with_errors(candidates)
+        candidates_result = upload.get_candidates_with_errors(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
             'candidates': candidates_result,
@@ -155,7 +155,7 @@ class UploadStatus(api_common.BaseApiView):
             candidates = candidates.filter(id__in=candidate_ids)
 
         candidates_result = {candidate['id']: candidate for candidate
-                             in upload_plus.get_candidates_with_errors(candidates)}
+                             in upload.get_candidates_with_errors(candidates)}
         return self.create_api_response({
             'candidates': candidates_result,
         })
@@ -193,8 +193,8 @@ class UploadSave(api_common.BaseApiView):
             batch.save()
 
             try:
-                content_ads = upload_plus.persist_candidates(batch)
-            except upload_plus.InvalidBatchStatus as e:
+                content_ads = upload.persist_candidates(batch)
+            except upload.InvalidBatchStatus as e:
                 raise exc.ValidationError(message=e.message)
 
             self._create_redirect_ids(content_ads)
@@ -212,8 +212,7 @@ class UploadSave(api_common.BaseApiView):
 
         error_report = None
         if batch.error_report_key:
-            error_report = reverse('upload_plus_error_report',
-                                   kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
+            error_report = reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
         return self.create_api_response({
             'num_successful': len(content_ads),
             'num_errors': batch.num_errors,
@@ -234,8 +233,8 @@ class UploadCancel(api_common.BaseApiView):
             raise exc.MissingDataError('Upload batch does not exist')
 
         try:
-            upload_plus.cancel_upload(batch)
-        except upload_plus.InvalidBatchStatus:
+            upload.cancel_upload(batch)
+        except upload.InvalidBatchStatus:
             raise exc.ValidationError(errors={
                 'cancel': 'Cancel action unsupported at this stage',
             })
@@ -259,7 +258,7 @@ class CandidatesDownload(api_common.BaseApiView):
         if 'batch_name' in request.GET:
             batch_name = request.GET['batch_name']
 
-        content = upload_plus.get_candidates_csv(batch)
+        content = upload.get_candidates_csv(batch)
         return self.create_csv_response(batch_name, content=content)
 
 
@@ -308,12 +307,12 @@ class Candidate(api_common.BaseApiView):
         resource = json.loads(request.body)
 
         try:
-            upload_plus.update_candidate(resource['candidate'], resource['defaults'], batch)
+            upload.update_candidate(resource['candidate'], resource['defaults'], batch)
         except models.ContentAdCandidate.DoesNotExist:
             raise exc.MissingDataError('Candidate does not exist')
 
         return self.create_api_response({
-            'candidates': upload_plus.get_candidates_with_errors(batch.contentadcandidate_set.all()),
+            'candidates': upload.get_candidates_with_errors(batch.contentadcandidate_set.all()),
         })
 
     def delete(self, request, ad_group_id, batch_id, candidate_id):

@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
 from utils import request_signer
-import dash.upload_plus
+import dash.upload
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def content_upload(request):
         return JsonResponse({
             'status': 'fail',
         })
-    dash.upload_plus.process_callback(candidate)
+    dash.upload.process_callback(candidate)
     return JsonResponse({
         "status": 'ok'
     })
