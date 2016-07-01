@@ -1311,3 +1311,22 @@ class History(api_common.BaseApiView):
                 'changes_text': history_entry.changes_text,
             })
         return history
+
+
+class Agencies(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_filter_by_agency'):
+            raise exc.AuthorizationError()
+
+        agencies = list(
+            models.Agency.objects.all().filter_by_user(
+                request.user
+            ).values('id', 'name')
+        )
+        return self.create_api_response({
+            'agencies': [{
+                'id': str(agency['id']),
+                'name': agency['name'],
+            } for agency in agencies]
+        })

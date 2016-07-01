@@ -1261,3 +1261,34 @@ constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.TIME_ON_SITE,
     constants.campaignGoalKPI.PAGES_PER_SESSION,
     constants.campaignGoalKPI.CPV];
+
+
+constants.defaultAccountTypes = [
+    {
+        id: String(constants.accountTypes.UNKNOWN),
+        name: 'Unknown',
+    },
+    {
+        id: String(constants.accountTypes.TEST),
+        name: 'Test',
+    },
+    {
+        id: String(constants.accountTypes.SANDBOX),
+        name: 'Sandbox',
+    },
+
+    {
+        id: String(constants.accountTypes.PILOT),
+        name: 'Pilot',
+    },
+
+    {
+        id: String(constants.accountTypes.SELF_MANAGED),
+        name: 'Self-Managed',
+    },
+    {
+        id: String(constants.accountTypes.MANAGED),
+        name: 'Managed',
+    },
+];
+

@@ -2262,12 +2262,16 @@ ul.icon-list li {
 
                     margin-bottom: 0;
 
+                    .agency-filter select2-input{
+                        margin-top: 7px;
+                    }
+
                     .select2-container {
                         vertical-align: top;
                         margin-top: 5px;
                         margin-right: 5px;
 
-                        &.add-source-filter .select2-choice {
+                        &.add-filter .select2-choice {
                             background-color: @add-filter-color;
                             border-color: @add-filter-color;
                             height: 28px;
@@ -2295,7 +2299,7 @@ ul.icon-list li {
                         }
                     }
 
-                    .filtered-source {
+                    .filtered {
                         &:first-child {
                             margin-left: 5px;
                         }
@@ -4976,4 +4980,3 @@ select.media-source-select {
         }
     }
 }
-

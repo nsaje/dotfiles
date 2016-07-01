@@ -3206,6 +3206,58 @@ class HistoryTest(TestCase):
         self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
 
 
+class AgenciesTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.assertFalse(self.user.is_superuser)
+
+    def get_agencies(self):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse('agencies', kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return response.json()
+
+    def test_permission(self):
+        response = self.get_agencies()
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_filter_by_agency'])
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+
+    def test_get(self):
+        agency = models.Agency(
+            name='test'
+        )
+        agency.save(fake_request(self.user))
+
+        add_permissions(self.user, ['can_filter_by_agency'])
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'agencies': []
+        }, response['data'])
+
+        agency.users.add(self.user)
+        agency.save(fake_request(self.user))
+
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'agencies': [
+                {
+                    'id': str(agency.id),
+                    'name': 'test',
+                }
+            ]
+        }, response['data'])
+
+
 class TestHistoryMixin(TestCase):
 
     class FakeMeta(object):

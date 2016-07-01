@@ -1,4 +1,4 @@
-/*global angular*/
+/* global angular,constants */
 
 var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.tooltip', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config', 'ui.select']);
 
@@ -70,22 +70,22 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.allAccounts', {
             url: 'all_accounts',
             template: basicTemplate,
-            controller: 'AllAccountsCtrl'
+            controller: 'AllAccountsCtrl',
         })
         .state('main.allAccounts.accounts', {
             url: '/accounts',
             templateUrl: '/partials/all_accounts_accounts.html',
-            controller: 'AllAccountsAccountsCtrl'
+            controller: 'AllAccountsAccountsCtrl',
         })
         .state('main.allAccounts.sources', {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
-            controller: 'MediaSourcesCtrl'
+            controller: 'MediaSourcesCtrl',
         })
         .state('main.allAccounts.scheduled_reports', {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
-            controller: 'ScheduledReportsCtrl'
+            controller: 'ScheduledReportsCtrl',
         });
 
     $stateProvider
@@ -102,34 +102,34 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.accounts.campaigns', {
             url: '/campaigns',
             templateUrl: '/partials/account_campaigns.html',
-            controller: 'AccountCampaignsCtrl'
+            controller: 'AccountCampaignsCtrl',
         })
         .state('main.accounts.sources', {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
-            controller: 'MediaSourcesCtrl'
+            controller: 'MediaSourcesCtrl',
         })
         .state('main.accounts.history', {
             url: '/history',
             templateUrl: '/partials/account_history.html',
-            controller: 'AccountHistoryCtrl'
+            controller: 'AccountHistoryCtrl',
         })
         .state('main.accounts.settings', {
             url: '/settings',
             templateUrl: '/partials/account_account.html',
-            controller: 'AccountAccountCtrl'
+            controller: 'AccountAccountCtrl',
         })
         .state('main.accounts.archived', {
             url: '/archived',
-            templateUrl: '/partials/account_settings.html'
+            templateUrl: '/partials/account_settings.html',
         }).state('main.accounts.credit', {
             url: '/credit',
             templateUrl: '/partials/account_credit.html',
-            controller: 'AccountCreditCtrl'
+            controller: 'AccountCreditCtrl',
         }).state('main.accounts.scheduled_reports', {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
-            controller: 'ScheduledReportsCtrl'
+            controller: 'ScheduledReportsCtrl',
         });
 
     $stateProvider
@@ -193,27 +193,27 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.adGroups.ads', {
             url: '/ads',
             templateUrl: '/partials/ad_group_contentads.html',
-            controller: 'AdGroupAdsCtrl'
+            controller: 'AdGroupAdsCtrl',
         })
         .state('main.adGroups.sources', {
             url: '/sources',
             templateUrl: '/partials/ad_group_sources.html',
-            controller: 'AdGroupSourcesCtrl'
+            controller: 'AdGroupSourcesCtrl',
         })
         .state('main.adGroups.settings', {
             url: '/settings',
             templateUrl: '/partials/ad_group_settings.html',
-            controller: 'AdGroupSettingsCtrl'
+            controller: 'AdGroupSettingsCtrl',
         })
         .state('main.adGroups.history', {
             url: '/history',
             templateUrl: '/partials/ad_group_history.html',
-            controller: 'AdGroupHistoryCtrl'
+            controller: 'AdGroupHistoryCtrl',
         })
         .state('main.adGroups.publishers', {
             url: '/publishers',
             templateUrl: '/partials/ad_group_publishers.html',
-            controller: 'AdGroupPublishersCtrl'
+            controller: 'AdGroupPublishersCtrl',
         });
 }]);
 
