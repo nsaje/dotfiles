@@ -20,7 +20,7 @@
         <ul class="filter-menu dropdown-menu" dropdown-menu>
             <li>
                 <div class="title">Filter by Media Source</div>
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-source-filter" data-placeholder="+ Media Source">
+                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-filter" data-placeholder="+ Media Source">
                     <option value=""></option>
                     <option ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceValidFilterChoice" value="{{source.id}}">{{source.name}}</option>
                 </select>
@@ -34,7 +34,7 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_agency')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Agency</div>
 
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No agencies', dropdownCssClass: 'select2-filter'}" ng-model="agencyIdToFilter" ng-change="addFilteredAgency(agencyIdToFilter)" class="add-agency-filter" data-placeholder="+ Agency">
+                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No agencies', dropdownCssClass: 'select2-filter'}" ng-model="agencyIdToFilter" ng-change="addFilteredAgency(agencyIdToFilter)" class="add-filter" data-placeholder="+ Agency">
                     <option value=""></option>
                     <option ng-repeat="agency in agencies | orderBy:'name'" value="{{agency.id}}">{{agency.name}}</option>
                 </select>
@@ -48,7 +48,7 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_account_type')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Account type</div>
 
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No account types', dropdownCssClass: 'select2-filter'}" ng-model="accountTypeIdToFilter" ng-change="addFilteredAccountType(accountTypeIdToFilter)" class="add-account-type-filter" data-placeholder="+ Account Type">
+                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No account types', dropdownCssClass: 'select2-filter'}" ng-model="accountTypeIdToFilter" ng-change="addFilteredAccountType(accountTypeIdToFilter)" class="add-filter" data-placeholder="+ Account Type">
                     <option value=""></option>
                     <option ng-repeat="accountType in accountTypes | orderBy:'name'" value="{{accountType.id}}">{{accountType.name}}</option>
                 </select>
