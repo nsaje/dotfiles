@@ -336,6 +336,19 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         orderField: 'call_to_action',
         initialOrder: 'asc'
     }, {
+        name: 'Label',
+        field: 'label',
+        checked: false,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Content ad\'s label.',
+        totalRow: false,
+        titleField: 'label',
+        order: true,
+        orderField: 'label',
+        initialOrder: 'asc',
+    }, {
         name: 'Spend',
         field: 'cost',
         checked: true,
