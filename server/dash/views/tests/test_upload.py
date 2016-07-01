@@ -755,7 +755,7 @@ class UploadSaveTestCase(TestCase):
         self.assertTemplateUsed(response, '404.html')
 
 
-class UploadDownloadTestCase(TestCase):
+class CandidatesDownloadTestCase(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
@@ -775,6 +775,19 @@ class UploadDownloadTestCase(TestCase):
                          'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
                          'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
                          'content ad 1,entropy,,\r\n', response.content)
+        self.assertEqual('attachment; filename="batch 1.csv"', response.get('Content-Disposition'))
+
+    def test_custom_batch_name(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        response = _get_client().get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            {'batch_name': 'Another batch'},
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('attachment; filename="Another batch.csv"', response.get('Content-Disposition'))
 
     def test_wrong_batch_id(self):
         batch_id = 1

@@ -32,6 +32,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Name of the campaign.',
             order: true,
+            orderField: 'name',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         adgroup: {
@@ -44,6 +45,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Name of the ad group.',
             order: true,
+            orderField: 'name',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         mediaSource: {
@@ -55,6 +57,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'A media source where your content is being promoted.',
             order: true,
+            orderField: 'name',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
             hasPermission: 'zemauth.can_filter_sources_through_table',
             shown: true,
@@ -204,6 +207,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
             order: true,
+            orderField: 'state',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         statusContentAd: {

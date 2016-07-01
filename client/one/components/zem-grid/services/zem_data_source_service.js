@@ -130,9 +130,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
             promise.then(function (breakdowns) {
                 applyBreakdowns(breakdowns);
-                if (level < selectedBreakdown.length) {
+                var childBreakdowns = getChildBreakdowns(breakdowns);
+                if (childBreakdowns.length > 0) {
                     // Chain request for each successive level
-                    var childBreakdowns = getChildBreakdowns(breakdowns);
                     var promise = getDataByLevel(level + 1, childBreakdowns);
                     deferred.resolve(promise);
                 } else {
@@ -194,9 +194,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         function getChildBreakdowns (breakdowns) {
             var childBreakdowns = [];
             breakdowns.forEach(function (breakdown) {
-                childBreakdowns = childBreakdowns.concat(breakdown.rows.map(function (row) {
-                    return row.breakdown;
-                }));
+                breakdown.rows.forEach(function (row) {
+                    if (row.breakdown) childBreakdowns.push(row.breakdown);
+                });
             });
             return childBreakdowns;
         }

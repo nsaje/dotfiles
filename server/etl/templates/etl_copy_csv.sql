@@ -5,6 +5,6 @@ FROM %(s3_url)s
 FORMAT CSV
 DELIMITER AS %(delimiter)s
 CREDENTIALS %(credentials)s
-MAXERROR 0;
+MAXERROR 0 BLANKSASNULL EMPTYASNULL;
 
 {% endautoescape %}

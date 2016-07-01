@@ -1208,7 +1208,7 @@ class ContentAdForm(ContentAdCandidateForm):
         except forms.ValidationError:
             pass
 
-        url = 'http://{}'.format(url)
+        url = u'http://{}'.format(url)
         validate_url(url)
 
         return url

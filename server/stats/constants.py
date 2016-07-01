@@ -42,6 +42,9 @@ IntegerDimensions = [
     StructureDimension.CONTENT_AD,
     StructureDimension.SOURCE,
     DeliveryDimension.DEVICE,
+    DeliveryDimension.AGE,
+    DeliveryDimension.AGE_GENDER,
+    DeliveryDimension.GENDER,
 ]
 
 

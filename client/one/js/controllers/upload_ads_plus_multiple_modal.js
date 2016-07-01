@@ -20,7 +20,7 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
         $scope.batchNameEdit = false;
         $scope.uploadFormData = {};
         $scope.uploadFormData.batchName = moment().utc().add(
-            $scope.user ? $scope.user.timezoneoffset : 0, 'seconds').format('M/D/YYYY h:mm A');
+            $scope.user ? $scope.user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
         $scope.anyCandidateHasErrors = false;
         $scope.batchId = null;
         $scope.numSuccessful = null;
@@ -293,7 +293,8 @@ oneApp.controller('UploadAdsPlusMultipleModalCtrl', ['$interval', '$scope',  '$s
     };
 
     $scope.download = function () {
-        var url = '/api/ad_groups/' + $state.params.id + '/contentads/upload_plus/' + $scope.batchId + '/download/';
+        var url = '/api/ad_groups/' + $state.params.id + '/contentads/upload_plus/' + $scope.batchId +
+                '/download/?batch_name=' + encodeURIComponent($scope.uploadFormData.batchName);
         $window.open(url, '_blank');
     };
 

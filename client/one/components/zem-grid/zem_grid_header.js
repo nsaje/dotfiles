@@ -89,7 +89,8 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 }
 
                 vm.grid.header.columns.forEach(function (column) {
-                    if (column.field === order) {
+                    var orderField = column.data.orderField || column.field;
+                    if (orderField === order) {
                         column.order = direction;
                     } else {
                         column.order = zemGridConstants.gridColumnOrder.NONE;
@@ -127,9 +128,9 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             function setOrder (column) {
                 toggleColumnOrder(column);
 
-                var order = column.field;
+                var order = column.data.orderField || column.field;
                 if (column.order === zemGridConstants.gridColumnOrder.DESC) {
-                    order = '-' + column.field;
+                    order = '-' + order;
                 }
 
                 // Resize columns to prevent flickering when rows are emptied

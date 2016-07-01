@@ -255,9 +255,12 @@ class CandidatesDownload(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError('Upload batch does not exist')
 
-        basefnm, _ = os.path.splitext(os.path.basename(batch.original_filename))
+        batch_name = batch.name
+        if 'batch_name' in request.GET:
+            batch_name = request.GET['batch_name']
+
         content = upload_plus.get_candidates_csv(batch)
-        return self.create_csv_response(basefnm, content=content)
+        return self.create_csv_response(batch_name, content=content)
 
 
 class UploadErrorReport(api_common.BaseApiView):
