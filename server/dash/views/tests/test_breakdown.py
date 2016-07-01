@@ -126,7 +126,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
         )
 
     @patch.object(table.AccountsAccountsTable, 'get')
@@ -338,7 +338,7 @@ class AccountBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
         )
 
     @patch.object(table.AccountCampaignsTable, 'get')
@@ -520,7 +520,7 @@ class CampaignBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
         )
 
 
@@ -584,5 +584,67 @@ class AdGroupBreakdownTestCase(TestCase):
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
-            5
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
         )
+
+
+class RequestOverflowTest(TestCase):
+    def create_test_data(self):
+        return [
+            {
+                'rows': [{}, {}, {}, {}, {}],
+                'pagination': {
+                    'offset': 0,
+                    'limit': 5,
+                    'count': -1,
+                }
+            }
+        ]
+
+    def test_complete_exact(self):
+        self.assertEqual(breakdown._process_request_overflow(self.create_test_data(), 5, 1), [
+            {
+                'rows': [{}, {}, {}, {}, {}],
+                'pagination': {
+                    'offset': 0,
+                    'limit': 5,
+                    'count': 5,
+                }
+            }
+        ])
+
+    def test_complete_overflow(self):
+        self.assertEqual(breakdown._process_request_overflow(self.create_test_data(), 4, 2), [
+            {
+                'rows': [{}, {}, {}, {}],
+                'pagination': {
+                    'offset': 0,
+                    'limit': 4,
+                    'count': 5,
+                }
+            }
+        ])
+
+    def test_complete_less(self):
+        self.assertEqual(breakdown._process_request_overflow(self.create_test_data(), 10, 1), [
+            {
+                'rows': [{}, {}, {}, {}, {}],
+                'pagination': {
+                    'offset': 0,
+                    'limit': 5,
+                    'count': 5,
+                }
+            }
+        ])
+
+    def test_not_complete(self):
+        self.assertEqual(breakdown._process_request_overflow(self.create_test_data(), 3, 2), [
+            {
+                'rows': [{}, {}, {}],
+                'pagination': {
+                    'offset': 0,
+                    'limit': 3,
+                    'count': -1,
+                }
+            }
+        ])

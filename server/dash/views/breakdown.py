@@ -15,6 +15,7 @@ import stats.constants
 
 DEFAULT_OFFSET = 0
 DEFAULT_LIMIT = 10
+REQUEST_LIMIT_OVERFLOW = 1  # [workaround] Request additional rows to check if more data is available
 
 
 def extract_constraints(form_data, **kwargs):
@@ -51,6 +52,21 @@ def format_breakdown_response(report_rows, offset, limit, breakdown_page):
             },
         })
 
+    return blocks
+
+
+def _process_request_overflow(blocks, limit, overflow):
+    # FIXME: This is workaround to find out if additional data can be requested by clients
+    # We request more data then required by client to check if breakdown collection is complete
+    # At the end all overflow data is removed and pagination limit updated
+    for block in blocks:
+        pagination = block['pagination']
+        if pagination['limit'] < limit + overflow:
+            pagination['count'] = pagination['offset'] + pagination['limit']
+
+        if pagination['limit'] > limit:
+            pagination['limit'] = limit
+            block['rows'] = block['rows'][:limit]
     return blocks
 
 
@@ -381,10 +397,11 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
 
@@ -429,10 +446,11 @@ class AccountBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
 
@@ -477,10 +495,11 @@ class CampaignBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
 
@@ -527,8 +546,9 @@ class AdGroupBreakdown(api_common.BaseApiView):
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
-            limit,
+            limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
