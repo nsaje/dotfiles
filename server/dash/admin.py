@@ -321,8 +321,9 @@ class AgencyFormAdmin(forms.ModelForm):
                 'first_name',
                 'last_name',
         )
-        self.fields['sales_representative'].label_from_instance = lambda obj: "%s <%s>" % (
-            obj.get_full_name(), obj.email or '')
+        self.fields['sales_representative'].label_from_instance = lambda obj: "{} <{}>".format(
+            obj.get_full_name(), obj.email or ''
+        )
 
 
 class AgencyResource(resources.ModelResource):

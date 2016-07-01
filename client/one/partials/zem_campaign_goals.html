@@ -18,8 +18,8 @@
                     </div>
                     <div ng-if="goal.type === 4" class="conv-goal-text">
                         Connected with conversion {{ goal.conversionGoal.name }}
-						<span ng-if="goal.conversionGoal.conversionWindow"> ({{ goal.conversionGoal.conversionWindow / 24 }} days)</span>.
-						<a ng-if="goal.conversionGoal.pixelUrl" ng-click="copyConversionPixelTag(goal.conversionGoal, $event)">Copy tag</a>
+                        <span ng-if="goal.conversionGoal.conversionWindow"> ({{ goal.conversionGoal.conversionWindow / 24 }} days)</span>.
+                        <a ng-if="goal.conversionGoal.pixelUrl" ng-click="copyConversionPixelTag(goal.conversionGoal, $event)">Copy tag</a>
                     </div>
                 </div>
             </div>

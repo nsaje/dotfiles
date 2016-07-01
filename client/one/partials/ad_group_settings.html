@@ -142,8 +142,8 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6 col-md-4 after-form-alert-box">
-                    <zem-retargeting ng-if="retargetingEnabled && warnings.retargeting === undefined" zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
+                <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
+                    <zem-retargeting zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
                 </div>
             </div>
 
