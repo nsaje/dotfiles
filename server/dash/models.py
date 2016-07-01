@@ -374,7 +374,7 @@ class Agency(models.Model):
             return self.filter(
                 models.Q(users__id=user.id) |
                 models.Q(sales_representative__id=user.id) |
-                models.Q(account__groups__users__id=user.id)
+                models.Q(account__groups__user__id=user.id)
             ).distinct()
 
     def __str__(self):
