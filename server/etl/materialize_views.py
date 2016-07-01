@@ -397,7 +397,7 @@ class MVCampaign(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_campaign_delivery',
+            'source_table': 'mv_ad_group',
         })
 
         return sql, {
@@ -415,6 +415,92 @@ class MVCampaignDelivery(materialize_helpers.Materialize):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_ad_group_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAdGroup(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_ad_group'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_content_ad',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAdGroupDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_ad_group_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_content_ad_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVContentAd(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_content_ad'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_content_ad_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVContentAdDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_content_ad_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),

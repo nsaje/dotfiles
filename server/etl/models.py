@@ -94,7 +94,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     agency_id = backtosql.Column('agency_id', BREAKDOWN)
     account_id = backtosql.Column('account_id', BREAKDOWN)
     campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
-    ad_group_id = backtosql.Column('adgroup_id', BREAKDOWN)
+    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
     source_id = backtosql.Column('source_id', BREAKDOWN)
     publisher = backtosql.Column('publisher', BREAKDOWN)
