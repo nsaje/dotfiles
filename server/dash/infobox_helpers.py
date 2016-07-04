@@ -363,7 +363,7 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
-def count_active_accounts():
+def count_active_accounts(filtered_agencies, filtered_account_types):
     account_ids = set(
         dash.models.AdGroup.objects.all()
         .filter_running()
@@ -372,7 +372,12 @@ def count_active_accounts():
             flat=True
         )
     )
-    return len(account_ids)
+    count_filtered_ids = dash.models.Account.objects.all()\
+        .filter(id__in=account_ids)\
+        .filter_by_agencies(filtered_agencies)\
+        .filter_by_account_types(filtered_account_types)\
+        .count()
+    return count_filtered_ids
 
 
 def format_username(user):
@@ -381,37 +386,76 @@ def format_username(user):
     return user.get_full_name()
 
 
-def count_weekly_logged_in_users():
-    return zemauth.models.User.objects.filter(
+def _filter_user_by_account_type(users, filtered_account_types):
+    if not filtered_account_types:
+        return users
+
+    latest_account_settings = dash.models.AccountSettings.objects.all()\
+        .filter(
+            models.Q(account__users__id=user.id) |
+            models.Q(account__groups__user__id=user.id) |
+            models.Q(account__agency__users__id=user.id)
+        )\
+        .group_current_settings()
+
+    filtered_latest_account_settings = dash.models.AccountSettings.objects\
+        .all()\
+        .filter(pk__in=latest_account_settings)\
+        .filter(account_type__in=filtered_account_types)\
+        .values_list('account__id', flat=True)
+
+    return user.filter(
+        models.Q(account__id__in=filtered_latest_account_settings) |
+        models.Q(group__account__id__in=filtered_latest_account_settings)
+    )
+
+
+def count_weekly_logged_in_users(filtered_agencies, filtered_account_types):
+    logged_in_users = zemauth.models.User.objects.filter(
         last_login__gte=_one_week_ago(),
         last_login__lte=_until_today(),
     ).exclude(
         email__contains='@zemanta'
     ).exclude(
         is_test_user=True
-    ).count()
+    ).filter_by_agencies(filtered_agencies)
+    return _filter_user_by_account_type(
+        logged_in_users,
+        filtered_account_types).count()
 
 
-def get_weekly_active_users():
-    return [action.created_by for action in dash.models.UserActionLog.objects.filter(
+def get_weekly_active_users(filtered_agencies, filtered_account_types):
+    users = zemauth.models.User.objects.all().filter(
+        pk__in=[action.created_by.id for action in dash.models.UserActionLog.objects.filter(
+                created_dt__gte=_one_week_ago(),
+                created_dt__lte=_until_today(),
+            ).exclude(
+                created_by__email__contains='@zemanta'
+            ).exclude(
+                created_by__is_test_user=True
+            ).select_related('created_by').distinct('created_by')
+        ]
+    ).filter_by_agencies(filtered_agencies)
+    return _filter_user_by_account_type(
+        users,
+        filtered_account_types)
+
+
+def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
+    actions = dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago(),
         created_dt__lte=_until_today(),
     ).exclude(
         created_by__email__contains='@zemanta'
     ).exclude(
         created_by__is_test_user=True
-    ).select_related('created_by').distinct('created_by')]
+    )
 
-
-def count_weekly_selfmanaged_actions():
-    return dash.models.UserActionLog.objects.filter(
-        created_dt__gte=_one_week_ago(),
-        created_dt__lte=_until_today(),
-    ).exclude(
-        created_by__email__contains='@zemanta'
-    ).exclude(
-        created_by__is_test_user=True
-    ).count()
+    users = zemauth.models.User.objects.all().filter(
+        pk__in=[action.created_by.id for action in actions])\
+        .filter_by_agencies(filtered_agencies)
+    filtered_users = _filter_user_by_account_type(users, filtered_account_types)
+    return actions.filter(created_by__in=users).count()
 
 
 def _one_week_ago():

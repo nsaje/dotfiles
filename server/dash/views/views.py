@@ -1790,6 +1790,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        # infobox only filters by agency and account type
+        view_filter = helpers.ViewFilter(request=request)
 
         header = {
             'title': None,
@@ -1799,18 +1801,21 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(start_date, end_date),
+            'basic_settings': self._basic_settings(start_date, end_date, view_filter),
             'performance_settings': None
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, start_date, end_date):
+    def _basic_settings(self, start_date, end_date, view_filter):
         settings = []
         daterange_proj = reports.projections.BudgetProjections(start_date, end_date, 'account')
         month_proj = reports.projections.CurrentMonthBudgetProjections('account')
 
-        count_active_accounts = infobox_helpers.count_active_accounts()
+        count_active_accounts = infobox_helpers.count_active_accounts(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
             count_active_accounts,
@@ -1818,14 +1823,20 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip='Number of accounts with at least one campaign running'
         ))
 
-        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
+        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Logged-in users:',
             weekly_logged_users,
             tooltip="Number of users who logged-in in the past 7 days"
         ))
 
-        weekly_active_users = infobox_helpers.get_weekly_active_users()
+        weekly_active_users = infobox_helpers.get_weekly_active_users(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         weekly_active_user_emails = [u.email for u in weekly_active_users]
         email_list_setting = infobox_helpers.OverviewSetting(
             'Active users:',
@@ -1841,7 +1852,10 @@ class AllAccountsOverview(api_common.BaseApiView):
             )
         settings.append(email_list_setting)
 
-        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
+        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Self-managed actions:',
             weekly_sf_actions,
@@ -1849,7 +1863,10 @@ class AllAccountsOverview(api_common.BaseApiView):
                     "in the past 7 days"
         ))
 
-        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
+        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spend:',
             lc_helper.default_currency(yesterday_spend),
@@ -1857,7 +1874,10 @@ class AllAccountsOverview(api_common.BaseApiView):
             section_start=True
         ))
 
-        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
+        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'MTD spend:',
             lc_helper.default_currency(mtd_spend),

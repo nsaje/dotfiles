@@ -413,7 +413,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
             adgss.save()
 
-        self.assertEqual(0, dash.infobox_helpers.count_active_accounts())
+        self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
         all_adgset = dash.models.AdGroupSettings.objects.filter(
             ad_group__campaign__account__id=1
@@ -435,7 +435,7 @@ class InfoBoxAccountHelpersTest(TestCase):
                 daily_budget_cc=10
             )
 
-        self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
+        self.assertEqual(1, dash.infobox_helpers.count_active_accounts(None, None))
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(
@@ -448,7 +448,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         return ordinary_john
 
     def test_get_weekly_logged_in_users(self):
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
@@ -457,17 +457,17 @@ class InfoBoxAccountHelpersTest(TestCase):
             u.save()
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
         john = self._make_a_john()
         john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         john.save()
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
     def test_count_weekly_active_users(self):
         # should be 0 by default
-        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
@@ -481,8 +481,8 @@ class InfoBoxAccountHelpersTest(TestCase):
             )
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         john = self._make_a_john()
         ual = dash.models.UserActionLog.objects.create(
@@ -493,8 +493,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         ual.save()
 
-        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.SET_CAMPAIGN_SETTINGS,
@@ -505,8 +505,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         ual.save()
 
-        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
     def test_calculate_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
