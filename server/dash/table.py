@@ -1207,6 +1207,7 @@ class AdGroupAdsTable(object):
                 'brand_name': content_ad.brand_name,
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
+                'label': content_ad.label,
                 'image_urls': {
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)

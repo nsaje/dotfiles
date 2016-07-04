@@ -42,6 +42,7 @@ FIELDNAMES = {
     'end_date': 'End Date',
     'image_url': 'Image URL',
     'image_hash': 'Image Hash',
+    'label': 'Label',
     'impressions': 'Impressions',
     'pageviews': 'Pageviews',
     'percent_new_users': 'Percent New Users',
@@ -401,6 +402,7 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
     stat['image_hash'] = content_ad.image_hash
+    stat['label'] = content_ad.label
     stat['uploaded'] = content_ad.created_dt.date()
     stat['status'] = content_ad.state
     stat['archived'] = content_ad.archived
@@ -907,7 +909,7 @@ class AccountExport(object):
             required_fields.extend(['campaign', 'ad_group'])
             dimensions.extend(['campaign', 'ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'image_hash', 'url'])
+            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
         required_fields.extend(['status'])
@@ -960,7 +962,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'url'])
+            required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:
@@ -1002,7 +1004,7 @@ class AdGroupAdsExport(object):
         if breakdown == 'ad_group':
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url', 'image_hash', 'url'])
+            required_fields.extend(['title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:

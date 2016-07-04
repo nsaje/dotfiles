@@ -484,6 +484,19 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             orderField: 'call_to_action',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
+        label: {
+            name: 'Label',
+            field: 'label',
+            checked: false,
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            shown: true,
+            help: 'Content ad\'s label.',
+            totalRow: false,
+            titleField: 'label',
+            order: true,
+            orderField: 'label',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
+        },
 
         // Publisher
         domain: {
@@ -1091,6 +1104,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.brandName,
         COLUMNS.description,
         COLUMNS.callToAction,
+        COLUMNS.label,
     ].concat(
         BASE_METRICS,
         POSTCLICK_ACQUISITION_METRICS,
@@ -1187,6 +1201,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
                 COLUMNS.brandName,
                 COLUMNS.description,
                 COLUMNS.callToAction,
+                COLUMNS.label,
             ],
         },
         {
