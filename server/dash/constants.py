@@ -1701,3 +1701,13 @@ class FacebookAccountStatus(ConstantBase):
         ANY_ACTIVE: 'any active',
         ANY_CLOSED: 'any closed'
     }
+
+
+class RuleType(ConstantBase):
+    STARTS_WITH = 1
+    CONTAINS = 2
+
+    _VALUES = {
+        STARTS_WITH: 'Starts with',
+        CONTAINS: 'Contains',
+    }

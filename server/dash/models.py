@@ -3792,7 +3792,7 @@ class History(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
-            raise AssertionError('Updating history object not alowed.')
+            raise AssertionError('Updating history object not allowed.')
 
         super(History, self).save(*args, **kwargs)
 
@@ -3802,6 +3802,23 @@ class History(models.Model):
     class Meta:
         verbose_name = 'History'
         verbose_name_plural = 'History'
+
+
+class Audience(models.Model):
+    id = models.AutoField(primary_key=True)
+    pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
+    ad_group_settings = models.ManyToManyField(AdGroupSettings)
+    ttl = models.PositiveSmallIntegerField()
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+
+class Rule(models.Model):
+    audience = models.ForeignKey(Audience, on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.RuleType.get_choices(),
+    )
+    value = models.CharField(max_length=255)
 
 
 def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
