@@ -286,7 +286,7 @@ class AdGroupSettingsTest(TestCase):
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put_low_cpc(self, mock_k1_ping, mock_log_useraction, mock_actionlog_api,
+    def test_put_low_cpc(self, mock_k1_ping, mock_actionlog_api,
                          mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
@@ -374,8 +374,6 @@ class AdGroupSettingsTest(TestCase):
                     ad_group, old_settings, new_settings, ANY, send=False),
                 ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             ])
-            mock_log_useraction.assert_called_with(
-                response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
