@@ -321,8 +321,8 @@ class AgencyFormAdmin(forms.ModelForm):
                 'first_name',
                 'last_name',
         )
-        self.fields['sales_representative'].label_from_instance = lambda obj: "{} <{}>".format(
-            obj.get_full_name(), obj.email or ''
+        self.fields['sales_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
+            obj.get_full_name(), obj.email or u''
         )
 
 
@@ -334,6 +334,9 @@ class AgencyResource(resources.ModelResource):
         model = models.Agency
         fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative']
         export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative']
+
+    def dehydrate_sales_representative(self, obj):
+        return obj.sales_representative and obj.sales_representative.get_full_name() or ''
 
     def dehydrate_accounts(self, obj):
         return u', '.join([
@@ -355,6 +358,7 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         'id',
         '_users',
         '_accounts',
+        'sales_representative',
         'created_dt',
         'modified_dt',
     )
@@ -371,14 +375,14 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         names = []
         for user in obj.users.all():
             names.append(user.get_full_name())
-        return ', '.join(names)
+        return u', '.join(names)
     _users.short_description = 'Agency Managers'
 
     def _accounts(self, obj):
         return u', '.join([
             unicode(account) for account in obj.account_set.all()
         ])
-    _users.short_description = 'Accounts'
+    _accounts.short_description = 'Accounts'
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Account:
