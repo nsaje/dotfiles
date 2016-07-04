@@ -818,8 +818,14 @@ def _include_model_ids(required_fields):
 class AllAccountsExport(object):
 
     def get_data(self, user, filtered_sources, start_date, end_date, order,
-                 additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
+                 additional_fields, view_filter=None, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
+        accounts = models.Account.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(filtered_sources)
+        if view_filter is not None:
+            accounts = accounts\
+                .filter_by_agencies(view_filter.filtered_agencies)\
+                .filter_by_account_types(view_filter.filtered_account_types)
 
         required_fields = ['start_date', 'end_date']
         if user.has_perm('zemauth.can_view_account_agency_information'):
@@ -1089,12 +1095,14 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
     )
 
     granularity = get_granularity_from_type(request.GET.get('type'))
+    view_filter = helpers.ViewFilter(request=request)
 
     return _get_report(
         request.user,
         helpers.get_stats_start_date(request.GET.get('start_date')),
         helpers.get_stats_end_date(request.GET.get('end_date')),
         filtered_sources=helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
+        view_filter=view_filter,
         order=request.GET.get('order') or 'name',
         additional_fields=additional_fields,
         granularity=granularity,
@@ -1113,6 +1121,7 @@ def _get_report(
         start_date,
         end_date,
         filtered_sources=None,
+        view_filter=None,
         order=None,
         additional_fields=None,
         granularity=None,
@@ -1151,6 +1160,7 @@ def _get_report(
     contents = _get_report_contents(
         user=user,
         filtered_sources=filtered_sources,
+        view_filter=view_filter,
         start_date=start_date,
         end_date=end_date,
         order=order,
@@ -1177,7 +1187,7 @@ def _get_report(
     return (contents, filename)
 
 
-def _get_report_contents(user, filtered_sources, start_date, end_date, order, additional_fields,
+def _get_report_contents(user, filtered_sources, view_filter, start_date, end_date, order, additional_fields,
                          breakdown, by_source, by_day, include_model_ids=False,
                          account_id=None, campaign_id=None, ad_group_id=None):
     arguments = {
@@ -1202,6 +1212,8 @@ def _get_report_contents(user, filtered_sources, start_date, end_date, order, ad
     elif ad_group_id:
         arguments['ad_group_id'] = ad_group_id
         return AdGroupAdsExport().get_data(**arguments)
+
+    arguments['view_filter'] = view_filter
     return AllAccountsExport().get_data(**arguments)
 
 
