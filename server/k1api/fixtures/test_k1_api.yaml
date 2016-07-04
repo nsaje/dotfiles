@@ -818,14 +818,6 @@
     model: dash.audience
     pk: 2
 
--   fields:
-        pixel_id: 3
-        ad_group_settings: [3]
-        ttl: 645
-        created_dt: '2015-02-25T00:00:00'
-        modified_dt: '2015-02-25T00:00:00'
-    model: dash.audience
-    pk: 3
 
 # test Rules
 
