@@ -1659,6 +1659,18 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         return True
 
 
+class RuleAdmin(admin.TabularInline):
+    model = models.Rule
+    extra = 3
+
+
+class AudienceAdmin(admin.ModelAdmin):
+    list_display = ('pixel', 'ttl', 'created_dt', 'modified_dt')
+
+    inlines = [RuleAdmin]
+    exclude = ('ad_group_settings',)
+
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1687,3 +1699,4 @@ admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
 admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)
+admin.site.register(models.Audience, AudienceAdmin)

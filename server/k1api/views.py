@@ -15,6 +15,9 @@ from utils import url_helper, request_signer, converters
 
 logger = logging.getLogger(__name__)
 
+EVENT_RETARGET_ADGROUP = "redirect_adgroup"
+EVENT_CUSTOM_AUDIENCE = "aud"
+
 
 def _response_ok(content):
     return JsonResponse({
@@ -529,7 +532,7 @@ def get_ad_groups(request):
             'device_targeting': ad_group_settings.target_devices,
             'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
             'target_regions': ad_group_settings.target_regions,
-            'retargeting_ad_groups': ad_group_settings.retargeting_ad_groups,
+            'retargeting': _get_retargeting(ad_group_settings),
             'campaign_id': ad_group_settings.ad_group.campaign.id,
             'account_id': ad_group_settings.ad_group.campaign.account.id,
             'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
@@ -538,6 +541,19 @@ def get_ad_groups(request):
         ad_groups.append(ad_group)
 
     return _response_ok(ad_groups)
+
+
+def _get_retargeting(ad_group_settings):
+    retargeting = []
+
+    for retargeting_ad_group_id in ad_group_settings.retargeting_ad_groups:
+        retargeting.append(
+            {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id), 'exclusion': False})
+
+    for audience in ad_group_settings.audience_set.all():
+        retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
+
+    return retargeting
 
 
 def _get_campaign_goal_types(campaign_ids):
@@ -558,7 +574,8 @@ def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id=ad_group_id)
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                              .prefetch_related('audience_set'))
         ad_group_ids = [ad_group_id]
     elif source_type:
         nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
@@ -569,12 +586,14 @@ def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(ad_group__id__in=ad_group_ids)
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                              .prefetch_related('audience_set'))
     else:
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .all()
                               .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                              .prefetch_related('audience_set'))
         ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
                         not ad_group_settings.archived]
 
