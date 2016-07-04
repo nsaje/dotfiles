@@ -15,7 +15,7 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
             facebookPageErrors: '=zemFacebookPageErrors',
             facebookPageChanged: '=zemFacebookPageChanged',
         },
-        controller: ['$scope', 'api', function ($scope, api) {
+        controller: ['$scope', '$timeout', 'api', function ($scope, $timeout, api) {
             $scope.facebookAccountStatusChecker = null;
             $scope.constants = constants;
             $scope.facebook = {page: $scope.facebookPage};
@@ -44,15 +44,15 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
                         $scope.facebookStatus = facebookAccountStatus;
                     },
                     function () {
-                        $scope.facebookStatus = 'Error';
+                        $scope.facebookStatus = constants.facebookStatus.ERROR;
                     }
                 );
                 if ($scope.facebookAccountStatusChecker !== null) {
                     // prevent the creation of multiple Facebook account checkers (for example, when Facebook page URL is
                     // updated multiple times).
-                    clearTimeout($scope.facebookAccountStatusChecker);
+                    $timeout.cancel($scope.facebookAccountStatusChecker);
                 }
-                $scope.facebookAccountStatusChecker = setTimeout($scope.checkFacebookAccountStatus, 30 * 1000);
+                $scope.facebookAccountStatusChecker = $timeout($scope.checkFacebookAccountStatus, 30 * 1000);
             };
 
             $scope.onFacebookPageChange = function () {
