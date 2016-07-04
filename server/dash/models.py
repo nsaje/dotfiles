@@ -3794,9 +3794,8 @@ class History(models.Model):
 
 class Audience(models.Model):
     id = models.AutoField(primary_key=True)
-    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    pixel = models.OneToOneField(ConversionPixel, on_delete=models.PROTECT)
     ad_group_settings = models.ManyToManyField(AdGroupSettings)
-    pixie_slug = models.CharField(max_length=255)
     ttl = models.PositiveSmallIntegerField()
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
