@@ -86,6 +86,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
         self._add_ga_account(request.user, ad_group, new_settings)
+        self._adjust_adgroup_sources(ad_group, new_settings, request)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         changes = current_settings.get_setting_changes(new_settings)
@@ -230,6 +231,19 @@ class AdGroupSettings(api_common.BaseApiView):
             )
 
         zwei_actions.send(actionlogs_to_send)
+
+    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
+        for ags in ad_group.adgroupsource_set.all():
+            curr_ags_settings = ags.get_current_settings()
+            if curr_ags_settings.cpc_cc <= ad_group_settings.cpc_cc:
+                continue
+            api.AdGroupSourceSettingsWriter(ags).set(
+                {
+                    'cpc_cc': ad_group_settings.cpc_cc
+                },
+                request=None,
+                send_to_zwei=False
+            )
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()
@@ -575,7 +589,7 @@ class CampaignSettings(api_common.BaseApiView):
                     conversions_helper.get_conversion_pixel_url(
                         campaign.account.id,
                         conversion_goal.pixel.slug
-                    )
+                )
             ret.append(goal_blob)
         return ret
 
@@ -1297,6 +1311,25 @@ class History(api_common.BaseApiView):
                 'changes_text': history_entry.changes_text,
             })
         return history
+
+
+class Agencies(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_filter_by_agency'):
+            raise exc.AuthorizationError()
+
+        agencies = list(
+            models.Agency.objects.all().filter_by_user(
+                request.user
+            ).values('id', 'name')
+        )
+        return self.create_api_response({
+            'agencies': [{
+                'id': str(agency['id']),
+                'name': agency['name'],
+            } for agency in agencies]
+        })
 
 
 class FacebookAccountStatus(api_common.BaseApiView):

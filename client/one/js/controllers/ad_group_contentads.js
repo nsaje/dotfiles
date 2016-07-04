@@ -336,6 +336,19 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         orderField: 'call_to_action',
         initialOrder: 'asc'
     }, {
+        name: 'Label',
+        field: 'label',
+        checked: false,
+        extraTdCss: 'no-wrap',
+        type: 'text',
+        shown: true,
+        help: 'Content ad\'s label.',
+        totalRow: false,
+        titleField: 'label',
+        order: true,
+        orderField: 'label',
+        initialOrder: 'asc',
+    }, {
         name: 'Spend',
         field: 'cost',
         checked: true,
@@ -471,7 +484,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                    'billing_cost', 'license_fee'],
     }, {
         'name': 'Content Sync',
-        'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
+        'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action', 'label'],
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cpc', 'clicks', 'impressions', 'ctr']
@@ -523,6 +536,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         });
 
         modalInstance.result.then(function () {
+            getTableData();
+        }).catch(function () {
             getTableData();
         });
 
@@ -908,6 +923,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         var dataSource = zemDataSourceService.createInstance(endpoint);
         dataSource.setDateRange($scope.dateRange, false);
+        dataSource.setOrder($scope.order, false);
 
         $scope.grid = {
             api: undefined,

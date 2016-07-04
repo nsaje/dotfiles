@@ -648,13 +648,13 @@ var options = {
         help: 'Autopilot will not operate on this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.INACTIVE,
     }, {
-        name: 'Optimize Bid CPCs',
-        help: 'Bid CPCs on active Media Sources in this Ad Group will be optimized.' +
+        name: 'Optimize Bids',
+        help: 'Bids on active Media Sources in this Ad Group will be optimized. ' +
               'Ad Group\'s Maximum CPC constraint will be enforced.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
     }, {
-        name: 'Optimize Bid CPCs and Daily Budgets',
-        help: 'Both Bid CPCs and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
+        name: 'Optimize Bids and Daily Budgets',
+        help: 'Both Bids and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
     },
     ],
@@ -1261,3 +1261,34 @@ constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.TIME_ON_SITE,
     constants.campaignGoalKPI.PAGES_PER_SESSION,
     constants.campaignGoalKPI.CPV];
+
+
+constants.defaultAccountTypes = [
+    {
+        id: String(constants.accountTypes.UNKNOWN),
+        name: 'Unknown',
+    },
+    {
+        id: String(constants.accountTypes.TEST),
+        name: 'Test',
+    },
+    {
+        id: String(constants.accountTypes.SANDBOX),
+        name: 'Sandbox',
+    },
+
+    {
+        id: String(constants.accountTypes.PILOT),
+        name: 'Pilot',
+    },
+
+    {
+        id: String(constants.accountTypes.SELF_MANAGED),
+        name: 'Self-Managed',
+    },
+    {
+        id: String(constants.accountTypes.MANAGED),
+        name: 'Managed',
+    },
+];
+

@@ -100,7 +100,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                                                     sum(b.total_time_on_site) total_time_on_site,
                                                     row_number() over (partition BY b.ad_group_id
                                                                     ORDER BY b.campaign_id DESC) AS r
-        FROM mv_master b
+        FROM mv_content_ad b
         WHERE (b.account_id=any(%s)
                 AND b.campaign_id=%s
                 AND b.date>=%s
@@ -108,7 +108,7 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
         AND ((b.content_ad_id=%s AND b.source_id=%s) OR (b.content_ad_id=%s AND b.source_id=ANY(%s)))
         GROUP BY ad_group_id,
                 content_ad_id) a
-        WHERE r >= 10 AND r <= 50
+        WHERE r >= 10 + 1 AND r <= 50
         GROUP BY 1,
                 2
         """)

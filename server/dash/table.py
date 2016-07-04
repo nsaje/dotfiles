@@ -955,10 +955,7 @@ class AccountsAccountsTable(object):
             if account_settings:
                 archived = account_settings.archived
 
-            if not show_archived and archived and\
-               not reports.api.row_has_traffic_data(account_data) and\
-               not reports.api.row_has_postclick_data(account_data) and\
-               not reports.api.row_has_conversion_goal_data(account_data):
+            if not show_archived and archived:
                 continue
 
             if has_view_managers_permission:
@@ -1192,10 +1189,7 @@ class AdGroupAdsTable(object):
             stat = stats.get(content_ad.id, {})
 
             archived = content_ad.archived
-            if not show_archived and archived and\
-               not reports.api.row_has_traffic_data(stat) and\
-               not reports.api.row_has_postclick_data(stat) and\
-               not reports.api.row_has_conversion_goal_data(stat):
+            if not show_archived and archived:
                 continue
 
             url = self._get_url(ad_group, content_ad, is_demo)
@@ -1213,6 +1207,7 @@ class AdGroupAdsTable(object):
                 'brand_name': content_ad.brand_name,
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
+                'label': content_ad.label,
                 'image_urls': {
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
@@ -1416,10 +1411,7 @@ class CampaignAdGroupsTable(object):
             archived = ad_group_settings.archived if ad_group_settings else False
 
             reports_api = get_reports_api_module(user)
-            if not show_archived and archived and\
-               not reports_api.row_has_traffic_data(ad_group_data) and\
-               not reports_api.row_has_postclick_data(ad_group_data) and\
-               not reports.api.row_has_conversion_goal_data(ad_group_data):
+            if not show_archived and archived:
                 continue
 
             row['state'] = ad_groups_status_dict[ad_group.id]
@@ -1630,10 +1622,7 @@ class AccountCampaignsTable(object):
             archived = campaign_settings.archived if campaign_settings else False
 
             reports_api = get_reports_api_module(user)
-            if not show_archived and archived and\
-               not reports_api.row_has_traffic_data(campaign_stat) and\
-               not reports_api.row_has_postclick_data(campaign_stat) and\
-               not reports.api.row_has_conversion_goal_data(campaign_stat):
+            if not show_archived and archived:
                 continue
 
             row['state'] = campaign_status_dict[campaign.id]

@@ -1,4 +1,4 @@
-/* globals oneApp, angular */
+/* globals oneApp, angular, constants */
 'use strict';
 
 oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
@@ -62,7 +62,9 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
         var width = getTextWidth(column.data.name, font);
         width = Math.max(width, zemGridConstants.gridStyle.DEFAULT_ICON_SIZE);  // Column without text (e.g. only icon)
+        if (column.data.internal) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
         if (column.data.help) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
+        if (column.order !== zemGridConstants.gridColumnOrder.NONE) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
@@ -175,6 +177,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     }
 
     function resizeGridColumns (grid) {
+        // Ignore resizing request when grid was emptied while column widths are already available
+        // This can happen when DataSource destroys data tree (e.g. ordering event) and to
+        // prevent column collapse we just wait for table to be filled again
+        if (grid.body.rows.length === 0 && grid.ui.columnsWidths.length > 0) return;
+
         calculateColumnWidths(grid);
         resizeCells(grid);
         resizeBreakdownRows(grid);
@@ -214,10 +221,28 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         return classes;
     }
 
+    function getHeaderColumnOrderClass (grid, column) {
+        if (column.order === zemGridConstants.gridColumnOrder.DESC) {
+            return 'ordered';
+        }
+        if (column.order === zemGridConstants.gridColumnOrder.ASC) {
+            return 'ordered-reverse';
+        }
+        return null;
+    }
+
     function getBreakdownColumnStyle (row) {
         return {
             'padding-left': (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING + 'px',
         };
+    }
+
+    function getFieldGoalStatusClass (status) {
+        switch (status) {
+        case constants.emoticon.HAPPY: return 'superperforming-goal';
+        case constants.emoticon.SAD: return 'underperforming-goal';
+        default: return '';
+        }
     }
 
     return {
@@ -225,6 +250,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         resizeGridColumns: resizeGridColumns,
         getRowClass: getRowClass,
         getHeaderColumnClass: getHeaderColumnClass,
+        getHeaderColumnOrderClass: getHeaderColumnOrderClass,
         getBreakdownColumnStyle: getBreakdownColumnStyle,
+        getFieldGoalStatusClass: getFieldGoalStatusClass,
     };
 }]);

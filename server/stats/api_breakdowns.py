@@ -19,6 +19,9 @@ def query(user, breakdown, constraints, breakdown_page,
 
     validate_breakdown(breakdown)
 
+    # FIXME: Hack to prevent sorting by fields not available in redshift
+    order = get_supported_order(order)
+
     rows = redshiftapi.api_breakdowns.query(
         helpers.extract_stats_breakdown(breakdown),
         helpers.extract_stats_constraints(constraints),
@@ -32,7 +35,7 @@ def query(user, breakdown, constraints, breakdown_page,
     augmenter.augment(breakdown, rows, target_dimension)
     augmenter.filter_columns_by_permission(user, rows)
 
-    rows = sort_helper.sort_results(rows, helpers.extract_order_fields(order, breakdown))
+    rows = sort_helper.sort_results(rows, helpers.extract_order_field(order, breakdown))
 
     return rows
 
@@ -65,3 +68,22 @@ def validate_breakdown(breakdown):
 
     if breakdown != clean_breakdown:
         raise exc.InvalidBreakdownError("Wrong breakdown order")
+
+
+# FIXME: Remove this hack
+def get_supported_order(order):
+    UNSUPPORTED_FIELDS = ["name", "state", "status", "performance", "yesterday_cost", "e_yesterday_cost", "min_bid_cpc",
+                          "max_bid_cpc", "daily_budget", "conversion_goal_1", "conversion_goal_2", "conversion_goal_3",
+                          "conversion_goal_4", "conversion_goal_5", "unbounced_visits",
+                          "avg_cost_per_non_bounced_visitor", "avg_cost_per_conversion_goal_1",
+                          "avg_cost_per_conversion_goal_2", "avg_cost_per_conversion_goal_3",
+                          "avg_cost_per_conversion_goal_4", "avg_cost_per_conversion_goal_5"]
+
+    unprefixed_order = order
+    if order.startswith('-'):
+        unprefixed_order = order[1:]
+
+    if unprefixed_order in UNSUPPORTED_FIELDS:
+        return "-clicks"
+
+    return order

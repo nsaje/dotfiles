@@ -210,11 +210,6 @@ class AdGroupSettingsForm(forms.Form):
 
         return target_regions
 
-    def clean_cpc_cc(self):
-        cpc_cc = self.cleaned_data.get('cpc_cc')
-        validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
-        return cpc_cc
-
     def clean_autopilot_state(self):
         autopilot_state = self.cleaned_data.get('autopilot_state')
         return autopilot_state
@@ -587,6 +582,7 @@ MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name',
                        'description', 'call_to_action', 'label', 'image_crop',
                        'primary_tracker_url', 'secondary_tracker_url']
+ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ['errors']
 
 # Example CSV content - must be ignored if mistakenly uploaded
@@ -1103,7 +1099,7 @@ class ContentAdCandidateForm(forms.ModelForm):
 
 class ContentAdForm(ContentAdCandidateForm):
     label = forms.CharField(
-        max_length=25,
+        max_length=100,
         required=False,
         error_messages={
             'max_length': 'Label too long (max %(limit_value)d characters)',
@@ -1212,7 +1208,7 @@ class ContentAdForm(ContentAdCandidateForm):
         except forms.ValidationError:
             pass
 
-        url = 'http://{}'.format(url)
+        url = u'http://{}'.format(url)
         validate_url(url)
 
         return url

@@ -7,7 +7,6 @@ import dash.models
 import dash.constants
 
 from redshiftapi import db
-from utils import converters
 
 from etl import models
 from etl import helpers
@@ -17,7 +16,7 @@ from etl import materialize_helpers
 logger = logging.getLogger(__name__)
 
 
-class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersSource(materialize_helpers.TableWithoutDateMixin, materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts source id and slug into redshift. Its than used to construct the mv_master view.
     """
@@ -35,11 +34,8 @@ class MVHelpersSource(materialize_helpers.TempTableMixin, materialize_helpers.Ma
                 source.bidder_slug,
             )
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_source.sql'
 
-
-class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersCampaignFactors(materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
     """
@@ -58,11 +54,8 @@ class MVHelpersCampaignFactors(materialize_helpers.TempTableMixin, materialize_h
                     factors[1],
                 )
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_campaign_factors.sql'
 
-
-class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersAdGroupStructure(materialize_helpers.TableWithoutDateMixin, materialize_helpers.MaterializeViaCSV):
     """
     Helper view that puts ad group structure (campaign id, account id, agency id) into redshift. Its than
     used to construct the mv_master view.
@@ -82,11 +75,8 @@ class MVHelpersAdGroupStructure(materialize_helpers.TempTableMixin, materialize_
                 ad_group.id,
             )
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_adgroup_structure.sql'
 
-
-class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_helpers.Materialize):
+class MVHelpersNormalizedStats(materialize_helpers.Materialize):
     """
     Writes a temporary table that has data from stats transformed into the correct format for mv_master construction.
     It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost
@@ -105,9 +95,6 @@ class MVHelpersNormalizedStats(materialize_helpers.TempTableMixin, materialize_h
 
         return sql, params
 
-    def create_table_template_name(self):
-        return 'etl_create_table_mvh_clean_stats.sql'
-
 
 class MasterView(materialize_helpers.MaterializeViaCSVDaily):
     """
@@ -124,7 +111,7 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
     def insert_data(self, cursor, date_from, date_to, campaign_factors, **kwargs):
         self._prefetch()
 
-        self._execute_insert_stats_into_mv_master(cursor)
+        self._execute_insert_stats_into_mv_master(cursor, date_from, date_to)
 
         breakdown_keys_with_traffic = self._get_breakdowns_with_traffic_results(cursor, date_from, date_to)
 
@@ -284,15 +271,18 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
             )
 
     @classmethod
-    def _execute_insert_stats_into_mv_master(cls, c):
-        sql, params = cls._prepare_insert_stats_query()
+    def _execute_insert_stats_into_mv_master(cls, c, date_from, date_to):
+        sql, params = cls._prepare_insert_stats_query(date_from, date_to)
         c.execute(sql, params)
 
     @classmethod
-    def _prepare_insert_stats_query(cls):
-        # NOTE: mvh_clean_stats includes only data from the selected date range
-        # so no constraints are necessary
-        return backtosql.generate_sql('etl_insert_mv_master_stats.sql', {}), {}
+    def _prepare_insert_stats_query(cls, date_from, date_to):
+        sql = backtosql.generate_sql('etl_insert_mv_master_stats.sql', {})
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
 
     @classmethod
     def _get_breakdowns_with_traffic_results(cls, c, date_from, date_to):
@@ -410,7 +400,7 @@ class MVCampaign(materialize_helpers.Materialize):
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
             'destination_table': self.table_name(),
-            'source_table': 'mv_campaign_delivery',
+            'source_table': 'mv_ad_group',
         })
 
         return sql, {
@@ -428,6 +418,92 @@ class MVCampaignDelivery(materialize_helpers.Materialize):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_ad_group_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAdGroup(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_ad_group'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_content_ad',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVAdGroupDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_ad_group_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
+                'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_content_ad_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVContentAd(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_content_ad'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
+            ]),
+            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'destination_table': self.table_name(),
+            'source_table': 'mv_content_ad_delivery',
+        })
+
+        return sql, {
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
+
+class MVContentAdDelivery(materialize_helpers.Materialize):
+
+    def table_name(self):
+        return 'mv_content_ad_delivery'
+
+    def prepare_insert_query(self, date_from, date_to, **kwargs):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster.get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),

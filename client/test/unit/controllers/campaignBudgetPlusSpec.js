@@ -49,7 +49,7 @@ describe('CampaignBudgetCtrl', function () {
         });
     });
 
-    describe('addBudgetItem', function (done) {
+    describe('addBudgetItem', function () {
         it('sets selected budget item to null', function () {
             $scope.addBudgetItem();
             expect($scope.selectedBudgetId).toBe(null);
@@ -58,11 +58,11 @@ describe('CampaignBudgetCtrl', function () {
         it('opens a modal', function () {
             $scope.addBudgetItem().result.catch(function (error) {
                 expect(error).toBeUndefined();
-            }).finally(done);
+            });
         });
     });
 
-    describe('editBudgetItem', function (done) {
+    describe('editBudgetItem', function () {
         it('sets selected budget item correctly', function () {
             $scope.editBudgetItem(10);
             expect($scope.selectedBudgetId).toBe(10);
@@ -71,7 +71,7 @@ describe('CampaignBudgetCtrl', function () {
         it('opens a modal', function () {
             $scope.editBudgetItem(10).result.catch(function (error) {
                 expect(error).toBeUndefined();
-            }).finally(done);
+            });
         });
     });
 

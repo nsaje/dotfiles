@@ -52,7 +52,7 @@ oneApp.factory('zemGridExportOptions', [function () {
         }
 
         if (breakdown === constants.breakdown.MEDIA_SOURCE) {
-            baseUrl += '/sources/';
+            baseUrl += 'sources/';
         }
 
         return baseUrl;

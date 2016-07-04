@@ -19,6 +19,18 @@ class BudgetProjections(object):
     BREAKDOWN_PREFIX = {
         'account': 'campaign__'
     }
+    FUTURE_METRICS = {
+        'account': (
+            'flat_fee',
+            'total_fee',
+            'allocated_total_budget',
+            'allocated_media_budget',
+        ),
+        'campaign': (
+            'allocated_total_budget',
+            'allocated_media_budget',
+        ),
+    }
 
     @newrelic.agent.function_trace()
     def __init__(self, start_date, end_date, breakdown, projection_date=None, accounts=[], **constraints):
@@ -96,7 +108,10 @@ class BudgetProjections(object):
     def _calculate_totals(self):
         if self.past_days <= 0:
             self.totals = self._blank_projections()
+            for field in BudgetProjections.FUTURE_METRICS[self.breakdown]:
+                self.totals[field] = sum(row[field] for row in self.projections.values())
             return
+
         self.totals = collections.defaultdict(Decimal)
         for row in self.projections.values():
             for key, value in row.iteritems():
@@ -112,7 +127,9 @@ class BudgetProjections(object):
         for key, budgets in self.calculation_groups.iteritems():
             if self.past_days <= 0:
                 row = self._blank_projections()
+                self._calculate_allocated_budgets(row, budgets)
                 self._calculate_recognized_fees(row, budgets, key)
+                self.projections[key] = row
                 continue
             statements_on_date, row = {}, {}
             for budget in budgets:
@@ -126,11 +143,11 @@ class BudgetProjections(object):
 
             self._calculate_allocated_budgets(row, budgets)
             self._calculate_pacing(row, budgets)
+            self._calculate_recognized_fees(row, budgets, key)
             self._calculate_media_spend_projection(row, budgets, statements_on_date,
                                                    num_of_positive_statements)
             self._calculate_license_fee_projection(row, budgets, statements_on_date,
                                                    num_of_positive_statements)
-            self._calculate_recognized_fees(row, budgets, key)
             self._calculate_total_license_fee_projection(row, budgets)
 
             self.projections[key] = row

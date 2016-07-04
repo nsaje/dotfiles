@@ -1,3 +1,5 @@
+{% autoescape off %}
+
 INSERT INTO mv_master (
   SELECT
       a.date as date,
@@ -41,4 +43,8 @@ INSERT INTO mv_master (
       join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id
     )
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
+  WHERE
+    a.date BETWEEN %(date_from)s AND %(date_to)s
 );
+
+{% endautoescape %}

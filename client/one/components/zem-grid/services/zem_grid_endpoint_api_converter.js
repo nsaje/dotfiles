@@ -15,15 +15,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zem
             breakdownId: breakdown.breakdown_id,
             level: config.level,
             pagination: breakdown.pagination,
-            totals: convertStatsFromApi(breakdown.totals, metaData),
         };
-        convertedBreakdown.rows = breakdown.rows.map(function (row) {
-            return {
-                stats: convertStatsFromApi(row, metaData),
-                breakdownId: row.breakdown_id,
-                archived: row.archived,
-            };
-        });
 
         if (breakdown.campaign_goals) {
             convertedBreakdown.campaignGoals = breakdown.campaign_goals;
@@ -34,6 +26,15 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zem
         if (breakdown.enabling_autopilot_sources_allowed) {
             convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
         }
+
+        convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
+        convertedBreakdown.rows = breakdown.rows.map(function (row) {
+            return {
+                stats: convertStatsFromApi(row, metaData),
+                breakdownId: row.breakdown_id,
+                archived: row.archived,
+            };
+        });
 
         return convertedBreakdown;
     }
@@ -59,13 +60,11 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zem
             convertedStats[column.field] = convertField(row[column.field], column.type);
         });
         convertedStats = setEditableFields(convertedStats, row.editable_fields);
+        convertedStats = setGoalStatuses(convertedStats, row.styles);
         return convertedStats;
     }
 
     function convertField (value, type) {
-        if (!value || !type) {
-            return null;
-        }
         switch (type) {
         // TODO: convertExternalLinkField
         // TODO: convertThumbnailField
@@ -84,6 +83,18 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zem
             if (stats[field]) {
                 stats[field].isEditable = editableFields[field].enabled;
                 stats[field].editMessage = editableFields[field].message;
+            }
+        });
+        return stats;
+    }
+
+    function setGoalStatuses (stats, goalStatuses) {
+        if (!goalStatuses) {
+            return stats;
+        }
+        Object.keys(goalStatuses).forEach(function (field) {
+            if (stats[field] !== undefined) {
+                stats[field].goalStatus = goalStatuses[field];
             }
         });
         return stats;

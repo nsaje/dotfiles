@@ -16,7 +16,7 @@ from django.template.defaultfilters import truncatechars
 from django.contrib.admin.utils import flatten_fieldsets
 from django.contrib.admin import SimpleListFilter
 
-from import_export import resources
+from import_export import resources, fields
 from import_export.admin import ExportMixin
 
 from zemauth.models import User as ZemUser
@@ -305,6 +305,7 @@ class AgencyAccountInline(admin.TabularInline):
 
 
 class AgencyFormAdmin(forms.ModelForm):
+
     class Meta:
         model = models.Agency
         fields = '__all__'
@@ -314,28 +315,53 @@ class AgencyFormAdmin(forms.ModelForm):
         self.fields['sales_representative'].queryset =\
             ZemUser.objects.all().exclude(
                 first_name=''
-            ).exclude(
+        ).exclude(
                 last_name=''
-            ).order_by(
+        ).order_by(
                 'first_name',
                 'last_name',
-            )
-        self.fields['sales_representative'].label_from_instance = lambda obj: "%s <%s>" % (obj.get_full_name(), obj.email or '')
+        )
+        self.fields['sales_representative'].label_from_instance = lambda obj: "{} <{}>".format(
+            obj.get_full_name(), obj.email or ''
+        )
 
 
-class AgencyAdmin(admin.ModelAdmin):
+class AgencyResource(resources.ModelResource):
+    agency_managers = fields.Field(column_name='agency_managers')
+    accounts = fields.Field(column_name='accounts')
+
+    class Meta:
+        model = models.Agency
+        fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative']
+        export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative']
+
+    def dehydrate_accounts(self, obj):
+        return u', '.join([
+            unicode(account) for account in obj.account_set.all()
+        ])
+
+    def dehydrate_agency_managers(self, obj):
+        names = []
+        for user in obj.users.all():
+            names.append(user.get_full_name())
+        return ', '.join(names)
+
+
+class AgencyAdmin(ExportMixin, admin.ModelAdmin):
     search_fields = ['name']
     form = AgencyFormAdmin
     list_display = (
         'name',
         'id',
         '_users',
+        '_accounts',
         'created_dt',
         'modified_dt',
     )
     exclude = ('users',)
     readonly_fields = ('id', 'created_dt', 'modified_dt', 'modified_by')
     inlines = (AgencyAccountInline, AgencyUserInline)
+    resource_class = AgencyResource
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
@@ -347,6 +373,12 @@ class AgencyAdmin(admin.ModelAdmin):
             names.append(user.get_full_name())
         return ', '.join(names)
     _users.short_description = 'Agency Managers'
+
+    def _accounts(self, obj):
+        return u', '.join([
+            unicode(account) for account in obj.account_set.all()
+        ])
+    _users.short_description = 'Accounts'
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Account:

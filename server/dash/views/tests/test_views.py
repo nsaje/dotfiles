@@ -291,6 +291,19 @@ class AdGroupSourceSettingsTest(TestCase):
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     @patch('utils.k1_helper.update_ad_group')
+    def test_cpc_bigger_than_max(self, mock_k1_ping):
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.cpc_cc = decimal.Decimal('1.0')
+        new_settings.save(None)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '2.0'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('utils.k1_helper.update_ad_group')
     def test_set_state_landing_mode(self, mock_k1_ping):
         self._set_campaign_landing_mode()
         response = self.client.put(
@@ -1860,6 +1873,32 @@ class AdGroupSourcesTest(TestCase):
                            in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
+
+    def test_put_overwrite_cpc(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        new_settings = ad_group.get_current_settings().copy_settings()
+        new_settings.cpc_cc = decimal.Decimal('0.01')
+        new_settings.save(None)
+        
+        response = self.client.put(
+            reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+            data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+        source = models.Source.objects.get(pk=9)
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertIn(source, ad_group_sources)
+        self.assertIn(source, waiting_sources)
+
+        ags = [ags for ags in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+               if ags.source == source][0]
+        self.assertEqual(
+            ags.get_current_settings().cpc_cc,
+            decimal.Decimal('0.01')
+        )
 
     @override_settings(K1_CONSISTENCY_SYNC=True)
     def test_put_add_content_ad_sources(self):

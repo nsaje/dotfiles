@@ -1007,6 +1007,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         var dataSource = zemDataSourceService.createInstance(endpoint);
         dataSource.setDateRange($scope.dateRange, false);
+        dataSource.setOrder($scope.order, false);
 
         $scope.grid = {
             api: undefined,

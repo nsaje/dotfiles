@@ -17,9 +17,11 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
 
         this.getData = function (config) {
             var url = createUrl(baseUrl, config);
-            var params = zemGridEndpointApiConverter.convertConfigToApi(config);
-            var deferred = $q.defer();
-            $http.post(url, {params: params}).success(function (data) {
+            var deferred = createAbortableDefer();
+            var data = zemGridEndpointApiConverter.convertConfigToApi(config);
+            var httpConfig = {timeout: deferred.abortPromise};
+
+            $http.post(url, {params: data}, httpConfig).success(function (data) {
                 var breakdowns = data.data;
                 breakdowns = breakdowns.map(function (breakdown) {
                     breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
@@ -62,18 +64,34 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         }
 
         function checkPaginationCount (config, breakdown) {
-            // In case that pagination.count is not provided,
+            // In case that pagination.count is not provided or is less then 0,
             // we can check if returned data size is less then
             // requested one -- in that case set the count to
             // the current size od data
             var pagination = breakdown.pagination;
-            if (pagination.count < 0) {
+            if (pagination.count == undefined || pagination.count === null || pagination.count < 0) {
                 if (config.limit > pagination.limit) {
                     pagination.count = pagination.offset + pagination.limit;
                 }
             }
             pagination.complete = (pagination.offset + pagination.limit) === pagination.count;
         }
+    }
+
+    function createAbortableDefer () {
+        var deferred = $q.defer();
+        var deferredAbort = $q.defer();
+        deferred.promise.abort = function () {
+            deferredAbort.resolve();
+        };
+        deferred.promise.finally(
+            function () {
+                deferred.promise.abort = angular.noop;
+            }
+        );
+
+        deferred.abortPromise = deferredAbort.promise;
+        return deferred;
     }
 
     function getUrl (level, id) {

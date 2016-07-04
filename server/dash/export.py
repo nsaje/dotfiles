@@ -9,6 +9,7 @@ from dash import models
 from dash import stats_helper
 from dash import constants
 from dash import bcm_helpers
+from dash import campaign_goals
 from dash.views import helpers
 from reports.projections import BudgetProjections
 
@@ -41,6 +42,7 @@ FIELDNAMES = {
     'end_date': 'End Date',
     'image_url': 'Image URL',
     'image_hash': 'Image Hash',
+    'label': 'Label',
     'impressions': 'Impressions',
     'pageviews': 'Pageviews',
     'percent_new_users': 'Percent New Users',
@@ -159,6 +161,10 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                        include_projections=include_projections, include_flat_fees=include_flat_fees,
                        statuses=statuses, settings=settings, account_settings=account_settings)
 
+    campaign = _get_campaign(constraints)
+    if user.has_perm('zemauth.campaign_goal_optimization') and campaign:
+        stats = campaign_goals.create_goals(campaign, stats)
+
     sorted_ret = list(sort_results(stats, [ordering]))
 
     is_breakdown_by_day = 'date' in dimensions
@@ -174,6 +180,12 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     return sorted_ret
 
+def _get_campaign(constraints):
+    if 'ad_group' in constraints:
+        return constraints['ad_group'].campaign
+    if 'campaign' in constraints:
+        return constraints['campaign']
+    return None
 
 def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_date, include_settings=False,
                         include_account_settings=False, include_budgets=False, include_flat_fees=False,
@@ -390,6 +402,7 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
     stat['image_hash'] = content_ad.image_hash
+    stat['label'] = content_ad.label
     stat['uploaded'] = content_ad.created_dt.date()
     stat['status'] = content_ad.state
     stat['archived'] = content_ad.archived
@@ -896,7 +909,7 @@ class AccountExport(object):
             required_fields.extend(['campaign', 'ad_group'])
             dimensions.extend(['campaign', 'ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'image_hash', 'url'])
+            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
         required_fields.extend(['status'])
@@ -949,7 +962,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'url'])
+            required_fields.extend(['ad_group', 'title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:
@@ -991,7 +1004,7 @@ class AdGroupAdsExport(object):
         if breakdown == 'ad_group':
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url', 'image_hash', 'url'])
+            required_fields.extend(['title', 'image_url', 'image_hash', 'label', 'url'])
             dimensions.extend(['content_ad'])
         required_fields.extend(['status'])
         if include_model_ids:

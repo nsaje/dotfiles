@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridCellBaseField', ['zemGridDataFormatter', function (zemGridDataFormatter) {
+oneApp.directive('zemGridCellBaseField', ['zemGridDataFormatter', 'zemGridUIService', function (zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -22,6 +22,11 @@ oneApp.directive('zemGridCellBaseField', ['zemGridDataFormatter', function (zemG
             function update () {
                 var value = ctrl.data ? ctrl.data.value : undefined;
                 ctrl.parsedValue = zemGridDataFormatter.formatValue(value, ctrl.column.data);
+
+                ctrl.goalStatusClass = '';
+                if (ctrl.data) {
+                    ctrl.goalStatusClass = zemGridUIService.getFieldGoalStatusClass(ctrl.data.goalStatus);
+                }
             }
         },
         controller: [function () {}],

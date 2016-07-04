@@ -22,33 +22,22 @@ S3_FILE_URI = 's3://{bucket_name}/{key}'
 CSV_DELIMITER = '\t'
 
 
-class TempTableMixin(object):
+class TableWithoutDateMixin(object):
     """
-    Mixin that instead of deleting rows from materualized view drops the table and
-    recreates it.
+    Mixin that instead of deleting rows from materualized view truncates the table.
     """
 
     def clear_data(self, cursor, date_from, date_to):
-        logger.info('Drop table "%s"', self.table_name())
-        sql, params = self.prepare_drop_query()
+        logger.info('Truncate table "%s"', self.table_name())
+        sql, params = self.prepare_truncate_query()
         cursor.execute(sql, params)
 
-        logger.info('Create table "%s"', self.table_name())
-        sql, params = self.prepare_create_table_query()
-        cursor.execute(sql, params)
-
-    def prepare_drop_query(self):
-        sql = backtosql.generate_sql('etl_drop_table.sql', {
+    def prepare_truncate_query(self):
+        sql = backtosql.generate_sql('etl_truncate_table.sql', {
             'table': self.table_name(),
         })
 
         return sql, {}
-
-    def prepare_create_table_query(self):
-        return backtosql.generate_sql(self.create_table_template_name(), None), {}
-
-    def create_table_template_name(self):
-        raise NotImplementedError()
 
 
 class Materialize(object):

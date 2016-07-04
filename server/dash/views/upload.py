@@ -164,15 +164,10 @@ class UploadStatus(api_common.BaseApiView):
 class UploadSave(api_common.BaseApiView):
 
     def _create_redirect_ids(self, content_ads):
+        redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
         for content_ad in content_ads:
-            redirect = redirector_helper.insert_redirect(
-                content_ad.url,
-                content_ad.pk,
-                content_ad.ad_group_id,
-            )
-
-            content_ad.url = redirect["redirect"]["url"]
-            content_ad.redirect_id = redirect["redirectid"]
+            content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
+            content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
             content_ad.save()
 
     def post(self, request, ad_group_id, batch_id):
@@ -246,6 +241,26 @@ class UploadCancel(api_common.BaseApiView):
             })
 
         return self.create_api_response({})
+
+
+class CandidatesDownload(api_common.BaseApiView):
+
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
+            raise Http404('Forbidden')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Upload batch does not exist')
+
+        batch_name = batch.name
+        if 'batch_name' in request.GET:
+            batch_name = request.GET['batch_name']
+
+        content = upload_plus.get_candidates_csv(batch)
+        return self.create_csv_response(batch_name, content=content)
 
 
 class UploadErrorReport(api_common.BaseApiView):

@@ -1,20 +1,58 @@
 import backtosql
 
 from stats import constants as sc
-from stats import helpers
 
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 MATERIALIZED_VIEWS = [
-    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE},
-     'mv_account'),
-    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE} | set(sc.DeliveryDimension._ALL),
-     'mv_account_delivery'),
-    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN},
-     'mv_campaign'),
-    ({sc.StructureDimension.ACCOUNT, sc.StructureDimension.SOURCE, sc.StructureDimension.CAMPAIGN} |
-     set(sc.DeliveryDimension._ALL),
-     'mv_campaign_delivery'),
+    ({
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.SOURCE
+    }, 'mv_account'),
+    ({
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.SOURCE
+    } | set(sc.DeliveryDimension._ALL),
+        'mv_account_delivery'),
+    ({
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.CAMPAIGN
+    }, 'mv_campaign'),
+    ({
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.CAMPAIGN
+    } | set(sc.DeliveryDimension._ALL),
+        'mv_campaign_delivery'),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP
+    }, 'mv_ad_group'),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP
+    } | set(sc.DeliveryDimension._ALL),
+        'mv_ad_group_delivery'),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP,
+        sc.StructureDimension.CONTENT_AD
+    }, 'mv_content_ad'),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP,
+        sc.StructureDimension.CONTENT_AD
+    } | set(sc.DeliveryDimension._ALL),
+        'mv_content_ad_delivery'),
 ]
 
 

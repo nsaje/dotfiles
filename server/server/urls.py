@@ -159,6 +159,10 @@ urlpatterns += [
         login_required(dash.views.upload.UploadStatus.as_view()), name='upload_plus_status'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/download/',
+        login_required(dash.views.upload.CandidatesDownload.as_view()), name='upload_plus_candidates_download'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/save/',
         login_required(dash.views.upload.UploadSave.as_view()), name='upload_plus_save'
     ),
@@ -366,6 +370,11 @@ urlpatterns += [
     url(
         r'^api/sources/',
         login_required(dash.views.views.AvailableSources.as_view()),
+    ),
+    url(
+        r'^api/agencies/',
+        login_required(dash.views.agency.Agencies.as_view()),
+        name='agencies',
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',

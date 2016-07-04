@@ -20,7 +20,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'A partner account.',
             order: true,
             orderField: 'name',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         campaign: {
             name: 'Campaign',
@@ -32,7 +32,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Name of the campaign.',
             order: true,
-            initialOrder: 'asc',
+            orderField: 'name',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         adgroup: {
             name: 'Ad Group',
@@ -44,7 +45,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Name of the ad group.',
             order: true,
-            initialOrder: 'asc',
+            orderField: 'name',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         mediaSource: {
             name: 'Media Source',
@@ -55,7 +57,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'A media source where your content is being promoted.',
             order: true,
-            initialOrder: 'asc',
+            orderField: 'name',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             hasPermission: 'zemauth.can_filter_sources_through_table',
             shown: true,
         },
@@ -69,7 +72,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Agency to which this account belongs.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_account_agency_information',
             shown: 'zemauth.can_view_account_agency_information',
         },
@@ -81,7 +84,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Account manager responsible for the campaign and the communication with the client.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_managers_in_accounts_table',
             shown: 'zemauth.can_see_managers_in_accounts_table',
         },
@@ -93,7 +96,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Sales representative responsible for the campaign and the communication with the client.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_managers_in_accounts_table',
             shown: 'zemauth.can_see_managers_in_accounts_table',
         },
@@ -105,7 +108,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Campaign manager responsible for the campaign and the communication with the client.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_managers_in_campaigns_table',
             shown: 'zemauth.can_see_managers_in_campaigns_table',
         },
@@ -117,7 +120,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Type of account.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_account_type',
             shown: 'zemauth.can_see_account_type',
         },
@@ -130,7 +133,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Goal performance indicator',
             order: true,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: 'zemauth.campaign_goal_performance',
             shown: 'zemauth.campaign_goal_performance',
         },
@@ -142,7 +145,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             type: zemGridConstants.gridColumnTypes.STATE_SELECTOR,
             order: true,
             editable: true,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             checked: true,
             totalRow: false,
             unselectable: true,
@@ -156,7 +159,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'status_setting',
             type: zemGridConstants.gridColumnTypes.STATE_SELECTOR,
             order: true,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             internal: false,
             shown: true,
             checked: true,
@@ -180,7 +183,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             'are paused too; otherwise the account is enabled.',
             order: true,
             orderField: 'status',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         statusCampaign: {
             name: 'Status',
@@ -192,7 +195,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Status of a campaign (enabled or paused). A campaign is paused only if all its ad groups ' +
             'are paused too; otherwise, the campaign is enabled.',
             order: true,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         statusAdGroup: {
             name: 'Status',
@@ -204,7 +207,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
             order: true,
-            initialOrder: 'asc',
+            orderField: 'state',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         statusContentAd: {
             name: 'Status',
@@ -227,7 +231,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Status of a particular media source (enabled or paused).',
             order: true,
             orderField: 'status',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         statusMediaSourceAdGroup: {
             name: 'Status',
@@ -240,7 +244,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Status of a particular media source (enabled or paused).',
             order: true,
             orderField: 'status',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         statusPublisher: {
             name: 'Status',
@@ -251,7 +255,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Blacklisted status of a publisher.',
             totalRow: false,
             order: false,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
             shown: 'zemauth.can_see_publisher_blacklist_status',
         },
 
@@ -266,7 +270,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Minimum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         maxBidCpc: {
             name: 'Max Bid',
@@ -278,7 +282,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         dailyBudget: {
             name: 'Daily Budget',
@@ -289,7 +293,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         supplyDashUrl: {
             name: 'Link',
@@ -298,7 +302,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             type: 'link',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.supply_dash_link_view',
             shown: 'zemauth.supply_dash_link_view',
         },
@@ -315,7 +319,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             order: true,
             settingsField: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         currentBidCpc: {
             name: 'Current Bid CPC',
@@ -328,7 +332,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             order: true,
             help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         dailyBudgetSetting: {
             name: 'Daily Budget',
@@ -341,7 +345,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             settingsField: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         currentDailyBudget: {
             name: 'Current Daily Budget',
@@ -354,7 +358,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             help: 'Maximum budget per day.',
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 
         // Content Ad
@@ -368,7 +372,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'title',
             order: true,
             orderField: 'image_hash',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         notification: {
             name: '',
@@ -389,7 +393,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'title',
             order: true,
             orderField: 'title',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         urlLink: {
             name: 'URL',
@@ -402,7 +406,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'url',
             order: true,
             orderField: 'url',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         uploadTime: {
             name: 'Uploaded',
@@ -413,7 +417,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'The time when the content ad was uploaded.',
             totalRow: false,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         batchName: {
             name: 'Batch Name',
@@ -426,7 +430,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'batch_name',
             order: true,
             orderField: 'batch_name',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         displayUrl: {
             name: 'Display URL',
@@ -439,7 +443,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'display_url',
             order: true,
             orderField: 'display_url',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         brandName: {
             name: 'Brand Name',
@@ -452,7 +456,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'brand_name',
             order: true,
             orderField: 'brand_name',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         description: {
             name: 'Description',
@@ -465,7 +469,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'description',
             order: true,
             orderField: 'description',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         callToAction: {
             name: 'Call to action',
@@ -478,7 +482,20 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             titleField: 'call_to_action',
             order: true,
             orderField: 'call_to_action',
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
+        },
+        label: {
+            name: 'Label',
+            field: 'label',
+            checked: false,
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            shown: true,
+            help: 'Content ad\'s label.',
+            totalRow: false,
+            titleField: 'label',
+            order: true,
+            orderField: 'label',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
 
         // Publisher
@@ -492,7 +509,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'A publisher where your content is being promoted.',
             order: true,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         domainLink: {
             name: 'Link',
@@ -504,7 +521,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'Link to a publisher where your content is being promoted.',
             order: false,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
         exchange: {
             name: 'Media Source',
@@ -516,7 +533,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: false,
             help: 'An exchange where your content is being promoted.',
             order: true,
-            initialOrder: 'asc',
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
 
         // Costs
@@ -528,7 +545,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'Amount spent per media source, including overspend.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_actual_costs',
             shown: 'zemauth.can_view_actual_costs',
         },
@@ -540,7 +557,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'Amount spent per media source.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
@@ -552,7 +569,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'Additional targeting/segmenting costs, including overspend.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_actual_costs',
             shown: 'zemauth.can_view_actual_costs',
         },
@@ -564,7 +581,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'Additional targeting/segmenting costs.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
@@ -576,7 +593,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'Zemanta One platform usage cost.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
@@ -588,7 +605,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
             shown: 'zemauth.can_view_flat_fees',
         },
@@ -600,7 +617,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
             shown: 'zemauth.can_view_flat_fees',
         },
@@ -612,7 +629,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'Sum of media spend, data cost and license fee.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
@@ -626,7 +643,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'The average CPC.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 
         // Yesterday cost metrics
@@ -639,7 +656,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             internal: 'zemauth.can_view_actual_costs',
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             shown: 'zemauth.can_view_actual_costs',
         },
         eYesterdayCost: {
@@ -650,7 +667,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Amount that you have spent yesterday for promotion on specific ad group.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
@@ -665,7 +682,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         impressions: {
             name: 'Impressions',
@@ -676,7 +693,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'The number of times content ads have been displayed.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         ctr: {
             name: 'CTR',
@@ -688,7 +705,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 
         // Projection metrics
@@ -700,7 +717,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
             shown: 'zemauth.can_see_projections',
         },
@@ -712,7 +729,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
             shown: 'zemauth.can_see_projections',
         },
@@ -724,7 +741,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
             shown: 'zemauth.can_see_projections',
         },
@@ -736,7 +753,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
             shown: 'zemauth.can_see_projections',
         },
@@ -748,7 +765,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             help: '',
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
             shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees'],
         },
@@ -764,7 +781,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Total time spend on site.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         unbouncedVisits: {
             name: 'Unbounced Visitors',
@@ -776,7 +793,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Percent of visitors that navigate to more than one page on the site.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         totalPageviews: {
             name: 'Total Pageviews',
@@ -788,7 +805,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Total pageviews.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         avgCostPerSecond: {
             name: 'Avg. Cost per Minute',
@@ -800,7 +817,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average cost per minute spent on site.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         avgCostPerPageview: {
             name: 'Avg. Cost per Pageview',
@@ -812,7 +829,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average cost per pageview.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         avgCostPerVisit: {
             name: 'Avg. Cost per Visit',
@@ -824,7 +841,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average cost per visit.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         avgCostPerNonBouncedVisitor: {
             name: 'Avg. Cost for Unbounced Visitor',
@@ -836,7 +853,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average cost per non-bounced visitors.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         avgCostForNewVisitor: {
             name: 'Avg. Cost for New Visitor',
@@ -848,7 +865,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average cost for new visitor.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 
         // Postclick Engagement Metrics
@@ -862,7 +879,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'An estimate of first time visits during the selected date range.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         bounceRate: {
             name: 'Bounce Rate',
@@ -874,7 +891,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Percentage of visits that resulted in only one page view.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         pvPerVisit: {
             name: 'Pageviews per Visit',
@@ -887,7 +904,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average number of pageviews per visit.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         avgTos: {
             name: 'Time on Site',
@@ -899,7 +916,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average time spent on site in seconds during the selected date range.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 
         // Postclick acquisition metrics
@@ -914,7 +931,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             'is actively engaged with your site.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         clickDiscrepancy: {
             name: 'Click Discrepancy',
@@ -926,7 +943,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Clicks detected only by media source as a percentage of total clicks.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         pageviews: {
             name: 'Pageviews',
@@ -939,7 +956,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             'a single page. Repeated views are counted.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
     };
 
@@ -954,7 +971,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             internal: false,
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         };
     }
 
@@ -969,7 +986,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Average cost per acquisition.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc',
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         };
     }
 
@@ -1059,8 +1076,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     );
 
     var CAMPAIGN_AD_GROUPS = [
-        COLUMNS.adgroup,
         COLUMNS.stateAdGroup,
+        COLUMNS.adgroup,
         COLUMNS.performance,
         COLUMNS.statusAdGroup,
         COLUMNS.yesterdayCost,
@@ -1087,6 +1104,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.brandName,
         COLUMNS.description,
         COLUMNS.callToAction,
+        COLUMNS.label,
     ].concat(
         BASE_METRICS,
         POSTCLICK_ACQUISITION_METRICS,
@@ -1102,6 +1120,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.minBidCpc,
         COLUMNS.maxBidCpc,
         COLUMNS.dailyBudget,
+        COLUMNS.yesterdayCost,
+        COLUMNS.eYesterdayCost,
     ].concat(
         BASE_METRICS,
         POSTCLICK_ACQUISITION_METRICS,
@@ -1181,6 +1201,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
                 COLUMNS.brandName,
                 COLUMNS.description,
                 COLUMNS.callToAction,
+                COLUMNS.label,
             ],
         },
         {

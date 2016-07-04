@@ -711,6 +711,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
         var dataSource = zemDataSourceService.createInstance(endpoint);
         dataSource.setDateRange($scope.dateRange, false);
+        dataSource.setOrder($scope.order, false);
 
         var options = {
             enableSelection: true,

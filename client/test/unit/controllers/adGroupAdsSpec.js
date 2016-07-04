@@ -111,7 +111,7 @@ describe('AdGroupAdsCtrl', function () {
         });
     }
 
-    describe('addContentAds', function (done) {
+    describe('addContentAds', function () {
         beforeEach(function () {
             initializeController();
         });
@@ -119,8 +119,7 @@ describe('AdGroupAdsCtrl', function () {
             $scope.addContentAds().result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
-                })
-                .finally(done);
+                });
         });
     });
 

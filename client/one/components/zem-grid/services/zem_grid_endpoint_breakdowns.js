@@ -21,7 +21,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         country: {name: 'Country', query: 'country'},
         state: {name: 'State', query: 'state'},
         dma: {name: 'DMA', query: 'dma'},
-        device: {name: 'Device', query: 'device'},
+        device: {name: 'Device', query: 'device_type'},
 
         day: {name: 'By day', query: 'day'},
         week: {name: 'By week', query: 'week'},
@@ -63,21 +63,33 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         })[0];
     }
 
-    function getStructureBreakdowns (baseLevelBreakdown) {
-        // Find structure breakdowns for requested level (only available on entity breakdowns)
+    function getEntityLevelBreakdown (level) {
+        switch(level) {
+        case constants.level.ALL_ACCOUNTS: return BREAKDOWNS.account;
+        case constants.level.ACCOUNTS: return BREAKDOWNS.campaign;
+        case constants.level.CAMPAIGNS: return BREAKDOWNS.adGroup;
+        case constants.level.AD_GROUPS: return BREAKDOWNS.contentAd;
+        }
+    }
+
+    function getStructureBreakdowns (level, breakdown) {
+        var entityBreakdown = getEntityLevelBreakdown(level);
+        var childEntityBreakdown = ENTITY_BREAKDOWNS[ENTITY_BREAKDOWNS.indexOf(entityBreakdown) + 1];
         var structureBreakdowns = [];
-        var entityBreakdownIdx = ENTITY_BREAKDOWNS.indexOf(baseLevelBreakdown);
-        if (entityBreakdownIdx >= 0) {
-            // Direct child entity breakdown is also added to structure breakdowns if defined
-            if (entityBreakdownIdx + 1 < ENTITY_BREAKDOWNS.length) {
-                structureBreakdowns.push(ENTITY_BREAKDOWNS[entityBreakdownIdx + 1]);
-            }
-            // Source and Publisher breakdowns are always available
-            structureBreakdowns.push(BREAKDOWNS.source);
-            structureBreakdowns.push(BREAKDOWNS.publisher);
+
+        switch (breakdown) {
+        case constants.breakdown.MEDIA_SOURCE:
+            structureBreakdowns = [entityBreakdown, childEntityBreakdown]; break;
+        case constants.breakdown.PUBLISHER:
+            break;
+        default:
+            structureBreakdowns = [childEntityBreakdown, BREAKDOWNS.source];
         }
 
-        return structureBreakdowns;
+        // childEntityBreakdown can be undefined - filter it out on return
+        return structureBreakdowns.filter(function (structureBreakdown) {
+            return structureBreakdown !== undefined;
+        });
     }
 
     function createBreakdownGroups (level, breakdown) {
@@ -91,7 +103,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         });
 
         // Structure breakdown group; based on level and breakdown (i.g. dedicated tab)
-        var structureBreakdowns = getStructureBreakdowns(baseLevelBreakdown);
+        var structureBreakdowns = getStructureBreakdowns(level, breakdown);
         if (structureBreakdowns.length > 0) {
             breakdownGroups.push ({
                 name: STRUCTURE_GROUP_NAME,

@@ -36,23 +36,7 @@ def insert_candidates(content_ads_data, ad_group, batch_name, filename):
     return batch, candidates
 
 
-@transaction.atomic
-def invoke_external_validation(candidate, batch):
-    skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
-    lambda_helper.invoke_lambda(
-        settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
-        {
-            'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
-            'candidateID': candidate.pk,
-            'pageUrl': candidate.url,
-            'adGroupID': candidate.ad_group.pk,
-            'batchID': candidate.batch.pk,
-            'imageUrl': candidate.image_url,
-            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
-            'skipUrlValidation': skip_url_validation,
-        },
-        async=True,
-    )
+def _reset_candidate_async_status(candidate):
     candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     candidate.image_id = None
@@ -60,6 +44,29 @@ def invoke_external_validation(candidate, batch):
     candidate.image_width = None
     candidate.image_height = None
     candidate.save()
+
+
+@transaction.atomic
+def invoke_external_validation(candidate, batch):
+    _reset_candidate_async_status(candidate)
+    form = forms.ContentAdForm(candidate.to_dict())
+    form.is_valid()  # cleaned urls have to be used since validation can change them
+
+    skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
+    lambda_helper.invoke_lambda(
+        settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
+        {
+            'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
+            'candidateID': candidate.pk,
+            'pageUrl': form.cleaned_data.get('url', ''),
+            'adGroupID': candidate.ad_group.pk,
+            'batchID': candidate.batch.pk,
+            'imageUrl': form.cleaned_data.get('image_url', ''),
+            'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
+            'skipUrlValidation': skip_url_validation,
+        },
+        async=True,
+    )
 
 
 def has_skip_validation_magic_word(filename):
@@ -92,6 +99,11 @@ def get_candidates_with_errors(candidates):
             candidate_dict['errors'] = errors[candidate.id]
         result.append(candidate_dict)
     return result
+
+
+def get_candidates_csv(batch):
+    candidates = batch.contentadcandidate_set.all()
+    return _get_candidates_csv(candidates)
 
 
 def _prepare_candidates(batch):
@@ -133,37 +145,53 @@ def _persist_content_ads(batch, new_content_ads):
 
 def _update_batch_status(batch, errors):
     if errors:
-        batch.error_report_key = _save_error_report(batch.id, batch.original_filename, errors)
+        content = _get_error_csv(errors)
+        batch.error_report_key = _upload_error_report_to_s3(batch.id, content, batch.original_filename)
 
     batch.status = constants.UploadBatchStatus.DONE
     batch.num_errors = len(errors)
     batch.save()
 
 
-def _save_error_report(batch_id, filename, errors):
+def _get_csv(fields, rows):
     string = StringIO.StringIO()
+    writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({_transform_field(k): v for k, v in row.items() if k in fields})
+    return string.getvalue()
 
-    fields = [field for field in forms.MANDATORY_CSV_FIELDS]
-    fields += [field for field in forms.OPTIONAL_CSV_FIELDS]
+
+def _get_candidates_csv(candidates):
+    fields = list(forms.ALL_CSV_FIELDS)
+    fields.remove('tracker_urls')
     fields.remove('crop_areas')  # a hack to ease transition
 
-    fields.append('errors')
-    writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
+    rows = []
+    for candidate in sorted(candidates, key=lambda x: x.id):
+        rows.append({k: v for k, v in candidate.to_dict().items() if k in fields})
+    return _get_csv(fields, rows)
 
-    writer.writeheader()
+
+def _get_error_csv(errors):
+    fields = list(forms.ALL_CSV_FIELDS)
+    fields.remove('primary_tracker_url')
+    fields.remove('secondary_tracker_url')
+    fields.remove('crop_areas')  # a hack to ease transition
+    fields.append('errors')
+
+    rows = []
     errors_sorted = sorted(errors, key=lambda x: x['candidate'].id)
     for error_dict in errors_sorted:
-        row = {_transform_field(k): v for k, v in error_dict['candidate'].to_dict().items() if k in fields}
-        row['Errors'] = error_dict['errors']
-        writer.writerow(row)
-
-    content = string.getvalue()
-    return _upload_error_report_to_s3(batch_id, content, filename)
+        row = error_dict['candidate'].to_dict()
+        row['errors'] = error_dict['errors']
+        rows.append(row)
+    return _get_csv(fields, rows)
 
 
 def _transform_field(field):
     field = _get_mapped_field(field)
-    return field.replace('_', ' ').title()
+    return field.replace('_', ' ').capitalize()
 
 
 def _get_mapped_field(field):
@@ -244,8 +272,13 @@ def process_callback(callback_data):
         logger.exception('No candidate with id %s', callback_data['id'])
         return
 
-    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != candidate.image_url or\
-       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != candidate.url:
+    form = forms.ContentAdForm(candidate.to_dict())
+    form.is_valid()  # cleaned urls have to be used since validation can change them
+    url = form.cleaned_data.get('url', '')
+    image_url = form.cleaned_data.get('image_url', '')
+
+    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != image_url or\
+       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != url:
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED

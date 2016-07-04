@@ -440,6 +440,7 @@ class AdGroupOverview(api_common.BaseApiView):
             'Campaign pacing:',
             lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
             description='{:.2f}% on plan'.format(pacing),
+            tooltip='Campaign pacing for the current month'
         ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
@@ -714,6 +715,7 @@ class CampaignOverview(api_common.BaseApiView):
             'Campaign pacing:',
             lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
             description='{:.2f}% on plan'.format(pacing),
+            tooltip='Campaign pacing for the current month'
         ).performance(is_delivering).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
@@ -998,7 +1000,10 @@ class AdGroupSources(api_common.BaseApiView):
             ad_group=ad_group)
 
         helpers.set_ad_group_source_settings(
-            None, ad_group_source, mobile_only=ad_group.get_current_settings().is_mobile_only())
+            None, ad_group_source,
+            mobile_only=ad_group_settings.is_mobile_only(),
+            max_cpc=ad_group_settings.cpc_cc
+        )
 
         if settings.K1_CONSISTENCY_SYNC:
             api.add_content_ad_sources(ad_group_source)

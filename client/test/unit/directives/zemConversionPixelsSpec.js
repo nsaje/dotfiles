@@ -45,23 +45,21 @@ describe('zemConversionPixels', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('addConversionPixel', function (done) {
+    describe('addConversionPixel', function () {
         it('opens a modal window', function () {
             isolate.addConversionPixel().result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
-                })
-                .finally(done);
+                });
         });
     });
 
-    describe('copyConversionPixelTag', function (done) {
+    describe('copyConversionPixelTag', function () {
         it('opens a modal window', function () {
             isolate.copyConversionPixelTag({id: 1, slug: 'slug', status: 1, lastVerifiedDt: null, archived: false, url: ''}).result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
-                })
-                .finally(done);
+                });
         });
     });
 

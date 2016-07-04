@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from mock import patch
 from django.test import TestCase, override_settings
 
@@ -21,7 +22,7 @@ valid_candidate = {
 }
 
 invalid_candidate = {
-    'label': 'test' * 10,
+    'label': 'repeat' * 21,
     'url': 'ftp://zemanta.com/test-content-ad',
     'image_url': 'file://zemanta.com/test-image.jpg',
     'image_crop': 'landscape',
@@ -148,9 +149,9 @@ class PersistCandidatesTestCase(TestCase):
         self.assertTrue(s3_key.startswith('contentads/errors/3/test_upload'))
         self.assertTrue(s3_key.endswith('.csv'))
         self.assertEqual(
-            'Url,Title,Image Url,Impression Trackers,Display Url,Brand Name,Description,Call To Action,Label,'
-            'Image Crop,Primary Tracker Url,Secondary Tracker Url,Errors\r\nhttp://zemanta.com/blog,Zemanta blog,'
-            'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,entropy,,,'
+            'Url,Title,Image url,Impression trackers,Display url,Brand name,Description,Call to action,Label,'
+            'Image crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog čšž,'
+            'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,entropy,'
             '"Content unreachable, Image could not be processed"\r\n', content)
 
         batch.refresh_from_db()
@@ -262,7 +263,7 @@ class ValidateCandidatesTestCase(TestCase):
         self.assertEquals({
             candidates[0].id: {
                 '__all__': ['Content ad still processing'],
-                'label': [u'Label too long (max 25 characters)'],
+                'label': [u'Label too long (max 100 characters)'],
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'image_url': [u'Invalid image URL'],
@@ -300,7 +301,7 @@ class ValidateCandidatesTestCase(TestCase):
                 'url': [u'Invalid URL'],
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'brand_name': [u'Missing brand name'],
-                'label': [u'Label too long (max 25 characters)'],
+                'label': [u'Label too long (max 100 characters)'],
                 'call_to_action': [u'Missing call to action'],
                 'image_url': [u'Invalid image URL'],
                 'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
@@ -309,7 +310,7 @@ class ValidateCandidatesTestCase(TestCase):
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
             'brand_name': '',
             'image_width': None,
-            'label': 'testtesttesttesttesttesttesttesttesttest',
+            'label': 'repeat'  * 21,
             'image_id': None,
             'image_height': None,
             'image_url': 'file://zemanta.com/test-image.jpg',
@@ -461,6 +462,19 @@ class UpdateCandidateTest(TestCase):
 
         upload_plus.update_candidate(new_candidate, [], self.candidate.batch)
         self.assertTrue(mock_invoke.called)
+
+
+class GetCandidatesCsvTestCase(TestCase):
+
+    fixtures = ['test_upload_plus.yaml']
+
+    def test_candidates_csv(self):
+        batch = models.UploadBatch.objects.get(id=1)
+        content = upload_plus.get_candidates_csv(batch)
+        self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
+                         'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
+                         'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
+                         'content ad 1,entropy,,\r\n', content)
 
 
 @patch('utils.lambda_helper.invoke_lambda')

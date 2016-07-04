@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 import boto.exception
@@ -264,7 +265,6 @@ class UploadCsvTestCase(TestCase):
                         'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
                         'image_url': ['Invalid image URL'],
                         'url': ['Invalid URL'],
-                        'label': ['Label too long (max 25 characters)'],
                     }
                 },
             }
@@ -416,7 +416,6 @@ class UploadMultipleTestCase(TestCase):
             'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
             'image_url': ['Invalid image URL'],
             'url': ['Invalid URL'],
-            'label': ['Label too long (max 25 characters)'],
             'description': ['Missing description'],
         }
 
@@ -531,16 +530,22 @@ class UploadSaveTestCase(TestCase):
 
     fixtures = ['test_upload_plus.yaml']
 
+    @staticmethod
+    def _mock_insert_redirects_batch(content_ads):
+        return {
+            str(content_ad.id): {
+                'redirect': {
+                    'url': 'http://example.com',
+                },
+                'redirectid': 'abc123',
+            } for content_ad in content_ads
+        }
+
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_ok(self, mock_insert_redirect, mock_s3_put):
-        mock_insert_redirect.return_value = {
-            'redirect': {
-                'url': 'http://example.com',
-            },
-            'redirectid': 'abc123',
-        }
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_ok(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
         batch_id = 2
         ad_group_id = 3
 
@@ -569,14 +574,10 @@ class UploadSaveTestCase(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_change_batch_name(self, mock_insert_redirect, mock_s3_put):
-        mock_insert_redirect.return_value = {
-            'redirect': {
-                'url': 'http://example.com',
-            },
-            'redirectid': 'abc123',
-        }
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_change_batch_name(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+
         batch_id = 2
         ad_group_id = 3
 
@@ -631,7 +632,10 @@ class UploadSaveTestCase(TestCase):
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_errors(self, mock_s3_put):
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_errors(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+
         batch_id = 3
         ad_group_id = 4
 
@@ -660,9 +664,9 @@ class UploadSaveTestCase(TestCase):
         )
 
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    @patch('utils.redirector_helper.insert_redirect')
-    def test_redirector_error(self, mock_insert_redirect, mock_s3_put):
-        mock_insert_redirect.side_effect = Exception()
+    @patch('utils.redirector_helper.insert_redirects_batch')
+    def test_redirector_error(self, mock_insert_batch, mock_s3_put):
+        mock_insert_batch.side_effect = Exception()
 
         batch_id = 2
         ad_group_id = 3
@@ -747,6 +751,81 @@ class UploadSaveTestCase(TestCase):
         )
         self.assertEqual(404, response.status_code)
         self.assertTemplateUsed(response, '404.html')
+
+
+class CandidatesDownloadTestCase(TestCase):
+
+    fixtures = ['test_upload_plus.yaml']
+
+    def test_valid(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client().get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
+                         'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
+                         'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
+                         'content ad 1,entropy,,\r\n', response.content)
+        self.assertEqual('attachment; filename="batch 1.csv"', response.get('Content-Disposition'))
+
+    def test_custom_batch_name(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        response = _get_client().get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            {'batch_name': 'Another batch'},
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('attachment; filename="Another batch.csv"', response.get('Content-Disposition'))
+
+    def test_wrong_batch_id(self):
+        batch_id = 1
+        ad_group_id = 1
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client().get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertEqual({
+            'success': False,
+            'data': {
+                'error_code': 'MissingDataError',
+                'message': 'Upload batch does not exist',
+            }
+        }, json.loads(response.content))
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+    def test_permission(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client(superuser=False).get(
+            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
 class UploadCancelTestCase(TestCase):
@@ -955,6 +1034,7 @@ class CandidateTest(TestCase):
         )
         self.assertEqual(200, response.status_code)
 
+        self.maxDiff = None
         response = json.loads(response.content)
         expected = {
             'data': {
@@ -977,7 +1057,7 @@ class CandidateTest(TestCase):
                     'label': 'content ad 1',
                     'primary_tracker_url': None,
                     'secondary_tracker_url': None,
-                    'title': 'Zemanta blog 1',
+                    'title': u'Zemanta blog čšž 1',
                     'tracker_urls': '',
                     'url': 'http://zemanta.com/blog1',
                     'url_status': 2
