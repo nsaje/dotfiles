@@ -613,6 +613,7 @@ var constants = {
         CONNECTED: 'Connected',
         PENDING: 'Pending',
         EMPTY: 'Empty',
+        ERROR: 'Error',
     },
     imageCrop: {
         CENTER: 'center',
