@@ -3614,13 +3614,15 @@ class ExportReport(models.Model):
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
-    filtered_sources = models.ManyToManyField(Source, blank=True)
+    filtered_sources = models.ManyToManyField(Source, blank=True, null=True)
+    filtered_agencies = models.ManyToManyField(Agency, blank=True, null=True)
+    filtered_account_types = jsonfield.JSONField(blank=True, default=[])
 
     def __unicode__(self):
         return u' '.join(filter(None, (
             constants.ScheduledReportLevel.get_text(self.level),
             '(',
-            (self.account.name if self.account else ''),
+            (self.account.name if self.arepccount else ''),
             (self.campaign.name if self.campaign else ''),
             (self.ad_group.name if self.ad_group else ''),
             ') - by',
