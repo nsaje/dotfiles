@@ -423,11 +423,10 @@ class AccountsDailyStats(BaseDailyStatsView):
         selected_kwargs = None
         group_key = None
         group_names = None
-
         accounts = models.Account.objects.all()\
             .filter_by_user(request.user)\
             .filter_by_agencies(view_filter.filtered_agencies)\
-            .filter_by_account_type(view_filter.filtered_account_type)
+            .filter_by_account_types(view_filter.filtered_account_types)
 
         if totals:
             totals_kwargs = {'account': accounts, 'source': view_filter.filtered_sources}
