@@ -70,20 +70,32 @@ class ViewFilter(object):
     '''Convenience class for extracting filters from requests'''
 
     def __init__(self, request=None, user=None, data=None):
-        self.filtered_sources = get_filtered_sources(
-            request.user, request.GET.get('filtered_sources'))
+        # table breakdowns specific code
+        if data:
+            self._init_breakdowns(request, user, data)
+        else:
+            self._init_old(request)
+
+    def _init_old(self, request):
+        self.filtered_sources = None
+        if request.user is not None:
+            self.filtered_sources = get_filtered_sources(
+                request.user, request.GET.get('filtered_sources'))
         self.filtered_agencies = get_filtered_agencies(
             request.GET.get('filtered_agencies'))
         self.filtered_account_types = get_filtered_account_types(
             request.GET.get('filtered_account_types'))
 
-        if data:
+    def _init_breakdowns(self, request, user, data):
+        self.filtered_sources = None
+        if user is not None:
             self.filtered_sources = get_filtered_sources(
                 user, request.GET.get('filtered_sources'))
-            self.filtered_agencies = get_filtered_agencies(
-                data.get('filtered_agencies'))
-            self.filtered_account_types = get_filtered_account_types(
-                data.get('filtered_account_types'))
+        self.filtered_agencies = get_filtered_agencies(
+            data.get('filtered_agencies'))
+        self.filtered_account_types = get_filtered_account_types(
+            data.get('filtered_account_types'))
+
 
 
 def get_filtered_sources(user, sources_filter):

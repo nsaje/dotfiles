@@ -19,6 +19,7 @@ from dash import models
 from dash import constants
 from dash import table
 from dash import conversions_helper
+from dash.views import helpers
 from actionlog.models import ActionLog
 import actionlog.constants
 
@@ -2034,8 +2035,8 @@ class AccountsAccountsTableTest(TestCase):
         size = 100
         show_archived = True
 
-        filtered_sources = None
-        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertNotIn('agency', response['rows'][0])
 
         # self.assertEqual('N/A', ['agency'])
