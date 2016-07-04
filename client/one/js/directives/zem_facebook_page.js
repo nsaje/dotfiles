@@ -26,12 +26,6 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
                 }
             });
 
-            // $scope.$watch('facebookStatus', function (newValue, oldValue) {
-            //     if (newValue !== oldValue) {
-            //         $scope.checkFacebookAccountStatus();
-            //     }
-            // });
-
             $scope.$watch('facebook.page', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
                     $scope.facebookPage = $scope.facebook.page;
