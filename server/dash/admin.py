@@ -1590,7 +1590,6 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         ('created_dt', admin.DateFieldListFilter),
         'action_type',
         'level',
-        'type',
         'system_user',
     )
 
