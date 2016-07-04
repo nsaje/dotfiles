@@ -425,16 +425,17 @@ def count_weekly_logged_in_users(filtered_agencies, filtered_account_types):
 
 
 def get_weekly_active_users(filtered_agencies, filtered_account_types):
+    actions = dash.models.UserActionLog.objects.filter(
+        created_dt__gte=_one_week_ago(),
+        created_dt__lte=_until_today(),
+    ).exclude(
+        created_by__email__contains='@zemanta'
+    ).exclude(
+        created_by__is_test_user=True
+    ).select_related('created_by').distinct('created_by')
+
     users = zemauth.models.User.objects.all().filter(
-        pk__in=[action.created_by.id for action in dash.models.UserActionLog.objects.filter(
-                created_dt__gte=_one_week_ago(),
-                created_dt__lte=_until_today(),
-            ).exclude(
-                created_by__email__contains='@zemanta'
-            ).exclude(
-                created_by__is_test_user=True
-            ).select_related('created_by').distinct('created_by')
-        ]
+        pk__in=[action.created_by.id for action in actions]
     ).filter_by_agencies(filtered_agencies)
     return _filter_user_by_account_type(
         users,
