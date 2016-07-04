@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='audience',
             name='pixel',
-            field=models.OneToOneField(default=1, on_delete=django.db.models.deletion.PROTECT, to='dash.ConversionPixel'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.PROTECT, to='dash.ConversionPixel'),
             preserve_default=False,
         ),
     ]
