@@ -417,17 +417,20 @@ class AccountsDailyStats(BaseDailyStatsView):
         selected_ids = request.GET.getlist('selected_ids')
         totals = request.GET.get('totals')
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        view_filter = helpers.ViewFilter(request=request)
 
         totals_kwargs = None
         selected_kwargs = None
         group_key = None
         group_names = None
 
-        accounts = models.Account.objects.all().filter_by_user(request.user)
+        accounts = models.Account.objects.all()\
+            .filter_by_user(request.user)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_type(view_filter.filtered_account_type)
 
         if totals:
-            totals_kwargs = {'account': accounts, 'source': filtered_sources}
+            totals_kwargs = {'account': accounts, 'source': view_filter.filtered_sources}
 
         if selected_ids:
             ids = map(int, selected_ids)
