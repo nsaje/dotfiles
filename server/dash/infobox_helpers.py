@@ -190,10 +190,31 @@ def get_yesterday_campaign_spend(user, campaign):
     ).get('media', Decimal(0))
 
 
-def get_yesterday_all_accounts_spend():
+def _filter_daily_statements(statements, filtered_agencies, filtered_account_types):
+    if filtered_agencies:
+        statements = statements.filter(
+            campaign__account__agency__in=filtered_agencies
+        )
+    if filtered_account_types:
+        account_ids = dash.models.AccountSettings.objects.all()\
+            .filter(campaign__budget__budgetdailystatement__in=statements)\
+            .group_current_settings()\
+            .values_list('account__id', flat=True)
+        statements = daily_statements.filter(
+            budget__campaign__account__id__in=account_ids)
+    return statements
+
+
+
+def get_yesterday_all_accounts_spend(filtered_agencies, filtered_account_types):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
         date=yesterday
+    )
+    daily_statements = _filter_daily_statements(
+        daily_statements,
+        filtered_agencies,
+        filtered_account_types
     )
     return reports.budget_helpers.calculate_spend_data(
         daily_statements,
@@ -201,8 +222,13 @@ def get_yesterday_all_accounts_spend():
     ).get('media', Decimal(0))
 
 
-def get_mtd_all_accounts_spend():
+def get_mtd_all_accounts_spend(filtered_agencies, filtered_account_types):
     daily_statements = reports.models.BudgetDailyStatement.objects.all()
+    daily_statements = _filter_daily_statements(
+        daily_statements,
+        filtered_agencies,
+        filtered_account_types
+    )
     return reports.budget_helpers.calculate_mtd_spend_data(
         daily_statements,
         date=_until_today(),
