@@ -806,6 +806,7 @@ class ExportTestCase(test.TestCase):
         report_contents = export._get_report_contents(
             User.objects.get(pk=1),
             [],
+            None,
             datetime.date(2014, 6, 3),
             datetime.date(2014, 6, 10),
             'name',
@@ -834,6 +835,7 @@ class ExportTestCase(test.TestCase):
         report_contents = export._get_report_contents(
             User.objects.get(pk=1),
             [],
+            None,
             datetime.date(2014, 6, 3),
             datetime.date(2014, 6, 10),
             'cost',
