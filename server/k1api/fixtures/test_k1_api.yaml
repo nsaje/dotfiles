@@ -790,3 +790,65 @@
         status: 2
     model: dash.facebookaccount
     pk: 1
+
+# test Audience
+
+-   fields:
+        account_id: 1
+        ad_group_settings: [1, 2]
+        pixie_slug: 'dummy_pixie'
+        ttl: 90
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.audience
+    pk: 1
+
+-   fields:
+        account_id: 1
+        ad_group_settings: [1]
+        pixie_slug: 'dummy_pixie2'
+        ttl: 60
+        created_dt: '2015-02-24T00:00:00'
+        modified_dt: '2015-02-24T00:00:00'
+    model: dash.audience
+    pk: 2
+
+-   fields:
+        account_id: 2
+        ad_group_settings: [3]
+        pixie_slug: 'dummy_pixie3'
+        ttl: 645
+        created_dt: '2015-02-25T00:00:00'
+        modified_dt: '2015-02-25T00:00:00'
+    model: dash.audience
+    pk: 3
+
+# test Rules
+
+-   fields:
+        audience: 1
+        type: 1
+        value: 'dummy'
+    model: dash.rule
+    pk: 1
+
+-   fields:
+        audience: 1
+        type: 2
+        value: 'dummy2'
+    model: dash.rule
+    pk: 2
+
+-   fields:
+        audience: 2
+        type: 1
+        value: 'dummy3'
+    model: dash.rule
+    pk: 3
+
+-   fields:
+        audience: 2
+        type: 2
+        value: 'dummy4'
+    model: dash.rule
+    pk: 4
