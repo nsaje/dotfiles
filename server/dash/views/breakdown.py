@@ -417,7 +417,6 @@ class AccountBreakdown(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
 
-        from pudb import set_trace; set_trace()
         account = helpers.get_account(request.user, account_id)
 
         request_body = json.loads(request.body).get('params')
