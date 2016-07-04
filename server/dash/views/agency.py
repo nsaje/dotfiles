@@ -1311,3 +1311,55 @@ class History(api_common.BaseApiView):
                 'changes_text': history_entry.changes_text,
             })
         return history
+
+
+class Agencies(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_filter_by_agency'):
+            raise exc.AuthorizationError()
+
+        agencies = list(
+            models.Agency.objects.all().filter_by_user(
+                request.user
+            ).values('id', 'name')
+        )
+        return self.create_api_response({
+            'agencies': [{
+                'id': str(agency['id']),
+                'name': agency['name'],
+            } for agency in agencies]
+        })
+
+
+class FacebookAccountStatus(api_common.BaseApiView):
+
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        credentials = facebook_helper.get_credentials()
+        try:
+            pages = facebook_helper.get_all_pages(credentials['business_id'], credentials['access_token'])
+            if pages is None:
+                raise exc.BaseError('Error while accessing facebook page api.')
+            page_status = pages.get(account.facebookaccount.page_id)
+            account_status = self._get_account_status(page_status)
+        except models.FacebookAccount.DoesNotExist:
+            account_status = models.constants.FacebookPageRequestType.EMPTY
+        except exc.BaseError:
+            account_status = models.constants.FacebookPageRequestType.ERROR
+
+        account_status_as_string = models.constants.FacebookPageRequestType.get_text(account_status)
+        return self.create_api_response({
+            'status': account_status_as_string
+        })
+
+    @staticmethod
+    def _get_account_status(page_status):
+        if page_status is None:
+            return models.constants.FacebookPageRequestType.EMPTY
+        elif page_status == 'CONFIRMED':
+            return models.constants.FacebookPageRequestType.CONNECTED
+        elif page_status == 'PENDING':
+            return models.constants.FacebookPageRequestType.PENDING
+        else:
+            return models.constants.FacebookPageRequestType.INVALID

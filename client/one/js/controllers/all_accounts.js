@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/* globals oneApp,constants */
 
 oneApp.controller('AllAccountsCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.level = constants.level.ALL_ACCOUNTS;

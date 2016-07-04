@@ -28,8 +28,8 @@ FROM (
     GROUP BY 1, 2, 3
 ) a
 WHERE
-    -- limit number of rows per group
-    {% if offset %} r >= {{ offset }} AND {% endif %}
+    -- limit number of rows per group (row_number() is 1-based)
+    {% if offset %} r >= {{ offset }} + 1 AND {% endif %}
     r <= {{ limit }}
 GROUP BY 1, 2, 3
 {% endautoescape %}

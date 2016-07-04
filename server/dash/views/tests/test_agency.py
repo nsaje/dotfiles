@@ -3206,6 +3206,58 @@ class HistoryTest(TestCase):
         self.assertEqual("Account manager changed to 'Janez Novak'", history['changes_text'])
 
 
+class AgenciesTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.assertFalse(self.user.is_superuser)
+
+    def get_agencies(self):
+        self.client.login(username=self.user.username, password='secret')
+        reversed_url = reverse('agencies', kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return response.json()
+
+    def test_permission(self):
+        response = self.get_agencies()
+        self.assertFalse(response['success'])
+
+        add_permissions(self.user, ['can_filter_by_agency'])
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+
+    def test_get(self):
+        agency = models.Agency(
+            name='test'
+        )
+        agency.save(fake_request(self.user))
+
+        add_permissions(self.user, ['can_filter_by_agency'])
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'agencies': []
+        }, response['data'])
+
+        agency.users.add(self.user)
+        agency.save(fake_request(self.user))
+
+        response = self.get_agencies()
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'agencies': [
+                {
+                    'id': str(agency.id),
+                    'name': 'test',
+                }
+            ]
+        }, response['data'])
+
+
 class TestHistoryMixin(TestCase):
 
     class FakeMeta(object):
@@ -3314,3 +3366,28 @@ class TestHistoryMixin(TestCase):
             ({}, 'Settings: 5.'),
             mix.construct_changes('Created settings.', 'Settings: 5.', {})
         )
+
+
+class AdFacebookAccountStatusTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_facebook.yaml']
+
+    @patch('dash.facebook_helper.get_all_pages')
+    def test_get(self, get_all_pages_mock):
+        get_all_pages_mock.return_value = {'123': 'CONFIRMED'}
+        client = self._get_client_with_permissions([])
+        response = client.get(
+            reverse('facebook_account_status', kwargs={'account_id': 100}),
+            follow=True
+        )
+        content = json.loads(response.content)
+        self.assertDictEqual(content['data'], {u'status': u'Connected'})
+        get_all_pages_mock.assert_called_with('fake_business_id', 'fake_access_token')
+
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=2)
+        add_permissions(user, permissions_list)
+        user.save()
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client

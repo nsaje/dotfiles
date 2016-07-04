@@ -2262,12 +2262,16 @@ ul.icon-list li {
 
                     margin-bottom: 0;
 
+                    .agency-filter select2-input{
+                        margin-top: 7px;
+                    }
+
                     .select2-container {
                         vertical-align: top;
                         margin-top: 5px;
                         margin-right: 5px;
 
-                        &.add-source-filter .select2-choice {
+                        &.add-filter .select2-choice {
                             background-color: @add-filter-color;
                             border-color: @add-filter-color;
                             height: 28px;
@@ -2295,7 +2299,7 @@ ul.icon-list li {
                         }
                     }
 
-                    .filtered-source {
+                    .filtered {
                         &:first-child {
                             margin-left: 5px;
                         }
@@ -3691,18 +3695,23 @@ zem-editable-currency-field {
                     height: 55px;
                 }
             }
+
             tr:first-child td {
                 border-top: none;
             }
+
             tr:last-child td {
                 border-bottom: 1px solid #ddd;
             }
+
             tr:hover td {
                 background: #F5F5F5;
             }
+
             td.status {
                 width: 20px;
             }
+
             td.image { 
                 width: 40px;
                 
@@ -3711,9 +3720,16 @@ zem-editable-currency-field {
                     height: auto;
                 }
             }
+
             td.title {
 
             }
+
+            td.link {
+                max-width: 560px;
+                word-wrap: break-word;
+            }
+
             td.errors div {
                 color: @red;
                 position: relative;
@@ -3731,6 +3747,7 @@ zem-editable-currency-field {
                     display: block;
                 }
             }
+
             td.action {
                 text-align: right;
                 white-space: nowrap;
@@ -4976,4 +4993,3 @@ select.media-source-select {
         }
     }
 }
-

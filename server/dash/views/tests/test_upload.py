@@ -265,7 +265,6 @@ class UploadCsvTestCase(TestCase):
                         'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
                         'image_url': ['Invalid image URL'],
                         'url': ['Invalid URL'],
-                        'label': ['Label too long (max 25 characters)'],
                     }
                 },
             }
@@ -417,7 +416,6 @@ class UploadMultipleTestCase(TestCase):
             'tracker_urls': ['Impression tracker URLs have to be HTTPS'],
             'image_url': ['Invalid image URL'],
             'url': ['Invalid URL'],
-            'label': ['Label too long (max 25 characters)'],
             'description': ['Missing description'],
         }
 

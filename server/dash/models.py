@@ -344,6 +344,8 @@ class Agency(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
+    objects = QuerySetManager()
+
     def write_history(self, changes_text, changes=None,
                       history_type=constants.HistoryType.CREDIT,
                       user=None, system_user=None,
@@ -364,6 +366,16 @@ class Agency(models.Model):
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)
+
+
+    class QuerySet(models.QuerySet):
+
+        def filter_by_user(self, user):
+            return self.filter(
+                models.Q(users__id=user.id) |
+                models.Q(sales_representative__id=user.id) |
+                models.Q(account__groups__user__id=user.id)
+            ).distinct()
 
     def __str__(self):
         return self.name
@@ -2489,7 +2501,7 @@ class ContentAd(models.Model):
         'redirect_id': lambda: 'u1jvpq0wthxc',
     }
 
-    label = models.CharField(max_length=25, default='')
+    label = models.CharField(max_length=100, default='')
     url = models.CharField(max_length=2048, editable=False)
     title = models.CharField(max_length=256, editable=False)
     display_url = models.CharField(max_length=25, blank=True, default='')

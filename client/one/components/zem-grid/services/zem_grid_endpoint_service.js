@@ -64,12 +64,12 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         }
 
         function checkPaginationCount (config, breakdown) {
-            // In case that pagination.count is not provided,
+            // In case that pagination.count is not provided or is less then 0,
             // we can check if returned data size is less then
             // requested one -- in that case set the count to
             // the current size od data
             var pagination = breakdown.pagination;
-            if (pagination.count < 0) {
+            if (pagination.count == undefined || pagination.count === null || pagination.count < 0) {
                 if (config.limit > pagination.limit) {
                     pagination.count = pagination.offset + pagination.limit;
                 }

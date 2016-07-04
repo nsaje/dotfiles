@@ -22,7 +22,7 @@ valid_candidate = {
 }
 
 invalid_candidate = {
-    'label': 'test' * 10,
+    'label': 'repeat' * 21,
     'url': 'ftp://zemanta.com/test-content-ad',
     'image_url': 'file://zemanta.com/test-image.jpg',
     'image_crop': 'landscape',
@@ -263,7 +263,7 @@ class ValidateCandidatesTestCase(TestCase):
         self.assertEquals({
             candidates[0].id: {
                 '__all__': ['Content ad still processing'],
-                'label': [u'Label too long (max 25 characters)'],
+                'label': [u'Label too long (max 100 characters)'],
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'image_url': [u'Invalid image URL'],
@@ -301,7 +301,7 @@ class ValidateCandidatesTestCase(TestCase):
                 'url': [u'Invalid URL'],
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'brand_name': [u'Missing brand name'],
-                'label': [u'Label too long (max 25 characters)'],
+                'label': [u'Label too long (max 100 characters)'],
                 'call_to_action': [u'Missing call to action'],
                 'image_url': [u'Invalid image URL'],
                 'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
@@ -310,7 +310,7 @@ class ValidateCandidatesTestCase(TestCase):
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
             'brand_name': '',
             'image_width': None,
-            'label': 'testtesttesttesttesttesttesttesttesttest',
+            'label': 'repeat'  * 21,
             'image_id': None,
             'image_height': None,
             'image_url': 'file://zemanta.com/test-image.jpg',

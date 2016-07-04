@@ -372,6 +372,11 @@ urlpatterns += [
         login_required(dash.views.views.AvailableSources.as_view()),
     ),
     url(
+        r'^api/agencies/',
+        login_required(dash.views.agency.Agencies.as_view()),
+        name='agencies',
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
         login_required(dash.views.views.AdGroupRestore.as_view()),
         name='ad_group_restore',
@@ -505,6 +510,11 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/facebook_account_status/',
+        login_required(dash.views.agency.FacebookAccountStatus.as_view()),
+        name='facebook_account_status'
     ),
     url(
         r'^api/demov3/$',
