@@ -677,11 +677,18 @@
 
 
 -   fields:
-        account: 2
+        account: 1
         slug: 'testslug2'
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 2
+
+-   fields:
+        account: 2
+        slug: 'testslug3'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.conversionpixel
+    pk: 3
 
 # test publisherblacklist
 
@@ -794,9 +801,8 @@
 # test Audience
 
 -   fields:
-        account_id: 1
+        pixel_id: 1
         ad_group_settings: [1, 2]
-        pixie_slug: 'dummy_pixie'
         ttl: 90
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
@@ -804,9 +810,8 @@
     pk: 1
 
 -   fields:
-        account_id: 1
+        pixel_id: 2
         ad_group_settings: [1]
-        pixie_slug: 'dummy_pixie2'
         ttl: 60
         created_dt: '2015-02-24T00:00:00'
         modified_dt: '2015-02-24T00:00:00'
@@ -814,9 +819,8 @@
     pk: 2
 
 -   fields:
-        account_id: 2
+        pixel_id: 3
         ad_group_settings: [3]
-        pixie_slug: 'dummy_pixie3'
         ttl: 645
         created_dt: '2015-02-25T00:00:00'
         modified_dt: '2015-02-25T00:00:00'

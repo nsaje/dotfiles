@@ -1661,7 +1661,7 @@ class RuleAdmin(admin.TabularInline):
 
 
 class AudienceAdmin(admin.ModelAdmin):
-    list_display = ('account', 'pixie_slug', 'ttl', 'created_dt', 'modified_dt')
+    list_display = ('pixel', 'ttl', 'created_dt', 'modified_dt')
 
     inlines = [RuleAdmin]
     exclude = ('ad_group_settings',)
