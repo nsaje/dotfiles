@@ -548,10 +548,10 @@ def _get_retargeting(ad_group_settings):
 
     for retargeting_ad_group_id in ad_group_settings.retargeting_ad_groups:
         retargeting.append(
-            {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id)})
+            {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id), 'exclusion': False})
 
     for audience in ad_group_settings.audience_set.all():
-        retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id)})
+        retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
 
     return retargeting
 
