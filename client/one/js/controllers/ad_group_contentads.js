@@ -484,7 +484,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                    'billing_cost', 'license_fee'],
     }, {
         'name': 'Content Sync',
-        'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
+        'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action', 'label'],
     }, {
         'name': 'Traffic Acquisition',
         'fields': ['cpc', 'clicks', 'impressions', 'ctr']
