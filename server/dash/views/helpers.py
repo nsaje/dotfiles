@@ -72,7 +72,7 @@ class ViewFilter(object):
     def __init__(self, request=None, user=None, data=None):
         # table breakdowns specific code
         if data:
-            self._init_breakdowns(request, user, data)
+            self._init_breakdowns(user, data)
         else:
             self._init_old(request)
 
@@ -86,11 +86,10 @@ class ViewFilter(object):
         self.filtered_account_types = get_filtered_account_types(
             request.GET.get('filtered_account_types'))
 
-    def _init_breakdowns(self, request, user, data):
+    def _init_breakdowns(self, user, data):
         self.filtered_sources = None
         if user is not None:
-            self.filtered_sources = get_filtered_sources(
-                user, request.GET.get('filtered_sources'))
+            self.filtered_sources = data.get('filtered_sources')
         self.filtered_agencies = get_filtered_agencies(
             data.get('filtered_agencies'))
         self.filtered_account_types = get_filtered_account_types(

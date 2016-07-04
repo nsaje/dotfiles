@@ -2070,8 +2070,8 @@ class AccountsAccountsTableTest(TestCase):
         size = 100
         show_archived = True
 
-        filtered_sources = None
-        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('AdPro', response['rows'][0]['agency'])
 
     def test_get_account_type(self, mock_api_query, mock_get_cursor):
@@ -2093,6 +2093,6 @@ class AccountsAccountsTableTest(TestCase):
         size = 100
         show_archived = True
 
-        filtered_sources = None
-        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('Sandbox', response['rows'][0]['account_type'])
