@@ -205,7 +205,6 @@ def _filter_daily_statements(statements, filtered_agencies, filtered_account_typ
     return statements
 
 
-
 def get_yesterday_all_accounts_spend(filtered_agencies, filtered_account_types):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
