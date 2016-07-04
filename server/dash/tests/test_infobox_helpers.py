@@ -371,7 +371,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
     def test_get_yesterday_all_accounts_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend())
+        self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         reports.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
@@ -380,10 +380,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             data_spend_nano=10e9,
             license_fee_nano=10e9,
         )
-        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend())
+        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
 
     def test_get_mtd_all_accounts_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend())
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         today = datetime.datetime.utcnow()
         reports.models.BudgetDailyStatement.objects.create(
@@ -393,7 +393,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             data_spend_nano=10e9,
             license_fee_nano=10e9,
         )
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         aproximately_one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=31)
         reports.models.BudgetDailyStatement.objects.create(
@@ -404,7 +404,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             license_fee_nano=10e9,
         )
         # shouldn't change because it's month to date
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
     def test_count_active_accounts(self):
         today = datetime.datetime.utcnow()
