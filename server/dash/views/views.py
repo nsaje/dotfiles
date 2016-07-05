@@ -1676,7 +1676,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                              everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
 
         self._write_history(request, ad_group, state, [
-            {'source': source, 'domain': d}
+            {'source': source, 'domain': d[0]}
             for source, domains in source_domains.iteritems()
             for d in domains
         ], level)

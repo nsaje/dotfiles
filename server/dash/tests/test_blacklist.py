@@ -157,7 +157,7 @@ class BlacklistTestCase(TestCase):
         self.assertEqual(
             publisher_blacklist_action.message,
             u'Blacklist the following publishers on Outbrain for account ZemAccount (#1):'
-            u' www.google.com, www.zemanta.com #123, www.zemanata.com #abc'
+            u' www.google.com, www.zemanata.com #abc, www.zemanta.com #123'
         )
 
     def test_enable_blacklist_ob_over_threshold(self):
@@ -193,7 +193,7 @@ class BlacklistTestCase(TestCase):
         self.assertEqual(
             publisher_blacklist_action.message,
             u'Enable the following publishers on Outbrain for account ZemAccount (#1): '
-            u'www.google.com, www.zemanta.com #123, www.zemanata.com #abc'
+            u'www.google.com, www.zemanata.com #abc, www.zemanta.com #123'
         )
 
     def test_enable_blacklist_ob_drop_under_threshold(self):
@@ -275,6 +275,15 @@ class BlacklistTestCase(TestCase):
                 (None, 'www.donaldjtrump.com'),
             ])
         )
+
+    def test_external_id(self):
+        dash.blacklist.update(self.ad_group, {'source': self.source, 'account': self.account},
+                              BLACKLISTED, self.domains)
+
+        self.assertEqual(set(self.domains), set(
+            (obj.name, obj.external_id) for obj in 
+            dash.models.PublisherBlacklist.objects.filter(source=self.source, account=self.account)
+        ))
 
     def test_campaign_enabling(self):
         dash.models.PublisherBlacklist.objects.create(

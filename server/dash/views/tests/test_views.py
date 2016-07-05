@@ -2664,7 +2664,8 @@ class PublishersBlacklistStatusTest(TestCase):
         )
         self.assertEqual(
             publisher_blacklist_action.message,
-            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1): Test'
+            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1): '
+            u'Test #sfdafkl1230899012asldas'
         )
         self.assertTrue(res['success'])
         self.assertEqual(12, models.PublisherBlacklist.objects.count())
@@ -2687,7 +2688,8 @@ class PublishersBlacklistStatusTest(TestCase):
         )
         self.assertEqual(
             publisher_blacklist_action.message,
-            u'Enable the following publishers on Outbrain for account ZemAccount (#1): Test'
+            u'Enable the following publishers on Outbrain for account ZemAccount (#1): '
+            u'Test #sfdafkl1230899012asldas'
         )
 
 

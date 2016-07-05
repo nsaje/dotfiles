@@ -32,8 +32,8 @@ class BlacklistException(Exception):
 
 def update(ad_group, constraints, status, domains, everywhere=False,
            all_sources=False, request=None):
-    domain_names = list(d[0] for d in domains)
     external_map = dict(domains)
+    domain_names = external_map.keys()
     if everywhere:
         _global_blacklist(constraints, status, domain_names, external_map)
         return
@@ -171,7 +171,7 @@ def _trigger_manual_ob_blacklist_action(request, ad_group, state, domain_names, 
         '{}{}'.format(
             domain, ' #' + external_map[domain] if external_map.get(domain) else ''
         )
-        for domain in domain_names
+        for domain in sorted(domain_names)
     )
 
     action = actionlog.models.ActionLog(
