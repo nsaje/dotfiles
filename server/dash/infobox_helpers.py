@@ -193,7 +193,7 @@ def get_yesterday_campaign_spend(user, campaign):
 def _filter_daily_statements(statements, filtered_agencies, filtered_account_types):
     if filtered_agencies:
         statements = statements.filter(
-            campaign__account__agency__in=filtered_agencies
+            budget__campaign__account__agency__in=filtered_agencies
         )
     if filtered_account_types:
         account_ids = dash.models.AccountSettings.objects.all()\
