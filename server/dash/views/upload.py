@@ -1,8 +1,5 @@
 import json
-import os
-from urlparse import urlparse
 
-import boto.exception
 from django.db import transaction
 from django.http import Http404
 from django.template.defaultfilters import pluralize
@@ -16,23 +13,9 @@ from dash.views import helpers
 
 from utils import api_common
 from utils import exc
-from utils import s3helpers
-from utils import redirector_helper
 
 
-class UploadMultiple(api_common.BaseApiView):
-
-    def _augment_candidates_data(self, ad_group, cleaned_fields):
-        ad_group_settings = ad_group.get_current_settings()
-        for content_ad in cleaned_fields['candidates']:
-            if 'display_url' not in content_ad or not content_ad['display_url']:
-                content_ad['display_url'] = urlparse(content_ad['url']).netloc
-            if 'brand_name' not in content_ad or not content_ad['brand_name']:
-                content_ad['brand_name'] = ad_group_settings.brand_name
-            if 'call_to_action' not in content_ad or not content_ad['call_to_action']:
-                content_ad['call_to_action'] = 'Read more'
-
-        return cleaned_fields['candidates']
+class UploadCsv(api_common.BaseApiView):
 
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_upload_with_picker'):
@@ -47,7 +30,6 @@ class UploadMultiple(api_common.BaseApiView):
         candidates_data = form.cleaned_data['candidates']
         filename = request.FILES['candidates'].name
 
-        self._augment_candidates_data(ad_group, form.cleaned_data)
         with transaction.atomic():
             batch, candidates = upload.insert_candidates(
                 candidates_data,
@@ -94,13 +76,6 @@ class UploadStatus(api_common.BaseApiView):
 
 class UploadSave(api_common.BaseApiView):
 
-    def _create_redirect_ids(self, content_ads):
-        redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
-        for content_ad in content_ads:
-            content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
-            content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
-            content_ad.save()
-
     def post(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
             raise Http404('Forbidden')
@@ -128,7 +103,7 @@ class UploadSave(api_common.BaseApiView):
             except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
                 raise exc.ValidationError(message=e.message)
 
-            self._create_redirect_ids(content_ads)
+            upload.create_redirect_ids(content_ads)
             changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
                 batch.name,
                 len(content_ads),
@@ -186,36 +161,6 @@ class CandidatesDownload(api_common.BaseApiView):
 
         content = upload.get_candidates_csv(batch)
         return self.create_csv_response(batch_name, content=content)
-
-
-class UploadErrorReport(api_common.BaseApiView):
-
-    def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        try:
-            batch = ad_group.uploadbatch_set.get(id=batch_id)
-        except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
-
-        if batch.status != constants.UploadBatchStatus.DONE:
-            raise exc.ValidationError()
-
-        if not batch.error_report_key:
-            raise exc.ValidationError()
-
-        try:
-            content = s3helpers.S3Helper().get(batch.error_report_key)
-        except boto.exception.S3ResponseError:
-            raise exc.MissingDataError('Error report does not exist')
-
-        basefnm, _ = os.path.splitext(
-            os.path.basename(batch.error_report_key))
-
-        name = basefnm.rsplit('_', 1)[0] + '_errors'
-        return self.create_csv_response(name, content=content)
 
 
 class Candidate(api_common.BaseApiView):

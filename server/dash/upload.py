@@ -1,5 +1,6 @@
 import logging
 import StringIO
+from urlparse import urlparse
 
 from django.db import transaction
 from django.conf import settings
@@ -31,6 +32,7 @@ def insert_candidates(candidates_data, ad_group, batch_name, filename):
         ad_group=ad_group,
         original_filename=filename,
     )
+    _augment_candidates_data(ad_group, candidates_data)
     candidates = _create_candidates(candidates_data, ad_group, batch)
     return batch, candidates
 
@@ -92,6 +94,14 @@ def persist_candidates(batch):
         msg='upload.process_async'
     )
     return content_ads
+
+
+def create_redirect_ids(content_ads):
+    redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
+    for content_ad in content_ads:
+        content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
+        content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
+        content_ad.save()
 
 
 def get_candidates_with_errors(candidates):
@@ -231,6 +241,17 @@ def process_callback(callback_data):
         logger.exception('Failed to parse callback data %s', str(callback_data))
 
     candidate.save()
+
+
+def _augment_candidates_data(ad_group, candidates):
+    ad_group_settings = ad_group.get_current_settings()
+    for candidate in candidates:
+        if ('display_url' not in candidate or not candidate['display_url']) and candidate.get('url'):
+            candidate['display_url'] = urlparse(candidate['url']).netloc
+        if 'brand_name' not in candidate or not candidate['brand_name']:
+            candidate['brand_name'] = ad_group_settings.brand_name
+        if 'call_to_action' not in candidate or not candidate['call_to_action']:
+            candidate['call_to_action'] = DEFAULT_CALL_TO_ACTION
 
 
 def _create_candidates(content_ads_data, ad_group, batch):

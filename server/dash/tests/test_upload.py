@@ -92,9 +92,9 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual('', candidate.image_url)
         self.assertEqual('center', candidate.image_crop)
         self.assertEqual('', candidate.display_url)
-        self.assertEqual('', candidate.brand_name)
+        self.assertEqual('Example', candidate.brand_name)
         self.assertEqual('', candidate.description)
-        self.assertEqual('', candidate.call_to_action)
+        self.assertEqual('Read more', candidate.call_to_action)
         self.assertEqual('', candidate.primary_tracker_url)
         self.assertEqual('', candidate.secondary_tracker_url)
 
@@ -196,7 +196,7 @@ class CancelUploadTestCase(TestCase):
             upload.cancel_upload(batch)
 
 
-class ValidateCandidatesTestCase(TestCase):
+class GetCandidatesWithErrorsTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
     def test_valid_candidate(self):
@@ -240,6 +240,7 @@ class ValidateCandidatesTestCase(TestCase):
         ad_group = models.AdGroup.objects.get(id=1)
         batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
 
+        self.maxDiff = None
         result = upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
             'hosted_image_url': None,
@@ -247,7 +248,7 @@ class ValidateCandidatesTestCase(TestCase):
             'primary_tracker_url': 'http://example.com/px1.png',
             'image_hash': None,
             'description': '',
-            'call_to_action': '',
+            'call_to_action': 'Read more',
             'title': '',
             'url': 'ftp://zemanta.com/test-content-ad',
             'errors': {
@@ -257,16 +258,14 @@ class ValidateCandidatesTestCase(TestCase):
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'display_url': [u'Display URL too long (max 25 characters)'],
-                'brand_name': [u'Missing brand name'],
                 'label': [u'Label too long (max 100 characters)'],
-                'call_to_action': [u'Missing call to action'],
                 'image_url': [u'Invalid image URL'],
                 'primary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
                 'secondary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
             },
             'display_url': 'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com'
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
-            'brand_name': '',
+            'brand_name': 'Example',
             'image_width': None,
             'label': 'repeat'  * 21,
             'image_id': None,

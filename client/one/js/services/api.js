@@ -2355,7 +2355,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.upload = function (adGroupId, data) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/multiple/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/csv/';
 
             var formData = new FormData();
             formData.append('candidates', data.file);
