@@ -264,7 +264,6 @@
     brand_name: 'Zemanta'
     description: 'Zemanta blog'
     call_to_action: 'Read more'
-    tracker_urls: ''
     image_id: null
     image_width: null
     image_height: null
@@ -311,7 +310,6 @@
     brand_name: 'Zemanta'
     description: 'Zemanta blog'
     call_to_action: 'Read more'
-    tracker_urls: ''
     image_id: null
     image_width: null
     image_height: null
@@ -358,7 +356,6 @@
     brand_name: 'BranName'
     description: 'Custom description'
     call_to_action: 'Contact us'
-    tracker_urls: ''
     image_id: null
     image_width: null
     image_height: null

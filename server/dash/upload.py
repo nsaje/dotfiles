@@ -8,31 +8,30 @@ import unicodecsv
 from dash import constants
 from dash import forms
 from dash import models
-from utils import s3helpers, lambda_helper, k1_helper
+from utils import lambda_helper, k1_helper, redirector_helper
 
 logger = logging.getLogger(__name__)
 
-S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT = 'contentads/errors/{batch_id}/{filename}'
 VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
-
-MAPPED_ERROR_CSV_FIELD = {
-    'tracker_urls': 'impression_trackers',
-}
+DEFAULT_CALL_TO_ACTION = 'Read more'
 
 
 class InvalidBatchStatus(Exception):
     pass
 
 
+class CandidateErrorsRemaining(Exception):
+    pass
+
+
 @transaction.atomic
-def insert_candidates(content_ads_data, ad_group, batch_name, filename):
+def insert_candidates(candidates_data, ad_group, batch_name, filename):
     batch = models.UploadBatch.objects.create(
         name=batch_name,
         ad_group=ad_group,
-        batch_size=len(content_ads_data),
         original_filename=filename,
     )
-    candidates = _create_candidates(content_ads_data, ad_group, batch)
+    candidates = _create_candidates(candidates_data, ad_group, batch)
     return batch, candidates
 
 
@@ -77,10 +76,16 @@ def persist_candidates(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         raise InvalidBatchStatus('Invalid batch status')
 
+    candidates = models.ContentAdCandidate.objects.filter(batch=batch)
+    cleaned_candidates, errors = _clean_candidates(candidates)
+    if errors:
+        raise CandidateErrorsRemaining('Save not permitted - candidate errors exist')
+
     with transaction.atomic():
-        new_content_ads, errors = _prepare_candidates(batch)
-        content_ads = _persist_content_ads(batch, new_content_ads)
-        _update_batch_status(batch, errors)
+        content_ads = _persist_content_ads(batch, cleaned_candidates)
+        batch.status = constants.UploadBatchStatus.DONE
+        batch.save()
+        candidates.delete()
 
     k1_helper.update_content_ads(
         batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
@@ -90,7 +95,7 @@ def persist_candidates(batch):
 
 
 def get_candidates_with_errors(candidates):
-    errors = validate_candidates(candidates)
+    _, errors = _clean_candidates(candidates)
     result = []
     for candidate in candidates:
         candidate_dict = candidate.to_dict()
@@ -104,28 +109,6 @@ def get_candidates_with_errors(candidates):
 def get_candidates_csv(batch):
     candidates = batch.contentadcandidate_set.all()
     return _get_candidates_csv(candidates)
-
-
-def _prepare_candidates(batch):
-    candidates = models.ContentAdCandidate.objects.filter(
-        batch=batch,
-    )
-
-    new_content_ads = []
-    errors = []
-    for candidate in candidates:
-        f = forms.ContentAdForm(candidate.to_dict())
-        if not f.is_valid():
-            # f.errors is a dict of lists of messages
-            errors.append({
-                'candidate': candidate,
-                'errors': ', '.join([', '.join(inner) for inner in f.errors.values()])
-            })
-            continue
-        new_content_ads.append(f.cleaned_data)
-
-    candidates.delete()
-    return new_content_ads, errors
 
 
 def _persist_content_ads(batch, new_content_ads):
@@ -143,16 +126,6 @@ def _persist_content_ads(batch, new_content_ads):
     return saved_content_ads
 
 
-def _update_batch_status(batch, errors):
-    if errors:
-        content = _get_error_csv(errors)
-        batch.error_report_key = _upload_error_report_to_s3(batch.id, content, batch.original_filename)
-
-    batch.status = constants.UploadBatchStatus.DONE
-    batch.num_errors = len(errors)
-    batch.save()
-
-
 def _get_csv(fields, rows):
     string = StringIO.StringIO()
     writer = unicodecsv.DictWriter(string, [_transform_field(field) for field in fields])
@@ -164,54 +137,14 @@ def _get_csv(fields, rows):
 
 def _get_candidates_csv(candidates):
     fields = list(forms.ALL_CSV_FIELDS)
-    fields.remove('tracker_urls')
-    fields.remove('crop_areas')  # a hack to ease transition
-
     rows = []
     for candidate in sorted(candidates, key=lambda x: x.id):
         rows.append({k: v for k, v in candidate.to_dict().items() if k in fields})
     return _get_csv(fields, rows)
 
 
-def _get_error_csv(errors):
-    fields = list(forms.ALL_CSV_FIELDS)
-    fields.remove('primary_tracker_url')
-    fields.remove('secondary_tracker_url')
-    fields.remove('crop_areas')  # a hack to ease transition
-    fields.append('errors')
-
-    rows = []
-    errors_sorted = sorted(errors, key=lambda x: x['candidate'].id)
-    for error_dict in errors_sorted:
-        row = error_dict['candidate'].to_dict()
-        row['errors'] = error_dict['errors']
-        rows.append(row)
-    return _get_csv(fields, rows)
-
-
 def _transform_field(field):
-    field = _get_mapped_field(field)
     return field.replace('_', ' ').capitalize()
-
-
-def _get_mapped_field(field):
-    if field not in MAPPED_ERROR_CSV_FIELD:
-        return field
-    return MAPPED_ERROR_CSV_FIELD[field]
-
-
-def _upload_error_report_to_s3(batch_id, content, filename):
-    key = S3_CONTENT_ADS_ERROR_REPORT_KEY_FORMAT.format(
-        batch_id=batch_id,
-        filename=s3helpers.generate_safe_filename(filename, content),
-    )
-    try:
-        s3helpers.S3Helper().put(key, content)
-        return key
-    except Exception:
-        logger.exception('Error while saving upload error report')
-
-    return None
 
 
 @transaction.atomic
@@ -225,13 +158,15 @@ def cancel_upload(batch):
     batch.contentadcandidate_set.all().delete()
 
 
-def validate_candidates(candidates):
+def _clean_candidates(candidates):
+    cleaned_candidates = []
     errors = {}
     for candidate in candidates:
         f = forms.ContentAdForm(candidate.to_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
-    return errors
+        cleaned_candidates.append(f.cleaned_data)
+    return cleaned_candidates, errors
 
 
 def _update_defaults(data, defaults, batch):

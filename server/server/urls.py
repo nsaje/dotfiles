@@ -128,10 +128,6 @@ urlpatterns += [
         name='ad_group_ads_table'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/csv/',
-        login_required(dash.views.upload.UploadCsv.as_view()), name='upload_csv'
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/multiple/',
         login_required(dash.views.upload.UploadMultiple.as_view()), name='upload_multiple'
     ),
