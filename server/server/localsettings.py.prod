@@ -160,7 +160,6 @@ CACHES = {
 USE_HASH_CACHE = True
 HASH_CACHE_TTL = 24 * 60 * 60
 
-Z3_API_IMAGE_URL = 'https://images-api.zemanta.com/api/image/'
 IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 BROKER_TRANSPORT = 'sqs'

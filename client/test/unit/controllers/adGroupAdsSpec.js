@@ -116,7 +116,7 @@ describe('AdGroupAdsCtrl', function () {
             initializeController();
         });
         it('opens a modal window when called', function () {
-            $scope.addContentAds().result
+            $scope.addContentAdsPlusMultiple().result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
                 });

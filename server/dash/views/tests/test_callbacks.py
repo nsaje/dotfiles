@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 
 class LambdaCallbackApiTest(TestCase):
 
-    @patch('dash.upload_plus.process_callback')
+    @patch('dash.upload.process_callback')
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='key')
     def test_content_upload_callback(self, mock_verify_wsgi_request, mock_process_callback):

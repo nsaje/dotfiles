@@ -28,12 +28,12 @@ def _get_client(superuser=True):
 
 class UploadCsvTestCase(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     def test_get(self):
         ad_group_id = 1
         response = _get_client().get(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -52,7 +52,7 @@ class UploadCsvTestCase(TestCase):
     def test_get_permission(self):
         ad_group_id = 1
         response = _get_client(superuser=False).get(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -68,7 +68,7 @@ class UploadCsvTestCase(TestCase):
             'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -125,7 +125,7 @@ class UploadCsvTestCase(TestCase):
             'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -183,7 +183,7 @@ class UploadCsvTestCase(TestCase):
             'description,custom'
         )
         response = _get_client().post(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -238,7 +238,7 @@ class UploadCsvTestCase(TestCase):
             'http://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -273,7 +273,7 @@ class UploadCsvTestCase(TestCase):
     def test_post_permission(self):
         ad_group_id = 1
         response = _get_client(superuser=False).post(
-            reverse('upload_plus_csv', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -282,7 +282,7 @@ class UploadCsvTestCase(TestCase):
 
 class UploadMultipleTestCase(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     @patch('utils.lambda_helper.invoke_lambda', MagicMock())
     def test_post(self):
@@ -294,7 +294,7 @@ class UploadMultipleTestCase(TestCase):
             'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
         )
         response = _get_client().post(
-            reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -348,7 +348,7 @@ class UploadMultipleTestCase(TestCase):
             'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png,description'
         )
         response = _get_client().post(
-            reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -399,7 +399,7 @@ class UploadMultipleTestCase(TestCase):
             'http://t.zemanta.com/px1.png https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
-            reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
             {
                 'content_ads': mock_file,
                 'batch_name': 'batch 1',
@@ -432,7 +432,7 @@ class UploadMultipleTestCase(TestCase):
     def test_post_permission(self):
         ad_group_id = 1
         response = _get_client(superuser=False).post(
-            reverse('upload_plus_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -441,7 +441,7 @@ class UploadMultipleTestCase(TestCase):
 
 class UploadStatusTestCase(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     def test_pending(self):
         batch_id = 1
@@ -454,7 +454,7 @@ class UploadStatusTestCase(TestCase):
         }
 
         response = _get_client().get(
-            reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -476,7 +476,7 @@ class UploadStatusTestCase(TestCase):
         expected_candidate['errors'] = {}
 
         response = _get_client().get(
-            reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -501,7 +501,7 @@ class UploadStatusTestCase(TestCase):
         }
 
         response = _get_client().get(
-            reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -519,7 +519,7 @@ class UploadStatusTestCase(TestCase):
         ad_group_id = 2
 
         response = _get_client(superuser=False).get(
-            reverse('upload_plus_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -528,7 +528,7 @@ class UploadStatusTestCase(TestCase):
 
 class UploadSaveTestCase(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     @staticmethod
     def _mock_insert_redirects_batch(content_ads):
@@ -550,7 +550,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -582,7 +582,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({
                 'batch_name': 'new batch name'
             }),
@@ -607,7 +607,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({
                 'batch_name': 'new batch name' * 50
             }),
@@ -640,7 +640,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 4
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -651,7 +651,7 @@ class UploadSaveTestCase(TestCase):
             'data': {
                 'num_successful': 0,
                 'num_errors': 1,
-                'error_report': reverse('upload_plus_error_report',
+                'error_report': reverse('upload_error_report',
                                         kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id})
             }
         }, json.loads(response.content))
@@ -672,7 +672,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 3
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -695,7 +695,7 @@ class UploadSaveTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -722,7 +722,7 @@ class UploadSaveTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -744,7 +744,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 2
 
         response = _get_client(superuser=False).post(
-            reverse('upload_plus_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             json.dumps({}),
             content_type='application/json',
             follow=True,
@@ -755,7 +755,7 @@ class UploadSaveTestCase(TestCase):
 
 class CandidatesDownloadTestCase(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     def test_valid(self):
         batch_id = 1
@@ -765,7 +765,7 @@ class CandidatesDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().get(
-            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -780,7 +780,7 @@ class CandidatesDownloadTestCase(TestCase):
         ad_group_id = 2
 
         response = _get_client().get(
-            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             {'batch_name': 'Another batch'},
             follow=True,
         )
@@ -795,7 +795,7 @@ class CandidatesDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().get(
-            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -818,7 +818,7 @@ class CandidatesDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client(superuser=False).get(
-            reverse('upload_plus_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -830,7 +830,7 @@ class CandidatesDownloadTestCase(TestCase):
 
 class UploadCancelTestCase(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     def test_valid(self):
         batch_id = 1
@@ -840,7 +840,7 @@ class UploadCancelTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().post(
-            reverse('upload_plus_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -862,7 +862,7 @@ class UploadCancelTestCase(TestCase):
         batch.save()
 
         response = _get_client().post(
-            reverse('upload_plus_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(400, response.status_code)
@@ -889,7 +889,7 @@ class UploadCancelTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().post(
-            reverse('upload_plus_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -912,7 +912,7 @@ class UploadCancelTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client(superuser=False).post(
-            reverse('upload_plus_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -924,7 +924,7 @@ class UploadCancelTestCase(TestCase):
 
 class UploadErrorReport(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
     @patch.object(utils.s3helpers.S3Helper, 'get')
@@ -937,7 +937,7 @@ class UploadErrorReport(TestCase):
         ad_group_id = 5
 
         response = _get_client().get(
-            reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(200, response.status_code)
@@ -952,7 +952,7 @@ class UploadErrorReport(TestCase):
         ad_group_id = 5
 
         response = _get_client().get(
-            reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -969,7 +969,7 @@ class UploadErrorReport(TestCase):
         ad_group_id = 1
 
         response = _get_client().get(
-            reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -986,7 +986,7 @@ class UploadErrorReport(TestCase):
         ad_group_id = 5
 
         response = _get_client(superuser=False).get(
-            reverse('upload_plus_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
+            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -995,7 +995,7 @@ class UploadErrorReport(TestCase):
 
 class CandidateTest(TestCase):
 
-    fixtures = ['test_upload_plus.yaml']
+    fixtures = ['test_upload.yaml']
 
     def test_update_candidate(self):
         batch_id = 5
@@ -1022,7 +1022,7 @@ class CandidateTest(TestCase):
 
         response = _get_client().put(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1094,7 +1094,7 @@ class CandidateTest(TestCase):
 
         response = _get_client().delete(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1136,7 +1136,7 @@ class CandidateTest(TestCase):
 
         response = _get_client().put(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1162,7 +1162,7 @@ class CandidateTest(TestCase):
 
         response = _get_client().delete(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1187,7 +1187,7 @@ class CandidateTest(TestCase):
 
         response = _get_client().put(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1212,7 +1212,7 @@ class CandidateTest(TestCase):
 
         response = _get_client().delete(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1237,7 +1237,7 @@ class CandidateTest(TestCase):
 
         response = _get_client(superuser=False).put(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
@@ -1256,7 +1256,7 @@ class CandidateTest(TestCase):
 
         response = _get_client(superuser=False).delete(
             reverse(
-                'upload_plus_candidate',
+                'upload_candidate',
                 kwargs={
                     'ad_group_id': ad_group_id,
                     'batch_id': batch_id,
