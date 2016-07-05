@@ -175,7 +175,7 @@ module.exports = function (grunt) {
             },
             one: {
                 files: {
-                    'dist/one/zemanta-one.min.css': 'one/**/*.less'
+                    'dist/one/zemanta-one.min.css': 'one/less/zemanta-one.less',
                 }
             },
             actionlog: {
