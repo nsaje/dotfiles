@@ -15,8 +15,8 @@ CREATE TABLE mv_account_delivery (
 
        impressions integer encode lzo,
        clicks integer encode lzo,
-       cost_cc integer encode lzo,
-       data_cost_cc integer encode lzo,
+       cost_nano bigint encode lzo,
+       data_cost_nano bigint encode lzo,
 
        visits integer encode lzo,
        new_visits integer encode lzo,
