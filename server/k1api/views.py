@@ -854,17 +854,16 @@ def get_facebook_account(request):
 def update_facebook_account(request):
     _validate_signature(request)
 
-    account_id = request.GET.get('account_id')
+    values = json.loads(request.body)
+    account_id = values.get('account_id')
     if not account_id:
-        return _response_error('Account must be specified')
-
+        return _response_error('account id must be specified')
     try:
         facebook_account = dash.models.FacebookAccount.objects.get(account__id=account_id)
     except dash.models.FacebookAccount.DoesNotExist:
         return _response_error(
             "No Facebook account exists for account_id: %s" % account_id, status=404)
 
-    values = json.loads(request.body)
     modified = False
     if values.get('ad_account_id'):
         facebook_account.ad_account_id = values['ad_account_id']
