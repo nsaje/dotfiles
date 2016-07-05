@@ -5,33 +5,6 @@ import dash.constants
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 
-class K1Stats(backtosql.Model, RSBreakdownMixin):
-    hour = backtosql.Column('hour', BREAKDOWN)
-    date = backtosql.Column('date', BREAKDOWN)
-
-    source_type = backtosql.Column('media_source_type', BREAKDOWN)
-    source_slug = backtosql.Column('media_source', BREAKDOWN)
-
-    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
-    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
-    publisher = backtosql.Column('publisher', BREAKDOWN)
-
-    device_type = backtosql.Column('device_type', BREAKDOWN)
-    country = backtosql.Column('country', BREAKDOWN)
-    state = backtosql.Column('state', BREAKDOWN)
-    dma = backtosql.Column('dma', BREAKDOWN)
-    age = backtosql.Column('age', BREAKDOWN)
-    gender = backtosql.Column('gender', BREAKDOWN)
-
-    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
-    impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
-    cost_micro = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'spend'}, AGGREGATES)
-    data_cost_micro = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'data_spend'}, AGGREGATES)
-
-    def get_best_view(self, *args, **kwargs):
-        return 'stats'
-
-
 class K1Conversions(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column('date', BREAKDOWN)
 
