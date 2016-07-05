@@ -143,7 +143,6 @@ def insert_audience(audience):
         }
 
         data = json.dumps(audience_dict)
-        print(data)
         return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience.id), data=data,
                                method='PUT')
     except Exception as e:

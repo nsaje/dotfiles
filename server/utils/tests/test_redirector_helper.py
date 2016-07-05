@@ -342,7 +342,7 @@ class InsertAudienceTest(TestCase):
             u'pixieslug': u'testslug1',
             u'rules': ListMatcher([{u'type': 1, u'value': u'dummy'}, {u'type': 2, u'value': u'dummy2'}]),
             u'ttl': 90,
-            u'modifieddt': u'2015-02-23T00:00:00'
+            u'modifieddt': u'2015-02-23T05:00:00Z'
         }
         self.assertJSONEqual(call.data, expected)
 
