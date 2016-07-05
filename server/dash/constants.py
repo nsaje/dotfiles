@@ -1416,13 +1416,15 @@ class FacebookPageRequestType(ConstantBase):
     PENDING = 3
     INVALID = 4
     ERROR = 5
+    REVOKED = 6
 
     _VALUES = {
         EMPTY: 'Empty',
         CONNECTED: 'Connected',
         PENDING: 'Pending',
         INVALID: 'Invalid',
-        ERROR: 'Error'
+        ERROR: 'Error',
+        REVOKED: 'Revoked'
     }
 
 

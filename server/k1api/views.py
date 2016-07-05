@@ -400,6 +400,7 @@ def get_content_ad_ad_group(request):
     return _response_ok(list(content_ads))
 
 
+@csrf_exempt
 def get_publishers_blacklist_outbrain(request):
     _validate_signature(request)
 
@@ -847,6 +848,35 @@ def get_facebook_account(request):
     except dash.models.FacebookAccount.DoesNotExist:
         facebook_account = None
     return _response_ok(facebook_account)
+
+
+@csrf_exempt
+def update_facebook_account(request):
+    _validate_signature(request)
+
+    account_id = request.GET.get('account_id')
+    if not account_id:
+        return _response_error('Account must be specified')
+
+    try:
+        facebook_account = dash.models.FacebookAccount.objects.get(account__id=account_id)
+    except dash.models.FacebookAccount.DoesNotExist:
+        return _response_error(
+            "No Facebook account exists for account_id: %s" % account_id, status=404)
+
+    values = json.loads(request.body)
+    modified = False
+    if values.get('ad_account_id'):
+        facebook_account.ad_account_id = values['ad_account_id']
+        modified = True
+
+    if values.get('status'):
+        facebook_account.status = values['status']
+        modified = True
+
+    if modified:
+        facebook_account.save()
+    return _response_ok(values)
 
 
 @csrf_exempt
