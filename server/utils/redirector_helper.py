@@ -3,7 +3,6 @@ import logging
 import time
 import urllib2
 
-from dateutil import tz
 from django.conf import settings
 
 from utils import request_signer
@@ -18,9 +17,9 @@ def validate_url(url, ad_group_id):
     try:
         data = json.dumps({'url': url, 'adgroupid': ad_group_id})
         return _call_api_retry(settings.R1_VALIDATE_API_URL, data)
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in validate_url')
-        raise e
+        raise
 
 
 def insert_redirect(url, content_ad_id, ad_group_id):
@@ -40,9 +39,9 @@ def insert_redirect(url, content_ad_id, ad_group_id):
         })
 
         return _call_api_retry(settings.R1_REDIRECTS_API_URL, data)
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in insert_redirect')
-        raise e
+        raise
 
 
 def insert_redirects_batch(content_ads):
@@ -63,9 +62,9 @@ def insert_redirects_batch(content_ads):
         } for content_ad in content_ads])
 
         return _call_api_retry(settings.R1_REDIRECTS_BATCH_API_URL, data)
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in insert_redirect_batch')
-        raise e
+        raise
 
 
 def update_redirect(url, redirect_id):
@@ -73,9 +72,9 @@ def update_redirect(url, redirect_id):
         data = json.dumps({'url': url})
 
         return _call_api_retry(settings.R1_REDIRECTS_API_URL + redirect_id + '/', data, method='PUT')
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in update_redirect')
-        raise e
+        raise
 
 
 def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe_tracking, adobe_tracking_param):
@@ -88,9 +87,9 @@ def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe
             'adobetrackingparam': adobe_tracking_param,
         })
         return _call_api_retry(url, data, method='PUT')
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in insert_adgroup')
-        raise e
+        raise
 
 
 def get_adgroup(ad_group_id):
@@ -103,9 +102,9 @@ def get_adgroup(ad_group_id):
             'adobe_tracking_param': adgroup_dict.get('adobetrackingparam'),
             'tracking_code': adgroup_dict.get('trackingcode'),
         }
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in get_adgroup')
-        raise e
+        raise
 
 
 def fetch_redirects_impressions(date, timeout=300):
@@ -131,31 +130,29 @@ def insert_audience(audience):
     try:
         rules = [{'type': rule.type, 'value': rule.value} for rule in audience.rule_set.all()]
 
-        modified_dt = audience.modified_dt.replace(tzinfo=tz.gettz(settings.DEFAULT_TIME_ZONE)).astimezone(
-            tz.gettz('UTC')).strftime('%Y-%m-%dT%H:%M:%SZ')
         audience_dict = {
             'id': str(audience.id),
             'accountid': audience.pixel.account.id,
             'pixieslug': audience.pixel.slug,
             'rules': rules,
             'ttl': audience.ttl,
-            'modifieddt': modified_dt,
+            'modifieddt': audience.modified_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         }
 
         data = json.dumps(audience_dict)
         return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience.id), data=data,
                                method='PUT')
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in insert_audience')
-        raise e
+        raise
 
 
 def delete_audience(audience_id):
     try:
         return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience_id), method='DELETE')
-    except Exception as e:
+    except Exception:
         logger.exception('Exception in delete_audience')
-        raise e
+        raise
 
 
 def _call_api_paginated(url, data=None, method='POST'):
