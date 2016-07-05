@@ -29,7 +29,7 @@ class SourcesTable(api_common.BaseApiView):
         newrelic.agent.set_transaction_name('dash.views.table:SourcesTable#%s' % (level_))
 
         user = request.user
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        view_filter = helpers.ViewFilter(request=request)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -39,7 +39,7 @@ class SourcesTable(api_common.BaseApiView):
         response = dt.SourcesTable().get(
             user,
             level_,
-            filtered_sources,
+            view_filter,
             start_date,
             end_date,
             order,
