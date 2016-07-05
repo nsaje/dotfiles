@@ -1676,7 +1676,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                              everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
 
         self._write_history(request, ad_group, state, [
-            {'source': source, 'domain': d}
+            {'source': source, 'domain': d[0]}
             for source, domains in source_domains.iteritems()
             for d in domains
         ], level)
@@ -1686,14 +1686,16 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         source_ids = set()
 
         pubs_ignored_set = set(
-            (publisher['source_id'], publisher['domain']) for publisher in pubs_ignored
+            (publisher['source_id'], publisher['domain'])
+            for publisher in pubs_ignored
         )
 
         for publisher in pubs + pubs_selected:
             source_id, domain = publisher['source_id'], publisher['domain']
+            external_id = publisher.get('external_id')
             if (source_id, domain, ) in pubs_ignored_set:
                 continue
-            source_publishers.setdefault(source_id, set()).add(domain)
+            source_publishers.setdefault(source_id, set()).add((domain, external_id))
             source_ids.add(source_id)
 
         sources_map = {

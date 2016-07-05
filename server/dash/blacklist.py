@@ -32,8 +32,10 @@ class BlacklistException(Exception):
 
 def update(ad_group, constraints, status, domains, everywhere=False,
            all_sources=False, request=None):
+    external_map = dict(domains)
+    domain_names = external_map.keys()
     if everywhere:
-        _global_blacklist(constraints, status, domains)
+        _global_blacklist(constraints, status, domain_names, external_map)
         return
 
     if not constraints or len(set(ALLOWED_LEVEL_CONSTRAINTS) & set(constraints.keys())) != 1:
@@ -45,10 +47,11 @@ def update(ad_group, constraints, status, domains, everywhere=False,
             for source in _get_sources(constraints['ad_group']):
                 source_constraints = {'source': source}
                 source_constraints.update(constraints)
-                _update_source(source_constraints, status, domains,
+                _update_source(source_constraints, status, domain_names, external_map,
                                request=request, ad_group=ad_group)
         else:
-            _update_source(constraints, status, domains, request=request, ad_group=ad_group)
+            _update_source(constraints, status, domain_names, external_map,
+                           request=request, ad_group=ad_group)
 
     if 'ad_group' in constraints:
         utils.k1_helper.update_blacklist(
@@ -66,7 +69,7 @@ def _get_sources(ad_group):
     ])
 
 
-def _update_source(constraints, status, domains, request=None, ad_group=None):
+def _update_source(constraints, status, domain_names, external_map, request=None, ad_group=None):
     source = constraints['source']
 
     if not source.can_modify_publisher_blacklist_automatically():
@@ -74,31 +77,32 @@ def _update_source(constraints, status, domains, request=None, ad_group=None):
 
     if source.source_type.type == dash.constants.SourceType.OUTBRAIN:
         try:
-            _handle_outbrain(source, constraints, status, domains, request, ad_group)
+            _handle_outbrain(source, constraints, status, domain_names, external_map,
+                             request, ad_group)
         except BlacklistException:
             logger.exception('Blacklist exception when using constraints: %s', str(constraints))
             return
 
     if status == dash.constants.PublisherStatus.ENABLED:
         globally_blacklisted = _get_globally_blacklisted_publishers_list()
-
         dash.models.PublisherBlacklist.objects.filter(
             everywhere=False,
-            name__in=domains,
+            name__in=domain_names,
             **constraints
         ).exclude(name__in=globally_blacklisted).delete()
         return
 
     already_blacklisted = set(dash.models.PublisherBlacklist.objects.filter(
         everywhere=False,
-        name__in=domains,
+        name__in=domain_names,
         **constraints
     ).values_list('name', flat=True))
-    for domain in set(domains) - already_blacklisted:
+    for domain in set(domain_names) - already_blacklisted:
         dash.models.PublisherBlacklist.objects.create(
             name=domain,
             everywhere=False,
             status=status,
+            external_id=external_map.get(domain),
             **constraints
         )
 
@@ -112,19 +116,19 @@ def _get_globally_blacklisted_publishers_list(**constraints):
 
 
 @transaction.atomic
-def _global_blacklist(constraints, status, domains):
+def _global_blacklist(constraints, status, domain_names, external_map):
     if set(ALLOWED_LEVEL_CONSTRAINTS) & set(constraints.keys()):
         raise Exception('On global blacklist, any non-source constraints are forbidden')
 
     if status == dash.constants.PublisherStatus.ENABLED:
         dash.models.PublisherBlacklist.objects.filter(
             everywhere=True,
-            name__in=domains,
+            name__in=domain_names,
             **constraints
         ).delete()
         return
 
-    domains_to_blacklist = set(domains) \
+    domains_to_blacklist = set(domain_names) \
         - set(_get_globally_blacklisted_publishers_list(**constraints))\
         - set(_get_globally_blacklisted_publishers_list(source=None))
 
@@ -133,14 +137,14 @@ def _global_blacklist(constraints, status, domains):
             name=domain,
             everywhere=True,
             status=status,
+            external_id=external_map.get(domain),
             **constraints
         )
 
 
-def _handle_outbrain(source, constraints, status, domains, request, ad_group):
+def _handle_outbrain(source, constraints, status, domain_names, external_map, request, ad_group):
     if 'account' not in constraints:
         raise BlacklistException('OB blacklist is allowed only on account level')
-
     ob_domains = dash.models.PublisherBlacklist.objects.filter(
         account=constraints['account'],
         source__source_type__type=dash.constants.SourceType.OUTBRAIN,
@@ -148,22 +152,27 @@ def _handle_outbrain(source, constraints, status, domains, request, ad_group):
     )
     count_ob = ob_domains.count()
     if status in NOT_ENABLED_BLACKLIST_STATUSES:
-        count_ob += len(domains)
+        count_ob += len(domain_names)
     else:
         count_ob -= len(
-            set(domains) & set(ob_domains.values_list('name', flat=True))
+            set(domain_names) & set(ob_domains.values_list('name', flat=True))
         )
 
     if count_ob > dash.constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
         raise BlacklistException('Attempted to blacklist more publishers than allowed per account on Outbrain')
 
     if count_ob > dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD:
-        _trigger_manual_ob_blacklist_action(request, ad_group, status, domains)
+        _trigger_manual_ob_blacklist_action(request, ad_group, status, domain_names, external_map)
 
 
-def _trigger_manual_ob_blacklist_action(request, ad_group, state, domains):
+def _trigger_manual_ob_blacklist_action(request, ad_group, state, domain_names, external_map):
     action_name = ACTION_TO_MESSAGE[state]
-    domains = ', '.join(domain for domain in domains)
+    domains = ', '.join(
+        '{}{}'.format(
+            domain, ' #' + external_map[domain] if external_map.get(domain) else ''
+        )
+        for domain in sorted(domain_names)
+    )
 
     action = actionlog.models.ActionLog(
         action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST,
