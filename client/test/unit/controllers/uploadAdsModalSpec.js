@@ -20,7 +20,7 @@ describe('UploadAdsModalCtrl', function () {
         };
         api = {
             upload: {
-                uploadMultiple: function () {},
+                upload: function () {},
                 checkStatus: function () {},
                 updateCandidate: function () {},
                 removeCandidate: function () {},
@@ -44,7 +44,7 @@ describe('UploadAdsModalCtrl', function () {
     describe('upload', function () {
         it('switches to picker on success', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'uploadMultiple').and.callFake(function () {
+            spyOn(api.upload, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -57,7 +57,7 @@ describe('UploadAdsModalCtrl', function () {
             spyOn($scope, 'switchToContentAdPicker').and.stub();
 
             $scope.upload();
-            expect(api.upload.uploadMultiple).toHaveBeenCalledWith(
+            expect(api.upload.upload).toHaveBeenCalledWith(
                 $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
             );
 
@@ -94,7 +94,7 @@ describe('UploadAdsModalCtrl', function () {
 
         it('displays errors on failure', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'uploadMultiple').and.callFake(function () {
+            spyOn(api.upload, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -106,7 +106,7 @@ describe('UploadAdsModalCtrl', function () {
             spyOn($scope, 'switchToContentAdPicker').and.stub();
 
             $scope.upload();
-            expect(api.upload.uploadMultiple).toHaveBeenCalledWith(
+            expect(api.upload.upload).toHaveBeenCalledWith(
                 $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
             );
 
