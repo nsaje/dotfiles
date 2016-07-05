@@ -553,12 +553,14 @@ class Account(models.Model):
                 account__in=self
             ).group_current_settings()
 
-            filtered_accounts = AccountSettings.objects.all().filter(
+            filtered_ac_ids = AccountSettings.objects.all().filter(
                 id__in=latest_settings,
                 account_type__in=account_types
             ).values_list('account__id', flat=True)
 
-            return self & filtered_accounts
+            if not filtered_ac_ids:
+                return self
+            return self.filter(id___in=filtered_ac_ids)
 
         def exclude_archived(self):
             related_settings = AccountSettings.objects.all().filter(

@@ -623,6 +623,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
         getTableData();
         getDailyStats();
+        $scope.getInfoboxData();
         // TODO: Breakdowns
     }, true);
 
@@ -632,8 +633,9 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
         getTableData();
         getDailyStats();
+        $scope.getInfoboxData();
         // TODO: Breakdowns
-    });
+    }, true);
 
     var pollSyncStatus = function () {
         if ($scope.isSyncInProgress) {

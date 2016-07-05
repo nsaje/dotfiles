@@ -146,10 +146,22 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 if (newValue === oldValue) {
                     return;
                 }
-
                 $scope.refreshAvailableSources();
             });
 
+            $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
+                if (newValue === oldValue) {
+                    return;
+                }
+                $scope.refreshAgencies();
+            }, true);
+
+            $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
+                if (newValue === oldValue) {
+                    return;
+                }
+                $scope.refreshAccountTypes();
+            }, true);
 
             $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
                 if (newValue === oldValue) {

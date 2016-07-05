@@ -1809,8 +1809,30 @@ class AllAccountsOverview(api_common.BaseApiView):
 
     def _basic_settings(self, start_date, end_date, view_filter):
         settings = []
-        daterange_proj = reports.projections.BudgetProjections(start_date, end_date, 'account')
-        month_proj = reports.projections.CurrentMonthBudgetProjections('account')
+
+        constraints = {}
+        if view_filter.filtered_agencies:
+            constraints['campaign__account__agency__in']\
+                = view_filter.filtered_agencies
+        if view_filter.filtered_account_types:
+            latest_accset = models.AccountSettings.objects.all().group_current_settings()
+            latest_typed_accset = models.AccountSettings.objects.all().filter(
+                id__in=latest_accset
+            ).filter(
+                account_type__in=view_filter.filtered_account_types
+            ).values_list('id', flat=True)
+            constraints['campaign__account__id__in'] = latest_typed_accset
+
+        daterange_proj = reports.projections.BudgetProjections(
+            start_date,
+            end_date,
+            'account',
+            **constraints
+        )
+        month_proj = reports.projections.CurrentMonthBudgetProjections(
+            'account',
+            **constraints
+        )
 
         count_active_accounts = infobox_helpers.count_active_accounts(
             view_filter.filtered_agencies,

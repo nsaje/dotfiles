@@ -197,10 +197,10 @@ def _filter_daily_statements(statements, filtered_agencies, filtered_account_typ
         )
     if filtered_account_types:
         account_ids = dash.models.AccountSettings.objects.all()\
-            .filter(campaign__budget__budgetdailystatement__in=statements)\
+            .filter(account__campaign__budgets__statements__in=statements)\
             .group_current_settings()\
             .values_list('account__id', flat=True)
-        statements = daily_statements.filter(
+        statements = statements.filter(
             budget__campaign__account__id__in=account_ids)
     return statements
 
@@ -414,12 +414,11 @@ def format_username(user):
 def _filter_user_by_account_type(users, filtered_account_types):
     if not filtered_account_types:
         return users
-
     latest_account_settings = dash.models.AccountSettings.objects.all()\
         .filter(
-            models.Q(account__users__id=user.id) |
-            models.Q(account__groups__user__id=user.id) |
-            models.Q(account__agency__users__id=user.id)
+            models.Q(account__users__in=users) |
+            models.Q(account__groups__user__in=users) |
+            models.Q(account__agency__users__in=users)
         )\
         .group_current_settings()
 
@@ -429,9 +428,9 @@ def _filter_user_by_account_type(users, filtered_account_types):
         .filter(account_type__in=filtered_account_types)\
         .values_list('account__id', flat=True)
 
-    return user.filter(
+    return users.filter(
         models.Q(account__id__in=filtered_latest_account_settings) |
-        models.Q(group__account__id__in=filtered_latest_account_settings)
+        models.Q(groups__account__id__in=filtered_latest_account_settings)
     )
 
 
