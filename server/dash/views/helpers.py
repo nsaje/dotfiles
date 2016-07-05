@@ -82,9 +82,9 @@ class ViewFilter(object):
             self.filtered_sources = get_filtered_sources(
                 request.user, request.GET.get('filtered_sources'))
         self.filtered_agencies = get_filtered_agencies(
-            request.GET.get('filtered_agencies'))
+            request.GET.getlist('filtered_agencies'))
         self.filtered_account_types = get_filtered_account_types(
-            request.GET.get('filtered_account_types'))
+            request.GET.getlist('filtered_account_types'))
 
     def _init_breakdowns(self, user, data):
         self.filtered_sources = None
@@ -119,7 +119,7 @@ def get_filtered_agencies(agency_filter):
     if not agency_filter:
         return filtered_agencies
 
-    filtered_ids = map(int, agency_filter.split(','))
+    filtered_ids = map(int, agency_filter)
     if filtered_ids:
         filtered_agencies = models.Agency.objects.all().filter(
             id__in=filtered_ids
@@ -133,7 +133,7 @@ def get_filtered_account_types(account_type_filter):
         return filtered_account_types
 
     filtered_account_types = constants.AccountType.get_all()
-    filtered_ids = map(int, account_type_filter.split(','))
+    filtered_ids = map(int, account_type_filter)
     return set(filtered_account_types) & set(filtered_ids)
 
 
