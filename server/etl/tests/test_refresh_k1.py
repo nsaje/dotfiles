@@ -22,6 +22,7 @@ class RefreshTest(TestCase):
         mock_reprocess.return_value = effective_spend_factors
 
         refresh_k1.MATERIALIZED_VIEWS = [mock_generate]
+        refresh_k1.NEW_MATERIALIZED_VIEWS = []
 
         refresh_k1.refresh_k1_reports(datetime.datetime(2016, 5, 10))
 
