@@ -22,8 +22,8 @@ INSERT INTO mv_master (
 
       a.impressions as impressions,
       a.clicks as clicks,
-      cast( (cast(a.spend as decimal) / 100) as integer) as cost_cc,
-      cast( (cast(a.data_spend as decimal) / 100) as integer) as data_cost_cc,
+      cast((cast(a.spend as decimal) / 100) as integer) as cost_cc,
+      cast((cast(a.data_spend as decimal) / 100) as integer) as data_cost_cc,
 
       null as visits,
       null as new_visits,
@@ -31,12 +31,14 @@ INSERT INTO mv_master (
       null as pageviews,
       null as total_time_on_site,
 
-      round(a.spend * cf.pct_actual_spend::decimal(10, 2) * 1000) as effective_cost_nano,
-      round(a.data_spend * cf.pct_actual_spend::decimal(10, 2) * 1000) as effective_data_cost_nano,
-      round(((a.spend * cf.pct_actual_spend::decimal(10, 2)) + (a.data_spend * cf.pct_actual_spend::decimal(10, 2))) * pct_license_fee::decimal(10, 2) * 1000) as license_fee_nano
-
-      -- null as conversions,
-      -- null as tp_conversions
+      round(a.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
+      round(a.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
+      round(
+          (
+              (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+              (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+          ) * pct_license_fee::decimal(10, 8) * 1000
+      ) as license_fee_nano
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
