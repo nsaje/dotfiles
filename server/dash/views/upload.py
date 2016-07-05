@@ -1,7 +1,6 @@
 import json
 
 from django.db import transaction
-from django.http import Http404
 from django.template.defaultfilters import pluralize
 
 from dash import constants
@@ -18,9 +17,6 @@ from utils import exc
 class UploadCsv(api_common.BaseApiView):
 
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_upload_with_picker'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
         if not form.is_valid():
@@ -51,9 +47,6 @@ class UploadCsv(api_common.BaseApiView):
 class UploadStatus(api_common.BaseApiView):
 
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
@@ -77,9 +70,6 @@ class UploadStatus(api_common.BaseApiView):
 class UploadSave(api_common.BaseApiView):
 
     def post(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
@@ -124,9 +114,6 @@ class UploadSave(api_common.BaseApiView):
 class UploadCancel(api_common.BaseApiView):
 
     def post(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
@@ -146,9 +133,6 @@ class UploadCancel(api_common.BaseApiView):
 class CandidatesDownload(api_common.BaseApiView):
 
     def get(self, request, ad_group_id, batch_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
@@ -166,9 +150,6 @@ class CandidatesDownload(api_common.BaseApiView):
 class Candidate(api_common.BaseApiView):
 
     def put(self, request, ad_group_id, batch_id, candidate_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
@@ -187,9 +168,6 @@ class Candidate(api_common.BaseApiView):
         })
 
     def delete(self, request, ad_group_id, batch_id, candidate_id):
-        if not request.user.has_perm('zemauth.can_use_improved_ads_upload'):
-            raise Http404('Forbidden')
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)

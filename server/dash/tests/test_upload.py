@@ -116,6 +116,7 @@ class PersistCandidatesTestCase(TestCase):
         self.assertFalse(mock_s3helper_put.called)
 
         content_ad = batch.contentad_set.get()
+        self.assertEqual(1, len(content_ad.contentadsource_set.all()))
 
         self.assertEqual(candidate.label, content_ad.label)
         self.assertEqual(candidate.url, content_ad.url)

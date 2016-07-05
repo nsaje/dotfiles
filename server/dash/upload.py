@@ -50,19 +50,18 @@ def _reset_candidate_async_status(candidate):
 @transaction.atomic
 def invoke_external_validation(candidate, batch):
     _reset_candidate_async_status(candidate)
-    form = forms.ContentAdForm(candidate.to_dict())
-    form.is_valid()  # cleaned urls have to be used since validation can change them
 
+    cleaned_urls = _get_cleaned_urls(candidate)
     skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
     lambda_helper.invoke_lambda(
         settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME,
         {
             'namespace': settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
             'candidateID': candidate.pk,
-            'pageUrl': form.cleaned_data.get('url', ''),
+            'pageUrl': cleaned_urls['url'],
             'adGroupID': candidate.ad_group.pk,
             'batchID': candidate.batch.pk,
-            'imageUrl': form.cleaned_data.get('image_url', ''),
+            'imageUrl': cleaned_urls['image_url'],
             'callbackUrl': settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
             'skipUrlValidation': skip_url_validation,
         },
@@ -208,6 +207,15 @@ def update_candidate(data, defaults, batch):
     _update_candidate(data, batch)
 
 
+def _get_cleaned_urls(candidate):
+    form = forms.ContentAdForm(candidate.to_dict())
+    form.is_valid()  # it doesn't matter if the form as a whole is valid or not
+    return {
+        'url': form.cleaned_data.get('url'),
+        'image_url': form.cleaned_data.get('image_url'),
+    }
+
+
 @transaction.atomic
 def process_callback(callback_data):
     try:
@@ -217,13 +225,9 @@ def process_callback(callback_data):
         logger.exception('No candidate with id %s', callback_data['id'])
         return
 
-    form = forms.ContentAdForm(candidate.to_dict())
-    form.is_valid()  # cleaned urls have to be used since validation can change them
-    url = form.cleaned_data.get('url', '')
-    image_url = form.cleaned_data.get('image_url', '')
-
-    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != image_url or\
-       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != url:
+    cleaned_urls = _get_cleaned_urls(candidate)
+    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != cleaned_urls['image_url'] or\
+       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != cleaned_urls['url']:
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
@@ -288,15 +292,15 @@ def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
         tracker_urls=candidate['tracker_urls'],
     )
 
-    content_ad_sources = []
+    _create_content_ad_sources(content_ad, ad_group_sources)
+    return content_ad
+
+
+def _create_content_ad_sources(content_ad, ad_group_sources):
     for ad_group_source in ad_group_sources:
-        content_ad_sources.append(
             models.ContentAdSource.objects.create(
                 source=ad_group_source.source,
                 content_ad=content_ad,
                 submission_status=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
                 state=constants.ContentAdSourceState.ACTIVE
             )
-        )
-
-    return content_ad

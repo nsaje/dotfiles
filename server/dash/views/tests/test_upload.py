@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-import boto.exception
-from mock import patch, Mock, MagicMock
+from mock import patch, MagicMock
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
@@ -10,7 +9,6 @@ from django.test import TestCase, Client
 from dash import constants
 from dash import models
 from zemauth.models import User
-import utils.s3helpers
 
 
 def _get_client(superuser=True):
@@ -176,15 +174,6 @@ class UploadCsvTestCase(TestCase):
             }
         }, json.loads(response.content))
 
-    def test_post_permission(self):
-        ad_group_id = 1
-        response = _get_client(superuser=False).post(
-            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
-
 
 class UploadStatusTestCase(TestCase):
 
@@ -260,17 +249,6 @@ class UploadStatusTestCase(TestCase):
                 }
             }
         }, json.loads(response.content))
-
-    def test_permission(self):
-        batch_id = 1
-        ad_group_id = 2
-
-        response = _get_client(superuser=False).get(
-            reverse('upload_status', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
 
 
 class UploadSaveTestCase(TestCase):
@@ -468,19 +446,6 @@ class UploadSaveTestCase(TestCase):
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
-    def test_permission(self):
-        batch_id = 1
-        ad_group_id = 2
-
-        response = _get_client(superuser=False).post(
-            reverse('upload_save', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            json.dumps({}),
-            content_type='application/json',
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
-
 
 class CandidatesDownloadTestCase(TestCase):
 
@@ -535,23 +500,6 @@ class CandidatesDownloadTestCase(TestCase):
                 'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
-
-        batch.refresh_from_db()
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
-
-    def test_permission(self):
-        batch_id = 1
-        ad_group_id = 2
-
-        batch = models.UploadBatch.objects.get(id=batch_id)
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
-
-        response = _get_client(superuser=False).get(
-            reverse('upload_candidates_download', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
@@ -629,23 +577,6 @@ class UploadCancelTestCase(TestCase):
                 'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
-
-        batch.refresh_from_db()
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
-
-    def test_permission(self):
-        batch_id = 1
-        ad_group_id = 2
-
-        batch = models.UploadBatch.objects.get(id=batch_id)
-        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
-
-        response = _get_client(superuser=False).post(
-            reverse('upload_cancel', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
@@ -884,41 +815,3 @@ class CandidateTest(TestCase):
                 'message': 'Upload batch does not exist',
             }
         }, json.loads(response.content))
-
-    def test_permission(self):
-        batch_id = 4
-        ad_group_id = 5
-        candidate_id = 4
-
-        response = _get_client(superuser=False).put(
-            reverse(
-                'upload_candidate',
-                kwargs={
-                    'ad_group_id': ad_group_id,
-                    'batch_id': batch_id,
-                    'candidate_id': candidate_id
-                }
-            ),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
-
-    def test_delete_permission(self):
-        batch_id = 4
-        ad_group_id = 5
-        candidate_id = 4
-
-        response = _get_client(superuser=False).delete(
-            reverse(
-                'upload_candidate',
-                kwargs={
-                    'ad_group_id': ad_group_id,
-                    'batch_id': batch_id,
-                    'candidate_id': candidate_id
-                }
-            ),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
