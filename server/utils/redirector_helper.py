@@ -3,6 +3,7 @@ import logging
 import time
 import urllib2
 
+from dateutil import tz
 from django.conf import settings
 
 from utils import request_signer
@@ -124,6 +125,38 @@ def fetch_redirects_impressions(date, timeout=300):
         return result
 
     raise Exception('Redirect conversion stats timeout')
+
+
+def insert_audience(audience):
+    try:
+        rules = [{'type': rule.type, 'value': rule.value} for rule in audience.rule_set.all()]
+
+        modified_dt = audience.modified_dt.replace(tzinfo=tz.gettz(settings.DEFAULT_TIME_ZONE)).astimezone(
+            tz.gettz('UTC')).strftime('%Y-%m-%dT%H:%M:%SZ')
+        audience_dict = {
+            'id': str(audience.id),
+            'accountid': audience.pixel.account.id,
+            'pixieslug': audience.pixel.slug,
+            'rules': rules,
+            'ttl': audience.ttl,
+            'modifieddt': modified_dt,
+        }
+
+        data = json.dumps(audience_dict)
+        print(data)
+        return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience.id), data=data,
+                               method='PUT')
+    except Exception as e:
+        logger.exception('Exception in insert_audience')
+        raise e
+
+
+def delete_audience(audience_id):
+    try:
+        return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience_id), method='DELETE')
+    except Exception as e:
+        logger.exception('Exception in delete_audience')
+        raise e
 
 
 def _call_api_paginated(url, data=None, method='POST'):

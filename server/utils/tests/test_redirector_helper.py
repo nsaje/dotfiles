@@ -7,6 +7,7 @@ from django.conf import settings
 
 import dash.models
 from utils import redirector_helper
+from utils.test_helper import ListMatcher
 
 
 @override_settings(
@@ -307,5 +308,86 @@ class GetAdgroupTest(TestCase):
 
         with self.assertRaises(Exception):
             redirector_helper.get_adgroup(100)
+
+        self.assertEqual(len(mock_urlopen.call_args_list), 3, "Should retry the call 3-times")
+
+
+@override_settings(
+    R1_CUSTOM_AUDIENCE_API_URL='https://r1.example.com/api/audience/{audience_id}',
+    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
+)
+@patch('utils.request_signer._secure_opener.open')
+class InsertAudienceTest(TestCase):
+
+    fixtures = ['test_k1_api.yaml']
+
+    def test_insert_audience(self, mock_urlopen):
+        response = Mock()
+        response.read.return_value = '{"status": "ok", "data":{"audienceid":"1"}}'
+        response.getcode = lambda: 200
+        mock_urlopen.return_value = response
+
+        audience = dash.models.Audience.objects.get(pk=1)
+        resp = redirector_helper.insert_audience(audience)
+
+        self.assertDictEqual(resp, {u'audienceid': u'1'})
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=1))
+        self.assertEqual(call.get_method(), 'PUT')
+        expected = {
+            u'id': u'1',
+            u'accountid': 1,
+            u'pixieslug': u'testslug1',
+            u'rules': ListMatcher([{u'type': 1, u'value': u'dummy'}, {u'type': 2, u'value': u'dummy2'}]),
+            u'ttl': 90,
+            u'modifieddt': u'2015-02-23T00:00:00'
+        }
+        self.assertJSONEqual(call.data, expected)
+
+    def test_insert_audience_error(self, mock_urlopen):
+        response = Mock()
+        response.getcode = lambda: 400
+        mock_urlopen.return_value = response
+
+        audience = dash.models.Audience.objects.get(pk=1)
+        with self.assertRaises(Exception):
+            redirector_helper.insert_audience(audience)
+
+        self.assertEqual(len(mock_urlopen.call_args_list), 3, "Should retry the call 3-times")
+
+
+@override_settings(
+    R1_CUSTOM_AUDIENCE_API_URL='https://r1.example.com/api/audience/{audience_id}',
+    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
+)
+@patch('utils.request_signer._secure_opener.open')
+class DeleteAudienceTest(TestCase):
+
+    fixtures = ['test_k1_api.yaml']
+
+    def test_delete_audience(self, mock_urlopen):
+        response = Mock()
+        response.read.return_value = '{"status": "ok", "data":{"audienceid":"1"}}'
+        response.getcode = lambda: 200
+        mock_urlopen.return_value = response
+
+        resp = redirector_helper.delete_audience(1)
+        self.assertDictEqual(resp, {u'audienceid': u'1'})
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=1))
+        self.assertEqual(call.get_method(), 'DELETE')
+        self.assertEqual(call.data, None)
+
+    def test_delete_audience_error(self, mock_urlopen):
+        response = Mock()
+        response.getcode = lambda: 400
+        mock_urlopen.return_value = response
+
+        with self.assertRaises(Exception):
+            redirector_helper.delete_audience(1)
 
         self.assertEqual(len(mock_urlopen.call_args_list), 3, "Should retry the call 3-times")
