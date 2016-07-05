@@ -265,7 +265,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
             batchName: $scope.uploadFormData.batchName,
         };
 
-        api.upload.uploadMultiple(
+        api.upload.upload(
             $state.params.id, uploadFormData
         ).then(
             function (result) {
