@@ -421,10 +421,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
+        if (angular.equals(newValue, oldValue)) { return; }
+        zemNavigationService.reload();
+    }, true);
 
+    $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) { return; }
+        zemNavigationService.reload();
+    }, true);
+
+    $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) { return; }
         zemNavigationService.reload();
     }, true);
 

@@ -22,7 +22,7 @@ oneApp.factory('zemFilterService', ['$location', '$rootScope', function ($locati
 
         var filteredAccountTypesLocation = $location.search().filtered_account_types;
         if (filteredAccountTypesLocation) {
-            filteredAccountTypesLocation = filteredAccountTypesLocation.split(',');
+            filteredAccountTypes = filteredAccountTypesLocation.split(',');
         }
 
         showArchived = $location.search().show_archived || false;
