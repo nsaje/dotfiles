@@ -1,4 +1,4 @@
-CREATE TABLE mvh_campaign_factors (
+CREATE TEMP TABLE mvh_campaign_factors (
     date date not null encode delta,
     campaign_id int2 not null encode lzo,
 

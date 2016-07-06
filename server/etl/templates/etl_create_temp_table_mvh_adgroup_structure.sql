@@ -1,4 +1,4 @@
-CREATE TABLE mvh_adgroup_structure (
+CREATE TEMP TABLE mvh_adgroup_structure (
     agency_id int2 encode lzo,
     account_id int2 encode lzo,
     campaign_id int2 encode lzo,
