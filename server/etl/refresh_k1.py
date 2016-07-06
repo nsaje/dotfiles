@@ -41,9 +41,6 @@ NEW_MATERIALIZED_VIEWS = [
 def refresh_k1_reports(update_since):
     influx.incr('etl.refresh_k1.refresh_k1_reports', 1)
 
-    if True:
-        return
-
     effective_spend_factors = daily_statements_k1.reprocess_daily_statements(update_since.date())
 
     dates = sorted(effective_spend_factors.keys())
