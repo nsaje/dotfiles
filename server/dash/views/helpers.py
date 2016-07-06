@@ -3,6 +3,7 @@ import datetime
 import dateutil.parser
 import pytz
 import logging
+import json
 
 from decimal import Decimal
 
@@ -78,22 +79,38 @@ class ViewFilter(object):
 
     def _init_old(self, request):
         self.filtered_sources = None
+
+        if request.method == 'GET':
+            data = request.GET
+            filtered_sources = data.get('filtered_sources')
+            filtered_agencies = data.getlist('filtered_agencies')
+            filtered_account_types = data.get('filtered_account_types')
+        elif request.method == 'PUT':
+            data = json.loads(request.body)
+            filtered_sources = data.get('filtered_sources')
+            filtered_agencies_raw = data.get('filtered_agencies')
+            filtered_agencies = filtered_agencies_raw.split(',') if\
+                filtered_agencies_raw else None
+            filtered_account_types_raw = data.get('filtered_account_types')
+            filtered_account_types = filtered_account_types_raw.split(',') if\
+                filtered_account_types_raw else None
+
         if request.user is not None:
-            self.filtered_sources = get_filtered_sources(
-                request.user, request.GET.get('filtered_sources'))
-        self.filtered_agencies = get_filtered_agencies(
-            request.GET.getlist('filtered_agencies'))
-        self.filtered_account_types = get_filtered_account_types(
-            request.GET.getlist('filtered_account_types'))
+            self.filtered_sources = get_filtered_sources(request.user, filtered_sources)
+        self.filtered_agencies = get_filtered_agencies(filtered_agencies)
+        self.filtered_account_types = get_filtered_account_types(filtered_account_types)
 
     def _init_breakdowns(self, user, data):
         self.filtered_sources = None
         if user is not None:
             self.filtered_sources = data.get('filtered_sources')
         self.filtered_agencies = get_filtered_agencies(
-            data.get('filtered_agencies'))
+            data.get('filtered_agencies')
+        )
         self.filtered_account_types = get_filtered_account_types(
-            data.get('filtered_account_types'))
+            data.get('filtered_account_types')
+        )
+
 
 
 def get_filtered_sources(user, sources_filter):
@@ -134,7 +151,7 @@ def get_filtered_account_types(account_type_filter):
 
     filtered_account_types = constants.AccountType.get_all()
     filtered_ids = map(int, account_type_filter)
-    return set(filtered_account_types) & set(filtered_ids)
+    return list(set(filtered_account_types) & set(filtered_ids))
 
 
 def get_additional_columns(additional_columns):

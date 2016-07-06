@@ -3625,7 +3625,7 @@ class ExportReport(models.Model):
         return u' '.join(filter(None, (
             constants.ScheduledReportLevel.get_text(self.level),
             '(',
-            (self.account.name if self.arepccount else ''),
+            (self.account.name if self.account else ''),
             (self.campaign.name if self.campaign else ''),
             (self.ad_group.name if self.ad_group else ''),
             ') - by',

@@ -67,7 +67,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
             url += '&filtered_agencies=' + zemFilterService.getFilteredAgencies().join(',');
         }
         if (zemFilterService.isAccountTypeFilterOn()) {
-            url += '&filtered_agencies=' + zemFilterService.getFilteredAccountTypes().join(',');
+            url += '&filtered_account_types=' + zemFilterService.getFilteredAccountTypes().join(',');
         }
 
         url += '&additional_fields=' + $scope.getAdditionalColumns().join(',');
