@@ -1,4 +1,5 @@
 import os
+from dateutil import rrule
 from functools import partial
 import csv
 import backtosql
@@ -71,6 +72,27 @@ def prepare_copy_csv_query(s3_path, table_name):
         's3_url': s3_url,
         'credentials': credentials,
         'delimiter': CSV_DELIMITER,
+    }
+
+
+def prepare_daily_delete_query(table_name, date):
+    sql = backtosql.generate_sql('etl_day_delete.sql', {
+        'table': table_name,
+    })
+
+    return sql, {
+        'date': date,
+    }
+
+
+def prepare_date_range_delete_query(table_name, date_from, date_to):
+    sql = backtosql.generate_sql('etl_delete.sql', {
+        'table': table_name,
+    })
+
+    return sql, {
+        'date_from': date_from,
+        'date_to': date_to,
     }
 
 
@@ -222,7 +244,7 @@ class MVHelpersNormalizedStats(Materialize):
         return sql, params
 
 
-class MasterView(materialize_helpers.MaterializeViaCSVDaily):
+class MasterView(Materialize):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.
@@ -234,32 +256,36 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
     def table_name(self):
         return 'mv_master'
 
-    def insert_data(self, cursor, date_from, date_to, campaign_factors, **kwargs):
-        self._prefetch()
+    def generate(self, **kwargs):
+        self.prefetch()
 
-        self._execute_insert_stats_into_mv_master(cursor, date_from, date_to)
+        for date in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):
 
-        breakdown_keys_with_traffic = self._get_breakdowns_with_traffic_results(cursor, date_from, date_to)
+            with get_write_stats_transaction():
+                with get_write_stats_cursor() as c:
+                    sql, params = prepare_daily_delete_query(self.table_name(), date)
+                    c.execute(sql, params)
 
-        super(MasterView, self).insert_data(
-            cursor, date_from, date_to, campaign_factors,
-            breakdown_keys_with_traffic=breakdown_keys_with_traffic,
-            **kwargs)
+                    sql, params = self.prepare_insert_traffic_data_query(date)
+                    c.execute(sql, params)
 
-    def _prefetch(self):
-        self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
-        self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.all()}
-        self.accounts_map = {x.id: x for x in dash.models.Account.objects.all()}
-        self.sources_slug_map = {
-            helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
-        self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
+                    breakdown_keys_with_traffic = self.get_breakdowns_with_traffic_results(c, date)
 
-    def generate_rows(self, cursor, date, breakdown_keys_with_traffic, **kwargs):
+                    # generate csv in transaction as it needs data created in it
+                    s3_path = upload_csv(
+                        self.table_name(),
+                        date,
+                        self.job_id,
+                        partial(self.generate_rows, cursor, date, breakdown_keys_with_traffic)
+                    )
+
+                    sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                    c.execute(sql, params)
+
+    def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
         skipped_postclick_stats = set()
 
-        breakdown_keys_with_traffic = breakdown_keys_with_traffic.get(date, {})
-
-        for breakdown_key, row in self._get_postclickstats(cursor, date):
+        for breakdown_key, row in self.get_postclickstats(cursor, date):
             # only return those rows for which we have traffic - click
             if breakdown_key in breakdown_keys_with_traffic:
                 yield row
@@ -269,7 +295,37 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
         if skipped_postclick_stats:
             logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
 
-    def _get_postclickstats(self, cursor, date):
+    def prepare_insert_traffic_data_query(self, date):
+        sql = backtosql.generate_sql('etl_insert_mv_master_stats.sql', {})
+
+        return sql, {
+            'date': date,
+        }
+
+    def get_breakdowns_with_traffic_results(self, c, date):
+        sql, params = self.prepare_get_breakdowns_with_traffic(date)
+        c.execute(sql, params)
+
+        breakdown_keys = set()
+        for row in db.xnamedtuplefetchall(c):
+            breakdown_keys.add(helpers.get_breakdown_key_for_postclickstats(row.source_id, row.content_ad_id))
+
+        return breakdown_keys
+
+    def prepare_get_breakdowns_with_traffic(self, date):
+        return backtosql.generate_sql('etl_select_breakdown_keys_with_traffic.sql', {}), {
+            'date': date,
+        }
+
+    def prefetch(self):
+        self.ad_groups_map = {x.id: x for x in dash.models.AdGroup.objects.all()}
+        self.campaigns_map = {x.id: x for x in dash.models.Campaign.objects.all()}
+        self.accounts_map = {x.id: x for x in dash.models.Account.objects.all()}
+        self.sources_slug_map = {
+            helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
+        self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
+
+    def get_postclickstats(self, cursor, date):
 
         # group postclick rows by ad group and postclick source
         rows_by_ad_group = defaultdict(lambda: defaultdict(list))
@@ -338,132 +394,19 @@ class MasterView(materialize_helpers.MaterializeViaCSVDaily):
                     # None,
                 )
 
-    def _get_touchpoint_conversions(self, cursor, date):
-
-        conversions_breakdown = helpers.construct_touchpoint_conversions_dict(
-            self._get_touchpoint_conversions_query_results(cursor, date))
-
-        for breakdown_key, conversions in conversions_breakdown.iteritems():
-            ad_group_id, content_ad_id, source_id, publisher = breakdown_key
-
-            if source_id not in self.sources_map:
-                logger.warning("Got conversion for unknown media source: %s", source_id)
-                continue
-
-            if ad_group_id not in self.ad_groups_map:
-                logger.warning("Got conversion for unknown ad group: %s", ad_group_id)
-                continue
-
-            ad_group = self.ad_groups_map[ad_group_id]
-            campaign = self.campaigns_map[ad_group.campaign_id]
-            account = self.accounts_map[campaign.account_id]
-
-            yield helpers.get_breakdown_key_for_postclickstats(source_id, content_ad_id), (
-                date,
-                source_id,
-
-                account.agency_id,
-                account.id,
-                campaign.id,
-                ad_group.id,
-                content_ad_id,
-                publisher,
-
-                dash.constants.DeviceType.UNDEFINED,
-                None,
-                None,
-                None,
-                dash.constants.AgeGroup.UNDEFINED,
-                dash.constants.Gender.UNDEFINED,
-                dash.constants.AgeGenderGroup.UNDEFINED,
-
-                0,
-                0,
-                0,
-                0,
-
-                0,
-                0,
-                0,
-                0,
-                0,
-
-                0,
-                0,
-                0,
-
-                None,
-                json.dumps(conversions),
-            )
-
-    @classmethod
-    def _execute_insert_stats_into_mv_master(cls, c, date_from, date_to):
-        sql, params = cls._prepare_insert_stats_query(date_from, date_to)
-        c.execute(sql, params)
-
-    @classmethod
-    def _prepare_insert_stats_query(cls, date_from, date_to):
-        sql = backtosql.generate_sql('etl_insert_mv_master_stats.sql', {})
-
-        return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
-        }
-
-    @classmethod
-    def _get_breakdowns_with_traffic_results(cls, c, date_from, date_to):
-        sql, params = cls._prepare_get_breakdowns_with_traffic(date_from, date_to)
-        c.execute(sql, params)
-
-        breakdown_keys = defaultdict(set)
-        for row in db.xnamedtuplefetchall(c):
-            breakdown_keys[row.date].add(helpers.get_breakdown_key_for_postclickstats(row.source_id, row.content_ad_id))
-
-        return breakdown_keys
-
-    @classmethod
-    def _prepare_get_breakdowns_with_traffic(cls, date_from, date_to):
-        return backtosql.generate_sql('etl_select_breakdown_keys_with_traffic.sql', {}), {
-            'date_from': date_from,
-            'date_to': date_to,
-        }
-
-    @classmethod
-    def _get_postclickstats_query_results(cls, c, date):
-        sql, params = cls._prepare_postclickstats_query(date)
+    def get_postclickstats_query_results(self, c, date):
+        sql, params = self.prepare_postclickstats_query(date)
 
         c.execute(sql, params)
         return db.xnamedtuplefetchall(c)
 
-    @classmethod
-    def _prepare_postclickstats_query(cls, date):
+    def prepare_postclickstats_query(self, date):
         sql = backtosql.generate_sql('etl_breakdown_simple_one_day.sql', {
             'breakdown': models.K1PostclickStats.get_breakdown([
                 'ad_group_id', 'postclick_source', 'content_ad_id', 'source_slug', 'publisher',
             ]),
             'aggregates': models.K1PostclickStats.get_aggregates(),
             'table': 'postclickstats'
-        })
-
-        params = {'date': date}
-
-        return sql, params
-
-    @classmethod
-    def _get_touchpoint_conversions_query_results(cls, c, date):
-        sql, params = cls._prepare_touchpoint_conversions_query(date)
-
-        c.execute(sql, params)
-        return db.xnamedtuplefetchall(c)
-
-    @classmethod
-    def _prepare_touchpoint_conversions_query(cls, date):
-        sql = backtosql.generate_sql('etl_breakdown_simple_one_day.sql', {
-            'breakdown': models.K1Conversions.get_breakdown([
-                'ad_group_id', 'content_ad_id', 'source_id', 'publisher', 'slug', 'conversion_window'
-            ]),
-            'aggregates': models.K1Conversions.select_columns(subset=['count']),
-            'table': 'conversions',
         })
 
         params = {'date': date}

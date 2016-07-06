@@ -47,7 +47,7 @@ INSERT INTO mv_master (
     )
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
   WHERE
-    a.date BETWEEN %(date_from)s AND %(date_to)s
+    a.date=%(date)s
 );
 
 {% endautoescape %}
