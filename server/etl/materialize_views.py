@@ -142,25 +142,6 @@ class MVHelpersSource(Materialize):
             )
 
 
-class MVHTest(Materialize):
-    TABLE_NAME = 'test'
-
-    def generate(self, **kwargs):
-        with get_write_stats_transaction():
-            with get_write_stats_cursor() as c:
-                c.execute("select count(*) from mvh_source")
-                print db.dictfetchall(c)
-
-                c.execute("select count(*) from mvh_campaign_factors")
-                print db.dictfetchall(c)
-
-                c.execute("select count(*) from mvh_adgroup_structure")
-                print db.dictfetchall(c)
-
-                c.execute("select count(*) from mvh_clean_stats")
-                print db.dictfetchall(c)
-
-
 class MVHelpersCampaignFactors(Materialize):
     """
     Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
@@ -278,6 +259,8 @@ class MasterView(Materialize):
         self.prefetch()
 
         for date in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):
+
+            date = date.date()
 
             with get_write_stats_transaction():
                 with get_write_stats_cursor() as c:
@@ -442,7 +425,7 @@ class DerivedMaterializedView(Materialize):
 
                 logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
-                sql = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from, self.date_to)
+                sql, params = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from, self.date_to)
                 c.execute(sql, params)
 
                 logger.info('Inserting data into table "%s" for date range %s - %s, job %s',
@@ -455,7 +438,7 @@ class MVAccount(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_account'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
@@ -466,8 +449,8 @@ class MVAccount(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -475,7 +458,7 @@ class MVAccountDelivery(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_account_delivery'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
@@ -487,8 +470,8 @@ class MVAccountDelivery(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -496,7 +479,7 @@ class MVCampaign(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_campaign'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
@@ -507,8 +490,8 @@ class MVCampaign(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -516,7 +499,7 @@ class MVCampaignDelivery(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_campaign_delivery'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
@@ -528,8 +511,8 @@ class MVCampaignDelivery(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -537,7 +520,7 @@ class MVAdGroup(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_ad_group'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
@@ -548,8 +531,8 @@ class MVAdGroup(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -557,7 +540,7 @@ class MVAdGroupDelivery(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_ad_group_delivery'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
@@ -569,8 +552,8 @@ class MVAdGroupDelivery(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -578,7 +561,7 @@ class MVContentAd(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_content_ad'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
@@ -589,8 +572,8 @@ class MVContentAd(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
 
 
@@ -598,7 +581,7 @@ class MVContentAdDelivery(DerivedMaterializedView):
 
     TABLE_NAME = 'mv_content_ad_delivery'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
+    def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
             'breakdown': models.MVMaster.get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id',
@@ -610,6 +593,6 @@ class MVContentAdDelivery(DerivedMaterializedView):
         })
 
         return sql, {
-            'date_from': date_from,
-            'date_to': date_to,
+            'date_from': self.date_from,
+            'date_to': self.date_to,
         }
