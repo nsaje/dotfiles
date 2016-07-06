@@ -25,8 +25,8 @@ TPConversionResults = collections.namedtuple('Result3',
                                               'slug', 'conversion_window', 'count'])
 
 
-@mock.patch('etl.materialize_views.get_write_stats_cursor')
-@mock.patch('etl.materialize_views.get_write_stats_transaction')
+@mock.patch('redshiftapi.db.get_write_stats_cursor')
+@mock.patch('redshiftapi.db.get_write_stats_transaction')
 @mock.patch ('utils.s3helpers.S3Helper')
 class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
@@ -67,8 +67,8 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
         ])
 
 
-@mock.patch('etl.materialize_views.get_write_stats_cursor')
-@mock.patch('etl.materialize_views.get_write_stats_transaction')
+@mock.patch('redshiftapi.db.get_write_stats_cursor')
+@mock.patch('redshiftapi.db.get_write_stats_transaction')
 @mock.patch ('utils.s3helpers.S3Helper')
 class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
@@ -121,8 +121,8 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
 
-@mock.patch('etl.materialize_views.get_write_stats_cursor')
-@mock.patch('etl.materialize_views.get_write_stats_transaction')
+@mock.patch('redshiftapi.db.get_write_stats_cursor')
+@mock.patch('redshiftapi.db.get_write_stats_transaction')
 @mock.patch ('utils.s3helpers.S3Helper')
 class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
@@ -165,8 +165,8 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
         ])
 
 
-@mock.patch('etl.materialize_views.get_write_stats_cursor')
-@mock.patch('etl.materialize_views.get_write_stats_transaction')
+@mock.patch('redshiftapi.db.get_write_stats_cursor')
+@mock.patch('redshiftapi.db.get_write_stats_transaction')
 class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
@@ -260,8 +260,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
-    @mock.patch('etl.materialize_views.get_write_stats_cursor')
-    @mock.patch('etl.materialize_views.get_write_stats_transaction')
+    @mock.patch('redshiftapi.db.get_write_stats_cursor')
+    @mock.patch('redshiftapi.db.get_write_stats_transaction')
     @mock.patch('utils.s3helpers.S3Helper')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
         date_from = datetime.date(2016, 7, 1)
@@ -393,7 +393,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
         ]
 
-        with mock.patch.object(materialize_views.MasterView, 'get_postclickstats', return_value=postclickstats_return_value):
+        with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
+                               return_value=postclickstats_return_value):
             mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
             rows = list(mv.generate_rows(mock_cursor, date, breakdown_keys_with_traffic))
 
@@ -467,7 +468,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertDictEqual(params, {'date': date})
 
 
-@mock.patch('etl.materialize_views.get_write_stats_transaction')
+@mock.patch('redshiftapi.db.get_write_stats_transaction')
 class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
     DERIVED_VIEWS = [
@@ -485,7 +486,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
         for mv_class, table_name in self.DERIVED_VIEWS:
             mv = mv_class('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
 
-            with mock.patch('etl.materialize_views.get_write_stats_cursor') as mock_cursor:
+            with mock.patch('redshiftapi.db.get_write_stats_cursor') as mock_cursor:
 
                 mv.generate()
 

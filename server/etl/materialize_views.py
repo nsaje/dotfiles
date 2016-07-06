@@ -1,17 +1,16 @@
-import os
 import backtosql
+import io
 import logging
 import os.path
-import io
-import unicodecsv as csv
+
+from collections import defaultdict
 from dateutil import rrule
 from functools import partial
-from collections import defaultdict
+import unicodecsv as csv
 
 from django.conf import settings
 
 from utils import s3helpers
-from redshiftapi.db import get_write_stats_cursor, get_write_stats_transaction
 
 import dash.models
 import dash.constants
@@ -122,8 +121,8 @@ class MVHelpersSource(Materialize):
             self.generate_rows
         )
 
-        with get_write_stats_transaction():
-            with get_write_stats_cursor() as c:
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_source.sql', None)
                 c.execute(sql)
 
@@ -157,8 +156,8 @@ class MVHelpersCampaignFactors(Materialize):
             partial(self.generate_rows, campaign_factors)
         )
 
-        with get_write_stats_transaction():
-            with get_write_stats_cursor() as c:
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_campaign_factors.sql', None)
                 c.execute(sql)
 
@@ -194,8 +193,8 @@ class MVHelpersAdGroupStructure(Materialize):
             self.generate_rows
         )
 
-        with get_write_stats_transaction():
-            with get_write_stats_cursor() as c:
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_adgroup_structure.sql', None)
                 c.execute(sql)
 
@@ -225,8 +224,8 @@ class MVHelpersNormalizedStats(Materialize):
     TABLE_NAME = 'mvh_clean_stats'
 
     def generate(self, **kwargs):
-        with get_write_stats_transaction():
-            with get_write_stats_cursor() as c:
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_clean_stats.sql', None)
                 c.execute(sql)
 
@@ -262,8 +261,8 @@ class MasterView(Materialize):
 
             date = date.date()
 
-            with get_write_stats_transaction():
-                with get_write_stats_cursor() as c:
+            with db.get_write_stats_transaction():
+                with db.get_write_stats_cursor() as c:
                     logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
                     sql, params = prepare_daily_delete_query(self.TABLE_NAME, date)
                     c.execute(sql, params)
@@ -420,8 +419,8 @@ class MasterView(Materialize):
 
 class DerivedMaterializedView(Materialize):
     def generate(self, **kwargs):
-        with get_write_stats_transaction():
-            with get_write_stats_cursor() as c:
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
 
                 logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
