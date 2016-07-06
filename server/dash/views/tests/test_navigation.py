@@ -3,6 +3,8 @@ import json
 from mock import patch
 import datetime
 
+from dash import models
+
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
@@ -68,7 +70,10 @@ class NavigationAllAccountsDataViewTest(TestCase):
 class NavigationDataViewTest(TestCase):
     fixtures = ['test_navigation.yaml']
 
-    def _get(self, user_id, level, obj_id, filtered_sources=None):
+    def _get(self, user_id, level, obj_id,
+             filtered_sources=None,
+             filtered_agencies=None,
+             filtered_account_types=None):
 
         username = User.objects.get(pk=user_id).email
         self.client.login(username=username, password='secret')
@@ -77,7 +82,7 @@ class NavigationDataViewTest(TestCase):
             'level_': level,
             'id_': obj_id,
         }), data={
-            'filtered_sources': filtered_sources
+            'filtered_sources': filtered_sources,
         })
 
         response = json.loads(response.content)
@@ -241,25 +246,33 @@ class NavigationDataViewTest(TestCase):
             'error_code': 'MissingDataError'
         })
 
+    def test_get_account_filter(self):
+        response = self._get(1, 'accounts', 1)
+        self.assertDictEqual(response, {
+            'account': {
+                'archived': False,
+                'id': 1,
+                'name': 'test account 1',
+            }
+        })
+
+        # archived entity
+        response = self._get(3, 'accounts', 3)
+
+        self.assertDictEqual(response, {
+            'account': {
+                'archived': True,
+                'id': 3,
+                'name': 'test account 3',
+            }
+        })
+
 
 class NavigationTreeViewTest(TestCase):
     fixtures = ['test_navigation.yaml']
 
-    def _get(self, user_id, filtered_sources=None):
-        username = User.objects.get(pk=user_id).email
-        self.client.login(username=username, password='secret')
-
-        response = self.client.get(reverse('navigation_tree'),
-                                   data={'filtered_sources': filtered_sources})
-
-        response = json.loads(response.content)
-        return response
-
-    @patch('datetime.datetime', MockDatetime)
-    def test_get(self):
-        response = self._get(1)
-
-        expected_response = [{
+    def setUp(self):
+        self.expected_response = [{
             "archived": False,
             "campaigns": [{
                 "adGroups": [{
@@ -298,11 +311,37 @@ class NavigationTreeViewTest(TestCase):
             "id": 1,
             "name": "test account 1",
         }]
-        self.assertItemsEqual(response['data'], expected_response)
+
+    def _get(self, user_id, filtered_sources=None,
+             filtered_agencies=None,
+             filtered_account_types=None):
+        username = User.objects.get(pk=user_id).email
+        self.client.login(username=username, password='secret')
+
+        data = {}
+        if filtered_sources:
+            data['filtered_sources'] = filtered_sources
+        if filtered_agencies:
+            data['filtered_agencies'] = filtered_agencies
+        if filtered_account_types:
+            data['filtered_account_types'] = filtered_account_types
+
+        response = self.client.get(
+            reverse('navigation_tree'),
+            data=data
+        )
+
+        response = json.loads(response.content)
+        return response
+
+    @patch('datetime.datetime', MockDatetime)
+    def test_get(self):
+        response = self._get(1)
+        self.assertItemsEqual(response['data'], self.expected_response)
 
     @patch('datetime.datetime', MockDatetime)
     def test_get_filtered_sources(self):
-        response = self._get(1, [2])
+        response = self._get(1, filtered_sources=[2])
 
         expected_response = [{
             "archived": False,
@@ -377,3 +416,29 @@ class NavigationTreeViewTest(TestCase):
 
     def test_get_no_data(self):
         self.assertDictEqual(self._get(4), {"success": True})
+
+    @patch('datetime.datetime', MockDatetime)
+    def test_get_account_filter_agency(self):
+        user = User.objects.get(pk=1)
+
+        account = models.Account.objects.get(pk=1)
+        response = self._get(1)
+        self.assertItemsEqual(response['data'], self.expected_response)
+
+        agency = models.Agency(name='Test')
+        agency.save(test_helper.fake_request(user))
+
+        agency2 = models.Agency(name='Test 2')
+        agency2.save(test_helper.fake_request(user))
+
+        account.agency = agency
+        account.save(test_helper.fake_request(user))
+
+        response = self._get(1, filtered_agencies=[agency2.id])
+        self.assertItemsEqual({"success": True}, response)
+
+        response = self._get(1, filtered_agencies=[agency.id])
+        self.assertItemsEqual(self.expected_response, response['data'])
+
+        response = self._get(1, filtered_agencies=[agency2.id, agency.id])
+        self.assertItemsEqual(self.expected_response, response['data'])
