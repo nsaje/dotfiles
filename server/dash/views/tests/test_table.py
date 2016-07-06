@@ -2026,6 +2026,7 @@ class AccountsAccountsTableTest(TestCase):
 
         t = table.AccountsAccountsTable()
         r = HttpRequest()
+        r.method = 'GET'
         r.user = self.normal_user
 
         start_date = date
@@ -2049,6 +2050,7 @@ class AccountsAccountsTableTest(TestCase):
         mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
 
         r = HttpRequest()
+        r.method = 'GET'
         r.user = self.normal_user
 
         agency = models.Agency(
@@ -2082,6 +2084,7 @@ class AccountsAccountsTableTest(TestCase):
         mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
 
         r = HttpRequest()
+        r.method = 'GET'
         r.user = self.normal_user
 
         t = table.AccountsAccountsTable()
@@ -2094,5 +2097,13 @@ class AccountsAccountsTableTest(TestCase):
         show_archived = True
 
         view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('Sandbox', response['rows'][0]['account_type'])
+
+        view_filter.filtered_account_types = [constants.AccountType.SELF_MANAGED]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual([], response['rows'])
+
+        view_filter.filtered_account_types = [constants.AccountType.SANDBOX]
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('Sandbox', response['rows'][0]['account_type'])
