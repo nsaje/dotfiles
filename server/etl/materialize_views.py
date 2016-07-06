@@ -128,7 +128,7 @@ class MVHelpersCampaignFactors(Materialize):
     def table_name(self):
         return 'mvh_campaign_factors'
 
-    def generate(self, campaign_factors):
+    def generate(self, campaign_factors, **kwargs):
         s3_path = upload_csv(
             self.table_name(),
             self.date_to,
@@ -156,7 +156,7 @@ class MVHelpersCampaignFactors(Materialize):
                 )
 
 
-class MVHelpersAdGroupStructure(materialize_helpers.TableWithoutDateMixin, materialize_helpers.MaterializeViaCSV):
+class MVHelpersAdGroupStructure(Materialize):
     """
     Helper view that puts ad group structure (campaign id, account id, agency id) into redshift. Its than
     used to construct the mv_master view.
@@ -165,7 +165,23 @@ class MVHelpersAdGroupStructure(materialize_helpers.TableWithoutDateMixin, mater
     def table_name(self):
         return 'mvh_adgroup_structure'
 
-    def generate_rows(self, cursor, date_from, date_to, **kwargs):
+    def generate(self, **kwargs):
+        s3_path = upload_csv(
+            self.table_name(),
+            self.date_to,
+            self.job_id(),
+            self.generate_rows
+        )
+
+        with get_write_stats_transaction():
+            with get_write_stats_cursor() as c:
+                sql = backtosql.generate_sql('etl_create_temp_table_mvh_adgroup_structure.sql', None)
+                c.execute(sql)
+
+                sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                c.execute(sql, params)
+
+    def generate_rows(self):
         ad_groups = dash.models.AdGroup.objects.select_related('campaign', 'campaign__account').all()
 
         for ad_group in ad_groups:
