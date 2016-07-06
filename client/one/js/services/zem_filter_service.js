@@ -1,7 +1,7 @@
 /* globals JSON */
 "use strict";
 
-oneApp.factory('zemFilterService', ['$location', '$rootScope', function ($location, $rootScope) {
+oneApp.factory('zemFilterService', ['$location', function ($location) {
     var filteredSources = [];
     var filteredAgencies = [];
     var filteredAccountTypes = [];
