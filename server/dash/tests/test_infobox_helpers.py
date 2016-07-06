@@ -12,6 +12,7 @@ import dash.constants
 import dash.models
 import dash.infobox_helpers
 
+from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
 
@@ -345,6 +346,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
+        self.user = user
+        self.agency = dash.models.Agency(name='test')
+        self.agency.save(fake_request(user))
+
         today = datetime.datetime.today().date()
 
         _, days_of_month = calendar.monthrange(today.year, today.month)
@@ -382,6 +387,22 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
         self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
 
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = self.agency
+        account.save(fake_request(self.user))
+
+        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend([self.agency], None))
+
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
+        self.assertEqual(0, res)
+
+        new_acs = account.get_current_settings().copy_settings()
+        new_acs.account_type = dash.constants.AccountType.UNKNOWN
+        new_acs.save(fake_request(self.user))
+
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
+        self.assertEqual(10, res)
+
     def test_get_mtd_all_accounts_spend(self):
         self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
@@ -405,6 +426,26 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
         # shouldn't change because it's month to date
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
+
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [self.agency], None))
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = self.agency
+        account.save(fake_request(self.user))
+
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [self.agency], None))
+
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [], [dash.constants.AccountType.PILOT]))
+
+        new_acs = account.get_current_settings().copy_settings()
+        new_acs.account_type = dash.constants.AccountType.PILOT
+        new_acs.save(fake_request(self.user))
+
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [], [dash.constants.AccountType.PILOT]))
 
     def test_count_active_accounts(self):
         today = datetime.datetime.utcnow()
