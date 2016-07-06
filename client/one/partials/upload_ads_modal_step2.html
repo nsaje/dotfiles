@@ -40,14 +40,18 @@
                     </div>
                 </td>
                 <td class="action">
-                    <a href ng-click="openEditForm(candidate)" class="btn btn-secondary">
+                    <img class="loader-icon small-icon" ng-if="candidate.removeRequestInProgress" ng-src="{{ config.static_url }}/one/img/loader.svg"/>
+                    <a href ng-click="openEditForm(candidate)" class="btn btn-secondary" ng-disabled="candidate.removeRequestInProgress">
                         <img ng-src="{{ config.static_url }}/one/img/button-edit.svg"/>
                         <span class="action-text">Edit</span>
                     </a>
-                    <a href ng-click="removeCandidate(candidate, $event)" class="btn btn-secondary">
+                    <a href ng-click="removeCandidate(candidate, $event)" class="btn btn-secondary" ng-disabled="candidate.removeRequestInProgress">
                         <img ng-src="{{ config.static_url }}/one/img/button-remove.svg"/>
                         <span class="action-text">Remove</span>
                     </a>
+                    <div class="error" ng-if="candidate.removeRequestFailed">
+                        Something went wrong. Please try again.
+                    </div>
                 </td>
             </tr>
         </table>
@@ -256,7 +260,9 @@
                 <div class="form-group">
                     <div class="col-xs-2 control-label"></div>
                     <div class="col-xs-8">
-                        <button type="button" class="btn btn-add" ng-click="updateCandidate()">Update ad</button>
+                        <button type="button" class="btn btn-add" ng-click="updateCandidate()" ng-disabled="updateRequestInProgress">Update ad</button>
+                        <img class="loader-icon small-icon" ng-if="updateRequestInProgress" ng-src="{{ config.static_url }}/one/img/loader.svg"/>
+                        <span class="error" ng-if="updateRequestFailed">Oops. Something went wrong. Please try again.</span>
                     </div>
                     <div class="col-xs-2"></div>
                 </div>
@@ -270,5 +276,6 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-gray" ng-click="cancel()">Cancel</button>
     <button type="button" class="btn btn-add pull-right" ng-click="save()" ng-disabled="isSaveDisabled()">Upload</button>
-    <span class="error pull-right" ng-if="anyCandidateHasErrors">You need to fix all errors before you can upload batch.</span>
+    <span class="error pull-right" ng-if="getSaveErrorMsg()">{{ getSaveErrorMsg() }}</span>
+    <img class="loader-icon small-icon pull-right" ng-if="saveRequestInProgress || anyCandidateWaiting" ng-src="{{ config.static_url }}/one/img/loader.svg"/>
 </div>

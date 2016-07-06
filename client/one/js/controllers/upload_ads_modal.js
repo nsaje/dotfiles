@@ -102,6 +102,8 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     };
 
     $scope.openEditForm = function (candidate) {
+        $scope.updateRequestInProgress = false;
+        $scope.updateRequestFailed = false;
         $scope.selectedCandidate = angular.copy(candidate);
         $scope.selectedCandidate.defaults = {};
         $scope.selectedCandidate.useTrackers = !!$scope.selectedCandidate.primaryTrackerUrl ||
@@ -118,23 +120,44 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     };
 
     $scope.isSaveDisabled = function () {
-        return $scope.anyCandidateHasErrors || !$scope.candidates.length || getWaitingCandidateIds().length;
+        return $scope.anyCandidateHasErrors || !$scope.candidates.length ||
+            getWaitingCandidateIds().length || $scope.saveRequestInProgress;
     };
 
-    $scope.removeCandidate = function (candidate, event) {
+    var findCandidate = function (candidateId) {
+        for (var i = 0; i < $scope.candidates.length; i++) {
+            if ($scope.candidates[i].id === candidateId) {
+                return $scope.candidates[i];
+            }
+        }
+    };
+
+    $scope.removeCandidate = function (selectedCandidate, event) {
         event.stopPropagation();  // the whole row has ng-click registered
+
+        var candidate = findCandidate(selectedCandidate.id);
+        candidate.removeRequestInProgress = true;
+        candidate.removeRequestFailed = false;
+
         api.upload.removeCandidate(
             candidate.id,
             $state.params.id,
             $scope.batchId
-        ).then(function () {
-            $scope.candidates = $scope.candidates.filter(function (el) {
-                return candidate.id !== el.id;
-            });
+        ).then(
+            function () {
+                $scope.candidates = $scope.candidates.filter(function (el) {
+                    return candidate.id !== el.id;
+                });
 
-            if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
-                $scope.closeEditForm();
+                if ($scope.selectedCandidate && ($scope.selectedCandidate.id === candidate.id)) {
+                    $scope.closeEditForm();
+                }
+            },
+            function () {
+                candidate.removeRequestFailed = true;
             }
+        ).finally(function () {
+            candidate.removeRequestInProgress = false;
         });
     };
 
@@ -200,15 +223,20 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     };
 
     $scope.save = function () {
+        $scope.saveRequestFailed = false;
+        $scope.saveRequestInProgress = true;
         api.upload.save($state.params.id, $scope.batchId, $scope.uploadFormData.batchName).then(
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
                 $scope.switchToSuccessScreen();
             },
             function (errors) {
+                $scope.saveRequestFailed = true;
                 $scope.saveErrors = errors;
             }
-        );
+        ).finally(function () {
+            $scope.saveRequestInProgress = false;
+        });
     };
 
     $scope.clearSelectedCandidateErrors = function (field) {
@@ -219,12 +247,38 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
         delete $scope.selectedCandidate.errors[field];
     };
 
+    $scope.clearUploadFormErrors = function (field) {
+        if (!$scope.uploadFormErrors) {
+            return;
+        }
+
+        delete $scope.uploadFormErrors[field];
+    };
+
     $scope.clearBatchNameErrors = function () {
         if (!$scope.saveErrors) {
             return;
         }
 
         delete $scope.saveErrors.batchName;
+    };
+
+    $scope.getSaveErrorMsg = function () {
+        if ($scope.saveRequestInProgress) {
+            return;
+        }
+
+        if ($scope.anyCandidateHasErrors) {
+            return 'You need to fix all errors before you can upload batch.';
+        }
+
+        if ($scope.saveErrors && $scope.saveErrors.batchName) {
+            return $scope.saveErrors.batchName[0];
+        }
+
+        if ($scope.saveRequestFailed) {
+            return 'Oops. Something went wrong. Please try again.';
+        }
     };
 
     $scope.getContentErrorsMsg = function (candidate) {
@@ -265,6 +319,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
             batchName: $scope.uploadFormData.batchName,
         };
 
+        $scope.uploadRequestInProgress = true;
         api.upload.upload(
             $state.params.id, uploadFormData
         ).then(
@@ -275,12 +330,16 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
                 $scope.startPolling();
             },
             function (data) {
+                $scope.uploadRequestFailed = true;
                 $scope.uploadFormErrors = data.errors;
             }
-        );
+        ).finally(function () {
+            $scope.uploadRequestInProgress = false;
+        });
     };
 
     $scope.updateCandidate = function () {
+        $scope.updateRequestInProgress = true;
         api.upload.updateCandidate(
             $scope.selectedCandidate,
             $state.params.id,
@@ -289,6 +348,10 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
             updateCandidates(result.candidates);
             $scope.startPolling();
             $scope.closeEditForm();
+        }, function () {
+            $scope.updateRequestFailed = true;
+        }).finally(function () {
+            $scope.updateRequestInProgress = false;
         });
     };
 
@@ -320,6 +383,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
 
     $scope.$watchCollection('candidates', function () {
         $scope.anyCandidateHasErrors = checkAllCandidateErrors($scope.candidates);
+        $scope.anyCandidateWaiting = getWaitingCandidateIds().length > 0;
     });
 
     $scope.$on('$destroy', function () {
