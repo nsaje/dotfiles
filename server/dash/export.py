@@ -122,17 +122,15 @@ ACCOUNT_CAMPAIGN_ONLY_ONCE_FIELDS = ACCOUNT_ONLY_ONCE_FIELDS + ('allocated_budge
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
                    conversion_goals, include_settings=False, include_account_settings=False, include_budgets=False,
                    include_flat_fees=False, include_projections=False, **constraints):
-    stats = []
-    if constraints.get('account'):
-        stats = stats_helper.get_stats_with_conversions(
-            user,
-            start_date,
-            end_date,
-            breakdown=dimensions,
-            ignore_diff_rows=ignore_diff_rows,
-            conversion_goals=conversion_goals,
-            constraints=constraints
-        )
+    stats = stats_helper.get_stats_with_conversions(
+        user,
+        start_date,
+        end_date,
+        breakdown=dimensions,
+        ignore_diff_rows=ignore_diff_rows,
+        conversion_goals=conversion_goals,
+        constraints=constraints
+    )
     prefetched_data, budgets, projections, account_projections, statuses, settings, account_settings =\
         _prefetch_rows_data(
             user,
