@@ -2664,8 +2664,6 @@ class ContentAdCandidate(FootprintModel):
     description = models.TextField(null=True, blank=True)
     call_to_action = models.TextField(null=True, blank=True)
 
-    # TODO: remove when upload v2.1 is public
-    tracker_urls = models.TextField(null=True, blank=True)
     primary_tracker_url = models.TextField(null=True, blank=True)
     secondary_tracker_url = models.TextField(null=True, blank=True)
 
@@ -2704,7 +2702,6 @@ class ContentAdCandidate(FootprintModel):
             'description': self.description,
             'brand_name': self.brand_name,
             'call_to_action': self.call_to_action,
-            'tracker_urls': self.tracker_urls,
             'image_status': self.image_status,
             'url_status': self.url_status,
             'hosted_image_url': self.get_image_url(160, 160),
