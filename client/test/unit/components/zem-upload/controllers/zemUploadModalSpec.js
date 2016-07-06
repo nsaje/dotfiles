@@ -1,13 +1,13 @@
 /* globals describe, beforeEach, module, inject, it, expect, constants, angular, spyOn, jasmine */
 'use strict';
 
-describe('UploadAdsModalCtrl', function () {
-    var $scope, $modalInstance, api, $state, $q, $interval, openedDeferred;
+describe('zemUploadModalCtrl', function () {
+    var $scope, $modalInstance, api, $q, $interval, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_, _$state_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_) {
         $q = _$q_;
         $interval = _$interval_;
         $scope = $rootScope.$new();
@@ -18,33 +18,28 @@ describe('UploadAdsModalCtrl', function () {
             close: function () {},
             opened: openedDeferred.promise,
         };
-        api = {
-            upload: {
-                upload: function () {},
-                checkStatus: function () {},
-                updateCandidate: function () {},
-                removeCandidate: function () {},
-                save: function () {},
-                cancel: function () {},
-            },
+        $scope.api = {
+            upload: function () {},
+            checkStatus: function () {},
+            updateCandidate: function () {},
+            removeCandidate: function () {},
+            save: function () {},
+            cancel: function () {},
         };
-
-        $state = _$state_;
-        $state.params = {id: 123};
 
         var mockedDate = new Date(Date.UTC(2016, 6, 1, 15, 5));
         jasmine.clock().mockDate(mockedDate);
 
         $controller(
-            'UploadAdsModalCtrl',
-            {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state, errors: {}}
+            'zemUploadModalCtrl',
+            {$scope: $scope, $modalInstance: $modalInstance, errors: {}}
         );
     }));
 
     describe('upload', function () {
         it('switches to picker on success', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'upload').and.callFake(function () {
+            spyOn($scope.api, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -57,8 +52,8 @@ describe('UploadAdsModalCtrl', function () {
             spyOn($scope, 'switchToContentAdPicker').and.stub();
 
             $scope.upload();
-            expect(api.upload.upload).toHaveBeenCalledWith(
-                $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
+            expect($scope.api.upload).toHaveBeenCalledWith(
+                {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
             );
             expect($scope.uploadRequestInProgress).toBe(true);
 
@@ -93,7 +88,7 @@ describe('UploadAdsModalCtrl', function () {
 
         it('sets a flag on upload failure', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'upload').and.callFake(function () {
+            spyOn($scope.api, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -105,8 +100,8 @@ describe('UploadAdsModalCtrl', function () {
             spyOn($scope, 'switchToContentAdPicker').and.stub();
 
             $scope.upload();
-            expect(api.upload.upload).toHaveBeenCalledWith(
-                $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
+            expect($scope.api.upload).toHaveBeenCalledWith(
+                {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
             );
             expect($scope.uploadRequestInProgress).toBe(true);
             expect($scope.uploadRequestFailed).toBe(false);
@@ -125,7 +120,7 @@ describe('UploadAdsModalCtrl', function () {
 
         it('displays errors on failure', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'upload').and.callFake(function () {
+            spyOn($scope.api, 'upload').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -137,8 +132,8 @@ describe('UploadAdsModalCtrl', function () {
             spyOn($scope, 'switchToContentAdPicker').and.stub();
 
             $scope.upload();
-            expect(api.upload.upload).toHaveBeenCalledWith(
-                $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
+            expect($scope.api.upload).toHaveBeenCalledWith(
+                {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
             );
 
             var errors = {
@@ -179,7 +174,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.candidates = angular.copy(candidates);
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'checkStatus').and.callFake(function () {
+            spyOn($scope.api, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
             $scope.startPolling();
@@ -199,7 +194,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.candidates = angular.copy(candidates);
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'checkStatus').and.callFake(function () {
+            spyOn($scope.api, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($interval, 'cancel');
@@ -256,20 +251,20 @@ describe('UploadAdsModalCtrl', function () {
             $scope.batchId = 1234;
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'checkStatus').and.callFake(function () {
+            spyOn($scope.api, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
             $scope.startPolling();
             $interval.flush(2501);
 
-            expect(api.upload.checkStatus).toHaveBeenCalledWith($state.params.id, $scope.batchId, [1]);
+            expect($scope.api.checkStatus).toHaveBeenCalledWith($scope.batchId, [1]);
         });
 
         it('stops polling when no candidates are left waiting', function () {
             $scope.candidates = angular.copy(candidates);
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'checkStatus').and.callFake(function () {
+            spyOn($scope.api, 'checkStatus').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($interval, 'cancel');
@@ -397,17 +392,19 @@ describe('UploadAdsModalCtrl', function () {
             $scope.batchId = 1234;
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'updateCandidate').and.callFake(function () {
+            spyOn($scope.api, 'updateCandidate').and.callFake(function () {
                 return deferred.promise;
             });
 
             spyOn($scope, 'startPolling').and.stub();
 
             $scope.updateCandidate();
-            expect(api.upload.updateCandidate).toHaveBeenCalledWith(
-                $scope.selectedCandidate, $state.params.id, $scope.batchId);
+            expect($scope.api.updateCandidate).toHaveBeenCalledWith(
+                $scope.selectedCandidate, $scope.batchId);
             expect($scope.updateRequestInProgress).toBe(true);
             expect($scope.updateRequestFailed).toBe(false);
+            expect($scope.api.updateCandidate).toHaveBeenCalledWith(
+                $scope.selectedCandidate, $scope.batchId);
 
             var returnedCandidate = {
                 id: 1,
@@ -454,15 +451,15 @@ describe('UploadAdsModalCtrl', function () {
             $scope.batchId = 1234;
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'updateCandidate').and.callFake(function () {
+            spyOn($scope.api, 'updateCandidate').and.callFake(function () {
                 return deferred.promise;
             });
 
             spyOn($scope, 'startPolling').and.stub();
 
             $scope.updateCandidate();
-            expect(api.upload.updateCandidate).toHaveBeenCalledWith(
-                $scope.selectedCandidate, $state.params.id, $scope.batchId);
+            expect($scope.api.updateCandidate).toHaveBeenCalledWith(
+                $scope.selectedCandidate, $scope.batchId);
             expect($scope.updateRequestInProgress).toBe(true);
             expect($scope.updateRequestFailed).toBe(false);
 
@@ -497,7 +494,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.batchId = 1234;
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'removeCandidate').and.callFake(function () {
+            spyOn($scope.api, 'removeCandidate').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -507,8 +504,8 @@ describe('UploadAdsModalCtrl', function () {
             spyOn(mockEvent, 'stopPropagation');
             $scope.removeCandidate(candidate, mockEvent);
             expect(mockEvent.stopPropagation).toHaveBeenCalled();
-            expect(api.upload.removeCandidate).toHaveBeenCalledWith(
-                candidate.id, $state.params.id, $scope.batchId);
+            expect($scope.api.removeCandidate).toHaveBeenCalledWith(
+                candidate.id, $scope.batchId);
             expect(candidate.removeRequestInProgress).toBe(true);
             expect(candidate.removeRequestFailed).toBe(false);
 
@@ -539,7 +536,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.batchId = 1234;
 
             var deferred = $q.defer();
-            spyOn(api.upload, 'removeCandidate').and.callFake(function () {
+            spyOn($scope.api, 'removeCandidate').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -549,8 +546,8 @@ describe('UploadAdsModalCtrl', function () {
             spyOn(mockEvent, 'stopPropagation');
             $scope.removeCandidate(candidate, mockEvent);
             expect(mockEvent.stopPropagation).toHaveBeenCalled();
-            expect(api.upload.removeCandidate).toHaveBeenCalledWith(
-                candidate.id, $state.params.id, $scope.batchId);
+            expect($scope.api.removeCandidate).toHaveBeenCalledWith(
+                candidate.id, $scope.batchId);
             expect(candidate.removeRequestInProgress).toBe(true);
             expect(candidate.removeRequestFailed).toBe(false);
 
@@ -567,7 +564,7 @@ describe('UploadAdsModalCtrl', function () {
     describe('upload save', function () {
         it('switches to last step on success', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'save').and.callFake(function () {
+            spyOn($scope.api, 'save').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($scope, 'switchToSuccessScreen').and.stub();
@@ -576,8 +573,8 @@ describe('UploadAdsModalCtrl', function () {
             $scope.uploadFormData.batchName = 'new batch name';
 
             $scope.save();
-            expect(api.upload.save).toHaveBeenCalledWith(
-                $state.params.id, $scope.batchId, $scope.uploadFormData.batchName);
+            expect($scope.api.save).toHaveBeenCalledWith(
+                $scope.batchId, $scope.uploadFormData.batchName);
             expect($scope.saveRequestInProgress).toBe(true);
             expect($scope.saveRequestFailed).toBe(false);
 
@@ -595,7 +592,7 @@ describe('UploadAdsModalCtrl', function () {
 
         it('sets a flag on failure', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'save').and.callFake(function () {
+            spyOn($scope.api, 'save').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($scope, 'switchToSuccessScreen').and.stub();
@@ -604,8 +601,8 @@ describe('UploadAdsModalCtrl', function () {
             $scope.uploadFormData.batchName = 'new batch name';
 
             $scope.save();
-            expect(api.upload.save).toHaveBeenCalledWith(
-                $state.params.id, $scope.batchId, $scope.uploadFormData.batchName);
+            expect($scope.api.save).toHaveBeenCalledWith(
+                $scope.batchId, $scope.uploadFormData.batchName);
             expect($scope.saveRequestInProgress).toBe(true);
             expect($scope.saveRequestFailed).toBe(false);
 
@@ -621,7 +618,7 @@ describe('UploadAdsModalCtrl', function () {
     describe('upload cancel', function () {
         it('closes the modal window', function () {
             var deferred = $q.defer();
-            spyOn(api.upload, 'cancel').and.callFake(function () {
+            spyOn($scope.api, 'cancel').and.callFake(function () {
                 return deferred.promise;
             });
             spyOn($scope, 'stopPolling').and.stub();
@@ -630,8 +627,8 @@ describe('UploadAdsModalCtrl', function () {
             $scope.batchId = 1234;
 
             $scope.cancel();
-            expect(api.upload.cancel).toHaveBeenCalledWith(
-                $state.params.id, $scope.batchId);
+            expect($scope.api.cancel).toHaveBeenCalledWith(
+                $scope.batchId);
 
             expect($scope.stopPolling).toHaveBeenCalled();
             expect($modalInstance.close).toHaveBeenCalled();

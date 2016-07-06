@@ -1,5 +1,5 @@
 /* globals $, oneApp, constants, options, defaults, angular, moment */
-oneApp.controller('zemUploadModalCtrl', ['$interval', '$scope',  '$state', '$modalInstance', '$window', function ($interval, $scope, $state, $modalInstance, $window) { // eslint-disable-line max-len
+oneApp.controller('zemUploadModalCtrl', ['$interval', '$scope', '$modalInstance', '$window', function ($interval, $scope, $modalInstance, $window) { // eslint-disable-line max-len
     $scope.MAX_URL_LENGTH = 936;
     $scope.MAX_TITLE_LENGTH = 90;
     $scope.MAX_DESCRIPTION_LENGTH = 140;
@@ -339,7 +339,6 @@ oneApp.controller('zemUploadModalCtrl', ['$interval', '$scope',  '$state', '$mod
     $scope.updateCandidate = function () {
         $scope.updateRequestInProgress = true;
         $scope.updateRequestFailed = false;
-        api.upload.updateCandidate(
         $scope.api.updateCandidate(
             $scope.selectedCandidate,
             $scope.batchId

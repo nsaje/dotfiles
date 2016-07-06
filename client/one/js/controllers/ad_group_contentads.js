@@ -500,7 +500,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     $scope.addContentAds = function () {
         var endpoint = zemUploadEndpointService.createEndpoint($state.params.id);
         var api = zemUploadApi.createInstance();
-        api.openModal($scope.adGroup, endpoint);
+        return api.openModal($scope.adGroup, endpoint);
     };
 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {

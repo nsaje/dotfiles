@@ -2940,7 +2940,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         exportAllowed: new ExportAllowed(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
-        upload: new Upload(),
         availableSources: new AvailableSources(),
         agencies: new Agencies(),
         conversionPixel: new ConversionPixel(),
