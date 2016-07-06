@@ -2,12 +2,10 @@ import json
 import requests
 import logging
 import sys
+from dash import models
 
 logging.getLogger('requests').setLevel(logging.CRITICAL)
 requests.packages.urllib3.disable_warnings()
-
-
-from dash import models
 
 AD_GROUP_IDS = []
 

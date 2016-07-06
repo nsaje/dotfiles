@@ -289,6 +289,7 @@ def get_actual_yesterday_cost(constraints, breakdown=None):
 
     return result
 
+
 def get_day_cost(day, breakdown=None, **constraints):
     rs = query(
         start_date=day,

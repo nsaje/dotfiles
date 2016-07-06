@@ -532,11 +532,11 @@ class RefreshAdGroupStatsTestCase(test.TestCase):
 
         # not yet refreshed, there are some differences
         imps_article_stats = models.ArticleStats.objects \
-              .filter(ad_group=astat.ad_group) \
-              .aggregate(impressions=Sum('impressions'))['impressions']
+            .filter(ad_group=astat.ad_group) \
+            .aggregate(impressions=Sum('impressions'))['impressions']
         imps_adgroup_stats = models.AdGroupStats.objects \
-              .filter(ad_group=astat.ad_group) \
-              .aggregate(impressions=Sum('impressions'))['impressions']
+            .filter(ad_group=astat.ad_group) \
+            .aggregate(impressions=Sum('impressions'))['impressions']
         self.assertEqual(imps_adgroup_stats + 1, imps_article_stats)
 
         # refresh for a single ad group
@@ -544,11 +544,11 @@ class RefreshAdGroupStatsTestCase(test.TestCase):
 
         # now there are no differences anymore
         imps_article_stats = models.ArticleStats.objects \
-              .filter(ad_group=astat.ad_group) \
-              .aggregate(impressions=Sum('impressions'))['impressions']
+            .filter(ad_group=astat.ad_group) \
+            .aggregate(impressions=Sum('impressions'))['impressions']
         imps_adgroup_stats = models.AdGroupStats.objects \
-              .filter(ad_group=astat.ad_group) \
-              .aggregate(impressions=Sum('impressions'))['impressions']
+            .filter(ad_group=astat.ad_group) \
+            .aggregate(impressions=Sum('impressions'))['impressions']
         self.assertEqual(imps_adgroup_stats, imps_article_stats)
 
     def test_cannot_refresh_invalid_constraints(self):

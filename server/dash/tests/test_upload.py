@@ -268,7 +268,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
             'brand_name': 'Example',
             'image_width': None,
-            'label': 'repeat'  * 21,
+            'label': 'repeat' * 21,
             'image_id': None,
             'image_height': None,
             'image_url': 'file://zemanta.com/test-image.jpg',

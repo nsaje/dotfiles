@@ -30,7 +30,6 @@ AD_ENDPOINT = 'https://api.admanager.yahoo.com/v1/rest/ad/'
 class SessionWithTimeout(requests.Session):
 
     def request(self, *args, **kwargs):
-        
         if not kwargs.get('timeout') and hasattr(self, 'timeout'):
             kwargs['timeout'] = self.timeout
         if not kwargs.get('verify'):

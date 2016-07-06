@@ -1468,7 +1468,7 @@ class UtilityHelpers(TestCase):
         other_agency.users.add(u)
 
         with self.assertRaises(MultipleObjectsReturned):
-           helpers.get_user_agency(u)
+            helpers.get_user_agency(u)
 
     def test_is_agency_manager(self):
         acc = models.Account.objects.get(pk=1000)

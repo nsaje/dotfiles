@@ -23,7 +23,6 @@ class CampaignStatusTest(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
-
     def test_update_status(self):
         zwei_response_data = {
             'status': 'success',
@@ -172,8 +171,7 @@ class GetContentAdStatusTest(TestCase):
             dash.constants.ContentAdSourceState.INACTIVE
         )
 
-        action = actionlog.models.ActionLog.objects.all().\
-                 order_by('-created_dt')[0]
+        action = actionlog.models.ActionLog.objects.all().order_by('-created_dt')[0]
 
         self.assertEqual(action.payload['args']['changes'], {'state': dash.constants.ContentAdSourceState.ACTIVE})
 

@@ -45,7 +45,7 @@ class Command(ExceptionCommand):
                         data = [
                             article_stats.date.isoformat(),
                             article_stats.content_ad.id,
-                            0, # special id instead of content ad
+                            0,  # special id instead of content ad
                             article_stats.ad_group.id,
                             article_stats.source.id,
                             article_stats.ad_group.campaign.id,

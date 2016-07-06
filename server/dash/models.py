@@ -239,7 +239,7 @@ class HistoryMixin(object):
             # this means that new settings changes for newly created settings
             # will always include defaults as fields that were changed:
             for key in self.get_defaults_dict():
-                if not key in current_dict:
+                if key not in current_dict:
                     continue
                 del current_dict[key]
 
@@ -366,7 +366,6 @@ class Agency(models.Model):
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)
-
 
     class QuerySet(models.QuerySet):
 

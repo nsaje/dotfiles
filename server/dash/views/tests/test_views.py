@@ -1569,7 +1569,7 @@ class AdGroupSourcesTest(TestCase):
         new_settings = ad_group.get_current_settings().copy_settings()
         new_settings.cpc_cc = decimal.Decimal('0.01')
         new_settings.save(None)
-        
+
         response = self.client.put(
             reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
             data=json.dumps({'source_id': '9'})

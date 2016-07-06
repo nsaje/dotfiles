@@ -173,7 +173,7 @@ class RedshiftTestRSModel(TestCase):
         TestModel().execute_delete(mock_cursor, {'date__eq': date, 'ad_group__eq': 4, 'exchange__eq': 'abc'})
 
         query = 'DELETE FROM "test_table" WHERE (adgroup_id=%s AND date=%s AND exchange=%s)'
-        params =  [4, datetime.date(2015, 1, 2), 'abc']
+        params = [4, datetime.date(2015, 1, 2), 'abc']
 
         mock_cursor.execute.assert_called_with(query, params)
 
@@ -207,7 +207,7 @@ class RedshiftTestRSModel(TestCase):
                                             ])
 
     def test_constraints_to_tuples_str(self):
-        constraint_str, params = redshift.RSQ(**{"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)}).expand(TestModel())
+        constraint_str, params = redshift.RSQ(**{"exchange": ["ab", "cd"], "date": datetime.date(2015, 1, 2)}).expand(TestModel())
         self.assertEqual(constraint_str, "(date=%s AND exchange IN (%s,%s))")
         self.assertEqual(params, [datetime.date(2015, 1, 2), 'ab', 'cd'])
 

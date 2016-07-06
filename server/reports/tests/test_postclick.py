@@ -10,7 +10,6 @@ from reports import redshift
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 
 
-
 class PostclickTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats_postclick.yaml']
 
