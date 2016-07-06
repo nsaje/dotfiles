@@ -99,6 +99,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_content_ad(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'contentad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -196,6 +197,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_ad_group(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -235,6 +237,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_content_ad(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'contentad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -322,6 +325,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -357,6 +361,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_ad_group(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -393,6 +398,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_content_ad(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'contentad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -476,6 +482,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_account(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -509,6 +516,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -546,6 +554,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_ad_group(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -634,6 +643,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
 
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -668,6 +678,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_account_with_ids(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -760,6 +771,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
 
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -835,6 +847,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_adgroup(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -909,6 +922,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -942,6 +956,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_ad_group(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -976,6 +991,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_content_ad(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'contentad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1046,6 +1062,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_account(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1077,6 +1094,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1109,6 +1127,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_ad_group(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1144,6 +1163,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_content_ad(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'contentad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1221,6 +1241,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_all_accounts(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'allaccounts-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1252,6 +1273,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_account(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1284,6 +1306,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1319,6 +1342,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
 
     def test_get_by_ad_group(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
@@ -1360,6 +1384,7 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.request = http.HttpRequest()
+        self.request.method = 'GET'
         self.request.GET['start_date'] = '2014-06-30'
         self.request.GET['end_date'] = '2014-07-01'
         self.request.user = models.User.objects.get(pk=2)
@@ -1417,6 +1442,7 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.request = http.HttpRequest()
+        self.request.method = 'GET'
         self.request.GET['start_date'] = '2014-06-30'
         self.request.GET['end_date'] = '2014-07-01'
         self.request.user = models.User.objects.get(pk=2)
@@ -1477,6 +1503,7 @@ class ScheduledReportsTest(test.TestCase):
 
     def test_get(self):
         request = http.HttpRequest()
+        request.method = 'GET'
         request.user = models.User.objects.get(pk=1)
 
         response = export.ScheduledReports().get(request, 1)
@@ -1495,6 +1522,7 @@ class ScheduledReportsTest(test.TestCase):
     def test_get_scheduled_reports(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
+        request.method = 'GET'
 
         response = export.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
@@ -1508,6 +1536,7 @@ class ScheduledReportsTest(test.TestCase):
 
     def test_delete(self):
         request = http.HttpRequest()
+        request.method = 'DELETE'
         request.user = models.User.objects.get(pk=1)
 
         self.assertEqual(
@@ -1526,6 +1555,7 @@ class ScheduledReportsTest(test.TestCase):
 
     def test_delete_no_permission(self):
         request = http.HttpRequest()
+        request.method = 'DELETE'
         request.user = models.User.objects.get(pk=2)
 
         self.assertEqual(
@@ -1543,6 +1573,7 @@ class ScheduledReportsTest(test.TestCase):
 
     def test_delete_user_not_creator(self):
         request = http.HttpRequest()
+        request.method = 'DELETE'
         request.user = models.User.objects.get(pk=2)
 
         self.assertEqual(
