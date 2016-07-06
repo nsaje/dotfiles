@@ -57,7 +57,7 @@ class BaseDailyStatsTest(TestCase):
         if agencies:
             params['filtered_agencies'] = agencies
         if account_types:
-            params['account_types'] = account_types
+            params['filtered_account_types'] = account_types
 
         return params
 
@@ -193,6 +193,53 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         self.client.get(
             reverse('accounts_daily_stats'),
             self._get_params(selected_ids=[], agencies=[agency.id]),
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+        accounts_matcher = QuerySetMatcher(models.Account.objects.filter(pk=1))
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
+        )
+
+    def test_get_by_account_type(self):
+        perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
+        self.user.user_permissions.add(perm)
+
+        self.client.get(
+            reverse('accounts_daily_stats'),
+            self._get_params(selected_ids=[], account_types=[constants.AccountType.TEST]),
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+        accounts_matcher = QuerySetMatcher(models.Account.objects.none())
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
+        )
+
+        acc1 = models.Account.objects.get(pk=1)
+        acs = acc1.get_current_settings().copy_settings()
+        acs.account_type = constants.AccountType.TEST
+        acs.save(fake_request(self.user))
+
+        self.client.get(
+            reverse('accounts_daily_stats'),
+            self._get_params(selected_ids=[], account_types=[constants.AccountType.TEST]),
             follow=True
         )
 
