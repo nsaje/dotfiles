@@ -319,6 +319,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
             batchName: $scope.uploadFormData.batchName,
         };
 
+        $scope.uploadRequestFailed = false;
         $scope.uploadRequestInProgress = true;
         api.upload.upload(
             $state.params.id, uploadFormData
@@ -340,6 +341,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
 
     $scope.updateCandidate = function () {
         $scope.updateRequestInProgress = true;
+        $scope.updateRequestFailed = false;
         api.upload.updateCandidate(
             $scope.selectedCandidate,
             $state.params.id,
