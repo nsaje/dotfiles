@@ -57,6 +57,7 @@ def upload_csv(table_name, date, job_id, generator):
 
         bucket.put(s3_path, csvfile.getvalue())
 
+    logger.info('CSV for table "%s", job %s uploaded', table_name, job_id)
     return s3_path
 
 
@@ -68,12 +69,12 @@ def prepare_copy_csv_query(s3_path, table_name):
     s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
 
     if settings.AWS_ACCESS_KEY_ID is not None and settings.AWS_ACCESS_KEY_ID != '':
-        credentials = _get_aws_credentials_string(
+        credentials = helpers.get_aws_credentials_string(
             settings.AWS_ACCESS_KEY_ID,
             settings.AWS_SECRET_ACCESS_KEY,
         )
     else:
-        credentials = _get_aws_credentials_from_role()
+        credentials = helpers.get_aws_credentials_from_role()
 
     return sql, {
         's3_url': s3_url,
@@ -105,8 +106,7 @@ def prepare_date_range_delete_query(table_name, date_from, date_to):
 
 class Materialize(object):
 
-    def table_name(self):
-        raise NotImplementedError()
+    TABLE_NAME = 'missing'
 
     def __init__(self, job_id, date_from, date_to):
         self.job_id = job_id
@@ -119,14 +119,13 @@ class Materialize(object):
 
 class MVHelpersSource(Materialize):
 
-    def table_name(self):
-        return 'mvh_source'
+    TABLE_NAME = 'mvh_source'
 
     def generate(self, **kwargs):
         s3_path = upload_csv(
-            self.table_name(),
+            self.TABLE_NAME,
             self.date_to,
-            self.job_id(),
+            self.job_id,
             self.generate_rows
         )
 
@@ -135,11 +134,12 @@ class MVHelpersSource(Materialize):
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_source.sql', None)
                 c.execute(sql)
 
-                sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
 
     def generate_rows(self):
-        sources = dash.models.source.objects.all()
+        sources = dash.models.Source.objects.all()
 
         for source in sources:
             yield (
@@ -154,14 +154,13 @@ class MVHelpersCampaignFactors(Materialize):
     Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
     """
 
-    def table_name(self):
-        return 'mvh_campaign_factors'
+    TABLE_NAME = 'mvh_campaign_factors'
 
     def generate(self, campaign_factors, **kwargs):
         s3_path = upload_csv(
-            self.table_name(),
+            self.TABLE_NAME,
             self.date_to,
-            self.job_id(),
+            self.job_id,
             partial(self.generate_rows, campaign_factors)
         )
 
@@ -170,7 +169,8 @@ class MVHelpersCampaignFactors(Materialize):
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_campaign_factors.sql', None)
                 c.execute(sql)
 
-                sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
 
     def generate_rows(self, campaign_factors):
@@ -191,14 +191,13 @@ class MVHelpersAdGroupStructure(Materialize):
     used to construct the mv_master view.
     """
 
-    def table_name(self):
-        return 'mvh_adgroup_structure'
+    TABLE_NAME = 'mvh_adgroup_structure'
 
     def generate(self, **kwargs):
         s3_path = upload_csv(
-            self.table_name(),
+            self.TABLE_NAME,
             self.date_to,
-            self.job_id(),
+            self.job_id,
             self.generate_rows
         )
 
@@ -207,7 +206,8 @@ class MVHelpersAdGroupStructure(Materialize):
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_adgroup_structure.sql', None)
                 c.execute(sql)
 
-                sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
 
     def generate_rows(self):
@@ -229,8 +229,7 @@ class MVHelpersNormalizedStats(Materialize):
     and license fee based on mvh_campaign_factors.
     """
 
-    def table_name(self):
-        return 'mvh_clean_stats'
+    TABLE_NAME = 'mvh_clean_stats'
 
     def generate(self, **kwargs):
         with get_write_stats_transaction():
@@ -238,6 +237,7 @@ class MVHelpersNormalizedStats(Materialize):
                 sql = backtosql.generate_sql('etl_create_temp_table_mvh_clean_stats.sql', None)
                 c.execute(sql)
 
+                logger.info('Running insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
                 sql, params = self.prepare_insert_query()
                 c.execute(sql, params)
 
@@ -260,8 +260,7 @@ class MasterView(Materialize):
     breakdown by publisher and content ad is not possible for them.
     """
 
-    def table_name(self):
-        return 'mv_master'
+    TABLE_NAME = 'mv_master'
 
     def generate(self, **kwargs):
         self.prefetch()
@@ -270,9 +269,11 @@ class MasterView(Materialize):
 
             with get_write_stats_transaction():
                 with get_write_stats_cursor() as c:
-                    sql, params = prepare_daily_delete_query(self.table_name(), date)
+                    logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = prepare_daily_delete_query(self.TABLE_NAME, date)
                     c.execute(sql, params)
 
+                    logger.info('Running insert traffic data into table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
                     sql, params = self.prepare_insert_traffic_data_query(date)
                     c.execute(sql, params)
 
@@ -280,13 +281,14 @@ class MasterView(Materialize):
 
                     # generate csv in transaction as it needs data created in it
                     s3_path = upload_csv(
-                        self.table_name(),
+                        self.TABLE_NAME,
                         date,
                         self.job_id,
                         partial(self.generate_rows, cursor, date, breakdown_keys_with_traffic)
                     )
 
-                    sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                    logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
     def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
@@ -425,17 +427,21 @@ class DerivedMaterializedView(Materialize):
     def generate(self, **kwargs):
         with get_write_stats_transaction():
             with get_write_stats_cursor() as c:
-                sql = prepare_date_range_delete_query(self.table_name(), date_from, date_to)
+
+                logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql = prepare_date_range_delete_query(self.TABLE_NAME, date_from, date_to)
                 c.execute(sql, params)
 
+                logger.info('Inserting data into table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
                 sql, params = self.prepare_insert_query()
                 c.execute(sql, params)
 
 
 class MVAccount(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_account'
+    TABLE_NAME = 'mv_account'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -443,7 +449,7 @@ class MVAccount(DerivedMaterializedView):
                 'date', 'source_id', 'agency_id', 'account_id',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_campaign',
         })
 
@@ -455,8 +461,7 @@ class MVAccount(DerivedMaterializedView):
 
 class MVAccountDelivery(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_account_delivery'
+    TABLE_NAME = 'mv_account_delivery'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -465,7 +470,7 @@ class MVAccountDelivery(DerivedMaterializedView):
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_campaign_delivery',
         })
 
@@ -477,8 +482,7 @@ class MVAccountDelivery(DerivedMaterializedView):
 
 class MVCampaign(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_campaign'
+    TABLE_NAME = 'mv_campaign'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -486,7 +490,7 @@ class MVCampaign(DerivedMaterializedView):
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_ad_group',
         })
 
@@ -498,8 +502,7 @@ class MVCampaign(DerivedMaterializedView):
 
 class MVCampaignDelivery(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_campaign_delivery'
+    TABLE_NAME = 'mv_campaign_delivery'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -508,7 +511,7 @@ class MVCampaignDelivery(DerivedMaterializedView):
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_ad_group_delivery',
         })
 
@@ -520,8 +523,7 @@ class MVCampaignDelivery(DerivedMaterializedView):
 
 class MVAdGroup(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_ad_group'
+    TABLE_NAME = 'mv_ad_group'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -529,7 +531,7 @@ class MVAdGroup(DerivedMaterializedView):
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_content_ad',
         })
 
@@ -541,8 +543,7 @@ class MVAdGroup(DerivedMaterializedView):
 
 class MVAdGroupDelivery(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_ad_group_delivery'
+    TABLE_NAME = 'mv_ad_group_delivery'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -551,7 +552,7 @@ class MVAdGroupDelivery(DerivedMaterializedView):
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_content_ad_delivery',
         })
 
@@ -563,8 +564,7 @@ class MVAdGroupDelivery(DerivedMaterializedView):
 
 class MVContentAd(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_content_ad'
+    TABLE_NAME = 'mv_content_ad'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -572,7 +572,7 @@ class MVContentAd(DerivedMaterializedView):
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_content_ad_delivery',
         })
 
@@ -584,8 +584,7 @@ class MVContentAd(DerivedMaterializedView):
 
 class MVContentAdDelivery(DerivedMaterializedView):
 
-    def table_name(self):
-        return 'mv_content_ad_delivery'
+    TABLE_NAME = 'mv_content_ad_delivery'
 
     def prepare_insert_query(self, date_from, date_to, **kwargs):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
@@ -594,7 +593,7 @@ class MVContentAdDelivery(DerivedMaterializedView):
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
             'aggregates': models.MVMaster.get_ordered_aggregates(),
-            'destination_table': self.table_name(),
+            'destination_table': self.TABLE_NAME,
             'source_table': 'mv_master',
         })
 
