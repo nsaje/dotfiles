@@ -193,7 +193,7 @@ class MVHelpersAdGroupStructure(Materialize):
             )
 
 
-class MVHelpersNormalizedStats(materialize_helpers.Materialize):
+class MVHelpersNormalizedStats(Materialize):
     """
     Writes a temporary table that has data from stats transformed into the correct format for mv_master construction.
     It does conversion from age, gender etc. strings to constatnts, calculates nano, calculates effective cost
@@ -203,8 +203,17 @@ class MVHelpersNormalizedStats(materialize_helpers.Materialize):
     def table_name(self):
         return 'mvh_clean_stats'
 
-    def prepare_insert_query(self, date_from, date_to, **kwargs):
-        params = helpers.get_local_multiday_date_context(date_from, date_to)
+    def generate(self, **kwargs):
+        with get_write_stats_transaction():
+            with get_write_stats_cursor() as c:
+                sql = backtosql.generate_sql('etl_create_temp_table_mvh_clean_stats.sql', None)
+                c.execute(sql)
+
+                sql, params = self.prepare_insert_query()
+                c.execute(sql, params)
+
+    def prepare_insert_query(self):
+        params = helpers.get_local_multiday_date_context(self.date_from, self.date_to)
 
         sql = backtosql.generate_sql('etl_insert_mvh_clean_stats.sql', {
             'date_ranges': params.pop('date_ranges'),
