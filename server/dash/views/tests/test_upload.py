@@ -26,7 +26,7 @@ def _get_client(superuser=True):
     return client
 
 
-class UploadMultipleTestCase(TestCase):
+class UploadCsvTestCase(TestCase):
 
     fixtures = ['test_upload.yaml']
 
@@ -41,7 +41,7 @@ class UploadMultipleTestCase(TestCase):
             'https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
         )
         response = _get_client().post(
-            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'candidates': mock_file,
                 'batch_name': 'batch 1',
@@ -95,7 +95,7 @@ class UploadMultipleTestCase(TestCase):
             'https://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png,description'
         )
         response = _get_client().post(
-            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'candidates': mock_file,
                 'batch_name': 'batch 1',
@@ -146,7 +146,7 @@ class UploadMultipleTestCase(TestCase):
             'http://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png'
         )
         response = _get_client().post(
-            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             {
                 'candidates': mock_file,
                 'batch_name': 'batch 1',
@@ -179,7 +179,7 @@ class UploadMultipleTestCase(TestCase):
     def test_post_permission(self):
         ad_group_id = 1
         response = _get_client(superuser=False).post(
-            reverse('upload_multiple', kwargs={'ad_group_id': ad_group_id}),
+            reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
             follow=True,
         )
         self.assertEqual(404, response.status_code)
@@ -649,77 +649,6 @@ class UploadCancelTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
-
-
-class UploadErrorReport(TestCase):
-
-    fixtures = ['test_upload.yaml']
-
-    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
-    @patch.object(utils.s3helpers.S3Helper, 'get')
-    def test_existing(self, mock_s3_get):
-        mock_s3_get.return_value = 'url,title,image_url,tracker_urls,display_url,brand_name,description,'\
-                                   'call_to_action,label,image_crop,errors\r\nhttp://zemanta.com/blog,Zemanta blog,'\
-                                   'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,'\
-                                   'content ad 1,entropy,"Content unreachable., Image could not be processed."\r\n'
-        batch_id = 4
-        ad_group_id = 5
-
-        response = _get_client().get(
-            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(mock_s3_get.return_value, response.content)
-
-    @patch.object(utils.s3helpers.S3Helper, '__init__', Mock(return_value=None))
-    @patch.object(utils.s3helpers.S3Helper, 'get')
-    def test_non_existing(self, mock_s3_get):
-        mock_s3_get.side_effect = boto.exception.S3ResponseError(status=404, reason='')
-
-        batch_id = 4
-        ad_group_id = 5
-
-        response = _get_client().get(
-            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertEqual({
-            'success': False,
-            'data': {
-                'error_code': 'MissingDataError',
-                'message': 'Error report does not exist',
-            }
-        }, json.loads(response.content))
-
-    def test_wrong_batch_id(self):
-        batch_id = 4
-        ad_group_id = 1
-
-        response = _get_client().get(
-            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertEqual({
-            'success': False,
-            'data': {
-                'error_code': 'MissingDataError',
-                'message': 'Upload batch does not exist',
-            }
-        }, json.loads(response.content))
-
-    def test_permission(self):
-        batch_id = 4
-        ad_group_id = 5
-
-        response = _get_client(superuser=False).get(
-            reverse('upload_error_report', kwargs={'ad_group_id': ad_group_id, 'batch_id': batch_id}),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
 
 
 class CandidateTest(TestCase):
