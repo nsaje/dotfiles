@@ -1,11 +1,19 @@
 import os
+import backtosql
+import logging
+import os.path
+import io
+import unicodecsv as csv
+
+from django.conf import settings
+
+from utils import s3helpers
+from redshiftapi.db import get_write_stats_cursor, get_write_stats_transaction
 from dateutil import rrule
 from functools import partial
 import csv
 import backtosql
-import datetime
 from collections import defaultdict
-import json
 import logging
 
 from django.conf import settings
@@ -19,7 +27,6 @@ from redshiftapi import db
 
 from etl import models
 from etl import helpers
-from etl import materialize_helpers
 
 
 logger = logging.getLogger(__name__)
@@ -414,7 +421,18 @@ class MasterView(Materialize):
         return sql, params
 
 
-class MVAccount(materialize_helpers.Materialize):
+class DerivedMaterializedView(Materialize):
+    def generate(self, **kwargs):
+        with get_write_stats_transaction():
+            with get_write_stats_cursor() as c:
+                sql = prepare_date_range_delete_query(self.table_name(), date_from, date_to)
+                c.execute(sql, params)
+
+                sql, params = self.prepare_insert_query()
+                c.execute(sql, params)
+
+
+class MVAccount(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_account'
@@ -435,7 +453,7 @@ class MVAccount(materialize_helpers.Materialize):
         }
 
 
-class MVAccountDelivery(materialize_helpers.Materialize):
+class MVAccountDelivery(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_account_delivery'
@@ -457,7 +475,7 @@ class MVAccountDelivery(materialize_helpers.Materialize):
         }
 
 
-class MVCampaign(materialize_helpers.Materialize):
+class MVCampaign(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_campaign'
@@ -478,7 +496,7 @@ class MVCampaign(materialize_helpers.Materialize):
         }
 
 
-class MVCampaignDelivery(materialize_helpers.Materialize):
+class MVCampaignDelivery(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_campaign_delivery'
@@ -500,7 +518,7 @@ class MVCampaignDelivery(materialize_helpers.Materialize):
         }
 
 
-class MVAdGroup(materialize_helpers.Materialize):
+class MVAdGroup(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_ad_group'
@@ -521,7 +539,7 @@ class MVAdGroup(materialize_helpers.Materialize):
         }
 
 
-class MVAdGroupDelivery(materialize_helpers.Materialize):
+class MVAdGroupDelivery(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_ad_group_delivery'
@@ -543,7 +561,7 @@ class MVAdGroupDelivery(materialize_helpers.Materialize):
         }
 
 
-class MVContentAd(materialize_helpers.Materialize):
+class MVContentAd(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_content_ad'
@@ -564,7 +582,7 @@ class MVContentAd(materialize_helpers.Materialize):
         }
 
 
-class MVContentAdDelivery(materialize_helpers.Materialize):
+class MVContentAdDelivery(DerivedMaterializedView):
 
     def table_name(self):
         return 'mv_content_ad_delivery'
@@ -584,22 +602,3 @@ class MVContentAdDelivery(materialize_helpers.Materialize):
             'date_from': date_from,
             'date_to': date_to,
         }
-def _get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
-    return 'aws_access_key_id={key};aws_secret_access_key={secret}'.format(
-        key=aws_access_key_id,
-        secret=aws_secret_access_key,
-    )
-
-
-def _get_aws_credentials_from_role():
-    s3_client = boto.s3.connect_to_region('us-east-1')
-
-    access_key = s3_client.aws_access_key_id
-    access_secret = s3_client.aws_secret_access_key
-
-    security_token_param = ''
-    if s3_client.provider.security_token:
-        security_token_param = ';token=%s' % s3_client.provider.security_token
-
-    return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
-        access_key, access_secret, security_token_param)
