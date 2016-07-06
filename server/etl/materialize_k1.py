@@ -452,7 +452,7 @@ class Breakdown(object):
 
 
 def _query_rows(query):
-    with get_stats_cursor() as c:
+    with get_write_stats_cursor() as c:
         c.execute(query)
         for row in c:
             yield row
