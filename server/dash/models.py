@@ -557,8 +557,6 @@ class Account(models.Model):
                 account_type__in=account_types
             ).values_list('account__id', flat=True)
 
-            if not filtered_ac_ids:
-                return self
             return self.filter(id__in=filtered_ac_ids)
 
         def exclude_archived(self):

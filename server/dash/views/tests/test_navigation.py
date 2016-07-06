@@ -4,6 +4,7 @@ from mock import patch
 import datetime
 
 from dash import models
+from dash import constants
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -441,4 +442,21 @@ class NavigationTreeViewTest(TestCase):
         self.assertItemsEqual(self.expected_response, response['data'])
 
         response = self._get(1, filtered_agencies=[agency2.id, agency.id])
+        self.assertItemsEqual(self.expected_response, response['data'])
+
+    @patch('datetime.datetime', MockDatetime)
+    def test_get_account_type_filter(self):
+        response = self._get(1)
+        self.assertItemsEqual(self.expected_response, response['data'])
+
+        response = self._get(
+            1,
+            filtered_account_types=[constants.AccountType.MANAGED]
+        )
+        self.assertItemsEqual({"success": True}, response)
+
+        response = self._get(
+            1,
+            filtered_account_types=[constants.AccountType.UNKNOWN]
+        )
         self.assertItemsEqual(self.expected_response, response['data'])
