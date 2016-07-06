@@ -2076,6 +2076,14 @@ class AccountsAccountsTableTest(TestCase):
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('AdPro', response['rows'][0]['agency'])
 
+        view_filter.filtered_agencies = [10]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual([], response['rows'])
+
+        view_filter.filtered_agencies = [agency.id]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('AdPro', response['rows'][0]['agency'])
+
     def test_get_account_type(self, mock_api_query, mock_get_cursor):
         allaccperm = authmodels.Permission.objects.get(codename="can_see_account_type")
         self.normal_user.user_permissions.add(allaccperm)
