@@ -7,7 +7,7 @@ from django.contrib.auth import models as authmodels
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from utils.test_helper import QuerySetMatcher, ListMatcher
+from utils.test_helper import QuerySetMatcher, ListMatcher, fake_request
 from zemauth.models import User
 from dash import constants, models, conversions_helper
 
@@ -43,7 +43,7 @@ class BaseDailyStatsTest(TestCase):
         }]
         self.mock_query.side_effect = [mock_stats1, mock_stats2]
 
-    def _get_params(self, selected_ids, sources=False):
+    def _get_params(self, selected_ids, sources=False, agencies=None, account_types=None):
         params = {
             'metrics': ['cpc', 'clicks'],
             'selected_ids': selected_ids,
@@ -54,6 +54,10 @@ class BaseDailyStatsTest(TestCase):
 
         if sources:
             params['sources'] = True
+        if agencies:
+            params['filtered_agencies'] = agencies
+        if account_types:
+            params['account_types'] = account_types
 
         return params
 
@@ -155,6 +159,55 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
 
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name, with_conversion_goals=False)
+
+    def test_get_by_agency(self):
+        agency = models.Agency(name='test')
+        agency.save(fake_request(self.user))
+
+        perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
+        self.user.user_permissions.add(perm)
+
+        self.client.get(
+            reverse('accounts_daily_stats'),
+            self._get_params(selected_ids=[], agencies=[agency.id]),
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+        accounts_matcher = QuerySetMatcher(models.Account.objects.none())
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
+        )
+
+        acc1 = models.Account.objects.get(pk=1)
+        acc1.agency = agency
+        acc1.save(fake_request(self.user))
+
+        self.client.get(
+            reverse('accounts_daily_stats'),
+            self._get_params(selected_ids=[], agencies=[agency.id]),
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+        accounts_matcher = QuerySetMatcher(models.Account.objects.filter(pk=1))
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
+        )
 
 
 class AccountDailyStatsTest(BaseDailyStatsTest):
