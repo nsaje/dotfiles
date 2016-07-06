@@ -383,14 +383,14 @@ class TouchpointConversions(materialize_views.Materialize):
     def generate(self, campaign_factors):
         for date, daily_campaign_factors in campaign_factors.iteritems():
             with get_write_stats_transaction():
-                s3_path = materialize_views.upload_csv(
-                    self.TABLE_NAME,
-                    date,
-                    self.job_id,
-                    partial(self.generate_rows, c, date)
-                )
-
                 with get_write_stats_cursor() as c:
+                    s3_path = materialize_views.upload_csv(
+                        self.TABLE_NAME,
+                        date,
+                        self.job_id,
+                        partial(self.generate_rows, c, date)
+                    )
+
                     sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
                     c.execute(sql, params)
 
