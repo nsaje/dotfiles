@@ -607,16 +607,48 @@ class ArchiveRestoreTestCase(TestCase):
 class AdGroupTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
+    def setUp(self):
+        self.user = User.objects.get(pk=3)
+
     def test_filter_by_agency_manager(self):
-        u = User.objects.get(pk=3)
-        qs = models.AdGroup.objects.all().filter_by_user(u)
+        qs = models.AdGroup.objects.all().filter_by_user(self.user)
         oldcount = qs.count()
         self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
-        agency.users.add(u)
-        qs = models.AdGroup.objects.all().filter_by_user(u)
+        agency.users.add(self.user)
+        qs = models.AdGroup.objects.all().filter_by_user(self.user)
         self.assertEqual(oldcount+1, qs.count())
+
+    def test_filter_by_agencies(self):
+        agencies = models.Agency.objects.filter(pk=1)
+
+        qs = models.AdGroup.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(1, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        acc2 = models.Account.objects.get(pk=2)
+        acc2.agency = agency
+        acc2.save(test_helper.fake_request(self.user))
+
+        qs = models.AdGroup.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(3, qs.count())
+
+    def test_filter_by_account_type(self):
+        all_adgroups = models.AdGroup.objects.all()
+        qs = all_adgroups.filter_by_account_types([constants.AccountType.UNKNOWN])
+        self.assertEqual(
+            models.AdGroup.objects.all().filter(
+                campaign__account__id=3
+            ).count(),
+            qs.count())
+
+        qs = all_adgroups.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        self.assertEqual(
+            models.AdGroup.objects.all().filter(
+                campaign__account__id=1
+            ).count(),
+            qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
