@@ -1948,8 +1948,6 @@ class AdGroupSource(models.Model):
                 values_list('ad_group_source_id', flat=True)
             return self.filter(id__in=active_ags_ids)
 
-
-
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
         if self.source.source_type and\
