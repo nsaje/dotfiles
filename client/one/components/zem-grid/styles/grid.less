@@ -65,6 +65,18 @@
                 width: 100%;
                 display: inline-block;
                 text-align: center;
+
+                .collapse-icon {
+                    width: 15px;
+                    height: 15px;
+                    opacity: 0.1;
+
+                    &.expanded {
+                        -webkit-transform: rotate(180deg);
+                        -ms-transform: rotate(180deg);
+                        transform: rotate(180deg);
+                    }
+                }
             }
 
             &.level-1 {
@@ -104,6 +116,7 @@
         }
 
         .loading-cell {
+            height: 100%;
             color: #00cc18;
             background-image: url('img/loader.gif');
             background-position: 10px center;

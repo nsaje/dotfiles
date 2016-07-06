@@ -2480,15 +2480,6 @@ class UploadBatch(models.Model):
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
     original_filename = models.CharField(max_length=1024, null=True)
 
-    error_report_key = models.CharField(max_length=1024, null=True, blank=True)
-    num_errors = models.PositiveIntegerField(null=True)
-
-    processed_content_ads = models.PositiveIntegerField(null=True)
-    inserted_content_ads = models.PositiveIntegerField(null=True)
-    propagated_content_ads = models.PositiveIntegerField(null=True)
-    cancelled = models.BooleanField(default=False)
-    batch_size = models.PositiveIntegerField(null=True)
-
     class Meta:
         get_latest_by = 'created_dt'
 
@@ -2664,8 +2655,6 @@ class ContentAdCandidate(FootprintModel):
     description = models.TextField(null=True, blank=True)
     call_to_action = models.TextField(null=True, blank=True)
 
-    # TODO: remove when upload v2.1 is public
-    tracker_urls = models.TextField(null=True, blank=True)
     primary_tracker_url = models.TextField(null=True, blank=True)
     secondary_tracker_url = models.TextField(null=True, blank=True)
 
@@ -2704,7 +2693,6 @@ class ContentAdCandidate(FootprintModel):
             'description': self.description,
             'brand_name': self.brand_name,
             'call_to_action': self.call_to_action,
-            'tracker_urls': self.tracker_urls,
             'image_status': self.image_status,
             'url_status': self.url_status,
             'hosted_image_url': self.get_image_url(160, 160),

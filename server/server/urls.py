@@ -132,10 +132,6 @@ urlpatterns += [
         login_required(dash.views.upload.UploadCsv.as_view()), name='upload_csv'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/multiple/',
-        login_required(dash.views.upload.UploadMultiple.as_view()), name='upload_multiple'
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
         login_required(dash.views.upload.UploadStatus.as_view()), name='upload_status'
     ),
@@ -150,10 +146,6 @@ urlpatterns += [
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/cancel/',
         login_required(dash.views.upload.UploadCancel.as_view()), name='upload_cancel'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/report/',
-        login_required(dash.views.upload.UploadErrorReport.as_view()), name='upload_error_report'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload'

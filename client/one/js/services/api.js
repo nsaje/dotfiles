@@ -2355,10 +2355,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.upload = function (adGroupId, data) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/multiple/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/csv/';
 
             var formData = new FormData();
-            formData.append('content_ads', data.file);
+            formData.append('candidates', data.file);
             formData.append('batch_name', data.batchName ? data.batchName : '');
 
             $http.post(url, formData, {
@@ -2376,7 +2376,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         'data': {
                             'status': constants.uploadBatchStatus.FAILED,
                             'errors': {
-                                'content_ads': ['File too large (max 1MB).'],
+                                'candidates': ['File too large (max 1MB).'],
                             },
                         },
                         'success': false,
@@ -2607,7 +2607,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertValidationErrorsFromApi (errors) {
             var converted = {
-                file: errors.content_ads,
+                file: errors.candidates,
                 batchName: errors.batch_name,
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,

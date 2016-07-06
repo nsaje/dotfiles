@@ -3419,7 +3419,7 @@ zem-editable-currency-field {
             white-space: nowrap;
             overflow:hidden;
             text-overflow: ellipsis;
-
+            
             span {
                 color: @text-color;
                 font-size: 18px;
@@ -3442,9 +3442,11 @@ zem-editable-currency-field {
                 line-height: 28px;
                 height: auto;
             }
-            input[readonly] {
-                border: none;
-                background: none;
+            
+            .title {
+                color: @default-color;
+                font-weight: 500;
+                line-height: 30px;
             }
 
             &.has-error {
@@ -3577,9 +3579,8 @@ zem-editable-currency-field {
             width: @modal-content-width - @modal-content-width*0.6;
             .transition(all 200ms ease-in-out);
 
-
-            .candidate-title input {
-                width: 74%;
+            .batch-name input {
+                width: 75%;
             }
 
             tr.selected td {
@@ -3681,6 +3682,10 @@ zem-editable-currency-field {
         .error {
             color: @red;
             padding-top: 8px;
+        }
+        
+        .loader-icon {
+            margin: 6px 20px 0 0;
         }
 
         border: none;

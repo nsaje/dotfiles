@@ -164,13 +164,13 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             loadMoreCellWidth = grid.ui.width - 250;
         }
 
-        element.find('.breakdown-pagination-cell').css({
+        element.find('.breakdown-row-primary-cell').css({
             'width': paginationCellWidth + 'px',
             'max-width': paginationCellWidth + 'px',
             'padding-left': paginationCellPadding,
         });
 
-        element.find('.breakdown-load-more-cell').css({
+        element.find('.breakdown-row-info-cell').css({
             'width': loadMoreCellWidth + 'px',
             'max-width': loadMoreCellWidth + 'px',
         });
