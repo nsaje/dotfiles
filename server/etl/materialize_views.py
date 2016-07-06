@@ -1,4 +1,5 @@
 import os
+from functools import partial
 import csv
 import backtosql
 import datetime
@@ -87,7 +88,7 @@ class Materialize(object):
         raise NotImplementedError()
 
 
-class MVHelpersSource(object):
+class MVHelpersSource(Materialize):
 
     def table_name(self):
         return 'mvh_source'
@@ -102,6 +103,9 @@ class MVHelpersSource(object):
 
         with get_write_stats_transaction():
             with get_write_stats_cursor() as c:
+                sql = backtosql.generate_sql('etl_create_temp_table_mvh_source.sql', None)
+                c.execute(sql)
+
                 sql, params = prepare_copy_csv_query(s3_path, self.table_name())
                 c.execute(sql, params)
 
@@ -115,7 +119,8 @@ class MVHelpersSource(object):
                 source.bidder_slug,
             )
 
-class MVHelpersCampaignFactors(materialize_helpers.MaterializeViaCSV):
+
+class MVHelpersCampaignFactors(Materialize):
     """
     Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
     """
@@ -123,7 +128,23 @@ class MVHelpersCampaignFactors(materialize_helpers.MaterializeViaCSV):
     def table_name(self):
         return 'mvh_campaign_factors'
 
-    def generate_rows(self, cursor, date_from, date_to, campaign_factors, **kwargs):
+    def generate(self, campaign_factors):
+        s3_path = upload_csv(
+            self.table_name(),
+            self.date_to,
+            self.job_id(),
+            partial(self.generate_rows, campaign_factors)
+        )
+
+        with get_write_stats_transaction():
+            with get_write_stats_cursor() as c:
+                sql = backtosql.generate_sql('etl_create_temp_table_mvh_campaign_factors.sql', None)
+                c.execute(sql)
+
+                sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                c.execute(sql, params)
+
+    def generate_rows(self, campaign_factors):
         for date, campaign_dict in campaign_factors.iteritems():
             for campaign, factors in campaign_dict.iteritems():
                 yield (
