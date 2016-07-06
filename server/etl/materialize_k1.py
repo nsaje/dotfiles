@@ -422,7 +422,6 @@ class Breakdown(object):
 
     def rows(self):
         query = self._get_materialize_query()
-        logger.info("Breakdown query: %s", query)
         return _query_rows(query)
 
     def _get_materialize_query(self):
