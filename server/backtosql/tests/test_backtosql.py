@@ -9,7 +9,6 @@ def assert_sql_equals(first, second):
     second_norm = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
 
     if first_norm != second_norm:
-        print "{} !!=== {}".format(backtosql.clean_sql(first), backtosql.clean_sql(second))
         raise AssertionError('"{} \n\n != \n\n "{}"'.format(
             backtosql.clean_sql(first), backtosql.clean_sql(second)))
 
