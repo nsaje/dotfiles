@@ -28,6 +28,31 @@ class InfoBoxHelpersTest(TestCase):
         self.assertTrue(formatted_flight_time.startswith('01/01 - '))
         self.assertEqual(2, days_left)
 
+    def test_filter_user_by_account_type(self):
+        account = dash.models.Account.objects.get(pk=1)
+
+        acs = account.get_current_settings()
+        acs.account_type = dash.constants.AccountType.PILOT
+        acs.save(fake_request(zemauth.models.User.objects.get(pk=1)))
+
+        su = zemauth.models.User.objects.all().filter(is_superuser=True)
+        fusers = dash.infobox_helpers._filter_user_by_account_type(
+            su, [dash.constants.AccountType.PILOT])
+        self.assertEqual(su.count(), fusers.count())
+
+        fusers = dash.infobox_helpers._filter_user_by_account_type(
+            account.users.all(), [dash.constants.AccountType.PILOT])
+        self.assertEqual(account.users.all().count(), fusers.count())
+
+        rest = zemauth.models.User.objects.all().exclude(
+            id__in=su.values_list('id', flat=True)
+        ).exclude(
+            id__in=account.users.all().values_list('id', flat=True)
+        )
+        rusers = dash.infobox_helpers._filter_user_by_account_type(
+            rest, [dash.constants.AccountType.PILOT])
+        self.assertEqual(0, rusers.count())
+
     def test_get_ideal_campaign_spend(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         campaign = ad_group.campaign
