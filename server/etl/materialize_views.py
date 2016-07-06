@@ -1,7 +1,14 @@
+import os
+import csv
 import backtosql
+import datetime
 from collections import defaultdict
 import json
 import logging
+
+from django.conf import settings
+
+from utils import s3helpers
 
 import dash.models
 import dash.constants
@@ -15,17 +22,91 @@ from etl import materialize_helpers
 
 logger = logging.getLogger(__name__)
 
+MATERIALIZED_VIEWS_S3_PREFIX = 'materialized_views'
+MATERIALIZED_VIEWS_FILENAME = 'view_{}.csv'
 
-class MVHelpersSource(materialize_helpers.TableWithoutDateMixin, materialize_helpers.MaterializeViaCSV):
-    """
-    Helper view that puts source id and slug into redshift. Its than used to construct the mv_master view.
-    """
+S3_FILE_URI = 's3://{bucket_name}/{key}'
+CSV_DELIMITER = '\t'
+
+
+def upload_csv(table_name, date, job_id, generator):
+    logger.info('Create CSV for table "%s", job %s', table_name, job_id)
+    s3_path = os.path.join(
+        MATERIALIZED_VIEWS_S3_PREFIX,
+        table_name,
+        date.strftime("%Y/%m/%d/"),
+        MATERIALIZED_VIEWS_FILENAME.format(job_id),
+    )
+
+    bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+
+    with io.BytesIO() as csvfile:
+        writer = csv.writer(csvfile, dialect='excel', delimiter=CSV_DELIMITER)
+
+        for line in generator():
+            writer.writerow(line)
+
+        bucket.put(s3_path, csvfile.getvalue())
+
+    return s3_path
+
+
+def prepare_copy_csv_query(s3_path, table_name):
+    sql = backtosql.generate_sql('etl_copy_csv.sql', {
+        'table': table_name,
+    })
+
+    s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
+
+    if settings.AWS_ACCESS_KEY_ID is not None and settings.AWS_ACCESS_KEY_ID != '':
+        credentials = _get_aws_credentials_string(
+            settings.AWS_ACCESS_KEY_ID,
+            settings.AWS_SECRET_ACCESS_KEY,
+        )
+    else:
+        credentials = _get_aws_credentials_from_role()
+
+    return sql, {
+        's3_url': s3_url,
+        'credentials': credentials,
+        'delimiter': CSV_DELIMITER,
+    }
+
+
+class Materialize(object):
+
+    def table_name(self):
+        raise NotImplementedError()
+
+    def __init__(self, job_id, date_from, date_to):
+        self.job_id = job_id
+        self.date_from = date_from
+        self.date_to = date_to
+
+    def generate(self, **kwargs):
+        raise NotImplementedError()
+
+
+class MVHelpersSource(object):
 
     def table_name(self):
         return 'mvh_source'
 
-    def generate_rows(self, cursor, date_from, date_to, **kwargs):
-        sources = dash.models.Source.objects.all()
+    def generate(self, **kwargs):
+        s3_path = upload_csv(
+            self.table_name(),
+            self.date_to,
+            self.job_id(),
+            self.generate_rows
+        )
+
+        with get_write_stats_transaction():
+            with get_write_stats_cursor() as c:
+                sql, params = prepare_copy_csv_query(s3_path, self.table_name())
+                c.execute(sql, params)
+
+    def generate_rows(self):
+        sources = dash.models.source.objects.all()
 
         for source in sources:
             yield (
@@ -33,7 +114,6 @@ class MVHelpersSource(materialize_helpers.TableWithoutDateMixin, materialize_hel
                 helpers.extract_source_slug(source.bidder_slug),
                 source.bidder_slug,
             )
-
 
 class MVHelpersCampaignFactors(materialize_helpers.MaterializeViaCSV):
     """
@@ -515,3 +595,22 @@ class MVContentAdDelivery(materialize_helpers.Materialize):
             'date_from': date_from,
             'date_to': date_to,
         }
+def _get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
+    return 'aws_access_key_id={key};aws_secret_access_key={secret}'.format(
+        key=aws_access_key_id,
+        secret=aws_secret_access_key,
+    )
+
+
+def _get_aws_credentials_from_role():
+    s3_client = boto.s3.connect_to_region('us-east-1')
+
+    access_key = s3_client.aws_access_key_id
+    access_secret = s3_client.aws_secret_access_key
+
+    security_token_param = ''
+    if s3_client.provider.security_token:
+        security_token_param = ';token=%s' % s3_client.provider.security_token
+
+    return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
+        access_key, access_secret, security_token_param)
