@@ -71,6 +71,10 @@ class ViewFilter(object):
     '''Convenience class for extracting filters from requests'''
 
     def __init__(self, request=None, user=None, data=None):
+        self.filtered_sources = None
+        self.filtered_agencies = None
+        self.filtered_account_types = None
+
         # table breakdowns specific code
         if data:
             self._init_breakdowns(user, data)
@@ -78,7 +82,8 @@ class ViewFilter(object):
             self._init_old(request)
 
     def _init_old(self, request):
-        self.filtered_sources = None
+        if not request:
+            return
 
         if request.method == 'GET':
             data = request.GET

@@ -19,6 +19,7 @@ from dash import models
 from dash import constants
 from dash import table
 from dash import conversions_helper
+from utils import test_helper
 from dash.views import helpers
 from actionlog.models import ActionLog
 import actionlog.constants
@@ -1955,24 +1956,34 @@ class AllAccountsSourcesTableTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def test_get_normal_all_accounts_table(self, mock_get_cursor):
-        t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
+        t = table.AllAccountsSourcesTable(self.normal_user, 1, helpers.ViewFilter())
         today = datetime.datetime.utcnow()
         r = HttpRequest()
+        r.method = 'GET'
         t.get_stats(r, today, today)
+
         self.assertFalse(mock_get_cursor().dictfetchall.called)
 
     def test_get_redshift_all_accounts_table(self, mock_get_cursor):
-        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        a = models.Agency(name='Test')
+        a.save(test_helper.fake_request(self.normal_user))
+
+        vf = helpers.ViewFilter()
+        vf.filtered_agencies = [a]
+        vf.filtered_account_types = [constants.AccountType.SELF_MANAGED]
+
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, vf)
         today = datetime.datetime.utcnow()
         r = HttpRequest()
+        r.method = 'GET'
+
         t.get_stats(r, today, today)
         self.assertTrue(mock_get_cursor().dictfetchall.called)
 
     def test_funcs(self, mock_get_cursor):
-        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, helpers.ViewFilter())
         today = datetime.datetime.utcnow()
         self.assertTrue(t.has_complete_postclick_metrics(today, today))
-
         self.assertFalse(t.is_sync_in_progress())
 
 
