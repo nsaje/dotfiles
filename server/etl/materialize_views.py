@@ -4,21 +4,14 @@ import logging
 import os.path
 import io
 import unicodecsv as csv
+from dateutil import rrule
+from functools import partial
+from collections import defaultdict
 
 from django.conf import settings
 
 from utils import s3helpers
 from redshiftapi.db import get_write_stats_cursor, get_write_stats_transaction
-from dateutil import rrule
-from functools import partial
-import csv
-import backtosql
-from collections import defaultdict
-import logging
-
-from django.conf import settings
-
-from utils import s3helpers
 
 import dash.models
 import dash.constants
@@ -84,7 +77,7 @@ def prepare_copy_csv_query(s3_path, table_name):
 
 
 def prepare_daily_delete_query(table_name, date):
-    sql = backtosql.generate_sql('etl_day_delete.sql', {
+    sql = backtosql.generate_sql('etl_daily_delete.sql', {
         'table': table_name,
     })
 
@@ -284,7 +277,7 @@ class MasterView(Materialize):
                         self.TABLE_NAME,
                         date,
                         self.job_id,
-                        partial(self.generate_rows, cursor, date, breakdown_keys_with_traffic)
+                        partial(self.generate_rows, c, date, breakdown_keys_with_traffic)
                     )
 
                     logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
@@ -338,7 +331,7 @@ class MasterView(Materialize):
 
         # group postclick rows by ad group and postclick source
         rows_by_ad_group = defaultdict(lambda: defaultdict(list))
-        for row in self._get_postclickstats_query_results(cursor, date):
+        for row in self.get_postclickstats_query_results(cursor, date):
             postclick_source = helpers.extract_postclick_source(row.postclick_source)
             rows_by_ad_group[row.ad_group_id][postclick_source].append(row)
 
