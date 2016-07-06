@@ -142,6 +142,25 @@ class MVHelpersSource(Materialize):
             )
 
 
+class MVHTest(Materialize):
+    TABLE_NAME = 'test'
+
+    def generate(self, **kwargs):
+        with get_write_stats_transaction():
+            with get_write_stats_cursor() as c:
+                c.execute("select count(*) from mvh_source")
+                print db.dictfetchall(c)
+
+                c.execute("select count(*) from mvh_campaign_factors")
+                print db.dictfetchall(c)
+
+                c.execute("select count(*) from mvh_adgroup_structure")
+                print db.dictfetchall(c)
+
+                c.execute("select count(*) from mvh_clean_stats")
+                print db.dictfetchall(c)
+
+
 class MVHelpersCampaignFactors(Materialize):
     """
     Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
@@ -423,7 +442,7 @@ class DerivedMaterializedView(Materialize):
 
                 logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
-                sql = prepare_date_range_delete_query(self.TABLE_NAME, date_from, date_to)
+                sql = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from, self.date_to)
                 c.execute(sql, params)
 
                 logger.info('Inserting data into table "%s" for date range %s - %s, job %s',

@@ -24,9 +24,6 @@ NEW_MATERIALIZED_VIEWS = [
     materialize_views.MVHelpersCampaignFactors,
     materialize_views.MVHelpersNormalizedStats,
 
-
-    materialize_views.MVHTest,
-
     materialize_views.MasterView,
 
     # Derived views from master - from broder to narrower breakdown
