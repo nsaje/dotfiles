@@ -138,10 +138,10 @@ class Command(ExceptionCommand):
     def generate_adgroup_blacklist_hash(self, blacklisted_before):
         logger.info('Fetching adgroup publisher blacklist entries...')
         adgroup_blacklist = set([(pub[0], pub[1], pub[2].replace('b1_', ''),)
-            for pub in dash.models.PublisherBlacklist.objects.filter(
-                ad_group__isnull=False,
-                status=dash.constants.PublisherStatus.BLACKLISTED,
-                created_dt__lte=blacklisted_before,
+                                for pub in dash.models.PublisherBlacklist.objects.filter(
+                                        ad_group__isnull=False,
+                                        status=dash.constants.PublisherStatus.BLACKLISTED,
+                                        created_dt__lte=blacklisted_before,
             ).values_list('name', 'ad_group__id', 'source__tracking_slug')
         ])
         logger.info('Fetching adgroup publisher blacklist entries... Done.')

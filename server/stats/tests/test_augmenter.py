@@ -79,18 +79,18 @@ class AugmenterTestCase(TestCase):
 
     def test_augment_row_delivery(self):
         rows = [
-            {'device': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
-            {'device': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
-            {'device': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
+            {'device_type': 1, 'age': 1, 'age_gender': 1, 'gender': 1, 'clicks': 10},
+            {'device_type': 2, 'age': 2, 'age_gender': 2, 'gender': 2, 'clicks': 20},
+            {'device_type': 0, 'age': 3, 'age_gender': 5, 'gender': 0, 'clicks': 30},
         ]
 
         for row in rows:
             augmenter.augment_row_delivery(row)
 
         self.assertItemsEqual(rows, [
-            {'device': 'Desktop', 'age': '18-20', 'age_gender': '18-20 Men', 'gender': 'Men', 'clicks': 10},
-            {'device': 'Tablet', 'age': '21-29', 'age_gender': '18-20 Women', 'gender': 'Women', 'clicks': 20},
-            {'device': 'Undefined', 'age': '30-39', 'age_gender': '21-29 Women', 'gender': 'Undefined',
+            {'device_type': 'Desktop', 'age': '18-20', 'age_gender': '18-20 Men', 'gender': 'Men', 'clicks': 10},
+            {'device_type': 'Tablet', 'age': '21-29', 'age_gender': '18-20 Women', 'gender': 'Women', 'clicks': 20},
+            {'device_type': 'Undefined', 'age': '30-39', 'age_gender': '21-29 Women', 'gender': 'Undefined',
              'clicks': 30},
         ])
 

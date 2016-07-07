@@ -14,8 +14,9 @@ oneApp.directive('zemGridCellCollapse', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_collapse.html',
-        controller: [function () {
+        controller: ['config', function (config) {
             var vm = this;
+            vm.config = config;
             vm.toggleCollapse = toggleCollapse;
 
             function toggleCollapse () {

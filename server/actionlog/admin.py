@@ -52,12 +52,12 @@ class CountFilterQuerySet(db_models.QuerySet):
             if there is no constraints on query """
         query = self.query
 
-        if (not query.where
-                and query.high_mark is None
-                and query.low_mark == 0
-                and not query.select
-                and not query.group_by
-                and not query.distinct):
+        if (not query.where and
+                query.high_mark is None and
+                query.low_mark == 0 and
+                not query.select and
+                not query.group_by and
+                not query.distinct):
             return 'unknown'
 
         return super(CountFilterQuerySet, self).count()

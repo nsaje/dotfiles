@@ -579,8 +579,7 @@ class UserForm(forms.Form):
 
 DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
-OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name',
-                       'description', 'call_to_action', 'label', 'image_crop',
+OPTIONAL_CSV_FIELDS = ['display_url', 'brand_name', 'description', 'call_to_action', 'label', 'image_crop',
                        'primary_tracker_url', 'secondary_tracker_url']
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ['errors']
@@ -621,7 +620,7 @@ class AdGroupAdsUploadBaseForm(forms.Form):
 
 
 class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
-    content_ads = forms.FileField(
+    candidates = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
 
@@ -652,22 +651,16 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
             # That's how those columns are presented in our csv template (that user can download)
             # If the user downloads the template, fills it in and uploades, it immediately works.
             field = re.sub("_*\(optional\)", "", field)
-            # accept both variants
-            if field == "tracker_url":
-                field = "tracker_urls"
-            # Tracker Urls column has been renamed to Impression Trackers
-            # For simplicity, consistency and backward compatibility this field name is reverted here
-            if field == "impression_trackers":
-                field = "tracker_urls"
             if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
         # Make sure each column_name appears only once
         for column_name, count in Counter(column_names).iteritems():
+            formatted_name = column_name.replace('_', ' ').capitalize()
             if count > 1:
                 raise forms.ValidationError(
-                    "Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
+                    "Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(formatted_name, count))
 
         return column_names
 
@@ -704,10 +697,10 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
         else:
             return False
 
-    def clean_content_ads(self):
-        content_ads_file = self.cleaned_data['content_ads']
+    def clean_candidates(self):
+        candidates_file = self.cleaned_data['candidates']
 
-        file_content = content_ads_file.read()
+        file_content = candidates_file.read()
         valid = self.is_valid_input_file(file_content)
         if not valid:
             raise forms.ValidationError('Input file was not recognized.')
@@ -747,69 +740,6 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
             raise forms.ValidationError('Too many content ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
 
         return data
-
-
-class AdGroupAdsUploadExtendedForm(AdGroupAdsUploadForm):
-    """
-    This form supports old content upload where more brand name, display url and call to action fields were
-    required.
-    """
-    display_url = DisplayURLField(
-        required=True,
-        label="Display URL",
-        # max_length is should be validated _after_ http:// has been stripped out
-        # that's why it is validated in DisplayURLField.clean() and max_length isn't set here
-        error_messages={
-            'invalid': 'Display URL is invalid.',
-            'max_length': 'Display URL is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    brand_name = forms.CharField(
-        required=True,
-        max_length=25,
-        label="Brand name",
-        error_messages={
-            'max_length': 'Brand name is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    call_to_action = forms.CharField(
-        required=True,
-        label="Call to action",
-        max_length=25,
-        error_messages={
-            'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-    description = forms.CharField(
-        required=True,
-        max_length=140,
-        label="Description",
-        error_messages={
-            'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        }
-    )
-
-    # we validate form as a whole after all fields have been validated to see
-    # if the fields that are submitted as empty in the form are specified in CSV as columns
-    def clean(self):
-        super(AdGroupAdsUploadExtendedForm, self).clean()
-
-        if self.errors:
-            return
-
-        # after individual fields are validated we need to check if CSV has columns for the ones
-        # that are submitted empty. We take an advantage of the fact that fields of this form
-        # have exactly the same names as normalized names of csv columns
-        for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
-            if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
-                if column_and_field_name not in self.csv_column_names:  # and is not present as a CSV column
-                    self.add_error(
-                        column_and_field_name,
-                        forms.ValidationError(
-                            "{0} has to be present here or as a column in CSV.".format(
-                                self.fields[column_and_field_name].label)
-                        )
-                    )
 
 
 class CreditLineItemForm(forms.ModelForm):
@@ -1091,7 +1021,6 @@ class ContentAdCandidateForm(forms.ModelForm):
             'brand_name',
             'description',
             'call_to_action',
-            'tracker_urls',
             'primary_tracker_url',
             'secondary_tracker_url',
         ]
@@ -1131,8 +1060,7 @@ class ContentAdForm(ContentAdCandidateForm):
             'required': 'Choose a valid image crop',
         },
     )
-    display_url = forms.CharField(
-        max_length=25,
+    display_url = DisplayURLField(
         error_messages={
             'required': 'Missing display URL',
             'max_length': 'Display URL too long (max %(limit_value)d characters)',
@@ -1166,9 +1094,6 @@ class ContentAdForm(ContentAdCandidateForm):
             'max_length': 'URL too long (max %(limit_value)d characters)',
         }
     )
-    tracker_urls = forms.CharField(
-        required=False,
-    )  # TODO: remove when upload v2.1 is public
     secondary_tracker_url = forms.CharField(
         max_length=936,
         required=False,
@@ -1253,19 +1178,6 @@ class ContentAdForm(ContentAdCandidateForm):
 
         return self._validate_tracker_url(url)
 
-    def clean_tracker_urls(self):
-        tracker_urls_str = self.cleaned_data.get('tracker_urls').strip()
-        if not tracker_urls_str:
-            return []
-
-        tracker_urls = tracker_urls_str.strip().split(' ')
-
-        result = []
-        for url in tracker_urls:
-            result.append(self._validate_tracker_url(url))
-
-        return result
-
     def clean_image_crop(self):
         image_crop = self.cleaned_data.get('image_crop')
         if not image_crop:
@@ -1297,6 +1209,7 @@ class ContentAdForm(ContentAdCandidateForm):
             return 'Content unreachable'
 
     def _set_tracker_urls(self, cleaned_data):
+        cleaned_data['tracker_urls'] = []
         primary_tracker_url = cleaned_data.get('primary_tracker_url')
         if primary_tracker_url:
             cleaned_data['tracker_urls'].append(primary_tracker_url)

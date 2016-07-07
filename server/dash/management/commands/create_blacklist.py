@@ -41,7 +41,9 @@ class Command(ExceptionCommand):
 
         status = ACTION_TO_BLACKLIST_STATUS[options['status'][0]]
 
-        dash.blacklist.update(ad_group, {'ad_group': ad_group}, status, domains, all_sources=True)
+        dash.blacklist.update(ad_group, {'ad_group': ad_group}, status, [
+            (d, None) for d in domains
+        ], all_sources=True)
 
     def parse_csv(self, csv_file):
         lines = unicodecsv.reader(csv_file)

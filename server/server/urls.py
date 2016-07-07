@@ -128,56 +128,29 @@ urlpatterns += [
         name='ad_group_ads_table'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/csv/',
+        login_required(dash.views.upload.UploadCsv.as_view()), name='upload_csv'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
-        login_required(dash.views.views.AdGroupAdsUploadStatus.as_view()),
-        name='ad_group_ads_upload_status'
+        login_required(dash.views.upload.UploadStatus.as_view()), name='upload_status'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/download/',
+        login_required(dash.views.upload.CandidatesDownload.as_view()), name='upload_candidates_download'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/save/',
+        login_required(dash.views.upload.UploadSave.as_view()), name='upload_save'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/cancel/',
-        login_required(dash.views.views.AdGroupAdsUploadCancel.as_view()),
-        name='ad_group_ads_upload_cancel'
+        login_required(dash.views.upload.UploadCancel.as_view()), name='upload_cancel'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/report/',
-        login_required(dash.views.views.AdGroupAdsUploadReport.as_view()),
-        name='ad_group_ads_upload_report'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/',
-        login_required(dash.views.views.AdGroupAdsUpload.as_view()), name='ad_group_ads_upload'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/csv/',
-        login_required(dash.views.upload.UploadCsv.as_view()), name='upload_plus_csv'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/multiple/',
-        login_required(dash.views.upload.UploadMultiple.as_view()), name='upload_plus_multiple'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/status/',
-        login_required(dash.views.upload.UploadStatus.as_view()), name='upload_plus_status'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/download/',
-        login_required(dash.views.upload.CandidatesDownload.as_view()), name='upload_plus_candidates_download'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/save/',
-        login_required(dash.views.upload.UploadSave.as_view()), name='upload_plus_save'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/cancel/',
-        login_required(dash.views.upload.UploadCancel.as_view()), name='upload_plus_cancel'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus/(?P<batch_id>\d+)/report/',
-        login_required(dash.views.upload.UploadErrorReport.as_view()), name='upload_plus_error_report'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload_plus'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload'
         '/(?P<batch_id>\d+)/candidate/(?P<candidate_id>\d+)/',
-        login_required(dash.views.upload.Candidate.as_view()), name='upload_plus_candidate'
+        login_required(dash.views.upload.Candidate.as_view()), name='upload_candidate'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
@@ -510,6 +483,11 @@ urlpatterns += [
         r'^api/ad_groups/(?P<ad_group_id>\d+)/breakdown(?P<breakdown>(/\w+)+/?)',
         login_required(dash.views.breakdown.AdGroupBreakdown.as_view()),
         name='breakdown_ad_groups'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/facebook_account_status/',
+        login_required(dash.views.agency.FacebookAccountStatus.as_view()),
+        name='facebook_account_status'
     ),
     url(
         r'^api/demov3/$',

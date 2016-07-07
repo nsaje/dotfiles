@@ -14,8 +14,9 @@ def dictfetchall(cursor):
 
 
 def is_collection(value):
-    return ((isinstance(value, collections.Iterable) or isinstance(value, QuerySet))
-            and type(value) not in (str, unicode))
+    return ((isinstance(value, collections.Iterable) or
+            isinstance(value, QuerySet)) and
+            type(value) not in (str, unicode))
 
 
 def extract_obj_ids(objects):

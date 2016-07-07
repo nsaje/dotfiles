@@ -496,7 +496,7 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.description = 'testdescription'
         self.brand_name = 'testbrandname'
         self.call_to_action = 'testcalltoaction'
-        self.tracker_urls = 'http://example1.com example2.com'
+        self.primary_tracker_url = 'http://example1.com'
 
     def test_filetypes(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
@@ -515,56 +515,58 @@ class AdGroupAdsUploadFormTest(TestCase):
             self.assertTrue(valid)
 
     def test_no_csv_content(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary tracker url'], [])
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
+        self.assertEqual(form.errors, {'candidates': [u'Uploaded file is empty.']})
 
     def test_csv_empty_lines(self):
-        csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Impression Trackers'], [],
-                                           [self.url, self.title, self.image_url, self.tracker_urls], []])
+        csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Primary tracker url'], [],
+                                           [self.url, self.title, self.image_url, self.primary_tracker_url], []])
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
 
     def test_csv_max_ads(self):
-        lines = [[self.url, self.title, self.image_url, self.tracker_urls]] * 101
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Impression Trackers'], lines)
+        lines = [[self.url, self.title, self.image_url, self.primary_tracker_url]] * 101
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary tracker url'], lines)
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': ['Too many content ads (max. 100)']})
+        self.assertEqual(form.errors, {'candidates': ['Too many content ads (max. 100)']})
 
     def test_csv_max_ads_empty_lines(self):
-        lines = [['Url', 'Title', 'Image Url', 'Impression Trackers']]
-        lines += [[self.url, self.title, self.image_url, self.tracker_urls], []] * 100
+        lines = [['Url', 'Title', 'Image Url', 'Primary tracker url']]
+        lines += [[self.url, self.title, self.image_url, self.primary_tracker_url], []] * 100
         csv_file = self._get_csv_file([], lines)
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
 
     def test_csv_example_content_without_data(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Impression Trackers'],
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Primary tracker url'],
                                       [forms.EXAMPLE_CSV_CONTENT.split(',')])
         form = self._init_form(csv_file, {})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
+        self.assertEqual(form.errors, {'candidates': [u'Uploaded file is empty.']})
 
     def test_csv_example_content_with_data(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Impression Trackers'],
-                                      [forms.EXAMPLE_CSV_CONTENT.split(','),
-                                       [self.url, self.title, self.image_url, self.description, self.tracker_urls],
-                                       forms.EXAMPLE_CSV_CONTENT.split(',')])
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Description', 'Primary tracker url'],
+            [forms.EXAMPLE_CSV_CONTENT.split(','),
+             [self.url, self.title, self.image_url, self.description, self.primary_tracker_url],
+             forms.EXAMPLE_CSV_CONTENT.split(',')]
+        )
         form = self._init_form(csv_file, {})
         self.assertTrue(form.is_valid())
-        self.assertEqual(len(form.cleaned_data['content_ads']), 1)
+        self.assertEqual(len(form.cleaned_data['candidates']), 1)
 
     def test_csv_impression_trackers_column(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Impression Trackers'],
-            [[self.url, self.title, self.image_url, self.tracker_urls]])
+            ['Url', 'Title', 'Image Url', 'Primary tracker url'],
+            [[self.url, self.title, self.image_url, self.primary_tracker_url]])
 
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['content_ads'][0]['tracker_urls'], self.tracker_urls)
+        self.assertEqual(form.cleaned_data['candidates'][0]['primary_tracker_url'], self.primary_tracker_url)
 
     def test_csv_ignore_errors_column(self):
         csv_file = self._get_csv_file(
@@ -573,35 +575,35 @@ class AdGroupAdsUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
-        self.assertTrue('errors' not in form.cleaned_data['content_ads'][0])
+        self.assertTrue('errors' not in form.cleaned_data['candidates'][0])
 
     def test_form(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
+            ['Url', 'Title', 'Image Url', 'Primary tracker url'],
+            [[self.url, self.title, self.image_url, self.primary_tracker_url]])
 
         form = self._init_form(csv_file, None)
 
         self.assertTrue(form.is_valid())
+        self.maxDiff = None
         self.assertEqual(form.cleaned_data, {
             'batch_name': self.batch_name,
-            'content_ads': [{
-                u'crop_areas': self.crop_areas,
+            'candidates': [{
                 u'image_url': self.image_url,
                 u'title': self.title,
                 u'url': self.url,
-                u'tracker_urls': self.tracker_urls
+                u'primary_tracker_url': self.primary_tracker_url,
             }]
         })
 
     def test_form_optional_fields_duplicated(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
+            ['Url', 'Title', 'Image Url', 'Primary tracker url', 'Primary tracker url'],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.primary_tracker_url]])
 
         form = self._init_form(csv_file, None)
-        self.assertEqual(form.errors, {'content_ads': [
-                         u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
+        self.assertEqual(form.errors, {'candidates': [
+                         u'Column "Primary tracker url" appears multiple times (2) in the CSV file.']})
 
     def test_incorrect_csv_format(self):
         csv_file = StringIO.StringIO()
@@ -621,48 +623,48 @@ class AdGroupAdsUploadFormTest(TestCase):
         csv_file = self._get_csv_file(['aaa', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['First column in header should be URL.'])
+        self.assertEqual(form.errors['candidates'], ['First column in header should be URL.'])
 
     def test_header_no_title(self):
         csv_file = self._get_csv_file(['URL', 'aaa', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['Second column in header should be Title.'])
+        self.assertEqual(form.errors['candidates'], ['Second column in header should be Title.'])
 
     def test_header_no_image_url(self):
         csv_file = self._get_csv_file(['URL', 'Title', 'aaa', 'Crop Areas'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['Third column in header should be Image URL.'])
+        self.assertEqual(form.errors['candidates'], ['Third column in header should be Image URL.'])
 
     def test_header_unknown_forth_column(self):
         csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'aaa'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            form.errors['content_ads'],
+            form.errors['candidates'],
             ['Unrecognized column name "aaa".']
         )
 
     def test_header_unknown_fifth_column(self):
-        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Crop Areas', 'aaa'], [])
+        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Primary tracker url', 'aaa'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
         self.assertEqual(
-            form.errors['content_ads'],
+            form.errors['candidates'],
             ['Unrecognized column name "aaa".']
         )
 
     def test_windows_1252_encoding(self):
         csv_file = self._get_csv_file(
-            ['URL', 'Title', 'Image URL', 'Crop areas'],
+            ['URL', 'Title', 'Image URL', 'Primary tracker url'],
             [[self.url, u'\u00ae', self.image_url, self.crop_areas]],
             encoding='windows-1252'
         )
         form = self._init_form(csv_file, None)
 
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['content_ads'][0]['title'], u'\xae')
+        self.assertEqual(form.cleaned_data['candidates'][0]['title'], u'\xae')
 
     def _init_form(self, csv_file, data_updates):
         data = {
@@ -674,348 +676,7 @@ class AdGroupAdsUploadFormTest(TestCase):
 
         return forms.AdGroupAdsUploadForm(
             data,
-            {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
-        )
-
-    def _get_csv_file(self, header, rows, encoding='utf-8'):
-        csv_file = StringIO.StringIO()
-
-        writer = unicodecsv.writer(csv_file, encoding=encoding)
-        writer.writerow(header)
-
-        for row in rows:
-            writer.writerow(row)
-
-        return csv_file
-
-
-class AdGroupAdsPlusUploadExtendedFormTestCase(TestCase):
-    def setUp(self):
-        self.batch_name = 'Test batch name'
-        self.url = 'http://example.com'
-        self.title = 'Test Title'
-        self.image_url = 'http://example.com/image'
-        self.crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-        self.display_url = 'example.com'
-        self.description = 'testdescription'
-        self.brand_name = 'testbrandname'
-        self.call_to_action = 'testcalltoaction'
-        self.tracker_urls = 'http://example1.com example2.com'
-
-    def test_empty_display_url_and_not_in_csv(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {'display_url': ''})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['This field is required.']})
-
-    def test_empty_brand_name_and_not_in_csv(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {'brand_name': ''})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'brand_name': ['This field is required.']})
-
-    def test_empty_description_and_not_in_csv(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {'description': ''})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'description': ['This field is required.']})
-
-    def test_empty_description(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Description'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.description]])
-
-        form = self._init_form(csv_file, {'description': ''})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'description': ['This field is required.']})
-
-    def test_empty_call_to_action_and_not_in_csv(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {'call_to_action': ''})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'call_to_action': ['This field is required.']})
-
-    def test_invalid_display_url(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {'display_url': 'teststring'})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Display URL is invalid.']})
-
-    def test_cleaned_display_url(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        form = self._init_form(csv_file, {'display_url': 'https://teststring.com/this/'})
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['display_url'], 'teststring.com/this')
-
-    def test_display_url_over_max_length(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas]])
-
-        domain = 'aaaaaaaaaaaaaaaaaaaaaa.com'
-        self.assertEqual(len(domain), 26, 'domain is not over max length = 25')
-        url = 'https://' + domain
-
-        form = self._init_form(csv_file, {'display_url': url})
-
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Display URL is too long (26/25).']})
-
-    def test_filetypes(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
-        form = self._init_form(csv_file, {})
-        with open('./dash/tests/test.gif') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertFalse(valid)
-        with open('./dash/tests/test.jpg') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertFalse(valid)
-        with open('./dash/tests/test.xlsx') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertFalse(valid)
-        with open('./dash/tests/test.csv') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertTrue(valid)
-
-    def test_no_csv_content(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
-
-        form = self._init_form(csv_file, {'display_url': 'test.com'})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
-
-    def test_csv_empty_lines(self):
-        csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Impression Trackers'], [],
-                                           [self.url, self.title, self.image_url, self.tracker_urls], []])
-        form = self._init_form(csv_file, None)
-        self.assertTrue(form.is_valid())
-
-    def test_csv_example_content_without_data(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Impression Trackers'],
-                                      [forms.EXAMPLE_CSV_CONTENT.split(',')])
-        form = self._init_form(csv_file, {})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
-
-    def test_csv_example_content_with_data(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Impression Trackers'],
-                                      [forms.EXAMPLE_CSV_CONTENT.split(','),
-                                       [self.url, self.title, self.image_url, self.description, self.tracker_urls],
-                                       forms.EXAMPLE_CSV_CONTENT.split(',')])
-        form = self._init_form(csv_file, {})
-        self.assertTrue(form.is_valid())
-        self.assertEqual(len(form.cleaned_data['content_ads']), 1)
-
-    def test_csv_impression_trackers_column(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Impression Trackers'],
-            [[self.url, self.title, self.image_url, self.tracker_urls]])
-
-        form = self._init_form(csv_file, None)
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['content_ads'][0]['tracker_urls'], self.tracker_urls)
-
-    def test_csv_ignore_errors_column(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Errors'],
-            [[self.url, self.title, self.image_url, 'some errors']])
-
-        form = self._init_form(csv_file, None)
-        self.assertTrue(form.is_valid())
-        self.assertTrue('errors' not in form.cleaned_data['content_ads'][0])
-
-    def test_form(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
-
-        form = self._init_form(csv_file, None)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data, {
-            'batch_name': self.batch_name,
-            'description': self.description,
-            'display_url': self.display_url,
-            'brand_name': self.brand_name,
-            'call_to_action': self.call_to_action,
-            'content_ads': [{
-                u'crop_areas': self.crop_areas,
-                u'image_url': self.image_url,
-                u'title': self.title,
-                u'url': self.url,
-                u'tracker_urls': self.tracker_urls
-            }]
-        })
-
-    def test_form_optional_fields_in_csv(self):
-        # optional fields in csv are present (display url, brand name, description, call to action)
-        # they override the ones from the batch upload form for each content ad
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs',
-                'Display URL', 'Brand name', 'Description', 'Call to action'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2",
-              self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
-
-        form = self._init_form(csv_file, None)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data, {
-            'batch_name': self.batch_name,
-            'display_url': self.display_url,
-            'brand_name': self.brand_name,
-            'description': self.description,
-            'call_to_action': self.call_to_action,
-            'content_ads': [{
-                u'crop_areas': self.crop_areas,
-                u'image_url': self.image_url,
-                u'title': self.title,
-                u'url': self.url,
-                u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url + "2",  # From CSV
-                u'brand_name': self.brand_name + "2",
-                u'description': self.description + "2",
-                u'call_to_action': self.call_to_action + "2",
-
-            }]
-        })
-
-    def test_form_optional_fields_in_csv_alternative_column_names(self):
-        # optional fields in csv are present (display url, brand name, description, call to action)
-        # they override the ones from the batch upload form for each content ad.
-        # Those optional fields have alternative endings like spaces and (optional) added.
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)',
-             'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2",
-              self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
-
-        form = self._init_form(csv_file, None)
-
-        self.assertEqual(form.errors, {})
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data, {
-            'batch_name': self.batch_name,
-            'display_url': self.display_url,
-            'brand_name': self.brand_name,
-            'description': self.description,
-            'call_to_action': self.call_to_action,
-            'content_ads': [{
-                u'crop_areas': self.crop_areas,
-                u'image_url': self.image_url,
-                u'title': self.title,
-                u'url': self.url,
-                u'tracker_urls': self.tracker_urls,
-                u'display_url': self.display_url + "2",  # From CSV
-                u'brand_name': self.brand_name + "2",
-                u'description': self.description + "2",
-                u'call_to_action': self.call_to_action + "2",
-
-            }]
-        })
-
-    def test_form_optional_fields_duplicated(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Crop Areas'],
-            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
-
-        form = self._init_form(csv_file, None)
-        self.assertEqual(form.errors, {'content_ads': [
-                         u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
-
-    def test_incorrect_csv_format(self):
-        csv_file = StringIO.StringIO()
-        csv_file.write('TEST\x00TEST')
-
-        form = self._init_form(csv_file, {'batch_name': self.batch_name})
-
-        self.assertFalse(form.is_valid())
-
-    def test_batch_name_missing(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
-        form = self._init_form(csv_file, {'batch_name': None})
-
-        self.assertFalse(form.is_valid())
-
-    def test_header_no_url(self):
-        csv_file = self._get_csv_file(['aaa', 'Title', 'Image Url', 'Crop Areas'], [])
-        form = self._init_form(csv_file, None)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['First column in header should be URL.'])
-
-    def test_header_no_title(self):
-        csv_file = self._get_csv_file(['URL', 'aaa', 'Image Url', 'Crop Areas'], [])
-        form = self._init_form(csv_file, None)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['Second column in header should be Title.'])
-
-    def test_header_no_image_url(self):
-        csv_file = self._get_csv_file(['URL', 'Title', 'aaa', 'Crop Areas'], [])
-        form = self._init_form(csv_file, None)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors['content_ads'], ['Third column in header should be Image URL.'])
-
-    def test_header_unknown_forth_column(self):
-        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'aaa'], [])
-        form = self._init_form(csv_file, None)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors['content_ads'],
-            ['Unrecognized column name "aaa".']
-        )
-
-    def test_header_unknown_fifth_column(self):
-        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Crop Areas', 'aaa'], [])
-        form = self._init_form(csv_file, None)
-        self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors['content_ads'],
-            ['Unrecognized column name "aaa".']
-        )
-
-    def test_windows_1252_encoding(self):
-        csv_file = self._get_csv_file(
-            ['URL', 'Title', 'Image URL', 'Crop areas'],
-            [[self.url, u'\u00ae', self.image_url, self.crop_areas]],
-            encoding='windows-1252'
-        )
-        form = self._init_form(csv_file, None)
-
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['content_ads'][0]['title'], u'\xae')
-
-    def _init_form(self, csv_file, data_updates):
-        data = {
-            'batch_name': self.batch_name,
-            'display_url': self.display_url,
-            'brand_name': self.brand_name,
-            'description': self.description,
-            'call_to_action': self.call_to_action
-        }
-
-        if data_updates is not None:
-            data.update(data_updates)
-
-        return forms.AdGroupAdsUploadExtendedForm(
-            data,
-            {'content_ads': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
+            {'candidates': SimpleUploadedFile('test_file.csv', csv_file.getvalue())}
         )
 
     def _get_csv_file(self, header, rows, encoding='utf-8'):
@@ -1103,7 +764,6 @@ class ContentAdCandidateFormTestCase(TestCase):
             'brand_name': 'Zemanta',
             'description': 'Description',
             'call_to_action': 'Read more',
-            'tracker_urls': '',
             'primary_tracker_url': 'https://zemanta.com/px1',
             'secondary_tracker_url': 'https://zemanta.com/px2',
         })
@@ -1378,12 +1038,27 @@ class ContentAdFormTestCase(TestCase):
 
     def test_display_url_too_long(self):
         data = self._get_valid_data()
-        data['display_url'] = 'repeat' * 6
+        data['display_url'] = 'repeat' * 4 + '.com'
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
             'display_url': ['Display URL too long (max 25 characters)']
         }, f.errors)
+
+    def test_display_url_invalid(self):
+        data = self._get_valid_data()
+        data['display_url'] = 'test'
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            'display_url': ['Enter a valid URL.']
+        }, f.errors)
+
+    def test_display_url_with_http(self):
+        data = self._get_valid_data()
+        data['display_url'] = 'http://' + 'repeat' * 3 + '.com/'
+        f = forms.ContentAdForm(data)
+        self.assertTrue(f.is_valid())
 
     def test_missing_brand_name(self):
         data = self._get_valid_data()

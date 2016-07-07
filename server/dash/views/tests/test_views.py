@@ -609,9 +609,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary tracker url,Secondary tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -625,10 +625,10 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
-'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary tracker url,Secondary tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -642,8 +642,8 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary tracker url,Secondary tracker url,Label',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -656,9 +656,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary tracker url,Secondary tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -672,10 +672,10 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary tracker url,Secondary tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -686,9 +686,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary tracker url,Secondary tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -1383,316 +1383,6 @@ class AdGroupContentAdRestore(TestCase):
         )
 
 
-class AdGroupAdsUploadTest(TestCase):
-    fixtures = ['test_views.yaml']
-
-    def _get_client(self, superuser=True):
-        password = 'secret'
-
-        user_id = 1 if superuser else 2
-        username = User.objects.get(pk=user_id).email
-
-        client = Client()
-        client.login(username=username, password=password)
-
-        return client
-
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    @patch('dash.views.views.upload.process_async')
-    def test_post(self, mock_process_async, mock_log_useraction):
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        ad_group_settings = models.AdGroupSettings(
-            ad_group_id=1,
-            created_by_id=1,
-        )
-        ad_group_settings.save(request)
-
-        mock_file = SimpleUploadedFile(
-            'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
-
-        response = self._get_client().post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
-            {
-                'content_ads': mock_file,
-                'batch_name': 'testname',
-                'display_url': 'test.com',
-                'brand_name': 'testbrand',
-                'description': 'testdesc',
-                'call_to_action': 'testcall',
-            },
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(mock_process_async.called)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.UPLOAD_CONTENT_ADS,
-            ad_group=models.AdGroup.objects.get(pk=1))
-
-    @patch('dash.views.views.upload.process_async')
-    def test_post_empty_fields_not_in_csv(self, mock_process_async):
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        ad_group_settings = models.AdGroupSettings(
-            ad_group_id=1,
-            created_by_id=1,
-        )
-        ad_group_settings.save(request)
-
-        mock_file = SimpleUploadedFile(
-            'testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
-
-        response = self._get_client().post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
-            {
-                'content_ads': mock_file,
-                'batch_name': 'testname',
-                'display_url': '',
-                'brand_name': '',
-                'description': '',
-                'call_to_action': '',
-            },
-            follow=True
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content),
-                         {
-            'data': {
-                "message": None,
-                "data": None,
-                "errors": {
-                    "display_url": ["This field is required."],
-                    "call_to_action": ["This field is required."],
-                    "brand_name": ["This field is required."],
-                    "description": ["This field is required."],
-                },
-
-                "error_code": "ValidationError"
-            },
-            "success": False
-        })
-        self.assertFalse(mock_process_async.called)
-
-    def test_validation_error(self):
-        response = self._get_client().post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}), follow=True)
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_missing_ad_group(self):
-        non_existent_ad_group_id = 0
-
-        response = self._get_client().post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': non_existent_ad_group_id}),
-            follow=True
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_description_too_long(self):
-        response = self._get_client().post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
-            {
-                'description': 'a' * 141
-            },
-            follow=True
-        )
-
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('Description is too long', response.content)
-
-    def test_description_right_length(self):
-        response = self._get_client().post(
-            reverse('ad_group_ads_upload', kwargs={'ad_group_id': 1}),
-            {
-                'description': 'a' * 140
-            },
-            follow=True
-        )
-
-        self.assertNotIn('Description is too long', response.content)
-
-
-class AdGroupAdsUploadStatusTest(TestCase):
-
-    fixtures = ['test_views.yaml']
-
-    def _get_client(self, superuser=True):
-        password = 'secret'
-
-        user_id = 1 if superuser else 2
-        username = User.objects.get(pk=user_id).email
-
-        client = Client()
-        client.login(username=username, password=password)
-
-        return client
-
-    def _get_status(self):
-        response = self._get_client().get(
-            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        return json.loads(response.content)['data']
-
-    def test_get(self):
-        batch = models.UploadBatch.objects.get(pk=2)
-        batch.processed_content_ads = 55
-        batch.save()
-
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 2,
-            'count': 55,
-            'batch_size': 100,
-        })
-
-        batch.inserted_content_ads = 55
-        batch.save()
-
-        # processing ended
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 3,
-            'count': 55,
-            'batch_size': 100,
-        })
-
-        # inserting ended, but did not yet switched
-        batch.inserted_content_ads = batch.batch_size
-        batch.save()
-
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 3,
-            'count': 100,
-            'batch_size': 100,
-        })
-
-        batch.propagated_content_ads = 22
-        batch.save()
-
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 4,
-            'count': 22,
-            'batch_size': 100,
-        })
-
-    def test_get_cancelled(self):
-        batch = models.UploadBatch.objects.get(pk=2)
-        batch.processed_content_ads = 55
-        batch.status = constants.UploadBatchStatus.CANCELLED
-        batch.save()
-
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.CANCELLED,
-            'step': 2,
-            'count': 55,
-            'batch_size': 100,
-            'errors': {
-                'details': {
-                    'description': 'Content Ads upload was cancelled.'
-                }
-            }
-        })
-
-    def test_get_failed(self):
-        batch = models.UploadBatch.objects.get(pk=2)
-        batch.processed_content_ads = 55
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.save()
-
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.FAILED,
-            'step': 2,
-            'count': 55,
-            'batch_size': 100,
-            'errors': {
-                'details': {
-                    'description': 'An error occured while processing file.'
-                }
-            }
-        })
-
-    def test_get_failed_csv_errors(self):
-        batch = models.UploadBatch.objects.get(pk=2)
-        batch.processed_content_ads = 55
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.error_report_key = 123
-        batch.num_errors = 12
-        batch.save()
-
-        response = self._get_status()
-        self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.FAILED,
-            'step': 2,
-            'count': 55,
-            'batch_size': 100,
-            'errors': {
-                'details': {
-                    'report_url': '/api/ad_groups/1/contentads/upload/2/report/',
-                    'description': 'Found 12 errors.'
-                }
-            }
-        })
-
-
-class AdGroupAdsUploadCancelTest(TestCase):
-
-    fixtures = ['test_views.yaml']
-
-    def _get_client(self, superuser=True):
-        password = 'secret'
-
-        user_id = 1 if superuser else 2
-        username = User.objects.get(pk=user_id).email
-
-        client = Client()
-        client.login(username=username, password=password)
-
-        return client
-
-    def _get_status(self):
-        response = self._get_client().get(
-            reverse('ad_group_ads_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        return json.loads(response.content)['data']
-
-    def test_get(self):
-        batch = models.UploadBatch.objects.get(pk=2)
-        self.assertFalse(batch.cancelled)
-        response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        response_dict = json.loads(response.content)
-        self.assertDictEqual(response_dict, {'success': True})
-
-        batch.refresh_from_db()
-        self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
-
-    def test_validation(self):
-        batch = models.UploadBatch.objects.get(pk=2)
-        batch.propagated_content_ads = batch.batch_size
-        batch.save()
-
-        response = self._get_client(superuser=True).get(
-            reverse('ad_group_ads_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-
-        self.assertEqual(response.status_code, 400)
-
-        response_dict = json.loads(response.content)
-        self.assertEqual(response_dict['data']['errors']['cancel'], 'Cancel action unsupported at this stage')
-
-
 class AdGroupSourcesTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
@@ -1879,7 +1569,7 @@ class AdGroupSourcesTest(TestCase):
         new_settings = ad_group.get_current_settings().copy_settings()
         new_settings.cpc_cc = decimal.Decimal('0.01')
         new_settings.save(None)
-        
+
         response = self.client.put(
             reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
             data=json.dumps({'source_id': '9'})
@@ -2664,7 +2354,8 @@ class PublishersBlacklistStatusTest(TestCase):
         )
         self.assertEqual(
             publisher_blacklist_action.message,
-            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1): Test'
+            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1): '
+            u'Test #sfdafkl1230899012asldas'
         )
         self.assertTrue(res['success'])
         self.assertEqual(12, models.PublisherBlacklist.objects.count())
@@ -2687,7 +2378,8 @@ class PublishersBlacklistStatusTest(TestCase):
         )
         self.assertEqual(
             publisher_blacklist_action.message,
-            u'Enable the following publishers on Outbrain for account ZemAccount (#1): Test'
+            u'Enable the following publishers on Outbrain for account ZemAccount (#1): '
+            u'Test #sfdafkl1230899012asldas'
         )
 
 

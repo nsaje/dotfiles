@@ -16,7 +16,7 @@ class RollupTestCase(test.TestCase):
         self.cursor_mock = cursor_patcher.start()
         self.addCleanup(cursor_patcher.stop)
 
-        self.start_date = datetime.date(2014,8,1)
+        self.start_date = datetime.date(2014, 8, 1)
         self.end_date = datetime.date(2014, 8, 3)
         refresh.refresh_adgroup_stats()
 
@@ -107,4 +107,3 @@ class RollupTestCase(test.TestCase):
         self.assertEqual(rows[0]['clicks'], 107)
         self.assertEqual(rows[0]['impressions'], 7261)
         self.assertEqual(rows[0]['cost'], 4.0096)
-

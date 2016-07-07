@@ -375,8 +375,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     order_fields=['date'])
 
             elif show_blacklisted_publishers in (
-                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+                    constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+                    constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
 
                 adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
                     ad_group

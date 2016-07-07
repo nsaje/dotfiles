@@ -25,6 +25,7 @@
         modified_by: 100
         allowed_sources: [100,200]
         name: 'test account 100'
+        users: [2, 100]
     model: dash.account
     pk: 100
 
@@ -44,6 +45,7 @@
         ad_account_id: 'dummy_id'
         page_url: 'http://fakebook.fake/dummy_page_url'
         status: 2
+        page_id: '123'
     model: dash.facebookaccount
     pk: 100
 
@@ -179,6 +181,16 @@
     pk: 200
 
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 100
+        campaign: 100
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 300
+
+
 # test adgroupsource
 
 -   fields:
@@ -208,6 +220,15 @@
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 300
+
+-   fields:
+        source: 200
+        ad_group: 300
+        source_campaign_key: '["fake"]'
+        source_credentials: 200
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 400
 
 
 # test ad group source credentials
@@ -282,6 +303,24 @@
     model: dash.adgroupsourcesettings
     pk: 300
 
+-   fields:
+        created_dt: '2014-06-06T09:58:21'
+        ad_group_source: 200
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 400
+
+-   fields:
+        created_dt: '2014-06-06T09:58:21'
+        ad_group_source: 400
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 500
+
 
 # test adgroupsourcestate
 
@@ -302,3 +341,12 @@
         state: 2
     model: dash.adgroupsourcestate
     pk: 200
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 300
+        cpc_cc: '0.15'
+        daily_budget_cc: '80.'
+        state: 1
+    model: dash.adgroupsourcestate
+    pk: 300

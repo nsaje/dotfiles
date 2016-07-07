@@ -239,7 +239,7 @@ class HistoryMixin(object):
             # this means that new settings changes for newly created settings
             # will always include defaults as fields that were changed:
             for key in self.get_defaults_dict():
-                if not key in current_dict:
+                if key not in current_dict:
                     continue
                 del current_dict[key]
 
@@ -366,7 +366,6 @@ class Agency(models.Model):
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Agency, self).save(*args, **kwargs)
-
 
     class QuerySet(models.QuerySet):
 
@@ -2546,15 +2545,6 @@ class UploadBatch(models.Model):
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
     original_filename = models.CharField(max_length=1024, null=True)
 
-    error_report_key = models.CharField(max_length=1024, null=True, blank=True)
-    num_errors = models.PositiveIntegerField(null=True)
-
-    processed_content_ads = models.PositiveIntegerField(null=True)
-    inserted_content_ads = models.PositiveIntegerField(null=True)
-    propagated_content_ads = models.PositiveIntegerField(null=True)
-    cancelled = models.BooleanField(default=False)
-    batch_size = models.PositiveIntegerField(null=True)
-
     class Meta:
         get_latest_by = 'created_dt'
 
@@ -2730,8 +2720,6 @@ class ContentAdCandidate(FootprintModel):
     description = models.TextField(null=True, blank=True)
     call_to_action = models.TextField(null=True, blank=True)
 
-    # TODO: remove when upload v2.1 is public
-    tracker_urls = models.TextField(null=True, blank=True)
     primary_tracker_url = models.TextField(null=True, blank=True)
     secondary_tracker_url = models.TextField(null=True, blank=True)
 
@@ -2770,7 +2758,6 @@ class ContentAdCandidate(FootprintModel):
             'description': self.description,
             'brand_name': self.brand_name,
             'call_to_action': self.call_to_action,
-            'tracker_urls': self.tracker_urls,
             'image_status': self.image_status,
             'url_status': self.url_status,
             'hosted_image_url': self.get_image_url(160, 160),
@@ -3860,7 +3847,7 @@ class History(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk is not None:
-            raise AssertionError('Updating history object not alowed.')
+            raise AssertionError('Updating history object not allowed.')
 
         super(History, self).save(*args, **kwargs)
 
@@ -3870,6 +3857,23 @@ class History(models.Model):
     class Meta:
         verbose_name = 'History'
         verbose_name_plural = 'History'
+
+
+class Audience(models.Model):
+    id = models.AutoField(primary_key=True)
+    pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
+    ad_group_settings = models.ManyToManyField(AdGroupSettings)
+    ttl = models.PositiveSmallIntegerField()
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+
+class Rule(models.Model):
+    audience = models.ForeignKey(Audience, on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        choices=constants.RuleType.get_choices(),
+    )
+    value = models.CharField(max_length=255)
 
 
 def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):

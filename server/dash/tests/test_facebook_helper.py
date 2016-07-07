@@ -5,12 +5,11 @@ from mock import patch
 from requests import Response
 
 from dash import facebook_helper, constants, models
-from dash.facebook_helper import FB_PAGES_URL, FB_API_VERSION, FB_PAGE_ID_URL, FB_AD_ACCOUNT_URL, \
+from dash.facebook_helper import FB_PAGES_URL, FB_API_VERSION, FB_PAGE_ID_URL, FB_AD_ACCOUNT_CREATE_URL, \
     FB_USER_PERMISSIONS_URL, CURRENCY_USD, TZ_AMERICA_NEW_YORK
 
 
 class FacebookPageAccessTest(TestCase):
-
     @staticmethod
     def get_credentials():
         return {
@@ -44,11 +43,15 @@ class FacebookPageAccessTest(TestCase):
         fb_account = models.FacebookAccount()
         fb_account.page_url = page_url
         fb_account.page_id = page_id
+
+        account = models.Account()
+        fb_account.account = account
         return fb_account
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_unchanged_page(self, mock_post, mock_get):
+    def test_update_unchanged_page(self, mock_post, mock_get, mock_stop):
         page_url = 'http://facebook.com/existing_page_id'
         page_id = '1234'
         fb_account = self._get_fb_account(page_url, page_id)
@@ -60,10 +63,12 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.page_id, page_id)
         self.assertFalse(mock_post.called)
         self.assertFalse(mock_get.called)
+        self.assertFalse(mock_stop.called)
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_new_page(self, mock_request, mock_page_id):
+    def test_update_new_page(self, mock_request, mock_page_id, mock_stop):
         page_url = 'http://www.facebook.com/new_page'
         page_id = '1234'
 
@@ -83,10 +88,12 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.status, constants.FacebookPageRequestType.PENDING)
         self.assertTrue(mock_page_id.called)
         self.assertTrue(mock_request.called)
+        mock_stop.assert_called_once_with(fb_account.account)
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_changed_page(self, mock_request, mock_page_id):
+    def test_update_changed_page(self, mock_request, mock_page_id, mock_stop):
         page_url = 'http://www.facebook.com/new_page'
         page_id = '9876'
 
@@ -106,10 +113,12 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.status, constants.FacebookPageRequestType.PENDING)
         self.assertTrue(mock_page_id.called)
         self.assertTrue(mock_request.called)
+        mock_stop.assert_called_once_with(fb_account.account)
 
+    @patch('dash.facebook_helper.stop_facebook_media_sources')
     @patch('requests.get')
     @patch('requests.post')
-    def test_update_clear_page(self, mock_request, mock_page_id):
+    def test_update_clear_page(self, mock_request, mock_page_id, mock_stop):
         page_url = 'http://facebook.com/existing_page'
         page_id = '1234'
         fb_account = self._get_fb_account(page_url, page_id)
@@ -122,6 +131,7 @@ class FacebookPageAccessTest(TestCase):
         self.assertEqual(fb_account.status, constants.FacebookPageRequestType.EMPTY)
         self.assertFalse(mock_request.called)
         self.assertFalse(mock_page_id.called)
+        mock_stop.assert_called_once_with(fb_account.account)
 
     @patch('requests.post')
     def test_send_page_access_invalid_page(self, mock_post):
@@ -135,8 +145,9 @@ class FacebookPageAccessTest(TestCase):
         status = facebook_helper.send_page_access_request(page_id, credentials['business_id'],
                                                           credentials['access_token'])
 
-        mock_post.assert_called_once_with(FB_PAGES_URL.format(FB_API_VERSION, 'fake_business_id'),
-                                          data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
+        mock_post.assert_called_once_with(
+            FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
+            data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
         self.assertEqual(status, constants.FacebookPageRequestType.INVALID)
 
     @patch('requests.post')
@@ -151,7 +162,7 @@ class FacebookPageAccessTest(TestCase):
         status = facebook_helper.send_page_access_request(page_id, credentials['business_id'],
                                                           credentials['access_token'])
 
-        mock.assert_called_once_with(FB_PAGES_URL.format(FB_API_VERSION, 'fake_business_id'),
+        mock.assert_called_once_with(FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
                                      data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
         self.assertEqual(status, constants.FacebookPageRequestType.PENDING)
 
@@ -167,7 +178,7 @@ class FacebookPageAccessTest(TestCase):
         status = facebook_helper.send_page_access_request(page_id, credentials['business_id'],
                                                           credentials['access_token'])
 
-        mock.assert_called_once_with(FB_PAGES_URL.format(FB_API_VERSION, 'fake_business_id'),
+        mock.assert_called_once_with(FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
                                      data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
         self.assertEqual(status, constants.FacebookPageRequestType.CONNECTED)
 
@@ -183,7 +194,7 @@ class FacebookPageAccessTest(TestCase):
         status = facebook_helper.send_page_access_request(page_id, credentials['business_id'],
                                                           credentials['access_token'])
 
-        mock.assert_called_once_with(FB_PAGES_URL.format(FB_API_VERSION, 'fake_business_id'),
+        mock.assert_called_once_with(FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
                                      data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
         self.assertEqual(status, constants.FacebookPageRequestType.PENDING)
 
@@ -199,7 +210,7 @@ class FacebookPageAccessTest(TestCase):
         status = facebook_helper.send_page_access_request(page_id, credentials['business_id'],
                                                           credentials['access_token'])
 
-        mock.assert_called_once_with(FB_PAGES_URL.format(FB_API_VERSION, 'fake_business_id'),
+        mock.assert_called_once_with(FB_PAGES_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
                                      data=json.dumps(self._get_params(page_id)), headers=self._get_headers())
         self.assertEqual(status, constants.FacebookPageRequestType.ERROR)
 
@@ -233,7 +244,7 @@ class FacebookPagesTest(TestCase):
 
         credentials = self.get_credentials()
         page_id = facebook_helper.get_page_id(page_url, credentials['access_token'])
-        mock_get.assert_called_once_with(FB_PAGE_ID_URL.format(FB_API_VERSION, 'page_name'),
+        mock_get.assert_called_once_with(FB_PAGE_ID_URL.format(api_version=FB_API_VERSION, page_id='page_name'),
                                          params=self._get_token_json())
         self.assertEqual(page_id, "1234")
 
@@ -244,7 +255,7 @@ class FacebookPagesTest(TestCase):
 
         credentials = self.get_credentials()
         page_id = facebook_helper.get_page_id(page_url, credentials['access_token'])
-        mock_get.assert_called_once_with(FB_PAGE_ID_URL.format(FB_API_VERSION, 'invalid_page'),
+        mock_get.assert_called_once_with(FB_PAGE_ID_URL.format(api_version=FB_API_VERSION, page_id='invalid_page'),
                                          params=self._get_token_json())
         self.assertEqual(page_id, None)
 
@@ -349,8 +360,9 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         ad_account_id = facebook_helper.create_ad_account(name, page_id, credentials['app_id'],
                                                           credentials['business_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_AD_ACCOUNT_URL.format(FB_API_VERSION, 'fake_business_id'),
-                                     json.dumps(self._get_account_params(name, page_id)), headers=self._get_headers())
+        mock.assert_called_once_with(
+            FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION, business_id='fake_business_id'),
+            json.dumps(self._get_account_params(name, page_id)), headers=self._get_headers())
         self.assertEqual("1000", ad_account_id)
 
     @patch('requests.post')
@@ -362,7 +374,8 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         ad_account_id = facebook_helper.create_ad_account(name, page_id, credentials['app_id'],
                                                           credentials['business_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_AD_ACCOUNT_URL.format(FB_API_VERSION, 'fake_business_id'),
+        mock.assert_called_once_with(FB_AD_ACCOUNT_CREATE_URL.format(api_version=FB_API_VERSION,
+                                                                     business_id='fake_business_id'),
                                      json.dumps(self._get_account_params(name, page_id)), headers=self._get_headers())
         self.assertIsNone(ad_account_id)
 
@@ -374,7 +387,7 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         result = facebook_helper.add_system_user_permissions(account_id, 'ADMIN', credentials['business_id'],
                                                              credentials['system_user_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, account_id),
+        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(api_version=FB_API_VERSION, object_id=account_id),
                                      json.dumps(self._get_user_params('ADMIN')), headers=self._get_headers())
         self.assertTrue(result)
 
@@ -386,7 +399,7 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         result = facebook_helper.add_system_user_permissions(account_id, 'ADMIN', credentials['business_id'],
                                                              credentials['system_user_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, account_id),
+        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(api_version=FB_API_VERSION, object_id=account_id),
                                      json.dumps(self._get_user_params('ADMIN')), headers=self._get_headers())
         self.assertFalse(result)
 
@@ -398,7 +411,7 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         result = facebook_helper.add_system_user_permissions(page_id, 'ADVERTISER', credentials['business_id'],
                                                              credentials['system_user_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, page_id),
+        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(api_version=FB_API_VERSION, object_id=page_id),
                                      json.dumps(self._get_user_params('ADVERTISER')), headers=self._get_headers())
         self.assertTrue(result)
 
@@ -410,6 +423,37 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         result = facebook_helper.add_system_user_permissions(page_id, 'ADVERTISER', credentials['business_id'],
                                                              credentials['system_user_id'], credentials['access_token'])
-        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(FB_API_VERSION, page_id),
+        mock.assert_called_once_with(FB_USER_PERMISSIONS_URL.format(api_version=FB_API_VERSION, object_id=page_id),
                                      json.dumps(self._get_user_params('ADVERTISER')), headers=self._get_headers())
         self.assertFalse(result)
+
+    @patch('requests.get')
+    def test_get_ad_account_status(self, get_mock):
+        get_mock.return_value = self._create_response(200, '{"account_status":1,"id":"act_10153378392231753"}')
+        credentials = self.get_credentials()
+        account_status = facebook_helper.get_ad_account_status('act_10153378392231753', credentials['access_token'])
+        self.assertEqual(account_status, models.constants.FacebookPageRequestType.CONNECTED)
+        get_mock.assert_called_once_with('https://graph.facebook.com/v2.6/act_10153378392231753',
+                                         params={'access_token': 'fake_access_token', 'fields': 'account_status'})
+
+
+class FacebookStopMediaSourcesTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_facebook.yaml']
+
+    @patch('utils.k1_helper.update_ad_groups')
+    @patch('dash.models.AdGroupSourceSettings.save')
+    def test_stop_source_on_account(self, save_mock, k1_update_mock):
+        account = models.Account.objects.get(pk=100)
+        facebook_helper.stop_facebook_media_sources(account)
+
+        save_mock.assert_called_once_with(None)
+        k1_update_mock.assert_called_once_with({100})
+
+    @patch('utils.k1_helper.update_ad_groups')
+    @patch('dash.models.AdGroupSourceSettings.save')
+    def test_stop_source_on_account_with_no_fb_sources(self, save_mock, k1_update_mock):
+        account = models.Account.objects.get(pk=200)
+        facebook_helper.stop_facebook_media_sources(account)
+
+        self.assertFalse(save_mock.called)
+        self.assertTrue(k1_update_mock.called)
