@@ -764,7 +764,7 @@ class AccountTestCase(TestCase):
         self.assertEqual(2, qs.count())
 
     def test_filter_by_account_type(self):
-        all_accounts= models.Account.objects.all()
+        all_accounts = models.Account.objects.all()
         qs = all_accounts.filter_by_account_types([constants.AccountType.UNKNOWN])
         self.assertEqual(
             1,

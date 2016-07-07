@@ -809,7 +809,7 @@ class AccountsAccountsTable(object):
         has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_accounts_table')
 
         accounts = models.Account.objects.all()\
-            .filter_by_user( user)\
+            .filter_by_user(user)\
             .filter_by_sources(view_filter.filtered_sources)\
             .filter_by_agencies(view_filter.filtered_agencies)\
             .filter_by_account_types(view_filter.filtered_account_types)

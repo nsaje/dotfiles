@@ -117,7 +117,6 @@ class ViewFilter(object):
         )
 
 
-
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
     if not sources_filter:
