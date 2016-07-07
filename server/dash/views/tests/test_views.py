@@ -2134,11 +2134,10 @@ class PublishersBlacklistStatusTest(TestCase):
 
         hist = history_helpers.get_campaign_history(adg9.campaign)
         self.assertEqual(1, hist.count())
-        for h in hist:
-            self.assertIsNotNone(h.created_by)
-            self.assertEqual(
-                constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
-                h.action_type)
+        self.assertIsNotNone(hist[0].created_by)
+        self.assertEqual(
+            constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
+            hist[0].action_type)
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
