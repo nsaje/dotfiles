@@ -240,13 +240,13 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
     return response
 
 
-def get_report_all_accounts_sources(user, filtered_sources, start_date, end_date,
+def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
                                     order, page, size, show_archived,
                                     **kwargs):
     response = table.SourcesTable().get(
         user,
         'all_accounts',
-        filtered_sources,
+        view_filter,
         start_date,
         end_date,
         order
@@ -265,10 +265,13 @@ def get_report_all_accounts_sources(user, filtered_sources, start_date, end_date
 def get_report_account_sources(user, filtered_sources, start_date, end_date,
                                order, page, size, show_archived,
                                **kwargs):
+    view_filter = helpers.ViewFilter()
+    view_filter.filtered_sources = filtered_sources
+
     response = table.SourcesTable().get(
         user,
         'accounts',
-        filtered_sources,
+        view_filter,
         start_date,
         end_date,
         order,
@@ -288,10 +291,13 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
 def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
                                 order, page, size, show_archived,
                                 **kwargs):
+    view_filter = helpers.ViewFilter()
+    view_filter.filtered_sources = filtered_sources
+
     response = table.SourcesTable().get(
         user,
         'campaigns',
-        filtered_sources,
+        view_filter,
         start_date,
         end_date,
         order,
@@ -314,10 +320,13 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
                                 order, page, size, show_archived,
                                 **kwargs):
+    view_filter = helpers.ViewFilter()
+    view_filter.filtered_sources = filtered_sources
+
     response = table.SourcesTable().get(
         user,
         'ad_groups',
-        filtered_sources,
+        view_filter,
         start_date,
         end_date,
         order,
