@@ -1534,11 +1534,13 @@ class ConversionWindows(ConstantBase):
     LEQ_1_DAY = 24
     LEQ_7_DAYS = 168
     LEQ_30_DAYS = 720
+    LEQ_90_DAYS = 2160
 
     _VALUES = {
         LEQ_1_DAY: '1 day',
         LEQ_7_DAYS: '7 days',
         LEQ_30_DAYS: '30 days',
+        LEQ_90_DAYS: '90 days',
     }
 
 
