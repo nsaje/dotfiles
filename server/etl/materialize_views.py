@@ -505,6 +505,9 @@ class DerivedMaterializedView(Materialize):
                 sql, params = self.prepare_insert_query()
                 c.execute(sql, params)
 
+    def prepare_insert_query(self):
+        raise NotImplementedError()
+
 
 class MVAccount(DerivedMaterializedView):
 
