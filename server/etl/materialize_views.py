@@ -340,7 +340,7 @@ class MasterView(Materialize):
         for ad_group_id, rows_by_postclick_source in rows_by_ad_group.iteritems():
 
             if len(rows_by_postclick_source.keys()) > 1:
-                logger.warning("Postclick stats for a single ad group (%s) from different sources %s, date %s",
+                logger.info("Postclick stats for a single ad group (%s) from different sources %s, date %s",
                                ad_group_id, rows_by_postclick_source.keys(), date)
 
             rows = helpers.get_highest_priority_postclick_source(rows_by_postclick_source)
@@ -348,11 +348,11 @@ class MasterView(Materialize):
             for row in rows:
                 source_slug = helpers.extract_source_slug(row.source_slug)
                 if source_slug not in self.sources_slug_map:
-                    logger.warning("Got postclick stats for unknown source: %s", row.source_slug)
+                    logger.info("Got postclick stats for unknown source: %s", row.source_slug)
                     continue
 
                 if row.ad_group_id not in self.ad_groups_map:
-                    logger.warning("Got postclick stats for unknown ad group: %s", row.ad_group_id)
+                    logger.info("Got postclick stats for unknown ad group: %s", row.ad_group_id)
                     continue
 
                 source = self.sources_slug_map[source_slug]
