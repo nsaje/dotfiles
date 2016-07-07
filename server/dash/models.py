@@ -3645,6 +3645,16 @@ class ExportReport(models.Model):
             return all_sources
         return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
 
+    def get_filtered_agencies(self):
+        if len(self.filtered_agencies.all()) == 0:
+            return Agency.objects.all()
+        return self.filtered_agencies.all()
+
+    def get_filtered_account_types(self):
+        if len(self.filtered_account_types or []) == 0:
+            return [constants.AccountType.get_text(c) for c in constants.AccountType.get_all()]
+        return [constants.AccountType.get_text(c) for c in self.filtered_account_types]
+
 
 class ScheduledExportReport(models.Model):
     id = models.AutoField(primary_key=True)
