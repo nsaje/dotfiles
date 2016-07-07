@@ -70,7 +70,7 @@ def _process_request_overflow(blocks, limit, overflow):
     return blocks
 
 
-def get_report_through_table(get_fn, user, form_data, **kwargs):
+def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, **kwargs):
     """
     FIXME: This code is temporary! It will only be used for the prototype.
 
@@ -84,6 +84,7 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
     end_date = constraints['date__lte']
 
     view_filter = helpers.ViewFilter(user=user, data=form_data)
+    filtered_sources = view_filter.filtered_sources
 
     offset = form_data.get('offset', DEFAULT_OFFSET)
     limit = form_data.get('limit', DEFAULT_LIMIT)
@@ -97,7 +98,7 @@ def get_report_through_table(get_fn, user, form_data, **kwargs):
 
     response = get_fn(
         user,
-        view_filter,
+        view_filter if all_accounts_level else filtered_sources,
         start_date,
         end_date,
         order,
@@ -386,7 +387,8 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             report = get_report_through_table(
                 self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
                 request.user,
-                form.cleaned_data
+                form.cleaned_data,
+                all_accounts_level=True
             )
             return self.create_api_response(report)
 
