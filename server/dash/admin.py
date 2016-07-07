@@ -1508,7 +1508,7 @@ class HistoryResource(resources.ModelResource):
 
     class Meta:
         model = models.History
-        exclude = ['type', 'changes']
+        exclude = ['changes']
 
     def _get_name(self, obj):
         return obj.name if obj else '/'
