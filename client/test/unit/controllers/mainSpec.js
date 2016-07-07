@@ -1,20 +1,58 @@
 'use strict';
 
 describe('MainCtrl', function () {
+    var api;
     var $scope;
     var ctrl;
     var $state;
     var user = {permissions: []};
     var zemFullStoryService;
+    var zemFilterServiceMock;
     var zemUserSettings;
     var accountsAccess;
 
+    beforeEach(module('one'));
+    beforeEach(module('stateMock'));
+
     beforeEach(function () {
-        module('one');
+
+        module(function ($provide) {
+            var mockApiFunc = function () {
+                return {
+                    then: function () {
+                        return {
+                            finally: function () {
+                            },
+                        };
+                    },
+                    abort: function () {
+                    },
+                };
+            };
+
+            api = {
+                navigation: {
+                    list: mockApiFunc,
+                },
+            };
+
+            zemFilterServiceMock = {
+                getShowArchived: function () {
+                    return true;
+                },
+                getFilteredSources: function () {},
+                getFilteredAccountTypes: function () {},
+                getFilteredAgencies: function () {},
+            };
+
+            $provide.value('zemFilterService', zemFilterServiceMock);
+            $provide.value('api', api);
+        });
 
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
+
             zemFullStoryService = {identify: function (user) {}};
             zemUserSettings = {
                 getInstance: function () {
@@ -34,10 +72,11 @@ describe('MainCtrl', function () {
             ctrl = $controller('MainCtrl', {
                 $scope: $scope,
                 $state: $state,
+                api: api,
                 user: user,
                 accountsAccess: accountsAccess,
                 zemFullStoryService: zemFullStoryService,
-                zemUserSettings: zemUserSettings
+                zemUserSettings: zemUserSettings,
             });
         });
     });

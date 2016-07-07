@@ -591,6 +591,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     });
 
+    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+
+        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
+            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+        }
+    });
+
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
@@ -604,17 +617,25 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     }, true);
 
-    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
-        if (newValue === oldValue) {
+    $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
             return;
         }
-
         getTableData();
+        getDailyStats();
+        $scope.getInfoboxData();
+        // TODO: Breakdowns
+    }, true);
 
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
+    $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
         }
-    });
+        getTableData();
+        getDailyStats();
+        $scope.getInfoboxData();
+        // TODO: Breakdowns
+    }, true);
 
     var pollSyncStatus = function () {
         if ($scope.isSyncInProgress) {

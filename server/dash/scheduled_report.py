@@ -70,6 +70,8 @@ def add_scheduled_report(
         user,
         report_name='',
         filtered_sources=[],
+        filtered_agencies=[],
+        filtered_account_types=[],
         order=None,
         additional_fields='',
         granularity=constants.ScheduledReportGranularity.CONTENT_AD,
@@ -107,10 +109,15 @@ def add_scheduled_report(
             breakdown_by_source=by_source,
             breakdown_by_day=by_day,
             include_model_ids=include_model_ids,
-            additional_fields=additional_fields)
+            additional_fields=additional_fields,
+            filtered_account_types=filtered_account_types
+        )
         export_report.save()
         for s in filtered_sources:
             export_report.filtered_sources.add(s)
+        if filtered_agencies:
+            for agency in filtered_agencies:
+                export_report.filtered_agencies.add(agency)
 
         scheduled_report = models.ScheduledExportReport(
             created_by=user,

@@ -80,38 +80,44 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
 class NavigationTreeView(api_common.BaseApiView):
     def get(self, request):
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        view_filter = helpers.ViewFilter(request=request)
         user = request.user
 
         campaigns, map_campaign_settings = self._fetch_campaign_data_from_db(
-            user, filtered_sources)
-        ad_groups_data = self._load_ad_groups_data(user, filtered_sources, map_campaign_settings)
-        campaigns_data = self._load_campaigns_data(ad_groups_data,
-                                                   campaigns, map_campaign_settings)
-        accounts_data = self._load_accounts_data(campaigns_data, user, filtered_sources)
-
+            user, view_filter)
+        ad_groups_data = self._load_ad_groups_data(
+            user, view_filter, map_campaign_settings)
+        campaigns_data = self._load_campaigns_data(
+            ad_groups_data, campaigns, map_campaign_settings)
+        accounts_data = self._load_accounts_data(
+            campaigns_data, user, view_filter)
         return self.create_api_response(accounts_data)
 
-    def _load_ad_groups_data(self, user, filtered_sources, map_campaign_settings):
+    def _load_ad_groups_data(self, user, view_filter, map_campaign_settings):
         # load necessary objects
-        ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources).order_by('name')
+        ad_groups = models.AdGroup.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)\
+            .order_by('name')
 
         map_ad_group_source = dict(
             models.AdGroupSource.objects
             .filter(ad_group__in=ad_groups)
-            .filter_by_sources(filtered_sources)
+            .filter_by_sources(view_filter.filtered_sources)
             .values_list('id', 'ad_group_id')
         )
 
-        ad_groups_settings = models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)\
-                                                           .group_current_settings()
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups).group_current_settings()
 
         map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         # takes too long to do a join when constraints are applied
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__in=map_ad_group_source.keys())\
-                                                                         .group_current_settings()
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__in=map_ad_group_source.keys()
+        ).group_current_settings()
 
         map_ad_groups_sources_settings = navigation_helpers.map_ad_group_sources_settings(
             ad_groups_sources_settings, map_ad_group_source)
@@ -129,9 +135,13 @@ class NavigationTreeView(api_common.BaseApiView):
 
         return data_ad_groups
 
-    def _fetch_campaign_data_from_db(self, user, filtered_sources):
-        campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources).order_by('name')
+    def _fetch_campaign_data_from_db(self, user, view_filter):
+        campaigns = models.Campaign.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)\
+            .order_by('name')
 
         map_campaigns_settings = {}
         campaigns_settings = models.CampaignSettings.objects.filter(
@@ -156,12 +166,15 @@ class NavigationTreeView(api_common.BaseApiView):
 
         return data_campaigns
 
-    def _load_accounts_data(self, campaings_data, user, filtered_sources):
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources)
+    def _load_accounts_data(self, campaings_data, user, view_filter):
+        accounts = models.Account.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)
 
         accounts_settings = models.AccountSettings.objects.filter(
-            account__in=accounts) .group_current_settings()
+            account__in=accounts).group_current_settings()
         map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
         data_accounts = []
