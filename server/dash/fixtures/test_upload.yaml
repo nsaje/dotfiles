@@ -129,14 +129,14 @@
 # Source Types
 -   fields:
         type: 'adblade'
-        available_actions: []
+        available_actions: [4]  # can manage content ads
         min_daily_budget: 5.00
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'adbanana'
-        available_actions: []
+        available_actions: [4]  # can manage content ads
     model: dash.sourcetype
     pk: 2
 
@@ -166,15 +166,25 @@
     source: 1
     ad_group: 1
     source_campaign_key: '["fake"]'
+    can_manage_content_ads: true
   model: dash.adgroupsource
   pk: 1
 
 - fields:
     source: 2
     ad_group: 1
+    can_manage_content_ads: true
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 2
+
+- fields:
+    source: 1
+    ad_group: 3
+    source_campaign_key: '["fake"]'
+    can_manage_content_ads: true
+  model: dash.adgroupsource
+  pk: 3
 
 # Ad Group Source Settings
 - fields:
@@ -203,7 +213,6 @@
     status: 3  # in progress
     ad_group: 2
     original_filename: 'test_upload.csv'
-    batch_size: 1
   model: dash.uploadbatch
   pk: 1
 
@@ -213,7 +222,6 @@
     status: 3  # in progress
     ad_group: 3
     original_filename: 'test_upload.csv'
-    batch_size: 1
   model: dash.uploadbatch
   pk: 2
 
@@ -223,7 +231,6 @@
     status: 3  # in progress
     ad_group: 4
     original_filename: 'test_upload.csv'
-    batch_size: 1
   model: dash.uploadbatch
   pk: 3
 
@@ -233,8 +240,6 @@
     status: 1  # done
     ad_group: 5
     original_filename: 'test_upload.csv'
-    error_report_key: 'test_upload_1234abc.csv'
-    batch_size: 1
   model: dash.uploadbatch
   pk: 4
 
@@ -244,7 +249,6 @@
     status: 3  # in progress
     ad_group: 4
     original_filename: 'test_upload.csv'
-    batch_size: 2
   model: dash.uploadbatch
   pk: 5
 
@@ -264,7 +268,6 @@
     brand_name: 'Zemanta'
     description: 'Zemanta blog'
     call_to_action: 'Read more'
-    tracker_urls: ''
     image_id: null
     image_width: null
     image_height: null
@@ -311,7 +314,6 @@
     brand_name: 'Zemanta'
     description: 'Zemanta blog'
     call_to_action: 'Read more'
-    tracker_urls: ''
     image_id: null
     image_width: null
     image_height: null
@@ -358,7 +360,6 @@
     brand_name: 'BranName'
     description: 'Custom description'
     call_to_action: 'Contact us'
-    tracker_urls: ''
     image_id: null
     image_width: null
     image_height: null

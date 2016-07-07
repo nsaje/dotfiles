@@ -160,7 +160,6 @@ CACHES = {
 USE_HASH_CACHE = True
 HASH_CACHE_TTL = 24 * 60 * 60
 
-Z3_API_IMAGE_URL = 'https://images-api.zemanta.com/api/image/'
 IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
 
 BROKER_TRANSPORT = 'sqs'
@@ -194,6 +193,7 @@ R1_BLANK_REDIRECT_URL = 'https://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad
 #R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/{job_id}/'
 R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
+R1_CUSTOM_AUDIENCE_API_URL = 'https://r1.zemanta.com/api/audience/{audience_id}/'
 
 # Budget automation
 DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5

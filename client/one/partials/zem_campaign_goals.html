@@ -1,6 +1,6 @@
 <div class="zem-campaign-goals">
     <div class="row" ng-show="!campaignGoals.length">
-        <div class="col-xs-7 campaign-goal-row nopadding">
+        <div class="col-xs-7 campaign-goal-row p-none">
             Currently there are no defined campaign goals.
         </div>
     </div>
@@ -40,18 +40,18 @@
         </div>
     </div>
     <div class="row" ng-if="getKPIOptimizationLabel()">
-        <div class="col-xs-12 nopadding optimization-label">
+        <div class="col-xs-12 p-none optimization-label">
             {{getKPIOptimizationLabel()}}
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-5 nopadding">
+        <div class="col-xs-5 p-none">
             <button type="button" class="btn btn-default" ng-click="addGoal()">
                 <span class="plus-sign"><zem-icon img-class="zem-icon-buttons-plus" file="buttons-plus-new.svg"></zem-icon></span>
                 <span class="plus-label">Add new goal</span>
             </button>
         </div>
-        <div class="col-xs-7 helper-label nopadding" ng-show="(campaignGoals.length || 0) > 1">
+        <div class="col-xs-7 helper-label p-none" ng-show="(campaignGoals.length || 0) > 1">
             Click on a goal to set it as primary <zem-help-popover content="Primary goal will be used for auto-optimizing your campaign." placement="top"></zem-help-popover>
         </div>
     </div>

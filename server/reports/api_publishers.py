@@ -135,7 +135,8 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
 
 
 def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[], conversion_goals=[]):
-    return query(start_date, end_date,
+    return query(
+        start_date, end_date,
         breakdown_fields=breakdown_fields,
         order_fields=order_fields,
         offset=offset,
@@ -164,7 +165,8 @@ def prepare_active_publishers_constraint_list(blacklist, use_touchpoint_fields):
 
 
 def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[], conversion_goals=[]):
-    return query(start_date, end_date,
+    return query(
+        start_date, end_date,
         breakdown_fields=breakdown_fields,
         order_fields=order_fields,
         offset=offset,
@@ -234,7 +236,7 @@ def _aggregate_domains(blacklist):
         key = (blacklist_entry['adgroup_id'], blacklist_entry['exchange'])
         aggregated_pubs[key] = aggregated_pubs.get(key, []) + [blacklist_entry['domain']]
     for adgroup_id, exchange in aggregated_pubs:
-        domain_list = aggregated_pubs[ (adgroup_id, exchange) ]
+        domain_list = aggregated_pubs[(adgroup_id, exchange)]
         if len(domain_list) == 1:
             domain_list = domain_list[0]
 

@@ -265,4 +265,3 @@ class ApiContentAdsPostclickRedshiftTest(RedshiftTestCase):
             accounts=accounts,
             sources=sources)
         self.assertFalse(result)
-

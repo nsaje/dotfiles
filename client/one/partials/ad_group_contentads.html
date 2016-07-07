@@ -13,39 +13,14 @@
     </div>
     <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
-            <div ng-if="!hasPermission('zemauth.can_use_improved_ads_upload')">
-                <div class="button-bar-item">
-                    <button
-                        type="button"
-                        class="btn btn-add"
-                        ng-click="addContentAds()">
-                        + Content Ads
-                    </button>
-                </div>
-            </div>
 
-            <div ng-if="hasPermission('zemauth.can_use_improved_ads_upload') && !hasPermission('zemauth.can_upload_with_picker')">
-                <div class="button-bar-item">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_use_improved_ads_upload')" popover-placement="top"></zem-internal-feature>
-                    <button
-                        type="button"
-                        class="btn btn-add"
-                        ng-click="addContentAdsPlus()">
-                        + Content Ads
-                    </button>
-                </div>
-            </div>
-
-            <div ng-if="hasPermission('zemauth.can_use_improved_ads_upload') && hasPermission('zemauth.can_upload_with_picker')">
-                <div class="button-bar-item">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_upload_with_picker')" popover-placement="top"></zem-internal-feature>
-                    <button
-                        type="button"
-                        class="btn btn-add"
-                        ng-click="addContentAdsPlusMultiple()">
-                        + Content Ads
-                    </button>
-                </div>
+            <div class="button-bar-item">
+                <button
+                    type="button"
+                    class="btn btn-add"
+                    ng-click="addContentAds()">
+                    + Content Ads
+                </button>
             </div>
 
             <div class="button-bar-item">

@@ -344,6 +344,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             offset: keysFrom,
             limit: keysTo - keysFrom,
             count: keysCount,
+            complete: keysCount === keysTo,
         };
 
         keys = keys.slice(keysFrom, keysTo + 1);

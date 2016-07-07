@@ -1449,7 +1449,7 @@ class PublisherHelpersTest(TestCase):
 
 
 class UtilityHelpers(TestCase):
-    fixtures = ['test_agency.yaml', 'test_facebook.yaml']
+    fixtures = ['test_views.yaml', 'test_agency.yaml', 'test_facebook.yaml']
 
     def test_get_user_agency(self):
         u = User.objects.get(pk=1000)
@@ -1468,7 +1468,7 @@ class UtilityHelpers(TestCase):
         other_agency.users.add(u)
 
         with self.assertRaises(MultipleObjectsReturned):
-           helpers.get_user_agency(u)
+            helpers.get_user_agency(u)
 
     def test_is_agency_manager(self):
         acc = models.Account.objects.get(pk=1000)
