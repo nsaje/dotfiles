@@ -1,3 +1,87 @@
+Always present
+- enable/pause button (applies to Campaign and lower levels)
+- Name
+- Delivery State/Status
+- Goal Performance Indicator (applies to Account and lower levels)
+
+Management (internal only)
+- Account ID
+- Campaign ID
+- Ad Group ID
+- Content Ad ID
+- Agency
+- Sales Representative
+- Account Manager
+- Campaign Manager
+
+Content (only applies to Content Ads tab)
+- Thumbnail
+- Status
+- Title
+- URL
+- Display URL
+- Brand Name
+- Description
+- Call to Action
+- Label
+- Impression trackers
+- Uploaded
+- Batch Name
+
+Media Sources
+- Link (only applies to Media Sources tab, ad group level)
+- Min bid (Media Sources tab)
+- Max Bid (Media Sources tab)
+- Daily Cap
+
+Costs
+- Actual Yesterday Spend
+- Yesterday Spend
+- Actual Media Spend
+- Media Spend
+- Actual Data Cost
+- Data Cost
+- License Fee
+- Recognized Flat Fee
+- Total Fee
+- Total Spend
+
+Projections
+- Media Budgets
+- Pacing
+- Spend Projection
+- License Fee Projection
+
+Traffic Acquisition
+- Impressions
+- Clicks
+- CTR
+- CPC
+
+Audience Metrics
+- Visits (internal only)
+- % New Users
+- Click Discrepancy (internal only)
+- Pageviews (internal only)
+- Pagevievs per Visit
+- Unbounced Visitors
+- Bounce Rate
+- Total Seconds
+- Time on Site
+
+Conversions
+- (pixel) 1 day, 7 days, 30 days
+
+Campaign Goals
+- Cost per Minute
+- Cost per Pageview
+- Cost per Visit
+- CPA (pixel)
+- Cost per Unbounced Visitor
+- Cost per New Visitor
+
+
+
 /*globals oneApp,moment,constants,options*/
 oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     $scope.isSyncRecent = true;
