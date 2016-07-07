@@ -417,6 +417,33 @@ class MasterView(Materialize):
         return sql, params
 
 
+
+class MVTouchpointConversions(Materialize):
+
+    TABLE_NAME = 'mv_touchpointconversions'
+
+    def generate(self, **kwargs):
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
+                logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from, self.date_to)
+                c.execute(sql, params)
+
+                logger.info('Inserting data into table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = self.prepare_insert_query()
+                c.execute(sql, params)
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_insert_mv_touchpointconversions.sql', {})
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
 class DerivedMaterializedView(Materialize):
     def generate(self, **kwargs):
         with db.get_write_stats_transaction():
