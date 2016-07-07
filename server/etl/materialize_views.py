@@ -341,7 +341,7 @@ class MasterView(Materialize):
 
             if len(rows_by_postclick_source.keys()) > 1:
                 logger.info("Postclick stats for a single ad group (%s) from different sources %s, date %s",
-                               ad_group_id, rows_by_postclick_source.keys(), date)
+                            ad_group_id, rows_by_postclick_source.keys(), date)
 
             rows = helpers.get_highest_priority_postclick_source(rows_by_postclick_source)
 
