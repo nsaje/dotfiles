@@ -4,6 +4,7 @@ from django.template import Context, Template
 import backtosql
 from backtosql import helpers
 
+
 def assert_sql_equals(first, second):
     first_norm = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
     second_norm = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
