@@ -301,7 +301,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
 
         this.get = function (level, id, startDate, endDate, order) {
-            var deferred = $q.defer();
+            var deferred = createAbortableDefer();
             var url = null;
             if (level === constants.level.ALL_ACCOUNTS) {
                 url = '/api/' + level + '/sources/table/';
