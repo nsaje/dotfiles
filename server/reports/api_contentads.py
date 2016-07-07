@@ -116,7 +116,6 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
         # between content ads correctly.
         constraints['content_ad__neq'] = redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID
 
-
     constraints = extract_obj_ids(constraints)
 
     cursor = redshift.get_cursor(read_only=True)
