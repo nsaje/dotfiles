@@ -856,7 +856,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         function getData (url, startDate, endDate, metrics, selectedIds, totals, groupSources) {
-
             var deferred = createAbortableDefer();
             var config = {
                 params: {},
@@ -1895,7 +1894,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
 
         this.get = function (page, size, startDate, endDate, order) {
-            var deferred = $q.defer();
+            var deferred = createAbortableDefer()
             var url = '/api/accounts/table/';
             var config = {
                 params: {}
