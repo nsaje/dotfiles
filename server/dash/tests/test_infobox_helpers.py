@@ -561,7 +561,6 @@ class InfoBoxAccountHelpersTest(TestCase):
             ad_group=dash.models.AdGroup.objects.get(pk=1),
             created_by=john,
         )
-
         self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
         self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
