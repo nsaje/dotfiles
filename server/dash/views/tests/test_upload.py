@@ -370,12 +370,6 @@ class UploadSaveTestCase(TestCase):
                 'message': 'Save not permitted - candidate errors exist'
             }
         }, json.loads(response.content))
-        self.assertEqual(
-            models.History.objects.filter(
-                ad_group=ad_group_id,
-            ).latest('created_dt').changes_text,
-            'Imported batch "batch 3" with 0 content ads.',
-        )
 
     @patch('utils.redirector_helper.insert_redirects_batch')
     def test_redirector_error(self, mock_insert_batch):
