@@ -30,13 +30,13 @@
                 </div>
             </li>
 
-            <li class="agency-filter" ng-show="agencyFilterVisible && hasPermission('zemauth.can_filter_by_agency')">
+            <li ng-show="agencyFilterVisible && hasPermission('zemauth.can_filter_by_agency')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_agency')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Agency</div>
 
-                <select ui-select2="{formatNoMatches: 'No agencies', dropdownCssClass: 'select2-filter'}" ng-model="agencyIdToFilter" ng-change="addFilteredAgency(agencyIdToFilter)" class="add-filter" data-placeholder="+ Agency">
+                <select id="agency-filter-select" ui-select2="{dropdownAutoWidth: true, formatNoMatches: 'No agencies', dropdownCssClass: 'select2-filter'}" ng-model="agencyIdToFilter" ng-change="addFilteredAgency(agencyIdToFilter)" class="add-filter" data-placeholder="+ Agency">
                     <option value=""></option>
-                    <option ng-repeat="agency in agencies | orderBy:'name'" value="{{agency.id}}">{{agency.name}}</option>
+                    <option ng-repeat="agency in agencies | orderBy:'name' | filter:isAgencyValidFilterChoice" value="{{agency.id}}">{{agency.name}}</option>
                 </select>
                 <div class="filtered" ng-repeat="agency in agencies | orderBy:'name' | filter:isAgencyFiltered" ng-click="removeFilteredAgency(agency.id)">
                     {{agency.name}}
@@ -48,9 +48,9 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_account_type')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Account type</div>
 
-                <select ui-select2="{formatNoMatches: 'No account types', dropdownCssClass: 'select2-filter'}" ng-model="accountTypeIdToFilter" ng-change="addFilteredAccountType(accountTypeIdToFilter)" class="add-filter" data-placeholder="+ Account Type">
+                <select id="account-type-filter-select" ui-select2="{dropdownAutoWidth: true, formatNoMatches: 'No account types', dropdownCssClass: 'select2-filter'}" ng-model="accountTypeIdToFilter" ng-change="addFilteredAccountType(accountTypeIdToFilter)" class="add-filter" data-placeholder="+ Account Type">
                     <option value=""></option>
-                    <option ng-repeat="accountType in accountTypes | orderBy:'name'" value="{{accountType.id}}">{{accountType.name}}</option>
+                    <option ng-repeat="accountType in accountTypes | orderBy:'name' | filter:isAccountTypeValidFilterChoice" value="{{accountType.id}}">{{accountType.name}}</option>
                 </select>
                 <div class="filtered" ng-repeat="accountType in accountTypes | orderBy:'name' | filter:isAccountTypeFiltered" ng-click="removeFilteredAccountType(accountType.id)">
                     {{accountType.name}}

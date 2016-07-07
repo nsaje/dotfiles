@@ -62,6 +62,14 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 return !$scope.isSourceFiltered(source) && !$scope.isSourceDeprecated(source);
             };
 
+            $scope.isAgencyValidFilterChoice = function (agency) {
+                return !$scope.isAgencyFiltered(agency);
+            }
+
+            $scope.isAccountTypeValidFilterChoice = function (accountType) {
+                return !$scope.isAccountTypeFiltered(accountType);
+            }
+
             $scope.isSourceDeprecated = function (source) {
                 return source.deprecated;
             };

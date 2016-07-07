@@ -20,6 +20,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = false;
 
+    $(document).ready(function() { 
+        $("#agency-filter-select").select2({ width: 'resolve' });           
+        $("#account-type-filter-select").select2({ width: 'resolve' });           
+    });
+
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
             return false;
