@@ -614,6 +614,7 @@ var constants = {
         PENDING: 'Pending',
         EMPTY: 'Empty',
         ERROR: 'Error',
+        INVALID: 'Invalid'
     },
     imageCrop: {
         CENTER: 'center',
