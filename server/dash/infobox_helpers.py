@@ -480,7 +480,7 @@ def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
         pk__in=[action.created_by.id for action in actions])\
         .filter_by_agencies(filtered_agencies)
     filtered_users = _filter_user_by_account_type(users, filtered_account_types)
-    return actions.filter(created_by__in=users).count()
+    return actions.filter(created_by__in=filtered_users).count()
 
 
 def _one_week_ago():
